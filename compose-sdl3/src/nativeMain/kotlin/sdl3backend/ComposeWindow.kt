@@ -1,9 +1,11 @@
 package sdl3backend
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.NodeApplier
+import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -48,6 +50,10 @@ fun composeWindow(
         return
     }
 
+    // Hook the real TTF metrics into the common layout pass so Text bounds match
+    // what's actually rendered (fixes off-center text inside Buttons / Boxes).
+    currentTextMeasurer = renderer.textMeasurer
+
     val rootNode = LayoutNode()
     val frameClock = SDL3FrameClock()
 
@@ -57,6 +63,12 @@ fun composeWindow(
 
         val recomposeJob = launch { recomposer.runRecomposeAndApplyChanges() }
 
+        // Without this, mutableStateOf writes from click handlers never reach the
+        // recomposer and the UI silently stops updating after the first frame.
+        val snapshotHandle = Snapshot.registerGlobalWriteObserver {
+            Snapshot.sendApplyNotifications()
+        }
+
         composition.setContent(content)
 
         // ============
@@ -64,6 +76,10 @@ fun composeWindow(
         var running = true
 
         while (running) {
+            // ============
+            //  Drain any pending snapshot writes from the previous frame's handlers
+            Snapshot.sendApplyNotifications()
+
             // ============
             //  Events
             val events = pollEvents()
@@ -88,6 +104,7 @@ fun composeWindow(
 
             // ============
             //  Signal frame to recomposer
+            Snapshot.sendApplyNotifications()
             frameClock.sendFrame()
             yield()
 
@@ -107,6 +124,7 @@ fun composeWindow(
             SDL_Delay(16u)
         }
 
+        snapshotHandle.dispose()
         composition.dispose()
         recomposer.cancel()
         recomposeJob.cancelAndJoin()

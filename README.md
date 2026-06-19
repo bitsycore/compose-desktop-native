@@ -39,4 +39,4 @@ No JVM required — compiles to native binaries for macOS, Linux, and Windows.
 
 ## License
 
-Licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en).
+Licensed under the [MIT License](LICENSE.md).

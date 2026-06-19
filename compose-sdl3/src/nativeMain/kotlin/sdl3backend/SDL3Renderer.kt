@@ -4,6 +4,8 @@ import androidx.compose.ui.BackgroundModifier
 import androidx.compose.ui.BorderModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
 import sdl3.*
 
@@ -13,6 +15,11 @@ import sdl3.*
 
 class SDL3Renderer(private val backend: SDL3Backend) {
     private val textRenderer = SDL3TextRenderer(backend)
+
+    val textMeasurer: TextMeasurer = TextMeasurer { inText, inFontSize ->
+        val vSize = textRenderer.measureText(inText, inFontSize)
+        IntSize(vSize.first, vSize.second)
+    }
 
     fun init(): Boolean = textRenderer.init()
     fun destroy() = textRenderer.destroy()

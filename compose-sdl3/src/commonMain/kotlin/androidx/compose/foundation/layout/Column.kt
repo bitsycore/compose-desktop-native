@@ -54,10 +54,13 @@ private class ColumnMeasurePolicy(
 
         val sizes = mutableListOf<Int>()
         var maxW = 0; var totalH = 0
+        val gap = arrangement.spacing
+        val gapTotal = if (node.children.size > 1) gap * (node.children.size - 1) else 0
 
         for (child in node.children) {
+            val used = totalH + (if (sizes.isNotEmpty()) gap else 0)
             val remaining = if (availH == Constraints.Infinity) Constraints.Infinity
-                            else (availH - totalH).coerceAtLeast(0)
+                            else (availH - used).coerceAtLeast(0)
             val cc = childConstraints.copy(maxHeight = remaining)
             val s = child.measure(cc)
             sizes.add(s.height)
@@ -66,7 +69,7 @@ private class ColumnMeasurePolicy(
         }
 
         val w = (maxW + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (totalH + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
+        val h = (totalH + gapTotal + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
         val innerW = w - pl - pr
 
         val positions = IntArray(sizes.size)

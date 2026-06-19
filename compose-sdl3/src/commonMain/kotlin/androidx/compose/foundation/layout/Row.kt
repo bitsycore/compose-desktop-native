@@ -54,10 +54,13 @@ private class RowMeasurePolicy(
 
         val sizes = mutableListOf<Int>()
         var totalW = 0; var maxH = 0
+        val gap = arrangement.spacing
+        val gapTotal = if (node.children.size > 1) gap * (node.children.size - 1) else 0
 
         for (child in node.children) {
+            val used = totalW + (if (sizes.isNotEmpty()) gap else 0)
             val remaining = if (availW == Constraints.Infinity) Constraints.Infinity
-                            else (availW - totalW).coerceAtLeast(0)
+                            else (availW - used).coerceAtLeast(0)
             val cc = childConstraints.copy(maxWidth = remaining)
             val s = child.measure(cc)
             sizes.add(s.width)
@@ -65,7 +68,7 @@ private class RowMeasurePolicy(
             maxH = max(maxH, s.height)
         }
 
-        val w = (totalW + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val w = (totalW + gapTotal + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
         val h = (maxH + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
         val innerH = h - pt - pb
 

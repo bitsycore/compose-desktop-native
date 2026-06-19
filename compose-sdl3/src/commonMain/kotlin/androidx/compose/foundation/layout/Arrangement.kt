@@ -9,41 +9,55 @@ import kotlin.math.max
 
 object Arrangement {
 
-    fun interface Horizontal {
+    interface Horizontal {
         fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray)
+        /* Inter-child spacing that the arrangement injects regardless of totalSize.
+           Row/Column read this so the parent size accounts for visible gaps. */
+        val spacing: Int get() = 0
     }
 
-    fun interface Vertical {
+    interface Vertical {
         fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray)
+        val spacing: Int get() = 0
     }
 
     /** Can be used as both Horizontal and Vertical. */
-    interface HorizontalOrVertical : Horizontal, Vertical
+    interface HorizontalOrVertical : Horizontal, Vertical {
+        override val spacing: Int get() = 0
+    }
 
     // ============
     //  Horizontal-only
 
-    val Start = Horizontal { _, sizes, out ->
-        var current = 0
-        sizes.forEachIndexed { i, size -> out[i] = current; current += size }
+    val Start = object : Horizontal {
+        override fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray) {
+            var current = 0
+            sizes.forEachIndexed { i, size -> outPositions[i] = current; current += size }
+        }
     }
 
-    val End = Horizontal { totalSize, sizes, out ->
-        var current = totalSize - sizes.sum()
-        sizes.forEachIndexed { i, size -> out[i] = current; current += size }
+    val End = object : Horizontal {
+        override fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray) {
+            var current = totalSize - sizes.sum()
+            sizes.forEachIndexed { i, size -> outPositions[i] = current; current += size }
+        }
     }
 
     // ============
     //  Vertical-only
 
-    val Top = Vertical { _, sizes, out ->
-        var current = 0
-        sizes.forEachIndexed { i, size -> out[i] = current; current += size }
+    val Top = object : Vertical {
+        override fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray) {
+            var current = 0
+            sizes.forEachIndexed { i, size -> outPositions[i] = current; current += size }
+        }
     }
 
-    val Bottom = Vertical { totalSize, sizes, out ->
-        var current = totalSize - sizes.sum()
-        sizes.forEachIndexed { i, size -> out[i] = current; current += size }
+    val Bottom = object : Vertical {
+        override fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray) {
+            var current = totalSize - sizes.sum()
+            sizes.forEachIndexed { i, size -> outPositions[i] = current; current += size }
+        }
     }
 
     // ============
@@ -85,8 +99,9 @@ object Arrangement {
     }
 
     fun spacedBy(space: Dp): HorizontalOrVertical = object : HorizontalOrVertical {
+        private val gap = space.value.toInt()
+        override val spacing: Int get() = gap
         override fun arrange(totalSize: Int, sizes: List<Int>, outPositions: IntArray) {
-            val gap = space.value.toInt()
             var current = 0
             sizes.forEachIndexed { i, size -> outPositions[i] = current; current += size + gap }
         }

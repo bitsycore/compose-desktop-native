@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
+import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.IntSize
 
 // ==================
@@ -34,15 +35,14 @@ fun BasicText(
     )
 }
 
-/** Approximate text measurement (0.6 * fontSize per char width). */
+/* Defers to whatever TextMeasurer is currently installed (TTF-backed on the
+   SDL3 backend, char-width estimate otherwise) so the laid-out bounds match
+   the glyphs the renderer will draw. */
 internal val TextMeasurePolicy = MeasurePolicy { node, constraints ->
     val t = node.text ?: ""
-    val fs = node.fontSize
-    val charW = (fs * 0.6f).toInt().coerceAtLeast(1)
-    val estW = charW * t.length
-    val estH = (fs * 1.3f).toInt()
+    val measured = currentTextMeasurer.measure(t, node.fontSize)
 
-    val w = estW.coerceIn(constraints.minWidth, constraints.maxWidth)
-    val h = estH.coerceIn(constraints.minHeight, constraints.maxHeight)
+    val w = measured.width.coerceIn(constraints.minWidth, constraints.maxWidth)
+    val h = measured.height.coerceIn(constraints.minHeight, constraints.maxHeight)
     IntSize(w, h)
 }
