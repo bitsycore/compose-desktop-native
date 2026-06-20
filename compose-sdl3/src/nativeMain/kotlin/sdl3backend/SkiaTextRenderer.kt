@@ -60,6 +60,7 @@ class SkiaTextRenderer {
         inX: Float,
         inY: Float,
         inBoxWidth: Int,
+        inBoxHeight: Int,
         inColor: ComposeColor,
         inFontSize: Int,
         inAlign: TextAlign = TextAlign.Start
@@ -69,17 +70,26 @@ class SkiaTextRenderer {
             color = toSkiaColor(inColor)
             isAntiAlias = true
         }
-        // Position the pen inside the laid-out box according to TextAlign.
-        // The estimated width may differ from the actual glyph extent by ~1 px;
-        // close enough for the buttons.
+
+        // Horizontal: TextAlign over the laid-out box width.
         val vTextWidth = estimateTextWidth(inText, inFontSize).toFloat()
         val vPenX = when (inAlign) {
             TextAlign.Start  -> inX
             TextAlign.Center -> inX + (inBoxWidth - vTextWidth) / 2f
             TextAlign.End    -> inX + inBoxWidth.toFloat() - vTextWidth
         }
-        // Baseline is |ascent| below the box top (ascent is negative).
-        val vBaseline = inY - vFont.metrics.ascent
+
+        // Vertical: baseline placed so that the cap-letter visual centre lands
+        // on the laid-out box's vertical centre. This is what Compose Material
+        // does via LineHeightStyle.Alignment.Center — centres cap-height text
+        // (titles, button labels, digits) regardless of how tall the line box
+        // is. Symbols like '+' (math-line) land near centre; '-' (x-height)
+        // sits a touch below, matching real Compose's behaviour.
+        val vMetrics = vFont.metrics
+        val vCapHeight = if (vMetrics.capHeight > 0f) vMetrics.capHeight
+                         else inFontSize * 0.7f
+        val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
+
         inCanvas.drawString(inText, vPenX, vBaseline, vFont, vPaint)
         vPaint.close()
     }

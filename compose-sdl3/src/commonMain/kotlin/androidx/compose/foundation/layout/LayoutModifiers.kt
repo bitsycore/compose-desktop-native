@@ -25,6 +25,10 @@ fun Modifier.fillMaxSize(fraction: Float = 1f) = then(SizeModifier(fillMaxWidth 
 fun Modifier.fillMaxWidth(fraction: Float = 1f) = then(SizeModifier(fillMaxWidth = true))
 fun Modifier.fillMaxHeight(fraction: Float = 1f) = then(SizeModifier(fillMaxHeight = true))
 
+// Offset (post-layout visual nudge; doesn't change measured size)
+fun Modifier.offset(x: Dp = Dp.Zero, y: Dp = Dp.Zero) =
+    then(OffsetModifier(x.value.toInt(), y.value.toInt()))
+
 // Min/Max constraints
 fun Modifier.requiredWidth(width: Dp) = then(SizeModifier(width = width.value.toInt()))
 fun Modifier.requiredHeight(height: Dp) = then(SizeModifier(height = height.value.toInt()))

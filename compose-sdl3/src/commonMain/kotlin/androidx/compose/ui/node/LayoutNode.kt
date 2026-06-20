@@ -38,9 +38,15 @@ class LayoutNode {
     var textAlign: TextAlign = TextAlign.Start
 
     // ============
-    //  Computed absolute position
-    val absoluteX: Int get() = x + (parent?.absoluteX ?: 0)
-    val absoluteY: Int get() = y + (parent?.absoluteY ?: 0)
+    //  Computed absolute position (incl. visual offset modifiers)
+    val offsetX: Int get() = modifier.foldIn(0) { acc, e ->
+        if (e is OffsetModifier) acc + e.x else acc
+    }
+    val offsetY: Int get() = modifier.foldIn(0) { acc, e ->
+        if (e is OffsetModifier) acc + e.y else acc
+    }
+    val absoluteX: Int get() = x + offsetX + (parent?.absoluteX ?: 0)
+    val absoluteY: Int get() = y + offsetY + (parent?.absoluteY ?: 0)
 
     // ============
     //  Tree manipulation

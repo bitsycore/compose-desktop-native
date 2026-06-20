@@ -79,6 +79,11 @@ data class ClickableModifier(val onClick: () -> Unit) : Modifier.Element
 class HoverableModifier(val onChange: (Boolean) -> Unit) : Modifier.Element
 class PressableModifier(val onChange: (Boolean) -> Unit) : Modifier.Element
 
+/* Visual offset applied after layout. The node's measured size and the
+   parent's placement are unchanged; only the absolute draw position shifts.
+   Multiple OffsetModifiers stack additively. */
+data class OffsetModifier(val x: Int, val y: Int) : Modifier.Element
+
 /* Clips this node's children to the given shape. The node's own bg/border
    drawing is not clipped (they already follow the shape via their own
    shape parameter). Children drawn inside are restricted to the shape. */
