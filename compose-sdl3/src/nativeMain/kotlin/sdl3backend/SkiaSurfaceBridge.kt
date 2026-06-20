@@ -15,20 +15,20 @@ import sdl3.*
 /* Owns the CPU pixel buffer Skia draws into, plus the streaming SDL_Texture
    used to push that buffer onto the window. All three (buffer, Skia surface,
    SDL texture) get reallocated when the window resizes. */
-class SkiaSurfaceBridge(private val backend: SDL3Backend) {
+class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
     private var fWidth = 0
     private var fHeight = 0
     private var fPixels: CPointer<UByteVar>? = null
     private var fSurface: Surface? = null
     private var fTexture: COpaquePointer? = null
 
-    val canvas: Canvas
+    override val canvas: Canvas
         get() = requireNotNull(fSurface) { "SkiaSurfaceBridge not initialised" }.canvas
 
     val width: Int get() = fWidth
     val height: Int get() = fHeight
 
-    fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
+    override fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
         if (inWidth == fWidth && inHeight == fHeight && fSurface != null) return true
         if (inWidth <= 0 || inHeight <= 0) return false
         destroy()
@@ -66,7 +66,7 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) {
     }
 
     /* Skia → SDL_Texture → screen, once per frame. */
-    fun present() {
+    override fun present() {
         val vRenderer = backend.renderer ?: return
         val vTexture = fTexture ?: return
         val vSurface = fSurface ?: return
@@ -78,7 +78,7 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) {
         SDL_RenderPresent(vRenderer.reinterpret())
     }
 
-    fun destroy() {
+    override fun destroy() {
         fTexture?.let { SDL_DestroyTexture(it.reinterpret()) }
         fSurface?.close()
         fPixels?.let { nativeHeap.free(it) }

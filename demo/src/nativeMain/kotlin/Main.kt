@@ -24,7 +24,12 @@ import androidx.compose.ui.unit.sp
 import sdl3backend.composeWindow
 
 fun main() {
-    composeWindow(title = "ComposeNativeSDL3 Showcase", width = 1000, height = 700) {
+    composeWindow(
+        title = "ComposeNativeSDL3 Showcase",
+        width = 1000,
+        height = 700,
+        useGpu = true,  // Skia → SDL3 OpenGL context. Set false to fall back to CPU raster.
+    ) {
         MaterialTheme(colors = darkColors()) {
             App()
         }

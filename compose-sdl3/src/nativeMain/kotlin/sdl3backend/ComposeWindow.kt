@@ -42,19 +42,32 @@ fun composeWindow(
     title: String = "ComposeNativeSDL3",
     width: Int = 800,
     height: Int = 600,
+    useGpu: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val backend = SDL3Backend(title, width, height)
+    val backend = SDL3Backend(title, width, height, useGpu = useGpu)
     if (!backend.init()) {
         println("Failed to init SDL3 backend")
         return
     }
 
-    val skiaBridge = SkiaSurfaceBridge(backend)
-    if (!skiaBridge.ensureSize(backend.windowWidth, backend.windowHeight)) {
-        println("Failed to init Skia surface bridge")
-        backend.destroy()
-        return
+    val skiaBridge: SkiaBridge = if (useGpu) {
+        val gl = SkiaGLBridge(backend)
+        if (!gl.init() || !gl.ensureSize(backend.windowWidth, backend.windowHeight)) {
+            println("Failed to init Skia GL bridge — falling back to CPU raster")
+            // Tear down the GL context first so the CPU bridge can create an SDL_Renderer
+            backend.destroy()
+            return
+        }
+        gl
+    } else {
+        val raster = SkiaSurfaceBridge(backend)
+        if (!raster.ensureSize(backend.windowWidth, backend.windowHeight)) {
+            println("Failed to init Skia raster bridge")
+            backend.destroy()
+            return
+        }
+        raster
     }
 
     val textRenderer = SkiaTextRenderer()
