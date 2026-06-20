@@ -58,9 +58,13 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
 
     override fun beginFrame(inDpr: Float) {
         val r = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
-        // SDL_SetRenderScale scales every coord passed to render fns by
-        // (dpr, dpr), matching the canvas.scale() the Skia path uses.
+        // SDL_SetRenderScale stretches every render coord by (dpr, dpr) so
+        // logical-point geometry lands at the right physical pixel. Text
+        // textures are rasterised at the DPR-scaled font size and drawn
+        // at logical-size dst rects — the stretch then maps them 1:1 to
+        // physical pixels instead of upscaling a half-resolution glyph.
         SDL_SetRenderScale(r, inDpr, inDpr)
+        fTextRenderer.setDpr(inDpr)
     }
 
     override fun draw(inRoot: LayoutNode) {

@@ -33,7 +33,25 @@ import sdl3_ttf.TTF_RenderText_Blended
    with what we paint. */
 internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
-    // Cached TTF_Font handles keyed by pixel size.
+    // HiDPI scale. Fonts are opened at fontSize * DPR pixels so the
+    // rasterised glyph texture matches the physical pixel count of the
+    // logical-size dst rect after SDL_SetRenderScale stretches it.
+    // Measurement results are divided back by DPR so layout still works
+    // in logical points.
+    private var fDpr: Float = 1f
+
+    fun setDpr(inDpr: Float) {
+        if (inDpr == fDpr) return
+        fDpr = inDpr
+        // Invalidate everything keyed off the old DPR-baked sizes.
+        for (v in fTextureCache.values) SDL_DestroyTexture(v.tex.reinterpret())
+        fTextureCache.clear()
+        for (f in fFontCache.values) TTF_CloseFont(f.reinterpret())
+        fFontCache.clear()
+        fWidthCache.clear()
+    }
+
+    // Cached TTF_Font handles keyed by logical pixel size.
     private val fFontCache = mutableMapOf<Int, COpaquePointer>()
 
     // Cached glyph textures: (text, fontSize, packedARGB) → texture + size.
@@ -41,7 +59,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     private data class CachedTexture(val tex: COpaquePointer, val w: Int, val h: Int)
     private val fTextureCache = mutableMapOf<TextureKey, CachedTexture>()
 
-    // Cached measured widths keyed by (text, fontSize).
+    // Cached measured widths in LOGICAL points keyed by (text, fontSize).
     private val fWidthCache = mutableMapOf<Pair<String, Int>, Int>()
 
     /* Returns false if TTF couldn't init. */
@@ -75,7 +93,9 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
         override fun lineHeight(inFontSize: Int): Float {
             val vFont = getFont(inFontSize) ?: return inFontSize * 1.3f
-            return TTF_GetFontHeight(vFont.reinterpret()).toFloat().coerceAtLeast(1f)
+            // TTF_GetFontHeight returns physical pixels (we opened the
+            // font at fontSize * DPR). Convert back to logical.
+            return (TTF_GetFontHeight(vFont.reinterpret()).toFloat() / fDpr).coerceAtLeast(1f)
         }
     }
 
@@ -155,6 +175,9 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
     }
 
+    /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
+       so TTF_GetStringSize reports physical pixels — divide by DPR to
+       get back to logical. */
     private fun measureWidth(inText: String, inFontSize: Int): Int {
         if (inText.isEmpty()) return 0
         fWidthCache[inText to inFontSize]?.let { return it }
@@ -163,16 +186,17 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             fWidthCache[inText to inFontSize] = vEst
             return vEst
         }
-        var vWidth = 0
+        var vPhys = 0
         memScoped {
             val vW = alloc<IntVar>()
             val vH = alloc<IntVar>()
             if (TTF_GetStringSize(vFont.reinterpret(), inText, inText.length.toULong(), vW.ptr, vH.ptr)) {
-                vWidth = vW.value
+                vPhys = vW.value
             }
         }
-        fWidthCache[inText to inFontSize] = vWidth
-        return vWidth
+        val vLogical = (vPhys / fDpr).toInt()
+        fWidthCache[inText to inFontSize] = vLogical
+        return vLogical
     }
 
     /* Renders one already-wrapped line at (inX, inY) inside a box of
@@ -192,21 +216,27 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         val vRenderer = backend.renderer ?: return
         val vCached = getOrCreateTexture(inText, inFontSize, inColor) ?: return
 
+        // Texture dimensions are physical pixels (rasterised at fontSize *
+        // DPR). Convert to logical for the dst rect so SDL_SetRenderScale's
+        // stretch brings it back to the same pixel size — i.e. 1:1, crisp.
+        val vLogW = vCached.w / fDpr
+        val vLogH = vCached.h / fDpr
+
         val vPenX = when (inAlign) {
             TextAlign.Start  -> inX.toFloat()
-            TextAlign.Center -> inX + (inBoxWidth - vCached.w) / 2f
-            TextAlign.End    -> inX + (inBoxWidth - vCached.w).toFloat()
+            TextAlign.Center -> inX + (inBoxWidth - vLogW) / 2f
+            TextAlign.End    -> inX + (inBoxWidth - vLogW)
         }
         // Vertically centre — matches the Skia path which cap-centres the
         // glyphs inside the box.
-        val vPenY = inY + (inBoxHeight - vCached.h) / 2f
+        val vPenY = inY + (inBoxHeight - vLogH) / 2f
 
         memScoped {
             val vDst = alloc<SDL_FRect>()
             vDst.x = vPenX
             vDst.y = vPenY
-            vDst.w = vCached.w.toFloat()
-            vDst.h = vCached.h.toFloat()
+            vDst.w = vLogW
+            vDst.h = vLogH
             SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)
         }
     }
@@ -253,9 +283,13 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return vCached
     }
 
+    /* Opens the font at PHYSICAL pixels (logical fontSize × DPR) so the
+       rasterised glyphs match the back buffer's resolution. The cache key
+       is the logical size — setDpr clears the cache when DPR changes. */
     private fun getFont(inSize: Int): COpaquePointer? {
         fFontCache[inSize]?.let { return it }
 
+        val vPhysicalSize = (inSize * fDpr).coerceAtLeast(1f)
         // Look for the bundled font next to the executable first; fall back
         // to common system fonts so the demo still works without copying.
         val vBaseRaw = SDL_GetBasePath()
@@ -266,7 +300,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             "C:\\Windows\\Fonts\\arial.ttf",
         )
         for (path in vPaths) {
-            val vFont = TTF_OpenFont(path, inSize.toFloat())
+            val vFont = TTF_OpenFont(path, vPhysicalSize)
             if (vFont != null) {
                 fFontCache[inSize] = vFont
                 return vFont
