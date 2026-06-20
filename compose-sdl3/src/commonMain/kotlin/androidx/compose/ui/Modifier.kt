@@ -64,7 +64,11 @@ data class SizeModifier(
     val maxWidth: Int = -1,
     val maxHeight: Int = -1,
     val fillMaxWidth: Boolean = false,
-    val fillMaxHeight: Boolean = false
+    val fillMaxHeight: Boolean = false,
+    /* defaultMinSize semantics: only raise the constraint's min if the
+       incoming min is still 0 (i.e. nothing upstream pinned a size). When
+       false, min* fields apply as a hard lower bound (widthIn/heightIn). */
+    val isDefaultMin: Boolean = false
 ) : Modifier.Element
 
 data class ClickableModifier(val onClick: () -> Unit) : Modifier.Element

@@ -29,4 +29,8 @@ fun Modifier.fillMaxHeight(fraction: Float = 1f) = then(SizeModifier(fillMaxHeig
 fun Modifier.requiredWidth(width: Dp) = then(SizeModifier(width = width.value.toInt()))
 fun Modifier.requiredHeight(height: Dp) = then(SizeModifier(height = height.value.toInt()))
 fun Modifier.defaultMinSize(minWidth: Dp = Dp.Zero, minHeight: Dp = Dp.Zero) =
-    then(SizeModifier(minWidth = minWidth.value.toInt(), minHeight = minHeight.value.toInt()))
+    then(SizeModifier(
+        minWidth = minWidth.value.toInt(),
+        minHeight = minHeight.value.toInt(),
+        isDefaultMin = true
+    ))

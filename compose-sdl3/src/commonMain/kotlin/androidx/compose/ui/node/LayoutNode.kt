@@ -90,8 +90,13 @@ class LayoutNode {
                 if (element.height >= 0) { minH = element.height; maxH = element.height }
                 if (element.fillMaxWidth) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
                 if (element.fillMaxHeight) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
-                if (element.minWidth >= 0) minW = max(minW, element.minWidth)
-                if (element.minHeight >= 0) minH = max(minH, element.minHeight)
+                if (element.minWidth >= 0) {
+                    // defaultMinSize: only apply if nothing upstream pinned the min.
+                    if (!element.isDefaultMin || minW == 0) minW = max(minW, element.minWidth)
+                }
+                if (element.minHeight >= 0) {
+                    if (!element.isDefaultMin || minH == 0) minH = max(minH, element.minHeight)
+                }
                 if (element.maxWidth >= 0) maxW = min(maxW, element.maxWidth)
                 if (element.maxHeight >= 0) maxH = min(maxH, element.maxHeight)
 
