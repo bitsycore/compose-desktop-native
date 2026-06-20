@@ -4,6 +4,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.max
@@ -34,6 +35,7 @@ class LayoutNode {
     /* Pixel font size — Composables that take a Sp param resolve it to an
        integer pixel count before storing here so the renderer never sees Sp. */
     var fontSize: Int = 16
+    var textAlign: TextAlign = TextAlign.Start
 
     // ============
     //  Computed absolute position

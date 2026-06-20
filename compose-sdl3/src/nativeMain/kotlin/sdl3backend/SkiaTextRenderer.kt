@@ -2,6 +2,7 @@ package sdl3backend
 
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.toKString
 import org.jetbrains.skia.Canvas
@@ -58,17 +59,28 @@ class SkiaTextRenderer {
         inText: String,
         inX: Float,
         inY: Float,
+        inBoxWidth: Int,
         inColor: ComposeColor,
-        inFontSize: Int
+        inFontSize: Int,
+        inAlign: TextAlign = TextAlign.Start
     ) {
         val vFont = getFont(inFontSize)
         val vPaint = Paint().apply {
             color = toSkiaColor(inColor)
             isAntiAlias = true
         }
+        // Position the pen inside the laid-out box according to TextAlign.
+        // The estimated width may differ from the actual glyph extent by ~1 px;
+        // close enough for the buttons.
+        val vTextWidth = estimateTextWidth(inText, inFontSize).toFloat()
+        val vPenX = when (inAlign) {
+            TextAlign.Start  -> inX
+            TextAlign.Center -> inX + (inBoxWidth - vTextWidth) / 2f
+            TextAlign.End    -> inX + inBoxWidth.toFloat() - vTextWidth
+        }
         // Baseline is |ascent| below the box top (ascent is negative).
         val vBaseline = inY - vFont.metrics.ascent
-        inCanvas.drawString(inText, inX, vBaseline, vFont, vPaint)
+        inCanvas.drawString(inText, vPenX, vBaseline, vFont, vPaint)
         vPaint.close()
     }
 

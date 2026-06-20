@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Sp
 import androidx.compose.ui.unit.sp
 
@@ -16,12 +17,14 @@ fun Text(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.onBackground,
-    fontSize: Sp = 16.sp
+    fontSize: Sp = 16.sp,
+    textAlign: TextAlign = TextAlign.Start
 ) {
     BasicText(
         text = text,
         modifier = modifier,
         color = color,
-        fontSize = fontSize
+        fontSize = fontSize,
+        textAlign = textAlign
     )
 }

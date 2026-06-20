@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import sdl3backend.composeWindow
@@ -58,7 +59,13 @@ fun App() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(onClick = { counter-- }, shape = CircleShape) {
-                    Text(text = "-", color = MaterialTheme.colors.onPrimary, fontSize = 20.sp)
+                    Text(
+                        text = "-",
+                        color = MaterialTheme.colors.onPrimary,
+                        fontSize = 20.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
 
                 OutlinedButton(onClick = { counter = 0 }) {
@@ -66,7 +73,13 @@ fun App() {
                 }
 
                 Button(onClick = { counter++ }, shape = CircleShape) {
-                    Text(text = "+", color = MaterialTheme.colors.onPrimary, fontSize = 20.sp)
+                    Text(
+                        text = "+",
+                        color = MaterialTheme.colors.onPrimary,
+                        fontSize = 20.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 

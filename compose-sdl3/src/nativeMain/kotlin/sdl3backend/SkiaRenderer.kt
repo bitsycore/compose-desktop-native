@@ -75,7 +75,11 @@ class SkiaRenderer(private val textRenderer: SkiaTextRenderer) {
         //  Text leaf
         val vText = inNode.text
         if (!vText.isNullOrEmpty()) {
-            textRenderer.drawText(inCanvas, vText, vAx, vAy, inNode.textColor, inNode.fontSize)
+            textRenderer.drawText(
+                inCanvas, vText,
+                vAx, vAy, inNode.width,
+                inNode.textColor, inNode.fontSize, inNode.textAlign
+            )
         }
 
         // ============
