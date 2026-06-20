@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RoundedCornerShape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sdl3backend.composeWindow
 
 fun main() {
@@ -40,14 +41,14 @@ fun App() {
             Text(
                 text = "ComposeNativeSDL3",
                 color = MaterialTheme.colors.primary,
-                fontSize = 32
+                fontSize = 32.sp
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 text = "Counter: $counter",
-                fontSize = 24
+                fontSize = 24.sp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -57,7 +58,7 @@ fun App() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(onClick = { counter-- }, shape = CircleShape) {
-                    Text(text = "-", color = MaterialTheme.colors.onPrimary, fontSize = 20)
+                    Text(text = "-", color = MaterialTheme.colors.onPrimary, fontSize = 20.sp)
                 }
 
                 OutlinedButton(onClick = { counter = 0 }) {
@@ -65,7 +66,7 @@ fun App() {
                 }
 
                 Button(onClick = { counter++ }, shape = CircleShape) {
-                    Text(text = "+", color = MaterialTheme.colors.onPrimary, fontSize = 20)
+                    Text(text = "+", color = MaterialTheme.colors.onPrimary, fontSize = 20.sp)
                 }
             }
 
@@ -89,7 +90,7 @@ fun App() {
             Text(
                 text = "Click the buttons above!",
                 color = Color.Gray,
-                fontSize = 14
+                fontSize = 14.sp
             )
         }
     }

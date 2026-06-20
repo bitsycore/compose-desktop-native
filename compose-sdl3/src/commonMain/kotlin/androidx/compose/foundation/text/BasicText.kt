@@ -9,6 +9,8 @@ import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.Sp
+import androidx.compose.ui.unit.sp
 
 // ==================
 // MARK: BasicText
@@ -19,14 +21,14 @@ fun BasicText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.White,
-    fontSize: Int = 16
+    fontSize: Sp = 16.sp
 ) {
     ComposeNode<LayoutNode, NodeApplier>(
         factory = { LayoutNode() },
         update = {
             set(text) { this.text = it }
             set(color) { this.textColor = it }
-            set(fontSize) { this.fontSize = it }
+            set(fontSize) { this.fontSize = it.value.toInt() }
             set(modifier) { this.modifier = it }
             set(Unit) {
                 this.measurePolicy = TextMeasurePolicy

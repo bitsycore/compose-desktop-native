@@ -31,6 +31,8 @@ class LayoutNode {
     //  Content for leaf nodes
     var text: String? = null
     var textColor: Color = Color.White
+    /* Pixel font size — Composables that take a Sp param resolve it to an
+       integer pixel count before storing here so the renderer never sees Sp. */
     var fontSize: Int = 16
 
     // ============
