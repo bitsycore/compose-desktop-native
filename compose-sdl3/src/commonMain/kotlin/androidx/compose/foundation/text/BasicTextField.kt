@@ -39,6 +39,7 @@ fun BasicTextField(
     modifier: Modifier = Modifier,
     color: Color = Color.Black,
     cursorColor: Color = Color.Black,
+    selectionColor: Color = Color(0x661E88E5L),
     fontSize: Sp = 16.sp,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -56,6 +57,7 @@ fun BasicTextField(
         modifier = modifier,
         color = color,
         cursorColor = cursorColor,
+        selectionColor = selectionColor,
         fontSize = fontSize,
         enabled = enabled,
         readOnly = readOnly,
@@ -69,6 +71,7 @@ fun BasicTextField(
     modifier: Modifier = Modifier,
     color: Color = Color.Black,
     cursorColor: Color = Color.Black,
+    selectionColor: Color = Color(0x661E88E5L),
     fontSize: Sp = 16.sp,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -111,6 +114,21 @@ fun BasicTextField(
                 onValueChange(insertAtCursor(value, input))
             }
     ) {
+        // Selection rect drawn FIRST so it sits behind glyphs. Drawn only
+        // when selection is non-collapsed.
+        if (!value.selection.collapsed) {
+            val vSelStartPx = prefixWidth(value.text, value.selection.min, vFontSize)
+            val vSelEndPx = prefixWidth(value.text, value.selection.max, vFontSize)
+            val vSelWidth = (vSelEndPx - vSelStartPx).coerceAtLeast(1)
+            Box(
+                modifier = Modifier
+                    .offset(x = vSelStartPx.dp)
+                    .width(vSelWidth.dp)
+                    .height((fontSize.value * 1.2f).dp)
+                    .background(selectionColor)
+            )
+        }
+
         BasicText(text = value.text, color = color, fontSize = fontSize)
 
         if (isFocused && cursorBlinkVisible) {
