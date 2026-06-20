@@ -32,7 +32,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":compose-sdl3"))
+                implementation(project(":compose-desktop-native"))
             }
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             kotlin.srcDir(composeResGenDir)
@@ -157,7 +157,7 @@ tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
 
 val composeResourcesDir = layout.projectDirectory.dir("src/nativeMain/composeResources")
 val libComposeResourcesDir = rootProject.layout.projectDirectory.dir(
-    "compose-sdl3/src/nativeMain/composeResources"
+    "compose-core/src/nativeMain/composeResources"
 )
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 

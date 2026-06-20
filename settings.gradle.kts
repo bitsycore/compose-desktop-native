@@ -8,5 +8,8 @@ pluginManagement {
 }
 
 rootProject.name = "ComposeNativeSDL3"
-include(":compose-sdl3")
+include(":compose-core")
+include(":compose-renderer-sdl3")
+include(":compose-renderer-skia")
+include(":compose-desktop-native")
 include(":demo")
