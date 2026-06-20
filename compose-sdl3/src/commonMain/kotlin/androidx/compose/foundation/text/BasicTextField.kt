@@ -50,6 +50,7 @@ fun BasicTextField(
     fontSize: Sp = 16.sp,
     enabled: Boolean = true,
     readOnly: Boolean = false,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     var fieldValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
     if (fieldValue.text != value) {
@@ -68,6 +69,7 @@ fun BasicTextField(
         fontSize = fontSize,
         enabled = enabled,
         readOnly = readOnly,
+        onFocusChanged = onFocusChanged,
     )
 }
 
@@ -82,6 +84,7 @@ fun BasicTextField(
     fontSize: Sp = 16.sp,
     enabled: Boolean = true,
     readOnly: Boolean = false,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var cursorBlinkVisible by remember { mutableStateOf(true) }
@@ -156,7 +159,10 @@ fun BasicTextField(
     Box(
         modifier = modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = (fontSize.value * 1.4f).dp)
-            .focusable { isFocused = it }
+            .focusable {
+                isFocused = it
+                onFocusChanged(it)
+            }
             .onDrag(
                 onStart = { relX, _ ->
                     if (!enabled) return@onDrag
