@@ -190,7 +190,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         memScoped {
             val vW = alloc<IntVar>()
             val vH = alloc<IntVar>()
-            if (TTF_GetStringSize(vFont.reinterpret(), inText, inText.length.toULong(), vW.ptr, vH.ptr)) {
+            // Length = 0 → SDL_ttf calls strlen on the UTF-8 string. Don't
+            // pass inText.length: that's UTF-16 code-unit count, but the C
+            // side wants byte count. Non-ASCII chars (e.g. em-dash → 3
+            // UTF-8 bytes) would otherwise truncate the tail of the string.
+            if (TTF_GetStringSize(vFont.reinterpret(), inText, 0u, vW.ptr, vH.ptr)) {
                 vPhys = vW.value
             }
         }
@@ -260,7 +264,8 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             val vSurface = TTF_RenderText_Blended(
                 vFont.reinterpret(),
                 inText,
-                inText.length.toULong(),
+                // 0 → strlen on the UTF-8 string (see measureWidth).
+                0u,
                 vColor.readValue(),
             ) ?: return@memScoped null
             // sdl3 and sdl3_ttf cinterops both declare SDL_Surface — they
