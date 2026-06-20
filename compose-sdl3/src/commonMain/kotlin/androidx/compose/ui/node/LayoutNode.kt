@@ -2,12 +2,14 @@ package androidx.compose.ui.node
 
 import androidx.compose.ui.*
 import androidx.compose.ui.FocusableModifier
+import androidx.compose.ui.HorizontalScrollModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnKeyEventModifier
 import androidx.compose.ui.OnTextInputModifier
 import androidx.compose.ui.PressableModifier
+import androidx.compose.ui.VerticalScrollModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -43,15 +45,33 @@ class LayoutNode {
     var textAlign: TextAlign = TextAlign.Start
 
     // ============
-    //  Computed absolute position (incl. visual offset modifiers)
+    //  Computed absolute position (incl. visual offset modifiers + parent scroll)
     val offsetX: Int get() = modifier.foldIn(0) { acc, e ->
         if (e is OffsetModifier) acc + e.x else acc
     }
     val offsetY: Int get() = modifier.foldIn(0) { acc, e ->
         if (e is OffsetModifier) acc + e.y else acc
     }
-    val absoluteX: Int get() = x + offsetX + (parent?.absoluteX ?: 0)
-    val absoluteY: Int get() = y + offsetY + (parent?.absoluteY ?: 0)
+    val scrollOffsetX: Int get() {
+        var v = 0
+        modifier.foldIn(Unit) { _, e -> if (e is HorizontalScrollModifier) v += e.state.value }
+        return v
+    }
+    val scrollOffsetY: Int get() {
+        var v = 0
+        modifier.foldIn(Unit) { _, e -> if (e is VerticalScrollModifier) v += e.state.value }
+        return v
+    }
+    /* Parent's scroll offset shifts this node's visual position; the node's
+       own scroll offset applies to its children but not to itself. */
+    val absoluteX: Int get() {
+        val p = parent ?: return x + offsetX
+        return x + offsetX + p.absoluteX - p.scrollOffsetX
+    }
+    val absoluteY: Int get() {
+        val p = parent ?: return y + offsetY
+        return y + offsetY + p.absoluteY - p.scrollOffsetY
+    }
 
     // ============
     //  Tree manipulation
@@ -79,10 +99,45 @@ class LayoutNode {
 
     fun measure(constraints: Constraints): IntSize {
         val adjusted = applyModifierConstraints(constraints)
-        val result = measurePolicy.measure(this, adjusted)
-        width = result.width
-        height = result.height
-        return result
+
+        // Scroll modifiers: children measured with unbounded length in the
+        // scroll axis, own bounds clamp to incoming maxLength.
+        val vScrollV = findVerticalScroll()
+        val vScrollH = findHorizontalScroll()
+        val childConstraints = Constraints(
+            minWidth = adjusted.minWidth,
+            maxWidth = if (vScrollH != null) Constraints.Infinity else adjusted.maxWidth,
+            minHeight = adjusted.minHeight,
+            maxHeight = if (vScrollV != null) Constraints.Infinity else adjusted.maxHeight,
+        )
+
+        val result = measurePolicy.measure(this, childConstraints)
+
+        val vCapHeight = if (vScrollV != null && adjusted.maxHeight != Constraints.Infinity) {
+            vScrollV.setMaxInternal((result.height - adjusted.maxHeight).coerceAtLeast(0))
+            adjusted.maxHeight
+        } else result.height
+
+        val vCapWidth = if (vScrollH != null && adjusted.maxWidth != Constraints.Infinity) {
+            vScrollH.setMaxInternal((result.width - adjusted.maxWidth).coerceAtLeast(0))
+            adjusted.maxWidth
+        } else result.width
+
+        width = vCapWidth
+        height = vCapHeight
+        return IntSize(width, height)
+    }
+
+    private fun findVerticalScroll(): androidx.compose.foundation.ScrollState? {
+        var s: androidx.compose.foundation.ScrollState? = null
+        modifier.foldIn(Unit) { _, e -> if (e is VerticalScrollModifier && s == null) s = e.state }
+        return s
+    }
+
+    private fun findHorizontalScroll(): androidx.compose.foundation.ScrollState? {
+        var s: androidx.compose.foundation.ScrollState? = null
+        modifier.foldIn(Unit) { _, e -> if (e is HorizontalScrollModifier && s == null) s = e.state }
+        return s
     }
 
     fun place(x: Int, y: Int) {
@@ -201,6 +256,28 @@ class LayoutNode {
             var has = false
             n.modifier.foldIn(Unit) { _, e -> if (e is ClickableModifier) has = true }
             if (has) return n
+            n = n.parent
+        }
+        return null
+    }
+
+    /* First scroll modifier on the self → root walk, with its node. Used by
+       ComposeWindow's wheel dispatch to find what to scroll. */
+    fun findVerticalScrollAncestor(): androidx.compose.foundation.ScrollState? {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val v = n.findVerticalScroll()
+            if (v != null) return v
+            n = n.parent
+        }
+        return null
+    }
+
+    fun findHorizontalScrollAncestor(): androidx.compose.foundation.ScrollState? {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val v = n.findHorizontalScroll()
+            if (v != null) return v
             n = n.parent
         }
         return null

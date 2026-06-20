@@ -238,6 +238,21 @@ fun composeWindow(
                     is AppEvent.TextInput -> {
                         focusedNode?.dispatchTextInput(event.text)
                     }
+
+                    is AppEvent.MouseWheel -> {
+                        val vHit = rootNode.hitTest(event.x, event.y)
+                        // SDL wheel: positive y = scrolled up (away from user) →
+                        // content should scroll up → state.value decreases.
+                        // Convert wheel "lines" to pixels (~50px/line).
+                        val vScrollY = vHit?.findVerticalScrollAncestor()
+                        if (vScrollY != null && event.deltaY != 0f) {
+                            vScrollY.scrollBy(-(event.deltaY * 50f).toInt())
+                        }
+                        val vScrollX = vHit?.findHorizontalScrollAncestor()
+                        if (vScrollX != null && event.deltaX != 0f) {
+                            vScrollX.scrollBy(-(event.deltaX * 50f).toInt())
+                        }
+                    }
                 }
             }
 

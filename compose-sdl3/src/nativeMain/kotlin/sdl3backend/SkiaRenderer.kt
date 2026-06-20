@@ -3,8 +3,11 @@ package sdl3backend
 import androidx.compose.ui.BackgroundModifier
 import androidx.compose.ui.BorderModifier
 import androidx.compose.ui.ClipModifier
+import androidx.compose.ui.HorizontalScrollModifier
+import androidx.compose.ui.VerticalScrollModifier
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.node.LayoutNode
 import org.jetbrains.skia.Canvas
@@ -83,10 +86,16 @@ class SkiaRenderer(private val textRenderer: SkiaTextRenderer) {
         }
 
         // ============
-        //  Children (clipped to shape if Modifier.clip is present)
+        //  Children (clipped to shape if Modifier.clip is present, or auto-
+        //  clipped to the node bounds when a scroll modifier is present so
+        //  scrolled-out content doesn't leak outside the viewport).
         var vClipShape: Shape? = null
         inNode.modifier.foldIn(Unit) { _, element ->
-            if (element is ClipModifier) vClipShape = element.shape
+            when {
+                element is ClipModifier -> vClipShape = element.shape
+                element is VerticalScrollModifier && vClipShape == null   -> vClipShape = RectangleShape
+                element is HorizontalScrollModifier && vClipShape == null -> vClipShape = RectangleShape
+            }
         }
         val vChildClip = vClipShape
         if (vChildClip != null && inNode.children.isNotEmpty()) {

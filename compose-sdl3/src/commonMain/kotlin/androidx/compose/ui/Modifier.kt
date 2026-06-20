@@ -117,6 +117,21 @@ class OnDragModifier(
     val onEnd: () -> Unit,
 ) : Modifier.Element
 
+// ==================
+// MARK: Scroll
+// ==================
+// `state` here is the foundation-package ScrollState exposed via Any so this
+// file doesn't pull in a foundation dependency; LayoutNode reads it via the
+// public ScrollState API in the foundation package.
+
+/* Children measured with unbounded length on the scroll axis; the node
+   itself clamps to incoming constraints and applies a -state.value
+   translation to its children. ScrollState's maxValue is updated each
+   layout pass to (content - viewport).clamp(0..). */
+class VerticalScrollModifier(val state: androidx.compose.foundation.ScrollState) : Modifier.Element
+
+class HorizontalScrollModifier(val state: androidx.compose.foundation.ScrollState) : Modifier.Element
+
 /* Wrapper around a key event the modifier sees. Wrapping rather than
    re-exporting androidx.compose.ui.input.key.KeyEvent so we don't pin the
    key-event type prematurely. */

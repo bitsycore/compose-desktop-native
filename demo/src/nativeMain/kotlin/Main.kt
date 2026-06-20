@@ -4,6 +4,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.clip
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.ui.Alignment
@@ -42,6 +44,7 @@ private val Screens: List<Screen> = listOf(
     Screen("Interaction")    { InteractionScreen() },
     Screen("Recomposition")  { RecompositionScreen() },
     Screen("Colors")         { ColorsScreen() },
+    Screen("Scroll")         { ScrollScreen() },
     Screen("Counter")        { CounterScreen() },
 )
 
@@ -55,15 +58,19 @@ fun App() {
     var current by remember { mutableStateOf(Screens[0]) }
     val vSidebarBg = MaterialTheme.colors.surface.blend(MaterialTheme.colors.onSurface, 0.02f)
 
+    val vSidebarScroll = rememberScrollState()
+    val vContentScroll = rememberScrollState()
+
     Row(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background),
     ) {
-        // Sidebar
+        // Sidebar (vertically scrollable — try resizing the window short)
         Column(
             modifier = Modifier
                 .width(180.dp)
                 .fillMaxHeight()
                 .background(vSidebarBg)
+                .verticalScroll(vSidebarScroll)
                 .padding(vertical = 12.dp, horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -83,10 +90,11 @@ fun App() {
             }
         }
 
-        // Content
+        // Content (vertically scrollable — long screens fit a short window)
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(vContentScroll)
                 .padding(24.dp),
             contentAlignment = Alignment.TopStart,
         ) {
@@ -605,6 +613,59 @@ private fun ColorRow(name: String, fill: Color, content: Color) {
         ) {
             Text(name, color = content, fontSize = 14.sp)
         }
+    }
+}
+
+// ==================
+// MARK: Scroll screen
+// ==================
+
+@Composable
+private fun ScrollScreen() {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ScreenTitle("Scroll")
+
+        Text(
+            "Hover over a scrollable area and use the mouse wheel / trackpad. " +
+            "The sidebar on the left and the main content area are also scrollable.",
+            color = Color.Gray, fontSize = 12.sp,
+        )
+
+        Text("Vertical scroll inside a fixed-height Box:", color = Color.Gray, fontSize = 12.sp)
+        val vScroll = rememberScrollState()
+        Box(
+            modifier = Modifier
+                .width(400.dp)
+                .height(200.dp)
+                .background(Color(0xFF1F1F1FL), RoundedCornerShape(4.dp))
+                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                .verticalScroll(vScroll)
+                .padding(12.dp),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (i in 1..40) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(MaterialTheme.colors.primary, CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("$i", color = MaterialTheme.colors.onPrimary, fontSize = 11.sp,
+                                modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        }
+                        Text("Row $i — scroll to see all 40 items",
+                            color = MaterialTheme.colors.onBackground, fontSize = 14.sp)
+                    }
+                }
+            }
+        }
+
+        Text(
+            "Sidebar tip: shrink the window vertically so the sidebar exceeds " +
+            "the window height — the sidebar becomes scrollable too.",
+            color = Color.Gray, fontSize = 12.sp,
+        )
     }
 }
 

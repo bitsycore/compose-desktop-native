@@ -14,6 +14,7 @@ sealed class AppEvent {
     data class Pointer(val event: PointerEvent) : AppEvent()
     data class Key(val event: KeyEvent) : AppEvent()
     data class TextInput(val text: String) : AppEvent()
+    data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float) : AppEvent()
     data object WindowResized : AppEvent()
 }
 
@@ -85,6 +86,16 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
         SDL_EVENT_TEXT_INPUT -> {
             val vText = e.text.text?.toKString().orEmpty()
             if (vText.isEmpty()) null else AppEvent.TextInput(vText)
+        }
+
+        SDL_EVENT_MOUSE_WHEEL -> {
+            val mw = e.wheel
+            AppEvent.MouseWheel(
+                x = mw.mouse_x.toInt(),
+                y = mw.mouse_y.toInt(),
+                deltaX = mw.x,
+                deltaY = mw.y,
+            )
         }
 
         else -> null
