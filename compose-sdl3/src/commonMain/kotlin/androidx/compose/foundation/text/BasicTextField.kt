@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.onDrag
 import androidx.compose.foundation.onKeyEvent
-import androidx.compose.foundation.onPressed
 import androidx.compose.foundation.onTextInput
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +26,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.time.TimeSource
 import kotlinx.coroutines.delay
+
+// Monotonic-clock millisecond source for double-click detection. Anchored at
+// the first read; subsequent reads return elapsed ms since that anchor.
+private val kClockStart = TimeSource.Monotonic.markNow()
+private fun nowMillis(): Long = kClockStart.elapsedNow().inWholeMilliseconds
 
 // ==================
 // MARK: BasicTextField — Phase 2 (editing mid-text)
@@ -78,6 +84,10 @@ fun BasicTextField(
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var cursorBlinkVisible by remember { mutableStateOf(true) }
+    var dragAnchor by remember { mutableStateOf(-1) }
+    // Double-click detection: timestamp + char index of the previous press
+    var lastPressMs by remember { mutableStateOf(0L) }
+    var lastPressIndex by remember { mutableStateOf(-1) }
 
     LaunchedEffect(isFocused, value.selection) {
         if (!isFocused) {
@@ -98,12 +108,34 @@ fun BasicTextField(
         modifier = modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = (fontSize.value * 1.4f).dp)
             .focusable { isFocused = it }
-            .onPressed { relX, _ ->
-                if (!enabled) return@onPressed
-                // Place cursor at the character index closest to the click x.
-                val vIndex = charIndexAtX(value.text, vFontSize, relX)
-                onValueChange(value.copy(selection = TextRange(vIndex)))
-            }
+            .onDrag(
+                onStart = { relX, _ ->
+                    if (!enabled) return@onDrag
+                    val vIndex = charIndexAtX(value.text, vFontSize, relX)
+                    val vNow = nowMillis()
+                    val vIsDoubleClick = vIndex == lastPressIndex && (vNow - lastPressMs) < 350
+                    lastPressMs = vNow
+                    lastPressIndex = vIndex
+                    if (vIsDoubleClick) {
+                        // Word select: anchor at left edge, head at right edge.
+                        val vWordStart = wordBoundaryLeft(value.text, vIndex + 1)
+                        val vWordEnd = wordBoundaryRight(value.text, vIndex)
+                        dragAnchor = vWordStart
+                        onValueChange(value.copy(selection = TextRange(vWordStart, vWordEnd)))
+                    } else {
+                        dragAnchor = vIndex
+                        onValueChange(value.copy(selection = TextRange(vIndex)))
+                    }
+                },
+                onDrag = { relX, _ ->
+                    if (!enabled || dragAnchor < 0) return@onDrag
+                    val vIndex = charIndexAtX(value.text, vFontSize, relX)
+                    onValueChange(value.copy(selection = TextRange(dragAnchor, vIndex)))
+                },
+                onEnd = {
+                    dragAnchor = -1
+                },
+            )
             .onKeyEvent { ev ->
                 if (!enabled) return@onKeyEvent false
                 if (ev.key.type != KeyEventType.Down) return@onKeyEvent false

@@ -107,6 +107,16 @@ class OnTextInputModifier(val handler: (String) -> Unit) : Modifier.Element
    The handler fires on PointerEventType.Press, BEFORE focus / click. */
 class OnPressedModifier(val handler: (relX: Int, relY: Int) -> Unit) : Modifier.Element
 
+/* Drag gesture. ComposeWindow captures this node on Press (so subsequent
+   Move events route here regardless of where the cursor wanders) until
+   Release, when it fires onEnd. A click without movement still fires
+   onStart immediately and onEnd on release — onDrag may not fire at all. */
+class OnDragModifier(
+    val onStart: (relX: Int, relY: Int) -> Unit,
+    val onDrag: (relX: Int, relY: Int) -> Unit,
+    val onEnd: () -> Unit,
+) : Modifier.Element
+
 /* Wrapper around a key event the modifier sees. Wrapping rather than
    re-exporting androidx.compose.ui.input.key.KeyEvent so we don't pin the
    key-event type prematurely. */

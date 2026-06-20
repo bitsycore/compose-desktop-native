@@ -3,6 +3,7 @@ package androidx.compose.foundation
 import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnKeyEventModifier
 import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.OnTextInputModifier
@@ -34,3 +35,14 @@ fun Modifier.onTextInput(handler: (String) -> Unit) =
    the cursor jumps before any drag-select gesture would start. */
 fun Modifier.onPressed(handler: (relX: Int, relY: Int) -> Unit) =
     then(OnPressedModifier(handler))
+
+/* Drag gesture: onStart fires on Press inside the node, onDrag fires on
+   every subsequent Move (even outside the node — the node is "captured"
+   until Release), onEnd fires on Release. Coordinates are relative to
+   this node's absolute top-left at capture time. A simple click without
+   drag fires onStart + onEnd with no onDrag in between. */
+fun Modifier.onDrag(
+    onStart: (relX: Int, relY: Int) -> Unit = { _, _ -> },
+    onDrag: (relX: Int, relY: Int) -> Unit = { _, _ -> },
+    onEnd: () -> Unit = {},
+) = then(OnDragModifier(onStart, onDrag, onEnd))

@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
+import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -97,6 +98,12 @@ fun composeWindow(
         var focusedNode: LayoutNode? = null
         var focusedCallback: ((Boolean) -> Unit)? = null
 
+        // Drag capture: on Press inside a draggable, hold the (node, modifier)
+        // until Release so Move events route here regardless of where the
+        // cursor wanders (matches gesture-detector semantics).
+        var dragNode: LayoutNode? = null
+        var dragModifier: OnDragModifier? = null
+
         fun setFocus(inNode: LayoutNode?, inCallback: ((Boolean) -> Unit)?) {
             if (inNode === focusedNode) return
             focusedCallback?.invoke(false)
@@ -160,6 +167,13 @@ fun composeWindow(
                                 armedClickNode?.let { vN ->
                                     if (!cursorInsideNode(vHit, vN)) armedClickNode = null
                                 }
+                                // Captured drag: route Move events to the original
+                                // drag node even if the cursor leaves its bounds.
+                                val dn = dragNode
+                                val dm = dragModifier
+                                if (dn != null && dm != null) {
+                                    dm.onDrag(vPx - dn.absoluteX, vPy - dn.absoluteY)
+                                }
                             }
                             PointerEventType.Press -> {
                                 val vHit = rootNode.hitTest(vPx, vPy)
@@ -188,9 +202,21 @@ fun composeWindow(
                                     }
                                     pn = node.parent
                                 }
+                                // Begin drag capture if the press lands on a draggable.
+                                val vDraggable = vHit?.findDraggable()
+                                if (vDraggable != null) {
+                                    dragNode = vDraggable.first
+                                    dragModifier = vDraggable.second
+                                    val dn = vDraggable.first
+                                    vDraggable.second.onStart(vPx - dn.absoluteX, vPy - dn.absoluteY)
+                                }
                             }
                             PointerEventType.Release -> {
                                 cancelPress()
+                                // End any in-progress drag, regardless of where the release lands.
+                                dragModifier?.onEnd?.invoke()
+                                dragNode = null
+                                dragModifier = null
                                 val vHit = rootNode.hitTest(vPx, vPy)
                                 val vArmed = armedClickNode
                                 armedClickNode = null

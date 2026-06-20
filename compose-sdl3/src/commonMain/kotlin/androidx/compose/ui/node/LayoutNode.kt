@@ -4,6 +4,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
+import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnKeyEventModifier
 import androidx.compose.ui.OnTextInputModifier
 import androidx.compose.ui.PressableModifier
@@ -201,6 +202,23 @@ class LayoutNode {
             n.modifier.foldIn(Unit) { _, e -> if (e is ClickableModifier) has = true }
             if (has) return n
             n = n.parent
+        }
+        return null
+    }
+
+    /* First node on the self → root walk that carries an OnDragModifier.
+       Used by ComposeWindow to capture drag gestures. */
+    fun findDraggable(): Pair<LayoutNode, OnDragModifier>? {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val current = n
+            var hit: OnDragModifier? = null
+            current.modifier.foldIn(Unit) { _, e ->
+                if (e is OnDragModifier && hit == null) hit = e
+            }
+            val found = hit
+            if (found != null) return current to found
+            n = current.parent
         }
         return null
     }
