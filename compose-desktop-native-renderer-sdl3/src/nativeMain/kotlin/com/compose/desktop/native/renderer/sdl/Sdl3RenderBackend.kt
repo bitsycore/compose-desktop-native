@@ -106,6 +106,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     }
 
     override fun destroy() {
+        fRenderer.destroy()
         fImageCache.destroy()
         fTextRenderer.destroy()
     }

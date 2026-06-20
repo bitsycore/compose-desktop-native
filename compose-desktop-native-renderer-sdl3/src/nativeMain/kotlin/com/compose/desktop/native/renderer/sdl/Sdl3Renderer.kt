@@ -41,6 +41,13 @@ internal class Sdl3Renderer(
     private val kClearG: UByte = 0x12u
     private val kClearB: UByte = 0x12u
 
+    // Offscreen layer pool for Modifier.alpha — one window-physical-sized TARGET
+    // texture per nesting depth, recreated when the window size changes.
+    private val fLayerTargets = mutableListOf<COpaquePointer>()
+    private var fLayerDepth = 0
+    private var fLayerW = 0
+    private var fLayerH = 0
+
     fun draw(inRoot: LayoutNode) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         SDL_SetRenderDrawColor(vRenderer, kClearR, kClearG, kClearB, 0xFFu)
@@ -49,6 +56,71 @@ internal class Sdl3Renderer(
     }
 
     private fun drawNode(inNode: LayoutNode) {
+        val vAlpha = inNode.nodeAlpha
+        if (vAlpha < 1f) drawNodeLayered(inNode, vAlpha) else drawNodeContent(inNode)
+    }
+
+    /* Renders the node's subtree into an offscreen texture, then composites it
+       back at inAlpha so overlapping content fades as a single layer (no
+       double-blend). Falls back to opaque drawing if the target can't be made. */
+    private fun drawNodeLayered(inNode: LayoutNode, inAlpha: Float) {
+        val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
+        val vLayer = acquireLayer(vRenderer) ?: run { drawNodeContent(inNode); return }
+        val vDpr = backend.pixelDensity
+        val vPrevTarget = SDL_GetRenderTarget(vRenderer)
+
+        fLayerDepth++
+        SDL_SetRenderTarget(vRenderer, vLayer.reinterpret())
+        SDL_SetRenderScale(vRenderer, vDpr, vDpr)          // a target switch can reset the scale
+        SDL_SetRenderDrawColor(vRenderer, 0u, 0u, 0u, 0u)  // transparent
+        SDL_RenderClear(vRenderer)
+        drawNodeContent(inNode)
+        fLayerDepth--
+
+        SDL_SetRenderTarget(vRenderer, vPrevTarget)        // window, or the enclosing layer
+        SDL_SetRenderScale(vRenderer, vDpr, vDpr)
+        SDL_SetTextureAlphaMod(vLayer.reinterpret(), (inAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
+        memScoped {
+            // The layer is window-physical-sized; drawing it at the logical
+            // window size (× dpr via the render scale) maps it back 1:1.
+            val vDst = alloc<SDL_FRect>()
+            vDst.x = 0f; vDst.y = 0f
+            vDst.w = backend.windowWidth.toFloat(); vDst.h = backend.windowHeight.toFloat()
+            SDL_RenderTexture(vRenderer, vLayer.reinterpret(), null, vDst.ptr)
+        }
+    }
+
+    /* Window-physical-sized TARGET texture for the current nesting depth;
+       recreates the pool when the window size changes. */
+    private fun acquireLayer(inRenderer: CPointer<cnames.structs.SDL_Renderer>): COpaquePointer? {
+        val vW = backend.pixelWidth
+        val vH = backend.pixelHeight
+        if (vW <= 0 || vH <= 0) return null
+        if (vW != fLayerW || vH != fLayerH) {
+            for (vT in fLayerTargets) SDL_DestroyTexture(vT.reinterpret())
+            fLayerTargets.clear()
+            fLayerW = vW; fLayerH = vH
+        }
+        while (fLayerTargets.size <= fLayerDepth) {
+            val vTex = SDL_CreateTexture(
+                inRenderer,
+                SDL_PIXELFORMAT_RGBA32,
+                SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET,
+                vW,
+                vH,
+            ) ?: return null
+            SDL_SetTextureBlendMode(vTex.reinterpret(), SDL_BLENDMODE_BLEND)
+            fLayerTargets.add(vTex)
+        }
+        return fLayerTargets[fLayerDepth]
+    }
+
+    fun destroy() {
+        for (vT in fLayerTargets) SDL_DestroyTexture(vT.reinterpret())
+        fLayerTargets.clear()
+    }
+
+    private fun drawNodeContent(inNode: LayoutNode) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         val vAx = inNode.absoluteX.toFloat()
         val vAy = inNode.absoluteY.toFloat()

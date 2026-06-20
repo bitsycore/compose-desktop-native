@@ -149,3 +149,9 @@ class KeyEventDispatch(
    drawing is not clipped (they already follow the shape via their own
    shape parameter). Children drawn inside are restricted to the shape. */
 data class ClipModifier(val shape: Shape) : Modifier.Element
+
+/* Node-wide opacity: the node and its whole subtree are rendered to an
+   offscreen layer and composited back at this alpha, so overlapping content
+   inside doesn't double-blend. Multiple AlphaModifiers multiply. Applied by
+   the renderer (Skia saveLayer / SDL3 render-to-texture). */
+data class AlphaModifier(val alpha: Float) : Modifier.Element

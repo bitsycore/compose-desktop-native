@@ -77,6 +77,11 @@ class LayoutNode {
         modifier.foldIn(Unit) { _, e -> if (e is VerticalScrollModifier) v += e.state.value }
         return v
     }
+    /* Node-wide opacity from Modifier.alpha (product of all AlphaModifiers);
+       1f = fully opaque. The renderer composites the subtree at this alpha. */
+    val nodeAlpha: Float get() = modifier.foldIn(1f) { acc, e ->
+        if (e is AlphaModifier) acc * e.alpha else acc
+    }
     /* Parent's scroll offset shifts this node's visual position; the node's
        own scroll offset applies to its children but not to itself. */
     val absoluteX: Int get() {

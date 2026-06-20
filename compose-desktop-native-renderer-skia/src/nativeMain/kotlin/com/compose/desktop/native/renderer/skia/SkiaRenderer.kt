@@ -35,6 +35,22 @@ class SkiaRenderer(
     }
 
     private fun drawNode(inNode: LayoutNode, inCanvas: Canvas) {
+        val vAlpha = inNode.nodeAlpha
+        if (vAlpha < 1f) {
+            // Composite the whole subtree as one layer so overlapping content
+            // fades together rather than each element blending separately.
+            // Paint alpha is the high byte (ARGB); RGB is ignored for the layer.
+            val vPaint = Paint().apply { color = (vAlpha * 255f).toInt().coerceIn(0, 255) shl 24 }
+            inCanvas.saveLayer(null, vPaint)
+            drawNodeContent(inNode, inCanvas)
+            inCanvas.restore()
+            vPaint.close()
+        } else {
+            drawNodeContent(inNode, inCanvas)
+        }
+    }
+
+    private fun drawNodeContent(inNode: LayoutNode, inCanvas: Canvas) {
         val vAx = inNode.absoluteX.toFloat()
         val vAy = inNode.absoluteY.toFloat()
         val vW = inNode.width.toFloat()

@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RoundedCornerShape
@@ -848,6 +849,24 @@ private fun ModifiersScreen() {
                             .background(MaterialTheme.colors.primary.copy(alpha = vA), RoundedCornerShape(6.dp)),
                         contentAlignment = Alignment.Center,
                     ) { Text("α $vA", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+                }
+            }
+        }
+
+        Section(
+            "Modifier.alpha — node-wide opacity",
+            "Fades the whole subtree as one layer (background, border, AND text together) — contrast with the per-colour fade above, where only the fill faded.",
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                for (vA in listOf(1f, 0.6f, 0.3f)) {
+                    Box(
+                        modifier = Modifier
+                            .alpha(vA)
+                            .size(width = 96.dp, height = 56.dp)
+                            .background(MaterialTheme.colors.primary, RoundedCornerShape(8.dp))
+                            .border(2.dp, Color.White, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("alpha $vA", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
                 }
             }
         }
