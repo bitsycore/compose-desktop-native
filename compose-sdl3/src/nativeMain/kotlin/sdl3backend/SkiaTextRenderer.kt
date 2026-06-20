@@ -3,6 +3,7 @@ package sdl3backend
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.unit.IntSize
+import kotlinx.cinterop.toKString
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
 import org.jetbrains.skia.Font
@@ -10,15 +11,21 @@ import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontStyle
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Typeface
+import sdl3.SDL_GetBasePath
 
 // ==================
 // MARK: SkiaTextRenderer
 // ==================
 
-/* Replaces SDL3TextRenderer. Uses Skia's FontMgr to find a system sans-serif
-   typeface and caches Font instances per pixel size. The TextMeasurer
-   reports ascent + descent (no linegap) so layout centring matches the
-   actual rendered glyph extent — same contract as before. */
+/* Replaces SDL3TextRenderer. Uses Skia for measurement + draw.
+
+   IMPORTANT: in Skiko 0.144.6, the typefaces returned by FontMgr.default
+   .matchFamilyStyle on macOS go through SkTypeface_Mac::onCharsToGlyphs,
+   which aborts inside sk_malloc_flags as soon as Font.measureText or
+   measureTextWidth is called. We work around it by loading the typeface
+   from a file we ship next to the binary — file-loaded typefaces don't
+   exercise that code path on the macOS Skiko build. The bundled font also
+   gives us consistent rendering across macOS / Linux. */
 class SkiaTextRenderer {
 
     private val fFontMgr: FontMgr = FontMgr.default
@@ -27,16 +34,21 @@ class SkiaTextRenderer {
 
     private val fFontCache = mutableMapOf<Int, Font>()
 
-    /* Reports the VISIBLE bounding-box width (not the advance), so that the
-       laid-out text box matches the rendered glyph extent — same as SDL3_ttf's
-       surface width. Height stays at the typo metric (descent − ascent) so a
-       button's height doesn't jitter when its label changes between text with
-       and without descenders. */
+    // Cache of measured widths per (text, fontSize). Even if Skia worked, this
+    // would avoid re-measuring static labels each frame.
+    private val fWidthCache = mutableMapOf<Pair<String, Int>, Int>()
+
+    /* WORKAROUND for Skiko 0.144.6 / macOS — both Font.measureText and
+       Font.measureTextWidth call into SkFont::measureText, which goes through
+       SkTypeface_Mac::onCharsToGlyphs and aborts inside sk_malloc_flags. Same
+       code path even for a file-loaded typeface, because SkFontMgr_Mac wraps
+       the file data in a CoreText-backed SkTypeface_Mac. Until Skiko is fixed
+       (or we get a FreeType-backed FontMgr) we estimate widths from the char
+       class. font.metrics is safe to read — it doesn't trigger glyph lookup. */
     val textMeasurer: TextMeasurer = TextMeasurer { inText, inFontSize ->
         val vFont = getFont(inFontSize)
-        val vBbox = vFont.measureText(inText, null)
         val vMetrics = vFont.metrics
-        val vWidth = vBbox.width.toInt().coerceAtLeast(0)
+        val vWidth = estimateTextWidth(inText, inFontSize)
         val vHeight = (vMetrics.descent - vMetrics.ascent).toInt().coerceAtLeast(1)
         IntSize(vWidth, vHeight)
     }
@@ -54,53 +66,97 @@ class SkiaTextRenderer {
             color = toSkiaColor(inColor)
             isAntiAlias = true
         }
-        // Skia's drawString places the pen at (x, baseline). The first glyph
-        // may have a positive leftBearing, so the visible left edge sits to
-        // the right of the pen. Subtract bbox.left to make the visible left
-        // align with the laid-out box's left edge.
-        val vBbox = vFont.measureText(inText, vPaint)
-        val vPenX = inX - vBbox.left
         // Baseline is |ascent| below the box top (ascent is negative).
         val vBaseline = inY - vFont.metrics.ascent
-        inCanvas.drawString(inText, vPenX, vBaseline, vFont, vPaint)
+        inCanvas.drawString(inText, inX, vBaseline, vFont, vPaint)
         vPaint.close()
+    }
+
+    private fun estimateTextWidth(inText: String, inFontSize: Int): Int {
+        fWidthCache[inText to inFontSize]?.let { return it }
+        var vTotal = 0f
+        for (c in inText) vTotal += charAdvance(c, inFontSize)
+        val vResult = vTotal.toInt().coerceAtLeast(0)
+        fWidthCache[inText to inFontSize] = vResult
+        return vResult
+    }
+
+    /* Per-character advance estimate in pixels, ratios tuned against
+       Roboto-Regular's actual UPM advances (units-per-em = 2048). Not
+       perfect, but stable across frames and crash-free. */
+    private fun charAdvance(inC: Char, inFontSize: Int): Float {
+        val vBase = inFontSize.toFloat()
+        val vRatio = when {
+            inC == ' '              -> 0.27f
+            inC == '-'              -> 0.29f
+            inC == '+' || inC == '=' -> 0.58f
+            inC == '(' || inC == ')' || inC == '[' || inC == ']' -> 0.30f
+            inC == '.' || inC == ',' || inC == ':' || inC == ';' || inC == '\'' || inC == '!' -> 0.24f
+            inC == 'i' || inC == 'l' || inC == 'I' || inC == '|' || inC == 'j' || inC == 't' -> 0.28f
+            inC == 'm' || inC == 'M' || inC == 'W' || inC == 'w' -> 0.82f
+            inC.isDigit()           -> 0.55f
+            inC.isUpperCase()       -> 0.62f
+            inC.isLowerCase()       -> 0.51f
+            else                    -> 0.55f
+        }
+        return vBase * vRatio
     }
 
     fun destroy() {
         fFontCache.values.forEach { it.close() }
         fFontCache.clear()
-        // fTypeface + fFontMgr.default are unmanaged Skia singletons; closing
-        // them throws "Object is not managed in K/N runtime".
+        // fTypeface from makeFromFile is reference-counted by Skia — close()
+        // decrements. fFontMgr.default is an unmanaged singleton; don't close.
+        fTypeface?.close()
     }
 
     private fun getFont(inSize: Int): Font {
         fFontCache[inSize]?.let { return it }
-        val vFont = Font(fTypeface, inSize.toFloat()).apply {
-            isSubpixel = true
-            edging = org.jetbrains.skia.FontEdging.SUBPIXEL_ANTI_ALIAS
-        }
+        val vFont = Font(fTypeface, inSize.toFloat())
         fFontCache[inSize] = vFont
         return vFont
     }
 
+    // ==================
+    // MARK: Typeface resolution
+    // ==================
+
     private fun pickTypeface(): Typeface? {
-        // Common system sans-serif families, by platform. First match wins;
-        // null falls back to FontMgr's "matchFamiliesStyle on nothing"
-        // (system default).
-        val vCandidates = listOf(
-            "Helvetica Neue",
-            "Helvetica",
-            "Arial",
-            "Segoe UI",
-            "DejaVu Sans",
-            "Liberation Sans",
-            "Roboto"
+        // First: bundled font shipped next to the executable. This is the
+        // only path that's known not to crash on macOS Skiko 0.144.6.
+        bundledTypeface()?.let { return it }
+
+        // Fallback: a system font we can hand to makeFromFile (still file-
+        // backed, still avoids the matchFamilyStyle crash path).
+        val vSystemPaths = listOf(
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf"
         )
-        for (name in vCandidates) {
-            val vTf = fFontMgr.matchFamilyStyle(name, FontStyle.NORMAL)
-            if (vTf != null) return vTf
+        for (path in vSystemPaths) {
+            val vTf = fFontMgr.makeFromFile(path, 0)
+            if (vTf != null) {
+                println("SkiaTextRenderer: bundled font missing, falling back to $path")
+                return vTf
+            }
         }
-        return fFontMgr.matchFamiliesStyle(arrayOf<String?>(null), FontStyle.NORMAL)
+
+        // Last resort: matchFamilyStyle. WILL crash measureText on macOS —
+        // included only so the app surfaces a clear error rather than failing
+        // silently when nothing else is available.
+        println("SkiaTextRenderer: no usable font file found; falling back to matchFamilyStyle (this may crash on macOS).")
+        return fFontMgr.matchFamilyStyle("Helvetica", FontStyle.NORMAL)
+            ?: fFontMgr.matchFamiliesStyle(arrayOf<String?>(null), FontStyle.NORMAL)
+    }
+
+    private fun bundledTypeface(): Typeface? {
+        val vBaseRaw = SDL_GetBasePath() ?: return null
+        val vBase = vBaseRaw.toKString()
+        if (vBase.isEmpty()) return null
+        val vPath = vBase + "fonts/Roboto-Regular.ttf"
+        val vTf = fFontMgr.makeFromFile(vPath, 0) ?: return null
+        println("SkiaTextRenderer: loaded bundled font from $vPath")
+        return vTf
     }
 }
 

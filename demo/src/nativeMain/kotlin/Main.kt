@@ -24,6 +24,8 @@ fun main() {
 
 @Composable
 fun App() {
+    RecompositionLogger("App")
+
     var counter by remember { mutableStateOf(0) }
 
     Box(

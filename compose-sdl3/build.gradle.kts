@@ -32,7 +32,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(compose.runtime)
+            api("org.jetbrains.compose.runtime:runtime:1.11.1")
             implementation(libs.kotlinx.coroutines.core)
         }
         nativeMain.dependencies {
