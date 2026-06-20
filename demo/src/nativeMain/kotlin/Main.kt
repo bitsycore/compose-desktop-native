@@ -284,12 +284,12 @@ private fun TextFieldScreen() {
             )
         }
 
-        Section("Multi-line", "Return inserts \\n, Up/Down navigates rows, selection extends across") {
+        Section("Multi-line", "Return inserts \\n, Up/Down navigates rows, field grows to fit") {
             OutlinedTextField(
                 value = multi,
                 onValueChange = { multi = it },
                 label = "Bio",
-                modifier = Modifier.width(420.dp).height(120.dp),
+                modifier = Modifier.width(420.dp),
             )
         }
 
@@ -299,12 +299,12 @@ private fun TextFieldScreen() {
             "cursor; Up / Down move between wrapped lines while preserving the preferred " +
             "x-column. Selection rectangles span all wrapped rows."
         ) }
-        Section("Soft-wrap", "Long text wraps at word boundaries inside the field's width") {
+        Section("Soft-wrap", "Long text wraps at word boundaries — field grows vertically to fit") {
             OutlinedTextField(
                 value = soft,
                 onValueChange = { soft = it },
                 label = "Long form",
-                modifier = Modifier.width(320.dp).height(180.dp),
+                modifier = Modifier.width(320.dp),
             )
         }
 

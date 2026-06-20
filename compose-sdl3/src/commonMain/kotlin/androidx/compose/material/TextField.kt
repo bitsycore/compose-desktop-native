@@ -9,8 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -263,10 +263,12 @@ private fun TextFieldImpl(
     val vBorderWidth: Dp = if (isFocused || isError) 2.dp else 1.dp
 
     Column(modifier = outerModifier) {
-        // The text field's main container.
+        // The text field's main container. Uses defaultMinSize for the height
+        // so multi-line / soft-wrapped content can grow the box; .height would
+        // pin it at 56 dp and clip wrapped lines.
         var containerMod: Modifier = Modifier
             .fillMaxWidth()
-            .height(TextFieldDefaults.MinHeight)
+            .defaultMinSize(minHeight = TextFieldDefaults.MinHeight)
         containerMod = if (outlined) {
             containerMod
                 .background(colors.containerColor, shape)
