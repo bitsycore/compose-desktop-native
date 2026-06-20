@@ -14,13 +14,19 @@ package sdl3backend
 
    preferredGpuMode() picks per-target via expect/actual. */
 enum class GpuMode {
-    /* CPU raster — Skia paints into a pixel buffer that SDL_Renderer
-       uploads as a texture each frame. Works everywhere; slowest. */
+    /* Skia CPU raster — paints into a pixel buffer that SDL_Renderer
+       uploads as a texture each frame. */
     NONE,
     /* Skia GPU on an SDL3 OpenGL context. Linux default. */
     OPENGL,
     /* Skia GPU on a CAMetalLayer via SDL_Metal_CreateView. macOS only. */
     METAL,
-    /* Let the platform pick (METAL on macOS, OPENGL on Linux). */
+    /* No Skia at all — render with SDL3 primitives + SDL3_ttf. Limited
+       (no antialiased shape edges, no proper rounded-corner fills) but
+       the only mode that works on mingwX64 since Skiko ships no klib
+       there. Available on every target as a comparison renderer. */
+    SDL3,
+    /* Let the platform pick: METAL on macOS, OPENGL on Linux, SDL3 on
+       mingwX64. */
     AUTO,
 }

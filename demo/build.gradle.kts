@@ -13,10 +13,10 @@ repositories {
 }
 
 kotlin {
-    // mingwX64() disabled — see compose-sdl3/build.gradle.kts.
     linuxArm64()
     linuxX64()
     macosArm64()
+    mingwX64()
 
     targets.withType<KotlinNativeTarget>().all {
         binaries.executable {
@@ -52,7 +52,7 @@ val fontsSourceDir = rootProject.layout.projectDirectory.dir(
 
 // One Copy task per (variant, target) so it's config-cache friendly.
 val variants = listOf("debug", "release")
-val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64")
+val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 
 for (variant in variants) {
     for (target in nativeTargets) {

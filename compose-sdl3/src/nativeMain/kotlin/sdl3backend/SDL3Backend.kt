@@ -50,6 +50,7 @@ class SDL3Backend(
             GpuMode.OPENGL -> SDL_WINDOW_OPENGL
             GpuMode.METAL  -> SDL_WINDOW_METAL
             GpuMode.NONE   -> 0UL
+            GpuMode.SDL3   -> 0UL
             GpuMode.AUTO   -> error("unreachable")
         }
         window = SDL_CreateWindow(title, width, height, flags)
@@ -75,7 +76,7 @@ class SDL3Backend(
                     return false
                 }
             }
-            GpuMode.NONE -> {
+            GpuMode.NONE, GpuMode.SDL3 -> {
                 renderer = SDL_CreateRenderer(window?.reinterpret(), null)
                 if (renderer == null) {
                     println("SDL_CreateRenderer failed: ${SDL_GetError()?.toKString()}")

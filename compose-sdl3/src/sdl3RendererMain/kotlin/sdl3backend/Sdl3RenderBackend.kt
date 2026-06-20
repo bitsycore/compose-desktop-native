@@ -1,0 +1,113 @@
+package sdl3backend
+
+import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.text.TextMeasurer
+import kotlinx.cinterop.*
+import sdl3.*
+
+// ==================
+// MARK: Sdl3RenderBackend
+// ==================
+
+/* RenderBackend that uses only SDL3 primitives + SDL3_ttf — no Skia,
+   no Skiko. The only renderer on mingwX64.
+
+   Per-frame flow:
+     beginFrame  → SDL_SetRenderScale to apply the DPR
+     draw        → Sdl3Renderer walks the layout tree
+     endFrame    → SDL_RenderPresent
+*/
+
+// ==================
+// MARK: makeRenderBackend (mingwX64)
+// ==================
+
+internal actual fun makeRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
+    // mingwX64 has no Skiko — every Skia mode falls back to SDL3 with a
+    // warning so the user knows their choice was ignored.
+    if (inGpu != GpuMode.SDL3 && inGpu != GpuMode.AUTO && inGpu != GpuMode.NONE) {
+        println("mingwX64: Skia mode '$inGpu' isn't available — using SDL3 renderer")
+    }
+    return try {
+        Sdl3RenderBackend(inSdl)
+    } catch (t: Throwable) {
+        println("makeRenderBackend (sdl3) failed: ${t.message}")
+        null
+    }
+}
+
+internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBackend {
+
+    private val fTextRenderer = Sdl3TextRenderer(backend)
+    private val fRenderer: Sdl3Renderer
+
+    init {
+        if (!fTextRenderer.init()) {
+            error("Sdl3RenderBackend: SDL3_ttf failed to init")
+        }
+        fRenderer = Sdl3Renderer(backend, fTextRenderer)
+    }
+
+    override val textMeasurer: TextMeasurer
+        get() = fTextRenderer.textMeasurer
+
+    override fun ensureSize(inPixelWidth: Int, inPixelHeight: Int): Boolean {
+        // SDL_Renderer auto-resizes with the window — nothing to do.
+        return inPixelWidth > 0 && inPixelHeight > 0
+    }
+
+    override fun beginFrame(inDpr: Float) {
+        val r = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
+        // SDL_SetRenderScale scales every coord passed to render fns by
+        // (dpr, dpr), matching the canvas.scale() the Skia path uses.
+        SDL_SetRenderScale(r, inDpr, inDpr)
+    }
+
+    override fun draw(inRoot: LayoutNode) {
+        fRenderer.draw(inRoot)
+    }
+
+    override fun endFrame() {
+        val r = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
+        SDL_RenderPresent(r)
+    }
+
+    /* Read the renderer output into a host BGRA byte array. The renderer's
+       native pixel format is platform-dependent (Metal on macOS uses BGRA,
+       OpenGL on Linux uses RGBA, etc.), so we explicitly convert the
+       returned surface to BGRA32 to share one byte order with the BMP
+       writer / the Skia bridge. */
+    override fun snapshotBgra(): Triple<Int, Int, ByteArray>? {
+        val r = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return null
+        val vRaw = SDL_RenderReadPixels(r, null) ?: return null
+        // SDL_PIXELFORMAT_BGRA32 = 376840196 in SDL3 (kept literal to avoid a
+        // brittle enum lookup that drifts across cinterop versions).
+        val vConverted = SDL_ConvertSurface(vRaw.reinterpret(), SDL_PIXELFORMAT_BGRA32) ?: run {
+            SDL_DestroySurface(vRaw.reinterpret())
+            return null
+        }
+        SDL_DestroySurface(vRaw.reinterpret())
+        try {
+            val s = vConverted.reinterpret<SDL_Surface>().pointed
+            val w = s.w
+            val h = s.h
+            val pitch = s.pitch
+            val pixels = s.pixels?.reinterpret<UByteVar>() ?: return null
+            val out = ByteArray(w * h * 4)
+            for (y in 0 until h) {
+                val srcRow = y * pitch
+                val dstRow = y * w * 4
+                for (x in 0 until w * 4) {
+                    out[dstRow + x] = pixels[srcRow + x].toByte()
+                }
+            }
+            return Triple(w, h, out)
+        } finally {
+            SDL_DestroySurface(vConverted)
+        }
+    }
+
+    override fun destroy() {
+        fTextRenderer.destroy()
+    }
+}

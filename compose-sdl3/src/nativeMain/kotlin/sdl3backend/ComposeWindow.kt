@@ -43,11 +43,12 @@ fun composeWindow(
     width: Int = 800,
     height: Int = 600,
     gpu: GpuMode = GpuMode.NONE,
-    onFrame: ((bridge: SkiaBridge, frameIndex: Int) -> Boolean)? = null,
+    onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
     content: @Composable () -> Unit
 ) {
-    // AUTO → resolve to the platform's preferred backend (METAL on macOS,
-    // OPENGL on Linux). Explicit modes pass through.
+    // Resolve AUTO at the call site so SDL3Backend / RenderBackend never see
+    // it.  preferredGpuMode() is per-target — Skia targets pick Metal/GL,
+    // mingw can return NONE (its only mode).
     val gpuMode = if (gpu == GpuMode.AUTO) preferredGpuMode() else gpu
     val backend = SDL3Backend(title, width, height, gpuMode = gpuMode)
     if (!backend.init()) {
@@ -59,43 +60,17 @@ fun composeWindow(
     // Retina back buffers come out half-resolution.
     backend.updateWindowSize()
 
-    val skiaBridge: SkiaBridge = when (gpuMode) {
-        GpuMode.METAL -> {
-            val metal = makeMetalBridge(backend)
-            if (metal == null || !metal.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
-                println("Failed to init Skia Metal bridge")
-                backend.destroy()
-                return
-            }
-            metal
-        }
-        GpuMode.OPENGL -> {
-            val gl = SkiaGLBridge(backend)
-            if (!gl.init() || !gl.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
-                println("Failed to init Skia GL bridge")
-                backend.destroy()
-                return
-            }
-            gl
-        }
-        GpuMode.NONE -> {
-            val raster = SkiaSurfaceBridge(backend)
-            if (!raster.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
-                println("Failed to init Skia raster bridge")
-                backend.destroy()
-                return
-            }
-            raster
-        }
-        GpuMode.AUTO -> error("unreachable — resolved above")
+    val renderBackend = makeRenderBackend(backend, gpuMode)
+    if (renderBackend == null || !renderBackend.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
+        println("Failed to init render backend for $gpuMode")
+        backend.destroy()
+        return
     }
 
-    val textRenderer = SkiaTextRenderer()
-    val renderer = SkiaRenderer(textRenderer)
-
-    // Hook Skia font metrics into the common layout pass so Text bounds match
-    // what's actually drawn (fixes off-centre text in Buttons / Boxes).
-    currentTextMeasurer = textRenderer.textMeasurer
+    // Hook the renderer's measurer into the common layout pass so text
+    // bounds match what's actually drawn (fixes off-centre text in
+    // Buttons / Boxes).
+    currentTextMeasurer = renderBackend.textMeasurer
 
     // Wire SDL3 clipboard so TextField Cmd+C / Cmd+V work in commonMain.
     currentClipboard = SDL3Clipboard()
@@ -297,31 +272,26 @@ fun composeWindow(
             yield()
 
             // ============
-            //  Layout — also resize the Skia surface if the window changed.
+            //  Layout — also resize the back buffer if the window changed.
             backend.updateWindowSize()
-            skiaBridge.ensureSize(backend.pixelWidth, backend.pixelHeight)
+            renderBackend.ensureSize(backend.pixelWidth, backend.pixelHeight)
             val constraints = Constraints.fixed(backend.windowWidth, backend.windowHeight)
             rootNode.measure(constraints)
             rootNode.place(0, 0)
 
             // ============
-            //  Draw via Skia. Scale by DPR so the logical-point layout maps
-            //  to physical pixels on HiDPI displays — text and shapes stay
-            //  crisp on Retina instead of getting upscaled by the OS.
-            val canvas = skiaBridge.canvas
-            val vDpr = backend.pixelDensity
-            canvas.save()
-            if (vDpr != 1f) canvas.scale(vDpr, vDpr)
-            renderer.draw(rootNode, canvas)
-            canvas.restore()
+            //  Draw — the backend scales by DPR so the logical-point layout
+            //  maps to physical pixels on HiDPI displays.
+            renderBackend.beginFrame(backend.pixelDensity)
+            renderBackend.draw(rootNode)
 
             // Hook for tools/tests: take a screenshot, return false to quit.
-            // Runs after draw but before present so the bridge's surface
-            // still holds the final pixels.
-            if (onFrame != null && !onFrame(skiaBridge, frameIndex)) {
+            // Runs after draw but before present so the back buffer still
+            // holds the final pixels.
+            if (onFrame != null && !onFrame(renderBackend, frameIndex)) {
                 running = false
             }
-            skiaBridge.present()
+            renderBackend.endFrame()
             frameIndex++
 
             SDL_Delay(16u)
@@ -333,7 +303,6 @@ fun composeWindow(
         recomposeJob.cancelAndJoin()
     }
 
-    textRenderer.destroy()
-    skiaBridge.destroy()
+    renderBackend.destroy()
     backend.destroy()
 }

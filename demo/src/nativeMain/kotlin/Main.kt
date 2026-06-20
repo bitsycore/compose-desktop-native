@@ -63,6 +63,7 @@ private fun parseArgs(argv: Array<String>): CliArgs {
                 "metal"  -> GpuMode.METAL
                 "opengl", "gl" -> GpuMode.OPENGL
                 "none", "cpu"  -> GpuMode.NONE
+                "sdl3"   -> GpuMode.SDL3
                 "auto"   -> GpuMode.AUTO
                 else     -> { println("Unknown --gpu=$value, using auto"); GpuMode.AUTO }
             })
