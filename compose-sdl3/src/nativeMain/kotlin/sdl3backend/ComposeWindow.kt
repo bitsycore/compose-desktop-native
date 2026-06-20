@@ -2,6 +2,7 @@ package sdl3backend
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
@@ -44,7 +45,7 @@ fun composeWindow(
     height: Int = 600,
     gpu: GpuMode = GpuMode.Auto,
     onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
-    content: @Composable () -> Unit
+    content: @Composable ComposeWindowScope.() -> Unit
 ) {
     // Resolve Auto at the call site so SDL3Backend / RenderBackend never see
     // it. preferredGpuMode() is per-target.
@@ -77,6 +78,14 @@ fun composeWindow(
     val rootNode = LayoutNode()
     val frameClock = SDL3FrameClock()
 
+    // Reactive handle to the window — provided to content via both a
+    // receiver scope and a CompositionLocal. Event handlers feed the
+    // window state below (resize → onResized, etc.).
+    val composeWindow = ComposeNativeWindow(backend, gpuMode, title)
+    val windowScope = object : ComposeWindowScope {
+        override val window: ComposeNativeWindow = composeWindow
+    }
+
     runBlocking(frameClock) {
         val recomposer = Recomposer(coroutineContext)
         val composition = Composition(NodeApplier(rootNode), recomposer)
@@ -89,7 +98,11 @@ fun composeWindow(
             Snapshot.sendApplyNotifications()
         }
 
-        composition.setContent(content)
+        composition.setContent {
+            CompositionLocalProvider(LocalComposeNativeWindow provides composeWindow) {
+                with(windowScope) { content() }
+            }
+        }
 
         // ============
         //  Main loop
@@ -154,6 +167,10 @@ fun composeWindow(
             //  Drain any pending snapshot writes from the previous frame's handlers
             Snapshot.sendApplyNotifications()
 
+            // A composable that called window.close() earlier — break the
+            // loop the same way SDL_EVENT_QUIT would.
+            if (composeWindow.isCloseRequested) running = false
+
             // ============
             //  Events
             val events = pollEvents()
@@ -163,6 +180,7 @@ fun composeWindow(
 
                     is AppEvent.WindowResized -> {
                         backend.updateWindowSize()
+                        composeWindow.onResized()
                     }
 
                     is AppEvent.Pointer -> {
