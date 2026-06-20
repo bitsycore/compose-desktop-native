@@ -751,7 +751,7 @@ private fun LayoutScreen() {
 @Composable
 private fun ModifiersScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ScreenTitle("Modifiers", "background, border, clip, padding, size, offset, defaultMinSize")
+        ScreenTitle("Modifiers", "background, border, clip, padding, size, offset, defaultMinSize, fillMaxWidth, color alpha")
 
         Section("background + border + padding") {
             Box(
@@ -800,6 +800,55 @@ private fun ModifiersScreen() {
                         .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp)),
                     contentAlignment = Alignment.Center,
                 ) { Text("40", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+            }
+        }
+
+        Section("padding overloads", "symmetric / per-axis / per-side — padding insets the content") {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
+                        .padding(16.dp),
+                ) { Text("padding(16.dp)", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 28.dp, vertical = 6.dp),
+                ) { Text("padding(horizontal = 28, vertical = 6)", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
+                        .padding(start = 28.dp, top = 4.dp, end = 4.dp, bottom = 16.dp),
+                ) { Text("padding(start = 28, top = 4, end = 4, bottom = 16)", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+            }
+        }
+
+        Section("fillMaxWidth()", "Stretches to the parent's width (here, the Card's content width)") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center,
+            ) { Text("fillMaxWidth()", color = MaterialTheme.colors.onPrimary, fontSize = 13.sp) }
+        }
+
+        Section(
+            "Opacity via Color alpha",
+            "There's no Modifier.alpha() — fade by lowering the colour's alpha channel (Color.copy(alpha = …)). " +
+                "The label keeps full alpha, showing it's per-colour, not a node-wide fade.",
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                for (vA in listOf(1f, 0.6f, 0.3f)) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 76.dp, height = 40.dp)
+                            .background(MaterialTheme.colors.primary.copy(alpha = vA), RoundedCornerShape(6.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("α $vA", color = MaterialTheme.colors.onPrimary, fontSize = 12.sp) }
+                }
             }
         }
     }
