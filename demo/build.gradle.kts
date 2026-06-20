@@ -47,45 +47,10 @@ kotlin {
     }
 }
 
-// ==================
-// MARK: Bundle fonts next to each native executable
-// ==================
-// Skia's matchFamilyStyle returns macOS CoreText typefaces (SkTypeface_Mac)
-// which crash inside onCharsToGlyphs in Skiko 0.144.6. Loading a typeface
-// from a file bypasses that path, so we ship Roboto-Regular.ttf next to
-// the binary and resolve it at runtime via SDL_GetBasePath().
-
-val fontsSourceDir = rootProject.layout.projectDirectory.dir(
-    "compose-sdl3/src/nativeMain/resources/fonts"
-)
-
-// One Copy task per (variant, target) so it's config-cache friendly.
+// Variants × targets used by the bundling Copy tasks below. One Copy task per
+// (variant, target) keeps things configuration-cache friendly.
 val variants = listOf("debug", "release")
 val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
-
-for (variant in variants) {
-    for (target in nativeTargets) {
-        val variantCap = variant.replaceFirstChar { it.uppercase() }
-        val targetCap = target.replaceFirstChar { it.uppercase() }
-        val copyTaskName = "copy${variantCap}Fonts${targetCap}"
-        val outDir = layout.buildDirectory.dir("bin/$target/${variant}Executable/fonts")
-
-        val copyTask = tasks.register<Copy>(copyTaskName) {
-            from(fontsSourceDir)
-            into(outDir)
-        }
-
-        // Wire into both link and run for the matching (variant, target).
-        listOf(
-            "link${variantCap}Executable${targetCap}",
-            "run${variantCap}Executable${targetCap}"
-        ).forEach { taskName ->
-            tasks.matching { it.name == taskName }.configureEach {
-                dependsOn(copyTask)
-            }
-        }
-    }
-}
 
 // ==================
 // MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
@@ -181,13 +146,20 @@ tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
 // ==================
 // MARK: Bundle composeResources next to each native executable
 // ==================
-// Mirrors the font copy: resources live under demo/src/nativeMain/composeResources
-// (drawable/, files/, …) and are copied next to the binary so the runtime can
-// load them via SDL_GetBasePath() + "composeResources/<path>". The generated
-// Res accessors (see generateComposeResAccessors below) reference the same
-// relative paths.
+// Two roots merge into <exe>/composeResources/, loaded at runtime via
+// SDL_GetBasePath() + "composeResources/<path>":
+//   - the demo's own assets (drawable/, files/), and
+//   - the library's default font (font/Roboto-Regular.ttf) that the text
+//     renderers load at startup.
+// Pass -PbundleDefaultFont=false to ship without the bundled Roboto; the text
+// renderers then fall back to a system font. The generated Res accessors (see
+// generateComposeResAccessors above) only scan the demo's resources.
 
 val composeResourcesDir = layout.projectDirectory.dir("src/nativeMain/composeResources")
+val libComposeResourcesDir = rootProject.layout.projectDirectory.dir(
+    "compose-sdl3/src/nativeMain/composeResources"
+)
+val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
 for (variant in variants) {
     for (target in nativeTargets) {
@@ -198,6 +170,9 @@ for (variant in variants) {
 
         val copyTask = tasks.register<Copy>(copyTaskName) {
             from(composeResourcesDir)
+            from(libComposeResourcesDir) {
+                if (!bundleDefaultFont) exclude("font/Roboto-Regular.ttf")
+            }
             into(outDir)
         }
 

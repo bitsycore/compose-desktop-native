@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
-import kotlinx.cinterop.toKString
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
 import org.jetbrains.skia.Font
@@ -13,7 +12,6 @@ import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontStyle
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Typeface
-import sdl3.SDL_GetBasePath
 
 // ==================
 // MARK: SkiaTextRenderer
@@ -268,10 +266,7 @@ class SkiaTextRenderer {
     }
 
     private fun bundledTypeface(): Typeface? {
-        val vBaseRaw = SDL_GetBasePath() ?: return null
-        val vBase = vBaseRaw.toKString()
-        if (vBase.isEmpty()) return null
-        val vPath = vBase + "fonts/Roboto-Regular.ttf"
+        val vPath = composeResourceFullPath("font/Roboto-Regular.ttf") ?: return null
         val vTf = fFontMgr.makeFromFile(vPath, 0) ?: return null
         println("SkiaTextRenderer: loaded bundled font from $vPath")
         return vTf

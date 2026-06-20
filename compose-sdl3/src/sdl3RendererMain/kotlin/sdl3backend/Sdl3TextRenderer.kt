@@ -9,7 +9,6 @@ import kotlinx.cinterop.*
 import sdl3.SDL_CreateTextureFromSurface
 import sdl3.SDL_DestroyTexture
 import sdl3.SDL_FRect
-import sdl3.SDL_GetBasePath
 import sdl3.SDL_GetError
 import sdl3.SDL_GetTextureSize
 import sdl3.SDL_RenderTexture
@@ -295,12 +294,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         fFontCache[inSize]?.let { return it }
 
         val vPhysicalSize = (inSize * fDpr).coerceAtLeast(1f)
-        // Look for the bundled font next to the executable first; fall back
-        // to common system fonts so the demo still works without copying.
-        val vBaseRaw = SDL_GetBasePath()
-        val vBase = vBaseRaw?.toKString() ?: ""
+        // Load the bundled font from composeResources/font first; fall back to
+        // common system fonts so text still renders without the default font
+        // (e.g. when built with -PbundleDefaultFont=false).
         val vPaths = listOfNotNull(
-            if (vBase.isNotEmpty()) vBase + "fonts/Roboto-Regular.ttf" else null,
+            composeResourceFullPath("font/Roboto-Regular.ttf"),
             "C:\\Windows\\Fonts\\segoeui.ttf",
             "C:\\Windows\\Fonts\\arial.ttf",
         )

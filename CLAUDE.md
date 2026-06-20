@@ -136,8 +136,11 @@ next to the executable automatically by `demo/build.gradle.kts` (the
 `copy*DllsMingwX64` tasks), sourced from `-Psdl3Dir` / `-Psdl3TtfDir` /
 `-Psdl3ImageDir` (defaults `C:\SDL3` / `C:\SDL3_ttf` / `C:\SDL3_image`; set
 overrides in `~/.gradle/gradle.properties` if your libs live elsewhere).
-That same build also stages `Roboto-Regular.ttf` and the `composeResources/`
-tree next to every binary, so you don't install fonts or copy assets by hand.
+That same build also stages the `composeResources/` tree — including the
+default `font/Roboto-Regular.ttf` the text renderers load at startup — next
+to every binary, so you don't install fonts or copy assets by hand. Pass
+`-PbundleDefaultFont=false` to ship without the bundled Roboto (the renderers
+then fall back to a system font).
 
 ### Linker errors on Windows
 
@@ -163,7 +166,9 @@ Drop assets under `demo/src/nativeMain/composeResources/` — `drawable/` for
 images (png / jpg / svg / android `<vector>` xml), `files/` for raw bytes.
 The `generateComposeResAccessors` Gradle task scans that tree and emits typed
 `Res.drawable.<name>` (→ `Painter`) and `Res.files.<name>` (→ path string for
-`Res.readBytes`). The official Compose resources runtime can't be used here —
+`Res.readBytes`). The library keeps its default font under its own
+`compose-sdl3/src/nativeMain/composeResources/font/`; both roots merge into
+`<exe>/composeResources/` at build time (see `-PbundleDefaultFont`). The official Compose resources runtime can't be used here —
 its generated code needs real Compose UI (`Painter` / `ImageBitmap` /
 `ImageVector`), which this repo re-implements — so this is a self-contained
 stand-in.

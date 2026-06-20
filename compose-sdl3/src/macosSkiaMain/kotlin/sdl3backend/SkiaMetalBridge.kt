@@ -111,8 +111,15 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
 
         if (inWidth != fWidth || inHeight != fHeight) {
             vLayer.drawableSize = CGSizeMake(inWidth.toDouble(), inHeight.toDouble())
+            // Keep contentsScale in lock-step with the live backing density.
+            // Setting it only in init() can leave it stale at 1.0 when the
+            // window hadn't acquired its Retina backing yet: the physical-px
+            // drawable then gets downscaled to the layer's logical backing and
+            // re-upscaled by the display, softening text and aliasing edges.
+            vLayer.contentsScale = backend.pixelDensity.toDouble()
             fWidth = inWidth
             fHeight = inHeight
+            println("SkiaMetalBridge: drawable ${inWidth}x${inHeight} @ contentsScale ${backend.pixelDensity}")
         }
 
         // Per-frame: drop the previous frame's drawable wrappers and grab a
