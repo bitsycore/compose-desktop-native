@@ -4,6 +4,7 @@ import kotlinx.cinterop.*
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Surface
 import sdl3.*
@@ -76,6 +77,27 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
         SDL_UpdateTexture(vTexture.reinterpret(), null, vPixels, fWidth * 4)
         SDL_RenderTexture(vRenderer.reinterpret(), vTexture.reinterpret(), null, null)
         SDL_RenderPresent(vRenderer.reinterpret())
+    }
+
+    override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
+
+    /* CPU bridge already has the raw pixels in fPixels (RGBA8888 premul).
+       Repack to BGRA so we share one BMP writer with the GPU bridges. */
+    override fun snapshotBgra(): Triple<Int, Int, ByteArray>? {
+        val vPixels = fPixels ?: return null
+        val vCount = fWidth * fHeight
+        val vBytes = ByteArray(vCount * 4)
+        for (i in 0 until vCount) {
+            val vR = vPixels[i * 4 + 0]
+            val vG = vPixels[i * 4 + 1]
+            val vB = vPixels[i * 4 + 2]
+            val vA = vPixels[i * 4 + 3]
+            vBytes[i * 4 + 0] = vB.toByte()
+            vBytes[i * 4 + 1] = vG.toByte()
+            vBytes[i * 4 + 2] = vR.toByte()
+            vBytes[i * 4 + 3] = vA.toByte()
+        }
+        return Triple(fWidth, fHeight, vBytes)
     }
 
     override fun destroy() {

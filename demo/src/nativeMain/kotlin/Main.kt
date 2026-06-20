@@ -21,19 +21,180 @@ import androidx.compose.ui.graphics.blend
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.refTo
+import platform.posix.fclose
+import platform.posix.fopen
+import platform.posix.fwrite
+import sdl3backend.GpuMode
 import sdl3backend.composeWindow
 
-fun main() {
-    composeWindow(
-        title = "ComposeNativeSDL3 Showcase",
-        width = 1000,
-        height = 700,
-        useGpu = true,  // Skia → SDL3 OpenGL context. Set false to fall back to CPU raster.
-    ) {
-        MaterialTheme(colors = darkColors()) {
-            App()
+// ==================
+// MARK: CLI args
+// ==================
+
+/* Parsed view of the demo's command line.
+
+   --gpu=metal | opengl | none | auto    (default: auto)
+   --screen=Buttons | TextField | ...    (default: full app with sidebar)
+   --screenshot=path.png                 capture after a few frames and exit
+   --width=W  --height=H                 (default 1000 / 700)
+   --frames=N                            screenshot delay in frames (default 6)
+
+   Names match the Screen registry entries (case-insensitive). */
+private data class CliArgs(
+    val gpu: GpuMode = GpuMode.AUTO,
+    val screen: String? = null,
+    val screenshot: String? = null,
+    val width: Int = 1000,
+    val height: Int = 700,
+    val frames: Int = 6,
+)
+
+private fun parseArgs(argv: Array<String>): CliArgs {
+    var vArgs = CliArgs()
+    for (arg in argv) {
+        val eq = arg.indexOf('=')
+        if (!arg.startsWith("--") || eq < 0) continue
+        val key = arg.substring(2, eq)
+        val value = arg.substring(eq + 1)
+        vArgs = when (key) {
+            "gpu" -> vArgs.copy(gpu = when (value.lowercase()) {
+                "metal"  -> GpuMode.METAL
+                "opengl", "gl" -> GpuMode.OPENGL
+                "none", "cpu"  -> GpuMode.NONE
+                "auto"   -> GpuMode.AUTO
+                else     -> { println("Unknown --gpu=$value, using auto"); GpuMode.AUTO }
+            })
+            "screen"     -> vArgs.copy(screen = value)
+            "screenshot" -> vArgs.copy(screenshot = value)
+            "width"      -> vArgs.copy(width = value.toIntOrNull() ?: vArgs.width)
+            "height"     -> vArgs.copy(height = value.toIntOrNull() ?: vArgs.height)
+            "frames"     -> vArgs.copy(frames = value.toIntOrNull() ?: vArgs.frames)
+            else -> vArgs
         }
     }
+    return vArgs
+}
+
+fun main(args: Array<String>) {
+    val vCli = parseArgs(args)
+    val vTitle = buildString {
+        append("ComposeNativeSDL3 Showcase")
+        if (vCli.screen != null) append(" — ").append(vCli.screen)
+        append(" [").append(vCli.gpu.name.lowercase()).append("]")
+    }
+
+    composeWindow(
+        title = vTitle,
+        width = vCli.width,
+        height = vCli.height,
+        gpu = vCli.gpu,
+        onFrame = if (vCli.screenshot != null) {
+            { bridge, frameIndex ->
+                if (frameIndex == vCli.frames) {
+                    val vSnap = bridge.snapshotBgra()
+                    if (vSnap != null) {
+                        val (vW, vH, vBgra) = vSnap
+                        val vBmp = encodeBmpBgra32(vW, vH, vBgra)
+                        writeFile(vCli.screenshot, vBmp)
+                        println("Wrote screenshot: ${vCli.screenshot} (${vW}x${vH})")
+                    } else println("Screenshot snapshot was null")
+                    false  // quit
+                } else true
+            }
+        } else null,
+    ) {
+        MaterialTheme(colors = darkColors()) {
+            if (vCli.screen != null) {
+                val vMatch = Screens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
+                if (vMatch == null) {
+                    println("Unknown --screen='${vCli.screen}'. Available: ${Screens.joinToString { it.name }}")
+                    Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
+                } else {
+                    // Single screen, no sidebar — wraps in the standard 24dp
+                    // content padding plus background so visuals match the App.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colors.background)
+                            .padding(24.dp),
+                    ) {
+                        vMatch.content()
+                    }
+                }
+            } else {
+                App()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun writeFile(inPath: String, inBytes: ByteArray) {
+    val vFile = fopen(inPath, "wb") ?: run {
+        println("fopen failed for $inPath")
+        return
+    }
+    fwrite(inBytes.refTo(0), 1u, inBytes.size.toULong(), vFile)
+    fclose(vFile)
+}
+
+/* Minimal BMP writer: 24-bit BGR (drop alpha) with the classic 40-byte
+   BITMAPINFOHEADER. Universally readable, including `sips`. Rows are
+   bottom-up (positive height) and padded to 4 bytes. */
+private fun encodeBmpBgra32(inWidth: Int, inHeight: Int, inBgra: ByteArray): ByteArray {
+    val kFileHeader = 14
+    val kInfoHeader = 40
+    val vRowBytes = inWidth * 3
+    val vRowPad = (4 - vRowBytes % 4) % 4
+    val vStride = vRowBytes + vRowPad
+    val vPixelBytes = vStride * inHeight
+    val vTotal = kFileHeader + kInfoHeader + vPixelBytes
+    val vOut = ByteArray(vTotal)
+
+    fun putU16LE(off: Int, v: Int) {
+        vOut[off]     = (v and 0xFF).toByte()
+        vOut[off + 1] = ((v ushr 8) and 0xFF).toByte()
+    }
+    fun putU32LE(off: Int, v: Int) {
+        vOut[off]     = (v and 0xFF).toByte()
+        vOut[off + 1] = ((v ushr 8) and 0xFF).toByte()
+        vOut[off + 2] = ((v ushr 16) and 0xFF).toByte()
+        vOut[off + 3] = ((v ushr 24) and 0xFF).toByte()
+    }
+
+    // BITMAPFILEHEADER
+    vOut[0] = 'B'.code.toByte(); vOut[1] = 'M'.code.toByte()
+    putU32LE(2, vTotal)
+    putU32LE(10, kFileHeader + kInfoHeader)
+
+    // BITMAPINFOHEADER
+    val info = kFileHeader
+    putU32LE(info + 0,  kInfoHeader)
+    putU32LE(info + 4,  inWidth)
+    putU32LE(info + 8,  inHeight)              // positive → bottom-up
+    putU16LE(info + 12, 1)
+    putU16LE(info + 14, 24)
+    putU32LE(info + 16, 0)                     // BI_RGB
+    putU32LE(info + 20, vPixelBytes)
+    putU32LE(info + 24, 2835)
+    putU32LE(info + 28, 2835)
+    putU32LE(info + 32, 0)
+    putU32LE(info + 36, 0)
+
+    // Source is top-down BGRA; convert to bottom-up 24-bit BGR.
+    val vPixelOffset = kFileHeader + kInfoHeader
+    for (y in 0 until inHeight) {
+        val vSrcRow = (inHeight - 1 - y) * inWidth * 4
+        val vDstRow = vPixelOffset + y * vStride
+        for (x in 0 until inWidth) {
+            vOut[vDstRow + x * 3 + 0] = inBgra[vSrcRow + x * 4 + 0]  // B
+            vOut[vDstRow + x * 3 + 1] = inBgra[vSrcRow + x * 4 + 1]  // G
+            vOut[vDstRow + x * 3 + 2] = inBgra[vSrcRow + x * 4 + 2]  // R
+        }
+    }
+    return vOut
 }
 
 // ==================

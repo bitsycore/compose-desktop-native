@@ -2,8 +2,13 @@ package sdl3backend
 
 import kotlinx.cinterop.*
 import org.jetbrains.skia.BackendRenderTarget
+import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.DirectContext
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Surface
 import org.jetbrains.skia.SurfaceColorFormat
 import org.jetbrains.skia.SurfaceOrigin
@@ -83,6 +88,11 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
         vSurface.flushAndSubmit()
         SDL_GL_SwapWindow(vWindow.reinterpret())
     }
+
+    override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
+
+    override fun snapshotBgra(): Triple<Int, Int, ByteArray>? =
+        readBackBgra(fSurface, fWidth, fHeight)
 
     override fun destroy() {
         fSurface?.close()
