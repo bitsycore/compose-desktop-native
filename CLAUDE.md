@@ -93,9 +93,9 @@ gradlew.bat :demo:runDebugExecutableMingwX64
 
 `sudo apt install libsdl3-dev` is enough. Same caveat for SDL3_ttf.
 
-### Windows (mingwX64 — always uses SDL3 + SDL3_ttf)
+### Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image)
 
-Both libraries must be extracted to fixed paths the cinterop `.def`
+All three libraries must be extracted to fixed paths the cinterop `.def`
 files reference:
 
 ```
@@ -108,26 +108,36 @@ C:\SDL3_ttf\
   include\SDL3_ttf\*.h
   lib\libSDL3_ttf.dll.a
   bin\SDL3_ttf.dll
+
+C:\SDL3_image\
+  include\SDL3_image\*.h
+  lib\libSDL3_image.dll.a
+  bin\SDL3_image.dll
 ```
 
 Download the **MinGW** development releases (not MSVC) from:
 - <https://github.com/libsdl-org/SDL/releases>
 - <https://github.com/libsdl-org/SDL_ttf/releases>
+- <https://github.com/libsdl-org/SDL_image/releases>
 
 Inside each release zip the right directory is `x86_64-w64-mingw32/`
 (or `i686-w64-mingw32/` for 32-bit, which we don't target). Either copy
 that subtree directly to `C:\SDL3` (so the `include/` and `lib/` dirs
 land at `C:\SDL3\include` etc.), or adjust the paths in
-`compose-sdl3/src/nativeInterop/cinterop/sdl3.def` and `sdl3_ttf.def`.
+`compose-sdl3/src/nativeInterop/cinterop/sdl3.def`, `sdl3_ttf.def`, and
+`sdl3_image.def`. Note the two *extension* `.def` files
+(`sdl3_ttf.def`, `sdl3_image.def`) each list **two** include dirs —
+their own plus SDL3's (`-IC:/SDL3_image/include -IC:/SDL3/include`) —
+because their headers `#include <SDL3/SDL.h>`. `depends = sdl3` wires the
+Kotlin klib but does *not* feed SDL3's include path to the clang indexer.
 
-The runtime DLLs (`SDL3.dll`, `SDL3_ttf.dll`) must be findable at launch:
-
-- Copy them next to the built `.kexe` (under
-  `demo/build/bin/mingwX64/debugExecutable/`), or
-- Put `C:\SDL3\bin` and `C:\SDL3_ttf\bin` on `PATH`.
-
-The `demo/build.gradle.kts` copies `Roboto-Regular.ttf` next to every
-binary already; you don't need to install fonts.
+The runtime DLLs (`SDL3.dll`, `SDL3_ttf.dll`, `SDL3_image.dll`) are copied
+next to the executable automatically by `demo/build.gradle.kts` (the
+`copy*DllsMingwX64` tasks), sourced from `-Psdl3Dir` / `-Psdl3TtfDir` /
+`-Psdl3ImageDir` (defaults `C:\SDL3` / `C:\SDL3_ttf` / `C:\SDL3_image`; set
+overrides in `~/.gradle/gradle.properties` if your libs live elsewhere).
+That same build also stages `Roboto-Regular.ttf` and the `composeResources/`
+tree next to every binary, so you don't install fonts or copy assets by hand.
 
 ### Linker errors on Windows
 
@@ -146,6 +156,27 @@ doesn't contain the headers. The MinGW zip's `include/` directory has
 them; copy that whole tree.
 
 ## Architecture Notes
+
+### Resources / images (composeResources)
+
+Drop assets under `demo/src/nativeMain/composeResources/` — `drawable/` for
+images (png / jpg / svg / android `<vector>` xml), `files/` for raw bytes.
+The `generateComposeResAccessors` Gradle task scans that tree and emits typed
+`Res.drawable.<name>` (→ `Painter`) and `Res.files.<name>` (→ path string for
+`Res.readBytes`). The official Compose resources runtime can't be used here —
+its generated code needs real Compose UI (`Painter` / `ImageBitmap` /
+`ImageVector`), which this repo re-implements — so this is a self-contained
+stand-in.
+
+Image drawing mirrors text exactly: a commonMain `ImageLoader` interface +
+`currentImageLoader` global (set in `ComposeWindow` from
+`renderBackend.imageLoader`), a `painter` leaf on `LayoutNode`, and each
+renderer paints it. Decoding is per-backend and cached by path —
+`SkiaImageCache` (`Image.makeFromEncoded` / `SVGDOM`) and `Sdl3ImageCache`
+(SDL3_image `IMG_Load` / `IMG_LoadSVG_IO`). SVG and Android `<vector>` XML
+both flow through `AndroidVectorToSvg` → SVG → rasterise. `ContentScale`
+(Fit / Crop / FillBounds / Inside / None) and `alpha` apply at draw time.
+Intrinsic pixel size is treated as logical points by the layout pass.
 
 ### Compose runtime integration (ComposeWindow.kt)
 

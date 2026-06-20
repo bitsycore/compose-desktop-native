@@ -30,6 +30,7 @@ import kotlin.math.sin
 internal class Sdl3Renderer(
     private val backend: SDL3Backend,
     private val textRenderer: Sdl3TextRenderer,
+    private val imageCache: Sdl3ImageCache,
 ) {
 
     private val kClearR: UByte = 0x12u
@@ -99,6 +100,18 @@ internal class Sdl3Renderer(
                     )
                 }
             }
+        }
+
+        // ============
+        //  Image leaf (decoded + cached by Sdl3ImageCache, painted per
+        //  contentScale / alpha into the node bounds)
+        val vPainter = inNode.painter
+        if (vPainter != null) {
+            imageCache.draw(
+                vPainter.resourcePath, vPainter.kind,
+                vAx, vAy, vW, vH,
+                inNode.contentScale, inNode.imageAlpha,
+            )
         }
 
         // ============

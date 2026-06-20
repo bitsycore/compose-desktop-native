@@ -1,7 +1,10 @@
 package sdl3backend
 
 import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.res.ImageLoader
+import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
 import sdl3.*
 
@@ -44,17 +47,25 @@ internal actual fun makeRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): Rende
 internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBackend {
 
     private val fTextRenderer = Sdl3TextRenderer(backend)
+    private val fImageCache = Sdl3ImageCache(backend)
     private val fRenderer: Sdl3Renderer
 
     init {
         if (!fTextRenderer.init()) {
             error("Sdl3RenderBackend: SDL3_ttf failed to init")
         }
-        fRenderer = Sdl3Renderer(backend, fTextRenderer)
+        fRenderer = Sdl3Renderer(backend, fTextRenderer, fImageCache)
     }
 
     override val textMeasurer: TextMeasurer
         get() = fTextRenderer.textMeasurer
+
+    override val imageLoader: ImageLoader = object : ImageLoader {
+        override fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize =
+            fImageCache.intrinsicSize(inPath, inKind)
+        override fun readBytes(inPath: String): ByteArray? =
+            loadComposeResourceBytes(inPath)
+    }
 
     override fun ensureSize(inPixelWidth: Int, inPixelHeight: Int): Boolean {
         // SDL_Renderer auto-resizes with the window — nothing to do.
@@ -117,6 +128,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     }
 
     override fun destroy() {
+        fImageCache.destroy()
         fTextRenderer.destroy()
     }
 }

@@ -34,16 +34,21 @@ kotlin {
             }
         }
     }
-    // SDL3_ttf is needed wherever the SDL3 renderer runs: always on
-    // mingwX64, and on every target when -Prenderer=sdl3 is set.
-    val needsSdl3Ttf: (KotlinNativeTarget) -> Boolean = {
+    // SDL3_ttf (text) and SDL3_image (resource decoding) are needed wherever
+    // the SDL3 renderer runs: always on mingwX64, and on every target when
+    // -Prenderer=sdl3 is set.
+    val needsSdl3Extras: (KotlinNativeTarget) -> Boolean = {
         it.konanTarget.name == "mingw_x64" || useSdl3Everywhere
     }
-    targets.withType<KotlinNativeTarget>().matching(needsSdl3Ttf).all {
+    targets.withType<KotlinNativeTarget>().matching(needsSdl3Extras).all {
         compilations["main"].cinterops {
             val sdl3_ttf by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
                 packageName("sdl3_ttf")
+            }
+            val sdl3_image by creating {
+                defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
+                packageName("sdl3_image")
             }
         }
     }

@@ -1,6 +1,7 @@
 package sdl3backend
 
 import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.text.TextMeasurer
 
 // ==================
@@ -16,6 +17,11 @@ interface RenderBackend {
     /* Measurer the shared TextMeasurePolicy plugs into to keep layout
        widths in sync with what the renderer actually draws. */
     val textMeasurer: TextMeasurer
+
+    /* Loader the shared ImageMeasurePolicy / Res.readBytes plug into. Backed
+       by the same decode cache the renderer uses to paint images, so a
+       resource is decoded once and shared between measure and draw. */
+    val imageLoader: ImageLoader
 
     /* Re-allocate / resize anything that depends on the back buffer
        dimensions. Width / height are in PHYSICAL PIXELS (HiDPI-aware).

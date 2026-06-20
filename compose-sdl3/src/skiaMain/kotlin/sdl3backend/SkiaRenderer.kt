@@ -20,7 +20,10 @@ import org.jetbrains.skia.Rect
 // MARK: SkiaRenderer — draws the LayoutNode tree onto a Skia Canvas.
 // ==================
 
-class SkiaRenderer(private val textRenderer: SkiaTextRenderer) {
+class SkiaRenderer(
+    private val textRenderer: SkiaTextRenderer,
+    private val imageCache: SkiaImageCache,
+) {
 
     private val kClearColor = 0xFF121212.toInt() // matches Material dark background
 
@@ -82,6 +85,18 @@ class SkiaRenderer(private val textRenderer: SkiaTextRenderer) {
                 inCanvas, vText,
                 vAx, vAy, inNode.width, inNode.height,
                 inNode.textColor, inNode.fontSize, inNode.textAlign
+            )
+        }
+
+        // ============
+        //  Image leaf (decoded + cached by SkiaImageCache, painted per
+        //  contentScale / alpha into the node bounds)
+        val vPainter = inNode.painter
+        if (vPainter != null) {
+            imageCache.draw(
+                inCanvas, vPainter.resourcePath, vPainter.kind,
+                vAx, vAy, vW, vH,
+                inNode.contentScale, inNode.imageAlpha,
             )
         }
 

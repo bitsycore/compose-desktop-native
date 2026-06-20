@@ -52,6 +52,14 @@ class LayoutNode {
     var softWrap: Boolean = true
 
     // ============
+    //  Content for image leaf nodes (set by the Image composable). The renderer
+    //  reads painter (resource path + kind) to resolve a cached decoded
+    //  texture, then paints it into the node bounds per contentScale / alpha.
+    var painter: androidx.compose.ui.graphics.painter.Painter? = null
+    var contentScale: androidx.compose.ui.layout.ContentScale = androidx.compose.ui.layout.ContentScale.Fit
+    var imageAlpha: Float = 1f
+
+    // ============
     //  Computed absolute position (incl. visual offset modifiers + parent scroll)
     val offsetX: Int get() = modifier.foldIn(0) { acc, e ->
         if (e is OffsetModifier) acc + e.x else acc

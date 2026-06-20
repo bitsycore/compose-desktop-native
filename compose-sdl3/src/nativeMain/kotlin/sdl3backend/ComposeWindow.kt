@@ -13,6 +13,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.NodeApplier
 import androidx.compose.ui.platform.currentClipboard
+import androidx.compose.ui.res.currentImageLoader
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import kotlinx.coroutines.*
@@ -71,6 +72,10 @@ fun composeWindow(
     // bounds match what's actually drawn (fixes off-centre text in
     // Buttons / Boxes).
     currentTextMeasurer = renderBackend.textMeasurer
+
+    // Same wiring for images: the layout pass sizes Image nodes via the
+    // backend's decode cache, and Res.readBytes reads bundled files.
+    currentImageLoader = renderBackend.imageLoader
 
     // Wire SDL3 clipboard so TextField Cmd+C / Cmd+V work in commonMain.
     currentClipboard = SDL3Clipboard()

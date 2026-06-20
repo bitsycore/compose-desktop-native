@@ -1,7 +1,10 @@
 package sdl3backend
 
 import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.res.ImageLoader
+import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
 
 // ==================
@@ -22,11 +25,19 @@ internal class SkiaRenderBackend(
 
     private val fBridge: SkiaBridge = buildBridge()
     private val fSkiaTextRenderer = SkiaTextRenderer()
-    private val fSkiaRenderer = SkiaRenderer(fSkiaTextRenderer)
+    private val fSkiaImageCache = SkiaImageCache()
+    private val fSkiaRenderer = SkiaRenderer(fSkiaTextRenderer, fSkiaImageCache)
     private var fCurrentCanvas: Canvas? = null
 
     override val textMeasurer: TextMeasurer
         get() = fSkiaTextRenderer.textMeasurer
+
+    override val imageLoader: ImageLoader = object : ImageLoader {
+        override fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize =
+            fSkiaImageCache.intrinsicSize(inPath, inKind)
+        override fun readBytes(inPath: String): ByteArray? =
+            loadComposeResourceBytes(inPath)
+    }
 
     private fun buildBridge(): SkiaBridge = when (gpuMode) {
         is GpuMode.Skia.Metal  -> makeMetalBridge(sdl) ?: error("Skia.Metal isn't supported on this target")
@@ -60,6 +71,7 @@ internal class SkiaRenderBackend(
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? = fBridge.snapshotBgra()
 
     override fun destroy() {
+        fSkiaImageCache.destroy()
         fSkiaTextRenderer.destroy()
         fBridge.destroy()
     }
