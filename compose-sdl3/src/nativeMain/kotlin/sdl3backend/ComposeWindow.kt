@@ -11,6 +11,7 @@ import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.NodeApplier
+import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import kotlinx.coroutines.*
@@ -62,6 +63,9 @@ fun composeWindow(
     // Hook Skia font metrics into the common layout pass so Text bounds match
     // what's actually drawn (fixes off-centre text in Buttons / Boxes).
     currentTextMeasurer = textRenderer.textMeasurer
+
+    // Wire SDL3 clipboard so TextField Cmd+C / Cmd+V work in commonMain.
+    currentClipboard = SDL3Clipboard()
 
     val rootNode = LayoutNode()
     val frameClock = SDL3FrameClock()

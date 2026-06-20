@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.input.TextFieldValue
@@ -88,6 +89,14 @@ fun BasicTextField(
     // Double-click detection: timestamp + char index of the previous press
     var lastPressMs by remember { mutableStateOf(0L) }
     var lastPressIndex by remember { mutableStateOf(-1) }
+    // Undo / redo stacks of TextFieldValue snapshots. Most-recent at top.
+    // We push a snapshot before each "edit run" (a sequence of typings is
+    // grouped, but any non-typing edit closes the run).
+    val undoStack = remember { mutableListOf<TextFieldValue>() }
+    val redoStack = remember { mutableListOf<TextFieldValue>() }
+    // Are the previous and next edits both typing? When true, we don't
+    // push a new undo snapshot (so a word's worth of typing is one undo).
+    var inTypingRun by remember { mutableStateOf(false) }
 
     LaunchedEffect(isFocused, value.selection) {
         if (!isFocused) {
@@ -104,6 +113,46 @@ fun BasicTextField(
     val vFontSize = fontSize.value.toInt()
     val vCursorOffsetPx = prefixWidth(value.text, value.selection.end.coerceIn(0, value.text.length), vFontSize)
 
+    // Edit helpers: push undo snapshots, manage the typing-run flag, fire the
+    // caller's onValueChange. typingEdit collapses consecutive typings into a
+    // single undo step; structuralEdit (backspace / delete / paste / cut) ends
+    // the typing run and snapshots.
+    val pushSnapshot: () -> Unit = {
+        undoStack.add(value)
+        if (undoStack.size > 100) undoStack.removeAt(0)
+        redoStack.clear()
+    }
+    val typingEdit: (TextFieldValue) -> Unit = { nv ->
+        if (!inTypingRun) pushSnapshot()
+        inTypingRun = true
+        onValueChange(nv)
+    }
+    val structuralEdit: (TextFieldValue) -> Unit = { nv ->
+        pushSnapshot()
+        inTypingRun = false
+        onValueChange(nv)
+    }
+    val cursorOnlyEdit: (TextFieldValue) -> Unit = { nv ->
+        inTypingRun = false
+        onValueChange(nv)
+    }
+    val doUndo: () -> Unit = {
+        val prev = undoStack.removeLastOrNull()
+        if (prev != null) {
+            redoStack.add(value)
+            inTypingRun = false
+            onValueChange(prev)
+        }
+    }
+    val doRedo: () -> Unit = {
+        val next = redoStack.removeLastOrNull()
+        if (next != null) {
+            undoStack.add(value)
+            inTypingRun = false
+            onValueChange(next)
+        }
+    }
+
     Box(
         modifier = modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = (fontSize.value * 1.4f).dp)
@@ -117,20 +166,19 @@ fun BasicTextField(
                     lastPressMs = vNow
                     lastPressIndex = vIndex
                     if (vIsDoubleClick) {
-                        // Word select: anchor at left edge, head at right edge.
                         val vWordStart = wordBoundaryLeft(value.text, vIndex + 1)
                         val vWordEnd = wordBoundaryRight(value.text, vIndex)
                         dragAnchor = vWordStart
-                        onValueChange(value.copy(selection = TextRange(vWordStart, vWordEnd)))
+                        cursorOnlyEdit(value.copy(selection = TextRange(vWordStart, vWordEnd)))
                     } else {
                         dragAnchor = vIndex
-                        onValueChange(value.copy(selection = TextRange(vIndex)))
+                        cursorOnlyEdit(value.copy(selection = TextRange(vIndex)))
                     }
                 },
                 onDrag = { relX, _ ->
                     if (!enabled || dragAnchor < 0) return@onDrag
                     val vIndex = charIndexAtX(value.text, vFontSize, relX)
-                    onValueChange(value.copy(selection = TextRange(dragAnchor, vIndex)))
+                    cursorOnlyEdit(value.copy(selection = TextRange(dragAnchor, vIndex)))
                 },
                 onEnd = {
                     dragAnchor = -1
@@ -139,11 +187,11 @@ fun BasicTextField(
             .onKeyEvent { ev ->
                 if (!enabled) return@onKeyEvent false
                 if (ev.key.type != KeyEventType.Down) return@onKeyEvent false
-                handleKey(ev.key, value, onValueChange, readOnly)
+                handleKey(ev.key, value, readOnly, structuralEdit, cursorOnlyEdit, doUndo, doRedo)
             }
             .onTextInput { input ->
                 if (!enabled || readOnly) return@onTextInput
-                onValueChange(insertAtCursor(value, input))
+                typingEdit(insertAtCursor(value, input))
             }
     ) {
         // Selection rect drawn FIRST so it sits behind glyphs. Drawn only
@@ -233,6 +281,10 @@ private fun wordBoundaryRight(inText: String, inFrom: Int): Int {
 // (physical key positions), not keysyms.
 
 private const val SCANCODE_A          = 4
+private const val SCANCODE_C          = 6
+private const val SCANCODE_V          = 25
+private const val SCANCODE_X          = 27
+private const val SCANCODE_Z          = 29
 private const val SCANCODE_BACKSPACE  = 42
 private const val SCANCODE_RIGHT      = 79
 private const val SCANCODE_LEFT       = 80
@@ -260,8 +312,11 @@ private fun moveCursor(
 private fun handleKey(
     inKey: KeyEvent,
     inValue: TextFieldValue,
-    inOnChange: (TextFieldValue) -> Unit,
     inReadOnly: Boolean,
+    inStructuralEdit: (TextFieldValue) -> Unit,
+    inCursorOnlyEdit: (TextFieldValue) -> Unit,
+    inUndo: () -> Unit,
+    inRedo: () -> Unit,
 ): Boolean {
     val vMods = inKey.modifiers
     val vShift = vMods.shift
@@ -272,36 +327,59 @@ private fun handleKey(
         SCANCODE_LEFT -> {
             val vCurrent = inValue.selection.end
             val vNewHead = when {
-                vMeta -> 0                                        // Cmd+Left → line start
-                vAlt  -> wordBoundaryLeft(inValue.text, vCurrent) // Alt+Left → previous word
+                vMeta -> 0
+                vAlt  -> wordBoundaryLeft(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.min
                 else  -> vCurrent - 1
             }
-            inOnChange(moveCursor(inValue, vNewHead, vShift))
+            inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
             return true
         }
         SCANCODE_RIGHT -> {
             val vCurrent = inValue.selection.end
             val vNewHead = when {
-                vMeta -> inValue.text.length                       // Cmd+Right → line end
-                vAlt  -> wordBoundaryRight(inValue.text, vCurrent) // Alt+Right → next word
+                vMeta -> inValue.text.length
+                vAlt  -> wordBoundaryRight(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.max
                 else  -> vCurrent + 1
             }
-            inOnChange(moveCursor(inValue, vNewHead, vShift))
+            inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
             return true
         }
         SCANCODE_HOME -> {
-            inOnChange(moveCursor(inValue, 0, vShift))
+            inCursorOnlyEdit(moveCursor(inValue, 0, vShift))
             return true
         }
         SCANCODE_END -> {
-            inOnChange(moveCursor(inValue, inValue.text.length, vShift))
+            inCursorOnlyEdit(moveCursor(inValue, inValue.text.length, vShift))
             return true
         }
         SCANCODE_A -> if (vMeta) {
-            // Cmd+A → select all
-            inOnChange(inValue.copy(selection = TextRange(0, inValue.text.length)))
+            inCursorOnlyEdit(inValue.copy(selection = TextRange(0, inValue.text.length)))
+            return true
+        }
+        SCANCODE_C -> if (vMeta && !inValue.selection.collapsed) {
+            // Copy selection — non-destructive, doesn't go through the edit
+            // helpers. Bare clipboard write.
+            val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
+            currentClipboard.setText(vSel)
+            return true
+        }
+        SCANCODE_X -> if (vMeta && !inValue.selection.collapsed && !inReadOnly) {
+            val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
+            currentClipboard.setText(vSel)
+            val vNewText = inValue.text.substring(0, inValue.selection.min) +
+                           inValue.text.substring(inValue.selection.max)
+            inStructuralEdit(TextFieldValue(vNewText, TextRange(inValue.selection.min)))
+            return true
+        }
+        SCANCODE_V -> if (vMeta && !inReadOnly) {
+            val vPaste = currentClipboard.getText() ?: return true
+            inStructuralEdit(insertAtCursor(inValue, vPaste))
+            return true
+        }
+        SCANCODE_Z -> if (vMeta) {
+            if (vShift) inRedo() else inUndo()
             return true
         }
         SCANCODE_BACKSPACE -> if (!inReadOnly) {
@@ -311,7 +389,7 @@ private fun handleKey(
             val vDeleteFrom = if (vMin == vMax) vMin - 1 else vMin
             val vNewText = inValue.text.substring(0, vDeleteFrom) +
                            inValue.text.substring(vMax)
-            inOnChange(TextFieldValue(vNewText, TextRange(vDeleteFrom)))
+            inStructuralEdit(TextFieldValue(vNewText, TextRange(vDeleteFrom)))
             return true
         }
         SCANCODE_DELETE -> if (!inReadOnly) {
@@ -321,7 +399,7 @@ private fun handleKey(
             val vDeleteTo = if (vMin == vMax) vMin + 1 else vMax
             val vNewText = inValue.text.substring(0, vMin) +
                            inValue.text.substring(vDeleteTo)
-            inOnChange(TextFieldValue(vNewText, TextRange(vMin)))
+            inStructuralEdit(TextFieldValue(vNewText, TextRange(vMin)))
             return true
         }
     }
