@@ -49,9 +49,14 @@ class SkiaTextRenderer {
     val textMeasurer: TextMeasurer = TextMeasurer { inText, inFontSize ->
         val vFont = getFont(inFontSize)
         val vMetrics = vFont.metrics
-        val vWidth = estimateTextWidth(inText, inFontSize)
-        val vHeight = (vMetrics.descent - vMetrics.ascent).toInt().coerceAtLeast(1)
-        IntSize(vWidth, vHeight)
+        val vLineHeight = (vMetrics.descent - vMetrics.ascent).toInt().coerceAtLeast(1)
+        if ('\n' !in inText) {
+            IntSize(estimateTextWidth(inText, inFontSize), vLineHeight)
+        } else {
+            val vLines = inText.split('\n')
+            val vWidth = vLines.maxOf { estimateTextWidth(it, inFontSize) }
+            IntSize(vWidth, vLineHeight * vLines.size)
+        }
     }
 
     fun drawText(
@@ -71,26 +76,36 @@ class SkiaTextRenderer {
             isAntiAlias = true
         }
 
-        // Horizontal: TextAlign over the laid-out box width.
-        val vTextWidth = estimateTextWidth(inText, inFontSize).toFloat()
-        val vPenX = when (inAlign) {
-            TextAlign.Start  -> inX
-            TextAlign.Center -> inX + (inBoxWidth - vTextWidth) / 2f
-            TextAlign.End    -> inX + inBoxWidth.toFloat() - vTextWidth
-        }
-
-        // Vertical: baseline placed so that the cap-letter visual centre lands
-        // on the laid-out box's vertical centre. This is what Compose Material
-        // does via LineHeightStyle.Alignment.Center — centres cap-height text
-        // (titles, button labels, digits) regardless of how tall the line box
-        // is. Symbols like '+' (math-line) land near centre; '-' (x-height)
-        // sits a touch below, matching real Compose's behaviour.
         val vMetrics = vFont.metrics
+        val vLineHeight = vMetrics.descent - vMetrics.ascent
         val vCapHeight = if (vMetrics.capHeight > 0f) vMetrics.capHeight
                          else inFontSize * 0.7f
-        val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
 
-        inCanvas.drawString(inText, vPenX, vBaseline, vFont, vPaint)
+        fun penXFor(inLineText: String): Float {
+            val vLineWidth = estimateTextWidth(inLineText, inFontSize).toFloat()
+            return when (inAlign) {
+                TextAlign.Start  -> inX
+                TextAlign.Center -> inX + (inBoxWidth - vLineWidth) / 2f
+                TextAlign.End    -> inX + inBoxWidth.toFloat() - vLineWidth
+            }
+        }
+
+        if ('\n' !in inText) {
+            // Single line: cap-centred over the full box (button text in a
+            // taller container lands at button centre).
+            val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
+            inCanvas.drawString(inText, penXFor(inText), vBaseline, vFont, vPaint)
+        } else {
+            // Multi-line: stack each line in its own lineHeight slot, cap-
+            // centred within that slot.
+            val vLines = inText.split('\n')
+            for ((vIdx, vLine) in vLines.withIndex()) {
+                val vSlotTop = inY + vIdx * vLineHeight
+                val vBaseline = vSlotTop + (vLineHeight + vCapHeight) / 2f
+                inCanvas.drawString(vLine, penXFor(vLine), vBaseline, vFont, vPaint)
+            }
+        }
+
         vPaint.close()
     }
 

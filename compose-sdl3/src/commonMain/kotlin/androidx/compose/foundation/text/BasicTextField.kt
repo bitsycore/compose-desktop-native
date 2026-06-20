@@ -92,6 +92,9 @@ fun BasicTextField(
     // Double-click detection: timestamp + char index of the previous press
     var lastPressMs by remember { mutableStateOf(0L) }
     var lastPressIndex by remember { mutableStateOf(-1) }
+    // Preferred column for Up/Down navigation. Set on Up/Down's first use,
+    // reset on any horizontal move.
+    var preferredCol by remember { mutableStateOf(-1) }
     // Undo / redo stacks of TextFieldValue snapshots. Most-recent at top.
     // We push a snapshot before each "edit run" (a sequence of typings is
     // grouped, but any non-typing edit closes the run).
@@ -114,7 +117,13 @@ fun BasicTextField(
     }
 
     val vFontSize = fontSize.value.toInt()
-    val vCursorOffsetPx = prefixWidth(value.text, value.selection.end.coerceIn(0, value.text.length), vFontSize)
+    val vLineHeight = (fontSize.value * 1.2f)
+    // Cursor position in (lineIndex, columnInLine) and pixel (x, y).
+    val vCursorIdx = value.selection.end.coerceIn(0, value.text.length)
+    val (vCursorLine, vCursorCol) = lineColumnAt(value.text, vCursorIdx)
+    val vCursorLineText = lineText(value.text, vCursorLine)
+    val vCursorOffsetPx = prefixWidth(vCursorLineText, vCursorCol, vFontSize)
+    val vCursorYPx = (vCursorLine * vLineHeight)
 
     // Edit helpers: push undo snapshots, manage the typing-run flag, fire the
     // caller's onValueChange. typingEdit collapses consecutive typings into a
@@ -164,13 +173,14 @@ fun BasicTextField(
                 onFocusChanged(it)
             }
             .onDrag(
-                onStart = { relX, _ ->
+                onStart = { relX, relY ->
                     if (!enabled) return@onDrag
-                    val vIndex = charIndexAtX(value.text, vFontSize, relX)
+                    val vIndex = charIndexAtPoint(value.text, vFontSize, relX, relY, vLineHeight)
                     val vNow = nowMillis()
                     val vIsDoubleClick = vIndex == lastPressIndex && (vNow - lastPressMs) < 350
                     lastPressMs = vNow
                     lastPressIndex = vIndex
+                    preferredCol = -1
                     if (vIsDoubleClick) {
                         val vWordStart = wordBoundaryLeft(value.text, vIndex + 1)
                         val vWordEnd = wordBoundaryRight(value.text, vIndex)
@@ -181,9 +191,9 @@ fun BasicTextField(
                         cursorOnlyEdit(value.copy(selection = TextRange(vIndex)))
                     }
                 },
-                onDrag = { relX, _ ->
+                onDrag = { relX, relY ->
                     if (!enabled || dragAnchor < 0) return@onDrag
-                    val vIndex = charIndexAtX(value.text, vFontSize, relX)
+                    val vIndex = charIndexAtPoint(value.text, vFontSize, relX, relY, vLineHeight)
                     cursorOnlyEdit(value.copy(selection = TextRange(dragAnchor, vIndex)))
                 },
                 onEnd = {
@@ -193,26 +203,44 @@ fun BasicTextField(
             .onKeyEvent { ev ->
                 if (!enabled) return@onKeyEvent false
                 if (ev.key.type != KeyEventType.Down) return@onKeyEvent false
-                handleKey(ev.key, value, readOnly, structuralEdit, cursorOnlyEdit, doUndo, doRedo)
+                handleKey(
+                    inKey = ev.key,
+                    inValue = value,
+                    inFontSize = vFontSize,
+                    inReadOnly = readOnly,
+                    inGetPrefColX = { preferredCol },
+                    inSetPrefColX = { preferredCol = it },
+                    inStructuralEdit = structuralEdit,
+                    inCursorOnlyEdit = cursorOnlyEdit,
+                    inTypingEdit = typingEdit,
+                    inUndo = doUndo,
+                    inRedo = doRedo,
+                )
             }
             .onTextInput { input ->
                 if (!enabled || readOnly) return@onTextInput
                 typingEdit(insertAtCursor(value, input))
             }
     ) {
-        // Selection rect drawn FIRST so it sits behind glyphs. Drawn only
-        // when selection is non-collapsed.
+        // Selection rect(s) drawn FIRST so they sit behind glyphs. Multi-line
+        // selections emit one rect per spanned line.
         if (!value.selection.collapsed) {
-            val vSelStartPx = prefixWidth(value.text, value.selection.min, vFontSize)
-            val vSelEndPx = prefixWidth(value.text, value.selection.max, vFontSize)
-            val vSelWidth = (vSelEndPx - vSelStartPx).coerceAtLeast(1)
-            Box(
-                modifier = Modifier
-                    .offset(x = vSelStartPx.dp)
-                    .width(vSelWidth.dp)
-                    .height((fontSize.value * 1.2f).dp)
-                    .background(selectionColor)
-            )
+            val (vMinLine, vMinCol) = lineColumnAt(value.text, value.selection.min)
+            val (vMaxLine, vMaxCol) = lineColumnAt(value.text, value.selection.max)
+            for (vLine in vMinLine..vMaxLine) {
+                val vLineStr = lineText(value.text, vLine)
+                val vStartCol = if (vLine == vMinLine) vMinCol else 0
+                val vEndCol = if (vLine == vMaxLine) vMaxCol else vLineStr.length
+                val vSx = prefixWidth(vLineStr, vStartCol, vFontSize)
+                val vEx = prefixWidth(vLineStr, vEndCol, vFontSize)
+                Box(
+                    modifier = Modifier
+                        .offset(x = vSx.dp, y = (vLine * vLineHeight).dp)
+                        .width((vEx - vSx).coerceAtLeast(1).dp)
+                        .height(vLineHeight.dp)
+                        .background(selectionColor)
+                )
+            }
         }
 
         BasicText(text = value.text, color = color, fontSize = fontSize)
@@ -220,9 +248,9 @@ fun BasicTextField(
         if (isFocused && cursorBlinkVisible) {
             Box(
                 modifier = Modifier
-                    .offset(x = vCursorOffsetPx.dp)
+                    .offset(x = vCursorOffsetPx.dp, y = vCursorYPx.dp)
                     .width(1.dp)
-                    .height((fontSize.value * 1.2f).dp)
+                    .height(vLineHeight.dp)
                     .background(cursorColor)
             )
         }
@@ -249,8 +277,7 @@ private fun prefixWidth(inText: String, inEnd: Int, inFontSize: Int): Int {
 }
 
 /* Character index whose left edge is closest to `inX` pixels from the text
-   start. Linear scan growing the prefix one char at a time — heuristic
-   measurer is cheap so O(n) per click is fine. */
+   start. Linear scan growing the prefix one char at a time. Single-line. */
 private fun charIndexAtX(inText: String, inFontSize: Int, inX: Int): Int {
     if (inX <= 0 || inText.isEmpty()) return 0
     var vPrev = 0
@@ -262,6 +289,67 @@ private fun charIndexAtX(inText: String, inFontSize: Int, inX: Int): Int {
         vPrev = vNext
     }
     return inText.length
+}
+
+/* Multi-line equivalent: pick the line based on relY / lineHeight, then run
+   charIndexAtX inside that line. Lines past the last clamp to the bottom
+   line. */
+private fun charIndexAtPoint(
+    inText: String,
+    inFontSize: Int,
+    inX: Int,
+    inY: Int,
+    inLineHeight: Float,
+): Int {
+    val vLines = lineCount(inText)
+    val vLine = (inY / inLineHeight).toInt().coerceIn(0, vLines - 1)
+    val vLineStr = lineText(inText, vLine)
+    val vCol = charIndexAtX(vLineStr, inFontSize, inX)
+    return lineStart(inText, vLine) + vCol
+}
+
+// ==================
+// MARK: Line / column helpers
+// ==================
+
+/* Start index of the Nth line (0 → 0; subsequent lines start one past the
+   previous newline). For lineIndex past the last line, returns text.length. */
+internal fun lineStart(inText: String, inLineIndex: Int): Int {
+    if (inLineIndex <= 0) return 0
+    var vLine = 0
+    for (i in inText.indices) {
+        if (inText[i] == '\n') {
+            vLine++
+            if (vLine == inLineIndex) return i + 1
+        }
+    }
+    return inText.length
+}
+
+internal fun lineText(inText: String, inLineIndex: Int): String {
+    val vStart = lineStart(inText, inLineIndex)
+    val vNl = inText.indexOf('\n', vStart)
+    val vEnd = if (vNl < 0) inText.length else vNl
+    return inText.substring(vStart, vEnd)
+}
+
+internal fun lineCount(inText: String): Int {
+    var n = 1
+    for (c in inText) if (c == '\n') n++
+    return n
+}
+
+internal fun lineColumnAt(inText: String, inIndex: Int): Pair<Int, Int> {
+    val vClamped = inIndex.coerceIn(0, inText.length)
+    var vLine = 0
+    var vLineStart = 0
+    for (i in 0 until vClamped) {
+        if (inText[i] == '\n') {
+            vLine++
+            vLineStart = i + 1
+        }
+    }
+    return vLine to (vClamped - vLineStart)
 }
 
 /* Word-boundary helpers — Compose's "word" = whitespace-delimited run. */
@@ -291,9 +379,12 @@ private const val SCANCODE_C          = 6
 private const val SCANCODE_V          = 25
 private const val SCANCODE_X          = 27
 private const val SCANCODE_Z          = 29
+private const val SCANCODE_RETURN     = 40
 private const val SCANCODE_BACKSPACE  = 42
+private const val SCANCODE_DOWN       = 81
 private const val SCANCODE_RIGHT      = 79
 private const val SCANCODE_LEFT       = 80
+private const val SCANCODE_UP         = 82
 private const val SCANCODE_DELETE     = 76
 private const val SCANCODE_HOME       = 74
 private const val SCANCODE_END        = 77
@@ -318,9 +409,13 @@ private fun moveCursor(
 private fun handleKey(
     inKey: KeyEvent,
     inValue: TextFieldValue,
+    inFontSize: Int,
     inReadOnly: Boolean,
+    inGetPrefColX: () -> Int,
+    inSetPrefColX: (Int) -> Unit,
     inStructuralEdit: (TextFieldValue) -> Unit,
     inCursorOnlyEdit: (TextFieldValue) -> Unit,
+    inTypingEdit: (TextFieldValue) -> Unit,
     inUndo: () -> Unit,
     inRedo: () -> Unit,
 ): Boolean {
@@ -329,11 +424,16 @@ private fun handleKey(
     val vMeta = vMods.meta   // Cmd on macOS
     val vAlt = vMods.alt     // Option on macOS, Alt elsewhere
 
+    // Reset preferred-column on any non-vertical motion. Up/Down handlers
+    // below set it before consuming so they retain across consecutive presses.
+    fun resetPrefX() { inSetPrefColX(-1) }
+
     when (inKey.keyCode) {
         SCANCODE_LEFT -> {
+            resetPrefX()
             val vCurrent = inValue.selection.end
             val vNewHead = when {
-                vMeta -> 0
+                vMeta -> lineStart(inValue.text, lineColumnAt(inValue.text, vCurrent).first)
                 vAlt  -> wordBoundaryLeft(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.min
                 else  -> vCurrent - 1
@@ -342,9 +442,13 @@ private fun handleKey(
             return true
         }
         SCANCODE_RIGHT -> {
+            resetPrefX()
             val vCurrent = inValue.selection.end
             val vNewHead = when {
-                vMeta -> inValue.text.length
+                vMeta -> {
+                    val vLine = lineColumnAt(inValue.text, vCurrent).first
+                    lineStart(inValue.text, vLine) + lineText(inValue.text, vLine).length
+                }
                 vAlt  -> wordBoundaryRight(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.max
                 else  -> vCurrent + 1
@@ -352,12 +456,56 @@ private fun handleKey(
             inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
             return true
         }
+        SCANCODE_UP -> {
+            val vCurrent = inValue.selection.end
+            val (vLine, vCol) = lineColumnAt(inValue.text, vCurrent)
+            if (vLine == 0) {
+                inCursorOnlyEdit(moveCursor(inValue, 0, vShift))
+                return true
+            }
+            val vCurX = if (inGetPrefColX() >= 0) inGetPrefColX()
+                        else prefixWidth(lineText(inValue.text, vLine), vCol, inFontSize)
+            inSetPrefColX(vCurX)
+            val vTargetLine = vLine - 1
+            val vTargetLineStr = lineText(inValue.text, vTargetLine)
+            val vTargetCol = charIndexAtX(vTargetLineStr, inFontSize, vCurX)
+            val vNewHead = lineStart(inValue.text, vTargetLine) + vTargetCol
+            inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
+            return true
+        }
+        SCANCODE_DOWN -> {
+            val vCurrent = inValue.selection.end
+            val (vLine, vCol) = lineColumnAt(inValue.text, vCurrent)
+            val vTotalLines = lineCount(inValue.text)
+            if (vLine >= vTotalLines - 1) {
+                inCursorOnlyEdit(moveCursor(inValue, inValue.text.length, vShift))
+                return true
+            }
+            val vCurX = if (inGetPrefColX() >= 0) inGetPrefColX()
+                        else prefixWidth(lineText(inValue.text, vLine), vCol, inFontSize)
+            inSetPrefColX(vCurX)
+            val vTargetLine = vLine + 1
+            val vTargetLineStr = lineText(inValue.text, vTargetLine)
+            val vTargetCol = charIndexAtX(vTargetLineStr, inFontSize, vCurX)
+            val vNewHead = lineStart(inValue.text, vTargetLine) + vTargetCol
+            inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
+            return true
+        }
         SCANCODE_HOME -> {
-            inCursorOnlyEdit(moveCursor(inValue, 0, vShift))
+            resetPrefX()
+            val vLine = lineColumnAt(inValue.text, inValue.selection.end).first
+            inCursorOnlyEdit(moveCursor(inValue, lineStart(inValue.text, vLine), vShift))
             return true
         }
         SCANCODE_END -> {
-            inCursorOnlyEdit(moveCursor(inValue, inValue.text.length, vShift))
+            resetPrefX()
+            val vLine = lineColumnAt(inValue.text, inValue.selection.end).first
+            val vEnd = lineStart(inValue.text, vLine) + lineText(inValue.text, vLine).length
+            inCursorOnlyEdit(moveCursor(inValue, vEnd, vShift))
+            return true
+        }
+        SCANCODE_RETURN -> if (!inReadOnly) {
+            inTypingEdit(insertAtCursor(inValue, "\n"))
             return true
         }
         SCANCODE_A -> if (vMeta) {
