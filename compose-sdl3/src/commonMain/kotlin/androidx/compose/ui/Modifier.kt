@@ -101,6 +101,12 @@ class OnKeyEventModifier(val handler: (KeyEventDispatch) -> Boolean) : Modifier.
    into a TextFieldValue. */
 class OnTextInputModifier(val handler: (String) -> Unit) : Modifier.Element
 
+/* Receives positional press events with coordinates relative to this
+   node's absolute top-left. Use it when a node needs to react to *where*
+   a click happened — e.g. positioning a text cursor under the pointer.
+   The handler fires on PointerEventType.Press, BEFORE focus / click. */
+class OnPressedModifier(val handler: (relX: Int, relY: Int) -> Unit) : Modifier.Element
+
 /* Wrapper around a key event the modifier sees. Wrapping rather than
    re-exporting androidx.compose.ui.input.key.KeyEvent so we don't pin the
    key-event type prematurely. */

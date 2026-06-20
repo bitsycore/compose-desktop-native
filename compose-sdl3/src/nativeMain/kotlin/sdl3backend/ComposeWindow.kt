@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
+import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
@@ -174,6 +175,19 @@ fun composeWindow(
                                 // click on nothing focusable clears focus.
                                 val vFocusable = vHit?.findFocusableNode()
                                 setFocus(vFocusable?.first, vFocusable?.second?.onFocusChanged)
+                                // Positional press dispatch (TextField cursor placement).
+                                // Walk from the hit-test target up, firing each OnPressedModifier
+                                // with coordinates relative to that node's absolute top-left.
+                                var pn: LayoutNode? = vHit
+                                while (pn != null) {
+                                    val node = pn
+                                    val relX = vPx - node.absoluteX
+                                    val relY = vPy - node.absoluteY
+                                    node.modifier.foldIn(Unit) { _, el ->
+                                        if (el is OnPressedModifier) el.handler(relX, relY)
+                                    }
+                                    pn = node.parent
+                                }
                             }
                             PointerEventType.Release -> {
                                 cancelPress()

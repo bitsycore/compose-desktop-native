@@ -4,6 +4,7 @@ import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnKeyEventModifier
+import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.OnTextInputModifier
 
 // ==================
@@ -26,3 +27,10 @@ fun Modifier.onKeyEvent(handler: (KeyEventDispatch) -> Boolean) =
    backspace etc.) come through onKeyEvent. */
 fun Modifier.onTextInput(handler: (String) -> Unit) =
     then(OnTextInputModifier(handler))
+
+/* Receives positional press events: handler fires with coordinates
+   relative to this node's absolute top-left. Used by TextField to place
+   the cursor under the click. Fires on Press (not Release / Click), so
+   the cursor jumps before any drag-select gesture would start. */
+fun Modifier.onPressed(handler: (relX: Int, relY: Int) -> Unit) =
+    then(OnPressedModifier(handler))
