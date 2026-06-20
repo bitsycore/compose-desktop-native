@@ -13,6 +13,7 @@ sealed class AppEvent {
     data object Quit : AppEvent()
     data class Pointer(val event: PointerEvent) : AppEvent()
     data class Key(val event: KeyEvent) : AppEvent()
+    data class TextInput(val text: String) : AppEvent()
     data object WindowResized : AppEvent()
 }
 
@@ -80,6 +81,11 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
         }
 
         SDL_EVENT_WINDOW_RESIZED -> AppEvent.WindowResized
+
+        SDL_EVENT_TEXT_INPUT -> {
+            val vText = e.text.text?.toKString().orEmpty()
+            if (vText.isEmpty()) null else AppEvent.TextInput(vText)
+        }
 
         else -> null
     }

@@ -39,6 +39,10 @@ class SDL3Backend(
         // state-layer overlays (Material hover / press) composite correctly.
         SDL_SetRenderDrawBlendMode(renderer?.reinterpret(), SDL_BLENDMODE_BLEND)
 
+        // Enable text input so SDL emits SDL_EVENT_TEXT_INPUT. Until we have
+        // per-focus IME management (PLAN.md Phase 7) we keep it on globally.
+        SDL_StartTextInput(window?.reinterpret())
+
         return true
     }
 

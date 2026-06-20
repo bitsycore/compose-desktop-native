@@ -2,7 +2,9 @@ package sdl3backend
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
+import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
@@ -89,6 +91,19 @@ fun composeWindow(
         var activePressCallback: ((Boolean) -> Unit)? = null
         var armedClickNode: LayoutNode? = null
 
+        // One focused node per window. onFocusChanged fires false on the old,
+        // true on the new. Click outside any focusable clears focus.
+        var focusedNode: LayoutNode? = null
+        var focusedCallback: ((Boolean) -> Unit)? = null
+
+        fun setFocus(inNode: LayoutNode?, inCallback: ((Boolean) -> Unit)?) {
+            if (inNode === focusedNode) return
+            focusedCallback?.invoke(false)
+            focusedNode = inNode
+            focusedCallback = inCallback
+            inCallback?.invoke(true)
+        }
+
         fun dispatchHover(inX: Int, inY: Int) {
             val vHit = rootNode.hitTest(inX, inY)
             val vNewChain = vHit?.collectHoverableChain() ?: emptyList()
@@ -155,6 +170,10 @@ fun composeWindow(
                                     vPressable.second.onChange(true)
                                 }
                                 armedClickNode = vHit?.findClickableNode()
+                                // Update focus: click on a focusable focuses it;
+                                // click on nothing focusable clears focus.
+                                val vFocusable = vHit?.findFocusableNode()
+                                setFocus(vFocusable?.first, vFocusable?.second?.onFocusChanged)
                             }
                             PointerEventType.Release -> {
                                 cancelPress()
@@ -168,7 +187,13 @@ fun composeWindow(
                         }
                     }
 
-                    is AppEvent.Key -> { /* key handling placeholder */ }
+                    is AppEvent.Key -> {
+                        focusedNode?.dispatchKeyEvent(KeyEventDispatch(event.event))
+                    }
+
+                    is AppEvent.TextInput -> {
+                        focusedNode?.dispatchTextInput(event.text)
+                    }
                 }
             }
 

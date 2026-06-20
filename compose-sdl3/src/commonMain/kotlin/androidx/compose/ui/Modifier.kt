@@ -84,6 +84,30 @@ class PressableModifier(val onChange: (Boolean) -> Unit) : Modifier.Element
    Multiple OffsetModifiers stack additively. */
 data class OffsetModifier(val x: Int, val y: Int) : Modifier.Element
 
+// ==================
+// MARK: Focus + keyboard input
+// ==================
+
+/* Marks the node as a focus target. Click on the node (or any descendant
+   not separately focusable) routes focus here. onFocusChanged fires on
+   enter / leave. */
+class FocusableModifier(val onFocusChanged: (Boolean) -> Unit) : Modifier.Element
+
+/* Receives raw key events while the node (or a descendant) is focused.
+   Return true to consume; false lets the event bubble up the focus chain. */
+class OnKeyEventModifier(val handler: (KeyEventDispatch) -> Boolean) : Modifier.Element
+
+/* Receives IME-committed text while the node is focused. Use it to insert
+   into a TextFieldValue. */
+class OnTextInputModifier(val handler: (String) -> Unit) : Modifier.Element
+
+/* Wrapper around a key event the modifier sees. Wrapping rather than
+   re-exporting androidx.compose.ui.input.key.KeyEvent so we don't pin the
+   key-event type prematurely. */
+class KeyEventDispatch(
+    val key: androidx.compose.ui.input.key.KeyEvent,
+)
+
 /* Clips this node's children to the given shape. The node's own bg/border
    drawing is not clipped (they already follow the shape via their own
    shape parameter). Children drawn inside are restricted to the shape. */

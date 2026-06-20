@@ -1,7 +1,11 @@
 package androidx.compose.ui.node
 
 import androidx.compose.ui.*
+import androidx.compose.ui.FocusableModifier
 import androidx.compose.ui.HoverableModifier
+import androidx.compose.ui.KeyEventDispatch
+import androidx.compose.ui.OnKeyEventModifier
+import androidx.compose.ui.OnTextInputModifier
 import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -199,6 +203,62 @@ class LayoutNode {
             n = n.parent
         }
         return null
+    }
+
+    /* First node on the self → root walk that carries a FocusableModifier. */
+    fun findFocusableNode(): Pair<LayoutNode, FocusableModifier>? {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val current = n
+            var hit: FocusableModifier? = null
+            current.modifier.foldIn(Unit) { _, e ->
+                if (e is FocusableModifier && hit == null) hit = e
+            }
+            val found = hit
+            if (found != null) return current to found
+            n = current.parent
+        }
+        return null
+    }
+
+    /* Dispatch a key event up the chain (this node + its ancestors). The
+       first OnKeyEventModifier that returns true consumes; otherwise the
+       event keeps bubbling. */
+    fun dispatchKeyEvent(inDispatch: KeyEventDispatch): Boolean {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val current = n
+            var consumed = false
+            current.modifier.foldIn(Unit) { _, e ->
+                if (!consumed && e is OnKeyEventModifier) {
+                    if (e.handler(inDispatch)) consumed = true
+                }
+            }
+            if (consumed) return true
+            n = current.parent
+        }
+        return false
+    }
+
+    /* Dispatch IME-committed text up the chain. The first OnTextInputModifier
+       receives it; later handlers don't. (Unlike key events, text input
+       doesn't have a "return false to bubble" — once a focused field has
+       claimed it, ancestors shouldn't double-insert.) */
+    fun dispatchTextInput(inText: String) {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val current = n
+            var handler: ((String) -> Unit)? = null
+            current.modifier.foldIn(Unit) { _, e ->
+                if (handler == null && e is OnTextInputModifier) handler = e.handler
+            }
+            val found = handler
+            if (found != null) {
+                found(inText)
+                return
+            }
+            n = current.parent
+        }
     }
 }
 
