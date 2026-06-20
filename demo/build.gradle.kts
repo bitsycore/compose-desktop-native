@@ -77,3 +77,37 @@ for (variant in variants) {
         }
     }
 }
+
+// ==================
+// MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
+// ==================
+// Windows resolves DLLs from the executable's own directory at launch, so we
+// copy SDL3.dll + SDL3_ttf.dll next to the .exe — the same trick used for the
+// font above. Source roots default to the layout documented in CLAUDE.md
+// (C:\SDL3, C:\SDL3_ttf); override with -Psdl3Dir=... / -Psdl3TtfDir=... or in
+// ~/.gradle/gradle.properties if your SDL3 lives elsewhere.
+
+val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "C:/SDL3"
+val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "C:/SDL3_ttf"
+
+for (variant in variants) {
+    val variantCap = variant.replaceFirstChar { it.uppercase() }
+    val copyTaskName = "copy${variantCap}DllsMingwX64"
+    val outDir = layout.buildDirectory.dir("bin/mingwX64/${variant}Executable")
+
+    val copyTask = tasks.register<Copy>(copyTaskName) {
+        from("$sdl3Dir/bin/SDL3.dll")
+        from("$sdl3TtfDir/bin/SDL3_ttf.dll")
+        into(outDir)
+    }
+
+    // Windows-only DLLs; the matching is a no-op on hosts without these tasks.
+    listOf(
+        "link${variantCap}ExecutableMingwX64",
+        "run${variantCap}ExecutableMingwX64"
+    ).forEach { taskName ->
+        tasks.matching { it.name == taskName }.configureEach {
+            dependsOn(copyTask)
+        }
+    }
+}
