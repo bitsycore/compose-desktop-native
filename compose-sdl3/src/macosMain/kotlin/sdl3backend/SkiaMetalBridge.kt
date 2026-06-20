@@ -82,13 +82,10 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
         // bridge through the pointer.
         vLayer.device = interpretObjCPointer<objcnames.protocols.MTLDeviceProtocol>(vDevice.objcPtr())
         vLayer.pixelFormat = MTLPixelFormatBGRA8Unorm
-        // SDL doesn't request HIGH_PIXEL_DENSITY so the rest of the pipeline
-        // (layout, GL framebuffer, etc.) works in logical points. Match that:
-        // force contentsScale = 1 so the layer's expected drawable size equals
-        // its bounds in points. Without this, on Retina the layer expects a
-        // 2× drawable and our (W, H) texture gets composited as if it were
-        // half-size — buttons appear tiny and text blurs.
-        vLayer.contentsScale = 1.0
+        // contentsScale matches the SDL backbuffer (HIGH_PIXEL_DENSITY): on
+        // Retina the drawable is 2× the logical bounds, ComposeWindow scales
+        // the Skia canvas by the same DPR, and pixels end up 1:1 on screen.
+        vLayer.contentsScale = backend.pixelDensity.toDouble()
 
         val vContext = try {
             DirectContext.makeMetal(vDevice.objcPtr(), vQueue.objcPtr())

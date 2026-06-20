@@ -54,11 +54,15 @@ fun composeWindow(
         println("Failed to init SDL3 backend")
         return
     }
+    // Pull the real (HiDPI-aware) pixel dimensions before we hand them to
+    // a bridge — without this they default to the logical window size and
+    // Retina back buffers come out half-resolution.
+    backend.updateWindowSize()
 
     val skiaBridge: SkiaBridge = when (gpuMode) {
         GpuMode.METAL -> {
             val metal = makeMetalBridge(backend)
-            if (metal == null || !metal.ensureSize(backend.windowWidth, backend.windowHeight)) {
+            if (metal == null || !metal.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
                 println("Failed to init Skia Metal bridge")
                 backend.destroy()
                 return
@@ -67,7 +71,7 @@ fun composeWindow(
         }
         GpuMode.OPENGL -> {
             val gl = SkiaGLBridge(backend)
-            if (!gl.init() || !gl.ensureSize(backend.windowWidth, backend.windowHeight)) {
+            if (!gl.init() || !gl.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
                 println("Failed to init Skia GL bridge")
                 backend.destroy()
                 return
@@ -76,7 +80,7 @@ fun composeWindow(
         }
         GpuMode.NONE -> {
             val raster = SkiaSurfaceBridge(backend)
-            if (!raster.ensureSize(backend.windowWidth, backend.windowHeight)) {
+            if (!raster.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
                 println("Failed to init Skia raster bridge")
                 backend.destroy()
                 return
@@ -295,14 +299,21 @@ fun composeWindow(
             // ============
             //  Layout — also resize the Skia surface if the window changed.
             backend.updateWindowSize()
-            skiaBridge.ensureSize(backend.windowWidth, backend.windowHeight)
+            skiaBridge.ensureSize(backend.pixelWidth, backend.pixelHeight)
             val constraints = Constraints.fixed(backend.windowWidth, backend.windowHeight)
             rootNode.measure(constraints)
             rootNode.place(0, 0)
 
             // ============
-            //  Draw via Skia, then push the pixel buffer to the SDL window.
-            renderer.draw(rootNode, skiaBridge.canvas)
+            //  Draw via Skia. Scale by DPR so the logical-point layout maps
+            //  to physical pixels on HiDPI displays — text and shapes stay
+            //  crisp on Retina instead of getting upscaled by the OS.
+            val canvas = skiaBridge.canvas
+            val vDpr = backend.pixelDensity
+            canvas.save()
+            if (vDpr != 1f) canvas.scale(vDpr, vDpr)
+            renderer.draw(rootNode, canvas)
+            canvas.restore()
 
             // Hook for tools/tests: take a screenshot, return false to quit.
             // Runs after draw but before present so the bridge's surface

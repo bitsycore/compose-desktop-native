@@ -23,8 +23,13 @@ class SDL3Backend(
     var renderer: COpaquePointer? = null; private set
     var glContext: COpaquePointer? = null; private set
     var metalView: COpaquePointer? = null; private set
+    // Logical (point) size — what layout / hit-testing / input events use.
     var windowWidth: Int = width; private set
     var windowHeight: Int = height; private set
+    // Physical (pixel) size of the back buffer — what bridges allocate.
+    // On Retina with HIGH_PIXEL_DENSITY this is 2x the logical size.
+    var pixelWidth: Int = width; private set
+    var pixelHeight: Int = height; private set
 
     fun init(): Boolean {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -41,7 +46,7 @@ class SDL3Backend(
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STENCIL_SIZE, 8)
         }
 
-        val flags = SDL_WINDOW_RESIZABLE or when (gpuMode) {
+        val flags = SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or when (gpuMode) {
             GpuMode.OPENGL -> SDL_WINDOW_OPENGL
             GpuMode.METAL  -> SDL_WINDOW_METAL
             GpuMode.NONE   -> 0UL
@@ -106,6 +111,16 @@ class SDL3Backend(
             SDL_GetWindowSize(w.reinterpret(), ww.ptr, hh.ptr)
             windowWidth = ww.value
             windowHeight = hh.value
+            SDL_GetWindowSizeInPixels(w.reinterpret(), ww.ptr, hh.ptr)
+            pixelWidth = ww.value
+            pixelHeight = hh.value
         }
     }
+
+    /* Backing-store scale: pixelWidth / windowWidth. 1.0 on standard
+       displays, 2.0 on Retina with SDL_WINDOW_HIGH_PIXEL_DENSITY active.
+       Used to scale the Skia canvas so Compose's logical-point layout
+       maps to physical pixels. */
+    val pixelDensity: Float
+        get() = if (windowWidth > 0) pixelWidth.toFloat() / windowWidth.toFloat() else 1f
 }
