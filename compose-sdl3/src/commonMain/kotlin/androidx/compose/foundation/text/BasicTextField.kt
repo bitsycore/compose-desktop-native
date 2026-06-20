@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.onKeyEvent
@@ -123,11 +123,14 @@ fun BasicTextField(
         BasicText(text = value.text, color = color, fontSize = fontSize)
 
         if (isFocused && cursorBlinkVisible) {
+            // Fixed height tied to fontSize. fillMaxHeight here would pick up
+            // the unbounded maxHeight from the surrounding Column and pulse
+            // the whole field's height every blink.
             Box(
                 modifier = Modifier
                     .offset(x = vCursorOffsetPx.dp)
                     .width(1.dp)
-                    .fillMaxHeight()
+                    .height((fontSize.value * 1.2f).dp)
                     .background(cursorColor)
             )
         }
