@@ -42,32 +42,48 @@ fun composeWindow(
     title: String = "ComposeNativeSDL3",
     width: Int = 800,
     height: Int = 600,
-    useGpu: Boolean = false,
+    gpu: GpuMode = GpuMode.NONE,
+    onFrame: ((bridge: SkiaBridge, frameIndex: Int) -> Boolean)? = null,
     content: @Composable () -> Unit
 ) {
-    val backend = SDL3Backend(title, width, height, useGpu = useGpu)
+    // AUTO → resolve to the platform's preferred backend (METAL on macOS,
+    // OPENGL on Linux). Explicit modes pass through.
+    val gpuMode = if (gpu == GpuMode.AUTO) preferredGpuMode() else gpu
+    val backend = SDL3Backend(title, width, height, gpuMode = gpuMode)
     if (!backend.init()) {
         println("Failed to init SDL3 backend")
         return
     }
 
-    val skiaBridge: SkiaBridge = if (useGpu) {
-        val gl = SkiaGLBridge(backend)
-        if (!gl.init() || !gl.ensureSize(backend.windowWidth, backend.windowHeight)) {
-            println("Failed to init Skia GL bridge — falling back to CPU raster")
-            // Tear down the GL context first so the CPU bridge can create an SDL_Renderer
-            backend.destroy()
-            return
+    val skiaBridge: SkiaBridge = when (gpuMode) {
+        GpuMode.METAL -> {
+            val metal = makeMetalBridge(backend)
+            if (metal == null || !metal.ensureSize(backend.windowWidth, backend.windowHeight)) {
+                println("Failed to init Skia Metal bridge")
+                backend.destroy()
+                return
+            }
+            metal
         }
-        gl
-    } else {
-        val raster = SkiaSurfaceBridge(backend)
-        if (!raster.ensureSize(backend.windowWidth, backend.windowHeight)) {
-            println("Failed to init Skia raster bridge")
-            backend.destroy()
-            return
+        GpuMode.OPENGL -> {
+            val gl = SkiaGLBridge(backend)
+            if (!gl.init() || !gl.ensureSize(backend.windowWidth, backend.windowHeight)) {
+                println("Failed to init Skia GL bridge")
+                backend.destroy()
+                return
+            }
+            gl
         }
-        raster
+        GpuMode.NONE -> {
+            val raster = SkiaSurfaceBridge(backend)
+            if (!raster.ensureSize(backend.windowWidth, backend.windowHeight)) {
+                println("Failed to init Skia raster bridge")
+                backend.destroy()
+                return
+            }
+            raster
+        }
+        GpuMode.AUTO -> error("unreachable — resolved above")
     }
 
     val textRenderer = SkiaTextRenderer()
@@ -100,6 +116,7 @@ fun composeWindow(
         // ============
         //  Main loop
         var running = true
+        var frameIndex = 0
 
         // ============
         //  Interaction state (hover / press / click target) — keyed by
@@ -286,7 +303,15 @@ fun composeWindow(
             // ============
             //  Draw via Skia, then push the pixel buffer to the SDL window.
             renderer.draw(rootNode, skiaBridge.canvas)
+
+            // Hook for tools/tests: take a screenshot, return false to quit.
+            // Runs after draw but before present so the bridge's surface
+            // still holds the final pixels.
+            if (onFrame != null && !onFrame(skiaBridge, frameIndex)) {
+                running = false
+            }
             skiaBridge.present()
+            frameIndex++
 
             SDL_Delay(16u)
         }
