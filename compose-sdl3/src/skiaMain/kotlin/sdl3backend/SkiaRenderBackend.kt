@@ -29,11 +29,11 @@ internal class SkiaRenderBackend(
         get() = fSkiaTextRenderer.textMeasurer
 
     private fun buildBridge(): SkiaBridge = when (gpuMode) {
-        GpuMode.METAL  -> makeMetalBridge(sdl) ?: error("Metal bridge unavailable on this target")
-        GpuMode.OPENGL -> SkiaGLBridge(sdl).also { require(it.init()) { "SkiaGLBridge.init failed" } }
-        GpuMode.NONE   -> SkiaSurfaceBridge(sdl)
-        GpuMode.SDL3,
-        GpuMode.AUTO   -> error("Only Skia modes are valid here")
+        is GpuMode.Skia.Metal  -> makeMetalBridge(sdl) ?: error("Skia.Metal isn't supported on this target")
+        is GpuMode.Skia.OpenGL -> SkiaGLBridge(sdl).also { require(it.init()) { "Skia.OpenGL init failed" } }
+        is GpuMode.None        -> SkiaSurfaceBridge(sdl)
+        is GpuMode.Sdl3,
+        is GpuMode.Auto        -> error("SkiaRenderBackend received non-Skia gpuMode $gpuMode")
     }
 
     override fun ensureSize(inPixelWidth: Int, inPixelHeight: Int): Boolean =
@@ -70,13 +70,12 @@ internal class SkiaRenderBackend(
 // ==================
 
 internal actual fun makeRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
-    var vResolved = if (inGpu == GpuMode.AUTO) preferredGpuMode() else inGpu
-    if (vResolved == GpuMode.SDL3) {
-        // SDL3 renderer + SDL3_ttf are only built on mingwX64; on Skia
-        // targets we fall back to the Skia CPU bridge so the app still
-        // runs instead of erroring out.
-        println("Skia target: SDL3 renderer isn't built here — falling back to NONE (CPU raster)")
-        vResolved = GpuMode.NONE
+    val vResolved = if (inGpu is GpuMode.Auto) preferredGpuMode() else inGpu
+    if (vResolved is GpuMode.Sdl3) {
+        // This build doesn't include the SDL3 renderer source set or the
+        // SDL3_ttf cinterop. Re-build with `-Prenderer=sdl3` (or run on
+        // mingwX64) if you actually want the SDL3 backend.
+        error("Sdl3.* modes aren't available in a Skia build — rerun with -Prenderer=sdl3")
     }
     return try {
         SkiaRenderBackend(inSdl, vResolved)

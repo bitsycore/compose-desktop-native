@@ -23,10 +23,15 @@ import sdl3.*
 // ==================
 
 internal actual fun makeRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
-    // mingwX64 has no Skiko — every Skia mode falls back to SDL3 with a
-    // warning so the user knows their choice was ignored.
-    if (inGpu != GpuMode.SDL3 && inGpu != GpuMode.AUTO && inGpu != GpuMode.NONE) {
-        println("mingwX64: Skia mode '$inGpu' isn't available — using SDL3 renderer")
+    val vResolved = if (inGpu is GpuMode.Auto) preferredGpuMode() else inGpu
+    // This factory is only linked on mingwX64 (always) and on macOS / Linux
+    // when -Prenderer=sdl3 is set. Either way the Skia bridges aren't on
+    // the classpath here — refuse Skia.* upfront with a clear message
+    // instead of crashing deeper.
+    if (vResolved is GpuMode.Skia) {
+        error("$vResolved isn't available in this build — Skiko isn't linked. " +
+              "Rerun without -Prenderer=sdl3 (on macOS / Linux) to use Skia, " +
+              "or pick a GpuMode.Sdl3.* / GpuMode.None.")
     }
     return try {
         Sdl3RenderBackend(inSdl)

@@ -35,21 +35,46 @@ import sdl3backend.composeWindow
 
 /* Parsed view of the demo's command line.
 
-   --gpu=metal | opengl | none | auto    (default: auto)
-   --screen=Buttons | TextField | ...    (default: full app with sidebar)
-   --screenshot=path.png                 capture after a few frames and exit
-   --width=W  --height=H                 (default 1000 / 700)
-   --frames=N                            screenshot delay in frames (default 6)
+   --gpu=auto | none | skia.metal | skia.opengl |
+         sdl3 | sdl3.auto | sdl3.software |
+         sdl3.opengl | sdl3.metal | sdl3.vulkan |
+         sdl3.d3d11 | sdl3.d3d12                 (default: auto)
+   --screen=Buttons | TextField | ...            (default: full app w/ sidebar)
+   --screenshot=path.bmp                         capture after frames and quit
+   --width=W  --height=H                         (default 1000 / 700)
+   --frames=N                                    screenshot delay in frames
 
    Names match the Screen registry entries (case-insensitive). */
 private data class CliArgs(
-    val gpu: GpuMode = GpuMode.AUTO,
+    val gpu: GpuMode = GpuMode.Auto,
     val screen: String? = null,
     val screenshot: String? = null,
     val width: Int = 1000,
     val height: Int = 700,
     val frames: Int = 6,
 )
+
+/* Translates the --gpu= string to the right GpuMode sealed instance.
+   Accepts both dotted (`skia.metal`) and dashed (`skia-metal`) forms,
+   plus the bare driver names (`metal`, `opengl`, …) as Skia aliases
+   for backwards compatibility. */
+private fun parseGpu(inValue: String): GpuMode = when (inValue.lowercase().replace('-', '.')) {
+    "auto"           -> GpuMode.Auto
+    "none", "cpu"    -> GpuMode.None
+    "metal", "skia.metal"   -> GpuMode.Skia.Metal
+    "opengl", "gl", "skia.opengl" -> GpuMode.Skia.OpenGL
+    "sdl3", "sdl3.auto"     -> GpuMode.Sdl3.Auto
+    "sdl3.software", "sdl3.sw" -> GpuMode.Sdl3.Software
+    "sdl3.opengl"    -> GpuMode.Sdl3.OpenGL
+    "sdl3.metal"     -> GpuMode.Sdl3.Metal
+    "sdl3.vulkan"    -> GpuMode.Sdl3.Vulkan
+    "sdl3.d3d11"     -> GpuMode.Sdl3.D3D11
+    "sdl3.d3d12"     -> GpuMode.Sdl3.D3D12
+    else -> {
+        println("Unknown --gpu=$inValue, using auto")
+        GpuMode.Auto
+    }
+}
 
 private fun parseArgs(argv: Array<String>): CliArgs {
     var vArgs = CliArgs()
@@ -59,14 +84,7 @@ private fun parseArgs(argv: Array<String>): CliArgs {
         val key = arg.substring(2, eq)
         val value = arg.substring(eq + 1)
         vArgs = when (key) {
-            "gpu" -> vArgs.copy(gpu = when (value.lowercase()) {
-                "metal"  -> GpuMode.METAL
-                "opengl", "gl" -> GpuMode.OPENGL
-                "none", "cpu"  -> GpuMode.NONE
-                "sdl3"   -> GpuMode.SDL3
-                "auto"   -> GpuMode.AUTO
-                else     -> { println("Unknown --gpu=$value, using auto"); GpuMode.AUTO }
-            })
+            "gpu"        -> vArgs.copy(gpu = parseGpu(value))
             "screen"     -> vArgs.copy(screen = value)
             "screenshot" -> vArgs.copy(screenshot = value)
             "width"      -> vArgs.copy(width = value.toIntOrNull() ?: vArgs.width)
@@ -83,7 +101,7 @@ fun main(args: Array<String>) {
     val vTitle = buildString {
         append("ComposeNativeSDL3 Showcase")
         if (vCli.screen != null) append(" — ").append(vCli.screen)
-        append(" [").append(vCli.gpu.name.lowercase()).append("]")
+        append(" [").append(vCli.gpu).append("]")
     }
 
     composeWindow(

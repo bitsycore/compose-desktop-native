@@ -24,7 +24,7 @@ import sdl3.SDL_Metal_GetLayer
 // MARK: macOS GPU defaults
 // ==================
 
-internal actual fun preferredGpuMode(): GpuMode = GpuMode.METAL
+internal actual fun preferredGpuMode(): GpuMode = GpuMode.Skia.Metal
 
 internal actual fun makeMetalBridge(backend: SDL3Backend): SkiaBridge? {
     val bridge = SkiaMetalBridge(backend)

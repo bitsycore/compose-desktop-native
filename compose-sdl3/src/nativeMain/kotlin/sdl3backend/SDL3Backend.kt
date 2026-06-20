@@ -11,11 +11,11 @@ class SDL3Backend(
     private val title: String = "ComposeNativeSDL3",
     private val width: Int = 800,
     private val height: Int = 600,
-    val gpuMode: GpuMode = GpuMode.NONE,
+    val gpuMode: GpuMode = GpuMode.None,
 ) {
     init {
-        require(gpuMode != GpuMode.AUTO) {
-            "SDL3Backend received GpuMode.AUTO — resolve via preferredGpuMode() first"
+        require(gpuMode !is GpuMode.Auto) {
+            "SDL3Backend received GpuMode.Auto — resolve via preferredGpuMode() first"
         }
     }
 
@@ -37,7 +37,7 @@ class SDL3Backend(
             return false
         }
 
-        if (gpuMode == GpuMode.OPENGL) {
+        if (gpuMode is GpuMode.Skia.OpenGL) {
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, 2)
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_PROFILE_MASK,
@@ -47,11 +47,11 @@ class SDL3Backend(
         }
 
         val flags = SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or when (gpuMode) {
-            GpuMode.OPENGL -> SDL_WINDOW_OPENGL
-            GpuMode.METAL  -> SDL_WINDOW_METAL
-            GpuMode.NONE   -> 0UL
-            GpuMode.SDL3   -> 0UL
-            GpuMode.AUTO   -> error("unreachable")
+            is GpuMode.Skia.OpenGL -> SDL_WINDOW_OPENGL
+            is GpuMode.Skia.Metal  -> SDL_WINDOW_METAL
+            is GpuMode.None        -> 0UL
+            is GpuMode.Sdl3        -> 0UL
+            is GpuMode.Auto        -> error("unreachable")
         }
         window = SDL_CreateWindow(title, width, height, flags)
         if (window == null) {
@@ -60,7 +60,7 @@ class SDL3Backend(
         }
 
         when (gpuMode) {
-            GpuMode.OPENGL -> {
+            is GpuMode.Skia.OpenGL -> {
                 glContext = SDL_GL_CreateContext(window?.reinterpret())
                 if (glContext == null) {
                     println("SDL_GL_CreateContext failed: ${SDL_GetError()?.toKString()}")
@@ -69,14 +69,21 @@ class SDL3Backend(
                 SDL_GL_MakeCurrent(window?.reinterpret(), glContext?.reinterpret())
                 SDL_GL_SetSwapInterval(1)
             }
-            GpuMode.METAL -> {
+            is GpuMode.Skia.Metal -> {
                 metalView = SDL_Metal_CreateView(window?.reinterpret())
                 if (metalView == null) {
                     println("SDL_Metal_CreateView failed: ${SDL_GetError()?.toKString()}")
                     return false
                 }
             }
-            GpuMode.NONE, GpuMode.SDL3 -> {
+            is GpuMode.None, is GpuMode.Sdl3 -> {
+                // For Sdl3.* with a driver pin we steer SDL_CreateRenderer
+                // via SDL_HINT_RENDER_DRIVER. SDL3 looks the hint up the
+                // moment the renderer is created.
+                val vDriverHint = (gpuMode as? GpuMode.Sdl3)?.driverHint
+                if (vDriverHint != null) {
+                    SDL_SetHint("SDL_RENDER_DRIVER", vDriverHint)
+                }
                 renderer = SDL_CreateRenderer(window?.reinterpret(), null)
                 if (renderer == null) {
                     println("SDL_CreateRenderer failed: ${SDL_GetError()?.toKString()}")
@@ -84,7 +91,7 @@ class SDL3Backend(
                 }
                 SDL_SetRenderDrawBlendMode(renderer?.reinterpret(), SDL_BLENDMODE_BLEND)
             }
-            GpuMode.AUTO -> error("unreachable")
+            is GpuMode.Auto -> error("unreachable")
         }
 
         SDL_StartTextInput(window?.reinterpret())

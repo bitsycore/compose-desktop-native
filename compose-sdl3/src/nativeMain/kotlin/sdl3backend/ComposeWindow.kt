@@ -42,14 +42,13 @@ fun composeWindow(
     title: String = "ComposeNativeSDL3",
     width: Int = 800,
     height: Int = 600,
-    gpu: GpuMode = GpuMode.NONE,
+    gpu: GpuMode = GpuMode.Auto,
     onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
     content: @Composable () -> Unit
 ) {
-    // Resolve AUTO at the call site so SDL3Backend / RenderBackend never see
-    // it.  preferredGpuMode() is per-target — Skia targets pick Metal/GL,
-    // mingw can return NONE (its only mode).
-    val gpuMode = if (gpu == GpuMode.AUTO) preferredGpuMode() else gpu
+    // Resolve Auto at the call site so SDL3Backend / RenderBackend never see
+    // it. preferredGpuMode() is per-target.
+    val gpuMode = if (gpu is GpuMode.Auto) preferredGpuMode() else gpu
     val backend = SDL3Backend(title, width, height, gpuMode = gpuMode)
     if (!backend.init()) {
         println("Failed to init SDL3 backend")
