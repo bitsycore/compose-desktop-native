@@ -27,8 +27,10 @@ import kotlin.math.sin
    on every target — primary renderer on mingwX64, comparison renderer
    on Skia targets.
 
-   Limitations vs Skia: shape edges aren't antialiased, and rounded
-   corners are approximated with fans of triangles (16 segments). */
+   Curved edges (rounded-corner / circle fills and borders) get a ~1px
+   alpha-feathered AA fringe so they don't look jagged at DPR 1 (e.g. a
+   non-HiDPI Windows display); straight edges are axis-aligned and need none.
+   Rounded corners are approximated with fans of triangles (16 segments). */
 internal class Sdl3Renderer(
     private val backend: SDL3Backend,
     private val textRenderer: Sdl3TextRenderer,
@@ -207,6 +209,10 @@ internal class Sdl3Renderer(
         strokeCornerArc(inRenderer, inX + vR,       inY + inH - vR, vR, vInnerR, 0.5f * PI.toFloat(),  PI.toFloat())
     }
 
+    /* Stroke quadrant: a solid band between inner/outer radii, plus an AA
+       fringe feathering each curved edge to alpha 0 over ~1px. When the
+       stroke is thinner than the fringe the solid band drops out and the two
+       fringes meet — a thin antialiased line. */
     private fun strokeCornerArc(
         inRenderer: CPointer<cnames.structs.SDL_Renderer>,
         inCx: Float,
@@ -217,25 +223,30 @@ internal class Sdl3Renderer(
         inEndRad: Float,
     ) {
         val kSegments = 12
-        val vVerts = kSegments * 6  // two triangles per segment
+        val vF = featherLogical()
+        val vOuterSolid = inOuterR - vF * 0.5f
+        val vOuterEdge = inOuterR + vF * 0.5f
+        val vInnerSolid = inInnerR + vF * 0.5f
+        val vInnerEdge = (inInnerR - vF * 0.5f).coerceAtLeast(0f)
+        val vHasBand = vOuterSolid > vInnerSolid
+        val vPerSeg = if (vHasBand) 18 else 12
         memScoped {
-            val vArr = allocArray<SDL_Vertex>(vVerts)
+            val vArr = allocArray<SDL_Vertex>(kSegments * vPerSeg)
+            var b = 0
             for (i in 0 until kSegments) {
                 val t0 = inStartRad + (inEndRad - inStartRad) * (i.toFloat() / kSegments)
                 val t1 = inStartRad + (inEndRad - inStartRad) * ((i + 1).toFloat() / kSegments)
-                val ox0 = inCx + inOuterR * cos(t0); val oy0 = inCy + inOuterR * sin(t0)
-                val ox1 = inCx + inOuterR * cos(t1); val oy1 = inCy + inOuterR * sin(t1)
-                val ix0 = inCx + inInnerR * cos(t0); val iy0 = inCy + inInnerR * sin(t0)
-                val ix1 = inCx + inInnerR * cos(t1); val iy1 = inCy + inInnerR * sin(t1)
-                val base = i * 6
-                writeVertex(vArr[base + 0], ox0, oy0)
-                writeVertex(vArr[base + 1], ix0, iy0)
-                writeVertex(vArr[base + 2], ox1, oy1)
-                writeVertex(vArr[base + 3], ox1, oy1)
-                writeVertex(vArr[base + 4], ix0, iy0)
-                writeVertex(vArr[base + 5], ix1, iy1)
+                val c0 = cos(t0); val s0 = sin(t0)
+                val c1 = cos(t1); val s1 = sin(t1)
+                // outer fringe (solid edge → outside, fading out)
+                radialQuad(vArr, b, inCx, inCy, vOuterSolid, fA, vOuterEdge, 0f, c0, s0, c1, s1); b += 6
+                // inner fringe (solid edge → inside, fading out)
+                radialQuad(vArr, b, inCx, inCy, vInnerSolid, fA, vInnerEdge, 0f, c0, s0, c1, s1); b += 6
+                if (vHasBand) {
+                    radialQuad(vArr, b, inCx, inCy, vInnerSolid, fA, vOuterSolid, fA, c0, s0, c1, s1); b += 6
+                }
             }
-            SDL_RenderGeometry(inRenderer, null, vArr, vVerts, null, 0)
+            SDL_RenderGeometry(inRenderer, null, vArr, kSegments * vPerSeg, null, 0)
         }
     }
 
@@ -282,6 +293,10 @@ internal class Sdl3Renderer(
         fillCornerArc(inRenderer, inX + vR,         inY + inH - vR,   vR, 0.5f * PI.toFloat(), PI.toFloat())       // BL
     }
 
+    /* Fill quadrant: a solid triangle fan to an inset radius, plus an AA
+       fringe feathering the curved edge from full alpha (inset radius) to 0
+       (just past the true radius) over ~1px. Straight radii meet the body
+       rects and stay solid. */
     private fun fillCornerArc(
         inRenderer: CPointer<cnames.structs.SDL_Renderer>,
         inCx: Float,
@@ -291,28 +306,71 @@ internal class Sdl3Renderer(
         inEndRad: Float,
     ) {
         val kSegments = 16
-        val vVerts = kSegments * 3
+        val vF = featherLogical()
+        val vRSolid = (inR - vF * 0.5f).coerceAtLeast(0f)
+        val vROuter = inR + vF * 0.5f
+        // per segment: 1 solid fan triangle (3 verts) + 1 fringe quad (6 verts)
+        val vVerts = kSegments * 9
         memScoped {
             val vArr = allocArray<SDL_Vertex>(vVerts)
+            var b = 0
             for (i in 0 until kSegments) {
                 val t0 = inStartRad + (inEndRad - inStartRad) * (i.toFloat() / kSegments)
                 val t1 = inStartRad + (inEndRad - inStartRad) * ((i + 1).toFloat() / kSegments)
-                val base = i * 3
-                writeVertex(vArr[base + 0], inCx, inCy)
-                writeVertex(vArr[base + 1], inCx + inR * cos(t0), inCy + inR * sin(t0))
-                writeVertex(vArr[base + 2], inCx + inR * cos(t1), inCy + inR * sin(t1))
+                val c0 = cos(t0); val s0 = sin(t0)
+                val c1 = cos(t1); val s1 = sin(t1)
+                writeVertex(vArr[b + 0], inCx, inCy)
+                writeVertex(vArr[b + 1], inCx + vRSolid * c0, inCy + vRSolid * s0)
+                writeVertex(vArr[b + 2], inCx + vRSolid * c1, inCy + vRSolid * s1)
+                b += 3
+                radialQuad(vArr, b, inCx, inCy, vRSolid, fA, vROuter, 0f, c0, s0, c1, s1)
+                b += 6
             }
             SDL_RenderGeometry(inRenderer, null, vArr, vVerts, null, 0)
         }
     }
 
-    private fun writeVertex(inV: SDL_Vertex, inX: Float, inY: Float) {
+    /* Emits two triangles (6 verts at inBase) for a radial quad spanning one
+       arc segment: the inner edge sits at radius inRLo with alpha inAlphaLo,
+       the outer edge at inRHi with inAlphaHi. Used for both the solid band and
+       the alpha-feathered fringes. */
+    private fun radialQuad(
+        inArr: CArrayPointer<SDL_Vertex>,
+        inBase: Int,
+        inCx: Float,
+        inCy: Float,
+        inRLo: Float,
+        inAlphaLo: Float,
+        inRHi: Float,
+        inAlphaHi: Float,
+        inC0: Float,
+        inS0: Float,
+        inC1: Float,
+        inS1: Float,
+    ) {
+        writeVertexA(inArr[inBase + 0], inCx + inRLo * inC0, inCy + inRLo * inS0, inAlphaLo)
+        writeVertexA(inArr[inBase + 1], inCx + inRHi * inC0, inCy + inRHi * inS0, inAlphaHi)
+        writeVertexA(inArr[inBase + 2], inCx + inRHi * inC1, inCy + inRHi * inS1, inAlphaHi)
+        writeVertexA(inArr[inBase + 3], inCx + inRLo * inC0, inCy + inRLo * inS0, inAlphaLo)
+        writeVertexA(inArr[inBase + 4], inCx + inRHi * inC1, inCy + inRHi * inS1, inAlphaHi)
+        writeVertexA(inArr[inBase + 5], inCx + inRLo * inC1, inCy + inRLo * inS1, inAlphaLo)
+    }
+
+    /* AA fringe width in logical points ≈ 1 physical pixel after the
+       renderer's SDL_SetRenderScale(dpr), so curved edges feather over one
+       pixel at any DPR (most visible at DPR 1). */
+    private fun featherLogical(): Float =
+        (1f / backend.pixelDensity.coerceAtLeast(0.5f)).coerceIn(0.5f, 1.5f)
+
+    private fun writeVertex(inV: SDL_Vertex, inX: Float, inY: Float) = writeVertexA(inV, inX, inY, fA)
+
+    private fun writeVertexA(inV: SDL_Vertex, inX: Float, inY: Float, inAlpha: Float) {
         inV.position.x = inX
         inV.position.y = inY
         inV.color.r = fR
         inV.color.g = fG
         inV.color.b = fB
-        inV.color.a = fA
+        inV.color.a = inAlpha
         inV.tex_coord.x = 0f
         inV.tex_coord.y = 0f
     }
