@@ -102,7 +102,8 @@ class SkiaRenderer internal constructor(
             textRenderer.drawText(
                 inCanvas, vText,
                 vAx, vAy, inNode.width, inNode.height,
-                inNode.textColor, inNode.fontSize, inNode.textAlign
+                inNode.textColor, inNode.fontSize, inNode.textAlign,
+                inNode.softWrap
             )
         }
 

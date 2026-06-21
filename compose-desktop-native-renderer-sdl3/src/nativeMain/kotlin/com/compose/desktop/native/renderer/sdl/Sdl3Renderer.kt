@@ -155,8 +155,11 @@ internal class Sdl3Renderer(
         val vText = inNode.text
         if (!vText.isNullOrEmpty()) {
             // Word-wrap to the box width so multi-line text renders the
-            // same lines the layout pass measured against.
-            val vLines = textRenderer.textMeasurer.wrap(vText, inNode.fontSize, inNode.width).lines
+            // same lines the layout pass measured against. softWrap = false
+            // (e.g. a singleLine field) must NOT wrap — it stays one line and
+            // overflows, matching the measure pass and the cursor math.
+            val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
+            val vLines = textRenderer.textMeasurer.wrap(vText, inNode.fontSize, vWrapWidth).lines
             val vLineHeight = textRenderer.textMeasurer.lineHeight(inNode.fontSize).toInt()
             if (vLines.size == 1 && '\n' !in vText) {
                 textRenderer.drawText(

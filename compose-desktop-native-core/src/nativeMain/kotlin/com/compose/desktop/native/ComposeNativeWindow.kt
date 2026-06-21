@@ -1,6 +1,5 @@
 package com.compose.desktop.native
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -68,7 +67,7 @@ class ComposeNativeWindow constructor(
         get() = when (val vMode = gpuMode) {
             is GpuMode.Skia.Metal  -> "Skia / Metal"
             is GpuMode.Skia.OpenGL -> "Skia / OpenGL"
-            is GpuMode.None        -> "Skia / CPU raster"
+            is GpuMode.Software        -> "Skia / CPU raster"
             is GpuMode.Sdl3 -> {
                 val vDriver = backend.renderer?.let {
                     SDL_GetRendererName(it.reinterpret())?.toKString()

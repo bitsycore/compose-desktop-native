@@ -43,7 +43,7 @@ internal class SkiaRenderBackend(
     private fun buildBridge(): SkiaBridge = when (gpuMode) {
         is GpuMode.Skia.Metal  -> makeMetalBridge(sdl) ?: error("Skia.Metal isn't supported on this target")
         is GpuMode.Skia.OpenGL -> SkiaGLBridge(sdl).also { require(it.init()) { "Skia.OpenGL init failed" } }
-        is GpuMode.None        -> SkiaSurfaceBridge(sdl)
+        is GpuMode.Software        -> SkiaSurfaceBridge(sdl)
         is GpuMode.Sdl3,
         is GpuMode.Auto        -> error("SkiaRenderBackend received non-Skia gpuMode $gpuMode")
     }

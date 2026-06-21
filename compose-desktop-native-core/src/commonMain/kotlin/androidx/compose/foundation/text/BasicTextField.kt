@@ -1,6 +1,7 @@
 package androidx.compose.foundation.text
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clip
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.platform.currentClipboard
@@ -141,6 +143,14 @@ fun BasicTextField(
     val vCursorOffsetPx = prefixWidth(vCursorLineText, vCursorCol, vFontSize)
     val vCursorYPx = (vCursorLine * vLineHeight)
 
+    // Horizontal scroll for single-line fields: once the caret runs past the
+    // right edge, shift the content left so the caret stays visible. The field
+    // is clipped, so overflow is hidden instead of spilling past the border.
+    // Multi-line fields wrap, so they never scroll horizontally.
+    val vVisibleWidth = if (fieldWidthPx == Int.MAX_VALUE) 0 else fieldWidthPx
+    val vScrollX = if (singleLine && isFocused && vVisibleWidth > 0)
+        (vCursorOffsetPx - vVisibleWidth + 2).coerceAtLeast(0) else 0
+
     // Edit helpers: push undo snapshots, manage the typing-run flag, fire the
     // caller's onValueChange. typingEdit collapses consecutive typings into a
     // single undo step; structuralEdit (backspace / delete / paste / cut) ends
@@ -185,6 +195,7 @@ fun BasicTextField(
         modifier = modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = (fontSize.value * 1.4f).dp)
             .onSizeChanged { fieldWidthPx = it.width }
+            .clip(RectangleShape)
             .focusable {
                 isFocused = it
                 onFocusChanged(it)
@@ -192,7 +203,7 @@ fun BasicTextField(
             .onDrag(
                 onStart = { relX, relY ->
                     if (!enabled) return@onDrag
-                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX, relY, vLineHeight)
+                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight)
                     val vNow = nowMillis()
                     val vIsDoubleClick = vIndex == lastPressIndex && (vNow - lastPressMs) < 350
                     lastPressMs = vNow
@@ -210,7 +221,7 @@ fun BasicTextField(
                 },
                 onDrag = { relX, relY ->
                     if (!enabled || dragAnchor < 0) return@onDrag
-                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX, relY, vLineHeight)
+                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight)
                     cursorOnlyEdit(value.copy(selection = TextRange(dragAnchor, vIndex)))
                 },
                 onEnd = {
@@ -257,7 +268,7 @@ fun BasicTextField(
                 val vEx = prefixWidth(vLineStr, vEndCol, vFontSize)
                 Box(
                     modifier = Modifier
-                        .offset(x = vSx.dp, y = (vLine * vLineHeight).dp)
+                        .offset(x = (vSx - vScrollX).dp, y = (vLine * vLineHeight).dp)
                         .width((vEx - vSx).coerceAtLeast(1).dp)
                         .height(vLineHeight.dp)
                         .background(selectionColor)
@@ -267,19 +278,20 @@ fun BasicTextField(
 
         // Inner BasicText: wraps when !singleLine so visible text matches the
         // wrap our cursor / selection math used. fillMaxWidth so it gets the
-        // same width constraint our onSizeChanged saw.
+        // same width constraint our onSizeChanged saw. Single-line shifts left
+        // by the horizontal scroll offset instead of wrapping.
         BasicText(
             text = value.text,
             color = color,
             fontSize = fontSize,
             softWrap = !singleLine,
-            modifier = if (singleLine) Modifier else Modifier.fillMaxWidth(),
+            modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),
         )
 
         if (isFocused && cursorBlinkVisible) {
             Box(
                 modifier = Modifier
-                    .offset(x = vCursorOffsetPx.dp, y = vCursorYPx.dp)
+                    .offset(x = (vCursorOffsetPx - vScrollX).dp, y = vCursorYPx.dp)
                     .width(1.dp)
                     .height(vLineHeight.dp)
                     .background(cursorColor)
@@ -494,6 +506,11 @@ private fun handleKey(
     val vShift = vMods.shift
     val vMeta = vMods.meta
     val vAlt = vMods.alt
+    // The "shortcut" modifier is Cmd on macOS and Ctrl on Windows / Linux, so
+    // accept either for copy / cut / paste / undo / select-all. Word-jump is
+    // Option (macOS) or Ctrl (Windows / Linux).
+    val vPrimary = vMeta || vMods.ctrl
+    val vWord = vAlt || vMods.ctrl
 
     fun resetPrefX() { inSetPrefColX(-1) }
     fun lineStartAt(inLine: Int): Int =
@@ -509,7 +526,7 @@ private fun handleKey(
             val vCurrent = inValue.selection.end
             val vNewHead = when {
                 vMeta -> lineStartAt(wrappedPosOf(inWrap, vCurrent).first)
-                vAlt  -> wordBoundaryLeft(inValue.text, vCurrent)
+                vWord -> wordBoundaryLeft(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.min
                 else  -> vCurrent - 1
             }
@@ -521,7 +538,7 @@ private fun handleKey(
             val vCurrent = inValue.selection.end
             val vNewHead = when {
                 vMeta -> lineEndAt(wrappedPosOf(inWrap, vCurrent).first)
-                vAlt  -> wordBoundaryRight(inValue.text, vCurrent)
+                vWord -> wordBoundaryRight(inValue.text, vCurrent)
                 !vShift && !inValue.selection.collapsed -> inValue.selection.max
                 else  -> vCurrent + 1
             }
@@ -574,18 +591,18 @@ private fun handleKey(
             inTypingEdit(insertAtCursor(inValue, "\n"))
             return true
         }
-        SCANCODE_A -> if (vMeta) {
+        SCANCODE_A -> if (vPrimary) {
             inCursorOnlyEdit(inValue.copy(selection = TextRange(0, inValue.text.length)))
             return true
         }
-        SCANCODE_C -> if (vMeta && !inValue.selection.collapsed) {
+        SCANCODE_C -> if (vPrimary && !inValue.selection.collapsed) {
             // Copy selection — non-destructive, doesn't go through the edit
             // helpers. Bare clipboard write.
             val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
             currentClipboard.setText(vSel)
             return true
         }
-        SCANCODE_X -> if (vMeta && !inValue.selection.collapsed && !inReadOnly) {
+        SCANCODE_X -> if (vPrimary && !inValue.selection.collapsed && !inReadOnly) {
             val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
             currentClipboard.setText(vSel)
             val vNewText = inValue.text.substring(0, inValue.selection.min) +
@@ -593,12 +610,12 @@ private fun handleKey(
             inStructuralEdit(TextFieldValue(vNewText, TextRange(inValue.selection.min)))
             return true
         }
-        SCANCODE_V -> if (vMeta && !inReadOnly) {
+        SCANCODE_V -> if (vPrimary && !inReadOnly) {
             val vPaste = currentClipboard.getText() ?: return true
             inStructuralEdit(insertAtCursor(inValue, vPaste))
             return true
         }
-        SCANCODE_Z -> if (vMeta) {
+        SCANCODE_Z -> if (vPrimary) {
             if (vShift) inRedo() else inUndo()
             return true
         }

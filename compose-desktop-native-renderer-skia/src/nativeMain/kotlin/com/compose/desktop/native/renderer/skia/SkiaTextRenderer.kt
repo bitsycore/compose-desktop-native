@@ -76,7 +76,8 @@ class SkiaTextRenderer {
         inBoxHeight: Int,
         inColor: ComposeColor,
         inFontSize: Int,
-        inAlign: TextAlign = TextAlign.Start
+        inAlign: TextAlign = TextAlign.Start,
+        inSoftWrap: Boolean = true
     ) {
         val vFont = getFont(inFontSize)
         val vPaint = Paint().apply {
@@ -99,8 +100,10 @@ class SkiaTextRenderer {
         }
 
         // Use the same wrap algorithm as measureText so layout and rendering
-        // produce identical line breakdowns.
-        val vLines = wrapTextWithStarts(inText, inFontSize, inBoxWidth).lines
+        // produce identical line breakdowns. softWrap = false (e.g. a
+        // singleLine field) stays one line and overflows the box width.
+        val vWrapWidth = if (inSoftWrap) inBoxWidth else Int.MAX_VALUE
+        val vLines = wrapTextWithStarts(inText, inFontSize, vWrapWidth).lines
         if (vLines.size == 1 && '\n' !in inText) {
             // Single line, no wrap, no explicit newlines: cap-centre across
             // the full box (button text in a taller container).

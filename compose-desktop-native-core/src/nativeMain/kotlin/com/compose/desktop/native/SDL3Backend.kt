@@ -11,7 +11,7 @@ class SDL3Backend(
     private val title: String = "ComposeNativeSDL3",
     private val width: Int = 800,
     private val height: Int = 600,
-    val gpuMode: GpuMode = GpuMode.None,
+    val gpuMode: GpuMode = GpuMode.Software,
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
@@ -49,7 +49,7 @@ class SDL3Backend(
         val flags = SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or when (gpuMode) {
             is GpuMode.Skia.OpenGL -> SDL_WINDOW_OPENGL
             is GpuMode.Skia.Metal  -> SDL_WINDOW_METAL
-            is GpuMode.None        -> 0UL
+            is GpuMode.Software        -> 0UL
             is GpuMode.Sdl3        -> 0UL
             is GpuMode.Auto        -> error("unreachable")
         }
@@ -76,7 +76,7 @@ class SDL3Backend(
                     return false
                 }
             }
-            is GpuMode.None, is GpuMode.Sdl3 -> {
+            is GpuMode.Software, is GpuMode.Sdl3 -> {
                 // For Sdl3.* with a driver pin we steer SDL_CreateRenderer
                 // via SDL_HINT_RENDER_DRIVER. SDL3 looks the hint up the
                 // moment the renderer is created.
