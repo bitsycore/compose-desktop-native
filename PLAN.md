@@ -124,7 +124,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   with the provided policy. `Modifier.layout` wraps a child's measure
   in a user lambda.
 
-- [ ] **Step 3 — `androidx.compose.animation` core.** Biggest gap by
+- [x] **Step 3 — `androidx.compose.animation` core.** Biggest gap by
   user-facing impact. Eliminates the hand-rolled `LaunchedEffect {
   while(true) ... delay(16) }` loops (e.g. the M3 spinner). Concretely:
   `Animatable<T>`, `AnimationSpec` (`tween`, `spring`, `snap`,

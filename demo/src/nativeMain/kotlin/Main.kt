@@ -18,6 +18,7 @@ import screens.ButtonsScreen
 import screens.AnimationScreen
 import screens.CanvasScreen
 import screens.CustomLayoutScreen
+import screens.GestureScreen
 import screens.GraphicsLayerScreen
 import screens.DesktopWidgetsScreen
 import screens.DialogsScreen
@@ -134,6 +135,7 @@ private val Screens: List<Screen> = listOf(
     Screen("GraphicsLayer")  { GraphicsLayerScreen() },
     Screen("CustomLayout")   { CustomLayoutScreen() },
     Screen("Animation")      { AnimationScreen() },
+    Screen("Gestures")       { GestureScreen() },
 )
 
 // ==================

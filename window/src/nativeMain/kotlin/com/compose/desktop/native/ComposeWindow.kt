@@ -8,7 +8,9 @@ import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnPressedModifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputElement
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.NodeApplier
 import androidx.compose.ui.platform.currentClipboard
@@ -189,6 +191,26 @@ fun nativeComposeWindow(
             activePressCallback = null
         }
 
+        /* Walk the hit target → root chain. On every node that has a
+           PointerInputElement modifier, deliver the change in local
+           coords. Each scope's awaitPointerEvent resumes synchronously
+           because the coroutine is on the same Dispatchers.Main as us. */
+        fun dispatchPointerInput(inRoot: LayoutNode, inX: Int, inY: Int, inPressed: Boolean) {
+            val vHit = inRoot.hitTest(inX, inY) ?: return
+            var vNode: LayoutNode? = vHit
+            while (vNode != null) {
+                val vN = vNode
+                vN.modifier.foldIn(Unit) { _, vEl ->
+                    if (vEl is PointerInputElement) {
+                        val vLocalX = (inX - vN.absoluteX).toFloat()
+                        val vLocalY = (inY - vN.absoluteY).toFloat()
+                        vEl.scope.deliverChange(Offset(vLocalX, vLocalY), inPressed, 0L)
+                    }
+                }
+                vNode = vN.parent
+            }
+        }
+
         fun cursorInsideNode(inHit: LayoutNode?, inNode: LayoutNode): Boolean =
             generateSequence(inHit) { it.parent }.any { it === inNode }
 
@@ -216,6 +238,13 @@ fun nativeComposeWindow(
                     is AppEvent.Pointer -> {
                         val vPx = event.event.x
                         val vPy = event.event.y
+                        // Pointer-input modifier delivery: walk the hit-target →
+                        // root chain and deliver this change to every
+                        // PointerInputElement we cross. Position is converted to
+                        // each owning node's local space so detectTapGestures /
+                        // detectDragGestures see node-relative coords.
+                        val vCurrentlyPressed = event.event.type != PointerEventType.Release
+                        dispatchPointerInput(rootNode, vPx, vPy, vCurrentlyPressed)
                         when (event.event.type) {
                             PointerEventType.Move -> {
                                 dispatchHover(vPx, vPy)
