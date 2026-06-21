@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -257,7 +258,6 @@ private val Screens: List<Screen> = listOf(
 
 @Composable
 fun App() {
-    RecompositionLogger("App")
     var current by remember { mutableStateOf(Screens[0]) }
     val vSidebarBg = MaterialTheme.colors.surface.blend(MaterialTheme.colors.onSurface, 0.02f)
 
@@ -353,7 +353,7 @@ private fun Section(
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(title, color = MaterialTheme.colors.onSurface, fontSize = 15.sp)
@@ -1062,7 +1062,7 @@ private fun InteractionScreen() {
 
 @Composable
 private fun RecompositionScreen() {
-    RecompositionLogger("Recomposition/outer")
+    trackRecomposition("Recomposition/outer")
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
@@ -1083,9 +1083,16 @@ private fun RecompositionScreen() {
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+@Composable
+private inline fun trackRecomposition(tag: String) {
+    val inst = remember(tag) { RecompositionTracker(tag) }
+    SideEffect { inst.record() }
+}
+
 @Composable
 private fun InnerCounterBlock(counter: Int, onChange: (Int) -> Unit) {
-    RecompositionLogger("Recomposition/inner")
+    trackRecomposition("Recomposition/inner")
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(onClick = { onChange(counter + 1) }) { Text("+", color = MaterialTheme.colors.onPrimary) }
@@ -1096,7 +1103,7 @@ private fun InnerCounterBlock(counter: Int, onChange: (Int) -> Unit) {
 
 @Composable
 private fun SiblingBlock() {
-    RecompositionLogger("Recomposition/sibling")
+    trackRecomposition("Recomposition/sibling")
     Text(
         "This block doesn't read the counter — its log stays at #1.",
         color = MaterialTheme.colors.onBackground,

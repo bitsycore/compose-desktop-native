@@ -66,6 +66,12 @@ object TextFieldDefaults {
 
     val ContentPadding: PaddingValues = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
 
+    // Outlined fields use uniform padding on all four sides (like Material's
+    // OutlinedTextField): combined with the 56 dp min height and a centred
+    // container, a single line sits vertically centred, and when the text
+    // wraps to multiple lines the box grows with equal insets all around.
+    val OutlinedContentPadding: PaddingValues = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp)
+
     @Composable
     fun textFieldColors(
         textColor: Color = MaterialTheme.colors.onSurface,
@@ -284,15 +290,24 @@ private fun TextFieldImpl(
                 .border(vBorderWidth, vBorderColor, shape)
         }
 
-        Box(modifier = containerMod) {
+        // Centre the content so a single line sits vertically centred in the
+        // 56 dp min height; with a multi-line value the box grows and the
+        // padding reads as equal insets top/bottom. Outlined uses uniform
+        // 16 dp padding (like Material's OutlinedTextField); filled is a touch
+        // more compact (12/8) but centred the same way.
+        val vPad = if (outlined) TextFieldDefaults.OutlinedContentPadding else TextFieldDefaults.ContentPadding
+        Box(
+            modifier = containerMod,
+            contentAlignment = Alignment.Center,
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        start = TextFieldDefaults.ContentPadding.start,
-                        end   = TextFieldDefaults.ContentPadding.end,
-                        top   = TextFieldDefaults.ContentPadding.top,
-                        bottom = TextFieldDefaults.ContentPadding.bottom,
+                        start = vPad.start,
+                        end   = vPad.end,
+                        top   = vPad.top,
+                        bottom = vPad.bottom,
                     ),
             ) {
                 if (label != null) {

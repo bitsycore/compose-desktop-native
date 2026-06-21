@@ -19,30 +19,44 @@ import kotlin.math.max
 fun Box(
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.TopStart,
+    propagateMinConstraints: Boolean = false,
     content: @Composable () -> Unit = {}
 ) {
     ComposeNode<LayoutNode, NodeApplier>(
         factory = { LayoutNode() },
         update = {
             set(modifier) { this.modifier = it }
-            set(contentAlignment) {
-                this.measurePolicy = BoxMeasurePolicy(it)
+            set(contentAlignment to propagateMinConstraints) {
+                this.measurePolicy = BoxMeasurePolicy(it.first, it.second)
             }
         },
         content = content
     )
 }
 
-private class BoxMeasurePolicy(private val alignment: Alignment) : MeasurePolicy {
+private class BoxMeasurePolicy(
+    private val alignment: Alignment,
+    private val propagateMinConstraints: Boolean,
+) : MeasurePolicy {
     override fun measure(node: LayoutNode, constraints: Constraints): IntSize {
         val pl = node.paddingLeft; val pt = node.paddingTop
         val pr = node.paddingRight; val pb = node.paddingBottom
 
+        // Compose's Box measures children with the incoming MIN constraints
+        // loosened to 0 (unless propagateMinConstraints is set), then aligns
+        // each child within the resolved box size. Propagating the min would
+        // force a child to fill the box and defeat contentAlignment — e.g. a
+        // single text line couldn't be vertically centred inside a min-height
+        // container. The box itself still honours its own incoming min via the
+        // coerceIn on w/h below.
+        val childMinW = if (propagateMinConstraints) (constraints.minWidth - pl - pr).coerceAtLeast(0) else 0
+        val childMinH = if (propagateMinConstraints) (constraints.minHeight - pt - pb).coerceAtLeast(0) else 0
+
         val innerConstraints = Constraints(
-            minWidth = (constraints.minWidth - pl - pr).coerceAtLeast(0),
+            minWidth = childMinW,
             maxWidth = if (constraints.maxWidth == Constraints.Infinity) Constraints.Infinity
                        else (constraints.maxWidth - pl - pr).coerceAtLeast(0),
-            minHeight = (constraints.minHeight - pt - pb).coerceAtLeast(0),
+            minHeight = childMinH,
             maxHeight = if (constraints.maxHeight == Constraints.Infinity) Constraints.Infinity
                         else (constraints.maxHeight - pt - pb).coerceAtLeast(0),
         )

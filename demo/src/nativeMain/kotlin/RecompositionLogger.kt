@@ -1,27 +1,42 @@
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.RememberObserver
 
 // ==================
-// MARK: RecompositionLogger (demo-only debug helper)
+// MARK: log helper
 // ==================
 
-/* Debug helper. Drop into any composable to log when it (re)composes:
+// ==================
+// MARK: RecompositionTracker
+// ==================
 
-       @Composable fun App() {
-           RecompositionLogger("App")
-           // ...
-       }
+/* A per-call-site recomposition counter that also observes its own composition
+   lifecycle via Compose's RememberObserver. Because it's stored with remember,
+   the runtime calls:
+     onRemembered — when this instance first enters the composition,
+     onForgotten  — when it leaves (scope removed, or `tag` changed), and on
+                    composition.dispose(),
+     onAbandoned  — if the composition that produced it is rolled back before
+                    being applied.
+   record() bumps the recomposition count; it's a plain Int (not snapshot
+   state) so logging it from a SideEffect doesn't itself trigger recomposition. */
+class RecompositionTracker(private val tag: String) : RememberObserver {
+	var count: Int = 0
+		private set
 
-   remember { intArrayOf(0) } survives recompositions so the counter is
-   stable; SideEffect runs once per successful composition. The IntArray
-   sidesteps writing to a mutableStateOf from inside SideEffect (which would
-   itself trigger another recomposition). */
-@Composable
-fun RecompositionLogger(tag: String) {
-    val counter = remember { intArrayOf(0) }
-    SideEffect {
-        counter[0]++
-        println("[$tag] recomposed #${counter[0]}")
-    }
+	fun record() {
+        ++count
+    	println("$tag: Recomposed: #$count")
+	}
+
+	override fun onRemembered() {
+		println("[$tag] entered composition")
+	}
+
+	override fun onForgotten() {
+		println("[$tag] left composition (after $count recompositions)")
+	}
+
+	override fun onAbandoned() {
+		println("[$tag] abandoned (composition rolled back before commit)")
+	}
 }
+
