@@ -5,7 +5,7 @@ upstream `androidx.compose.foundation` / `.ui` / `.animation` surface.
 Items are tackled in order; each one is its own commit. Strike through
 when done.
 
-## Step 0 — Modularisation: split Material out of :core
+## ✅ Step 0 — Modularisation: split Material out of :core
 
 `:core` should be the "foundation + ui + animation" base of Compose.
 Material widgets (`androidx.compose.material.*`) currently live in
@@ -107,7 +107,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
 
 ## Steps (ordered by impact / unblocking)
 
-- [ ] **Step 1 — `RowScope.weight()` / `ColumnScope.weight()`.** Small,
+- [x] **Step 1 — `RowScope.weight()` / `ColumnScope.weight()`.** Small,
   blocks many layouts. Today there's no way to say "split the leftover
   space 1:2 between these two children". Add the standard upstream
   semantics: children with a `weight` first take their measured size of

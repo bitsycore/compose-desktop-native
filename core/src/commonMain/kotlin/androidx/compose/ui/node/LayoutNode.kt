@@ -149,7 +149,34 @@ class LayoutNode {
     // ============
     //  Layout
 
+    /* Guards against recursive Modifier.layout interception when the
+       user's onMeasure body calls measurable.measure(): the second pass
+       must run the NATURAL measure without re-applying the modifier. */
+    private var fSkipLayoutModifier: Boolean = false
+
     fun measure(constraints: Constraints): IntSize {
+        // Modifier.layout intercept — runs once, then the user's onMeasure
+        // body calls measurable.measure(c) which re-enters measure() with
+        // fSkipLayoutModifier=true to take the natural path.
+        if (!fSkipLayoutModifier) {
+            val vLayoutMod = findLayoutModifier()
+            if (vLayoutMod != null) {
+                val vMeasurable = object : androidx.compose.ui.layout.Measurable {
+                    override fun measure(constraints: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
+                        fSkipLayoutModifier = true
+                        try { this@LayoutNode.measure(constraints) }
+                        finally { fSkipLayoutModifier = false }
+                        return androidx.compose.ui.layout.LayoutNodePlaceable(this@LayoutNode)
+                    }
+                }
+                val vScope = androidx.compose.ui.layout.MeasureScopeImpl()
+                val vResult = vLayoutMod.onMeasure.invoke(vScope, vMeasurable, constraints)
+                vResult.placeChildren()
+                width = vResult.width
+                height = vResult.height
+                return IntSize(width, height)
+            }
+        }
         val adjusted = applyModifierConstraints(constraints)
 
         // Scroll modifiers: children measured with unbounded length in the
@@ -351,6 +378,16 @@ class LayoutNode {
 
     /* First scroll modifier on the self → root walk, with its node. Used by
        ComposeWindow's wheel dispatch to find what to scroll. */
+    /* Looks for a Modifier.layout(...) on this node only — the modifier
+       wraps THIS node's measure, it doesn't propagate to ancestors. */
+    private fun findLayoutModifier(): androidx.compose.ui.layout.LayoutModifierElement? {
+        var v: androidx.compose.ui.layout.LayoutModifierElement? = null
+        modifier.foldIn(Unit) { _, e ->
+            if (e is androidx.compose.ui.layout.LayoutModifierElement) v = e
+        }
+        return v
+    }
+
     fun findVerticalScrollAncestor(): androidx.compose.foundation.ScrollState? {
         var n: LayoutNode? = this
         while (n != null) {
