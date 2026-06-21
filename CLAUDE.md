@@ -92,27 +92,41 @@ gradlew.bat :demo:runDebugExecutableMingwX64
 
 `sudo apt install libsdl3-dev` is enough. Same caveat for SDL3_ttf.
 
-### Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image)
+### Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image + FreeType)
 
-All three libraries must be extracted to fixed paths the cinterop `.def`
-files reference:
+All four libraries must be extracted to fixed paths the cinterop `.def`
+files reference (`C:/Dev/Libs/...` by convention; override via
+`-Psdl3Dir=`/`-Psdl3TtfDir=`/`-Psdl3ImageDir=`/`-PfreetypeDir=`):
 
 ```
-C:\SDL3\
+C:\Dev\Libs\SDL3\
   include\SDL3\*.h
   lib\libSDL3.dll.a
   bin\SDL3.dll
 
-C:\SDL3_ttf\
+C:\Dev\Libs\SDL3_ttf\
   include\SDL3_ttf\*.h
   lib\libSDL3_ttf.dll.a
   bin\SDL3_ttf.dll
 
-C:\SDL3_image\
+C:\Dev\Libs\SDL3_image\
   include\SDL3_image\*.h
   lib\libSDL3_image.dll.a
   bin\SDL3_image.dll
+
+C:\Dev\Libs\FreeType\
+  include\freetype2\ft2build.h
+  include\freetype2\freetype\*.h
+  lib\libfreetype.dll.a
+  bin\libfreetype-6.dll
 ```
+
+FreeType is used by the SDL3 renderer for variable-font axis support on
+Material Symbols icons (SDL3_ttf 3.2 has no axis-set API; we go directly
+to FreeType for those families). Easiest source: MSYS2 (`pacman -S
+mingw-w64-x86_64-freetype`) — copy `mingw64/include/freetype2/`,
+`mingw64/lib/libfreetype.dll.a`, and `mingw64/bin/libfreetype-6.dll`
+into the layout above.
 
 Download the **MinGW** development releases (not MSVC) from:
 - <https://github.com/libsdl-org/SDL/releases>

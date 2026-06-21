@@ -1,14 +1,13 @@
 package com.compose.desktop.native
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.FocusableModifier
-import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnPressedModifier
-import androidx.compose.ui.PressableModifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.NodeApplier
@@ -19,9 +18,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.window.LocalPopupHost
 import androidx.compose.ui.window.PopupLayer
 import androidx.compose.ui.window.createPopupHostState
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import sdl3.SDL_Delay

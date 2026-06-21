@@ -59,14 +59,14 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
 // ==================
 // Windows resolves DLLs from the executable's own directory at launch, so we
-// copy SDL3.dll + SDL3_ttf.dll next to the .exe — the same trick used for the
-// font above. Source roots default to the layout documented in CLAUDE.md
-// (C:\SDL3, C:\SDL3_ttf); override with -Psdl3Dir=... / -Psdl3TtfDir=... or in
-// ~/.gradle/gradle.properties if your SDL3 lives elsewhere.
+// copy SDL3.dll + SDL3_ttf.dll + SDL3_image.dll + libfreetype-6.dll next to
+// the .exe. Source roots default to C:/Dev/Libs/<lib>/bin/; override via
+// -Psdl3Dir=... / -PfreetypeDir=... or in ~/.gradle/gradle.properties.
 
-val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "C:/SDL3"
-val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "C:/SDL3_ttf"
-val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "C:/SDL3_image"
+val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "C:/Dev/Libs/SDL3"
+val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "C:/Dev/Libs/SDL3_ttf"
+val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "C:/Dev/Libs/SDL3_image"
+val freetypeDir = (findProperty("freetypeDir") as? String) ?: "C:/Dev/Libs/FreeType"
 
 for (variant in variants) {
     val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -77,6 +77,7 @@ for (variant in variants) {
         from("$sdl3Dir/bin/SDL3.dll")
         from("$sdl3TtfDir/bin/SDL3_ttf.dll")
         from("$sdl3ImageDir/bin/SDL3_image.dll")
+        from("$freetypeDir/bin/libfreetype-6.dll")
         into(outDir)
     }
 

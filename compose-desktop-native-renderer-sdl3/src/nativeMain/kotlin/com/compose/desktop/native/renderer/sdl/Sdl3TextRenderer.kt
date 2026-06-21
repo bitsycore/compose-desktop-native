@@ -43,14 +43,17 @@ import sdl3.SDL_IOFromConstMem
 internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     init {
-        // SDL3_ttf 3.2 has no variable-axis API (the only writable per-font
-        // knobs are size / style flags / outline / hinting / SDF / kerning;
-        // TTF_OpenFontWithProperties takes filename / iostream / size /
-        // face / dpi only). Material Symbols install() reads this flag and
-        // logs a one-shot warning so axis-using apps aren't silently
-        // ignored on Windows / -Prenderer=sdl3 builds.
-        TextRendererCapabilities.supportsFontVariations = false
+        // SDL3_ttf 3.2 has no variable-axis API. We route icon-font draws
+        // (anything registered in IconFont) through FreeType directly, which
+        // honours FT_Set_Var_Design_Coordinates for the full FILL / wght /
+        // GRAD / opsz axis set. Regular text stays on the SDL3_ttf path.
+        // The capability flag stays true because, from the app's POV, axes
+        // do work on this renderer — Material Symbols install() therefore
+        // doesn't emit its "axes ignored" warning.
+        TextRendererCapabilities.supportsFontVariations = true
     }
+
+    private val fFreeTypeIcons = FreeTypeIcons()
 
     // HiDPI scale. Fonts are opened at fontSize * DPR pixels so the
     // rasterised glyph texture matches the physical pixel count of the
@@ -108,6 +111,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         for ((vMem, _) in fFontMem.values) nativeHeap.free(vMem)
         fFontMem.clear()
         fMissingFamilies.clear()
+        fFreeTypeIcons.destroy()
         TTF_Quit()
     }
 
@@ -254,9 +258,34 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         inFontSize: Int,
         inAlign: TextAlign,
         inFontFamily: String? = null,
+        inFontVariations: List<androidx.compose.ui.text.FontVariation>? = null,
     ) {
         if (inText.isEmpty()) return
         val vRenderer = backend.renderer ?: return
+
+        // Icon-font path: anything registered in IconFont gets routed through
+        // FreeType so variable-font axes work. We treat the text as a single
+        // codepoint per icon (Material Symbols are all BMP single chars).
+        if (inFontFamily != null && fFreeTypeIcons.hasFamily(inFontFamily)) {
+            val vCodepoint = inText.codePointAtSafe(0)
+            val vDrew = fFreeTypeIcons.drawGlyph(
+                inSdlRenderer = vRenderer,
+                inFamily = inFontFamily,
+                inCodepoint = vCodepoint,
+                inPixelSize = inFontSize,
+                inColor = inColor,
+                inVariations = inFontVariations ?: emptyList(),
+                inBoxX = inX,
+                inBoxY = inY,
+                inBoxW = inBoxWidth,
+                inBoxH = inBoxHeight,
+                inDpr = fDpr,
+            )
+            if (vDrew) return
+            // Fall through to SDL3_ttf if the FreeType path couldn't draw
+            // (missing family, no glyph, etc.) so we at least show *something*.
+        }
+
         val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inColor) ?: return
 
         // Texture dimensions are physical pixels (rasterised at fontSize *
@@ -439,4 +468,20 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     private fun ComposeColor.toArgb(): Int =
         (a8 shl 24) or (r8 shl 16) or (g8 shl 8) or b8
+
+    /* Decodes the codepoint at the given char index, handling UTF-16
+       surrogate pairs for supplementary-plane characters. Material Symbols
+       icons are BMP so the surrogate path rarely fires, but Icon supports
+       arbitrary codepoints (codepointToString returns a surrogate pair for
+       supplementary). */
+    private fun String.codePointAtSafe(inIndex: Int): Int {
+        val vHigh = this[inIndex].code
+        if (vHigh in 0xD800..0xDBFF && inIndex + 1 < length) {
+            val vLow = this[inIndex + 1].code
+            if (vLow in 0xDC00..0xDFFF) {
+                return 0x10000 + ((vHigh - 0xD800) shl 10) + (vLow - 0xDC00)
+            }
+        }
+        return vHigh
+    }
 }

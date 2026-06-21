@@ -168,6 +168,7 @@ internal class Sdl3Renderer(
                     inNode.width, inNode.height,
                     inNode.textColor, inNode.fontSize, inNode.textAlign,
                     inNode.fontFamily,
+                    inNode.fontVariationSettings,
                 )
             } else {
                 for ((idx, line) in vLines.withIndex()) {
@@ -178,6 +179,7 @@ internal class Sdl3Renderer(
                         inNode.width, vLineHeight,
                         inNode.textColor, inNode.fontSize, inNode.textAlign,
                         inNode.fontFamily,
+                        inNode.fontVariationSettings,
                     )
                 }
             }

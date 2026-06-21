@@ -36,6 +36,15 @@ kotlin {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
                 packageName("sdl3_image")
             }
+            // FreeType powers variable-font axis rendering (FILL / wght / GRAD /
+            // opsz) on Material Symbols icons — SDL3_ttf 3.2 has no axis-set
+            // API, so the SDL3 renderer routes icon-font draws with non-default
+            // axes through FreeType + a glyph-bitmap cache and stays on
+            // SDL3_ttf for everything else.
+            val freetype by creating {
+                defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
+                packageName("freetype")
+            }
         }
     }
 
