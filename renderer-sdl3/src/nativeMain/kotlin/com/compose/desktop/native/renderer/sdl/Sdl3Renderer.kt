@@ -53,8 +53,19 @@ internal class Sdl3Renderer(
     // Persistent per-node cache: subtree pre-rendered into a window-sized
     // texture, reused frame to frame while cacheKey matches. Window-sized
     // (rather than node-sized) because SDL3 has no canvas-translate; the
-    // subtree paints at its absolute coords and we blit a sub-region.
-    private class CachedLayer(val key: Any, val texture: COpaquePointer)
+    // subtree paints at its absolute coords inside the texture. We track
+    // those original coords (srcX/srcY) so subsequent blits can pull from
+    // the right region even when the node has scrolled to a new position.
+    private class CachedLayer(
+        val key: Any,
+        val texture: COpaquePointer,
+        val srcX: Int,
+        val srcY: Int,
+        val srcW: Int,
+        val srcH: Int,
+        val texW: Int,
+        val texH: Int,
+    )
     private val fCache = mutableMapOf<LayoutNode, CachedLayer>()
     private val fSeenThisFrame = mutableSetOf<LayoutNode>()
 
@@ -163,7 +174,9 @@ internal class Sdl3Renderer(
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         val vTex = acquireLayer(vRenderer) ?: run { drawNodeContent(inNode); return }
         renderSubtreeToTarget(vRenderer, vTex, inNode)
-        blitTransformed(vRenderer, vTex, inNode, inLayer, inAlpha)
+        // Ephemeral path: the texture was just painted at the node's current
+        // absolute coords, so src = dst position-wise (no scroll drift to worry about).
+        blitTransformed(vRenderer, vTex, inNode, inLayer, inAlpha, inCachedSrc = null)
     }
 
     // ============
@@ -174,8 +187,10 @@ internal class Sdl3Renderer(
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         fSeenThisFrame.add(inNode)
         val vKey = inLayer.cacheKey!!
+        val vWinW = backend.pixelWidth
+        val vWinH = backend.pixelHeight
         var vEntry = fCache[inNode]
-        if (vEntry == null || vEntry.key != vKey || fLayerW != backend.pixelWidth || fLayerH != backend.pixelHeight) {
+        if (vEntry == null || vEntry.key != vKey || vEntry.texW != vWinW || vEntry.texH != vWinH) {
             vEntry?.let { SDL_DestroyTexture(it.texture.reinterpret()) }
             fCache.remove(inNode)
             val vTex = createWindowSizedTarget(vRenderer) ?: run {
@@ -185,10 +200,15 @@ internal class Sdl3Renderer(
                 return
             }
             renderSubtreeToTarget(vRenderer, vTex, inNode)
-            vEntry = CachedLayer(vKey, vTex)
+            vEntry = CachedLayer(
+                key = vKey, texture = vTex,
+                srcX = inNode.absoluteX, srcY = inNode.absoluteY,
+                srcW = inNode.width,     srcH = inNode.height,
+                texW = vWinW,            texH = vWinH,
+            )
             fCache[inNode] = vEntry
         }
-        blitTransformed(vRenderer, vEntry.texture, inNode, inLayer, inAlpha)
+        blitTransformed(vRenderer, vEntry.texture, inNode, inLayer, inAlpha, vEntry)
     }
 
     /* Render the node's subtree into a target texture at the node's
@@ -213,16 +233,20 @@ internal class Sdl3Renderer(
     }
 
     /* Blit the node region from inSource onto the current render target,
-       applying the layer's scale / rotation / translation and alpha. The
-       source texture holds the subtree at the node's absolute coords, so
-       src_rect = (absX*dpr, absY*dpr, w*dpr, h*dpr) (physical pixels in
-       texture). dst_rect = (absX + translation, scaled). */
+       applying the layer's scale / rotation / translation and alpha.
+       inCachedSrc is set when blitting from a persistent cache: its
+       srcX/srcY locate the original render position in the cache texture
+       (which may differ from the node's CURRENT absoluteX/Y if the node
+       has since been scrolled or otherwise moved). When null (ephemeral
+       layer) the source is just rendered at the node's current absolute
+       coords so src == dst position-wise. */
     private fun blitTransformed(
         inRenderer: CPointer<cnames.structs.SDL_Renderer>,
         inSource: COpaquePointer,
         inNode: LayoutNode,
         inLayer: GraphicsLayerModifier,
         inAlpha: Float,
+        inCachedSrc: CachedLayer?,
     ) {
         val vDpr = backend.pixelDensity
         val vAx = inNode.absoluteX.toFloat()
@@ -239,13 +263,20 @@ internal class Sdl3Renderer(
         val vDstX = vPivotX - vScaledW * inLayer.transformOrigin.pivotFractionX + inLayer.translationX
         val vDstY = vPivotY - vScaledH * inLayer.transformOrigin.pivotFractionY + inLayer.translationY
 
+        // Source rect: cached-layer entries remember where the subtree was
+        // actually painted in the texture; ephemerals match current pos.
+        val vSrcX = (inCachedSrc?.srcX?.toFloat() ?: vAx) * vDpr
+        val vSrcY = (inCachedSrc?.srcY?.toFloat() ?: vAy) * vDpr
+        val vSrcW = (inCachedSrc?.srcW?.toFloat() ?: vW) * vDpr
+        val vSrcH = (inCachedSrc?.srcH?.toFloat() ?: vH) * vDpr
+
         SDL_SetTextureAlphaMod(inSource.reinterpret(),
             (inAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
 
         memScoped {
             val vSrc = alloc<SDL_FRect>().apply {
-                x = vAx * vDpr; y = vAy * vDpr
-                w = vW * vDpr;  h = vH * vDpr
+                x = vSrcX; y = vSrcY
+                w = vSrcW; h = vSrcH
             }
             val vDst = alloc<SDL_FRect>().apply {
                 x = vDstX; y = vDstY
