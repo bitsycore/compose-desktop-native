@@ -25,8 +25,10 @@ import sdl3_ttf.TTF_GetFontHeight
 import sdl3_ttf.TTF_GetStringSize
 import sdl3_ttf.TTF_Init
 import sdl3_ttf.TTF_OpenFont
+import sdl3_ttf.TTF_OpenFontIO
 import sdl3_ttf.TTF_Quit
 import sdl3_ttf.TTF_RenderText_Blended
+import sdl3.SDL_IOFromConstMem
 
 // ==================
 // MARK: Sdl3TextRenderer (mingwX64 fallback)
@@ -59,6 +61,13 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     // Cached TTF_Font handles keyed by logical pixel size.
     private val fFontCache = mutableMapOf<Int, COpaquePointer>()
 
+    // Bundled font bytes, allocated on the native heap once and shared by every
+    // TTF_OpenFontIO call. SDL3_ttf reads from this memory for the font's
+    // lifetime, so we keep it alive until destroy(). Null until first request
+    // (or if the archive doesn't contain the font).
+    private var fBundledFontMem: CPointer<ByteVar>? = null
+    private var fBundledFontSize: Int = 0
+
     // Cached glyph textures: (text, fontSize, packedARGB) → texture + size.
     private data class TextureKey(val text: String, val fontSize: Int, val color: Int)
     private data class CachedTexture(val tex: COpaquePointer, val w: Int, val h: Int)
@@ -81,6 +90,9 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         fTextureCache.clear()
         for (f in fFontCache.values) TTF_CloseFont(f.reinterpret())
         fFontCache.clear()
+        fBundledFontMem?.let { nativeHeap.free(it) }
+        fBundledFontMem = null
+        fBundledFontSize = 0
         TTF_Quit()
     }
 
@@ -335,20 +347,27 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     /* Opens the font at PHYSICAL pixels (logical fontSize × DPR) so the
        rasterised glyphs match the back buffer's resolution. The cache key
-       is the logical size — setDpr clears the cache when DPR changes. */
+       is the logical size — setDpr clears the cache when DPR changes.
+
+       Tries the bundled font from the composeResources archive first via
+       TTF_OpenFontIO, then falls back to common system fonts by path (used
+       when -PbundleDefaultFont=false or on Windows when SDL3_ttf can't open
+       the bundled bytes). */
     private fun getFont(inSize: Int): COpaquePointer? {
         fFontCache[inSize]?.let { return it }
 
         val vPhysicalSize = (inSize * fDpr).coerceAtLeast(1f)
-        // Load the bundled font from composeResources/font first; fall back to
-        // common system fonts so text still renders without the default font
-        // (e.g. when built with -PbundleDefaultFont=false).
-        val vPaths = listOfNotNull(
-            composeResourceFullPath("font/Roboto-Regular.ttf"),
+
+        openBundledFont(vPhysicalSize)?.let {
+            fFontCache[inSize] = it
+            return it
+        }
+
+        val vSystemPaths = listOf(
             "C:\\Windows\\Fonts\\segoeui.ttf",
             "C:\\Windows\\Fonts\\arial.ttf",
         )
-        for (path in vPaths) {
+        for (path in vSystemPaths) {
             val vFont = TTF_OpenFont(path, vPhysicalSize)
             if (vFont != null) {
                 fFontCache[inSize] = vFont
@@ -357,6 +376,27 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
         println("Sdl3TextRenderer: no usable font found for size $inSize")
         return null
+    }
+
+    /* Opens the bundled Roboto-Regular at the given physical pt size from the
+       archive's raw bytes. The byte buffer is allocated once on the native
+       heap and shared across all font sizes (TTF_OpenFontIO with closeio=true
+       closes the IOStream when the font is closed; the underlying memory must
+       outlive every font opened from it, hence the lifetime-of-renderer
+       allocation freed in destroy()). */
+    private fun openBundledFont(inPhysicalPt: Float): COpaquePointer? {
+        if (fBundledFontMem == null) {
+            val vBytes = loadComposeResourceBytes("font/Roboto-Regular.ttf") ?: return null
+            if (vBytes.isEmpty()) return null
+            val vMem = nativeHeap.allocArray<ByteVar>(vBytes.size)
+            vBytes.usePinned { vPinned ->
+                platform.posix.memcpy(vMem, vPinned.addressOf(0), vBytes.size.convert())
+            }
+            fBundledFontMem = vMem
+            fBundledFontSize = vBytes.size
+        }
+        val vIo = SDL_IOFromConstMem(fBundledFontMem, fBundledFontSize.convert()) ?: return null
+        return TTF_OpenFontIO(vIo.reinterpret(), true, inPhysicalPt)
     }
 
     private fun ComposeColor.toArgb(): Int =

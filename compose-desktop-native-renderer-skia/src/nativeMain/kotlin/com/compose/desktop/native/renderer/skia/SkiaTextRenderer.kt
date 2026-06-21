@@ -9,6 +9,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
+import org.jetbrains.skia.Data
 import org.jetbrains.skia.Font
 import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontStyle
@@ -226,8 +227,9 @@ class SkiaTextRenderer {
     fun destroy() {
         fFontCache.values.forEach { it.close() }
         fFontCache.clear()
-        // fTypeface from makeFromFile is reference-counted by Skia — close()
-        // decrements. fFontMgr.default is an unmanaged singleton; don't close.
+        // fTypeface (from makeFromData or makeFromFile) is reference-counted by
+        // Skia — close() decrements. fFontMgr.default is an unmanaged singleton;
+        // don't close.
         fTypeface?.close()
     }
 
@@ -271,9 +273,9 @@ class SkiaTextRenderer {
     }
 
     private fun bundledTypeface(): Typeface? {
-        val vPath = composeResourceFullPath("font/Roboto-Regular.ttf") ?: return null
-        val vTf = fFontMgr.makeFromFile(vPath, 0) ?: return null
-        println("SkiaTextRenderer: loaded bundled font from $vPath")
+        val vBytes = loadComposeResourceBytes("font/Roboto-Regular.ttf") ?: return null
+        val vTf = fFontMgr.makeFromData(Data.makeFromBytes(vBytes), 0) ?: return null
+        println("SkiaTextRenderer: loaded bundled font from data.kres (font/Roboto-Regular.ttf)")
         return vTf
     }
 }

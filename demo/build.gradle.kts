@@ -146,11 +146,14 @@ tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
 // ==================
 // MARK: Bundle composeResources next to each native executable
 // ==================
-// Two roots merge into <exe>/composeResources/, loaded at runtime via
-// SDL_GetBasePath() + "composeResources/<path>":
+// Two roots merge into a single archive <exe>/data.kres, loaded at
+// runtime via SDL_GetBasePath() + "data.kres":
 //   - the demo's own assets (drawable/, files/), and
 //   - the library's default font (font/Roboto-Regular.ttf) that the text
 //     renderers load at startup.
+// Entries are STORED (no compression) so the ZIP reader in ResourceIO.kt can
+// hand the raw bytes to SDL3_image / SDL3_ttf / Skia without inflating anything
+// — readBytes is an fseek+fread per entry, not a whole-archive memory load.
 // Pass -PbundleDefaultFont=false to ship without the bundled Roboto; the text
 // renderers then fall back to a system font. The generated Res accessors (see
 // generateComposeResAccessors above) only scan the demo's resources.
@@ -166,14 +169,16 @@ for (variant in variants) {
         val variantCap = variant.replaceFirstChar { it.uppercase() }
         val targetCap = target.replaceFirstChar { it.uppercase() }
         val copyTaskName = "copy${variantCap}ComposeResources${targetCap}"
-        val outDir = layout.buildDirectory.dir("bin/$target/${variant}Executable/composeResources")
+        val outDir = layout.buildDirectory.dir("bin/$target/${variant}Executable")
 
-        val copyTask = tasks.register<Copy>(copyTaskName) {
+        val copyTask = tasks.register<Zip>(copyTaskName) {
+            archiveFileName.set("data.kres")
+            destinationDirectory.set(outDir)
+            entryCompression = org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
             from(composeResourcesDir)
             from(libComposeResourcesDir) {
                 if (!bundleDefaultFont) exclude("font/Roboto-Regular.ttf")
             }
-            into(outDir)
         }
 
         listOf(

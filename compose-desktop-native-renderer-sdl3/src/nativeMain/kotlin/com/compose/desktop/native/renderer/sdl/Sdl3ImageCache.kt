@@ -8,7 +8,7 @@ import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
 import sdl3.*
-import sdl3_image.IMG_Load
+import sdl3_image.IMG_Load_IO
 import sdl3_image.IMG_LoadSVG_IO
 import kotlin.math.max
 import kotlin.math.min
@@ -54,8 +54,8 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 
 		val vSurface = when (inKind) {
 			ResourceKind.Raster, ResourceKind.Svg -> {
-				val vFull = composeResourceFullPath(inPath) ?: return null
-				IMG_Load(vFull)
+				val vBytes = loadComposeResourceBytes(inPath) ?: return null
+				loadEncodedSurface(vBytes)
 			}
 			ResourceKind.AndroidVector -> {
 				val vXml = loadComposeResourceBytes(inPath)?.decodeToString() ?: return null
@@ -73,6 +73,20 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 		SDL_DestroySurface(vSdlSurface)
 		if (vTex == null) return null
 		return Cached(vTex, vW, vH)
+	}
+
+	/* Decodes any IMG_-supported raster or SVG container from raw bytes
+	   (png/jpg/bmp/gif/webp/svg). IMG_Load_IO peeks the bytes to auto-detect
+	   the format; closeio = true so SDL closes its IOStream wrapper. The
+	   underlying mem only needs to outlive the call (the surface owns its
+	   pixels). */
+	private fun loadEncodedSurface(inBytes: ByteArray): CPointer<sdl3.SDL_Surface>? {
+		if (inBytes.isEmpty()) return null
+		return inBytes.usePinned { vPinned ->
+			val vIo = SDL_IOFromConstMem(vPinned.addressOf(0), inBytes.size.convert())
+				?: return@usePinned null
+			IMG_Load_IO(vIo.reinterpret(), true)
+		}
 	}
 
 	/* Rasterises an SVG string from memory. */

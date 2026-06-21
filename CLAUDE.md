@@ -137,9 +137,9 @@ next to the executable automatically by `demo/build.gradle.kts` (the
 `copy*DllsMingwX64` tasks), sourced from `-Psdl3Dir` / `-Psdl3TtfDir` /
 `-Psdl3ImageDir` (defaults `C:\SDL3` / `C:\SDL3_ttf` / `C:\SDL3_image`; set
 overrides in `~/.gradle/gradle.properties` if your libs live elsewhere).
-That same build also stages the `composeResources/` tree — including the
-default `font/Roboto-Regular.ttf` the text renderers load at startup — next
-to every binary, so you don't install fonts or copy assets by hand. Pass
+That same build also bundles `data.kres` (STORED, no compression)
+next to every binary — drawables, files, plus the default
+`font/Roboto-Regular.ttf` the text renderers load at startup. Pass
 `-PbundleDefaultFont=false` to ship without the bundled Roboto (the renderers
 then fall back to a system font).
 
@@ -169,20 +169,29 @@ The `generateComposeResAccessors` Gradle task scans that tree and emits typed
 `Res.drawable.<name>` (→ `Painter`) and `Res.files.<name>` (→ path string for
 `Res.readBytes`). compose-desktop-native-core keeps its default font under
 `compose-desktop-native-core/src/nativeMain/composeResources/font/`; both roots merge into
-`<exe>/composeResources/` at build time (see `-PbundleDefaultFont`). The official Compose resources runtime can't be used here —
-its generated code needs real Compose UI (`Painter` / `ImageBitmap` /
-`ImageVector`), which this repo re-implements — so this is a self-contained
-stand-in.
+a single `<exe>/data.kres` at build time (STORED, no compression —
+see `-PbundleDefaultFont`). At runtime `ResourceIO.kt` opens that archive
+once via `SDL_GetBasePath()`, parses its central directory, and serves each
+entry with an `fseek` + `fread` on demand — no whole-archive memory load.
+The official Compose resources runtime can't be used here — its generated
+code needs real Compose UI (`Painter` / `ImageBitmap` / `ImageVector`), which
+this repo re-implements — so this is a self-contained stand-in.
 
 Image drawing mirrors text exactly: a commonMain `ImageLoader` interface +
 `currentImageLoader` global (set in `ComposeWindow` from
 `renderBackend.imageLoader`), a `painter` leaf on `LayoutNode`, and each
 renderer paints it. Decoding is per-backend and cached by path —
-`SkiaImageCache` (`Image.makeFromEncoded` / `SVGDOM`) and `Sdl3ImageCache`
-(SDL3_image `IMG_Load` / `IMG_LoadSVG_IO`). SVG and Android `<vector>` XML
-both flow through `AndroidVectorToSvg` → SVG → rasterise. `ContentScale`
-(Fit / Crop / FillBounds / Inside / None) and `alpha` apply at draw time.
-Intrinsic pixel size is treated as logical points by the layout pass.
+`SkiaImageCache` (`Image.makeFromEncoded` / `SVGDOM` on raw bytes) and
+`Sdl3ImageCache` (`IMG_Load_IO` / `IMG_LoadSVG_IO` from an in-memory
+`SDL_IOFromConstMem` stream). SVG and Android `<vector>` XML both flow
+through `AndroidVectorToSvg` → SVG → rasterise. `ContentScale` (Fit / Crop /
+FillBounds / Inside / None) and `alpha` apply at draw time. Intrinsic pixel
+size is treated as logical points by the layout pass.
+
+Fonts follow the same byte-based path: Skia uses `FontMgr.makeFromData`,
+SDL3_ttf uses `TTF_OpenFontIO`. The bundled font bytes are copied once into
+a `nativeHeap` allocation that lives for the renderer's lifetime so the
+SDL_IOStream's reads stay valid for every opened size (closed in `destroy()`).
 
 ### Compose runtime integration (ComposeWindow.kt)
 
