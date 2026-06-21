@@ -169,7 +169,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   `graphicsLayer`; shadow needs a Skia drop-shadow paint + an SDL3
   blurred-quad fallback.
 
-- [ ] **Step 8 — `FocusRequester` / `FocusManager`.** Programmatic
+- [x] **Step 8 — `FocusRequester` / `FocusManager`.** Programmatic
   focus control (today focus only follows clicks). `FocusRequester`
   with `.requestFocus()`, `LocalFocusManager`,
   `focusProperties { next = ..., previous = ... }`, `onFocusChanged` /

@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import com.compose.desktop.native.nativeComposeWindow
 import screens.ButtonsScreen
 import screens.AnimationScreen
+import screens.AnnotatedStringScreen
 import screens.CanvasScreen
 import screens.CustomLayoutScreen
 import screens.FocusRequesterScreen
@@ -146,6 +147,7 @@ private val Screens: List<Screen> = listOf(
     Screen("LazyExtra")      { LazyExtraScreen() },
     Screen("InteractionSource") { InteractionSourceScreen() },
     Screen("FocusRequester") { FocusRequesterScreen() },
+    Screen("AnnotatedString") { AnnotatedStringScreen() },
 )
 
 // ==================
