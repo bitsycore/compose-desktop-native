@@ -105,6 +105,16 @@ class LayoutNode {
             else                                                            -> acc
         }
     }
+    /* Sum of all Modifier.zIndex(...) values applied to this node. Used
+       by the renderer to order siblings within their parent — higher z
+       draws on top. Defaults to 0 when no zIndex modifier is present. */
+    val zIndex: Float get() {
+        var v = 0f
+        modifier.foldIn(Unit) { _, e ->
+            if (e is androidx.compose.ui.draw.ZIndexModifier) v += e.zIndex
+        }
+        return v
+    }
     /* The (last) GraphicsLayerModifier in this node's chain, or null if
        none. Used by renderers to apply transforms and per-node caching. */
     val graphicsLayer: androidx.compose.ui.graphics.GraphicsLayerModifier? get() {

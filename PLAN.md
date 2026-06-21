@@ -145,7 +145,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   `combinedClickable`. Routed off the existing `ComposeWindow` event
   dispatch.
 
-- [ ] **Step 5 — `Path` + `drawPath` + DrawScope completion +
+- [x] **Step 5 — `Path` + `drawPath` + DrawScope completion +
   `CutCornerShape` / `GenericShape`.** Add `Path` with `moveTo`,
   `lineTo`, `quadraticBezierTo`, `cubicTo`, `arcTo`, `relativeLineTo`
   etc.; `DrawScope.drawPath` / `clipPath` / `drawOval` /

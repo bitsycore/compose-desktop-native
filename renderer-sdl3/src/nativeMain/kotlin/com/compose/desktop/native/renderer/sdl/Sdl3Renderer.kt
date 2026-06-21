@@ -449,13 +449,19 @@ internal class Sdl3Renderer(
                 vRect.w = inNode.width
                 vRect.h = inNode.height
                 SDL_SetRenderClipRect(vRenderer, vRect.ptr)
-                for (child in inNode.children) drawNode(child)
+                for (child in zOrderedChildren(inNode)) drawNode(child)
                 SDL_SetRenderClipRect(vRenderer, null)
             }
         } else {
-            for (child in inNode.children) drawNode(child)
+            for (child in zOrderedChildren(inNode)) drawNode(child)
         }
     }
+
+    /* Sort children by Modifier.zIndex when present; default to tree
+       order so the common case has zero overhead. */
+    private fun zOrderedChildren(inNode: LayoutNode): List<LayoutNode> =
+        if (inNode.children.any { it.zIndex != 0f })
+            inNode.children.sortedBy { it.zIndex } else inNode.children
 
     // ==================
     // MARK: Outline fill / stroke

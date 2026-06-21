@@ -270,13 +270,16 @@ class SkiaRenderer internal constructor(
             }
         }
         val vChildClip = vClipShape
+        // Sort children by zIndex (stable: when none set, draw in tree order).
+        val vChildren = if (inNode.children.any { it.zIndex != 0f })
+            inNode.children.sortedBy { it.zIndex } else inNode.children
         if (vChildClip != null && inNode.children.isNotEmpty()) {
             inCanvas.save()
             applyClip(inCanvas, vAx, vAy, vW, vH, vChildClip.outline(inNode.width, inNode.height))
-            for (child in inNode.children) drawNode(child, inCanvas)
+            for (child in vChildren) drawNode(child, inCanvas)
             inCanvas.restore()
         } else {
-            for (child in inNode.children) drawNode(child, inCanvas)
+            for (child in vChildren) drawNode(child, inCanvas)
         }
     }
 
