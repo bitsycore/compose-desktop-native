@@ -164,7 +164,7 @@ internal fun AnnotatedStringScreen() {
 				))
 				append("\$19.99")
 				pop()
-				append(" → ")
+				append(" -> ")
 				pushStyle(SpanStyle(
 					color = Color(0xFF6200EE),
 					fontWeight = FontWeight.Bold,
