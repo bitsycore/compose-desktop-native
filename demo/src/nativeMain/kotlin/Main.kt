@@ -20,6 +20,7 @@ import screens.CanvasScreen
 import screens.CustomLayoutScreen
 import screens.GestureScreen
 import screens.GraphicsLayerScreen
+import screens.LazyExtraScreen
 import screens.ModifierShortcutsScreen
 import screens.PathScreen
 import screens.DesktopWidgetsScreen
@@ -140,6 +141,7 @@ private val Screens: List<Screen> = listOf(
     Screen("Gestures")       { GestureScreen() },
     Screen("Path")           { PathScreen() },
     Screen("ModShortcuts")   { ModifierShortcutsScreen() },
+    Screen("LazyExtra")      { LazyExtraScreen() },
 )
 
 // ==================

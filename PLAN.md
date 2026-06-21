@@ -161,7 +161,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   `textDecoration`), declarative `FontFamily` / `FontWeight`,
   `TextOverflow` (clip / ellipsis / visible).
 
-- [ ] **Step 7 — Thin Modifier convenience wrappers.** Small commit,
+- [x] **Step 7 — Thin Modifier convenience wrappers.** Small commit,
   immediately useful. `Modifier.rotate(degrees)`, `.scale(scaleX,
   scaleY)`, `.aspectRatio(ratio, matchHeightConstraintsFirst)`,
   `.zIndex(value)`, `.shadow(elevation, shape, clip)`,
