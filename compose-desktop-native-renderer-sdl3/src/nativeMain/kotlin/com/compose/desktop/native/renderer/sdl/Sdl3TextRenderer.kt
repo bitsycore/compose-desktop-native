@@ -1,9 +1,11 @@
 package com.compose.desktop.native.renderer.sdl
 
 import com.compose.desktop.native.*
+import com.compose.desktop.native.icons.IconFont
 
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
@@ -40,6 +42,16 @@ import sdl3.SDL_IOFromConstMem
    with what we paint. */
 internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
+    init {
+        // SDL3_ttf 3.2 has no variable-axis API (the only writable per-font
+        // knobs are size / style flags / outline / hinting / SDF / kerning;
+        // TTF_OpenFontWithProperties takes filename / iostream / size /
+        // face / dpi only). Material Symbols install() reads this flag and
+        // logs a one-shot warning so axis-using apps aren't silently
+        // ignored on Windows / -Prenderer=sdl3 builds.
+        TextRendererCapabilities.supportsFontVariations = false
+    }
+
     // HiDPI scale. Fonts are opened at fontSize * DPR pixels so the
     // rasterised glyph texture matches the physical pixel count of the
     // logical-size dst rect after SDL_SetRenderScale stretches it.
@@ -58,23 +70,26 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         fWidthCache.clear()
     }
 
-    // Cached TTF_Font handles keyed by logical pixel size.
-    private val fFontCache = mutableMapOf<Int, COpaquePointer>()
+    // Cached TTF_Font handles keyed by (family, logical pixel size). family is
+    // null for the default (Roboto); non-null for registered IconFont entries.
+    private val fFontCache = mutableMapOf<Pair<String?, Int>, COpaquePointer>()
 
-    // Bundled font bytes, allocated on the native heap once and shared by every
-    // TTF_OpenFontIO call. SDL3_ttf reads from this memory for the font's
-    // lifetime, so we keep it alive until destroy(). Null until first request
-    // (or if the archive doesn't contain the font).
-    private var fBundledFontMem: CPointer<ByteVar>? = null
-    private var fBundledFontSize: Int = 0
+    // Per-family bundled font bytes — allocated on the native heap once,
+    // shared by every TTF_OpenFontIO opened from that family (the IO closes
+    // with the font but the underlying mem must outlive every font opened
+    // against it, so we keep them all until destroy()).
+    private val fFontMem = mutableMapOf<String?, Pair<CPointer<ByteVar>, Int>>()
+    // Families we've already tried and failed to resolve — cached so we don't
+    // keep retrying every frame.
+    private val fMissingFamilies = mutableSetOf<String>()
 
-    // Cached glyph textures: (text, fontSize, packedARGB) → texture + size.
-    private data class TextureKey(val text: String, val fontSize: Int, val color: Int)
+    // Cached glyph textures: (family, text, fontSize, packedARGB) → texture.
+    private data class TextureKey(val family: String?, val text: String, val fontSize: Int, val color: Int)
     private data class CachedTexture(val tex: COpaquePointer, val w: Int, val h: Int)
     private val fTextureCache = mutableMapOf<TextureKey, CachedTexture>()
 
-    // Cached measured widths in LOGICAL points keyed by (text, fontSize).
-    private val fWidthCache = mutableMapOf<Pair<String, Int>, Int>()
+    // Cached measured widths in LOGICAL points keyed by (family, text, size).
+    private val fWidthCache = mutableMapOf<Triple<String?, String, Int>, Int>()
 
     /* Returns false if TTF couldn't init. */
     fun init(): Boolean {
@@ -90,26 +105,30 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         fTextureCache.clear()
         for (f in fFontCache.values) TTF_CloseFont(f.reinterpret())
         fFontCache.clear()
-        fBundledFontMem?.let { nativeHeap.free(it) }
-        fBundledFontMem = null
-        fBundledFontSize = 0
+        for ((vMem, _) in fFontMem.values) nativeHeap.free(vMem)
+        fFontMem.clear()
+        fMissingFamilies.clear()
         TTF_Quit()
     }
 
     val textMeasurer: TextMeasurer = object : TextMeasurer {
-        override fun measure(inText: String, inFontSize: Int, inMaxWidth: Int): IntSize {
-            val vWrap = wrap(inText, inFontSize, inMaxWidth)
+        // SDL3_ttf 3.2 has no variable-axis setter — variations are ignored
+        // here and the base font is opened. The wght axis specifically could
+        // be approximated via TTF_SetFontStyle(BOLD) but that's a binary
+        // toggle, not a gradient; we accept the loss for now.
+        override fun measure(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): IntSize {
+            val vWrap = wrap(inText, inFontSize, inMaxWidth, inFontFamily, inFontVariations)
             val vWidth = if (vWrap.lines.isEmpty()) 0
-                         else vWrap.lines.maxOf { measureWidth(it, inFontSize) }
-            val vLine = lineHeight(inFontSize).toInt().coerceAtLeast(1)
+                         else vWrap.lines.maxOf { measureWidth(it, inFontSize, inFontFamily) }
+            val vLine = lineHeight(inFontSize, inFontFamily, inFontVariations).toInt().coerceAtLeast(1)
             return IntSize(vWidth, vLine * vWrap.lines.size.coerceAtLeast(1))
         }
 
-        override fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int): WrappedText =
-            wrapTextWithStarts(inText, inFontSize, inMaxWidth)
+        override fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): WrappedText =
+            wrapTextWithStarts(inText, inFontSize, inMaxWidth, inFontFamily)
 
-        override fun lineHeight(inFontSize: Int): Float {
-            val vFont = getFont(inFontSize) ?: return inFontSize * 1.3f
+        override fun lineHeight(inFontSize: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): Float {
+            val vFont = getFont(inFontFamily, inFontSize) ?: return inFontSize * 1.3f
             // TTF_GetFontHeight returns physical pixels (we opened the
             // font at fontSize * DPR). Convert back to logical.
             return (TTF_GetFontHeight(vFont.reinterpret()).toFloat() / fDpr).coerceAtLeast(1f)
@@ -119,7 +138,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     /* Greedy soft-wrap that mirrors the Skia renderer's algorithm so the
        cross-platform behaviour stays identical. Hard lines on '\n'; long
        lines split at whitespace, ultra-long words split mid-word. */
-    private fun wrapTextWithStarts(inText: String, inFontSize: Int, inMaxWidth: Int): WrappedText {
+    private fun wrapTextWithStarts(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String? = null): WrappedText {
         if (inText.isEmpty()) return WrappedText(listOf(""), intArrayOf(0))
         val vLines = mutableListOf<String>()
         val vStarts = mutableListOf<Int>()
@@ -130,10 +149,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             val vNl = inText.indexOf('\n', vHardStart)
             val vHardEnd = if (vNl < 0) inText.length else vNl
             val vHard = inText.substring(vHardStart, vHardEnd)
-            if (vUnbounded || vHard.isEmpty() || measureWidth(vHard, inFontSize) <= inMaxWidth) {
+            if (vUnbounded || vHard.isEmpty() || measureWidth(vHard, inFontSize, inFontFamily) <= inMaxWidth) {
                 vLines.add(vHard); vStarts.add(vHardStart)
             } else {
-                wrapHardLine(vHard, inFontSize, inMaxWidth, vHardStart, vLines, vStarts)
+                wrapHardLine(vHard, inFontSize, inMaxWidth, vHardStart, vLines, vStarts, inFontFamily)
             }
             if (vNl < 0) break
             vHardStart = vNl + 1
@@ -148,6 +167,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         inBaseOffset: Int,
         outLines: MutableList<String>,
         outStarts: MutableList<Int>,
+        inFontFamily: String? = null,
     ) {
         var vCurrent = StringBuilder()
         var vLineStartInHard = 0
@@ -158,7 +178,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             while (i < inLine.length && inLine[i].isWhitespace()) i++
             val vWord = inLine.substring(vWordStart, i)
             val vCandidate = vCurrent.toString() + vWord
-            if (measureWidth(vCandidate, inFontSize) <= inMaxWidth) {
+            if (measureWidth(vCandidate, inFontSize, inFontFamily) <= inMaxWidth) {
                 vCurrent.append(vWord)
             } else {
                 if (vCurrent.isNotEmpty()) {
@@ -167,10 +187,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                     vLineStartInHard += vCurrent.length
                     vCurrent = StringBuilder()
                 }
-                if (measureWidth(vWord, inFontSize) > inMaxWidth) {
+                if (measureWidth(vWord, inFontSize, inFontFamily) > inMaxWidth) {
                     val vSub = StringBuilder()
                     for (ch in vWord) {
-                        if (measureWidth(vSub.toString() + ch, inFontSize) > inMaxWidth) {
+                        if (measureWidth(vSub.toString() + ch, inFontSize, inFontFamily) > inMaxWidth) {
                             if (vSub.isNotEmpty()) {
                                 outLines.add(vSub.toString())
                                 outStarts.add(inBaseOffset + vLineStartInHard)
@@ -195,12 +215,13 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
        so TTF_GetStringSize reports physical pixels — divide by DPR to
        get back to logical. */
-    private fun measureWidth(inText: String, inFontSize: Int): Int {
+    private fun measureWidth(inText: String, inFontSize: Int, inFontFamily: String? = null): Int {
         if (inText.isEmpty()) return 0
-        fWidthCache[inText to inFontSize]?.let { return it }
-        val vFont = getFont(inFontSize) ?: run {
+        val vKey = Triple(inFontFamily, inText, inFontSize)
+        fWidthCache[vKey]?.let { return it }
+        val vFont = getFont(inFontFamily, inFontSize) ?: run {
             val vEst = (inText.length * inFontSize * 0.6f).toInt()
-            fWidthCache[inText to inFontSize] = vEst
+            fWidthCache[vKey] = vEst
             return vEst
         }
         var vPhys = 0
@@ -216,7 +237,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             }
         }
         val vLogical = (vPhys / fDpr).toInt()
-        fWidthCache[inText to inFontSize] = vLogical
+        fWidthCache[vKey] = vLogical
         return vLogical
     }
 
@@ -232,10 +253,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         inColor: ComposeColor,
         inFontSize: Int,
         inAlign: TextAlign,
+        inFontFamily: String? = null,
     ) {
         if (inText.isEmpty()) return
         val vRenderer = backend.renderer ?: return
-        val vCached = getOrCreateTexture(inText, inFontSize, inColor) ?: return
+        val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inColor) ?: return
 
         // Texture dimensions are physical pixels (rasterised at fontSize *
         // DPR). Convert to logical for the dst rect so SDL_SetRenderScale's
@@ -298,15 +320,16 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     }
 
     private fun getOrCreateTexture(
+        inFontFamily: String?,
         inText: String,
         inFontSize: Int,
         inColor: ComposeColor,
     ): CachedTexture? {
-        val vKey = TextureKey(inText, inFontSize, inColor.toArgb())
+        val vKey = TextureKey(inFontFamily, inText, inFontSize, inColor.toArgb())
         fTextureCache[vKey]?.let { return it }
 
         val vRenderer = backend.renderer ?: return null
-        val vFont = getFont(inFontSize) ?: return null
+        val vFont = getFont(inFontFamily, inFontSize) ?: return null
         val vTex = memScoped {
             val vColor = alloc<SDL_Color>()
             vColor.r = inColor.r8.toUByte()
@@ -347,55 +370,70 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     /* Opens the font at PHYSICAL pixels (logical fontSize × DPR) so the
        rasterised glyphs match the back buffer's resolution. The cache key
-       is the logical size — setDpr clears the cache when DPR changes.
+       is (family, logical size) — setDpr clears the cache when DPR changes.
 
-       Tries the bundled font from the composeResources archive first via
-       TTF_OpenFontIO, then falls back to common system fonts by path (used
-       when -PbundleDefaultFont=false or on Windows when SDL3_ttf can't open
-       the bundled bytes). */
-    private fun getFont(inSize: Int): COpaquePointer? {
-        fFontCache[inSize]?.let { return it }
+       Default family (null) tries the bundled Roboto first, then common
+       system fonts. A non-null family looks up bytes in the IconFont
+       registry and opens those — falling back to null when not registered. */
+    private fun getFont(inFamily: String?, inSize: Int): COpaquePointer? {
+        val vKey = inFamily to inSize
+        fFontCache[vKey]?.let { return it }
 
         val vPhysicalSize = (inSize * fDpr).coerceAtLeast(1f)
 
-        openBundledFont(vPhysicalSize)?.let {
-            fFontCache[inSize] = it
-            return it
+        if (inFamily == null) {
+            openFontFromBytes(null, ::defaultFontBytes, vPhysicalSize)?.let {
+                fFontCache[vKey] = it
+                return it
+            }
+            val vSystemPaths = listOf(
+                "C:\\Windows\\Fonts\\segoeui.ttf",
+                "C:\\Windows\\Fonts\\arial.ttf",
+            )
+            for (path in vSystemPaths) {
+                val vFont = TTF_OpenFont(path, vPhysicalSize)
+                if (vFont != null) {
+                    fFontCache[vKey] = vFont
+                    return vFont
+                }
+            }
+            println("Sdl3TextRenderer: no usable font found for size $inSize")
+            return null
         }
 
-        val vSystemPaths = listOf(
-            "C:\\Windows\\Fonts\\segoeui.ttf",
-            "C:\\Windows\\Fonts\\arial.ttf",
-        )
-        for (path in vSystemPaths) {
-            val vFont = TTF_OpenFont(path, vPhysicalSize)
-            if (vFont != null) {
-                fFontCache[inSize] = vFont
-                return vFont
-            }
+        if (inFamily in fMissingFamilies) return null
+        val vBytes = IconFont.bytesFor(inFamily)
+        if (vBytes == null) {
+            println("Sdl3TextRenderer: IconFont '$inFamily' not registered")
+            fMissingFamilies += inFamily
+            return null
         }
-        println("Sdl3TextRenderer: no usable font found for size $inSize")
-        return null
+        val vFont = openFontFromBytes(inFamily, { vBytes }, vPhysicalSize)
+        if (vFont != null) fFontCache[vKey] = vFont
+        return vFont
     }
 
-    /* Opens the bundled Roboto-Regular at the given physical pt size from the
-       archive's raw bytes. The byte buffer is allocated once on the native
-       heap and shared across all font sizes (TTF_OpenFontIO with closeio=true
-       closes the IOStream when the font is closed; the underlying memory must
-       outlive every font opened from it, hence the lifetime-of-renderer
-       allocation freed in destroy()). */
-    private fun openBundledFont(inPhysicalPt: Float): COpaquePointer? {
-        if (fBundledFontMem == null) {
-            val vBytes = loadComposeResourceBytes("font/Roboto-Regular.ttf") ?: return null
+    private fun defaultFontBytes(): ByteArray? = loadComposeResourceBytes("font/Roboto-Regular.ttf")
+
+    /* Lazily uploads a family's bytes into the native heap (once per family),
+       then opens a fresh TTF_Font on a new SDL_IOFromConstMem stream. Each
+       size of a family gets its own font handle but shares the same byte
+       buffer; the buffer lives until destroy(). */
+    private fun openFontFromBytes(
+        inFamily: String?,
+        inBytesProvider: () -> ByteArray?,
+        inPhysicalPt: Float,
+    ): COpaquePointer? {
+        val vSlot = fFontMem.getOrPut(inFamily) {
+            val vBytes = inBytesProvider() ?: return null
             if (vBytes.isEmpty()) return null
             val vMem = nativeHeap.allocArray<ByteVar>(vBytes.size)
             vBytes.usePinned { vPinned ->
                 platform.posix.memcpy(vMem, vPinned.addressOf(0), vBytes.size.convert())
             }
-            fBundledFontMem = vMem
-            fBundledFontSize = vBytes.size
+            vMem to vBytes.size
         }
-        val vIo = SDL_IOFromConstMem(fBundledFontMem, fBundledFontSize.convert()) ?: return null
+        val vIo = SDL_IOFromConstMem(vSlot.first, vSlot.second.convert()) ?: return null
         return TTF_OpenFontIO(vIo.reinterpret(), true, inPhysicalPt)
     }
 

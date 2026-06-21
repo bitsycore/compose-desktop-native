@@ -33,6 +33,9 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":compose-desktop-native"))
+                implementation(project(":compose-desktop-material-symbols:outlined"))
+                implementation(project(":compose-desktop-material-symbols:rounded"))
+                implementation(project(":compose-desktop-material-symbols:sharp"))
             }
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             kotlin.srcDir(composeResGenDir)
@@ -164,6 +167,34 @@ val libComposeResourcesDir = rootProject.layout.projectDirectory.dir(
 )
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
+// Walk the demo's declared dependencies and pick out every
+// :compose-desktop-material-symbols:* project this module actually pulls in.
+// Each such module exposes extra["iconFontFile"] (Provider<RegularFile> for
+// the downloaded .ttf) and extra["iconFontDownloadTask"] (TaskProvider). The
+// Zip task pulls the file into data.kres under font/ and depends on the
+// download task — apps just declare the dependency on the style(s) they want,
+// the bundling is automatic and only ships what's depended on.
+fun collectIconFontModules(): List<Project> {
+    val vConfigs = listOf(
+        "commonMainImplementation", "commonMainApi",
+        "nativeMainImplementation", "nativeMainApi",
+    )
+    val vSet = mutableSetOf<Project>()
+    for (vName in vConfigs) {
+        val vCfg = configurations.findByName(vName) ?: continue
+        for (vDep in vCfg.dependencies) {
+            if (vDep is org.gradle.api.artifacts.ProjectDependency) {
+                val vPath = vDep.path
+                if (vPath.startsWith(":compose-desktop-material-symbols:")) {
+                    rootProject.findProject(vPath)?.let { vSet.add(it) }
+                }
+            }
+        }
+    }
+    return vSet.toList()
+}
+val iconFontModules: List<Project> = collectIconFontModules()
+
 for (variant in variants) {
     for (target in nativeTargets) {
         val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -178,6 +209,14 @@ for (variant in variants) {
             from(composeResourcesDir)
             from(libComposeResourcesDir) {
                 if (!bundleDefaultFont) exclude("font/Roboto-Regular.ttf")
+            }
+            // Pull each icon-font module's downloaded .ttf into the font/ entry.
+            iconFontModules.forEach { vP ->
+                @Suppress("UNCHECKED_CAST")
+                val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<RegularFile>
+                val vDownloadTask = vP.extra["iconFontDownloadTask"] as TaskProvider<*>
+                from(vFontFile) { into("font") }
+                dependsOn(vDownloadTask)
             }
         }
 

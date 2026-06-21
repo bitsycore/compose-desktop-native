@@ -18,16 +18,36 @@ class WrappedText(val lines: List<String>, val lineStarts: IntArray)
    draw. The native backend installs a Skia-backed implementation at startup. */
 interface TextMeasurer {
 	/* Measure the text's laid-out size. If inMaxWidth is bounded, lines wrap
-	   at word boundaries (or mid-word if a single word exceeds the limit). */
-	fun measure(inText: String, inFontSize: Int, inMaxWidth: Int = Int.MAX_VALUE): IntSize
+	   at word boundaries (or mid-word if a single word exceeds the limit).
+	   inFontFamily picks a registered IconFont; null falls back to the
+	   renderer's default font. inFontVariations applies variable-font axis
+	   settings (Material Symbols wght / FILL / etc.) when supported by the
+	   active renderer. */
+	fun measure(
+		inText: String,
+		inFontSize: Int,
+		inMaxWidth: Int = Int.MAX_VALUE,
+		inFontFamily: String? = null,
+		inFontVariations: List<FontVariation>? = null,
+	): IntSize
 
 	/* Wrapped lines + the original-text offset where each begins. */
-	fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int = Int.MAX_VALUE): WrappedText
+	fun wrap(
+		inText: String,
+		inFontSize: Int,
+		inMaxWidth: Int = Int.MAX_VALUE,
+		inFontFamily: String? = null,
+		inFontVariations: List<FontVariation>? = null,
+	): WrappedText
 
 	/* Exact line height the renderer uses for this fontSize, as a Float so
 	   callers (TextField cursor / click math) line up with rendered glyph
 	   slots even when the per-line drift is sub-pixel. */
-	fun lineHeight(inFontSize: Int): Float
+	fun lineHeight(
+		inFontSize: Int,
+		inFontFamily: String? = null,
+		inFontVariations: List<FontVariation>? = null,
+	): Float
 }
 
 // ==================
@@ -35,11 +55,11 @@ interface TextMeasurer {
 // ==================
 
 private val kFallbackTextMeasurer = object : TextMeasurer {
-	override fun measure(inText: String, inFontSize: Int, inMaxWidth: Int): IntSize {
+	override fun measure(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<FontVariation>?): IntSize {
 		val vCharW = (inFontSize * 0.6f).toInt().coerceAtLeast(1)
 		return IntSize(vCharW * inText.length, (inFontSize * 1.3f).toInt())
 	}
-	override fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int): WrappedText {
+	override fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<FontVariation>?): WrappedText {
 		val vLines = if (inText.isEmpty()) listOf("") else inText.split('\n')
 		val vStarts = IntArray(vLines.size)
 		var vAcc = 0
@@ -49,7 +69,7 @@ private val kFallbackTextMeasurer = object : TextMeasurer {
 		}
 		return WrappedText(vLines, vStarts)
 	}
-	override fun lineHeight(inFontSize: Int): Float = inFontSize * 1.3f
+	override fun lineHeight(inFontSize: Int, inFontFamily: String?, inFontVariations: List<FontVariation>?): Float = inFontSize * 1.3f
 }
 
 var currentTextMeasurer: TextMeasurer = kFallbackTextMeasurer

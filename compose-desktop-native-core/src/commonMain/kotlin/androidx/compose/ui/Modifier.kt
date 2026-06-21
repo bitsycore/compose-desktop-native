@@ -73,6 +73,14 @@ data class SizeModifier(
 
 data class ClickableModifier(val onClick: () -> Unit) : Modifier.Element
 
+/* Fires after the place() pass with the node's absolute window-coordinate
+   position. Different from OnSizeChangedModifier in that the callback runs
+   even when only the position (not size) changes — useful for popups that
+   need to anchor to a moving target. Identity by callback reference. */
+class GloballyPositionedModifier(
+    val onChange: (androidx.compose.ui.unit.IntOffset) -> Unit,
+) : Modifier.Element
+
 /* Identity is by callback reference — not great across recomposition. The
    dispatch code in ComposeWindow keys hover/press state by LayoutNode
    identity (which is stable) rather than by the modifier itself. */

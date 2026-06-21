@@ -38,3 +38,27 @@ fun Modifier.defaultMinSize(minWidth: Dp = Dp.Zero, minHeight: Dp = Dp.Zero) =
         minHeight = minHeight.value.toInt(),
         isDefaultMin = true
     ))
+
+/* Bound the width to [min, max] hard. Either bound can be Dp.Unspecified
+   (Float.NaN) — comparing to it via == would never be true (NaN != NaN), so
+   we check .value.isNaN() and map unspecified to -1 so the layout pass
+   ignores that side. */
+private fun Dp.toBound(): Int = if (value.isNaN()) -1 else value.toInt()
+
+fun Modifier.widthIn(min: Dp = Dp.Unspecified, max: Dp = Dp.Unspecified) =
+    then(SizeModifier(minWidth = min.toBound(), maxWidth = max.toBound()))
+
+fun Modifier.heightIn(min: Dp = Dp.Unspecified, max: Dp = Dp.Unspecified) =
+    then(SizeModifier(minHeight = min.toBound(), maxHeight = max.toBound()))
+
+fun Modifier.sizeIn(
+    minWidth: Dp = Dp.Unspecified,
+    minHeight: Dp = Dp.Unspecified,
+    maxWidth: Dp = Dp.Unspecified,
+    maxHeight: Dp = Dp.Unspecified,
+) = then(SizeModifier(
+    minWidth = minWidth.toBound(),
+    minHeight = minHeight.toBound(),
+    maxWidth = maxWidth.toBound(),
+    maxHeight = maxHeight.toBound(),
+))

@@ -1,6 +1,7 @@
 package androidx.compose.foundation
 
 import androidx.compose.ui.FocusableModifier
+import androidx.compose.ui.GloballyPositionedModifier
 import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnDragModifier
@@ -8,6 +9,7 @@ import androidx.compose.ui.OnKeyEventModifier
 import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.OnSizeChangedModifier
 import androidx.compose.ui.OnTextInputModifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
 // ==================
@@ -53,3 +55,11 @@ fun Modifier.onDrag(
    in the callback schedule a recomposition next frame. */
 fun Modifier.onSizeChanged(onChange: (IntSize) -> Unit) =
     then(OnSizeChangedModifier(onChange))
+
+/* Fires after each layout pass with this node's absolute (window-level)
+   coordinates whenever they change. Use it to anchor overlay popups
+   (DropdownMenu, Tooltip, ContextMenu) to a moving target — the value
+   becomes available one frame after the layout that produced it, which is
+   fine for non-animated UI. */
+fun Modifier.onGloballyPositioned(onChange: (IntOffset) -> Unit) =
+    then(GloballyPositionedModifier(onChange))

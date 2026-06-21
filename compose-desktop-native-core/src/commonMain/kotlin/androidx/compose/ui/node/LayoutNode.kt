@@ -2,6 +2,8 @@ package androidx.compose.ui.node
 
 import androidx.compose.ui.*
 import androidx.compose.ui.FocusableModifier
+import androidx.compose.ui.GloballyPositionedModifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.HorizontalScrollModifier
 import androidx.compose.ui.HoverableModifier
 import androidx.compose.ui.KeyEventDispatch
@@ -50,6 +52,15 @@ class LayoutNode {
     /* Whether text auto-wraps at constraints.maxWidth. BasicTextField sets
        this false on its inner BasicText to keep cursor mapping deterministic. */
     var softWrap: Boolean = true
+    /* Font family for the text leaf. null = the renderer's default font
+       (bundled Roboto). Non-null = an IconFont entry registered by an icon
+       module — both renderers cache typefaces per (family, size). */
+    var fontFamily: String? = null
+    /* Variable-font axis settings for the text leaf (Material Symbols
+       wght/FILL/GRAD/opsz, or any custom axis the bundled font supports).
+       null or empty = default axis values. Currently honored by the Skia
+       renderer; SDL3_ttf ignores them (no axis-set API in 3.2). */
+    var fontVariationSettings: List<androidx.compose.ui.text.FontVariation>? = null
 
     // ============
     //  Content for image leaf nodes (set by the Image composable). The renderer
@@ -176,6 +187,29 @@ class LayoutNode {
     fun place(x: Int, y: Int) {
         this.x = x
         this.y = y
+    }
+
+    /* Previous absolute position; -1 = first dispatch, force a fire. */
+    private var lastAbsX = Int.MIN_VALUE
+    private var lastAbsY = Int.MIN_VALUE
+
+    /* Walks the tree after place() and fires every GloballyPositionedModifier
+       whose node's absolute position has changed since last frame. Position
+       is computed via absoluteX/Y, so this MUST run after all places resolve
+       — call it from ComposeWindow's loop, not from inside place itself. */
+    fun dispatchGloballyPositioned() {
+        val vAx = absoluteX
+        val vAy = absoluteY
+        if (vAx != lastAbsX || vAy != lastAbsY) {
+            lastAbsX = vAx
+            lastAbsY = vAy
+            modifier.foldIn(Unit) { _, e ->
+                if (e is GloballyPositionedModifier) {
+                    e.onChange(IntOffset(vAx, vAy))
+                }
+            }
+        }
+        for (vChild in children) vChild.dispatchGloballyPositioned()
     }
 
     private fun applyModifierConstraints(incoming: Constraints): Constraints {

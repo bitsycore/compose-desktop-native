@@ -16,6 +16,12 @@ import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.currentImageLoader
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.window.LocalPopupHost
+import androidx.compose.ui.window.PopupLayer
+import androidx.compose.ui.window.createPopupHostState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import sdl3.SDL_Delay
@@ -103,9 +109,21 @@ fun composeWindow(
             Snapshot.sendApplyNotifications()
         }
 
+        val popupHost = createPopupHostState()
         composition.setContent {
-            CompositionLocalProvider(LocalComposeNativeWindow provides composeWindow) {
-                with(windowScope) { content() }
+            CompositionLocalProvider(
+                LocalComposeNativeWindow provides composeWindow,
+                LocalPopupHost provides popupHost,
+            ) {
+                // Root Box: main content + overlay layer as sibling. The
+                // overlay is the *last* child so popups draw above and the
+                // hit-tester (which iterates children in reverse) hits them
+                // first. Each popup positions itself via Modifier.offset /
+                // Box(contentAlignment) inside its own composable.
+                Box(modifier = Modifier.fillMaxSize()) {
+                    with(windowScope) { content() }
+                    PopupLayer(popupHost)
+                }
             }
         }
 
@@ -300,6 +318,10 @@ fun composeWindow(
             val constraints = Constraints.fixed(backend.windowWidth, backend.windowHeight)
             rootNode.measure(constraints)
             rootNode.place(0, 0)
+            // Fire onGloballyPositioned callbacks now that absolute coords
+            // are valid. Popups (DropdownMenu/Tooltip) read these to anchor
+            // to their target's current window-coordinate position.
+            rootNode.dispatchGloballyPositioned()
 
             // ============
             //  Draw — the backend scales by DPR so the logical-point layout

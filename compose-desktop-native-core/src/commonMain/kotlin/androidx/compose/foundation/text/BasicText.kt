@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
+import androidx.compose.ui.text.FontVariation
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
@@ -25,6 +26,8 @@ fun BasicText(
     fontSize: Sp = 16.sp,
     textAlign: TextAlign = TextAlign.Start,
     softWrap: Boolean = true,
+    fontFamily: String? = null,
+    fontVariationSettings: List<FontVariation>? = null,
 ) {
     ComposeNode<LayoutNode, NodeApplier>(
         factory = { LayoutNode() },
@@ -34,6 +37,8 @@ fun BasicText(
             set(fontSize) { this.fontSize = it.value.toInt() }
             set(textAlign) { this.textAlign = it }
             set(softWrap) { this.softWrap = it }
+            set(fontFamily) { this.fontFamily = it }
+            set(fontVariationSettings) { this.fontVariationSettings = it }
             set(modifier) { this.modifier = it }
             set(Unit) {
                 this.measurePolicy = TextMeasurePolicy
@@ -50,7 +55,7 @@ internal val TextMeasurePolicy = MeasurePolicy { node, constraints ->
     val t = node.text ?: ""
     val wrapWidth = if (node.softWrap && constraints.maxWidth != androidx.compose.ui.unit.Constraints.Infinity)
         constraints.maxWidth else Int.MAX_VALUE
-    val measured = currentTextMeasurer.measure(t, node.fontSize, wrapWidth)
+    val measured = currentTextMeasurer.measure(t, node.fontSize, wrapWidth, node.fontFamily, node.fontVariationSettings)
 
     val w = measured.width.coerceIn(constraints.minWidth, constraints.maxWidth)
     val h = measured.height.coerceIn(constraints.minHeight, constraints.maxHeight)

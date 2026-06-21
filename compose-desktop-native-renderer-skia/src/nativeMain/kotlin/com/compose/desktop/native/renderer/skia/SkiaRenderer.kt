@@ -100,7 +100,9 @@ class SkiaRenderer internal constructor(
                 inCanvas, vText,
                 vAx, vAy, inNode.width, inNode.height,
                 inNode.textColor, inNode.fontSize, inNode.textAlign,
-                inNode.softWrap
+                inNode.softWrap,
+                inNode.fontFamily,
+                inNode.fontVariationSettings,
             )
         }
 

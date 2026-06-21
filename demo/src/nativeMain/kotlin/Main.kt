@@ -15,6 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.compose.desktop.native.composeWindow
 import screens.ButtonsScreen
+import screens.DesktopWidgetsScreen
+import screens.DialogsScreen
+import screens.IconsScreen
+import screens.WidgetsScreen
 import screens.ColorsScreen
 import screens.CounterScreen
 import screens.ImagesScreen
@@ -40,7 +44,7 @@ import utils.writeFile
 fun main(args: Array<String>) {
     val vCli = parseArgs(args)
     val vTitle = buildString {
-        append("ComposeNativeSDL3 Showcase")
+        append("ComposeDesktopNative Showcase")
         if (vCli.screen != null) append(" — ").append(vCli.screen)
         append(" [").append(vCli.gpu).append("]")
     }
@@ -65,6 +69,10 @@ fun main(args: Array<String>) {
             }
         } else null,
     ) {
+        // Material Symbols fonts auto-install on first use of the matching
+        // MaterialSymbolsOutlined / Rounded / Sharp composable — no setup
+        // needed here. Apps that want to preload the bytes at startup can
+        // still call .install() explicitly.
         MaterialTheme(colors = darkColors()) {
             if (vCli.screen != null) {
                 val vMatch = Screens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
@@ -112,6 +120,10 @@ private val Screens: List<Screen> = listOf(
     Screen("Scroll")         { ScrollScreen() },
     Screen("LazyColumn")     { LazyColumnScreen() },
     Screen("Counter")        { CounterScreen() },
+    Screen("Widgets")        { WidgetsScreen() },
+    Screen("Desktop")        { DesktopWidgetsScreen() },
+    Screen("Dialogs")        { DialogsScreen() },
+    Screen("Icons")          { IconsScreen() },
 )
 
 // ==================
