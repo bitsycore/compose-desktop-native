@@ -24,15 +24,20 @@ val vHostOs = System.getProperty("os.name")
 val vHostSdlInclude: String? = when {
     vHostOs.startsWith("Mac")     -> "/opt/homebrew/include"
     vHostOs == "Linux"            -> "/usr/include"
-    vHostOs.startsWith("Windows") -> "C:/Dev/Libs/SDL3/include"
+    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/SDL3/include"
     else                          -> null
 }
 val vHostFtInclude: String? = when {
     vHostOs.startsWith("Mac")     -> "/opt/homebrew/include/freetype2"
     vHostOs == "Linux"            -> "/usr/include/freetype2"
-    vHostOs.startsWith("Windows") -> "C:/Dev/Libs/FreeType/include/freetype2"
+    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/FreeType/include/freetype2"
     else                          -> null
 }
+
+val vHostTtfInclude: String? =
+    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_ttf/include" else null
+val vHostImageInclude: String? =
+    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_image/include" else null
 
 kotlin {
     linuxArm64()
@@ -47,17 +52,19 @@ kotlin {
             val sdl3 by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
-                if (vHostSdlInclude != null) extraOpts("-compilerOpts", "-I$vHostSdlInclude")
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
             val sdl3_ttf by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
                 packageName("sdl3_ttf")
-                if (vHostSdlInclude != null) extraOpts("-compilerOpts", "-I$vHostSdlInclude")
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
             }
             val sdl3_image by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
                 packageName("sdl3_image")
-                if (vHostSdlInclude != null) extraOpts("-compilerOpts", "-I$vHostSdlInclude")
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                if (vHostImageInclude != null) extraOpts("-compiler-options", "-I$vHostImageInclude")
             }
             // FreeType powers variable-font axis rendering (FILL / wght / GRAD /
             // opsz) on Material Symbols icons — SDL3_ttf 3.2 has no axis-set
@@ -67,7 +74,7 @@ kotlin {
             val freetype by creating {
                 defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
                 packageName("freetype")
-                if (vHostFtInclude != null) extraOpts("-compilerOpts", "-I$vHostFtInclude")
+                if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
             }
         }
     }

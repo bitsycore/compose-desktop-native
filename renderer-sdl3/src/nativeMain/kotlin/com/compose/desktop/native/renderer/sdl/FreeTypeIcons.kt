@@ -1,18 +1,11 @@
 package com.compose.desktop.native.renderer.sdl
 
-import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.FontVariation
 import com.compose.desktop.native.icons.IconFont
-import kotlinx.cinterop.*
 import freetype.*
-import sdl3.SDL_CreateTextureFromSurface
-import sdl3.SDL_DestroySurface
-import sdl3.SDL_DestroyTexture
-import sdl3.SDL_FRect
-import sdl3.SDL_PIXELFORMAT_ARGB8888
-import sdl3.SDL_RenderTexture
-import sdl3.SDL_CreateSurface
-import sdl3.SDL_Surface
+import kotlinx.cinterop.*
+import sdl3.*
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 // ==================
 // MARK: FreeTypeIcons
@@ -246,7 +239,7 @@ internal class FreeTypeIcons {
 				val vTagInt = vAxis.tag.toLong() and 0xFFFFFFFFL
 				val vTag = tagFromInt(vTagInt.toInt())
 				vAxisIndex[vTag] = i
-				vDefs[i] = vAxis.def
+				vDefs[i] = vAxis.def.toLong()
 			}
 			FT_Done_MM_Var(vLib, vMmPtr.value)
 			vDefs

@@ -5,9 +5,8 @@ depends = sdl3
 compilerOpts.osx = -I/opt/homebrew/include
 compilerOpts.linux_x64 = -I/usr/include
 compilerOpts.linux_arm64 = -I/usr/include
-compilerOpts.mingw_x64 = -IC:/Dev/Libs/SDL3_image/include -IC:/Dev/Libs/SDL3/include
 
 linkerOpts.osx = -L/opt/homebrew/lib -lSDL3_image
 linkerOpts.linux_x64 = -L/usr/lib/x86_64-linux-gnu -lSDL3_image
 linkerOpts.linux_arm64 = -L/usr/lib/aarch64-linux-gnu -lSDL3_image
-linkerOpts.mingw_x64 = -LC:/Dev/Libs/SDL3_image/lib -lSDL3_image
+linkerOpts.mingw_x64 = -lSDL3_image

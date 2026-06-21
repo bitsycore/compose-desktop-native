@@ -2,7 +2,10 @@ package com.compose.desktop.native
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
@@ -21,30 +24,13 @@ import androidx.compose.ui.window.LocalPopupHost
 import androidx.compose.ui.window.PopupLayer
 import androidx.compose.ui.window.createPopupHostState
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import sdl3.SDL_Delay
-import sdl3.SDL_GetTicksNS
 
 // ==================
 // MARK: ComposeWindow
 // ==================
-
-private class SDL3FrameClock : MonotonicFrameClock {
-    private val frameCh = Channel<Long>(Channel.CONFLATED)
-
-    override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R {
-        frameCh.receive()
-        return onFrame(currentTimeNanos())
-    }
-
-    fun sendFrame() {
-        frameCh.trySend(currentTimeNanos())
-    }
-
-    private fun currentTimeNanos(): Long = SDL_GetTicksNS().toLong()
-}
 
 fun nativeComposeWindow(
     title: String = "ComposeNativeSDL3",

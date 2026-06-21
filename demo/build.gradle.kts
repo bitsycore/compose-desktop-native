@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import java.io.File
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -17,6 +16,11 @@ repositories {
 // sources and produced by the generateComposeResAccessors task below.
 val composeResGenDir = layout.buildDirectory.dir("generated/composeRes")
 
+// Native deps live in a gitignored, in-repo folder populated by the scripts in
+// tools/ (fetch-sdl3.sh, build-freetype.sh). Driven off rootDir so it works
+// regardless of where the repo is cloned.
+val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
+
 kotlin {
     linuxArm64()
     linuxX64()
@@ -24,8 +28,18 @@ kotlin {
     mingwX64()
 
     targets.withType<KotlinNativeTarget>().all {
+        val isMingw = name == "mingwX64"
         binaries.executable {
             entryPoint = "main"
+            // mingwX64 links against the in-repo import libs (SDL3 / ttf / image)
+            // and the static FreeType. macOS/Linux resolve via the .def's
+            // system -L paths, so no extra linker opts are needed there.
+            if (isMingw) linkerOpts(
+                "-L$vLibs/SDL3/lib",
+                "-L$vLibs/SDL3_ttf/lib",
+                "-L$vLibs/SDL3_image/lib",
+                "-L$vLibs/FreeType/lib",
+            )
         }
     }
 
@@ -59,14 +73,14 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
 // ==================
 // Windows resolves DLLs from the executable's own directory at launch, so we
-// copy SDL3.dll + SDL3_ttf.dll + SDL3_image.dll + libfreetype-6.dll next to
-// the .exe. Source roots default to C:/Dev/Libs/<lib>/bin/; override via
-// -Psdl3Dir=... / -PfreetypeDir=... or in ~/.gradle/gradle.properties.
+// copy every DLL from each lib's bin/ next to the .exe — SDL3.dll, SDL3_ttf.dll,
+// SDL3_image.dll, plus SDL3_image's format DLLs (libpng/jpeg/…). FreeType is
+// linked statically, so it has no runtime DLL. Source roots default to the
+// in-repo <repo>/libs/<lib>; override via -Psdl3Dir=... etc.
 
-val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "C:/Dev/Libs/SDL3"
-val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "C:/Dev/Libs/SDL3_ttf"
-val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "C:/Dev/Libs/SDL3_image"
-val freetypeDir = (findProperty("freetypeDir") as? String) ?: "C:/Dev/Libs/FreeType"
+val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "$vLibs/SDL3"
+val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "$vLibs/SDL3_ttf"
+val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "$vLibs/SDL3_image"
 
 for (variant in variants) {
     val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -74,10 +88,9 @@ for (variant in variants) {
     val outDir = layout.buildDirectory.dir("bin/mingwX64/${variant}Executable")
 
     val copyTask = tasks.register<Copy>(copyTaskName) {
-        from("$sdl3Dir/bin/SDL3.dll")
-        from("$sdl3TtfDir/bin/SDL3_ttf.dll")
-        from("$sdl3ImageDir/bin/SDL3_image.dll")
-        from("$freetypeDir/bin/libfreetype-6.dll")
+        from("$sdl3Dir/bin") { include("*.dll") }
+        from("$sdl3TtfDir/bin") { include("*.dll") }
+        from("$sdl3ImageDir/bin") { include("*.dll") }
         into(outDir)
     }
 

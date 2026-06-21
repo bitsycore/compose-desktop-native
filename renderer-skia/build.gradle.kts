@@ -21,7 +21,7 @@ val vHostOs = System.getProperty("os.name")
 val vHostSdlInclude: String? = when {
     vHostOs.startsWith("Mac")     -> "/opt/homebrew/include"
     vHostOs == "Linux"            -> "/usr/include"
-    vHostOs.startsWith("Windows") -> "C:/Dev/Libs/SDL3/include"
+    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/SDL3/include"
     else                          -> null
 }
 
@@ -37,7 +37,7 @@ kotlin {
             val sdl3 by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
-                if (vHostSdlInclude != null) extraOpts("-compilerOpts", "-I$vHostSdlInclude")
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
         }
     }

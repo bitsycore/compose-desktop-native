@@ -1,16 +1,22 @@
 package com.compose.desktop.native.renderer.sdl
 
-import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.FontVariation
 import freetype.*
 import kotlinx.cinterop.*
-import sdl3.SDL_CreateSurface
-import sdl3.SDL_CreateTextureFromSurface
-import sdl3.SDL_DestroySurface
-import sdl3.SDL_DestroyTexture
-import sdl3.SDL_FRect
-import sdl3.SDL_PIXELFORMAT_ARGB8888
-import sdl3.SDL_RenderTexture
+import sdl3.*
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.Color as ComposeColor
+
+// Coverage gamma: alpha' = 255*(cov/255)^kTextGamma. With kTextGamma < 1 this
+// boosts partial coverage so antialiased stems read heavier and smoother for
+// light text on a dark background — closer to Skia's gamma-corrected coverage.
+// Mirrors Sdl3TextRenderer's kTextGamma so FreeType-rasterised variable-weight
+// text matches the SDL3_ttf path instead of looking thin.
+private const val kTextGamma = 0.72f
+private val fTextGammaLut = UByteArray(256) { i ->
+	(255f * (i / 255f).pow(kTextGamma)).roundToInt().coerceIn(0, 255).toUByte()
+}
 
 // ==================
 // MARK: FreeTypeText
@@ -255,7 +261,7 @@ internal class FreeTypeText {
 				val vAxis = vAxes[vI]
 				val vTagInt = (vAxis.tag.toLong() and 0xFFFFFFFFL).toInt()
 				vAxisIndex[tagFromInt(vTagInt)] = vI
-				vDefs[vI] = vAxis.def
+				vDefs[vI] = vAxis.def.toLong()
 			}
 			FT_Done_MM_Var(vLib, vMmPtr.value)
 			vDefs
@@ -285,12 +291,12 @@ internal class FreeTypeText {
 		// Apply requested variations on top of font defaults.
 		if (inState.defaultCoords.isNotEmpty()) {
 			memScoped {
-				val vCoords = allocArray<LongVar>(inState.defaultCoords.size)
-				for (vI in inState.defaultCoords.indices) vCoords[vI] = inState.defaultCoords[vI]
+				val vCoords = allocArray<FT_FixedVar>(inState.defaultCoords.size)
+				for (vI in inState.defaultCoords.indices) vCoords[vI] = inState.defaultCoords[vI].convert()
 				for (vVar in inVariations) {
 					val vIdx = inState.axisIndexByTag[vVar.axisTag] ?: continue
 					// Convert float → 16.16 fixed-point font units.
-					vCoords[vIdx] = (vVar.value * 65536f).toLong()
+					vCoords[vIdx] = (vVar.value * 65536f).toLong().convert()
 				}
 				FT_Set_Var_Design_Coordinates(vFace, inState.defaultCoords.size.convert(), vCoords)
 			}
@@ -384,7 +390,7 @@ internal class FreeTypeText {
 							if (vDx < 0 || vDx >= vTextW) continue
 							val vCov = vBuf[vSrcRow + vCol].toInt() and 0xFF
 							if (vCov == 0) continue
-							val vA = ((vCov * vColorAlpha) / 255).coerceIn(0, 255)
+							val vA = ((fTextGammaLut[vCov].toInt() * vColorAlpha) / 255).coerceIn(0, 255)
 							val vBase = vDy * vDstPitch + vDx * 4
 							// Premultiply NOT needed; we use straight ARGB
 							// with ALPHA blending at render time.
