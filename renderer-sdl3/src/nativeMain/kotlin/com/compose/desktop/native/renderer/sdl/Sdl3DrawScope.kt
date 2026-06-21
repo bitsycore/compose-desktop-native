@@ -45,9 +45,15 @@ import kotlin.math.sqrt
    ~64 segments per full circle (5.6° per step). At smaller sizes that's
    sub-pixel work; at larger sizes the human eye stops seeing facets.
 
-   Gradient brushes degrade to the first colour for now — SDL3 has no
-   built-in shader, so a real implementation would per-vertex blend along
-   the gradient axis. */
+   Gradient brushes are sampled per vertex (Sampler in this file); SDL
+   linearly interpolates between vertex colours across each triangle,
+   which approximates a shader at the tessellation density we use.
+
+   Batching: every call to a draw* primitive pushes triangles into a
+   shared native-heap vertex buffer; we submit ONE SDL_RenderGeometry per
+   flush() (called at the end of each Canvas{} or drawBehind invocation).
+   This collapses what used to be ~64 GPU calls per spinner frame into
+   one, and matters even more for screens with many drawn shapes. */
 @OptIn(ExperimentalForeignApi::class)
 internal class Sdl3DrawScope(
 	private val fRenderer: COpaquePointer,
@@ -56,11 +62,54 @@ internal class Sdl3DrawScope(
 	override val size: Size,
 ) : DrawScope {
 
-	// Exposed for the sampler extension functions below — they need to map
-	// gradient anchor points (in node-local coords) into the SDL renderer's
+	// Exposed for the sampler extension functions — they map gradient
+	// anchor points (in node-local coords) into the SDL renderer's
 	// absolute pixel space.
 	internal val originX: Float get() = fOriginX
 	internal val originY: Float get() = fOriginY
+
+	// ============
+	//  Vertex batch — heap-allocated buffer of SDL_Vertex shared across
+	//  every draw call in this scope. Submitted in one SDL_RenderGeometry
+	//  on flush() (called from the renderer after the user's drawer
+	//  lambda returns). Auto-flushes if the buffer is about to overflow.
+
+	private val fBatch: CPointer<SDL_Vertex> = nativeHeap.allocArray(kBatchCapacity)
+	private var fBatchCount: Int = 0
+
+	/* Pushes a single vertex into the batch buffer. If the buffer is full
+	   the batch is auto-flushed before writing. Returns the slot the
+	   vertex was written to so emitters can configure position / colour. */
+	private fun pushVertex(): SDL_Vertex {
+		if (fBatchCount >= kBatchCapacity) flush()
+		val vSlot = fBatch[fBatchCount]
+		fBatchCount++
+		return vSlot
+	}
+
+	/* Submit the accumulated triangles to SDL. Called once per drawer
+	   invocation by the renderer; safe to call mid-scope when the buffer
+	   fills up (state across draw calls is purely positional, no
+	   between-tri state). */
+	fun flush() {
+		if (fBatchCount == 0) return
+		SDL_RenderGeometry(
+			fRenderer.reinterpret(),
+			null,
+			fBatch,
+			fBatchCount,
+			null,
+			0,
+		)
+		fBatchCount = 0
+	}
+
+	/* Releases the native vertex pool. Called by the renderer after the
+	   drawer block + flush() complete. */
+	fun release() {
+		flush()
+		nativeHeap.free(fBatch)
+	}
 
 	// ============
 	//  Public primitives. Each one resolves the Brush into a "sampler" —
@@ -255,20 +304,9 @@ internal class Sdl3DrawScope(
 		ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float,
 		inSampler: Sampler,
 	) {
-		memScoped {
-			val vVerts = allocArray<SDL_Vertex>(3)
-			writeVertex(vVerts[0], ax, ay, inSampler(ax, ay))
-			writeVertex(vVerts[1], bx, by, inSampler(bx, by))
-			writeVertex(vVerts[2], cx, cy, inSampler(cx, cy))
-			SDL_RenderGeometry(
-				fRenderer.reinterpret(),
-				null,
-				vVerts,
-				3,
-				null,
-				0,
-			)
-		}
+		writeVertex(pushVertex(), ax, ay, inSampler(ax, ay))
+		writeVertex(pushVertex(), bx, by, inSampler(bx, by))
+		writeVertex(pushVertex(), cx, cy, inSampler(cx, cy))
 	}
 
 	private fun writeVertex(inV: SDL_Vertex, inX: Float, inY: Float, inColor: ComposeColor) {
@@ -282,6 +320,13 @@ internal class Sdl3DrawScope(
 		inV.tex_coord.y = 0f
 	}
 }
+
+// ============
+//  Batch capacity — 8192 vertices = ~2730 triangles per submission. At
+//  64 segments per full circle that's room for ~21 full-circle filled
+//  shapes per Canvas{} before any flush. Bigger gives fewer GPU
+//  submissions; smaller saves RAM. ~128 KB at 16 bytes per SDL_Vertex.
+private const val kBatchCapacity: Int = 8192
 
 // ==================
 // MARK: Brush → per-vertex colour sampler

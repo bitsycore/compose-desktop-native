@@ -8,6 +8,7 @@ import androidx.compose.ui.ClipModifier
 import androidx.compose.ui.HorizontalScrollModifier
 import androidx.compose.ui.VerticalScrollModifier
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.GraphicsLayerModifier
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -41,23 +42,54 @@ internal class Sdl3Renderer(
     private val kClearG: UByte = 0x12u
     private val kClearB: UByte = 0x12u
 
-    // Offscreen layer pool for Modifier.alpha — one window-physical-sized TARGET
-    // texture per nesting depth, recreated when the window size changes.
+    // Offscreen layer pool for Modifier.alpha + graphicsLayer transforms.
+    // Each entry is a window-physical-sized TARGET texture; pool grows with
+    // nesting depth and is recreated when the window size changes.
     private val fLayerTargets = mutableListOf<COpaquePointer>()
     private var fLayerDepth = 0
     private var fLayerW = 0
     private var fLayerH = 0
 
+    // Persistent per-node cache: subtree pre-rendered into a window-sized
+    // texture, reused frame to frame while cacheKey matches. Window-sized
+    // (rather than node-sized) because SDL3 has no canvas-translate; the
+    // subtree paints at its absolute coords and we blit a sub-region.
+    private class CachedLayer(val key: Any, val texture: COpaquePointer)
+    private val fCache = mutableMapOf<LayoutNode, CachedLayer>()
+    private val fSeenThisFrame = mutableSetOf<LayoutNode>()
+
     fun draw(inRoot: LayoutNode) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         SDL_SetRenderDrawColor(vRenderer, kClearR, kClearG, kClearB, 0xFFu)
         SDL_RenderClear(vRenderer)
+        fSeenThisFrame.clear()
         drawNode(inRoot)
+        // Evict cache entries for nodes we didn't paint this frame.
+        if (fCache.size > fSeenThisFrame.size) {
+            val vIter = fCache.entries.iterator()
+            while (vIter.hasNext()) {
+                val vE = vIter.next()
+                if (vE.key !in fSeenThisFrame) {
+                    SDL_DestroyTexture(vE.value.texture.reinterpret())
+                    vIter.remove()
+                }
+            }
+        }
     }
 
     private fun drawNode(inNode: LayoutNode) {
         val vAlpha = inNode.nodeAlpha
-        if (vAlpha < 1f) drawNodeLayered(inNode, vAlpha) else drawNodeContent(inNode)
+        val vLayer = inNode.graphicsLayer
+        val vWantsTransform = vLayer != null && vLayer.needsTransform
+        val vWantsCache = vLayer != null && vLayer.cacheKey != null
+        val vWantsAlpha = vAlpha < 1f
+
+        when {
+            vWantsCache              -> drawNodeCached(inNode, vLayer!!, vAlpha)
+            vWantsTransform          -> drawNodeTransformed(inNode, vLayer!!, vAlpha)
+            vWantsAlpha              -> drawNodeLayered(inNode, vAlpha)
+            else                     -> drawNodeContent(inNode)
+        }
     }
 
     /* Renders the node's subtree into an offscreen texture, then composites it
@@ -118,6 +150,139 @@ internal class Sdl3Renderer(
     fun destroy() {
         for (vT in fLayerTargets) SDL_DestroyTexture(vT.reinterpret())
         fLayerTargets.clear()
+        for (vE in fCache.values) SDL_DestroyTexture(vE.texture.reinterpret())
+        fCache.clear()
+    }
+
+    // ============
+    //  Transform: render subtree to an ephemeral window-sized layer, then
+    //  blit just the node's region with SDL_RenderTextureRotated to apply
+    //  scale / rotation / translation / alpha.
+
+    private fun drawNodeTransformed(inNode: LayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
+        val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
+        val vTex = acquireLayer(vRenderer) ?: run { drawNodeContent(inNode); return }
+        renderSubtreeToTarget(vRenderer, vTex, inNode)
+        blitTransformed(vRenderer, vTex, inNode, inLayer, inAlpha)
+    }
+
+    // ============
+    //  Cache: persistent per-node texture, rebuilt when cacheKey changes
+    //  or the window resizes. Reused as-is on subsequent frames.
+
+    private fun drawNodeCached(inNode: LayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
+        val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
+        fSeenThisFrame.add(inNode)
+        val vKey = inLayer.cacheKey!!
+        var vEntry = fCache[inNode]
+        if (vEntry == null || vEntry.key != vKey || fLayerW != backend.pixelWidth || fLayerH != backend.pixelHeight) {
+            vEntry?.let { SDL_DestroyTexture(it.texture.reinterpret()) }
+            fCache.remove(inNode)
+            val vTex = createWindowSizedTarget(vRenderer) ?: run {
+                // Allocation failed — fall through to non-cached transform path.
+                if (inLayer.needsTransform) drawNodeTransformed(inNode, inLayer, inAlpha)
+                else drawNodeContent(inNode)
+                return
+            }
+            renderSubtreeToTarget(vRenderer, vTex, inNode)
+            vEntry = CachedLayer(vKey, vTex)
+            fCache[inNode] = vEntry
+        }
+        blitTransformed(vRenderer, vEntry.texture, inNode, inLayer, inAlpha)
+    }
+
+    /* Render the node's subtree into a target texture at the node's
+       absolute coords. The target is cleared transparent first. The
+       active render scale (= DPR) is preserved across the target switch. */
+    private fun renderSubtreeToTarget(
+        inRenderer: CPointer<cnames.structs.SDL_Renderer>,
+        inTarget: COpaquePointer,
+        inNode: LayoutNode,
+    ) {
+        val vDpr = backend.pixelDensity
+        val vPrev = SDL_GetRenderTarget(inRenderer)
+        fLayerDepth++
+        SDL_SetRenderTarget(inRenderer, inTarget.reinterpret())
+        SDL_SetRenderScale(inRenderer, vDpr, vDpr)
+        SDL_SetRenderDrawColor(inRenderer, 0u, 0u, 0u, 0u)
+        SDL_RenderClear(inRenderer)
+        drawNodeContent(inNode)
+        fLayerDepth--
+        SDL_SetRenderTarget(inRenderer, vPrev)
+        SDL_SetRenderScale(inRenderer, vDpr, vDpr)
+    }
+
+    /* Blit the node region from inSource onto the current render target,
+       applying the layer's scale / rotation / translation and alpha. The
+       source texture holds the subtree at the node's absolute coords, so
+       src_rect = (absX*dpr, absY*dpr, w*dpr, h*dpr) (physical pixels in
+       texture). dst_rect = (absX + translation, scaled). */
+    private fun blitTransformed(
+        inRenderer: CPointer<cnames.structs.SDL_Renderer>,
+        inSource: COpaquePointer,
+        inNode: LayoutNode,
+        inLayer: GraphicsLayerModifier,
+        inAlpha: Float,
+    ) {
+        val vDpr = backend.pixelDensity
+        val vAx = inNode.absoluteX.toFloat()
+        val vAy = inNode.absoluteY.toFloat()
+        val vW = inNode.width.toFloat()
+        val vH = inNode.height.toFloat()
+        val vScaledW = vW * inLayer.scaleX
+        val vScaledH = vH * inLayer.scaleY
+        val vPivotX = vAx + vW * inLayer.transformOrigin.pivotFractionX
+        val vPivotY = vAy + vH * inLayer.transformOrigin.pivotFractionY
+        // After scaling around the pivot, the new top-left is offset by
+        // (pivot - scaled_pivot) where scaled_pivot is the same fraction of
+        // the post-scale bounds. Translation is added on top.
+        val vDstX = vPivotX - vScaledW * inLayer.transformOrigin.pivotFractionX + inLayer.translationX
+        val vDstY = vPivotY - vScaledH * inLayer.transformOrigin.pivotFractionY + inLayer.translationY
+
+        SDL_SetTextureAlphaMod(inSource.reinterpret(),
+            (inAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
+
+        memScoped {
+            val vSrc = alloc<SDL_FRect>().apply {
+                x = vAx * vDpr; y = vAy * vDpr
+                w = vW * vDpr;  h = vH * vDpr
+            }
+            val vDst = alloc<SDL_FRect>().apply {
+                x = vDstX; y = vDstY
+                w = vScaledW; h = vScaledH
+            }
+            if (inLayer.rotationZ == 0f) {
+                SDL_RenderTexture(inRenderer, inSource.reinterpret(), vSrc.ptr, vDst.ptr)
+            } else {
+                val vCenter = alloc<SDL_FPoint>().apply {
+                    x = vScaledW * inLayer.transformOrigin.pivotFractionX
+                    y = vScaledH * inLayer.transformOrigin.pivotFractionY
+                }
+                SDL_RenderTextureRotated(
+                    inRenderer, inSource.reinterpret(),
+                    vSrc.ptr, vDst.ptr,
+                    inLayer.rotationZ.toDouble(),
+                    vCenter.ptr,
+                    SDL_FLIP_NONE,
+                )
+            }
+        }
+    }
+
+    private fun createWindowSizedTarget(
+        inRenderer: CPointer<cnames.structs.SDL_Renderer>,
+    ): COpaquePointer? {
+        val vW = backend.pixelWidth
+        val vH = backend.pixelHeight
+        if (vW <= 0 || vH <= 0) return null
+        val vTex = SDL_CreateTexture(
+            inRenderer,
+            SDL_PIXELFORMAT_RGBA32,
+            SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET,
+            vW, vH,
+        ) ?: return null
+        SDL_SetTextureBlendMode(vTex.reinterpret(), SDL_BLENDMODE_BLEND)
+        return vTex
     }
 
     private fun drawNodeContent(inNode: LayoutNode) {
@@ -153,7 +318,9 @@ internal class Sdl3Renderer(
         // ============
         //  drawBehind modifier(s) — invoke each in modifier order, after
         //  background / border so they sit on top of the chrome but under
-        //  text / image / children.
+        //  text / image / children. flush()+release() between each scope
+        //  so per-modifier draw order is preserved (later modifiers paint
+        //  on top of earlier ones).
         inNode.modifier.foldIn(Unit) { _, element ->
             if (element is androidx.compose.ui.DrawBehindModifier) {
                 val vScope = Sdl3DrawScope(
@@ -163,11 +330,14 @@ internal class Sdl3Renderer(
                     size = androidx.compose.ui.geometry.Size(vW, vH),
                 )
                 element.onDraw(vScope)
+                vScope.release()
             }
         }
 
         // ============
-        //  Canvas{} leaf — drawer set by the Canvas composable.
+        //  Canvas{} leaf — drawer set by the Canvas composable. Batched
+        //  triangles for the whole drawer block submit in one
+        //  SDL_RenderGeometry call.
         val vDrawer = inNode.drawer
         if (vDrawer != null) {
             val vScope = Sdl3DrawScope(
@@ -177,6 +347,7 @@ internal class Sdl3Renderer(
                 size = androidx.compose.ui.geometry.Size(vW, vH),
             )
             vDrawer(vScope)
+            vScope.release()
         }
 
         // ============
