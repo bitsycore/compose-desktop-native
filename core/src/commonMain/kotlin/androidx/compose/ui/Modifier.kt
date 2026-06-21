@@ -167,6 +167,13 @@ class KeyEventDispatch(
    shape parameter). Children drawn inside are restricted to the shape. */
 data class ClipModifier(val shape: Shape) : Modifier.Element
 
+/* Tells the parent Row / Column to give this child a fraction of the
+   leftover main-axis space (after unweighted children take their
+   intrinsic size). fill = true (the default upstream) forces the child
+   to fill its allotted slice; fill = false caps the child at its
+   preferred size while still claiming that share. weight must be > 0. */
+data class LayoutWeightModifier(val weight: Float, val fill: Boolean) : Modifier.Element
+
 /* Node-wide opacity: the node and its whole subtree are rendered to an
    offscreen layer and composited back at this alpha, so overlapping content
    inside doesn't double-blend. Multiple AlphaModifiers multiply. Applied by

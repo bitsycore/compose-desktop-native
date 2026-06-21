@@ -3,6 +3,7 @@ package androidx.compose.foundation.layout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ComposeNode
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.LayoutWeightModifier
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.MeasurePolicy
@@ -20,7 +21,7 @@ fun Column(
     modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     ComposeNode<LayoutNode, NodeApplier>(
         factory = { LayoutNode() },
@@ -30,10 +31,12 @@ fun Column(
                 this.measurePolicy = ColumnMeasurePolicy(verticalArrangement, horizontalAlignment)
             }
         },
-        content = content
+        content = { ColumnScope.content() }
     )
 }
 
+/* See RowMeasurePolicy for the two-pass weighted-measurement scheme;
+   Column is the same with the main axis being vertical. */
 private class ColumnMeasurePolicy(
     private val arrangement: Arrangement.Vertical,
     private val alignment: Alignment.Horizontal
@@ -47,33 +50,70 @@ private class ColumnMeasurePolicy(
         val availH = if (constraints.maxHeight == Constraints.Infinity) Constraints.Infinity
                      else (constraints.maxHeight - pt - pb).coerceAtLeast(0)
 
-        val childConstraints = Constraints(
-            minWidth = 0, maxWidth = availW,
-            minHeight = 0, maxHeight = availH
-        )
-
-        val sizes = mutableListOf<Int>()
-        var maxW = 0; var totalH = 0
         val gap = arrangement.spacing
-        val gapTotal = if (node.children.size > 1) gap * (node.children.size - 1) else 0
+        val n = node.children.size
+        val gapTotal = if (n > 1) gap * (n - 1) else 0
 
-        for (child in node.children) {
-            val used = totalH + (if (sizes.isNotEmpty()) gap else 0)
+        val sizes = IntArray(n)
+        val weights = FloatArray(n)
+        val fills = BooleanArray(n)
+        for (i in 0 until n) weights[i] = weightOf(node.children[i]).also { fills[i] = fillOf(node.children[i]) }
+        val totalWeight = weights.sum()
+        val hasWeights = totalWeight > 0f && availH != Constraints.Infinity
+
+        var maxW = 0
+        var consumedH = 0
+        for (i in 0 until n) {
+            if (weights[i] > 0f && hasWeights) continue
             val remaining = if (availH == Constraints.Infinity) Constraints.Infinity
-                            else (availH - used).coerceAtLeast(0)
-            val cc = childConstraints.copy(maxHeight = remaining)
-            val s = child.measure(cc)
-            sizes.add(s.height)
+                            else (availH - consumedH - gapTotal).coerceAtLeast(0)
+            val cc = Constraints(minWidth = 0, maxWidth = availW, minHeight = 0, maxHeight = remaining)
+            val s = node.children[i].measure(cc)
+            sizes[i] = s.height
+            consumedH += s.height
             maxW = max(maxW, s.width)
-            totalH += s.height
+        }
+        if (hasWeights) {
+            val leftover = (availH - consumedH - gapTotal).coerceAtLeast(0)
+            val raw = FloatArray(n)
+            for (i in 0 until n) if (weights[i] > 0f) raw[i] = leftover * weights[i] / totalWeight
+            val slice = IntArray(n)
+            var assigned = 0
+            for (i in 0 until n) if (weights[i] > 0f) {
+                slice[i] = raw[i].toInt()
+                assigned += slice[i]
+            }
+            var drift = leftover - assigned
+            if (drift != 0) {
+                val order = (0 until n).filter { weights[it] > 0f }
+                    .sortedByDescending { raw[it] - raw[it].toInt() }
+                for (i in order) {
+                    if (drift == 0) break
+                    slice[i] += 1
+                    drift -= 1
+                }
+            }
+            for (i in 0 until n) if (weights[i] > 0f) {
+                val cc = if (fills[i]) Constraints(
+                    minWidth = 0, maxWidth = availW,
+                    minHeight = slice[i], maxHeight = slice[i],
+                ) else Constraints(
+                    minWidth = 0, maxWidth = availW,
+                    minHeight = 0, maxHeight = slice[i],
+                )
+                val s = node.children[i].measure(cc)
+                sizes[i] = s.height
+                maxW = max(maxW, s.width)
+            }
         }
 
+        val totalChildH = sizes.sum()
         val w = (maxW + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (totalH + gapTotal + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
+        val h = (totalChildH + gapTotal + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
         val innerW = w - pl - pr
 
-        val positions = IntArray(sizes.size)
-        arrangement.arrange(h - pt - pb, sizes, positions)
+        val positions = IntArray(n)
+        arrangement.arrange(h - pt - pb, sizes.toList(), positions)
 
         node.children.forEachIndexed { i, child ->
             val xOff = alignment.align(child.width, innerW)
@@ -81,5 +121,16 @@ private class ColumnMeasurePolicy(
         }
 
         return IntSize(w, h)
+    }
+
+    private fun weightOf(inNode: LayoutNode): Float {
+        var v = 0f
+        inNode.modifier.foldIn(Unit) { _, e -> if (e is LayoutWeightModifier) v = e.weight }
+        return v
+    }
+    private fun fillOf(inNode: LayoutNode): Boolean {
+        var v = true
+        inNode.modifier.foldIn(Unit) { _, e -> if (e is LayoutWeightModifier) v = e.fill }
+        return v
     }
 }
