@@ -54,8 +54,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // api so apps depending on :window also get the compose re-impl,
-            // Res/resources, GpuMode, etc. from :core.
+            // Res/resources, GpuMode, etc. from :core, and the Material
+            // widget set (Button/Text/MaterialTheme/...) from :material.
             api(project(":core"))
+            api(project(":material"))
             implementation(libs.kotlinx.coroutines.core)
             // setMain() / resetMain() are the only public APIs to swap the
             // process-global Dispatchers.Main. Despite the "test" naming,

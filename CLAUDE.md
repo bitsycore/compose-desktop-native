@@ -26,9 +26,16 @@ the `com.compose.desktop.native` Kotlin package; the re-implemented Compose
 APIs keep their upstream `androidx.compose.*` names, in `core/commonMain`.
 
 - `core/` (publishes as `compose-desktop-native-core`) — renderer-agnostic
-  base: the `androidx.compose.*` re-impl, `RenderBackend` interface,
-  `GpuMode`, `SDL3Backend`, window / clipboard / event / resource IO, and
-  the bundled default font. Owns the `sdl3` cinterop.
+  base: the `androidx.compose.foundation` / `.ui` / `.animation` re-impl,
+  `RenderBackend` interface, `GpuMode`, `SDL3Backend`, window / clipboard /
+  event / resource IO, and the bundled default font. Owns the `sdl3`
+  cinterop. **No Material code** — Material widgets live in `:material`.
+- `material/` (publishes as `compose-desktop-native-material`) — Material
+  widgets re-implemented on top of `:core` (Button / Text / MaterialTheme /
+  Surface / TextField / Slider / Switch / Checkbox / Radio / Chip / Card /
+  Dialog / DropdownMenu / SegmentedButton / Snackbar / Tooltip /
+  ProgressIndicator). Apps that only want the foundation+ui base without
+  Material can skip pulling this in.
 - `renderer-sdl3/` (publishes as `compose-desktop-native-renderer-sdl3`) —
   pure-SDL3 renderer (+ `sdl3_ttf`, `sdl3_image`, `freetype` cinterops).
   Exposes `createRenderBackend(...)` / `rendererPreferredGpuMode()`. All
@@ -39,7 +46,8 @@ APIs keep their upstream `androidx.compose.*` names, in `core/commonMain`.
 - `window/` (publishes as `compose-desktop-native`) — what apps depend on.
   Owns `composeWindow()` and selects a renderer per target by depending on
   exactly one renderer module: mingwX64 → sdl3 (always); macOS/Linux →
-  skia, or sdl3 under `-Prenderer=sdl3`. Re-exports `:core` via `api`.
+  skia, or sdl3 under `-Prenderer=sdl3`. Re-exports `:core` + `:material`
+  via `api`.
 - `material-symbols/{outlined,rounded,sharp}/` (publishes as
   `compose-desktop-material-symbols-{outlined,rounded,sharp}`) — Material
   Symbols icon-font modules. Each ships its variable font (downloaded at

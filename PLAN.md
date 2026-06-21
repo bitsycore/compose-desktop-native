@@ -1,89 +1,197 @@
 # PLAN.md
 
-What's still missing on top of the current ComposeNativeSDL3 implementation.
-Phases 0–6 of the original TextField roadmap are done (BasicTextField,
-selection, clipboard, undo/redo, multi-line, soft-wrap, Material chrome).
-Skia + SDL3 renderers, HiDPI, Window API, and the Sdl3.* driver picker
-are all in.
+Roadmap for bringing this Kotlin/Native subset of Compose closer to the
+upstream `androidx.compose.foundation` / `.ui` / `.animation` surface.
+Items are tackled in order; each one is its own commit. Strike through
+when done.
 
----
+## Step 0 — Modularisation: split Material out of :core
 
-## TextField — Phase 7 (IME)
+`:core` should be the "foundation + ui + animation" base of Compose.
+Material widgets (`androidx.compose.material.*`) currently live in
+`:core` but conceptually belong on top.
 
-The single biggest feature gap. SDL3 already gives us text-input events;
-the IME composition handling isn't wired through.
+- New module `:material` (Gradle artifact id
+  `compose-desktop-native-material`). Depends on `:core` via `api`.
+- Move every file under
+  `core/src/commonMain/kotlin/androidx/compose/material/` into the new
+  module, preserving package names (so callers' imports don't change).
+- Make `:window` re-export `:material` via `api` so existing app code
+  that just depends on `:window` keeps working.
+- Update `settings.gradle.kts` to include the new module.
+- Verify the demo builds with both Skia and SDL3 renderers and that
+  screenshots are pixel-identical to pre-split.
 
-- `SDL_StartTextInput(window)` on focus, `SDL_StopTextInput(window)` on
-  unfocus (currently always on).
-- `SDL_EVENT_TEXT_EDITING` → in-progress composition; render with the
-  Compose "composition" range styled (underlined).
-- Replace composition range on `SDL_EVENT_TEXT_INPUT` commit.
-- `SDL_SetTextInputArea(window, rect, cursor)` per frame so the OS IME
-  candidate window pops near the cursor.
-- Dead keys (´ + e = é) — comes through `SDL_EVENT_TEXT_EDITING` then
-  `SDL_EVENT_TEXT_INPUT`.
-- CJK composition + candidate windows.
-- AnnotatedString-like styling for the composition range underline.
+## Audit — what's missing (informs steps 1-10)
 
-## TextField — Phase 8 (Behaviour polish)
+### `androidx.compose.foundation`
 
-- `KeyboardOptions(imeAction, keyboardType, autoCorrect, capitalization)`
-- `KeyboardActions(onDone, onSearch, onNext, …)`
-- `visualTransformation` (`PasswordVisualTransformation`)
-- `decorationBox` slot for fully custom chrome
-- `onTextLayout` callback exposing line metrics + cursor positions
-- `interactionSource` (hover / press / focus)
-- Cursor-into-view auto-scroll inside tall TextField
+**Tier A (common patterns block on these)**
+- `RowScope.weight()` / `ColumnScope.weight()` — confirmed absent.
+- `pointerInput` + gesture DSL (`awaitPointerEventScope`,
+  `awaitFirstDown`, `detectTapGestures`, `detectDragGestures`,
+  `detectTransformGestures`). Currently only one-shot callbacks
+  (`clickable`, `onPressed`, `onDrag`).
+- `combinedClickable` — long-press / double-tap.
+- `AnnotatedString` + `SpanStyle` / `ParagraphStyle` /
+  `buildAnnotatedString` — no rich text today.
+- `TextStyle` / `FontFamily` / `FontWeight` declarative font
+  resolution — today `fontFamily: String?` is a raw name and
+  `fontSize: Int`.
+- `InteractionSource` / `Indication` — no shared press/hover/focus
+  state object, no swappable visual feedback (ripple, focus ring).
+- `LazyRow` — only LazyColumn exists.
+- `LazyVerticalGrid` / `LazyHorizontalGrid` / `LazyStaggeredGrid` —
+  also absent.
 
-## LazyColumn — real virtualization
+**Tier B**
+- `Pager` / `HorizontalPager` / `VerticalPager` — page snapping.
+- `stickyHeader` / `animateItemPlacement` inside LazyColumn.
+- `SelectionContainer` — text selection across composables.
+- `TextOverflow` — clip / ellipsis / visible.
+- `VisualTransformation` — password masking, formatted input.
+- `KeyboardOptions` / `KeyboardActions` — soft-keyboard hints.
+- `draggable` / `scrollable` / `anchoredDraggable` — standalone gesture
+  modifiers separate from scroll containers.
 
-Currently composes all items each frame; works fine until ~hundreds of
-items. Need:
+### `androidx.compose.ui`
 
-- Skip composition for items outside the viewport.
-- Item height caching keyed by index.
-- `LazyListState` (firstVisibleItemIndex, scrollOffset) + animations.
-- `key { }` for stable item identity across data changes.
+**Tier A**
+- `Modifier.layout { measurable, constraints -> ... }` — the
+  foundational "write a custom layout from one composable" hook.
+- Public `Layout(content, measurePolicy)` composable + the
+  `MeasurePolicy` / `MeasureScope` / `Placeable` / `IntrinsicMeasurable`
+  public API. Internals exist (LayoutNode) but aren't exposed.
+- `Modifier.composed { ... }` — composition-aware modifier factory.
+- `Path` (with `moveTo` / `lineTo` / `cubicTo` / `quadraticBezierTo` /
+  `arcTo` / `close`) and `DrawScope.drawPath` / `clipPath`. Custom
+  shapes are stuck on Rectangle / RoundedRect today.
+- `Modifier.aspectRatio`, `.zIndex`, `.shadow`, `.rotate`, `.scale`,
+  `.offset(IntOffset)` variants. `.rotate` / `.scale` are trivial
+  wrappers over `graphicsLayer`.
+- `FocusRequester` + `LocalFocusManager` — programmatic focus.
+- `Modifier.onFocusChanged` / `onFocusEvent` as standalone modifiers.
 
-## Renderer / backend
+**Tier B**
+- DrawScope completeness: `drawOval`, `drawRoundRect`, `drawPath`,
+  `drawText`, `drawImage`, `drawPoints`, plus transform DSL
+  (`withTransform`, `rotate`, `translate`, `scale`, `inset`,
+  `clipRect`, `clipPath`).
+- `CutCornerShape`, `GenericShape`, `AbsoluteRoundedCornerShape`.
+- `ColorFilter`, `BlendMode`, `RenderEffect` (Skia supports natively).
+- `Modifier.drawWithCache`, `drawWithContent`, `paint(Painter)`.
+- `Modifier.semantics`, `contentDescription`, `Role`, `testTag` (a11y +
+  UI testing).
+- `rememberSaveable` + `Saver` / `MapSaver` / `ListSaver`.
+- `WindowInsets` (desktop has analogs — menubar inset, traffic-light
+  overlap on macOS).
+- `Rect`, `RoundRect`, `CornerRadius` — only `Offset` / `Size` exposed
+  today.
 
-- **Sdl3 hinting parity** — Skia uses light hinting + subpixel positioning;
-  SDL3_ttf defaults to normal grayscale hinting. Try
-  `TTF_SetFontHinting(font, TTF_HINTING_LIGHT)` to bring them closer.
-- **Sdl3 rounded-rect borders** — current ring strip is fine at small
-  radii, gets visibly faceted at large ones (try
-  `RoundedCornerShape(50)`). Bump segment count or move to a stroked
-  path approach.
-- **Sdl3 shape clipping** — `SDL_SetRenderClipRect` is rectangular only,
-  so clipping a `RoundedCornerShape` reveals corners on children that
-  draw outside the shape's curve. Need a stencil / mask texture path.
-- **Window resize**: bridges (Metal especially) rebuild their drawable
-  every frame; CPU + GL rebuild on resize. Make sure no leak under
-  rapid resize.
+### `androidx.compose.animation`
 
-## Build / tooling
+**Entire package — not implemented.** Biggest single gap.
 
-- **Linux validation** — code compiles for `linuxX64` but hasn't been
-  smoke-tested on a real Linux desktop with `libsdl3-dev` /
-  `libsdl3-ttf-dev`. Run the demo, hit a few screens, fix anything broken.
-- **Windows validation** — mingwX64 hasn't been smoke-tested either; the
-  source compiles on macOS up to the cinterop step (which needs the
-  Windows SDL3 headers). When running on Windows, verify:
-  - SDL3.dll + SDL3_ttf.dll are next to the .kexe (or on PATH)
-  - The fonts/ directory is copied next to the binary
-  - `Sdl3.Auto` picks Direct3D 11 or 12, `--gpu=sdl3.d3d12` works
-- **Configuration cache compatibility** — most of build.gradle is
-  config-cache-friendly, but the gradle property switch for
-  `-Prenderer=sdl3` doesn't invalidate the cache when toggled; you have
-  to delete `.gradle/configuration-cache/` between switches.
+- `animateFloatAsState`, `animateDpAsState`, `animateColorAsState`,
+  `animateIntAsState`, `animateValueAsState<T>` — bread-and-butter.
+- `Animatable<T>` — imperative handle for `snap` / `animateTo` /
+  `animateDecay` / `stop`.
+- `AnimationSpec` + `tween`, `spring`, `snap`, `keyframes`,
+  `repeatable`, `infiniteRepeatable`.
+- `InfiniteTransition` + `rememberInfiniteTransition`.
+- `Transition`, `updateTransition` — coordinated multi-property
+  animations.
+- `Easing` + `LinearEasing`, `FastOutSlowInEasing`, `CubicBezierEasing`.
+- `AnimatedVisibility`, `AnimatedContent`, `Crossfade`.
+- `Modifier.animateContentSize`.
 
-## Smaller stuff
+## Steps (ordered by impact / unblocking)
 
-- `Modifier.weight(...)` for Row/Column.
-- `Modifier.aspectRatio(...)`.
-- `Modifier.alpha(...)` (renderer compositing).
-- `LaunchedEffect`/`SideEffect`/`DisposableEffect` — partial coverage; audit.
-- Snapshot of the final SDL3-renderer pixels still off by one pixel on
-  the right edge of borders in some cases — investigate.
-- True PNG screenshot output (currently writes BMP; Skiko Native has no
-  encoder).
+- [ ] **Step 1 — `RowScope.weight()` / `ColumnScope.weight()`.** Small,
+  blocks many layouts. Today there's no way to say "split the leftover
+  space 1:2 between these two children". Add the standard upstream
+  semantics: children with a `weight` first take their measured size of
+  the cross axis, then split the remaining main axis proportionally;
+  `fill = false` lets them stay at their min content size while still
+  claiming weight share.
+
+- [ ] **Step 2 — Public `Layout` composable + `MeasurePolicy` API +
+  `Modifier.layout { ... }`.** Opens the door to user-written custom
+  layouts without forking `:core`. LayoutNode already does measure /
+  place; this step is mostly exposing the right interfaces
+  (`Measurable`, `Placeable`, `MeasureScope`) and a thin
+  `Layout(content, measurePolicy)` composable that builds a LayoutNode
+  with the provided policy. `Modifier.layout` wraps a child's measure
+  in a user lambda.
+
+- [ ] **Step 3 — `androidx.compose.animation` core.** Biggest gap by
+  user-facing impact. Eliminates the hand-rolled `LaunchedEffect {
+  while(true) ... delay(16) }` loops (e.g. the M3 spinner). Concretely:
+  `Animatable<T>`, `AnimationSpec` (`tween`, `spring`, `snap`,
+  `keyframes`, `repeatable`, `infiniteRepeatable`), `Easing`
+  (`LinearEasing`, `FastOutSlowInEasing`, `CubicBezierEasing`), the
+  `animate*AsState` family for `Float` / `Dp` / `Int` / `Color`,
+  `InfiniteTransition` / `rememberInfiniteTransition`. Driven by the
+  existing `SDL3FrameClock` (already a `MonotonicFrameClock`).
+  Wrappers like `AnimatedVisibility`, `Crossfade`, and
+  `Modifier.animateContentSize` come after the core.
+
+- [ ] **Step 4 — `pointerInput` + gesture DSL.** Unlocks custom
+  interactions. `Modifier.pointerInput(*keys) { /* PointerInputScope */
+  }`, `awaitPointerEventScope`, `awaitFirstDown`,
+  `waitForUpOrCancellation`, `detectTapGestures(onPress, onDoubleTap,
+  onLongPress, onTap)`, `detectDragGestures(onDragStart, onDrag,
+  onDragEnd)`, `detectTransformGestures(onGesture)`,
+  `combinedClickable`. Routed off the existing `ComposeWindow` event
+  dispatch.
+
+- [ ] **Step 5 — `Path` + `drawPath` + DrawScope completion +
+  `CutCornerShape` / `GenericShape`.** Add `Path` with `moveTo`,
+  `lineTo`, `quadraticBezierTo`, `cubicTo`, `arcTo`, `relativeLineTo`
+  etc.; `DrawScope.drawPath` / `clipPath` / `drawOval` /
+  `drawRoundRect` / `drawImage` / `drawText` / `drawPoints`; transform
+  DSL (`withTransform { rotate / translate / scale / inset / clipRect /
+  clipPath }`). Skia maps almost 1:1; SDL3 tessellates paths into
+  triangle fans.
+
+- [ ] **Step 6 — `AnnotatedString` + `TextStyle`.** Mixed-style runs,
+  inline icons, hyperlink-style spans. `AnnotatedString` with
+  `SpanStyle` / `ParagraphStyle`, `buildAnnotatedString`, `TextStyle`
+  aggregate (`fontWeight`, `fontStyle`, `letterSpacing`, `lineHeight`,
+  `textDecoration`), declarative `FontFamily` / `FontWeight`,
+  `TextOverflow` (clip / ellipsis / visible).
+
+- [ ] **Step 7 — Thin Modifier convenience wrappers.** Small commit,
+  immediately useful. `Modifier.rotate(degrees)`, `.scale(scaleX,
+  scaleY)`, `.aspectRatio(ratio, matchHeightConstraintsFirst)`,
+  `.zIndex(value)`, `.shadow(elevation, shape, clip)`,
+  `.offset(IntOffset)`. Most are one-line wrappers over the existing
+  `graphicsLayer`; shadow needs a Skia drop-shadow paint + an SDL3
+  blurred-quad fallback.
+
+- [ ] **Step 8 — `FocusRequester` / `FocusManager`.** Programmatic
+  focus control (today focus only follows clicks). `FocusRequester`
+  with `.requestFocus()`, `LocalFocusManager`,
+  `focusProperties { next = ..., previous = ... }`, `onFocusChanged` /
+  `onFocusEvent` standalone modifiers.
+
+- [ ] **Step 9 — `LazyRow` + `LazyVerticalGrid`.** Extends the lazy
+  story. `LazyRow` reuses LazyListState; `LazyVerticalGrid` adds
+  `GridCells.Fixed(count)` and `GridCells.Adaptive(minSize)`.
+  `stickyHeader` inside `LazyListScope` as a follow-up.
+
+- [ ] **Step 10 — `InteractionSource` + `Indication`.**
+  `MutableInteractionSource` (Press / Hover / Focus emissions),
+  `Indication` interface, default ripple indication, default
+  focus-ring indication. Wire into `clickable` / `focusable` /
+  `hoverable` so visual feedback is uniform and pluggable.
+
+## How each step lands
+
+1. One commit per step (no bundling).
+2. Each step adds a small demo screen (where visually relevant) so the
+   feature is exercised end-to-end on both Skia and SDL3.
+3. After each step, run `--screenshot` on both renderers and confirm
+   parity with what changed.
+4. CLAUDE.md gets a short note for any new public API surface that
+   reshapes how downstream code consumes the library.
