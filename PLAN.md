@@ -136,7 +136,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   Wrappers like `AnimatedVisibility`, `Crossfade`, and
   `Modifier.animateContentSize` come after the core.
 
-- [ ] **Step 4 — `pointerInput` + gesture DSL.** Unlocks custom
+- [x] **Step 4 — `pointerInput` + gesture DSL.** Unlocks custom
   interactions. `Modifier.pointerInput(*keys) { /* PointerInputScope */
   }`, `awaitPointerEventScope`, `awaitFirstDown`,
   `waitForUpOrCancellation`, `detectTapGestures(onPress, onDoubleTap,

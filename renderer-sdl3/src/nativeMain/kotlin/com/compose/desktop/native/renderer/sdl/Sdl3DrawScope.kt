@@ -5,6 +5,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.graphics.Path as ComposePath
+import androidx.compose.ui.graphics.PathCommand
 import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
@@ -198,6 +200,92 @@ internal class Sdl3DrawScope(
 		}
 	}
 
+	override fun drawPath(
+		path: ComposePath,
+		brush: Brush,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		// Linearise the path into polyline sub-paths, then fan-triangulate
+		// each. Stroking is approximated as a per-segment thick quad.
+		val vSampler = samplerFor(brush, size, alpha)
+		val vSubpaths = linearisePath(path)
+		when (style) {
+			Fill -> for (vSub in vSubpaths) fanFill(vSub, vSampler)
+			is Stroke -> for (vSub in vSubpaths) strokePolyline(vSub, style.width, vSampler)
+		}
+	}
+
+	override fun drawOval(
+		brush: Brush,
+		topLeft: Offset,
+		size: Size,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		val vSampler = samplerFor(brush, size, alpha)
+		val vCx = fOriginX + topLeft.x + size.width / 2f
+		val vCy = fOriginY + topLeft.y + size.height / 2f
+		val vRx = size.width / 2f
+		val vRy = size.height / 2f
+		when (style) {
+			Fill -> emitFilledArc(vCx, vCy, vRx, vRy, 0f, 360f, true, 64, vSampler)
+			is Stroke -> {
+				// Approximate oval stroke as ring between r - w/2 and r + w/2
+				// using the smaller axis as the radius reference.
+				val vR = kotlin.math.min(vRx, vRy)
+				emitStrokedArc(vCx, vCy, vR - style.width / 2f, vR + style.width / 2f, 0f, 360f, 64, vSampler)
+			}
+		}
+	}
+
+	override fun drawRoundRect(
+		brush: Brush,
+		topLeft: Offset,
+		size: Size,
+		cornerRadius: Float,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		val vSampler = samplerFor(brush, size, alpha)
+		val vR = cornerRadius.coerceIn(0f, kotlin.math.min(size.width, size.height) / 2f)
+		val vX = fOriginX + topLeft.x
+		val vY = fOriginY + topLeft.y
+		val vW = size.width
+		val vH = size.height
+		if (vR <= 0f) {
+			// Trivial: just two triangles.
+			emitQuad(vX, vY, vX + vW, vY, vX + vW, vY + vH, vX, vY + vH, vSampler)
+			return
+		}
+		// Body in 3 strips: middle (full width × inner height), top edge,
+		// bottom edge — plus the 4 corner arcs.
+		if (style == Fill) {
+			// Middle strip
+			emitQuad(vX, vY + vR, vX + vW, vY + vR, vX + vW, vY + vH - vR, vX, vY + vH - vR, vSampler)
+			// Top edge (between left+right corners)
+			emitQuad(vX + vR, vY, vX + vW - vR, vY, vX + vW - vR, vY + vR, vX + vR, vY + vR, vSampler)
+			// Bottom edge
+			emitQuad(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH - vR, vX + vW - vR, vY + vH, vX + vR, vY + vH, vSampler)
+			// 4 corner fills
+			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, false, 16, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vR,         vR, vR, 270f,  90f, false, 16, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vH - vR,    vR, vR,   0f,  90f, false, 16, vSampler)
+			emitFilledArc(vX + vR,          vY + vH - vR,    vR, vR,  90f,  90f, false, 16, vSampler)
+		} else if (style is Stroke) {
+			// Stroked rounded rect: 4 straight edges + 4 quarter arcs.
+			val vSw = style.width
+			drawLine(brush, Offset(topLeft.x + cornerRadius, topLeft.y), Offset(topLeft.x + vW - cornerRadius, topLeft.y), vSw, StrokeCap.Butt, alpha)
+			drawLine(brush, Offset(topLeft.x + vW, topLeft.y + cornerRadius), Offset(topLeft.x + vW, topLeft.y + vH - cornerRadius), vSw, StrokeCap.Butt, alpha)
+			drawLine(brush, Offset(topLeft.x + vW - cornerRadius, topLeft.y + vH), Offset(topLeft.x + cornerRadius, topLeft.y + vH), vSw, StrokeCap.Butt, alpha)
+			drawLine(brush, Offset(topLeft.x, topLeft.y + vH - cornerRadius), Offset(topLeft.x, topLeft.y + cornerRadius), vSw, StrokeCap.Butt, alpha)
+			emitStrokedArc(vX + vR,      vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 180f, 90f, 16, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 270f, 90f, 16, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,   0f, 90f, 16, vSampler)
+			emitStrokedArc(vX + vR,      vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,  90f, 90f, 16, vSampler)
+		}
+	}
+
 	override fun drawLine(
 		brush: Brush,
 		start: Offset,
@@ -227,6 +315,89 @@ internal class Sdl3DrawScope(
 		if (cap == StrokeCap.Round) {
 			emitFilledArc(vX1, vY1, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 12, vSampler)
 			emitFilledArc(vX2, vY2, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 12, vSampler)
+		}
+	}
+
+	// ============
+	//  Path tessellation: linearise curves into polylines, then
+	//  fan-triangulate each sub-path. Fan triangulation only works
+	//  correctly for convex polygons; concave shapes (rare in UI) will
+	//  show overlap artifacts at the concave vertices. Cubics are
+	//  subdivided into a fixed 16 segments (good enough for typical
+	//  UI sizes); refine if needed.
+
+	private fun linearisePath(inPath: ComposePath): List<List<Pair<Float, Float>>> {
+		val vSubs = mutableListOf<MutableList<Pair<Float, Float>>>()
+		var vCurrent: MutableList<Pair<Float, Float>>? = null
+		var vCx = 0f; var vCy = 0f
+		for (vCmd in inPath.commands) when (vCmd) {
+			is PathCommand.MoveTo -> {
+				vCx = fOriginX + vCmd.x; vCy = fOriginY + vCmd.y
+				vCurrent = mutableListOf(vCx to vCy)
+				vSubs.add(vCurrent)
+			}
+			is PathCommand.LineTo -> {
+				vCx = fOriginX + vCmd.x; vCy = fOriginY + vCmd.y
+				vCurrent?.add(vCx to vCy)
+			}
+			is PathCommand.QuadTo -> {
+				val vEx = fOriginX + vCmd.x; val vEy = fOriginY + vCmd.y
+				val vCx1 = fOriginX + vCmd.cx; val vCy1 = fOriginY + vCmd.cy
+				val vN = 12
+				for (vI in 1..vN) {
+					val vT = vI.toFloat() / vN
+					val vOne = 1f - vT
+					val vXx = vOne * vOne * vCx + 2f * vOne * vT * vCx1 + vT * vT * vEx
+					val vYy = vOne * vOne * vCy + 2f * vOne * vT * vCy1 + vT * vT * vEy
+					vCurrent?.add(vXx to vYy)
+				}
+				vCx = vEx; vCy = vEy
+			}
+			is PathCommand.CubicTo -> {
+				val vC1x = fOriginX + vCmd.c1x; val vC1y = fOriginY + vCmd.c1y
+				val vC2x = fOriginX + vCmd.c2x; val vC2y = fOriginY + vCmd.c2y
+				val vEx = fOriginX + vCmd.x;     val vEy = fOriginY + vCmd.y
+				val vN = 16
+				for (vI in 1..vN) {
+					val vT = vI.toFloat() / vN
+					val vOne = 1f - vT
+					val vXx = vOne * vOne * vOne * vCx + 3f * vOne * vOne * vT * vC1x +
+					          3f * vOne * vT * vT * vC2x + vT * vT * vT * vEx
+					val vYy = vOne * vOne * vOne * vCy + 3f * vOne * vOne * vT * vC1y +
+					          3f * vOne * vT * vT * vC2y + vT * vT * vT * vEy
+					vCurrent?.add(vXx to vYy)
+				}
+				vCx = vEx; vCy = vEy
+			}
+			PathCommand.Close -> {
+				val vList = vCurrent ?: continue
+				val vFirst = vList.firstOrNull() ?: continue
+				if (vList.last() != vFirst) vList.add(vFirst)
+			}
+		}
+		return vSubs
+	}
+
+	private fun fanFill(inPolyline: List<Pair<Float, Float>>, inSampler: Sampler) {
+		if (inPolyline.size < 3) return
+		val (vAx, vAy) = inPolyline[0]
+		for (vI in 1 until inPolyline.size - 1) {
+			val (vBx, vBy) = inPolyline[vI]
+			val (vCx, vCy) = inPolyline[vI + 1]
+			emitTri(vAx, vAy, vBx, vBy, vCx, vCy, inSampler)
+		}
+	}
+
+	private fun strokePolyline(inPolyline: List<Pair<Float, Float>>, inWidth: Float, inSampler: Sampler) {
+		for (vI in 0 until inPolyline.size - 1) {
+			val (vAx, vAy) = inPolyline[vI]
+			val (vBx, vBy) = inPolyline[vI + 1]
+			val vDx = vBx - vAx; val vDy = vBy - vAy
+			val vLen = sqrt(vDx * vDx + vDy * vDy)
+			if (vLen < 1e-4f) continue
+			val vNx = -vDy / vLen * inWidth / 2f
+			val vNy =  vDx / vLen * inWidth / 2f
+			emitQuad(vAx + vNx, vAy + vNy, vBx + vNx, vBy + vNy, vBx - vNx, vBy - vNy, vAx - vNx, vAy - vNy, inSampler)
 		}
 	}
 

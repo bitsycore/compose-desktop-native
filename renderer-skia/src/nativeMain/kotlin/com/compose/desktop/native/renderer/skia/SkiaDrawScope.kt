@@ -5,6 +5,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.graphics.Path as ComposePath
+import androidx.compose.ui.graphics.PathCommand
 import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
@@ -22,7 +24,10 @@ import org.jetbrains.skia.Gradient
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.PaintMode
 import org.jetbrains.skia.PaintStrokeCap
+import org.jetbrains.skia.Path as SkiaPath
+import org.jetbrains.skia.PathBuilder
 import org.jetbrains.skia.Point
+import org.jetbrains.skia.RRect
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Shader
 
@@ -115,6 +120,71 @@ internal class SkiaDrawScope(
 			vPaint,
 		)
 		vPaint.close()
+	}
+
+	override fun drawPath(
+		path: ComposePath,
+		brush: Brush,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		val vPaint = paintFor(brush, alpha, style, size)
+		val vSk = toSkiaPath(path)
+		fCanvas.drawPath(vSk, vPaint)
+		vSk.close()
+		vPaint.close()
+	}
+
+	override fun drawOval(
+		brush: Brush,
+		topLeft: Offset,
+		size: Size,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		val vPaint = paintFor(brush, alpha, style, size)
+		val vRect = Rect.makeXYWH(
+			fOriginX + topLeft.x, fOriginY + topLeft.y,
+			size.width, size.height,
+		)
+		fCanvas.drawOval(vRect, vPaint)
+		vPaint.close()
+	}
+
+	override fun drawRoundRect(
+		brush: Brush,
+		topLeft: Offset,
+		size: Size,
+		cornerRadius: Float,
+		alpha: Float,
+		style: DrawStyle,
+	) {
+		val vPaint = paintFor(brush, alpha, style, size)
+		val vRR = RRect.makeXYWH(
+			fOriginX + topLeft.x, fOriginY + topLeft.y,
+			size.width, size.height, cornerRadius,
+		)
+		fCanvas.drawRRect(vRR, vPaint)
+		vPaint.close()
+	}
+
+	private fun toSkiaPath(inPath: ComposePath): SkiaPath {
+		val vB = PathBuilder()
+		for (vCmd in inPath.commands) when (vCmd) {
+			is PathCommand.MoveTo  -> vB.moveTo(fOriginX + vCmd.x, fOriginY + vCmd.y)
+			is PathCommand.LineTo  -> vB.lineTo(fOriginX + vCmd.x, fOriginY + vCmd.y)
+			is PathCommand.QuadTo  -> vB.quadTo(
+				fOriginX + vCmd.cx, fOriginY + vCmd.cy,
+				fOriginX + vCmd.x,  fOriginY + vCmd.y,
+			)
+			is PathCommand.CubicTo -> vB.cubicTo(
+				fOriginX + vCmd.c1x, fOriginY + vCmd.c1y,
+				fOriginX + vCmd.c2x, fOriginY + vCmd.c2y,
+				fOriginX + vCmd.x,   fOriginY + vCmd.y,
+			)
+			PathCommand.Close      -> vB.closePath()
+		}
+		return vB.snapshot()
 	}
 
 	// ============

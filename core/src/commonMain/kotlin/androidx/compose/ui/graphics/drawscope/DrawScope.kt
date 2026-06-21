@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 
 // ==================
@@ -70,6 +71,35 @@ interface DrawScope {
 		alpha: Float = 1f,
 	)
 
+	/* Fill or stroke an arbitrary Path. Sub-paths separated by moveTo
+	   form discontiguous figures; the renderer fills each one. */
+	fun drawPath(
+		path: Path,
+		brush: Brush,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	)
+
+	/* Fill or stroke an ellipse inscribed in the given rect. */
+	fun drawOval(
+		brush: Brush,
+		topLeft: Offset = Offset.Zero,
+		size: Size = this.size,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	)
+
+	/* Fill or stroke a rectangle with rounded corners. cornerRadius is
+	   uniform; pass 0 for a sharp-cornered rect. */
+	fun drawRoundRect(
+		brush: Brush,
+		topLeft: Offset = Offset.Zero,
+		size: Size = this.size,
+		cornerRadius: Float,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	)
+
 	// ============
 	//  Color overloads — convenience wrappers that boxing the colour into
 	//  a SolidColor brush. Cheap and keep the call-site short.
@@ -109,4 +139,28 @@ interface DrawScope {
 		cap: StrokeCap = StrokeCap.Butt,
 		alpha: Float = 1f,
 	) = drawLine(SolidColor(color), start, end, strokeWidth, cap, alpha)
+
+	fun drawPath(
+		path: Path,
+		color: Color,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	) = drawPath(path, SolidColor(color), alpha, style)
+
+	fun drawOval(
+		color: Color,
+		topLeft: Offset = Offset.Zero,
+		size: Size = this.size,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	) = drawOval(SolidColor(color), topLeft, size, alpha, style)
+
+	fun drawRoundRect(
+		color: Color,
+		topLeft: Offset = Offset.Zero,
+		size: Size = this.size,
+		cornerRadius: Float,
+		alpha: Float = 1f,
+		style: DrawStyle = Fill,
+	) = drawRoundRect(SolidColor(color), topLeft, size, cornerRadius, alpha, style)
 }
