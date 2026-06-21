@@ -54,6 +54,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     }
 
     private val fFreeTypeIcons = FreeTypeIcons()
+    private val fFreeTypeText = FreeTypeText()
 
     // HiDPI scale. Fonts are opened at fontSize * DPR pixels so the
     // rasterised glyph texture matches the physical pixel count of the
@@ -100,6 +101,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             println("TTF_Init failed: ${SDL_GetError()?.toKString()}")
             return false
         }
+        // Register the default font's bytes with FreeTypeText so we can
+        // route text-with-variations through it (the SDL3_ttf path can't
+        // honour wght / wdth axes on its own).
+        defaultFontBytes()?.let { fFreeTypeText.registerFontBytes("", it) }
         return true
     }
 
@@ -112,26 +117,32 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         fFontMem.clear()
         fMissingFamilies.clear()
         fFreeTypeIcons.destroy()
+        fFreeTypeText.destroy()
         TTF_Quit()
     }
 
     val textMeasurer: TextMeasurer = object : TextMeasurer {
-        // SDL3_ttf 3.2 has no variable-axis setter — variations are ignored
-        // here and the base font is opened. The wght axis specifically could
-        // be approximated via TTF_SetFontStyle(BOLD) but that's a binary
-        // toggle, not a gradient; we accept the loss for now.
+        // When variations are present and the family is the default
+        // (no IconFont match), route width / line-height through the
+        // FreeText path so the wght axis the layout sees matches what
+        // gets painted. Without this, layout uses unweighted glyph
+        // widths and the paint then renders wider weighted glyphs,
+        // producing visible right-edge clipping.
         override fun measure(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): IntSize {
             val vWrap = wrap(inText, inFontSize, inMaxWidth, inFontFamily, inFontVariations)
             val vWidth = if (vWrap.lines.isEmpty()) 0
-                         else vWrap.lines.maxOf { measureWidth(it, inFontSize, inFontFamily) }
+                         else vWrap.lines.maxOf { measureWidth(it, inFontSize, inFontFamily, inFontVariations) }
             val vLine = lineHeight(inFontSize, inFontFamily, inFontVariations).toInt().coerceAtLeast(1)
             return IntSize(vWidth, vLine * vWrap.lines.size.coerceAtLeast(1))
         }
 
         override fun wrap(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): WrappedText =
-            wrapTextWithStarts(inText, inFontSize, inMaxWidth, inFontFamily)
+            wrapTextWithStarts(inText, inFontSize, inMaxWidth, inFontFamily, inFontVariations)
 
         override fun lineHeight(inFontSize: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.FontVariation>?): Float {
+            if (shouldUseFreeTypeText(inFontFamily, inFontVariations)) {
+                return fFreeTypeText.lineHeight(inFontFamily, inFontSize, inFontVariations!!)
+            }
             val vFont = getFont(inFontFamily, inFontSize) ?: return inFontSize * 1.3f
             // TTF_GetFontHeight returns physical pixels (we opened the
             // font at fontSize * DPR). Convert back to logical.
@@ -139,10 +150,23 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
     }
 
+    /* Variations on the default family go through the FreeType text
+       path; icon families stay on FreeTypeIcons; everything else falls
+       through to SDL3_ttf. */
+    private fun shouldUseFreeTypeText(
+        inFontFamily: String?,
+        inFontVariations: List<androidx.compose.ui.text.FontVariation>?,
+    ): Boolean {
+        if (inFontVariations.isNullOrEmpty()) return false
+        // IconFont families have their own variable-axis path.
+        if (inFontFamily != null && fFreeTypeIcons.hasFamily(inFontFamily)) return false
+        return fFreeTypeText.hasFamily(inFontFamily)
+    }
+
     /* Greedy soft-wrap that mirrors the Skia renderer's algorithm so the
        cross-platform behaviour stays identical. Hard lines on '\n'; long
        lines split at whitespace, ultra-long words split mid-word. */
-    private fun wrapTextWithStarts(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String? = null): WrappedText {
+    private fun wrapTextWithStarts(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String? = null, inFontVariations: List<androidx.compose.ui.text.FontVariation>? = null): WrappedText {
         if (inText.isEmpty()) return WrappedText(listOf(""), intArrayOf(0))
         val vLines = mutableListOf<String>()
         val vStarts = mutableListOf<Int>()
@@ -153,10 +177,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             val vNl = inText.indexOf('\n', vHardStart)
             val vHardEnd = if (vNl < 0) inText.length else vNl
             val vHard = inText.substring(vHardStart, vHardEnd)
-            if (vUnbounded || vHard.isEmpty() || measureWidth(vHard, inFontSize, inFontFamily) <= inMaxWidth) {
+            if (vUnbounded || vHard.isEmpty() || measureWidth(vHard, inFontSize, inFontFamily, inFontVariations) <= inMaxWidth) {
                 vLines.add(vHard); vStarts.add(vHardStart)
             } else {
-                wrapHardLine(vHard, inFontSize, inMaxWidth, vHardStart, vLines, vStarts, inFontFamily)
+                wrapHardLine(vHard, inFontSize, inMaxWidth, vHardStart, vLines, vStarts, inFontFamily, inFontVariations)
             }
             if (vNl < 0) break
             vHardStart = vNl + 1
@@ -172,6 +196,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         outLines: MutableList<String>,
         outStarts: MutableList<Int>,
         inFontFamily: String? = null,
+        inFontVariations: List<androidx.compose.ui.text.FontVariation>? = null,
     ) {
         var vCurrent = StringBuilder()
         var vLineStartInHard = 0
@@ -182,7 +207,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             while (i < inLine.length && inLine[i].isWhitespace()) i++
             val vWord = inLine.substring(vWordStart, i)
             val vCandidate = vCurrent.toString() + vWord
-            if (measureWidth(vCandidate, inFontSize, inFontFamily) <= inMaxWidth) {
+            if (measureWidth(vCandidate, inFontSize, inFontFamily, inFontVariations) <= inMaxWidth) {
                 vCurrent.append(vWord)
             } else {
                 if (vCurrent.isNotEmpty()) {
@@ -191,10 +216,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                     vLineStartInHard += vCurrent.length
                     vCurrent = StringBuilder()
                 }
-                if (measureWidth(vWord, inFontSize, inFontFamily) > inMaxWidth) {
+                if (measureWidth(vWord, inFontSize, inFontFamily, inFontVariations) > inMaxWidth) {
                     val vSub = StringBuilder()
                     for (ch in vWord) {
-                        if (measureWidth(vSub.toString() + ch, inFontSize, inFontFamily) > inMaxWidth) {
+                        if (measureWidth(vSub.toString() + ch, inFontSize, inFontFamily, inFontVariations) > inMaxWidth) {
                             if (vSub.isNotEmpty()) {
                                 outLines.add(vSub.toString())
                                 outStarts.add(inBaseOffset + vLineStartInHard)
@@ -219,8 +244,18 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
        so TTF_GetStringSize reports physical pixels — divide by DPR to
        get back to logical. */
-    private fun measureWidth(inText: String, inFontSize: Int, inFontFamily: String? = null): Int {
+    private fun measureWidth(
+        inText: String,
+        inFontSize: Int,
+        inFontFamily: String? = null,
+        inFontVariations: List<androidx.compose.ui.text.FontVariation>? = null,
+    ): Int {
         if (inText.isEmpty()) return 0
+        // When variations are present, defer to FreeTypeText so the
+        // measured width matches the (weighted) glyphs we'll paint.
+        if (shouldUseFreeTypeText(inFontFamily, inFontVariations)) {
+            return fFreeTypeText.measureString(inFontFamily, inText, inFontSize, inFontVariations!!)
+        }
         val vKey = Triple(inFontFamily, inText, inFontSize)
         fWidthCache[vKey]?.let { return it }
         val vFont = getFont(inFontFamily, inFontSize) ?: run {
@@ -284,6 +319,33 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             if (vDrew) return
             // Fall through to SDL3_ttf if the FreeType path couldn't draw
             // (missing family, no glyph, etc.) so we at least show *something*.
+        }
+
+        // Variable-axis text path: when the caller passed any variations
+        // (typically wght from a SpanStyle.fontWeight), rasterise through
+        // FreeType so the axis interpolation actually applies.
+        if (shouldUseFreeTypeText(inFontFamily, inFontVariations)) {
+            val vWidth = fFreeTypeText.measureString(inFontFamily, inText, inFontSize, inFontVariations!!)
+            val vHeight = fFreeTypeText.lineHeight(inFontFamily, inFontSize, inFontVariations).toInt().coerceAtLeast(1)
+            val vPenX = when (inAlign) {
+                TextAlign.Start  -> inX.toFloat()
+                TextAlign.Center -> inX + (inBoxWidth - vWidth) / 2f
+                TextAlign.End    -> inX + (inBoxWidth - vWidth).toFloat()
+            }
+            val vPenY = inY + (inBoxHeight - vHeight) / 2f
+            val vDrew = fFreeTypeText.drawString(
+                inSdlRenderer = vRenderer,
+                inFamily = inFontFamily,
+                inText = inText,
+                inPixelSize = inFontSize,
+                inColor = inColor,
+                inVariations = inFontVariations,
+                inX = vPenX,
+                inY = vPenY,
+                inDpr = fDpr,
+            )
+            if (vDrew) return
+            // Otherwise fall through to SDL3_ttf with default styling.
         }
 
         val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inColor) ?: return
