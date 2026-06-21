@@ -67,14 +67,28 @@ internal fun AnnotatedStringScreen() {
 
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle(
-			"AnnotatedString + TextStyle (API only)",
-			"AnnotatedString with SpanStyle / ParagraphStyle, buildAnnotatedString { } DSL, " +
+			"AnnotatedString + TextStyle",
+			"AnnotatedString + SpanStyle / ParagraphStyle, buildAnnotatedString { } DSL, " +
 				"TextStyle aggregate, FontWeight / FontStyle / FontFamily / TextDecoration / " +
-				"TextOverflow. Renderer integration for multi-span text is a TODO — the Text " +
-				"below renders the backing String only, not the styled runs.",
+				"TextOverflow. Text(AnnotatedString) renders each contiguous-style run as a " +
+				"separate BasicText in a horizontal Row (single-line, no soft-wrap across runs).",
 		)
 
-		Section("Backing string from buildAnnotatedString", "The .text of the built AnnotatedString.") {
+		Section(
+			"Text(AnnotatedString) — styled runs",
+			"Each contiguous-style segment renders as its own BasicText laid out in a Row. " +
+				"Color and font weight apply per run; underline is painted via Modifier.drawBehind.",
+		) {
+			Box(modifier = Modifier
+				.background(MaterialTheme.colors.surface, RoundedCornerShape(6.dp))
+			) {
+				Box(modifier = Modifier.padding(12.dp)) {
+					Text(vAnnotated, color = vOnSurface, fontSize = 16.sp)
+				}
+			}
+		}
+
+		Section("Plain backing string", "Same AnnotatedString.text, no styling applied — for comparison.") {
 			Box(modifier = Modifier
 				.background(MaterialTheme.colors.surface, RoundedCornerShape(6.dp))
 			) {

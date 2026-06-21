@@ -154,7 +154,7 @@ Material widgets (`androidx.compose.material.*`) currently live in
   clipPath }`). Skia maps almost 1:1; SDL3 tessellates paths into
   triangle fans.
 
-- [ ] **Step 6 — `AnnotatedString` + `TextStyle`.** Mixed-style runs,
+- [x] **Step 6 — `AnnotatedString` + `TextStyle`.** (API surface; multi-span renderer integration TODO) Mixed-style runs,
   inline icons, hyperlink-style spans. `AnnotatedString` with
   `SpanStyle` / `ParagraphStyle`, `buildAnnotatedString`, `TextStyle`
   aggregate (`fontWeight`, `fontStyle`, `letterSpacing`, `lineHeight`,
