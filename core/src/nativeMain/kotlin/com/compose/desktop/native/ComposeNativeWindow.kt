@@ -121,8 +121,20 @@ class ComposeNativeWindow constructor(
     }
 
     /* Asks composeWindow's main loop to break out at the next frame.
-       Same effect as the user closing the window via the OS. */
+       Same effect as the user closing the window via the OS. Bypasses any
+       onCloseRequest handler — this is the "really quit now" path. */
     fun close() { fCloseRequested = true }
+
+    // ============
+    //  Close interception
+
+    private var fOnCloseRequest: (() -> Boolean)? = null
+
+    /* Register a handler invoked when the user tries to close the window (OS
+       close button / Quit). Return true to let the close proceed, false to veto
+       it (e.g. to show an "unsaved changes" dialog first, then call close()
+       once the user confirms). Pass null to clear. */
+    fun setOnCloseRequest(inHandler: (() -> Boolean)?) { fOnCloseRequest = inHandler }
 
     // ============
     //  Framework hooks — driven by composeWindow's main loop (which lives in
@@ -137,6 +149,10 @@ class ComposeNativeWindow constructor(
     }
 
     val isCloseRequested: Boolean get() = fCloseRequested
+
+    /* Driven by composeWindow's main loop on an OS close / Quit event. Returns
+       true if the close should proceed (no handler, or the handler allowed it). */
+    fun requestCloseFromUser(): Boolean = fOnCloseRequest?.invoke() ?: true
 }
 
 // ==================

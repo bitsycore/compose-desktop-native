@@ -253,7 +253,7 @@ fun nativeComposeWindow(
             val events = pollEvents()
             for (event in events) {
                 when (event) {
-                    is AppEvent.Quit -> running = false
+                    is AppEvent.Quit -> if (composeWindow.requestCloseFromUser()) running = false
 
                     is AppEvent.WindowResized -> {
                         backend.updateWindowSize()
