@@ -83,6 +83,9 @@ private class ReqState(inInitial: ApiRequest) {
     var preview by mutableStateOf(false)  // panel 4 showing the resolved, not-yet-sent request
     var sentReq by mutableStateOf<ApiRequest?>(null)  // resolved request actually sent (Request tab)
     var imageKey: String? = null          // memory-resource key when the response is an image
+    // null = auto-detect from Content-Type each frame; non-null = user-pinned override.
+    var respFormatOverride by mutableStateOf<BodyFormat?>(null)
+    var reqFormat by mutableStateOf(BodyFormat.RAW)  // builder-side: how to highlight the JSON / TEXT body editor
 }
 
 /* One open pack: its file path (null = never saved), a dirty flag (edits since
@@ -967,7 +970,7 @@ private fun RequestBuilder(
             when (inRs.reqTab) {
                 0 -> KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
                 1 -> KeyValEditor(inReq.headers) { v -> inEdit { it.copy(headers = v) } }
-                else -> BodyContent(inReq) { v -> inEdit(v) }
+                else -> BodyContent(inReq, inRs) { v -> inEdit(v) }
             }
         }
 
@@ -980,7 +983,21 @@ private fun RequestBuilder(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Body", color = c.dim, fontSize = 12.sp)
-                BodyTypeMenu(inReq.bodyType, true) { vT -> inEdit { it.copy(bodyType = vT) } }
+                BodyTypeMenu(inReq.bodyType, true) { vT ->
+                    inEdit { it.copy(bodyType = vT) }
+                    // Re-seed the highlighter format from bodyType so JSON →
+                    // JSON colours kicks in automatically when the user picks
+                    // it from the body-type menu.
+                    inRs.reqFormat = when (vT) {
+                        BodyType.JSON -> BodyFormat.JSON
+                        BodyType.TEXT -> inRs.reqFormat
+                        else -> BodyFormat.RAW
+                    }
+                }
+                // Format selector — only relevant for JSON / TEXT bodies.
+                if (inReq.bodyType == BodyType.JSON || inReq.bodyType == BodyType.TEXT) {
+                    BodyFormatSelector(inSelected = inRs.reqFormat, inOnChange = { inRs.reqFormat = it })
+                }
             }
         }
     }
@@ -988,8 +1005,7 @@ private fun RequestBuilder(
 
 /* The body editing area for the current body type (driven by the bottom menu). */
 @Composable
-private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
-    val c = LocalAppColors.current
+private fun BodyContent(inReq: ApiRequest, inRs: ReqState, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
     when (inReq.bodyType) {
         BodyType.NONE -> ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(240.dp))
         BodyType.JSON, BodyType.TEXT -> BodyView(
@@ -997,6 +1013,7 @@ private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) 
             modifier = Modifier.fillMaxWidth().height(240.dp),
             inOnChange = { v -> inEdit { it.copy(body = v) } },
             inPlaceholder = if (inReq.bodyType == BodyType.JSON) "{ }" else "text body",
+            inFormat = inRs.reqFormat,
         )
         BodyType.FORM -> KeyValEditor(inReq.form) { v -> inEdit { it.copy(form = v) } }
         BodyType.FILE -> FileBody(inReq) { v -> inEdit(v) }
@@ -1120,6 +1137,8 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                 else -> {
                     val vHeaders = vResp?.headers ?: emptyList()
                     val vBody = if (vLoading) "…" else vRespBody
+                    val vAutoFmt = autoFormatFor(vResp?.contentType)
+                    val vBodyFmt = inRs.respFormatOverride ?: vAutoFmt
                     HttpFlowView(
                         inStatusLine = formatStatusLine(vResp, c),
                         inStatusLineAccentColor = if (vResp != null) statusColor(vResp.status) else c.dim,
@@ -1133,6 +1152,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                         inHeadersCollapsed = vHeadersCollapsed,
                         inOnToggleCollapse = { vHeadersCollapsed = !vHeadersCollapsed },
                         inShowSecureLock = isTlsValidated(inRs.sentReq?.url ?: inResolved.url, vResp),
+                        inBodyFormat = vBodyFmt,
                     )
                 }
             }
@@ -1150,6 +1170,19 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // Response viewer: format selector for the body. Auto-detected
+                // from Content-Type until the user overrides, then pinned.
+                if (vRespHasContent && vResp != null && !vRespImage) {
+                    val vAuto = autoFormatFor(vResp.contentType)
+                    val vCurrent = inRs.respFormatOverride ?: vAuto
+                    BodyFormatSelector(
+                        inSelected = vCurrent,
+                        inOnChange = { vNew ->
+                            inRs.respFormatOverride = if (vNew == vAuto) null else vNew
+                        },
+                        inAutoLabel = if (inRs.respFormatOverride == null) vAuto.name else null,
+                    )
+                }
                 vMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
                 Spacer(Modifier.weight(1f))
                 if (vRespHasContent && vResp != null && vResp.error == null) {
@@ -1196,6 +1229,7 @@ private fun HttpFlowView(
     inHeadersCollapsed: Boolean,
     inOnToggleCollapse: () -> Unit,
     inShowSecureLock: Boolean = false,
+    inBodyFormat: BodyFormat = BodyFormat.RAW,
 ) {
     val c = LocalAppColors.current
     Column(
@@ -1236,7 +1270,11 @@ private fun HttpFlowView(
                     Image(painter = inImagePainter, contentDescription = "Response image", contentScale = ContentScale.Fit)
                 }
             } else if (inBody != null) {
-                BodyView(inBody, modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp))
+                BodyView(
+                    inText = inBody,
+                    modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+                    inFormat = inBodyFormat,
+                )
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -1277,6 +1315,7 @@ private fun BodyView(
     modifier: Modifier = Modifier,
     inOnChange: ((String) -> Unit)? = null,
     inPlaceholder: String = "",
+    inFormat: BodyFormat = BodyFormat.RAW,
 ) {
     val c = LocalAppColors.current
     val vLines = if (inText.isEmpty()) listOf("") else inText.split('\n')
@@ -1298,23 +1337,28 @@ private fun BodyView(
             }
         }
         Spacer(Modifier.width(6.dp))
-        // Body: a single BasicTextField so selection / copy works; the
-        // gutter alignment relies on the matching line-height, which the
-        // default font metric gives us at 12.sp. Read-only when no
-        // onChange is supplied (response viewer); editable in the
-        // request builder.
+        // Body. Two render paths:
+        //  - RAW or editable: BasicTextField, selectable/editable, no
+        //    syntax colouring (BasicTextField can't show per-char spans).
+        //  - JSON / XML / HTML / YAML read-only: Text(AnnotatedString)
+        //    with the tokeniser's colour spans. Selection is lost but the
+        //    overflow menu's Copy actions cover that case.
         Box(modifier = Modifier.weight(1f)) {
             if (inText.isEmpty() && inPlaceholder.isNotEmpty()) {
                 Text(inPlaceholder, color = c.dim, fontSize = 12.sp)
             }
-            BasicTextField(
-                value = inText,
-                onValueChange = inOnChange ?: {},
-                readOnly = inOnChange == null,
-                color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
-                fontSize = 12.sp,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (inFormat == BodyFormat.RAW || inOnChange != null) {
+                BasicTextField(
+                    value = inText,
+                    onValueChange = inOnChange ?: {},
+                    readOnly = inOnChange == null,
+                    color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Text(highlight(inText, inFormat), color = c.text, fontSize = 12.sp)
+            }
         }
     }
 }
@@ -1580,6 +1624,41 @@ private fun ViewerOverflowMenu(
         Divider(color = c.border, modifier = Modifier.padding(vertical = 4.dp))
         DropdownMenuItem(onClick = { inOnClear(); vOpen = false }) {
             Text("Clear", color = Color(0xFFFF5630))
+        }
+    }
+}
+
+// ==================
+// MARK: BodyFormatSelector — small dropdown for RAW / JSON / XML / YAML / HTML
+// ==================
+
+@Composable
+private fun BodyFormatSelector(
+    inSelected: BodyFormat,
+    inOnChange: (BodyFormat) -> Unit,
+    inAutoLabel: String? = null,  // when set, shown as "FORMAT (auto)"
+) {
+    val c = LocalAppColors.current
+    var vOpen by remember { mutableStateOf(false) }
+    val vAnchor = rememberMenuAnchor()
+    val vLabel = if (inAutoLabel != null) "$inAutoLabel (auto)" else inSelected.name
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .clickable { vOpen = true }
+            .menuAnchor(vAnchor)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(vLabel, color = c.dim, fontSize = 11.sp)
+            MaterialSymbolsOutlined(icon = MaterialSymbols.ArrowDropDown, tint = c.dim, size = 14.dp)
+        }
+    }
+    DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, offsetY = (-4).dp) {
+        for (vF in BodyFormat.values()) {
+            DropdownMenuItem(onClick = { inOnChange(vF); vOpen = false }) {
+                Text(vF.name, color = if (vF == inSelected) c.accent else c.text)
+            }
         }
     }
 }
