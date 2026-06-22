@@ -922,13 +922,14 @@ private fun RequestBuilder(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header — request name + Preview toggle.
+        // Header — status message + Preview toggle. The request name is
+        // already shown in the sidebar tab strip, no need to duplicate it.
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(inReq.name, color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
             inMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
             val vPreviewOn = inRs.preview
             Box(
@@ -1107,7 +1108,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                     val vHeaders = if (vSentHeaders != null) vSentHeaders else parseHeaderLines(requestHeadersText(vR))
                     val vBody = if (!vR.method.allowsBody || vR.bodyType == BodyType.NONE) null else requestBodyText(vR)
                     HttpFlowView(
-                        inStatusLine = formatRequestLine(vR),
+                        inStatusLine = formatRequestLine(vR, inRs.response?.httpVersion ?: "HTTP/1.1", c),
                         inStatusLineAccentColor = methodColor(vR.method),
                         inHeaders = vHeaders,
                         inBody = vBody,
@@ -1122,7 +1123,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                     val vHeaders = vResp?.headers ?: emptyList()
                     val vBody = if (vLoading) "…" else vRespBody
                     HttpFlowView(
-                        inStatusLine = formatStatusLine(vResp),
+                        inStatusLine = formatStatusLine(vResp, c),
                         inStatusLineAccentColor = if (vResp != null) statusColor(vResp.status) else c.dim,
                         inHeaders = vHeaders,
                         inBody = if (vRespImage) null else vBody,
@@ -1336,32 +1337,55 @@ private fun ViewerTab(
 // MARK: Helpers — header parsing / formatting
 // ==================
 
-/* "HTTP/1.1 STATUS_TEXT" status line for a Response, or just "HTTP/1.1"
-   when nothing's come back yet (no dash placeholder). */
-private fun formatStatusLine(inResp: ApiResponse?): AnnotatedString {
-    if (inResp == null) return AnnotatedString("HTTP/1.1")
+/* "HTTP/1.1   200 OK" status line for a Response, with the protocol
+   token dimmed (it's structural) and the status code + reason in the
+   status colour. Just "HTTP/1.1" pre-response — no placeholder. Triple-
+   spaced to match the request-line formatting. */
+private fun formatStatusLine(inResp: ApiResponse?, inColors: AppColors): AnnotatedString {
+    if (inResp == null) return buildAnnotatedString {
+        pushStyle(SpanStyle(color = inColors.dim))
+        append(inResp?.httpVersion ?: "HTTP/1.1")
+        pop()
+    }
     if (inResp.error != null) return buildAnnotatedString {
-        append("HTTP/1.1 ")
+        pushStyle(SpanStyle(color = inColors.dim))
+        append(inResp?.httpVersion ?: "HTTP/1.1")
+        pop()
+        append("   ")
         pushStyle(SpanStyle(color = Color(0xFFFF5630), fontWeight = FontWeight.Bold))
         append("FAILED")
         pop()
     }
     return buildAnnotatedString {
-        append("HTTP/1.1 ")
+        pushStyle(SpanStyle(color = inColors.dim))
+        append(inResp?.httpVersion ?: "HTTP/1.1")
+        pop()
+        append("   ")
         pushStyle(SpanStyle(color = statusColor(inResp.status), fontWeight = FontWeight.Bold))
         append("${inResp.status} ${inResp.statusText.uppercase()}")
         pop()
     }
 }
 
-/* "GET /path HTTP/1.1" style status line for a Request. */
-private fun formatRequestLine(inReq: ApiRequest): AnnotatedString = buildAnnotatedString {
+/* "GET   /path   HTTP/1.1" status line for a Request. Each part takes
+   its own colour: method in its canonical method colour, URL in the
+   default text colour, protocol token dimmed so the eye lands on the
+   request target first. Triple-spaced so the columns read at a glance.
+   The protocol string comes from the matching response when we have
+   one (so HTTP/2 servers show "HTTP/2"); fallback "HTTP/1.1" before
+   send. */
+private fun formatRequestLine(inReq: ApiRequest, inHttpVersion: String, inColors: AppColors): AnnotatedString = buildAnnotatedString {
     pushStyle(SpanStyle(color = methodColor(inReq.method), fontWeight = FontWeight.Bold))
     append(inReq.method.name)
     pop()
-    append(" ")
+    append("   ")
+    pushStyle(SpanStyle(color = inColors.text))
     append(inReq.url.ifEmpty { "/" })
-    append(" HTTP/1.1")
+    pop()
+    append("   ")
+    pushStyle(SpanStyle(color = inColors.dim))
+    append(inHttpVersion)
+    pop()
 }
 
 /* Format the timing / size footer text shown bottom-right. */

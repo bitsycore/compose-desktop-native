@@ -102,6 +102,7 @@ class ApiResponse(
     val bytes: ByteArray = ByteArray(0),
     val contentType: String? = null,
     val requestHeaders: List<Pair<String, String>> = emptyList(),  // headers actually sent
+    val httpVersion: String = "HTTP/1.1",  // from Ktor's response.version, e.g. "HTTP/1.1" or "HTTP/2"
     val error: String? = null,
 )
 
