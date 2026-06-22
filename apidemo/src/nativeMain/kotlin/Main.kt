@@ -76,6 +76,7 @@ private class ReqState(inInitial: ApiRequest) {
     var reqTab by mutableStateOf(0)       // panel 3 (build): 0 Query, 1 Headers, 2 Body
     var viewTab by mutableStateOf(1)      // panel 4 (view): 0 Request, 1 Response
     var preview by mutableStateOf(false)  // panel 4 showing the resolved, not-yet-sent request
+    var sentReq by mutableStateOf<ApiRequest?>(null)  // resolved request actually sent (Request tab)
     var imageKey: String? = null          // memory-resource key when the response is an image
 }
 
@@ -197,7 +198,8 @@ private fun App() {
         val vOriginal = inRs.req
         val vSend = resolveVars(vOriginal, effective(vP))
         inRs.loading = true; inRs.response = null; vReqMsg = null
-        inRs.preview = false; inRs.viewTab = 1   // sending → show the Response tab
+        inRs.sentReq = vSend                      // snapshot what we actually send
+        inRs.preview = false; inRs.viewTab = 1    // sending → show the Response tab
         inRs.job = vScope.launch(Dispatchers.Main) {
             try {
                 val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
@@ -989,7 +991,7 @@ private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) 
         return
     }
     when (inReq.bodyType) {
-        BodyType.NONE -> Text("No body — pick a type from the selector below.", color = c.dim, fontSize = 13.sp)
+        BodyType.NONE -> ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(240.dp))
         BodyType.JSON, BodyType.TEXT -> ThinField(
             inReq.body, { v -> inEdit { it.copy(body = v) } },
             inModifier = Modifier.fillMaxWidth().height(240.dp),
@@ -1072,65 +1074,98 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
         }
         Divider(color = c.border)
 
-        Column(
-            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (vShowRequest) {
-                CodeSection("HEADERS", requestHeadersText(inResolved))
-                CodeSection("BODY", requestBodyText(inResolved))
-            } else if (vResp == null && !vLoading) {
-                Text("Send a request to see the response.", color = c.dim, fontSize = 13.sp)
-            } else {
-                CodeSection("HEADERS" + (vResp?.let { " (${it.headers.size})" } ?: ""), if (vLoading) "…" else vRespHeaders)
-                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("BODY", color = c.dim, fontSize = 11.sp)
-                    Box(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
-                            .background(c.bg, RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(12.dp),
-                    ) {
-                        if (vRespImage && !vLoading) {
-                            val vKind = if (vResp?.contentType?.contains("svg", ignoreCase = true) == true) ResourceKind.Svg else ResourceKind.Raster
-                            Image(painter = painterResource(inRs.imageKey!!, vKind), contentDescription = "Response image", contentScale = ContentScale.Fit)
-                        } else {
-                            BasicTextField(
-                                value = if (vLoading) "…" else vRespBody.ifEmpty { "(empty)" },
-                                onValueChange = {}, readOnly = true,
-                                color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
-                                fontSize = 12.sp, modifier = Modifier.fillMaxWidth(),
-                            )
+        // The request shown: live resolved in Preview, else the snapshot we sent.
+        val vReqShown = if (vPreview) inResolved else inRs.sentReq
+
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            when {
+                vShowRequest && vReqShown == null -> ViewerEmpty(MaterialSymbols.Send, "Not sent")
+                vShowRequest -> Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CodeSection("HEADERS", requestHeadersText(vReqShown!!))
+                    if (!vReqShown.method.allowsBody || vReqShown.bodyType == BodyType.NONE) {
+                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("BODY", color = c.dim, fontSize = 11.sp)
+                            ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(140.dp))
+                        }
+                    } else {
+                        CodeSection("BODY", requestBodyText(vReqShown))
+                    }
+                }
+                vResp == null && !vLoading -> ViewerEmpty(MaterialSymbols.Download, "Not received")
+                else -> Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CodeSection("HEADERS" + (vResp?.let { " (${it.headers.size})" } ?: ""), if (vLoading) "…" else vRespHeaders)
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("BODY", color = c.dim, fontSize = 11.sp)
+                        Box(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                                .background(c.bg, RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(12.dp),
+                        ) {
+                            if (vRespImage && !vLoading) {
+                                val vKind = if (vResp?.contentType?.contains("svg", ignoreCase = true) == true) ResourceKind.Svg else ResourceKind.Raster
+                                Image(painter = painterResource(inRs.imageKey!!, vKind), contentDescription = "Response image", contentScale = ContentScale.Fit)
+                            } else {
+                                BasicTextField(
+                                    value = if (vLoading) "…" else vRespBody.ifEmpty { "(empty)" },
+                                    onValueChange = {}, readOnly = true,
+                                    color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
+                                    fontSize = 12.sp, modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Toolbar — copy / save the current view's body.
-        Divider(color = c.border)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val vImg = !vShowRequest && vRespImage
-            val vText = if (vShowRequest) requestBodyText(inResolved) else vRespBody
-            if (!vImg) {
-                IconLabelChip(MaterialSymbols.ContentCopy, "Copy") { currentClipboard.setText(vText); vMsg = "Copied." }
-            }
-            IconLabelChip(MaterialSymbols.Save, "Save as…") {
-                if (vImg) {
-                    val vBytes = vResp?.bytes ?: ByteArray(0)
-                    showSaveFileDialog(imageFileName(vResp?.contentType)) { vPath ->
-                        if (vPath != null) vMsg = writeBytesFile(vPath, vBytes)?.let { "Save failed: $it" } ?: "Saved."
-                    }
-                } else {
-                    showSaveFileDialog(if (vShowRequest) "request.txt" else "response.json") { vPath ->
-                        if (vPath != null) vMsg = writeTextFile(vPath, vText)?.let { "Save failed: $it" } ?: "Saved."
+        // Toolbar — only when there's something to copy / save.
+        val vReqHasContent = vShowRequest && vReqShown != null
+        val vRespHasContent = !vShowRequest && vResp != null
+        if (vReqHasContent || vRespHasContent) {
+            Divider(color = c.border)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val vImg = vRespHasContent && vRespImage
+                val vText = if (vReqHasContent) requestBodyText(vReqShown!!) else vRespBody
+                if (!vImg) {
+                    IconLabelChip(MaterialSymbols.ContentCopy, "Copy") { currentClipboard.setText(vText); vMsg = "Copied." }
+                }
+                IconLabelChip(MaterialSymbols.Save, "Save as…") {
+                    if (vImg) {
+                        val vBytes = vResp?.bytes ?: ByteArray(0)
+                        showSaveFileDialog(imageFileName(vResp?.contentType)) { vPath ->
+                            if (vPath != null) vMsg = writeBytesFile(vPath, vBytes)?.let { "Save failed: $it" } ?: "Saved."
+                        }
+                    } else {
+                        showSaveFileDialog(if (vReqHasContent) "request.txt" else "response.json") { vPath ->
+                            if (vPath != null) vMsg = writeTextFile(vPath, vText)?.let { "Save failed: $it" } ?: "Saved."
+                        }
                     }
                 }
+                Spacer(Modifier.weight(1f))
+                vMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
             }
-            Spacer(Modifier.weight(1f))
-            vMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
+        }
+    }
+}
+
+/* Centered icon + label placeholder for the viewer (Not sent / Not received /
+   No Body). Fills its parent unless a sized modifier is supplied. */
+@Composable
+private fun ViewerEmpty(inIcon: Int, inText: String, inModifier: Modifier = Modifier.fillMaxSize()) {
+    val c = LocalAppColors.current
+    Box(modifier = inModifier, contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            MaterialSymbolsOutlined(inIcon, tint = c.dim, size = 40.dp)
+            Text(inText, color = c.dim, fontSize = 14.sp)
         }
     }
 }
@@ -1201,7 +1236,7 @@ private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Uni
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (inRows.isNotEmpty()) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Spacer(Modifier.width(46.dp))
+                Spacer(Modifier.width(20.dp))
                 Text("KEY", color = c.dim, fontSize = 11.sp, modifier = Modifier.weight(1f))
                 Text("VALUE", color = c.dim, fontSize = 11.sp, modifier = Modifier.weight(1.4f))
                 Spacer(Modifier.width(30.dp))
@@ -1209,9 +1244,10 @@ private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Uni
         }
         inRows.forEachIndexed { vI, vKv ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                TogglePill(if (vKv.enabled) "on" else "off", vKv.enabled) {
-                    inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(enabled = !vR.enabled) else vR })
-                }
+                Checkbox(
+                    checked = vKv.enabled,
+                    onCheckedChange = { vOn -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(enabled = vOn) else vR }) },
+                )
                 ThinField(vKv.key, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(key = v) else vR }) }, inModifier = Modifier.weight(1f), inPlaceholder = "key")
                 ThinField(vKv.value, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(value = v) else vR }) }, inModifier = Modifier.weight(1.4f), inPlaceholder = "value")
                 IconBtn(MaterialSymbols.Close, "Remove", inSize = 16.dp) { inOnChange(inRows.filterIndexed { vJ, _ -> vJ != vI }) }

@@ -66,6 +66,7 @@ object MaterialSymbols {
 	const val MoreHoriz       = 0xe5d3
 	const val Download        = 0xf090
 	const val Upload          = 0xf09b
+	const val Block           = 0xe14b
 	const val ContentCopy     = 0xe14d
 	const val ContentCut      = 0xe14e
 	const val ContentPaste    = 0xe14f
