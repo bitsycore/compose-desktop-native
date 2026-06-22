@@ -71,53 +71,103 @@ fun Text(
     fontFamily: String? = null,
     fontVariationSettings: List<FontVariation>? = null,
 ) {
-    val vRuns = splitIntoRuns(text)
-    Row(modifier = modifier) {
-        for (vRun in vRuns) {
-            val vStyle = vRun.style
-            val vColor = if (vStyle != null && vStyle.color != Color.Unspecified) vStyle.color else color
-            val vSize = if (vStyle != null && vStyle.fontSize.value.isFinite()) vStyle.fontSize else fontSize
-            val vFamily = if (vStyle?.fontFamily != null) familyName(vStyle.fontFamily) ?: fontFamily else fontFamily
-            // Background tint: paint behind the run if a background colour is set.
-            val vBgModifier = if (vStyle != null && vStyle.background != Color.Unspecified)
-                Modifier.background(vStyle.background) else Modifier
-            // Underline / line-through: drawBehind paints a 1px line under the run.
-            val vDec: TextDecoration? = vStyle?.textDecoration
-            val vDecorModifier = if (vDec != null && vDec != TextDecoration.None) {
-                val vDecColor = vColor
-                val vHasUnder = TextDecoration.Underline in vDec
-                val vHasLine = TextDecoration.LineThrough in vDec
-                Modifier.drawBehind {
-                    if (vHasUnder) {
-                        drawLine(
-                            color = vDecColor,
-                            start = Offset(0f, size.height - 2f),
-                            end = Offset(size.width, size.height - 2f),
-                            strokeWidth = 1f,
-                        )
-                    }
-                    if (vHasLine) {
-                        drawLine(
-                            color = vDecColor,
-                            start = Offset(0f, size.height / 2f),
-                            end = Offset(size.width, size.height / 2f),
-                            strokeWidth = 1f,
-                        )
-                    }
+    val vLines = splitIntoRunLines(text)
+    androidx.compose.foundation.layout.Column(modifier = modifier) {
+        for (vLine in vLines) {
+            androidx.compose.foundation.layout.Row {
+                if (vLine.isEmpty()) {
+                    // Empty line still needs to take the line-height — emit a
+                    // single-space BasicText so the row doesn't collapse to 0px.
+                    BasicText(text = " ", color = color, fontSize = fontSize, softWrap = false,
+                        fontFamily = fontFamily, fontVariationSettings = fontVariationSettings)
+                } else for (vRun in vLine) {
+                    val vStyle = vRun.style
+                    val vColor = if (vStyle != null && vStyle.color != Color.Unspecified) vStyle.color else color
+                    val vSize = if (vStyle != null && vStyle.fontSize.value.isFinite()) vStyle.fontSize else fontSize
+                    val vFamily = if (vStyle?.fontFamily != null) familyName(vStyle.fontFamily) ?: fontFamily else fontFamily
+                    val vBgModifier = if (vStyle != null && vStyle.background != Color.Unspecified)
+                        Modifier.background(vStyle.background) else Modifier
+                    val vDec: TextDecoration? = vStyle?.textDecoration
+                    val vDecorModifier = if (vDec != null && vDec != TextDecoration.None) {
+                        val vDecColor = vColor
+                        val vHasUnder = TextDecoration.Underline in vDec
+                        val vHasLine = TextDecoration.LineThrough in vDec
+                        Modifier.drawBehind {
+                            if (vHasUnder) {
+                                drawLine(
+                                    color = vDecColor,
+                                    start = Offset(0f, size.height - 2f),
+                                    end = Offset(size.width, size.height - 2f),
+                                    strokeWidth = 1f,
+                                )
+                            }
+                            if (vHasLine) {
+                                drawLine(
+                                    color = vDecColor,
+                                    start = Offset(0f, size.height / 2f),
+                                    end = Offset(size.width, size.height / 2f),
+                                    strokeWidth = 1f,
+                                )
+                            }
+                        }
+                    } else Modifier
+                    BasicText(
+                        text = vRun.text,
+                        modifier = vBgModifier.then(vDecorModifier),
+                        color = vColor,
+                        fontSize = vSize,
+                        textAlign = textAlign,
+                        softWrap = false,
+                        fontFamily = vFamily,
+                        fontVariationSettings = vStyle?.let { extractFontVariations(it, fontVariationSettings) } ?: fontVariationSettings,
+                    )
                 }
-            } else Modifier
-            BasicText(
-                text = vRun.text,
-                modifier = vBgModifier.then(vDecorModifier),
-                color = vColor,
-                fontSize = vSize,
-                textAlign = textAlign,
-                softWrap = false,  // Per-run wrap doesn't make sense; only the parent Row does.
-                fontFamily = vFamily,
-                fontVariationSettings = vStyle?.let { extractFontVariations(it, fontVariationSettings) } ?: fontVariationSettings,
-            )
+            }
         }
     }
+}
+
+/* Split into lines of runs. First we cut the AnnotatedString at every
+   '\n' (newlines aren't run-bearing — they end a Row), then within each
+   line we re-split at span boundaries so each in-line run carries the
+   right SpanStyle. Result is List<line> of List<run>. */
+private fun splitIntoRunLines(inText: AnnotatedString): List<List<Run>> {
+    if (inText.length == 0) return listOf(emptyList())
+    val vOut = mutableListOf<List<Run>>()
+    var vLineStart = 0
+    for (vI in inText.text.indices) {
+        if (inText.text[vI] == '\n') {
+            vOut.add(slicedRuns(inText, vLineStart, vI))
+            vLineStart = vI + 1
+        }
+    }
+    vOut.add(slicedRuns(inText, vLineStart, inText.length))
+    return vOut
+}
+
+/* Run list for inText[inStart, inEnd) — same algorithm as splitIntoRuns
+   but limited to a sub-range and clipping span boundaries to that range. */
+private fun slicedRuns(inText: AnnotatedString, inStart: Int, inEnd: Int): List<Run> {
+    if (inStart >= inEnd) return emptyList()
+    if (inText.spanStyles.isEmpty()) return listOf(Run(inText.text.substring(inStart, inEnd), null))
+    val vSet = mutableSetOf(inStart, inEnd)
+    for (vR in inText.spanStyles) {
+        val vS = vR.start.coerceIn(inStart, inEnd)
+        val vE = vR.end.coerceIn(inStart, inEnd)
+        if (vS < vE) { vSet.add(vS); vSet.add(vE) }
+    }
+    val vSorted = vSet.toList().sorted()
+    val vOut = mutableListOf<Run>()
+    for (vI in 0 until vSorted.size - 1) {
+        val vS = vSorted[vI]; val vE = vSorted[vI + 1]
+        if (vS == vE) continue
+        var vActive: SpanStyle? = null
+        for (vR in inText.spanStyles) {
+            if (vR.start <= vS && vR.end >= vE) vActive = vR.item
+        }
+        vOut.add(Run(inText.text.substring(vS, vE), vActive))
+    }
+    return vOut
 }
 
 /* One contiguous-style segment of an AnnotatedString. */
