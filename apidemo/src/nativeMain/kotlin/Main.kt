@@ -1286,12 +1286,15 @@ private fun BodyView(
     val vDigits = vLines.size.toString().length
     val vGutterWidth = (vDigits * 7 + 4).dp
     Row(modifier = modifier) {
+        // Numbers are reference-only — half-alpha so they stay legible
+        // without competing with the body content for attention.
+        val vNumColor = c.dim.copy(alpha = 0.45f)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(vGutterWidth),
         ) {
             for (vI in vLines.indices) {
-                Text("${vI + 1}", color = c.dim, fontSize = 12.sp)
+                Text("${vI + 1}", color = vNumColor, fontSize = 12.sp)
             }
         }
         Spacer(Modifier.width(6.dp))
