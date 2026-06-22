@@ -1386,7 +1386,10 @@ private fun formatRequestLine(inReq: ApiRequest, inHttpVersion: String, inColors
     pop()
     append("   ")
     pushStyle(SpanStyle(color = inColors.text))
-    append(urlPathOnly(inReq.url).ifEmpty { "/" })
+    // urlWithParams appends the Query-tab key/values percent-encoded;
+    // urlPathOnly then strips scheme+host so the request line reads
+    // "GET /search?q=foo&n=10 HTTP/1.1" like httpie / curl trace.
+    append(urlPathOnly(urlWithParams(inReq)).ifEmpty { "/" })
     pop()
     append("   ")
     pushStyle(SpanStyle(color = inColors.dim))
@@ -1499,7 +1502,7 @@ private fun ViewerOverflowMenu(
     val vCanCopyBody = !(inIsImage && !inIsRequestTab)
 
     fun statusLineText(): String = if (inIsRequestTab && inRequest != null) {
-        "${inRequest.method.name} ${urlPathOnly(inRequest.url).ifEmpty { "/" }} ${inResponse?.httpVersion ?: "HTTP/1.1"}"
+        "${inRequest.method.name} ${urlPathOnly(urlWithParams(inRequest)).ifEmpty { "/" }} ${inResponse?.httpVersion ?: "HTTP/1.1"}"
     } else if (!inIsRequestTab && inResponse != null) {
         val vVer = inResponse.httpVersion
         if (inResponse.error != null) "$vVer FAILED"

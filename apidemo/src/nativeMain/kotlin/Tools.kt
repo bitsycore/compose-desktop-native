@@ -104,7 +104,7 @@ fun formEncode(inForm: List<KeyVal>): String =
         .joinToString("&") { "${urlEncode(it.key)}=${urlEncode(it.value)}" }
 
 /* The request URL with its enabled query params appended (percent-encoded). */
-private fun urlWithParams(inReq: ApiRequest): String {
+internal fun urlWithParams(inReq: ApiRequest): String {
     val vTrimmed = inReq.url.trim()
     val vEnabled = inReq.params.filter { it.enabled && it.key.isNotBlank() }
     if (vEnabled.isEmpty()) return vTrimmed
