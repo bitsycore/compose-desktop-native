@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Download the latest SDL3, SDL3_ttf and SDL3_image *mingw* development releases
-# from GitHub and install their x86_64-w64-mingw32 include/lib/bin trees into
-# <repo>/libs/{SDL3,SDL3_ttf,SDL3_image} — the layout the cinterop .def files
-# and the demo's DLL-bundling expect.
+# Download the latest SDL3 and SDL3_image *mingw* development releases from
+# GitHub and install their x86_64-w64-mingw32 include/lib/bin trees into
+# <repo>/libs/{SDL3,SDL3_image} — the layout the cinterop .def files and the
+# demo's DLL-bundling expect.
+#
+# SDL3_ttf is NOT fetched here: we build it from source with our variable-font
+# axis patch (the API isn't in any upstream release yet). After this script,
+# run tools/build-freetype.sh then tools/build-sdl3-ttf.sh to populate
+# libs/SDL3_ttf. Re-running this script will NOT touch SDL3_ttf.
 #
 # Run from Git Bash on Windows. Requires: curl, 7z, python (to parse the
 # GitHub release JSON). Each lib's whole bin/ is copied, so SDL3_image's
-# format DLLs (libpng, libjpeg, …) and any SDL3_ttf siblings come along.
+# format DLLs (libpng, libjpeg, …) come along.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,7 +44,7 @@ install_lib() {  # repo  asset-name-regex  dest-dir-name
 }
 
 install_lib "libsdl-org/SDL"       'SDL3-devel-.*-mingw\.zip'        SDL3
-install_lib "libsdl-org/SDL_ttf"   'SDL3_ttf-devel-.*-mingw\.zip'   SDL3_ttf
 install_lib "libsdl-org/SDL_image" 'SDL3_image-devel-.*-mingw\.zip' SDL3_image
 
-echo ">> done. SDL3 / SDL3_ttf / SDL3_image installed under $LIBS"
+echo ">> done. SDL3 / SDL3_image installed under $LIBS"
+echo ">> next: tools/build-freetype.sh then tools/build-sdl3-ttf.sh (patched SDL3_ttf)"

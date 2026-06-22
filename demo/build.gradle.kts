@@ -31,14 +31,26 @@ kotlin {
         val isMingw = name == "mingwX64"
         binaries.executable {
             entryPoint = "main"
-            // mingwX64 links against the in-repo import libs (SDL3 / ttf / image)
-            // and the static FreeType. macOS/Linux resolve via the .def's
-            // system -L paths, so no extra linker opts are needed there.
+            // mingwX64 links SDL3 / SDL3_ttf / SDL3_image / FreeType + image
+            // codecs all statically into the .exe (clean app.exe + data.kres,
+            // no DLLs). macOS/Linux resolve via the .def's system -L paths.
             if (isMingw) linkerOpts(
                 "-L$vLibs/SDL3/lib",
                 "-L$vLibs/SDL3_ttf/lib",
                 "-L$vLibs/SDL3_image/lib",
                 "-L$vLibs/FreeType/lib",
+                // --start-group resolves the circular static deps
+                // (ttf<->freetype<->SDL3, image<->png/webp/zlib).
+                "-Wl,--start-group",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lzlibstatic", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-Wl,--end-group",
+                // Windows system libraries SDL3 pulls in when static.
+                "-lm", "-lkernel32", "-luser32", "-lgdi32", "-lwinmm", "-limm32",
+                "-lole32", "-loleaut32", "-lversion", "-luuid", "-ladvapi32",
+                "-lsetupapi", "-lshell32", "-ldinput8",
+                // Code-shrink: drop unused sections and strip symbols.
+                "-Wl,--gc-sections", "-Wl,-s",
             )
         }
     }
@@ -69,41 +81,9 @@ kotlin {
 val variants = listOf("debug", "release")
 val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 
-// ==================
-// MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
-// ==================
-// Windows resolves DLLs from the executable's own directory at launch, so we
-// copy every DLL from each lib's bin/ next to the .exe — SDL3.dll, SDL3_ttf.dll,
-// SDL3_image.dll, plus SDL3_image's format DLLs (libpng/jpeg/…). FreeType is
-// linked statically, so it has no runtime DLL. Source roots default to the
-// in-repo <repo>/libs/<lib>; override via -Psdl3Dir=... etc.
-
-val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "$vLibs/SDL3"
-val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "$vLibs/SDL3_ttf"
-val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "$vLibs/SDL3_image"
-
-for (variant in variants) {
-    val variantCap = variant.replaceFirstChar { it.uppercase() }
-    val copyTaskName = "copy${variantCap}DllsMingwX64"
-    val outDir = layout.buildDirectory.dir("bin/mingwX64/${variant}Executable")
-
-    val copyTask = tasks.register<Copy>(copyTaskName) {
-        from("$sdl3Dir/bin") { include("*.dll") }
-        from("$sdl3TtfDir/bin") { include("*.dll") }
-        from("$sdl3ImageDir/bin") { include("*.dll") }
-        into(outDir)
-    }
-
-    // Windows-only DLLs; the matching is a no-op on hosts without these tasks.
-    listOf(
-        "link${variantCap}ExecutableMingwX64",
-        "run${variantCap}ExecutableMingwX64"
-    ).forEach { taskName ->
-        tasks.matching { it.name == taskName }.configureEach {
-            dependsOn(copyTask)
-        }
-    }
-}
+// On Windows everything (SDL3 / SDL3_ttf / SDL3_image / FreeType + image codecs)
+// is linked statically into the .exe, so there are no runtime DLLs to bundle —
+// the distributable is just <app>.exe + data.kres.
 
 // ==================
 // MARK: Generate typed Res accessors from composeResources/

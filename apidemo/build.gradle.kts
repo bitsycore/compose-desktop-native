@@ -35,6 +35,20 @@ kotlin {
                 "-L$vLibs/SDL3_ttf/lib",
                 "-L$vLibs/SDL3_image/lib",
                 "-L$vLibs/FreeType/lib",
+                // SDL3 / SDL3_ttf / SDL3_image / FreeType + image codecs are
+                // all linked statically into the .exe (clean app.exe + data.kres,
+                // no DLLs). --start-group resolves the circular static deps
+                // (ttf<->freetype<->SDL3, image<->png/webp/zlib).
+                "-Wl,--start-group",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lzlibstatic", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-Wl,--end-group",
+                // Windows system libraries SDL3 pulls in when static.
+                "-lm", "-lkernel32", "-luser32", "-lgdi32", "-lwinmm", "-limm32",
+                "-lole32", "-loleaut32", "-lversion", "-luuid", "-ladvapi32",
+                "-lsetupapi", "-lshell32", "-ldinput8",
+                // Code-shrink: drop unused sections and strip symbols.
+                "-Wl,--gc-sections", "-Wl,-s",
             )
         }
     }
@@ -66,27 +80,10 @@ kotlin {
     }
 }
 
-// ==================
-// MARK: Bundle SDL3 runtime DLLs next to the Windows executable (mingwX64)
-// ==================
+// SDL3 / SDL3_ttf / SDL3_image / FreeType are linked statically into the
+// executable (see the mingw linkerOpts above), so there are no runtime DLLs to
+// bundle — the distributable is just <app>.exe + data.kres.
 val variants = listOf("debug", "release")
-val sdl3Dir = (findProperty("sdl3Dir") as? String) ?: "$vLibs/SDL3"
-val sdl3TtfDir = (findProperty("sdl3TtfDir") as? String) ?: "$vLibs/SDL3_ttf"
-val sdl3ImageDir = (findProperty("sdl3ImageDir") as? String) ?: "$vLibs/SDL3_image"
-
-for (variant in variants) {
-    val variantCap = variant.replaceFirstChar { it.uppercase() }
-    val outDir = layout.buildDirectory.dir("bin/mingwX64/${variant}Executable")
-    val copyTask = tasks.register<Copy>("copy${variantCap}DllsMingwX64") {
-        from("$sdl3Dir/bin") { include("*.dll") }
-        from("$sdl3TtfDir/bin") { include("*.dll") }
-        from("$sdl3ImageDir/bin") { include("*.dll") }
-        into(outDir)
-    }
-    listOf("link${variantCap}ExecutableMingwX64", "run${variantCap}ExecutableMingwX64").forEach { taskName ->
-        tasks.matching { it.name == taskName }.configureEach { dependsOn(copyTask) }
-    }
-}
 
 // ==================
 // MARK: Bundle the default font (data.kres) next to each native executable
