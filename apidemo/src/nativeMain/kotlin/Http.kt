@@ -47,21 +47,25 @@ class HttpRunner {
                     setBody(inReq.body)
                 }
             }
-            // Read raw bytes so binary responses (images) survive; decode text
-            // only for non-image content. sizeBytes is the true payload size.
-            val vBytes = vResp.readRawBytes()
+            // Decide by Content-Type before reading the (single-shot) body:
+            //  - text → bodyAsText(), which runs through the receive pipeline so
+            //    ContentEncoding actually decompresses gzip/deflate and the charset
+            //    is honoured (readRawBytes() reads the raw, still-encoded channel).
+            //  - image → readRawBytes(), the real binary payload to render.
             val vContentType = vResp.contentType()?.toString()
             val vIsImage = vContentType?.startsWith("image/", ignoreCase = true) == true
+            val vBytes = if (vIsImage) vResp.readRawBytes() else ByteArray(0)
+            val vText = if (vIsImage) "" else vResp.bodyAsText()
             ApiResponse(
                 ok = true,
                 status = vResp.status.value,
                 statusText = vResp.status.description,
                 timeMs = vMark.elapsedNow().inWholeMilliseconds,
-                sizeBytes = vBytes.size.toLong(),
+                sizeBytes = (if (vIsImage) vBytes.size else vText.length).toLong(),
                 headers = vResp.headers.entries()
                     .flatMap { e -> e.value.map { e.key to it } }
                     .sortedBy { it.first.lowercase() },
-                body = if (vIsImage) "" else vBytes.decodeToString(),
+                body = vText,
                 bytes = vBytes,
                 contentType = vContentType,
             )
