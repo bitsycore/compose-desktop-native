@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.compose.desktop.native.LocalComposeNativeWindow
 import com.compose.desktop.native.icons.MaterialSymbols
 import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.desktop.native.nativeComposeWindow
@@ -50,31 +51,14 @@ private val LocalAppColors = staticCompositionLocalOf { DarkColors }
 // ==================
 
 fun main() {
-    nativeComposeWindow(title = "API Manager", width = 1240, height = 820) { Root() }
-}
-
-@Composable
-private fun Root() {
-    var vDark by remember { mutableStateOf(true) }
-    val vC = if (vDark) DarkColors else LightColors
-    val vMat = if (vDark) {
-        darkColors(primary = vC.accent, background = vC.bg, surface = vC.panel, onPrimary = vC.onAccent, onBackground = vC.text, onSurface = vC.text)
-    } else {
-        lightColors(primary = vC.accent, background = vC.bg, surface = vC.panel, onPrimary = vC.onAccent, onBackground = vC.text, onSurface = vC.text)
-    }
-    MaterialTheme(colors = vMat) {
-        CompositionLocalProvider(LocalAppColors provides vC) {
-            App(vDark) { vDark = !vDark }
-        }
-    }
+    nativeComposeWindow(title = "API Manager", width = 1240, height = 820) { App() }
 }
 
 private class HistoryEntry(val method: ReqMethod, val url: String, val status: Int, val timeMs: Long, val request: ApiRequest)
 
-/* One request plus its live session state — the response, the in-flight job
-   (for cancel) and which sub-tabs are showing. Stable object identity lets the
-   sidebar list and the open-tab strip both point at the same request without
-   index juggling, and lets each open tab keep its own response. */
+/* One request plus its live session state — response, in-flight job (for
+   cancel) and which sub-tabs show. Stable identity lets the sidebar and the
+   open-tab strip reference the same request without index juggling. */
 private class ReqState(inInitial: ApiRequest) {
     var req by mutableStateOf(inInitial)
     var response by mutableStateOf<ApiResponse?>(null)
@@ -84,54 +68,122 @@ private class ReqState(inInitial: ApiRequest) {
     var respTab by mutableStateOf(0)
 }
 
+/* One open pack: its file path (null = never saved), a dirty flag (edits since
+   last file save), and its own requests, variables and open-tab strip. Switching
+   packs swaps the whole working set. */
+private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean) {
+    var name by mutableStateOf(inPack.name)
+    var path by mutableStateOf(inPath)
+    var dirty by mutableStateOf(inDirty)
+    val requests = mutableStateListOf<ReqState>().apply {
+        inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
+    }
+    val variables = mutableStateListOf<KeyVal>().apply { addAll(inPack.variables) }
+    val openTabs = mutableStateListOf<ReqState>().apply { requests.firstOrNull()?.let { add(it) } }
+    var active by mutableStateOf(requests.firstOrNull())
+
+    fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList())
+}
+
 // ==================
 // MARK: App
 // ==================
 
 @Composable
-private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
-    val c = LocalAppColors.current
+private fun App() {
+    val vInitial = remember { loadAppState() }
+    var vDark by remember { mutableStateOf(vInitial.dark) }
+
     val vRunner = remember { HttpRunner() }
     val vScope = rememberCoroutineScope()
+    val vWindow = LocalComposeNativeWindow.current
 
-    val vRequests = remember { mutableStateListOf<ReqState>().apply { Pack().requests.forEach { add(ReqState(it)) } } }
-    val vVars = remember { mutableStateListOf<KeyVal>().apply { addAll(Pack().variables) } }
+    // First launch (or empty saved state) → load the httpbin starter pack once.
+    val vPacks = remember {
+        mutableStateListOf<PackState>().apply {
+            val vSaved = if (!vInitial.launched || vInitial.packs.isEmpty())
+                listOf(SavedPack(pack = defaultPack()))
+            else vInitial.packs
+            vSaved.forEach { add(PackState(it.pack, it.path, it.dirty)) }
+        }
+    }
+    val vGlobalEnv = remember { mutableStateListOf<KeyVal>().apply { addAll(vInitial.globalEnv) } }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
-    val vOpenTabs = remember { mutableStateListOf<ReqState>().apply { vRequests.firstOrNull()?.let { add(it) } } }
-    var vActive by remember { mutableStateOf(vRequests.firstOrNull()) }
+    var vActivePack by remember { mutableStateOf(vInitial.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))) }
 
-    var vSideTab by remember { mutableStateOf(0) }     // 0 Requests, 1 History, 2 Env
+    var vSideTab by remember { mutableStateOf(0) }      // 0 Requests, 1 History, 2 Env
+    var vEnvScope by remember { mutableStateOf(0) }     // 0 Pack env, 1 Global env
     var vReqMsg by remember { mutableStateOf<String?>(null) }
-    var vPackName by remember { mutableStateOf("My Pack") }
-    var vNotice by remember { mutableStateOf<String?>(null) }
-    var vPackOpen by remember { mutableStateOf(false) }
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
+    var vQuitDialog by remember { mutableStateOf(false) }
+
+    fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
+    fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
+
+    fun persist() {
+        saveAppState(AppState(
+            launched = true,
+            dark = vDark,
+            globalEnv = vGlobalEnv.toList(),
+            packs = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) },
+            activePack = vActivePack,
+        ))
+    }
 
     // ============
-    //  Request actions (operate on ReqState identities, not indices)
+    //  Request actions (operate on the active pack, read live)
     fun open(inRs: ReqState) {
-        if (inRs !in vOpenTabs) vOpenTabs.add(inRs)
-        vActive = inRs
-        vReqMsg = null
+        val vP = activePack() ?: return
+        if (inRs !in vP.openTabs) vP.openTabs.add(inRs)
+        vP.active = inRs; vReqMsg = null
     }
     fun closeTab(inRs: ReqState) {
-        val vIdx = vOpenTabs.indexOf(inRs)
-        vOpenTabs.remove(inRs)
-        if (vActive === inRs) vActive = vOpenTabs.getOrNull(vIdx) ?: vOpenTabs.lastOrNull()
+        val vP = activePack() ?: return
+        val vIdx = vP.openTabs.indexOf(inRs)
+        vP.openTabs.remove(inRs)
+        if (vP.active === inRs) vP.active = vP.openTabs.getOrNull(vIdx) ?: vP.openTabs.lastOrNull()
+    }
+    fun reorderTabs(inFrom: Int, inTo: Int) {
+        val vP = activePack() ?: return
+        if (inFrom == inTo || inFrom !in vP.openTabs.indices || inTo !in vP.openTabs.indices) return
+        vP.openTabs.add(inTo, vP.openTabs.removeAt(inFrom))
     }
     fun edit(inT: (ApiRequest) -> ApiRequest) {
-        val vRs = vActive ?: return
-        vRs.req = inT(vRs.req)
+        val vP = activePack() ?: return
+        val vRs = vP.active ?: return
+        vRs.req = inT(vRs.req); vP.dirty = true
+    }
+    fun newRequest() {
+        val vP = activePack() ?: return
+        val vRs = ReqState(ApiRequest(name = "Request ${vP.requests.size + 1}"))
+        vP.requests.add(vRs); vP.openTabs.add(vRs); vP.active = vRs; vP.dirty = true; vReqMsg = null; vSideTab = 0
+    }
+    fun duplicate(inRs: ReqState) {
+        val vP = activePack() ?: return
+        val vAt = (vP.requests.indexOf(inRs) + 1).coerceIn(0, vP.requests.size)
+        val vCopy = ReqState(inRs.req.copy(name = "${inRs.req.name} copy"))
+        vP.requests.add(vAt, vCopy); vP.openTabs.add(vCopy); vP.active = vCopy; vP.dirty = true; vReqMsg = null
+    }
+    fun deleteRequest(inRs: ReqState) {
+        val vP = activePack() ?: return
+        inRs.job?.cancel()
+        vP.openTabs.remove(inRs); vP.requests.remove(inRs)
+        if (vP.requests.isEmpty()) vP.requests.add(ReqState(ApiRequest()))
+        if (vP.active === inRs) vP.active = vP.openTabs.lastOrNull()
+        vP.dirty = true
+    }
+    fun renameRequest(inRs: ReqState, inName: String) {
+        val vP = activePack() ?: return
+        inRs.req = inRs.req.copy(name = inName); vP.dirty = true
     }
     fun send(inRs: ReqState) {
         if (inRs.loading) return
+        val vP = activePack() ?: return
         val vOriginal = inRs.req
-        val vSend = resolveVars(vOriginal, vVars)
-        inRs.loading = true
-        inRs.response = null
-        vReqMsg = null
+        val vSend = resolveVars(vOriginal, effective(vP))
+        inRs.loading = true; inRs.response = null; vReqMsg = null
         inRs.job = vScope.launch(Dispatchers.Main) {
             try {
                 val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
@@ -139,268 +191,386 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                 vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vOriginal))
                 if (vHistory.size > 50) vHistory.removeAt(vHistory.size - 1)
             } finally {
-                inRs.loading = false
-                inRs.job = null
+                inRs.loading = false; inRs.job = null
             }
         }
     }
-    fun cancel(inRs: ReqState) {
-        inRs.job?.cancel()
-        inRs.job = null
-        inRs.loading = false
+    fun cancel(inRs: ReqState) { inRs.job?.cancel(); inRs.job = null; inRs.loading = false }
+
+    // ============
+    //  Pack actions
+    fun newPack() {
+        vPacks.add(PackState(Pack(name = "Pack ${vPacks.size + 1}"), null, false))
+        vActivePack = vPacks.size - 1; vReqMsg = null; persist()
     }
-    fun reorderTabs(inFrom: Int, inTo: Int) {
-        if (inFrom == inTo || inFrom !in vOpenTabs.indices || inTo !in vOpenTabs.indices) return
-        vOpenTabs.add(inTo, vOpenTabs.removeAt(inFrom))
+    fun openPackFile() {
+        showOpenFileDialog { vPath ->
+            if (vPath != null) importPack(vPath).fold(
+                onSuccess = { vPk ->
+                    vPacks.add(PackState(vPk, vPath, false)); vActivePack = vPacks.size - 1
+                    vReqMsg = "Opened ${vPk.name}."; persist()
+                },
+                onFailure = { vReqMsg = "Open failed: ${it.message}" },
+            )
+        }
     }
-    fun newRequest() {
-        val vRs = ReqState(ApiRequest(name = "Request ${vRequests.size + 1}"))
-        vRequests.add(vRs); open(vRs); vSideTab = 0
+    fun saveAsPack() {
+        val vP = activePack() ?: return
+        showSaveFileDialog("${vP.name}.json") { vPath ->
+            if (vPath != null) {
+                val vErr = exportPack(vP.toPack(), vPath)
+                if (vErr == null) { vP.path = vPath; vP.dirty = false; vReqMsg = "Saved."; persist() }
+                else vReqMsg = "Save failed: $vErr"
+            }
+        }
     }
-    fun duplicate(inRs: ReqState) {
-        val vAt = (vRequests.indexOf(inRs) + 1).coerceIn(0, vRequests.size)
-        val vCopy = ReqState(inRs.req.copy(name = "${inRs.req.name} copy"))
-        vRequests.add(vAt, vCopy); open(vCopy)
+    fun savePack() {
+        val vP = activePack() ?: return
+        val vPath = vP.path
+        if (vPath == null) { saveAsPack(); return }
+        val vErr = exportPack(vP.toPack(), vPath)
+        if (vErr == null) { vP.dirty = false; vReqMsg = "Saved."; persist() } else vReqMsg = "Save failed: $vErr"
     }
-    fun delete(inRs: ReqState) {
-        cancel(inRs)
-        vOpenTabs.remove(inRs)
-        vRequests.remove(inRs)
-        if (vRequests.isEmpty()) vRequests.add(ReqState(ApiRequest()))
-        if (vActive === inRs) vActive = vOpenTabs.lastOrNull()
+    fun closePack(inIdx: Int) {
+        if (inIdx !in vPacks.indices) return
+        vPacks.removeAt(inIdx)
+        vActivePack = vActivePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))
+        vReqMsg = null; persist()
+    }
+    fun loadDefaultPack() {
+        vPacks.add(PackState(defaultPack(), null, false)); vActivePack = vPacks.size - 1; vReqMsg = null; persist()
     }
 
-    HorizontalSplitPane(
-        modifier = Modifier.background(c.bg),
-        initialFirstSize = 248.dp,
-        minFirstSize = 190.dp,
-        minSecondSize = 520.dp,
-        dividerColor = c.border,
-        dividerHoverColor = c.accent,
-        first = {
-            // ============
-            //  Sidebar (Pack panel) — requests / history / variables
-            Column(
-                modifier = Modifier.fillMaxSize().background(c.panel)
-                    .verticalScroll(rememberScrollState()).padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(vPackName, color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
-                    IconBtn(MaterialSymbols.Folder, "Pack") { vPackOpen = true }
-                    OptionsMenu(inDark, inOnToggleTheme)
-                }
-                TabBar(listOf("Requests", "History", "Env (${vVars.size})"), vSideTab) { vSideTab = it }
-                Divider(color = c.border)
+    // ============
+    //  Warn-on-quit: persist always; veto if anything is unsaved-to-file.
+    DisposableEffect(Unit) {
+        vWindow.setOnCloseRequest {
+            persist()
+            if (vPacks.any { it.dirty }) { vQuitDialog = true; false } else true
+        }
+        onDispose { vWindow.setOnCloseRequest(null) }
+    }
 
-                when (vSideTab) {
-                    0 -> {
-                        vRequests.forEach { vRs ->
-                            key(vRs) {
-                                RequestRow(
-                                    inRs = vRs,
-                                    inSelected = vRs === vActive,
-                                    inOnOpen = { open(vRs) },
-                                    inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
-                                    inOnDuplicate = { duplicate(vRs) },
-                                    inOnDelete = { vDeleteTarget = vRs },
+    val vC = if (vDark) DarkColors else LightColors
+    val vMat = if (vDark) {
+        darkColors(primary = vC.accent, background = vC.bg, surface = vC.panel, onPrimary = vC.onAccent, onBackground = vC.text, onSurface = vC.text)
+    } else {
+        lightColors(primary = vC.accent, background = vC.bg, surface = vC.panel, onPrimary = vC.onAccent, onBackground = vC.text, onSurface = vC.text)
+    }
+
+    MaterialTheme(colors = vMat) {
+        CompositionLocalProvider(LocalAppColors provides vC) {
+            val c = vC
+            val vP = vPacks.getOrNull(vActivePack)
+
+            HorizontalSplitPane(
+                modifier = Modifier.background(c.bg),
+                initialFirstSize = 248.dp,
+                minFirstSize = 190.dp,
+                minSecondSize = 520.dp,
+                dividerColor = c.border,
+                dividerHoverColor = c.accent,
+                first = {
+                    // ============
+                    //  Sidebar (Pack panel)
+                    Column(
+                        modifier = Modifier.fillMaxSize().background(c.panel)
+                            .verticalScroll(rememberScrollState()).padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PackSwitcher(
+                                inPacks = vPacks,
+                                inActive = vActivePack,
+                                inOnSelect = { vActivePack = it; vReqMsg = null },
+                                inOnClose = { closePack(it) },
+                                inOnNew = { newPack() },
+                                inOnOpen = { openPackFile() },
+                                inModifier = Modifier.weight(1f),
+                            )
+                            IconBtn(MaterialSymbols.Save, "Save pack", inSize = 18.dp) { savePack() }
+                            OptionsMenu(
+                                inDark = vDark,
+                                inOnToggleTheme = { vDark = !vDark; persist() },
+                                inOnSaveAs = { saveAsPack() },
+                                inOnClosePack = { closePack(vActivePack) },
+                                inOnLoadDefault = { loadDefaultPack() },
+                            )
+                        }
+                        TabBar(listOf("Requests", "History", "Env (${vP?.variables?.size ?: 0})"), vSideTab) { vSideTab = it }
+                        Divider(color = c.border)
+
+                        when (vSideTab) {
+                            0 -> {
+                                if (vP == null) {
+                                    Text("No pack open — use the pack menu to open or create one.", color = c.dim, fontSize = 12.sp)
+                                } else {
+                                    vP.requests.forEach { vRs ->
+                                        key(vRs) {
+                                            RequestRow(
+                                                inRs = vRs,
+                                                inSelected = vRs === vP.active,
+                                                inOnOpen = { open(vRs) },
+                                                inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
+                                                inOnDuplicate = { duplicate(vRs) },
+                                                inOnDelete = { vDeleteTarget = vRs },
+                                            )
+                                        }
+                                    }
+                                    OutlinedAction(MaterialSymbols.Add, "New request") { newRequest() }
+                                }
+                            }
+                            1 -> {
+                                if (vHistory.isEmpty()) Text("No requests sent yet.", color = c.dim, fontSize = 12.sp)
+                                vHistory.forEachIndexed { vI, vH ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+                                            .clickable {
+                                                val vTarget = activePack() ?: return@clickable
+                                                val vRs = ReqState(vH.request.copy())
+                                                vTarget.requests.add(vRs); vTarget.openTabs.add(vRs); vTarget.active = vRs
+                                                vTarget.dirty = true; vSideTab = 0; vReqMsg = null
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        MethodTag(vH.method)
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(vH.url, color = c.text, fontSize = 11.sp, modifier = Modifier.fillMaxWidth())
+                                            Text("#${vHistory.size - vI} · ${vH.timeMs} ms", color = c.dim, fontSize = 10.sp)
+                                        }
+                                        Text(if (vH.status > 0) "${vH.status}" else "ERR", color = statusColor(vH.status), fontSize = 12.sp)
+                                    }
+                                }
+                            }
+                            else -> {
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
+                                    Text("Variables", color = c.text, fontSize = 13.sp)
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    TogglePill("Pack", vEnvScope == 0) { vEnvScope = 0 }
+                                    TogglePill("Global", vEnvScope == 1) { vEnvScope = 1 }
+                                }
+                                if (vEnvScope == 0) {
+                                    Text("Pack variables — {{name}} in this pack.", color = c.dim, fontSize = 11.sp)
+                                    if (vP == null) Text("No pack open.", color = c.dim, fontSize = 12.sp)
+                                    else KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true }
+                                } else {
+                                    Text("Global variables override pack variables in every pack.", color = c.dim, fontSize = 11.sp)
+                                    KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
+                                }
+                            }
+                        }
+                    }
+                },
+                second = {
+                    // ============
+                    //  Main — tab strip over a resizable request | response split
+                    val vAct = vP?.active
+                    if (vP == null) {
+                        Column(modifier = Modifier.fillMaxSize().background(c.bg), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(Modifier.weight(1f))
+                            Text("No pack open.", color = c.dim)
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OutlinedAction(MaterialSymbols.Add, "New pack") { newPack() }
+                                OutlinedAction(MaterialSymbols.Folder, "Open pack…") { openPackFile() }
+                                OutlinedAction(MaterialSymbols.Refresh, "Load default") { loadDefaultPack() }
+                            }
+                            Spacer(Modifier.weight(1f))
+                        }
+                    } else if (vAct == null) {
+                        Box(modifier = Modifier.fillMaxSize().background(c.bg), contentAlignment = Alignment.Center) {
+                            Text("No request open — pick one from the sidebar.", color = c.dim)
+                        }
+                    } else {
+                        Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
+                            RequestTabStrip(
+                                inTabs = vP.openTabs,
+                                inActive = vAct,
+                                inOnSelect = { open(it) },
+                                inOnClose = { closeTab(it) },
+                                inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
+                            )
+                            Divider(color = c.border)
+                            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                                HorizontalSplitPane(
+                                    initialFirstSize = 540.dp,
+                                    minFirstSize = 360.dp,
+                                    minSecondSize = 320.dp,
+                                    dividerColor = c.border,
+                                    dividerHoverColor = c.accent,
+                                    first = {
+                                        // Request editor (Request panel)
+                                        val vReq = vAct.req
+                                        Column(
+                                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(vReq.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
+                                                vReqMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
+                                                IconLabelChip(MaterialSymbols.FileCopy, "Duplicate") { duplicate(vAct) }
+                                                IconLabelChip(MaterialSymbols.Terminal, "Copy as cURL") {
+                                                    currentClipboard.setText(toCurl(resolveVars(vAct.req, effective(vP))))
+                                                    vReqMsg = "Copied cURL."
+                                                }
+                                            }
+
+                                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                MethodPicker(vReq.method) { m -> edit { it.copy(method = m) } }
+                                                ThinField(vReq.url, { v -> edit { it.copy(url = v) } }, inModifier = Modifier.weight(1f), inPlaceholder = "https://example.com/path")
+                                                if (vAct.loading) {
+                                                    DangerButton("Cancel", MaterialSymbols.Stop) { cancel(vAct) }
+                                                } else {
+                                                    Button(onClick = { send(vAct) }) { BtnContent(MaterialSymbols.Send, "Send", c.onAccent) }
+                                                }
+                                            }
+
+                                            val vMissing = unresolvedVars(vReq, effective(vP))
+                                            if (vMissing.isNotEmpty()) {
+                                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                    MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 15.dp)
+                                                    Text("Undefined: ${vMissing.joinToString(", ") { "{{$it}}" }}", color = kWarnColor, fontSize = 11.sp)
+                                                }
+                                            }
+
+                                            val vHasBody = vReq.method.allowsBody && vReq.bodyType != BodyType.NONE && vReq.body.isNotBlank()
+                                            TabBar(
+                                                listOf("Query (${vReq.params.size})", "Headers (${vReq.headers.size})", "Body"),
+                                                vAct.reqTab,
+                                                inDots = if (vHasBody) setOf(2) else emptySet(),
+                                            ) { vAct.reqTab = it }
+                                            when (vAct.reqTab) {
+                                                0 -> KeyValEditor(vReq.params) { v -> edit { it.copy(params = v) } }
+                                                1 -> KeyValEditor(vReq.headers) { v -> edit { it.copy(headers = v) } }
+                                                else -> BodyEditor(vReq) { v -> edit(v) }
+                                            }
+                                        }
+                                    },
+                                    second = {
+                                        ResponseView(vAct) { cancel(vAct) }
+                                    },
                                 )
                             }
                         }
-                        OutlinedAction(MaterialSymbols.Add, "New request") { newRequest() }
                     }
-                    1 -> {
-                        if (vHistory.isEmpty()) Text("No requests sent yet.", color = c.dim, fontSize = 12.sp)
-                        vHistory.forEachIndexed { vI, vH ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                                    .clickable {
-                                        val vRs = ReqState(vH.request.copy())
-                                        vRequests.add(vRs); open(vRs); vSideTab = 0
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 5.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                MethodTag(vH.method)
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(vH.url, color = c.text, fontSize = 11.sp, modifier = Modifier.fillMaxWidth())
-                                    Text("#${vHistory.size - vI} · ${vH.timeMs} ms", color = c.dim, fontSize = 10.sp)
-                                }
-                                Text(if (vH.status > 0) "${vH.status}" else "ERR", color = statusColor(vH.status), fontSize = 12.sp)
+                },
+            )
+
+            // ============
+            //  Dialogs
+            val vRen = vRenameTarget
+            if (vRen != null) {
+                Dialog(onDismissRequest = { vRenameTarget = null }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Rename request", color = c.text, fontSize = 16.sp)
+                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Button(onClick = {
+                                    if (vRenameText.isNotBlank()) renameRequest(vRen, vRenameText.trim())
+                                    vRenameTarget = null
+                                }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
+                                OutlinedButton(onClick = { vRenameTarget = null }) { Text("Cancel", color = c.text) }
                             }
                         }
                     }
-                    else -> {
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                            MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
-                            Text("Variables", color = c.text, fontSize = 13.sp)
-                        }
-                        Text("Reference any value as {{name}} in a URL, param, header or body.", color = c.dim, fontSize = 11.sp)
-                        KeyValEditor(vVars) { vNew -> vVars.clear(); vVars.addAll(vNew) }
-                    }
                 }
             }
-        },
-        second = {
-            // ============
-            //  Main — tab strip over a resizable request | response split
-            val vAct = vActive
-            if (vAct == null) {
-                Box(modifier = Modifier.fillMaxSize().background(c.bg), contentAlignment = Alignment.Center) {
-                    Text("No request open — pick one from the sidebar.", color = c.dim)
-                }
-            } else {
-                Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
-                    RequestTabStrip(
-                        inTabs = vOpenTabs,
-                        inActive = vAct,
-                        inOnSelect = { open(it) },
-                        inOnClose = { closeTab(it) },
-                        inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
-                    )
-                    Divider(color = c.border)
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        HorizontalSplitPane(
-                            initialFirstSize = 540.dp,
-                            minFirstSize = 360.dp,
-                            minSecondSize = 320.dp,
-                            dividerColor = c.border,
-                            dividerHoverColor = c.accent,
-                            first = {
-                                // Request editor (Request panel)
-                                val vReq = vAct.req
-                                Column(
-                                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(vReq.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
-                                        vReqMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
-                                        IconLabelChip(MaterialSymbols.FileCopy, "Duplicate") { duplicate(vAct) }
-                                        IconLabelChip(MaterialSymbols.Terminal, "Copy as cURL") {
-                                            currentClipboard.setText(toCurl(resolveVars(vAct.req, vVars)))
-                                            vReqMsg = "Copied cURL."
-                                        }
-                                    }
 
-                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                        MethodPicker(vReq.method) { m -> edit { it.copy(method = m) } }
-                                        ThinField(vReq.url, { v -> edit { it.copy(url = v) } }, inModifier = Modifier.weight(1f), inPlaceholder = "https://example.com/path")
-                                        if (vAct.loading) {
-                                            DangerButton("Cancel", MaterialSymbols.Stop) { cancel(vAct) }
-                                        } else {
-                                            Button(onClick = { send(vAct) }) { BtnContent(MaterialSymbols.Send, "Send", c.onAccent) }
-                                        }
-                                    }
-
-                                    val vMissing = unresolvedVars(vReq, vVars)
-                                    if (vMissing.isNotEmpty()) {
-                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                            MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 15.dp)
-                                            Text("Undefined: ${vMissing.joinToString(", ") { "{{$it}}" }}", color = kWarnColor, fontSize = 11.sp)
-                                        }
-                                    }
-
-                                    val vHasBody = vReq.method.allowsBody && vReq.bodyType != BodyType.NONE && vReq.body.isNotBlank()
-                                    TabBar(
-                                        listOf("Query (${vReq.params.size})", "Headers (${vReq.headers.size})", "Body"),
-                                        vAct.reqTab,
-                                        inDots = if (vHasBody) setOf(2) else emptySet(),
-                                    ) { vAct.reqTab = it }
-                                    when (vAct.reqTab) {
-                                        0 -> KeyValEditor(vReq.params) { v -> edit { it.copy(params = v) } }
-                                        1 -> KeyValEditor(vReq.headers) { v -> edit { it.copy(headers = v) } }
-                                        else -> BodyEditor(vReq) { v -> edit(v) }
-                                    }
+            val vDel = vDeleteTarget
+            if (vDel != null) {
+                val vName = vDel.req.name
+                Dialog(onDismissRequest = { vDeleteTarget = null }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                MaterialSymbolsOutlined(MaterialSymbols.Delete, tint = methodColor(ReqMethod.DELETE), size = 20.dp)
+                                Text("Delete request", color = c.text, fontSize = 16.sp)
+                            }
+                            Text("\"$vName\" will be removed from the pack. This can't be undone.", color = c.dim, fontSize = 13.sp)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedButton(onClick = { vDeleteTarget = null }) { Text("Cancel", color = c.text) }
+                                    DangerButton("Delete", MaterialSymbols.Delete) { deleteRequest(vDel); vDeleteTarget = null }
                                 }
-                            },
-                            second = {
-                                // Response panel
-                                ResponseView(vAct) { cancel(vAct) }
-                            },
-                        )
+                            }
+                        }
                     }
                 }
             }
-        },
-    )
 
-    // ============
-    //  Dialogs
-    if (vPackOpen) {
-        PackDialog(
-            inName = vPackName,
-            inOnName = { vPackName = it },
-            inNotice = vNotice,
-            inOnExport = {
-                showSaveFileDialog("${vPackName}.json") { vPath ->
-                    if (vPath != null) {
-                        val vErr = exportPack(Pack(vPackName, vRequests.map { it.req }, vVars.toList()), vPath)
-                        vNotice = vErr?.let { "Export failed: $it" }
-                            ?: "Saved ${vRequests.size} request(s), ${vVars.size} variable(s)."
-                    }
-                }
-            },
-            inOnImport = {
-                showOpenFileDialog { vPath ->
-                    if (vPath != null) importPack(vPath).fold(
-                        onSuccess = { vP ->
-                            vPackName = vP.name
-                            vRequests.clear()
-                            (vP.requests.ifEmpty { listOf(ApiRequest()) }).forEach { vRequests.add(ReqState(it)) }
-                            vVars.clear(); vVars.addAll(vP.variables)
-                            vOpenTabs.clear(); vRequests.firstOrNull()?.let { vOpenTabs.add(it) }
-                            vActive = vRequests.firstOrNull()
-                            vReqMsg = null
-                            vNotice = "Imported ${vP.requests.size} request(s), ${vP.variables.size} variable(s)."
-                        },
-                        onFailure = { vNotice = "Import failed: ${it.message}" },
-                    )
-                }
-            },
-            inOnClose = { vPackOpen = false },
-        )
-    }
-
-    val vRen = vRenameTarget
-    if (vRen != null) {
-        Dialog(onDismissRequest = { vRenameTarget = null }) {
-            Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Rename request", color = c.text, fontSize = 16.sp)
-                    ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(onClick = {
-                            if (vRenameText.isNotBlank()) vRen.req = vRen.req.copy(name = vRenameText.trim())
-                            vRenameTarget = null
-                        }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
-                        OutlinedButton(onClick = { vRenameTarget = null }) { Text("Cancel", color = c.text) }
+            if (vQuitDialog) {
+                val vDirty = vPacks.filter { it.dirty }.joinToString(", ") { it.name }
+                Dialog(onDismissRequest = { vQuitDialog = false }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(440.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 20.dp)
+                                Text("Unsaved changes", color = c.text, fontSize = 18.sp)
+                            }
+                            Text("Unsaved edits in: $vDirty.", color = c.text, fontSize = 13.sp)
+                            Text("Your session is kept and restored next launch, but export a pack to a .json file to save it permanently.", color = c.dim, fontSize = 12.sp)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedButton(onClick = { vQuitDialog = false }) { Text("Keep editing", color = c.text) }
+                                    Button(onClick = { vQuitDialog = false; savePack() }) { BtnContent(MaterialSymbols.Save, "Save pack", c.onAccent) }
+                                    DangerButton("Quit anyway", MaterialSymbols.Close) { persist(); vWindow.close() }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+}
 
-    val vDel = vDeleteTarget
-    if (vDel != null) {
-        val vName = vDel.req.name
-        Dialog(onDismissRequest = { vDeleteTarget = null }) {
-            Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        MaterialSymbolsOutlined(MaterialSymbols.Delete, tint = methodColor(ReqMethod.DELETE), size = 20.dp)
-                        Text("Delete request", color = c.text, fontSize = 16.sp)
-                    }
-                    Text("\"$vName\" will be removed from the pack. This can't be undone.", color = c.dim, fontSize = 13.sp)
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlinedButton(onClick = { vDeleteTarget = null }) { Text("Cancel", color = c.text) }
-                            DangerButton("Delete", MaterialSymbols.Delete) { delete(vDel); vDeleteTarget = null }
-                        }
+// ==================
+// MARK: Pack switcher (active pack name → dropdown of open packs)
+// ==================
+
+@Composable
+private fun PackSwitcher(
+    inPacks: List<PackState>,
+    inActive: Int,
+    inOnSelect: (Int) -> Unit,
+    inOnClose: (Int) -> Unit,
+    inOnNew: () -> Unit,
+    inOnOpen: () -> Unit,
+    inModifier: Modifier = Modifier,
+) {
+    val c = LocalAppColors.current
+    val vAnchor = rememberMenuAnchor()
+    var vOpen by remember { mutableStateOf(false) }
+    val vActivePack = inPacks.getOrNull(inActive)
+    Box(modifier = inModifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth().menuAnchor(vAnchor).clip(RoundedCornerShape(6.dp))
+                .clickable { vOpen = true }.padding(horizontal = 6.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(vActivePack?.name ?: "No pack", color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
+            if (vActivePack?.dirty == true) Box(Modifier.size(6.dp).background(c.accent, RoundedCornerShape(3.dp)))
+            MaterialSymbolsOutlined(MaterialSymbols.ExpandMore, tint = c.dim, size = 18.dp)
+        }
+        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 224.dp) {
+            inPacks.forEachIndexed { vI, vP ->
+                DropdownMenuItem(onClick = { vOpen = false; inOnSelect(vI) }) {
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (vI == inActive) MaterialSymbolsOutlined(MaterialSymbols.Check, tint = c.accent, size = 16.dp)
+                        else Spacer(Modifier.width(16.dp))
+                        Text(vP.name + if (vP.dirty) " •" else "", color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        IconBtn(MaterialSymbols.Close, "Close pack", inSize = 14.dp) { vOpen = false; inOnClose(vI) }
                     }
                 }
             }
+            Divider(color = c.border)
+            DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open pack…") }
         }
     }
 }
@@ -498,8 +668,6 @@ private fun RequestTabStrip(
                                 val vd = vDragging ?: return@onDrag
                                 val vCur = inTabs.indexOf(vd)
                                 if (vCur < 0) return@onDrag
-                                // onDrag's x is relative to the dragged node's current left,
-                                // so add that left back to recover the pointer's window-x.
                                 val vPointerX = (vLeft[vd] ?: 0) + vRelX
                                 if (vCur < inTabs.lastIndex) {
                                     val vR = inTabs[vCur + 1]
@@ -530,59 +698,34 @@ private fun RequestTabStrip(
 }
 
 // ==================
-// MARK: Pack dialog
+// MARK: Options menu (theme + pack-file actions)
 // ==================
 
 @Composable
-private fun PackDialog(
-    inName: String, inOnName: (String) -> Unit, inNotice: String?,
-    inOnExport: () -> Unit, inOnImport: () -> Unit, inOnClose: () -> Unit,
+private fun OptionsMenu(
+    inDark: Boolean,
+    inOnToggleTheme: () -> Unit,
+    inOnSaveAs: () -> Unit,
+    inOnClosePack: () -> Unit,
+    inOnLoadDefault: () -> Unit,
 ) {
-    val c = LocalAppColors.current
-    Dialog(onDismissRequest = inOnClose) {
-        Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(440.dp)) {
-            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MaterialSymbolsOutlined(MaterialSymbols.Folder, tint = c.accent, size = 20.dp)
-                    Text("Pack", color = c.text, fontSize = 18.sp)
-                }
-                Text("Name", color = c.dim, fontSize = 12.sp)
-                ThinField(inName, inOnName, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Pack name")
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(onClick = inOnExport) { BtnContent(MaterialSymbols.Upload, "Export…", c.onAccent) }
-                    OutlinedButton(onClick = inOnImport) { BtnContent(MaterialSymbols.Download, "Import…", c.accent) }
-                }
-                Text(
-                    "Export saves every request to a .json file (native Save dialog); Import replaces the pack from a file.",
-                    color = c.dim, fontSize = 12.sp,
-                )
-                inNotice?.let { Text(it, color = c.text, fontSize = 12.sp) }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    OutlinedButton(onClick = inOnClose) { Text("Close", color = c.text) }
-                }
-            }
-        }
-    }
-}
-
-// ==================
-// MARK: Options menu (dark / light)
-// ==================
-
-@Composable
-private fun OptionsMenu(inDark: Boolean, inOnToggleTheme: () -> Unit) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
     Box {
         IconBtn(MaterialSymbols.Settings, "Options", inModifier = Modifier.menuAnchor(vAnchor)) { vOpen = true }
-        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor) {
+        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 200.dp) {
             DropdownMenuItem(onClick = { if (!inDark) inOnToggleTheme(); vOpen = false }) {
                 Text("Dark mode", color = if (inDark) c.accent else c.text, fontSize = 13.sp)
             }
             DropdownMenuItem(onClick = { if (inDark) inOnToggleTheme(); vOpen = false }) {
                 Text("Light mode", color = if (!inDark) c.accent else c.text, fontSize = 13.sp)
             }
+            Divider(color = c.border)
+            DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Save, "Save pack as…") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnClosePack() }) { MenuRow(MaterialSymbols.Close, "Close pack") }
+            Divider(color = c.border)
+            DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
         }
     }
 }
@@ -669,7 +812,6 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
-        // Header — label + status / time / size (or a Cancel chip while loading).
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -692,13 +834,11 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
         }
         Divider(color = c.border)
 
-        // Tabs.
         Box(modifier = Modifier.padding(horizontal = 6.dp)) {
             TabBar(listOf("Body", "Headers" + (vResp?.let { " (${it.headers.size})" } ?: "")), vTab, inOnSelect = { inRs.respTab = it })
         }
         Divider(color = c.border)
 
-        // Content — recessed code area, selectable, scrolls when long.
         Box(modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 8.dp)) {
             Box(
                 modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))
@@ -709,7 +849,6 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
                 if (vResp == null && !vLoading) {
                     Text("Send a request to see the response.", color = c.dim, fontSize = 13.sp)
                 } else {
-                    // Read-only BasicTextField → selectable + copyable (drag-select, Ctrl+C).
                     BasicTextField(
                         value = if (vLoading) "…" else vShown.ifEmpty { "(empty)" },
                         onValueChange = {},
@@ -724,7 +863,6 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
             }
         }
 
-        // Bottom toolbar — copy / save the shown pane.
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -854,7 +992,7 @@ private fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier:
     }
 }
 
-/* Small icon-only button (burger / pack / options / close). */
+/* Small icon-only button (burger / pack / options / save / close). */
 @Composable
 private fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
@@ -863,14 +1001,14 @@ private fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier
     }
 }
 
-/* Outlined icon+label action (New request / Add row). */
+/* Outlined icon+label action (New request / Add row / pack actions). */
 @Composable
 private fun OutlinedAction(inIcon: Int, inLabel: String, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
     OutlinedButton(onClick = inOnClick) { BtnContent(inIcon, inLabel, c.accent) }
 }
 
-/* Filled red icon+label button for destructive / stop actions (delete, cancel). */
+/* Filled red icon+label button for destructive / stop actions (delete, cancel, quit). */
 @Composable
 private fun DangerButton(inLabel: String, inIcon: Int, inOnClick: () -> Unit) {
     val vRed = methodColor(ReqMethod.DELETE)
@@ -899,7 +1037,7 @@ private fun BtnContent(inIcon: Int, inLabel: String, inColor: Color, inSize: Dp 
     }
 }
 
-// Amber used to flag undefined {{variables}} in the request editor.
+// Amber used to flag undefined {{variables}} and unsaved-changes warnings.
 private val kWarnColor = Color(0xFFFFAB00)
 
 private fun methodColor(inM: ReqMethod): Color = when (inM) {
