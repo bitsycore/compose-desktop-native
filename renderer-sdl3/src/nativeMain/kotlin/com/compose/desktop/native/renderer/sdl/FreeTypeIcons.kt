@@ -173,11 +173,14 @@ internal class FreeTypeIcons {
 		if (vGlyph == null) return false
 
 		// Glyph bitmap is in physical pixels; the SDL renderer scale brings
-		// it back to logical when we blit. Centre in the box.
+		// it back to logical when we blit. Centre in the box, then SNAP the
+		// top-left to a whole device pixel — a fractional device offset makes
+		// SDL bilinear-sample the texture (the main cause of blurry / fringed
+		// icons). vLogW * dpr == vGlyph.w exactly, so the size already maps 1:1.
 		val vLogW = vGlyph.w / inDpr
 		val vLogH = vGlyph.h / inDpr
-		val vDstX = inBoxX + (inBoxW - vLogW) / 2f
-		val vDstY = inBoxY + (inBoxH - vLogH) / 2f
+		val vDstX = kotlin.math.round((inBoxX + (inBoxW - vLogW) / 2f) * inDpr) / inDpr
+		val vDstY = kotlin.math.round((inBoxY + (inBoxH - vLogH) / 2f) * inDpr) / inDpr
 		blit(inSdlRenderer, vGlyph, vDstX, vDstY, vLogW, vLogH)
 		return true
 	}
@@ -305,14 +308,14 @@ internal class FreeTypeIcons {
 		val vFamily = resolveFamily(inFamily) ?: return null
 		val vVariant = getOrCreateVariant(inFamily, vFamily, inVariations, inVariationsKey) ?: return null
 
-		// Supersampling: render at 2× the requested physical pixel size,
-		// then downsample with a 2×2 box filter when uploading. This blurs
-		// the thin gaps between overlapping interpolated subpaths into the
-		// surrounding fill, which is what Skia/CoreText effectively do
-		// implicitly via their path-aware rendering. At normal axis
-		// combinations the supersample is invisible — only the extreme
-		// (high GRAD + opsz + FILL=1) cases benefit visibly.
-		val vRenderPx = inPixelSize * kSupersampleFactor
+		// Only the FILL axis interpolation produces the overlapping / near-
+		// touching contours that need supersampling + embolden to render
+		// cleanly. For the common case (no fill) render at the EXACT target
+		// size with FreeType's own anti-aliasing — far crisper at UI sizes
+		// than a 2× render boxed back down. Filled icons keep the 2× path.
+		val vFilled = inVariations.any { it.axisTag == "FILL" && it.value > 0f }
+		val vSS = if (vFilled) kSupersampleFactor else 1
+		val vRenderPx = inPixelSize * vSS
 		if (vVariant.pixelSize != vRenderPx) {
 			FT_Set_Pixel_Sizes(vVariant.face, 0u, vRenderPx.convert())
 			vVariant.pixelSize = vRenderPx
@@ -349,12 +352,14 @@ internal class FreeTypeIcons {
 		vSlot.outline.flags = vSlot.outline.flags or
 				FT_OUTLINE_OVERLAP.toInt() or
 				FT_OUTLINE_HIGH_PRECISION.toInt()
-		// Strength is in 26.6 fixed-point font units; we're rendering at
-		// kSupersampleFactor × physical pixels, so 1 source pixel = 64
-		// font units. Two source pixels (= 1 output pixel after
-		// downsample) is enough to close the gap without making icons
-		// visibly heavier at default axis values.
-		FT_Outline_Embolden(vSlot.outline.ptr, (2L * 64L).convert())
+		// Embolden ONLY the filled path, to close the geometric gap between
+		// the outer outline and the inner fill contour. On plain outlined
+		// icons it just fattens strokes and merges fine detail (gear teeth,
+		// the trash-can bars), so skip it there. Strength is 26.6 fixed-point
+		// font units; at the 2× fill render that is two source pixels.
+		if (vFilled) {
+			FT_Outline_Embolden(vSlot.outline.ptr, (2L * 64L).convert())
+		}
 
 		val vRenderErr = FT_Render_Glyph(vSlotPtr, FT_RENDER_MODE_NORMAL)
 		if (vRenderErr.toInt() != 0) return null
@@ -364,10 +369,9 @@ internal class FreeTypeIcons {
 		val vSrcH = vBitmap.rows.toInt()
 		if (vSrcW <= 0 || vSrcH <= 0) return null
 
-		val vTex = uploadBitmap(inSdlRenderer, vBitmap, inColor) ?: return null
+		val vTex = uploadBitmap(inSdlRenderer, vBitmap, inColor, vSS) ?: return null
 		// CachedGlyph dimensions are POST-downsample (texture size), so the
 		// later blit math gives the right logical size.
-		val vSS = kSupersampleFactor
 		return CachedGlyph(
 			tex = vTex,
 			w = (vSrcW + vSS - 1) / vSS,
@@ -391,12 +395,13 @@ internal class FreeTypeIcons {
 		inSdlRenderer: COpaquePointer,
 		inBitmap: FT_Bitmap,
 		inColor: ComposeColor,
+		inSS: Int,
 	): COpaquePointer? {
 		val vSrcW = inBitmap.width.toInt()
 		val vSrcH = inBitmap.rows.toInt()
 		val vPitch = inBitmap.pitch
 		val vBuf = inBitmap.buffer ?: return null
-		val vSS = kSupersampleFactor
+		val vSS = inSS
 
 		// Output is the downsampled size — round up so a 49×49 source at 2×
 		// gives a 25×25 dst (last row/col samples partial cells).
