@@ -32,16 +32,43 @@ fun autoFormatFor(inContentType: String?): BodyFormat {
 // MARK: Highlight palette
 // ==================
 
-/* Per-token colours used across all three highlighters. Tuned for the
-   apidemo dark theme; light theme will look acceptable but not tuned. */
-private object SynColors {
-	val Key      = Color(0xFF9CDCFE) // light blue — JSON keys, XML attr names, YAML keys
-	val String   = Color(0xFFCE9178) // peach — quoted strings
-	val Number   = Color(0xFFB5CEA8) // sage — numeric literals
-	val Keyword  = Color(0xFFC586C0) // pink — true / false / null
-	val Tag      = Color(0xFF569CD6) // brighter blue — XML/HTML element names
-	val Comment  = Color(0xFF6A9955) // green — // and #
-	val Punct    = Color(0xFFCCCCCC) // light gray — braces, colons, commas
+/* Per-token colours. Two preset themes: a dark-on-dark and a dark-on-
+   light variant matching VS Code's defaults. Caller picks based on
+   surrounding theme; auto-pick available via SyntaxPalette.forDark(). */
+data class SyntaxPalette(
+	val key: Color,
+	val string: Color,
+	val number: Color,
+	val keyword: Color,
+	val tag: Color,
+	val comment: Color,
+	val punct: Color,
+) {
+	companion object {
+		/* Light-on-dark — VS Code Dark+. */
+		val Dark = SyntaxPalette(
+			key     = Color(0xFF9CDCFE),
+			string  = Color(0xFFCE9178),
+			number  = Color(0xFFB5CEA8),
+			keyword = Color(0xFFC586C0),
+			tag     = Color(0xFF569CD6),
+			comment = Color(0xFF6A9955),
+			punct   = Color(0xFFCCCCCC),
+		)
+		/* Dark-on-light — VS Code Light+. Higher contrast on white. */
+		val Light = SyntaxPalette(
+			key     = Color(0xFF0451A5),
+			string  = Color(0xFFA31515),
+			number  = Color(0xFF098658),
+			keyword = Color(0xFF0000FF),
+			tag     = Color(0xFF800000),
+			comment = Color(0xFF008000),
+			punct   = Color(0xFF333333),
+		)
+
+		/* Pick a palette by the host theme's background brightness. */
+		fun forDark(inIsDark: Boolean): SyntaxPalette = if (inIsDark) Dark else Light
+	}
 }
 
 // ==================
@@ -50,11 +77,15 @@ private object SynColors {
 
 /* Render the given text with per-token colour spans for the requested
    format. RAW returns an unstyled AnnotatedString. */
-fun highlight(inText: String, inFormat: BodyFormat): AnnotatedString = when (inFormat) {
+fun highlight(
+	inText: String,
+	inFormat: BodyFormat,
+	inPalette: SyntaxPalette = SyntaxPalette.Dark,
+): AnnotatedString = when (inFormat) {
 	BodyFormat.RAW  -> AnnotatedString(inText)
-	BodyFormat.JSON -> highlightJson(inText)
-	BodyFormat.XML, BodyFormat.HTML -> highlightXml(inText)
-	BodyFormat.YAML -> highlightYaml(inText)
+	BodyFormat.JSON -> highlightJson(inText, inPalette)
+	BodyFormat.XML, BodyFormat.HTML -> highlightXml(inText, inPalette)
+	BodyFormat.YAML -> highlightYaml(inText, inPalette)
 }
 
 // ==================
@@ -66,7 +97,7 @@ fun highlight(inText: String, inFormat: BodyFormat): AnnotatedString = when (inF
    (strings followed by ':') from string values by peeking after each
    string. Error-tolerant — malformed JSON still highlights as best
    effort rather than throwing. */
-private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedString {
+private fun highlightJson(inText: String, inP: SyntaxPalette): AnnotatedString = buildAnnotatedString {
 	val vN = inText.length
 	var vI = 0
 	while (vI < vN) {
@@ -86,7 +117,7 @@ private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedStrin
 				var vK = vJ
 				while (vK < vN && inText[vK].isWhitespace()) vK++
 				val vIsKey = vK < vN && inText[vK] == ':'
-				val vColor = if (vIsKey) SynColors.Key else SynColors.String
+				val vColor = if (vIsKey) inP.key else inP.string
 				pushStyle(SpanStyle(color = vColor))
 				append(inText.substring(vStart, vJ))
 				pop()
@@ -96,7 +127,7 @@ private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedStrin
 				val vStart = vI
 				if (vC == '-') vI++
 				while (vI < vN && (inText[vI].isDigit() || inText[vI] in ".eE+-")) vI++
-				pushStyle(SpanStyle(color = SynColors.Number))
+				pushStyle(SpanStyle(color = inP.number))
 				append(inText.substring(vStart, vI))
 				pop()
 			}
@@ -105,7 +136,7 @@ private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedStrin
 				while (vI < vN && inText[vI].isLetter()) vI++
 				val vWord = inText.substring(vStart, vI)
 				if (vWord == "true" || vWord == "false" || vWord == "null") {
-					pushStyle(SpanStyle(color = SynColors.Keyword))
+					pushStyle(SpanStyle(color = inP.keyword))
 					append(vWord)
 					pop()
 				} else {
@@ -113,7 +144,7 @@ private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedStrin
 				}
 			}
 			vC in "{}[],:" -> {
-				pushStyle(SpanStyle(color = SynColors.Punct))
+				pushStyle(SpanStyle(color = inP.punct))
 				append(vC)
 				pop()
 				vI++
@@ -130,7 +161,7 @@ private fun highlightJson(inText: String): AnnotatedString = buildAnnotatedStrin
 /* Tokeniser for XML / HTML. Distinguishes tag names, attribute names,
    attribute values (string), and comments. Inside tags, attr=value pairs
    are recognised; outside tags text is left in the default colour. */
-private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString {
+private fun highlightXml(inText: String, inP: SyntaxPalette): AnnotatedString = buildAnnotatedString {
 	val vN = inText.length
 	var vI = 0
 	while (vI < vN) {
@@ -139,7 +170,7 @@ private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString
 			// Comment block: <!-- ... -->
 			vC == '<' && inText.startsWith("<!--", vI) -> {
 				val vEnd = inText.indexOf("-->", vI + 4).let { if (it < 0) vN else it + 3 }
-				pushStyle(SpanStyle(color = SynColors.Comment))
+				pushStyle(SpanStyle(color = inP.comment))
 				append(inText.substring(vI, vEnd))
 				pop()
 				vI = vEnd
@@ -147,14 +178,14 @@ private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString
 			vC == '<' -> {
 				// Tag open: <[/]name attr=val attr2="val2">
 				val vGt = inText.indexOf('>', vI).let { if (it < 0) vN else it + 1 }
-				pushStyle(SpanStyle(color = SynColors.Punct)); append('<'); pop()
+				pushStyle(SpanStyle(color = inP.punct)); append('<'); pop()
 				var vJ = vI + 1
-				if (vJ < vN && inText[vJ] == '/') { pushStyle(SpanStyle(color = SynColors.Punct)); append('/'); pop(); vJ++ }
+				if (vJ < vN && inText[vJ] == '/') { pushStyle(SpanStyle(color = inP.punct)); append('/'); pop(); vJ++ }
 				// Tag name.
 				val vTagStart = vJ
 				while (vJ < vN && !inText[vJ].isWhitespace() && inText[vJ] != '>' && inText[vJ] != '/') vJ++
 				if (vJ > vTagStart) {
-					pushStyle(SpanStyle(color = SynColors.Tag))
+					pushStyle(SpanStyle(color = inP.tag))
 					append(inText.substring(vTagStart, vJ))
 					pop()
 				}
@@ -163,11 +194,11 @@ private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString
 					val vC2 = inText[vJ]
 					when {
 						vC2.isWhitespace() -> { append(vC2); vJ++ }
-						vC2 == '/' -> { pushStyle(SpanStyle(color = SynColors.Punct)); append('/'); pop(); vJ++ }
-						vC2 == '=' -> { pushStyle(SpanStyle(color = SynColors.Punct)); append('='); pop(); vJ++ }
+						vC2 == '/' -> { pushStyle(SpanStyle(color = inP.punct)); append('/'); pop(); vJ++ }
+						vC2 == '=' -> { pushStyle(SpanStyle(color = inP.punct)); append('='); pop(); vJ++ }
 						vC2 == '"' || vC2 == '\'' -> {
 							val vEnd = inText.indexOf(vC2, vJ + 1).let { if (it < 0) vGt - 1 else it + 1 }
-							pushStyle(SpanStyle(color = SynColors.String))
+							pushStyle(SpanStyle(color = inP.string))
 							append(inText.substring(vJ, vEnd))
 							pop()
 							vJ = vEnd
@@ -175,14 +206,14 @@ private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString
 						else -> {
 							val vAttrStart = vJ
 							while (vJ < vGt - 1 && !inText[vJ].isWhitespace() && inText[vJ] != '=' && inText[vJ] != '>' && inText[vJ] != '/') vJ++
-							pushStyle(SpanStyle(color = SynColors.Key))
+							pushStyle(SpanStyle(color = inP.key))
 							append(inText.substring(vAttrStart, vJ))
 							pop()
 						}
 					}
 				}
 				if (vGt > vI && inText.getOrNull(vGt - 1) == '>') {
-					pushStyle(SpanStyle(color = SynColors.Punct)); append('>'); pop()
+					pushStyle(SpanStyle(color = inP.punct)); append('>'); pop()
 				}
 				vI = vGt
 			}
@@ -200,7 +231,7 @@ private fun highlightXml(inText: String): AnnotatedString = buildAnnotatedString
    (key vs value, list item vs scalar) depend on position within a
    line. Comments (#), keys (text before ':'), quoted strings, numbers
    and booleans are coloured; everything else stays default. */
-private fun highlightYaml(inText: String): AnnotatedString = buildAnnotatedString {
+private fun highlightYaml(inText: String, inP: SyntaxPalette): AnnotatedString = buildAnnotatedString {
 	val vLines = inText.split('\n')
 	for ((vIdx, vLineRaw) in vLines.withIndex()) {
 		val vLine = vLineRaw
@@ -218,20 +249,20 @@ private fun highlightYaml(inText: String): AnnotatedString = buildAnnotatedStrin
 			var vK = 0
 			while (vK < vPrefix.length && vPrefix[vK].isWhitespace()) { append(vPrefix[vK]); vK++ }
 			if (vK + 1 < vPrefix.length && vPrefix[vK] == '-' && vPrefix[vK + 1].isWhitespace()) {
-				pushStyle(SpanStyle(color = SynColors.Punct)); append('-'); pop()
+				pushStyle(SpanStyle(color = inP.punct)); append('-'); pop()
 				append(vPrefix[vK + 1])
 				vK += 2
 			}
-			pushStyle(SpanStyle(color = SynColors.Key))
+			pushStyle(SpanStyle(color = inP.key))
 			append(vPrefix.substring(vK))
 			pop()
-			pushStyle(SpanStyle(color = SynColors.Punct)); append(':'); pop()
-			appendYamlValue(vRest)
+			pushStyle(SpanStyle(color = inP.punct)); append(':'); pop()
+			appendYamlValue(vRest, inP)
 		} else {
-			appendYamlValue(vCodePart)
+			appendYamlValue(vCodePart, inP)
 		}
 		if (vCommentPart.isNotEmpty()) {
-			pushStyle(SpanStyle(color = SynColors.Comment))
+			pushStyle(SpanStyle(color = inP.comment))
 			append(vCommentPart)
 			pop()
 		}
@@ -241,32 +272,32 @@ private fun highlightYaml(inText: String): AnnotatedString = buildAnnotatedStrin
 
 /* Render the value portion of a YAML line — applies string / number /
    keyword / list-marker colours where applicable. */
-private fun AnnotatedString.Builder.appendYamlValue(inSeg: String) {
+private fun AnnotatedString.Builder.appendYamlValue(inSeg: String, inP: SyntaxPalette) {
 	val vTrimmed = inSeg.trimStart()
 	val vPad = inSeg.substring(0, inSeg.length - vTrimmed.length)
 	append(vPad)
 	when {
 		vTrimmed.isEmpty() -> { /* nothing */ }
 		vTrimmed.startsWith('-') && (vTrimmed.length == 1 || vTrimmed[1].isWhitespace()) -> {
-			pushStyle(SpanStyle(color = SynColors.Punct)); append('-'); pop()
-			appendYamlValue(vTrimmed.substring(1))
+			pushStyle(SpanStyle(color = inP.punct)); append('-'); pop()
+			appendYamlValue(vTrimmed.substring(1), inP)
 		}
 		vTrimmed.startsWith('"') || vTrimmed.startsWith('\'') -> {
 			val vQ = vTrimmed[0]
 			val vEnd = vTrimmed.indexOf(vQ, 1).let { if (it < 0) vTrimmed.length else it + 1 }
-			pushStyle(SpanStyle(color = SynColors.String))
+			pushStyle(SpanStyle(color = inP.string))
 			append(vTrimmed.substring(0, vEnd))
 			pop()
 			append(vTrimmed.substring(vEnd))
 		}
 		vTrimmed == "true" || vTrimmed == "false" || vTrimmed == "null" || vTrimmed == "~" -> {
-			pushStyle(SpanStyle(color = SynColors.Keyword)); append(vTrimmed); pop()
+			pushStyle(SpanStyle(color = inP.keyword)); append(vTrimmed); pop()
 		}
 		vTrimmed.first().let { it.isDigit() || it == '-' && vTrimmed.length > 1 && vTrimmed[1].isDigit() } -> {
 			var vJ = 0
 			if (vTrimmed[0] == '-') vJ++
 			while (vJ < vTrimmed.length && (vTrimmed[vJ].isDigit() || vTrimmed[vJ] in ".eE+-")) vJ++
-			pushStyle(SpanStyle(color = SynColors.Number))
+			pushStyle(SpanStyle(color = inP.number))
 			append(vTrimmed.substring(0, vJ))
 			pop()
 			append(vTrimmed.substring(vJ))

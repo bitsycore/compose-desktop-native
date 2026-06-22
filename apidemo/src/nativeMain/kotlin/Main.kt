@@ -1357,7 +1357,10 @@ private fun BodyView(
                     modifier = Modifier.fillMaxWidth(),
                 )
             } else {
-                Text(highlight(inText, inFormat), color = c.text, fontSize = 12.sp)
+                // Pick a palette by background luminance — light theme gets
+                // dark-on-light VS Code colours, dark gets the inverse.
+                val vPalette = SyntaxPalette.forDark(isDarkBg(c.bg))
+                Text(highlight(inText, inFormat, vPalette), color = c.text, fontSize = 12.sp)
             }
         }
     }
@@ -1626,6 +1629,13 @@ private fun ViewerOverflowMenu(
             Text("Clear", color = Color(0xFFFF5630))
         }
     }
+}
+
+/* Perceptual luminance check — true when the colour reads as "dark"
+   (background gets a light foreground). Standard Rec. 709 weights. */
+private fun isDarkBg(inColor: Color): Boolean {
+    val vY = 0.299f * inColor.red + 0.587f * inColor.green + 0.114f * inColor.blue
+    return vY < 0.5f
 }
 
 // ==================
