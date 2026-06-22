@@ -964,19 +964,18 @@ private fun RequestBuilder(
             }
         }
 
-        // Body-type selector pinned at the bottom.
-        Divider(color = c.border)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text("Body", color = c.dim, fontSize = 12.sp)
-            BodyTypeMenu(inReq.bodyType, inReq.method.allowsBody) { vT ->
-                inEdit { it.copy(bodyType = vT) }
-                inRs.reqTab = 2
+        // Body-type selector — only on the Body tab, pinned at the bottom.
+        if (inRs.reqTab == 2) {
+            Divider(color = c.border)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Body", color = c.dim, fontSize = 12.sp)
+                BodyTypeMenu(inReq.bodyType, inReq.method.allowsBody) { vT -> inEdit { it.copy(bodyType = vT) } }
+                if (!inReq.method.allowsBody) Text("${inReq.method.name} sends no body", color = c.dim, fontSize = 11.sp)
             }
-            if (!inReq.method.allowsBody) Text("${inReq.method.name} sends no body", color = c.dim, fontSize = 11.sp)
         }
     }
 }
@@ -1029,7 +1028,8 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
     var vMsg by remember { mutableStateOf<String?>(null) }
     val vResp = inRs.response
     val vLoading = inRs.loading
-    val vReqTab = inRs.viewTab == 0
+    val vPreview = inRs.preview
+    val vShowRequest = vPreview || inRs.viewTab == 0   // preview takes over the whole panel
 
     val vRespBody = if (vResp != null) (vResp.error ?: prettyJsonOrRaw(vResp.body).take(20000)) else ""
     val vRespHeaders = if (vResp != null) vResp.headers.joinToString("\n") { (vK, vV) -> "$vK: $vV" }.ifEmpty { "(no headers)" } else ""
@@ -1040,20 +1040,33 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
             modifier = Modifier.fillMaxWidth().padding(start = 6.dp, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TabBar(listOf("Request", "Response"), inRs.viewTab) { inRs.viewTab = it; inRs.preview = false }
-            Spacer(Modifier.weight(1f))
-            when {
-                vReqTab && inRs.preview -> Text("PREVIEW · not sent", color = kWarnColor, fontSize = 11.sp)
-                !vReqTab && vLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.size(14.dp), color = c.accent, strokeWidth = 2.dp)
-                    Spacer(Modifier.width(8.dp))
-                    IconLabelChip(MaterialSymbols.Stop, "Cancel") { inOnCancel() }
+            if (vPreview) {
+                // Preview replaces the Request/Response tabs entirely.
+                Row(
+                    modifier = Modifier.padding(start = 10.dp, top = 9.dp, bottom = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    MaterialSymbolsOutlined(MaterialSymbols.Visibility, tint = c.accent, size = 16.dp)
+                    Text("PREVIEW", color = c.accent, fontSize = 13.sp)
                 }
-                !vReqTab && vResp?.error != null -> StatusPill(0, "FAILED")
-                !vReqTab && vResp != null -> {
-                    StatusPill(vResp.status, "${vResp.status} ${vResp.statusText}")
-                    Spacer(Modifier.width(8.dp))
-                    Text("${vResp.timeMs} ms · ${vResp.sizeBytes} B", color = c.dim, fontSize = 12.sp)
+                Spacer(Modifier.weight(1f))
+                Text("not sent", color = kWarnColor, fontSize = 11.sp)
+            } else {
+                TabBar(listOf("Request", "Response"), inRs.viewTab) { inRs.viewTab = it }
+                Spacer(Modifier.weight(1f))
+                when {
+                    inRs.viewTab == 1 && vLoading -> {
+                        CircularProgressIndicator(modifier = Modifier.size(14.dp), color = c.accent, strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                        IconLabelChip(MaterialSymbols.Stop, "Cancel") { inOnCancel() }
+                    }
+                    inRs.viewTab == 1 && vResp?.error != null -> StatusPill(0, "FAILED")
+                    inRs.viewTab == 1 && vResp != null -> {
+                        StatusPill(vResp.status, "${vResp.status} ${vResp.statusText}")
+                        Spacer(Modifier.width(8.dp))
+                        Text("${vResp.timeMs} ms · ${vResp.sizeBytes} B", color = c.dim, fontSize = 12.sp)
+                    }
                 }
             }
         }
@@ -1063,7 +1076,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
             modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (vReqTab) {
+            if (vShowRequest) {
                 CodeSection("HEADERS", requestHeadersText(inResolved))
                 CodeSection("BODY", requestBodyText(inResolved))
             } else if (vResp == null && !vLoading) {
@@ -1099,8 +1112,8 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val vImg = !vReqTab && vRespImage
-            val vText = if (vReqTab) requestBodyText(inResolved) else vRespBody
+            val vImg = !vShowRequest && vRespImage
+            val vText = if (vShowRequest) requestBodyText(inResolved) else vRespBody
             if (!vImg) {
                 IconLabelChip(MaterialSymbols.ContentCopy, "Copy") { currentClipboard.setText(vText); vMsg = "Copied." }
             }
@@ -1111,7 +1124,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                         if (vPath != null) vMsg = writeBytesFile(vPath, vBytes)?.let { "Save failed: $it" } ?: "Saved."
                     }
                 } else {
-                    showSaveFileDialog(if (vReqTab) "request.txt" else "response.json") { vPath ->
+                    showSaveFileDialog(if (vShowRequest) "request.txt" else "response.json") { vPath ->
                         if (vPath != null) vMsg = writeTextFile(vPath, vText)?.let { "Save failed: $it" } ?: "Saved."
                     }
                 }
