@@ -11,12 +11,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.translate
 import androidx.compose.ui.draw.zIndex
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.graphics.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -1028,24 +1033,25 @@ private fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> 
 private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -> Unit) {
     val c = LocalAppColors.current
     var vMsg by remember { mutableStateOf<String?>(null) }
+    var vHeadersCollapsed by remember { mutableStateOf(false) }
     val vResp = inRs.response
     val vLoading = inRs.loading
     val vPreview = inRs.preview
-    val vShowRequest = vPreview || inRs.viewTab == 0   // preview takes over the whole panel
+    val vShowRequest = vPreview || inRs.viewTab == 0
 
     val vRespBody = if (vResp != null) (vResp.error ?: prettyJsonOrRaw(vResp.body).take(20000)) else ""
-    val vRespHeaders = if (vResp != null) vResp.headers.joinToString("\n") { (vK, vV) -> "$vK: $vV" }.ifEmpty { "(no headers)" } else ""
     val vRespImage = vResp?.isImage == true && vResp.error == null && inRs.imageKey != null
 
     Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
+        // ============
+        //  Top bar: "Request GET" / "Response 200" tabs, plus loading / cancel.
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 6.dp, end = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             if (vPreview) {
-                // Preview replaces the Request/Response tabs entirely.
                 Row(
-                    modifier = Modifier.padding(start = 10.dp, top = 9.dp, bottom = 9.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
@@ -1055,24 +1061,36 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                 Spacer(Modifier.weight(1f))
                 Text("not sent", color = kWarnColor, fontSize = 11.sp)
             } else {
-                TabBar(listOf("Request", "Response"), inRs.viewTab) { inRs.viewTab = it }
+                // Request tab — "Request GET"
+                ViewerTab(
+                    inLabel = "Request",
+                    inAccent = inResolved.method.name,
+                    inAccentColor = methodColor(inResolved.method),
+                    inSelected = inRs.viewTab == 0,
+                    inOnClick = { inRs.viewTab = 0 },
+                )
+                // Response tab — "Response 200" (or "FAILED" / "—" while pending)
+                val (vRespAccent, vRespColor) = when {
+                    vLoading && vResp == null -> "…" to c.dim
+                    vResp?.error != null      -> "FAILED" to statusColor(0)
+                    vResp != null             -> vResp.status.toString() to statusColor(vResp.status)
+                    else                      -> "—" to c.dim
+                }
+                ViewerTab(
+                    inLabel = "Response",
+                    inAccent = vRespAccent,
+                    inAccentColor = vRespColor,
+                    inSelected = inRs.viewTab == 1,
+                    inOnClick = { inRs.viewTab = 1 },
+                )
                 Spacer(Modifier.weight(1f))
-                when {
-                    inRs.viewTab == 1 && vLoading -> {
-                        CircularProgressIndicator(modifier = Modifier.size(14.dp), color = c.accent, strokeWidth = 2.dp)
-                        Spacer(Modifier.width(8.dp))
-                        IconLabelChip(MaterialSymbols.Stop, "Cancel") { inOnCancel() }
-                    }
-                    inRs.viewTab == 1 && vResp?.error != null -> StatusPill(0, "FAILED")
-                    inRs.viewTab == 1 && vResp != null -> {
-                        StatusPill(vResp.status, "${vResp.status} ${vResp.statusText}")
-                        Spacer(Modifier.width(8.dp))
-                        Text("${vResp.timeMs} ms · ${vResp.sizeBytes} B", color = c.dim, fontSize = 12.sp)
-                    }
+                if (inRs.viewTab == 1 && vLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), color = c.accent, strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    IconLabelChip(MaterialSymbols.Stop, "Cancel") { inOnCancel() }
                 }
             }
         }
-        Divider(color = c.border)
 
         // The request shown: live resolved in Preview, else the snapshot we sent.
         val vReqShown = if (vPreview) inResolved else inRs.sentReq
@@ -1082,54 +1100,43 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                 vShowRequest && vReqShown == null -> ViewerEmpty(MaterialSymbols.Send, "Not sent")
                 vShowRequest -> {
                     val vR = vReqShown!!
-                    Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        // A sent request shows the headers Ktor actually put on the wire;
-                        // Preview (nothing sent yet) shows the inferred set.
-                        val vSentHeaders = if (!vPreview) inRs.response?.requestHeaders?.takeIf { it.isNotEmpty() } else null
-                        CodeSection("HEADERS", if (vSentHeaders != null) headersText(vSentHeaders) else requestHeadersText(vR))
-                        if (!vR.method.allowsBody || vR.bodyType == BodyType.NONE) {
-                            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text("BODY", color = c.dim, fontSize = 11.sp)
-                                ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(140.dp))
-                            }
-                        } else {
-                            CodeSection("BODY", requestBodyText(vR))
-                        }
-                    }
+                    val vSentHeaders = if (!vPreview) inRs.response?.requestHeaders?.takeIf { it.isNotEmpty() } else null
+                    val vHeaders = if (vSentHeaders != null) vSentHeaders else parseHeaderLines(requestHeadersText(vR))
+                    val vBody = if (!vR.method.allowsBody || vR.bodyType == BodyType.NONE) null else requestBodyText(vR)
+                    HttpFlowView(
+                        inStatusLine = formatRequestLine(vR),
+                        inStatusLineAccentColor = methodColor(vR.method),
+                        inHeaders = vHeaders,
+                        inBody = vBody,
+                        inIsImage = false,
+                        inImagePainter = null,
+                        inHeadersCollapsed = vHeadersCollapsed,
+                        inOnToggleCollapse = { vHeadersCollapsed = !vHeadersCollapsed },
+                    )
                 }
                 vResp == null && !vLoading -> ViewerEmpty(MaterialSymbols.Download, "Not received")
-                else -> Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    CodeSection("HEADERS" + (vResp?.let { " (${it.headers.size})" } ?: ""), if (vLoading) "…" else vRespHeaders)
-                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("BODY", color = c.dim, fontSize = 11.sp)
-                        Box(
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
-                                .background(c.bg, RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(12.dp),
-                        ) {
-                            if (vRespImage && !vLoading) {
-                                val vKind = if (vResp?.contentType?.contains("svg", ignoreCase = true) == true) ResourceKind.Svg else ResourceKind.Raster
-                                Image(painter = painterResource(inRs.imageKey!!, vKind), contentDescription = "Response image", contentScale = ContentScale.Fit)
-                            } else {
-                                BasicTextField(
-                                    value = if (vLoading) "…" else vRespBody.ifEmpty { "(empty)" },
-                                    onValueChange = {}, readOnly = true,
-                                    color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
-                                    fontSize = 12.sp, modifier = Modifier.fillMaxWidth(),
-                                )
-                            }
-                        }
-                    }
+                else -> {
+                    val vHeaders = vResp?.headers ?: emptyList()
+                    val vBody = if (vLoading) "…" else vRespBody
+                    HttpFlowView(
+                        inStatusLine = formatStatusLine(vResp),
+                        inStatusLineAccentColor = if (vResp != null) statusColor(vResp.status) else c.dim,
+                        inHeaders = vHeaders,
+                        inBody = if (vRespImage) null else vBody,
+                        inIsImage = vRespImage && !vLoading,
+                        inImagePainter = if (vRespImage && !vLoading) {
+                            val vKind = if (vResp?.contentType?.contains("svg", ignoreCase = true) == true) ResourceKind.Svg else ResourceKind.Raster
+                            painterResource(inRs.imageKey!!, vKind)
+                        } else null,
+                        inHeadersCollapsed = vHeadersCollapsed,
+                        inOnToggleCollapse = { vHeadersCollapsed = !vHeadersCollapsed },
+                    )
                 }
             }
         }
 
-        // Toolbar — only when there's something to copy / save.
+        // ============
+        //  Bottom bar: copy / save on the left, timing+size on the right.
         val vReqHasContent = vShowRequest && vReqShown != null
         val vRespHasContent = !vShowRequest && vResp != null
         if (vReqHasContent || vRespHasContent) {
@@ -1156,12 +1163,225 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                         }
                     }
                 }
+                vMsg?.let {
+                    Spacer(Modifier.width(8.dp))
+                    Text(it, color = c.dim, fontSize = 11.sp)
+                }
                 Spacer(Modifier.weight(1f))
-                vMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
+                // Timing / size: bottom-right footer, only on response with data.
+                if (vRespHasContent && vResp != null && vResp.error == null) {
+                    Text(formatTimingSize(vResp), color = c.dim, fontSize = 11.sp)
+                }
             }
         }
     }
 }
+
+// ==================
+// MARK: HttpFlowView — flat httpie-style request/response layout
+// ==================
+
+/* Renders the body of a Request or Response tab in a httpie-flavoured
+   layout: status line (with collapse arrow) + headers table + raw body
+   inline, no card / rounded-rect chrome around each section. The
+   headers section can be collapsed via the arrow. */
+@Composable
+private fun HttpFlowView(
+    inStatusLine: AnnotatedString,
+    @Suppress("UNUSED_PARAMETER") inStatusLineAccentColor: Color,
+    inHeaders: List<Pair<String, String>>,
+    inBody: String?,
+    inIsImage: Boolean,
+    inImagePainter: Painter?,
+    inHeadersCollapsed: Boolean,
+    inOnToggleCollapse: () -> Unit,
+) {
+    val c = LocalAppColors.current
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+    ) {
+        // Status line with collapse arrow on the left.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { inOnToggleCollapse() }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MaterialSymbolsOutlined(
+                icon = if (inHeadersCollapsed) MaterialSymbols.ChevronRight else MaterialSymbols.ExpandMore,
+                tint = c.dim,
+                size = 16.dp,
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(inStatusLine, color = c.text, fontSize = 13.sp)
+        }
+        // Headers as a key/value table — only when not collapsed.
+        if (!inHeadersCollapsed && inHeaders.isNotEmpty()) {
+            HeaderTable(inHeaders, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+        }
+        if (inBody != null || inIsImage) {
+            Divider(color = c.border, modifier = Modifier.padding(vertical = 8.dp))
+            if (inIsImage && inImagePainter != null) {
+                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Image(painter = inImagePainter, contentDescription = "Response image", contentScale = ContentScale.Fit)
+                }
+            } else if (inBody != null) {
+                BodyView(inBody, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp))
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+/* Header table: each row is (key | value) where the key column has a
+   fixed width so values line up. Long keys wrap; long values wrap too.
+   Keys render in accent colour, values in regular text. */
+@Composable
+private fun HeaderTable(inHeaders: List<Pair<String, String>>, modifier: Modifier = Modifier) {
+    val c = LocalAppColors.current
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        for ((vK, vV) in inHeaders) {
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = titleCaseHeader(vK),
+                    color = c.accent,
+                    fontSize = 13.sp,
+                    modifier = Modifier.width(220.dp).padding(end = 12.dp),
+                )
+                Text(
+                    text = vV,
+                    color = c.text,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+/* Body view with line numbers in the gutter — mimics the code panel
+   in httpie. Numbers are dim; body text uses the regular colour. */
+@Composable
+private fun BodyView(inText: String, modifier: Modifier = Modifier) {
+    val c = LocalAppColors.current
+    val vLines = if (inText.isEmpty()) listOf("") else inText.split('\n')
+    val vGutterWidth = ((vLines.size).toString().length * 9 + 12).dp
+    Row(modifier = modifier) {
+        // Gutter: line numbers right-aligned.
+        Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(vGutterWidth)) {
+            for (vI in vLines.indices) {
+                Text(
+                    "${vI + 1}",
+                    color = c.dim,
+                    fontSize = 12.sp,
+                )
+            }
+        }
+        Spacer(Modifier.width(4.dp))
+        // Body: a single BasicTextField so selection / copy works; the
+        // gutter alignment relies on the matching line-height, which the
+        // default font metric gives us at 12.sp.
+        BasicTextField(
+            value = inText,
+            onValueChange = {}, readOnly = true,
+            color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
+            fontSize = 12.sp,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+/* "Request" + colored "GET" tab. Selected tab gets full-strength
+   labels and a 2dp underline; unselected tabs stay dimmed. */
+@Composable
+private fun ViewerTab(
+    inLabel: String,
+    inAccent: String,
+    inAccentColor: Color,
+    inSelected: Boolean,
+    inOnClick: () -> Unit,
+) {
+    val c = LocalAppColors.current
+    Column(
+        modifier = Modifier.clickable { inOnClick() }.padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(inLabel, color = if (inSelected) c.dim else c.dim.copy(alpha = 0.6f), fontSize = 14.sp)
+            Text(inAccent, color = if (inSelected) inAccentColor else inAccentColor.copy(alpha = 0.6f), fontSize = 14.sp)
+        }
+        Spacer(Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .height(2.dp)
+                .width(60.dp)
+                .background(if (inSelected) c.accent else Color.Transparent),
+        ) {}
+    }
+}
+
+// ==================
+// MARK: Helpers — header parsing / formatting
+// ==================
+
+/* "HTTP/1.1 STATUS_TEXT" style status line for a Response. */
+private fun formatStatusLine(inResp: ApiResponse?): AnnotatedString {
+    if (inResp == null) return AnnotatedString("HTTP/1.1 —")
+    if (inResp.error != null) return buildAnnotatedString {
+        append("HTTP/1.1 ")
+        pushStyle(SpanStyle(color = Color(0xFFFF5630), fontWeight = FontWeight.Bold))
+        append("FAILED")
+        pop()
+    }
+    return buildAnnotatedString {
+        append("HTTP/1.1 ")
+        pushStyle(SpanStyle(color = statusColor(inResp.status), fontWeight = FontWeight.Bold))
+        append("${inResp.status} ${inResp.statusText.uppercase()}")
+        pop()
+    }
+}
+
+/* "GET /path HTTP/1.1" style status line for a Request. */
+private fun formatRequestLine(inReq: ApiRequest): AnnotatedString = buildAnnotatedString {
+    pushStyle(SpanStyle(color = methodColor(inReq.method), fontWeight = FontWeight.Bold))
+    append(inReq.method.name)
+    pop()
+    append(" ")
+    append(inReq.url.ifEmpty { "/" })
+    append(" HTTP/1.1")
+}
+
+/* Format the timing / size footer text shown bottom-right. */
+private fun formatTimingSize(inResp: ApiResponse): String {
+    val vSize = when {
+        inResp.sizeBytes < 1024 -> "${inResp.sizeBytes} B"
+        inResp.sizeBytes < 1024 * 1024 -> "${(inResp.sizeBytes + 512) / 1024} KB"
+        else -> "${(inResp.sizeBytes + 512 * 1024) / (1024 * 1024)} MB"
+    }
+    return "$vSize, ${inResp.timeMs} ms"
+}
+
+/* Parse "Key: value\nKey2: value2" into a list of pairs so the headers
+   table renderer can lay them out as a key/value grid. */
+private fun parseHeaderLines(inText: String): List<Pair<String, String>> {
+    if (inText.isBlank() || inText == "(no headers)") return emptyList()
+    return inText.split('\n').mapNotNull { vLine ->
+        val vIdx = vLine.indexOf(':')
+        if (vIdx < 0) null else vLine.substring(0, vIdx).trim() to vLine.substring(vIdx + 1).trim()
+    }
+}
+
+/* "content-type" → "Content-Type"; preserves single-word keys; leaves
+   already-correct ones unchanged. */
+private fun titleCaseHeader(inKey: String): String =
+    inKey.split('-').joinToString("-") { vWord ->
+        if (vWord.isEmpty()) vWord
+        else vWord[0].uppercaseChar() + vWord.drop(1).lowercase()
+    }
 
 /* Centered icon + label placeholder for the viewer (Not sent / Not received /
    No Body). Fills its parent unless a sized modifier is supplied. */
@@ -1442,8 +1662,9 @@ private fun imageFileName(inContentType: String?): String = when {
 }
 
 private fun statusColor(inStatus: Int): Color = when (inStatus) {
-    in 200..299 -> Color(0xFF36B37E)
-    in 300..399 -> Color(0xFF4C9AFF)
-    in 400..599 -> Color(0xFFFF5630)
-    else -> Color(0xFFFF991F)
+    in 200..299 -> Color(0xFF36B37E) // success — green
+    in 300..399 -> Color(0xFF4C9AFF) // redirect — blue
+    in 400..499 -> Color(0xFFFF991F) // client error — orange (warning)
+    in 500..599 -> Color(0xFFFF5630) // server error — red
+    else -> Color(0xFFFF991F)        // unknown / pending — orange
 }
