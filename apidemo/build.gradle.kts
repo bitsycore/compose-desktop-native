@@ -43,6 +43,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":window"))
+                implementation(project(":material-symbols:outlined"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
@@ -94,6 +95,22 @@ for (variant in variants) {
 val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 val libComposeResourcesDir = rootProject.layout.projectDirectory.dir("core/src/nativeMain/composeResources")
 
+// Material Symbols icon-font modules this app depends on — each exposes its
+// downloaded .ttf via extra["iconFontFile"]; we pull it into data.kres/font/
+// so the icons render at runtime (same scheme as :demo).
+val iconFontModules: List<Project> = run {
+    val vSet = mutableSetOf<Project>()
+    for (vName in listOf("commonMainImplementation", "commonMainApi", "nativeMainImplementation", "nativeMainApi")) {
+        val vCfg = configurations.findByName(vName) ?: continue
+        for (vDep in vCfg.dependencies) {
+            if (vDep is org.gradle.api.artifacts.ProjectDependency && vDep.path.startsWith(":material-symbols:")) {
+                rootProject.findProject(vDep.path)?.let { vSet.add(it) }
+            }
+        }
+    }
+    vSet.toList()
+}
+
 for (variant in variants) {
     for (target in nativeTargets) {
         val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -104,6 +121,13 @@ for (variant in variants) {
             destinationDirectory.set(outDir)
             entryCompression = org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
             from(libComposeResourcesDir)
+            iconFontModules.forEach { vP ->
+                @Suppress("UNCHECKED_CAST")
+                val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+                val vDownloadTask = vP.extra["iconFontDownloadTask"] as TaskProvider<*>
+                from(vFontFile) { into("font") }
+                dependsOn(vDownloadTask)
+            }
         }
         listOf("link${variantCap}Executable${targetCap}", "run${variantCap}Executable${targetCap}").forEach { taskName ->
             tasks.matching { it.name == taskName }.configureEach { dependsOn(copyTask) }
