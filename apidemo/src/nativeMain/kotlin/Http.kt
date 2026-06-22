@@ -75,7 +75,9 @@ class HttpRunner {
                 requestHeaders = vResp.call.request.headers.entries()
                     .flatMap { e -> e.value.map { e.key to it } }
                     .sortedBy { it.first.lowercase() },
-                httpVersion = vResp.version.name,
+                // HttpProtocolVersion.toString() gives "HTTP/1.1" (or
+                // "HTTP/2"); .name on its own would just be "HTTP".
+                httpVersion = vResp.version.toString(),
             )
         } catch (e: CancellationException) {
             // The caller cancelled (Cancel button) — let it propagate so the
