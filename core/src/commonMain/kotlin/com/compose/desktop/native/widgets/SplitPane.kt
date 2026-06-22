@@ -75,13 +75,15 @@ fun HorizontalSplitPane(
                 .hoverable { vDividerHover = it }
                 .onDrag(
                     onDrag = { x, _ ->
-                        // onDrag's x is relative to the divider's top-left
-                        // at press capture, so add it to the current width.
-                        val vNew = vClampedFirst + x
-                        vFirstWidth = vNew.coerceIn(
-                            vMinFirst,
-                            (vTotalWidth - vDividerW - vMinSecond).coerceAtLeast(vMinFirst),
-                        )
+                        // onDrag's x is relative to the divider's *current*
+                        // top-left (the dispatcher passes pointerX - node.absoluteX
+                        // each move). Add it to the divider's live offset read from
+                        // state — NOT the value captured when the press began, or
+                        // the reference and the delta disagree every frame and the
+                        // divider oscillates between the two.
+                        val vMax = (vTotalWidth - vDividerW - vMinSecond).coerceAtLeast(vMinFirst)
+                        val vLive = if (vTotalWidth > 0) vFirstWidth.coerceIn(vMinFirst, vMax) else vFirstWidth
+                        vFirstWidth = (vLive + x).coerceIn(vMinFirst, vMax)
                     }
                 )
         )
@@ -129,11 +131,12 @@ fun VerticalSplitPane(
                 .hoverable { vDividerHover = it }
                 .onDrag(
                     onDrag = { _, y ->
-                        val vNew = vClampedFirst + y
-                        vFirstHeight = vNew.coerceIn(
-                            vMinFirst,
-                            (vTotalHeight - vDividerH - vMinSecond).coerceAtLeast(vMinFirst),
-                        )
+                        // y is relative to the divider's *current* top — add it to
+                        // the divider's live offset read from state, not the press-
+                        // time capture, otherwise the divider oscillates each frame.
+                        val vMax = (vTotalHeight - vDividerH - vMinSecond).coerceAtLeast(vMinFirst)
+                        val vLive = if (vTotalHeight > 0) vFirstHeight.coerceIn(vMinFirst, vMax) else vFirstHeight
+                        vFirstHeight = (vLive + y).coerceIn(vMinFirst, vMax)
                     }
                 )
         )
