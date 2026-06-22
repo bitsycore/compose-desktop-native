@@ -1,11 +1,13 @@
 package apidemo
 
 import io.ktor.client.*
-import io.ktor.client.plugins.compression.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.CancellationException
+import okio.Buffer
+import okio.GzipSource
+import okio.buffer
 import kotlin.time.TimeSource
 
 // ==================
@@ -17,14 +19,7 @@ import kotlin.time.TimeSource
    Curl). run() is a suspend fun — call it off the UI dispatcher. */
 class HttpRunner {
 
-    private val fClient = HttpClient {
-        // Advertise Accept-Encoding and transparently decompress gzip/deflate
-        // responses (e.g. httpbin /gzip), so bodies aren't read as garbage.
-        install(ContentEncoding) {
-            gzip()
-            deflate()
-        }
-    }
+    private val fClient = HttpClient()
 
     suspend fun run(inReq: ApiRequest): ApiResponse {
         val vMark = TimeSource.Monotonic.markNow()
@@ -47,26 +42,27 @@ class HttpRunner {
                     setBody(inReq.body)
                 }
             }
-            // Decide by Content-Type before reading the (single-shot) body:
-            //  - text → bodyAsText(), which runs through the receive pipeline so
-            //    ContentEncoding actually decompresses gzip/deflate and the charset
-            //    is honoured (readRawBytes() reads the raw, still-encoded channel).
-            //  - image → readRawBytes(), the real binary payload to render.
+            // Read the raw payload, then gunzip ourselves if needed. Ktor's
+            // ContentEncoding plugin throws on a valid gzip stream on Kotlin/Native,
+            // so we don't install it; instead we detect gzip from the response's
+            // Content-Encoding header (or the 1f 8b magic) and inflate with okio.
+            val vRaw = vResp.readRawBytes()
+            val vEncoding = vResp.headers[HttpHeaders.ContentEncoding]
+            val vBody = if (isGzip(vEncoding, vRaw)) gunzip(vRaw) else vRaw
+
             val vContentType = vResp.contentType()?.toString()
             val vIsImage = vContentType?.startsWith("image/", ignoreCase = true) == true
-            val vBytes = if (vIsImage) vResp.readRawBytes() else ByteArray(0)
-            val vText = if (vIsImage) "" else vResp.bodyAsText()
             ApiResponse(
                 ok = true,
                 status = vResp.status.value,
                 statusText = vResp.status.description,
                 timeMs = vMark.elapsedNow().inWholeMilliseconds,
-                sizeBytes = (if (vIsImage) vBytes.size else vText.length).toLong(),
+                sizeBytes = vBody.size.toLong(),
                 headers = vResp.headers.entries()
                     .flatMap { e -> e.value.map { e.key to it } }
                     .sortedBy { it.first.lowercase() },
-                body = vText,
-                bytes = vBytes,
+                body = if (vIsImage) "" else vBody.decodeToString(),
+                bytes = vBody,
                 contentType = vContentType,
             )
         } catch (e: CancellationException) {
@@ -88,4 +84,18 @@ class HttpRunner {
     }
 
     fun close() = fClient.close()
+}
+
+/* True when the bytes are gzip — either the response says so or they carry the
+   gzip magic number (1f 8b). */
+private fun isGzip(inEncoding: String?, inBytes: ByteArray): Boolean =
+    inEncoding?.contains("gzip", ignoreCase = true) == true ||
+        (inBytes.size >= 2 && inBytes[0] == 0x1f.toByte() && inBytes[1] == 0x8b.toByte())
+
+/* Inflate a gzip stream to its original bytes via okio's GzipSource. */
+private fun gunzip(inBytes: ByteArray): ByteArray {
+    val vGz = GzipSource(Buffer().write(inBytes)).buffer()
+    val vResult = vGz.readByteArray()
+    vGz.close()
+    return vResult
 }
