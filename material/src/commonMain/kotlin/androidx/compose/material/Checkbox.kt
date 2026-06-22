@@ -1,18 +1,21 @@
 package androidx.compose.material
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.ui.graphics.drawscope.StrokeCap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 // ==================
 // MARK: Checkbox
@@ -49,12 +52,23 @@ fun Checkbox(
     }
 
     Box(modifier = m, contentAlignment = Alignment.Center) {
-        if (checked) {
-            Text(
-                text = "✓",
-                color = if (enabled) colors.checkmarkColor else colors.disabledColor,
-                fontSize = 14.sp,
-            )
+        if (checked) CheckGlyph(if (enabled) colors.checkmarkColor else colors.disabledColor)
+    }
+}
+
+/* The check mark / indeterminate dash, drawn as strokes so it doesn't depend on
+   a font having the ✓ / – glyphs (the bundled font lacks them). */
+@Composable
+private fun CheckGlyph(inColor: Color, inDash: Boolean = false) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val vW = size.width
+        val vH = size.height
+        val vStroke = size.minDimension * 0.14f
+        if (inDash) {
+            drawLine(inColor, Offset(vW * 0.26f, vH * 0.5f), Offset(vW * 0.74f, vH * 0.5f), vStroke, StrokeCap.Round)
+        } else {
+            drawLine(inColor, Offset(vW * 0.22f, vH * 0.52f), Offset(vW * 0.43f, vH * 0.72f), vStroke, StrokeCap.Round)
+            drawLine(inColor, Offset(vW * 0.43f, vH * 0.72f), Offset(vW * 0.78f, vH * 0.30f), vStroke, StrokeCap.Round)
         }
     }
 }
@@ -120,17 +134,11 @@ fun TriStateCheckbox(
     }
 
     Box(modifier = m, contentAlignment = Alignment.Center) {
-        val vGlyph = when (state) {
-            ToggleableState.On            -> "✓"
-            ToggleableState.Indeterminate -> "–"
-            ToggleableState.Off           -> ""
-        }
-        if (vGlyph.isNotEmpty()) {
-            Text(
-                text = vGlyph,
-                color = if (enabled) colors.checkmarkColor else colors.disabledColor,
-                fontSize = 14.sp,
-            )
+        val vColor = if (enabled) colors.checkmarkColor else colors.disabledColor
+        when (state) {
+            ToggleableState.On            -> CheckGlyph(vColor)
+            ToggleableState.Indeterminate -> CheckGlyph(vColor, inDash = true)
+            ToggleableState.Off           -> {}
         }
     }
 }
