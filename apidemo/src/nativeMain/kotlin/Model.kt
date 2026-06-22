@@ -79,10 +79,12 @@ data class KeyVal(val key: String = "", val value: String = "", val enabled: Boo
 @Serializable
 enum class ReqMethod { GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS }
 
-/* Whether a method conventionally carries a request body. */
+/* HTTP doesn't forbid a body on GET / HEAD / OPTIONS — RFC 7230 §3.3
+   leaves it as "SHOULD NOT" / server discretion. Many APIs use a body
+   on GET (Elasticsearch search, GraphQL queries) so we don't gate it
+   here; the UI just sets bodyType=NONE by default for those methods. */
 val ReqMethod.allowsBody: Boolean
-    get() = this == ReqMethod.POST || this == ReqMethod.PUT ||
-        this == ReqMethod.PATCH || this == ReqMethod.DELETE
+    get() = true
 
 @Serializable
 enum class BodyType { NONE, JSON, TEXT, FORM, FILE }

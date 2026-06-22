@@ -981,8 +981,7 @@ private fun RequestBuilder(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Body", color = c.dim, fontSize = 12.sp)
-                BodyTypeMenu(inReq.bodyType, inReq.method.allowsBody) { vT -> inEdit { it.copy(bodyType = vT) } }
-                if (!inReq.method.allowsBody) Text("${inReq.method.name} sends no body", color = c.dim, fontSize = 11.sp)
+                BodyTypeMenu(inReq.bodyType, true) { vT -> inEdit { it.copy(bodyType = vT) } }
             }
         }
     }
@@ -992,10 +991,6 @@ private fun RequestBuilder(
 @Composable
 private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
     val c = LocalAppColors.current
-    if (!inReq.method.allowsBody) {
-        Text("${inReq.method.name} requests don't send a body.", color = c.dim, fontSize = 13.sp)
-        return
-    }
     when (inReq.bodyType) {
         BodyType.NONE -> ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(240.dp))
         BodyType.JSON, BodyType.TEXT -> ThinField(
@@ -1656,14 +1651,11 @@ private fun requestHeadersText(inReq: ApiRequest): String {
 }
 
 /* The body that would be sent, rendered as text for the preview. */
-private fun requestBodyText(inReq: ApiRequest): String {
-    if (!inReq.method.allowsBody) return "(no body)"
-    return when (inReq.bodyType) {
-        BodyType.NONE -> "(no body)"
-        BodyType.JSON, BodyType.TEXT -> inReq.body.ifEmpty { "(empty)" }
-        BodyType.FORM -> formEncode(inReq.form).ifEmpty { "(empty form)" }
-        BodyType.FILE -> if (inReq.body.isBlank()) "(no file)" else "(file) ${inReq.body}"
-    }
+private fun requestBodyText(inReq: ApiRequest): String = when (inReq.bodyType) {
+    BodyType.NONE -> "(no body)"
+    BodyType.JSON, BodyType.TEXT -> inReq.body.ifEmpty { "(empty)" }
+    BodyType.FORM -> formEncode(inReq.form).ifEmpty { "(empty form)" }
+    BodyType.FILE -> if (inReq.body.isBlank()) "(no file)" else "(file) ${inReq.body}"
 }
 
 @Composable
