@@ -157,7 +157,10 @@ fun CircularProgressIndicator(
     val vArcStart = vBaseRotation + vTailTrim - 90f
     val vStrokeWidthPx = strokeWidth.value
 
-    Canvas(modifier = modifier.size(ProgressIndicatorDefaults.CircularSize)) {
+    // Default size first, caller's modifier last — so a caller-supplied .size()
+    // overrides the default (the last fixed size modifier wins) instead of being
+    // clobbered by it.
+    Canvas(modifier = Modifier.size(ProgressIndicatorDefaults.CircularSize).then(modifier)) {
         // Inset so the stroke stays fully inside the bounds. drawArc paints
         // ON the inscribed ellipse — its centre line follows the rect's
         // inscribed circle — so inset by half the stroke width on every side.
