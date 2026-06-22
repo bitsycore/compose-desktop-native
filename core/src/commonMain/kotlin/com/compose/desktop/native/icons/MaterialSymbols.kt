@@ -44,6 +44,7 @@ object MaterialSymbols {
 	const val ExpandMore      = 0xe5cf
 	const val ArrowDropDown   = 0xe5c5
 	const val ArrowDropUp     = 0xe5c7
+	const val UnfoldMore      = 0xe5d7
 	const val Menu            = 0xe5d2
 	const val Close           = 0xe5cd
 
