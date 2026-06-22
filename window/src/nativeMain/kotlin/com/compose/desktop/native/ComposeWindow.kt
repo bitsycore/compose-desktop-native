@@ -355,10 +355,14 @@ fun nativeComposeWindow(
                         // content should scroll up → state.value decreases.
                         // Convert wheel "lines" to pixels (~50px/line).
                         val vScrollY = vHit?.findVerticalScrollAncestor()
+                        val vScrollX = vHit?.findHorizontalScrollAncestor()
                         if (vScrollY != null && event.deltaY != 0f) {
                             vScrollY.scrollBy(-(event.deltaY * 50f).toInt())
+                        } else if (vScrollX != null && event.deltaY != 0f) {
+                            // No vertical scroller under the cursor but a horizontal one is
+                            // (e.g. the tab strip) — let the wheel scroll it sideways.
+                            vScrollX.scrollBy(-(event.deltaY * 50f).toInt())
                         }
-                        val vScrollX = vHit?.findHorizontalScrollAncestor()
                         if (vScrollX != null && event.deltaX != 0f) {
                             vScrollX.scrollBy(-(event.deltaX * 50f).toInt())
                         }
