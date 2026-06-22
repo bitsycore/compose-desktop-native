@@ -1,6 +1,7 @@
 package androidx.compose.material
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Box
@@ -72,6 +73,9 @@ fun DropdownMenu(
             modifier = Modifier
                 .width(minWidth)
                 .background(MaterialTheme.colors.surface, DropdownMenuDefaults.Shape)
+                // No elevation/shadow in this renderer, so a hairline outline keeps
+                // the menu legible against similar-coloured content behind it.
+                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.18f), DropdownMenuDefaults.Shape)
                 .padding(vertical = 4.dp)
                 .clickable { /* swallow clicks landed inside the menu */ }
         ) {
