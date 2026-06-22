@@ -7,6 +7,9 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.translate
+import androidx.compose.ui.draw.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RoundedCornerShape
 import androidx.compose.ui.platform.currentClipboard
@@ -627,11 +630,13 @@ private fun MenuRow(inIcon: Int, inLabel: String, inColor: Color? = null) {
 // MARK: Request tab strip (open requests; drag a tab to reorder)
 // ==================
 
-/* The strip of open requests above the editor. Each tab carries both a click
-   handler (select) and an onDrag handler (reorder): a plain click selects, while
-   dragging past a neighbour's centre swaps order. Per-tab window-x/width are
-   tracked so the drag can hit-test neighbours; key(tab) keeps each tab's
-   LayoutNode stable across reorders so the captured drag node stays valid. */
+/* The strip of open requests above the editor. Each tab carries a click handler
+   (select) and an onDrag handler (reorder). While dragging, the grabbed tab
+   floats — it lifts above its neighbours (zIndex), goes semi-transparent and
+   tracks the cursor (translate) — without the others shuffling; the reorder is
+   committed on drop, to the slot whose neighbours' centres the cursor passed.
+   Per-tab window-x/width are tracked for that hit-test; key(tab) keeps each
+   tab's LayoutNode stable so the captured drag node stays valid. */
 @Composable
 private fun RequestTabStrip(
     inTabs: List<ReqState>,
@@ -644,6 +649,9 @@ private fun RequestTabStrip(
     val vLeft = remember { mutableStateMapOf<ReqState, Int>() }   // window-x of each tab's left edge
     val vWidth = remember { mutableStateMapOf<ReqState, Int>() }  // measured tab width
     var vDragging by remember { mutableStateOf<ReqState?>(null) }
+    var vPressRelX by remember { mutableStateOf(0) }              // press point inside the tab
+    var vDragDx by remember { mutableStateOf(0f) }               // visual follow offset
+    var vDragTarget by remember { mutableStateOf(-1) }           // slot to drop into
 
     Row(
         modifier = Modifier.fillMaxWidth().background(c.panel)
@@ -655,35 +663,48 @@ private fun RequestTabStrip(
             key(vRs) {
                 val vSel = vRs === inActive
                 val vReq = vRs.req
+                val vDragged = vRs === vDragging
+
+                var vMod = Modifier
+                    .onGloballyPositioned { vLeft[vRs] = it.x }
+                    .onSizeChanged { vWidth[vRs] = it.width }
+                if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(vDragDx, 0f)
+                vMod = vMod
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(if (vSel) c.accent.copy(alpha = 0.20f) else c.field, RoundedCornerShape(7.dp))
+                    .border(1.dp, if (vSel || vDragged) c.accent else c.border, RoundedCornerShape(7.dp))
+                    .onDrag(
+                        onStart = { vRelX, _ ->
+                            vDragging = vRs; vPressRelX = vRelX; vDragDx = 0f; vDragTarget = inTabs.indexOf(vRs)
+                        },
+                        onDrag = { vRelX, _ ->
+                            val vd = vDragging ?: return@onDrag
+                            vDragDx = (vRelX - vPressRelX).toFloat()
+                            val vCursorX = (vLeft[vd] ?: 0) + vRelX
+                            // Drop slot = how many *other* tabs the cursor has passed the centre of.
+                            var vCount = 0
+                            inTabs.forEach { vT ->
+                                if (vT !== vd) {
+                                    val vCenter = (vLeft[vT] ?: 0) + (vWidth[vT] ?: 0) / 2
+                                    if (vCursorX > vCenter) vCount++
+                                }
+                            }
+                            vDragTarget = vCount
+                        },
+                        onEnd = {
+                            val vd = vDragging
+                            if (vd != null) {
+                                val vFrom = inTabs.indexOf(vd)
+                                if (vFrom >= 0 && vDragTarget >= 0 && vDragTarget != vFrom) inOnReorder(vFrom, vDragTarget)
+                            }
+                            vDragging = null; vDragDx = 0f; vDragTarget = -1
+                        },
+                    )
+                    .clickable { inOnSelect(vRs) }
+                    .padding(start = 9.dp, top = 6.dp, bottom = 6.dp, end = 3.dp)
+
                 Row(
-                    modifier = Modifier
-                        .onGloballyPositioned { vLeft[vRs] = it.x }
-                        .onSizeChanged { vWidth[vRs] = it.width }
-                        .clip(RoundedCornerShape(7.dp))
-                        .background(if (vSel) c.accent.copy(alpha = 0.20f) else c.field, RoundedCornerShape(7.dp))
-                        .border(1.dp, if (vSel) c.accent else c.border, RoundedCornerShape(7.dp))
-                        .onDrag(
-                            onStart = { _, _ -> vDragging = vRs },
-                            onDrag = { vRelX, _ ->
-                                val vd = vDragging ?: return@onDrag
-                                val vCur = inTabs.indexOf(vd)
-                                if (vCur < 0) return@onDrag
-                                val vPointerX = (vLeft[vd] ?: 0) + vRelX
-                                if (vCur < inTabs.lastIndex) {
-                                    val vR = inTabs[vCur + 1]
-                                    val vCenter = (vLeft[vR] ?: 0) + (vWidth[vR] ?: 0) / 2
-                                    if (vPointerX > vCenter) { inOnReorder(vCur, vCur + 1); return@onDrag }
-                                }
-                                if (vCur > 0) {
-                                    val vL = inTabs[vCur - 1]
-                                    val vCenter = (vLeft[vL] ?: 0) + (vWidth[vL] ?: 0) / 2
-                                    if (vPointerX < vCenter) { inOnReorder(vCur, vCur - 1); return@onDrag }
-                                }
-                            },
-                            onEnd = { vDragging = null },
-                        )
-                        .clickable { inOnSelect(vRs) }
-                        .padding(start = 9.dp, top = 6.dp, bottom = 6.dp, end = 3.dp),
+                    modifier = vMod,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
