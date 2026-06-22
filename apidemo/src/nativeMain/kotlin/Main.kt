@@ -1061,20 +1061,23 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest, inOnCancel: () -
                 Spacer(Modifier.weight(1f))
                 Text("not sent", color = kWarnColor, fontSize = 11.sp)
             } else {
-                // Request tab — "Request GET"
+                // Request tab — adds the coloured method only once the
+                // request has actually been sent (sentReq != null).
+                val vSent = inRs.sentReq
                 ViewerTab(
                     inLabel = "Request",
-                    inAccent = inResolved.method.name,
-                    inAccentColor = methodColor(inResolved.method),
+                    inAccent = vSent?.method?.name,
+                    inAccentColor = vSent?.let { methodColor(it.method) } ?: c.dim,
                     inSelected = inRs.viewTab == 0,
                     inOnClick = { inRs.viewTab = 0 },
                 )
-                // Response tab — "Response 200" (or "FAILED" / "—" while pending)
+                // Response tab — adds the coloured status only when a
+                // response (or error) is in. No placeholder during the
+                // pre-send / loading state.
                 val (vRespAccent, vRespColor) = when {
-                    vLoading && vResp == null -> "…" to c.dim
-                    vResp?.error != null      -> "FAILED" to statusColor(0)
-                    vResp != null             -> vResp.status.toString() to statusColor(vResp.status)
-                    else                      -> "—" to c.dim
+                    vResp?.error != null -> "FAILED" to statusColor(0)
+                    vResp != null        -> vResp.status.toString() to statusColor(vResp.status)
+                    else                 -> null to c.dim
                 }
                 ViewerTab(
                     inLabel = "Response",
@@ -1292,12 +1295,15 @@ private fun BodyView(inText: String, modifier: Modifier = Modifier) {
     }
 }
 
-/* "Request" + colored "GET" tab. Selected tab gets full-strength
-   labels and a 2dp underline; unselected tabs stay dimmed. */
+/* "Request" + colored "GET" tab. inAccent is shown next to the label
+   when non-null (e.g. method name once sent, status code once received);
+   when null the tab is just the label, no placeholder dash. Selected
+   tab gets full-strength labels and a 2dp underline; unselected tabs
+   stay dimmed. */
 @Composable
 private fun ViewerTab(
     inLabel: String,
-    inAccent: String,
+    inAccent: String?,
     inAccentColor: Color,
     inSelected: Boolean,
     inOnClick: () -> Unit,
@@ -1312,7 +1318,9 @@ private fun ViewerTab(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(inLabel, color = if (inSelected) c.dim else c.dim.copy(alpha = 0.6f), fontSize = 14.sp)
-            Text(inAccent, color = if (inSelected) inAccentColor else inAccentColor.copy(alpha = 0.6f), fontSize = 14.sp)
+            if (inAccent != null) {
+                Text(inAccent, color = if (inSelected) inAccentColor else inAccentColor.copy(alpha = 0.6f), fontSize = 14.sp)
+            }
         }
         Spacer(Modifier.height(4.dp))
         Box(
@@ -1328,9 +1336,10 @@ private fun ViewerTab(
 // MARK: Helpers — header parsing / formatting
 // ==================
 
-/* "HTTP/1.1 STATUS_TEXT" style status line for a Response. */
+/* "HTTP/1.1 STATUS_TEXT" status line for a Response, or just "HTTP/1.1"
+   when nothing's come back yet (no dash placeholder). */
 private fun formatStatusLine(inResp: ApiResponse?): AnnotatedString {
-    if (inResp == null) return AnnotatedString("HTTP/1.1 —")
+    if (inResp == null) return AnnotatedString("HTTP/1.1")
     if (inResp.error != null) return buildAnnotatedString {
         append("HTTP/1.1 ")
         pushStyle(SpanStyle(color = Color(0xFFFF5630), fontWeight = FontWeight.Bold))
