@@ -653,6 +653,14 @@ private fun RequestTabStrip(
     var vDragDx by remember { mutableStateOf(0f) }               // visual follow offset
     var vDragTarget by remember { mutableStateOf(-1) }           // slot to drop into
 
+    // Where the drop indicator goes: before the tab now sitting at the target
+    // slot (among the non-dragged tabs), or at the very end.
+    val vDrag = vDragging
+    val vShowBar = vDrag != null && vDragDx != 0f
+    val vOthers = if (vShowBar && vDrag != null) inTabs.filter { it !== vDrag } else emptyList()
+    val vBarBefore = if (vShowBar) vOthers.getOrNull(vDragTarget) else null
+    val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
+
     Row(
         modifier = Modifier.fillMaxWidth().background(c.panel)
             .horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 5.dp),
@@ -660,6 +668,7 @@ private fun RequestTabStrip(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         inTabs.forEach { vRs ->
+            if (vRs === vBarBefore) DropBar()
             key(vRs) {
                 val vSel = vRs === inActive
                 val vReq = vRs.req
@@ -715,7 +724,16 @@ private fun RequestTabStrip(
                 }
             }
         }
+        if (vBarAtEnd) DropBar()
     }
+}
+
+/* Thin accent bar marking where a dragged tab will be inserted. Rendered in-flow
+   between tabs so the Row centres it vertically and reserves a little space. */
+@Composable
+private fun DropBar() {
+    val c = LocalAppColors.current
+    Box(modifier = Modifier.width(3.dp).height(24.dp).clip(RoundedCornerShape(2.dp)).background(c.accent, RoundedCornerShape(2.dp)))
 }
 
 // ==================
