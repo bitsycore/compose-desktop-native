@@ -98,5 +98,11 @@ class ApiResponse(
     val sizeBytes: Long,
     val headers: List<Pair<String, String>>,
     val body: String,
+    val bytes: ByteArray = ByteArray(0),
+    val contentType: String? = null,
     val error: String? = null,
 )
+
+/* True when the response carries an image payload (rendered, not shown as text). */
+val ApiResponse.isImage: Boolean
+    get() = contentType?.startsWith("image/", ignoreCase = true) == true

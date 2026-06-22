@@ -44,6 +44,14 @@ fun writeTextFile(inPath: String, inText: String): String? = try {
     e.message ?: e.toString()
 }
 
+/* Write raw bytes (a binary response body, e.g. an image) to inPath. */
+fun writeBytesFile(inPath: String, inBytes: ByteArray): String? = try {
+    FileSystem.SYSTEM.write(inPath.trim().toPath()) { write(inBytes) }
+    null
+} catch (e: Throwable) {
+    e.message ?: e.toString()
+}
+
 /* Re-indent a JSON response for display; returns the input unchanged if it
    isn't valid JSON (so plain-text / HTML responses still show). */
 fun prettyJsonOrRaw(inText: String): String = try {

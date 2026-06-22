@@ -13,7 +13,10 @@ import androidx.compose.ui.draw.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.currentClipboard
+import androidx.compose.ui.res.ResourceKind
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,6 +24,8 @@ import com.compose.desktop.native.LocalComposeNativeWindow
 import com.compose.desktop.native.icons.MaterialSymbols
 import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.desktop.native.nativeComposeWindow
+import com.compose.desktop.native.registerMemoryResource
+import com.compose.desktop.native.removeMemoryResource
 import com.compose.desktop.native.showOpenFileDialog
 import com.compose.desktop.native.showSaveFileDialog
 import com.compose.desktop.native.widgets.HorizontalSplitPane
@@ -70,6 +75,7 @@ private class ReqState(inInitial: ApiRequest) {
     var job: Job? = null
     var reqTab by mutableStateOf(0)
     var respTab by mutableStateOf(0)
+    var imageKey: String? = null   // memory-resource key when the response is an image
 }
 
 /* One open pack: its file path (null = never saved), a dirty flag (edits since
@@ -122,6 +128,7 @@ private fun App() {
     var vRenameText by remember { mutableStateOf("") }
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
     var vQuitDialog by remember { mutableStateOf(false) }
+    var vImgSeq by remember { mutableStateOf(0) }   // unique-key counter for response images
 
     fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
@@ -173,6 +180,7 @@ private fun App() {
     fun deleteRequest(inRs: ReqState) {
         val vP = activePack() ?: return
         inRs.job?.cancel()
+        inRs.imageKey?.let { removeMemoryResource(it) }
         vP.openTabs.remove(inRs); vP.requests.remove(inRs)
         if (vP.requests.isEmpty()) vP.requests.add(ReqState(ApiRequest()))
         if (vP.active === inRs) vP.active = vP.openTabs.lastOrNull()
@@ -192,6 +200,13 @@ private fun App() {
             try {
                 val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
                 inRs.response = vR
+                // Image payload → register its bytes under a fresh key so the
+                // response panel can render it via painterResource(key).
+                inRs.imageKey?.let { removeMemoryResource(it) }
+                inRs.imageKey = if (vR.isImage && vR.bytes.isNotEmpty()) {
+                    vImgSeq += 1
+                    "resp-image://$vImgSeq".also { registerMemoryResource(it, vR.bytes) }
+                } else null
                 vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vOriginal))
                 if (vHistory.size > 50) vHistory.removeAt(vHistory.size - 1)
             } finally {
@@ -875,6 +890,8 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
         vTab == 0 -> vBody
         else -> vHeaders
     }
+    // Body tab + image content → render the picture instead of decoded text.
+    val vImageBody = vTab == 0 && vResp?.isImage == true && vResp.error == null && inRs.imageKey != null
 
     Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
         Row(
@@ -912,10 +929,17 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
                     .border(1.dp, c.border, RoundedCornerShape(8.dp))
                     .verticalScroll(rememberScrollState()).padding(12.dp),
             ) {
-                if (vResp == null && !vLoading) {
-                    Text("Send a request to see the response.", color = c.dim, fontSize = 13.sp)
-                } else {
-                    BasicTextField(
+                when {
+                    vResp == null && !vLoading -> Text("Send a request to see the response.", color = c.dim, fontSize = 13.sp)
+                    vImageBody && !vLoading -> {
+                        val vKind = if (vResp?.contentType?.contains("svg", ignoreCase = true) == true) ResourceKind.Svg else ResourceKind.Raster
+                        Image(
+                            painter = painterResource(inRs.imageKey!!, vKind),
+                            contentDescription = "Response image",
+                            contentScale = ContentScale.Fit,
+                        )
+                    }
+                    else -> BasicTextField(
                         value = if (vLoading) "…" else vShown.ifEmpty { "(empty)" },
                         onValueChange = {},
                         readOnly = true,
@@ -934,12 +958,21 @@ private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconLabelChip(MaterialSymbols.ContentCopy, "Copy") {
-                currentClipboard.setText(vShown); vMsg = "Copied."
+            if (!vImageBody) {
+                IconLabelChip(MaterialSymbols.ContentCopy, "Copy") {
+                    currentClipboard.setText(vShown); vMsg = "Copied."
+                }
             }
             IconLabelChip(MaterialSymbols.Save, "Save as…") {
-                showSaveFileDialog(if (vTab == 0) "response.json" else "headers.txt") { vPath ->
-                    if (vPath != null) vMsg = writeTextFile(vPath, vShown)?.let { "Save failed: $it" } ?: "Saved."
+                if (vImageBody) {
+                    val vImgBytes = vResp?.bytes ?: ByteArray(0)
+                    showSaveFileDialog(imageFileName(vResp?.contentType)) { vPath ->
+                        if (vPath != null) vMsg = writeBytesFile(vPath, vImgBytes)?.let { "Save failed: $it" } ?: "Saved."
+                    }
+                } else {
+                    showSaveFileDialog(if (vTab == 0) "response.json" else "headers.txt") { vPath ->
+                        if (vPath != null) vMsg = writeTextFile(vPath, vShown)?.let { "Save failed: $it" } ?: "Saved."
+                    }
                 }
             }
             Spacer(Modifier.weight(1f))
@@ -1137,6 +1170,17 @@ private fun methodColor(inM: ReqMethod): Color = when (inM) {
     ReqMethod.PATCH -> Color(0xFF00B8D9)
     ReqMethod.DELETE -> Color(0xFFFF5630)
     ReqMethod.HEAD, ReqMethod.OPTIONS -> Color(0xFF8777FF)
+}
+
+/* Default save name for an image response, by content type. */
+private fun imageFileName(inContentType: String?): String = when {
+    inContentType == null -> "image.bin"
+    inContentType.contains("png", ignoreCase = true) -> "image.png"
+    inContentType.contains("jpeg", ignoreCase = true) || inContentType.contains("jpg", ignoreCase = true) -> "image.jpg"
+    inContentType.contains("gif", ignoreCase = true) -> "image.gif"
+    inContentType.contains("webp", ignoreCase = true) -> "image.webp"
+    inContentType.contains("svg", ignoreCase = true) -> "image.svg"
+    else -> "image.bin"
 }
 
 private fun statusColor(inStatus: Int): Color = when (inStatus) {

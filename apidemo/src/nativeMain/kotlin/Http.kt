@@ -1,6 +1,7 @@
 package apidemo
 
 import io.ktor.client.*
+import io.ktor.client.plugins.compression.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -16,7 +17,14 @@ import kotlin.time.TimeSource
    Curl). run() is a suspend fun — call it off the UI dispatcher. */
 class HttpRunner {
 
-    private val fClient = HttpClient()
+    private val fClient = HttpClient {
+        // Advertise Accept-Encoding and transparently decompress gzip/deflate
+        // responses (e.g. httpbin /gzip), so bodies aren't read as garbage.
+        install(ContentEncoding) {
+            gzip()
+            deflate()
+        }
+    }
 
     suspend fun run(inReq: ApiRequest): ApiResponse {
         val vMark = TimeSource.Monotonic.markNow()
@@ -39,17 +47,23 @@ class HttpRunner {
                     setBody(inReq.body)
                 }
             }
-            val vBody = vResp.bodyAsText()
+            // Read raw bytes so binary responses (images) survive; decode text
+            // only for non-image content. sizeBytes is the true payload size.
+            val vBytes = vResp.readRawBytes()
+            val vContentType = vResp.contentType()?.toString()
+            val vIsImage = vContentType?.startsWith("image/", ignoreCase = true) == true
             ApiResponse(
                 ok = true,
                 status = vResp.status.value,
                 statusText = vResp.status.description,
                 timeMs = vMark.elapsedNow().inWholeMilliseconds,
-                sizeBytes = vBody.length.toLong(),
+                sizeBytes = vBytes.size.toLong(),
                 headers = vResp.headers.entries()
                     .flatMap { e -> e.value.map { e.key to it } }
                     .sortedBy { it.first.lowercase() },
-                body = vBody,
+                body = if (vIsImage) "" else vBytes.decodeToString(),
+                bytes = vBytes,
+                contentType = vContentType,
             )
         } catch (e: CancellationException) {
             // The caller cancelled (Cancel button) — let it propagate so the
