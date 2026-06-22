@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -67,11 +68,12 @@ fun HorizontalSplitPane(
 
         Box(modifier = Modifier.width(vClampedFirst.dp).fillMaxHeight()) { first() }
 
+        // Fixed-width hit/drag slot; the visible line sits centred inside it and
+        // only thickens on hover, so the panes never shift.
         Box(
             modifier = Modifier
                 .width(SplitPaneDefaults.DividerThickness)
                 .fillMaxHeight()
-                .background(if (vDividerHover) dividerHoverColor else dividerColor)
                 .hoverable { vDividerHover = it }
                 .onDrag(
                     onDrag = { x, _ ->
@@ -85,8 +87,16 @@ fun HorizontalSplitPane(
                         val vLive = if (vTotalWidth > 0) vFirstWidth.coerceIn(vMinFirst, vMax) else vFirstWidth
                         vFirstWidth = (vLive + x).coerceIn(vMinFirst, vMax)
                     }
-                )
-        )
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(if (vDividerHover) SplitPaneDefaults.DividerHoverThickness else SplitPaneDefaults.DividerLineThickness)
+                    .fillMaxHeight()
+                    .background(if (vDividerHover) dividerHoverColor else dividerColor),
+            )
+        }
 
         Box(modifier = Modifier.width(vSecondWidth.dp).fillMaxHeight()) { second() }
     }
@@ -123,11 +133,11 @@ fun VerticalSplitPane(
 
         Box(modifier = Modifier.height(vClampedFirst.dp).fillMaxWidth()) { first() }
 
+        // Fixed-height hit/drag slot; centred line thickens on hover only.
         Box(
             modifier = Modifier
                 .height(SplitPaneDefaults.DividerThickness)
                 .fillMaxWidth()
-                .background(if (vDividerHover) dividerHoverColor else dividerColor)
                 .hoverable { vDividerHover = it }
                 .onDrag(
                     onDrag = { _, y ->
@@ -138,13 +148,23 @@ fun VerticalSplitPane(
                         val vLive = if (vTotalHeight > 0) vFirstHeight.coerceIn(vMinFirst, vMax) else vFirstHeight
                         vFirstHeight = (vLive + y).coerceIn(vMinFirst, vMax)
                     }
-                )
-        )
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(if (vDividerHover) SplitPaneDefaults.DividerHoverThickness else SplitPaneDefaults.DividerLineThickness)
+                    .fillMaxWidth()
+                    .background(if (vDividerHover) dividerHoverColor else dividerColor),
+            )
+        }
 
         Box(modifier = Modifier.height(vSecondHeight.dp).fillMaxWidth()) { second() }
     }
 }
 
 object SplitPaneDefaults {
-    val DividerThickness: Dp = 4.dp
+    val DividerThickness: Dp = 8.dp        // reserved hit/drag slot (fixed; layout never shifts)
+    val DividerLineThickness: Dp = 1.dp    // visible line at rest
+    val DividerHoverThickness: Dp = 3.dp   // visible line when hovered
 }
