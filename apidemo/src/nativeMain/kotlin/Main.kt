@@ -608,14 +608,14 @@ private fun RequestRow(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
             .background(if (inSelected) c.accent.copy(alpha = 0.22f) else Color.Transparent, RoundedCornerShape(6.dp))
             .clickable { inOnOpen() }
-            .padding(start = 8.dp, top = 3.dp, bottom = 3.dp, end = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+            .padding(start = 8.dp, top = 1.dp, bottom = 1.dp, end = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MethodTag(vReq.method)
         Text(vReq.name, color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
         Box {
-            IconBtn(MaterialSymbols.MoreVert, "Options", inModifier = Modifier.menuAnchor(vAnchor), inSize = 18.dp) { vMenu = true }
+            IconBtn(MaterialSymbols.MoreVert, "Options", inModifier = Modifier.menuAnchor(vAnchor), inSize = 16.dp, inPadding = 4.dp) { vMenu = true }
             DropdownMenu(expanded = vMenu, onDismissRequest = { vMenu = false }, anchor = vAnchor, minWidth = 168.dp) {
                 DropdownMenuItem(onClick = { vMenu = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnDuplicate() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }
@@ -972,9 +972,19 @@ private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Uni
 // MARK: Reusable bits
 // ==================
 
+/* Method as a compact rounded badge (soft colour fill + coloured label), fixed
+   width so request names line up. */
 @Composable
 private fun MethodTag(inMethod: ReqMethod) {
-    Text(inMethod.name, color = methodColor(inMethod), fontSize = 10.sp, modifier = Modifier.width(40.dp))
+    val vCol = methodColor(inMethod)
+    Box(
+        modifier = Modifier.width(46.dp).clip(RoundedCornerShape(4.dp))
+            .background(vCol.copy(alpha = 0.18f), RoundedCornerShape(4.dp))
+            .padding(vertical = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(inMethod.name, color = vCol, fontSize = 10.sp)
+    }
 }
 
 /* Tab indices listed in inDots get a small accent dot after their label — used
@@ -1040,11 +1050,12 @@ private fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier:
     }
 }
 
-/* Small icon-only button (burger / pack / options / save / close). */
+/* Small icon-only button (burger / pack / options / save / close). inPadding
+   tightens the tap area for slimmer rows. */
 @Composable
-private fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inOnClick: () -> Unit) {
+private fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inPadding: Dp = 6.dp, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
-    Box(modifier = inModifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = inOnClick).padding(6.dp)) {
+    Box(modifier = inModifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = inOnClick).padding(inPadding)) {
         MaterialSymbolsOutlined(inIcon, contentDescription = inDesc, tint = c.dim, size = inSize)
     }
 }
