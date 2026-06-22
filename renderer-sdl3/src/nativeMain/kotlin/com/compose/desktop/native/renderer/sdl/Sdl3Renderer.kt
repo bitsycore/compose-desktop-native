@@ -442,15 +442,39 @@ internal class Sdl3Renderer(
         }
         if (vClipShape != null && inNode.children.isNotEmpty()) {
             // SDL clip only supports rects — round corners are ignored here.
+            // Nest correctly: intersect with the clip already in effect and
+            // restore it afterwards, so a scroll viewport's clip survives a
+            // child that also clips (e.g. each tab in a clipped tab strip, or a
+            // BasicTextField clipping to its own taller-than-viewport bounds).
+            // Without this the inner clip clobbers the outer one and content
+            // spills past the scroll area.
             memScoped {
+                val vHadClip = SDL_RenderClipEnabled(vRenderer)
+                val vPrev = alloc<SDL_Rect>()
+                SDL_GetRenderClipRect(vRenderer, vPrev.ptr)
+
+                var vLeft = inNode.absoluteX
+                var vTop = inNode.absoluteY
+                var vRight = vLeft + inNode.width
+                var vBottom = vTop + inNode.height
+                if (vHadClip) {
+                    vLeft = maxOf(vLeft, vPrev.x)
+                    vTop = maxOf(vTop, vPrev.y)
+                    vRight = minOf(vRight, vPrev.x + vPrev.w)
+                    vBottom = minOf(vBottom, vPrev.y + vPrev.h)
+                }
+
                 val vRect = alloc<SDL_Rect>()
-                vRect.x = inNode.absoluteX
-                vRect.y = inNode.absoluteY
-                vRect.w = inNode.width
-                vRect.h = inNode.height
+                vRect.x = vLeft
+                vRect.y = vTop
+                vRect.w = maxOf(0, vRight - vLeft)
+                vRect.h = maxOf(0, vBottom - vTop)
                 SDL_SetRenderClipRect(vRenderer, vRect.ptr)
+
                 for (child in zOrderedChildren(inNode)) drawNode(child)
-                SDL_SetRenderClipRect(vRenderer, null)
+
+                if (vHadClip) SDL_SetRenderClipRect(vRenderer, vPrev.ptr)
+                else SDL_SetRenderClipRect(vRenderer, null)
             }
         } else {
             for (child in zOrderedChildren(inNode)) drawNode(child)
