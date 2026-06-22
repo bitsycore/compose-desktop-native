@@ -68,8 +68,11 @@ object MaterialSymbols {
 	const val ContentCopy     = 0xe14d
 	const val ContentCut      = 0xe14e
 	const val ContentPaste    = 0xe14f
+	const val FileCopy        = 0xe173
 	const val Undo            = 0xe166
 	const val Redo            = 0xe15a
+	const val Tune            = 0xe429
+	const val Terminal        = 0xeb8e
 
 	// ============
 	//  Status / feedback

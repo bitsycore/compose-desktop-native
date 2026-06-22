@@ -6,12 +6,26 @@ import kotlinx.serialization.Serializable
 // MARK: Pack model (serialized to / from .json)
 // ==================
 
-/* A "pack" is a savable collection of requests — the export/import unit. */
+/* A "pack" is a savable collection of requests plus its environment variables
+   — the export/import unit. Variables are referenced as {{name}} in any URL,
+   query value, header or body and substituted just before the request is sent
+   (see resolveVars in Tools.kt). */
 @Serializable
 data class Pack(
     val name: String = "My Pack",
     val requests: List<ApiRequest> = listOf(
-        ApiRequest(name = "Get IP", url = "https://httpbin.org/get"),
+        ApiRequest(name = "Get IP", url = "{{baseUrl}}/get"),
+        ApiRequest(
+            name = "Echo post",
+            method = ReqMethod.POST,
+            url = "{{baseUrl}}/post",
+            bodyType = BodyType.JSON,
+            body = "{\n  \"hello\": \"{{name}}\"\n}",
+        ),
+    ),
+    val variables: List<KeyVal> = listOf(
+        KeyVal("baseUrl", "https://httpbin.org"),
+        KeyVal("name", "world"),
     ),
 )
 

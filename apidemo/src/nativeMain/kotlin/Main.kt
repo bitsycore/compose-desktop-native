@@ -80,9 +80,11 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
     val vScope = rememberCoroutineScope()
 
     val vRequests = remember { mutableStateListOf<ApiRequest>().apply { addAll(Pack().requests) } }
+    val vVars = remember { mutableStateListOf<KeyVal>().apply { addAll(Pack().variables) } }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
     var vSelected by remember { mutableStateOf(0) }
-    var vSideTab by remember { mutableStateOf(0) }     // 0 Requests, 1 History
+    var vSideTab by remember { mutableStateOf(0) }     // 0 Requests, 1 History, 2 Env
+    var vReqMsg by remember { mutableStateOf<String?>(null) }
     var vPackName by remember { mutableStateOf("My Pack") }
     var vNotice by remember { mutableStateOf<String?>(null) }
     var vPackOpen by remember { mutableStateOf(false) }
@@ -113,7 +115,7 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                 IconBtn(MaterialSymbols.Folder, "Pack") { vPackOpen = true }
                 OptionsMenu(inDark, inOnToggleTheme)
             }
-            TabBar(listOf("Requests", "History"), vSideTab) { vSideTab = it }
+            TabBar(listOf("Requests", "History", "Env (${vVars.size})"), vSideTab) { vSideTab = it }
             Divider(color = c.border)
 
             if (vSideTab == 0) {
@@ -122,7 +124,7 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
                             .background(if (vSel) c.accent.copy(alpha = 0.22f) else Color.Transparent, RoundedCornerShape(6.dp))
-                            .clickable { vSelected = vI; vResponse = null }
+                            .clickable { vSelected = vI; vResponse = null; vReqMsg = null }
                             .padding(start = 8.dp, top = 3.dp, bottom = 3.dp, end = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -135,16 +137,16 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                 }
                 OutlinedAction(MaterialSymbols.Add, "New request") {
                     vRequests.add(ApiRequest(name = "Request ${vRequests.size + 1}"))
-                    vSelected = vRequests.size - 1; vResponse = null; vSideTab = 0
+                    vSelected = vRequests.size - 1; vResponse = null; vReqMsg = null; vSideTab = 0
                 }
-            } else {
+            } else if (vSideTab == 1) {
                 if (vHistory.isEmpty()) Text("No requests sent yet.", color = c.dim, fontSize = 12.sp)
                 vHistory.forEachIndexed { vI, vH ->
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
                             .clickable {
                                 vRequests.add(vH.request.copy())
-                                vSelected = vRequests.size - 1; vSideTab = 0; vResponse = null
+                                vSelected = vRequests.size - 1; vSideTab = 0; vResponse = null; vReqMsg = null
                             }
                             .padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -158,6 +160,13 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                         Text(if (vH.status > 0) "${vH.status}" else "ERR", color = statusColor(vH.status), fontSize = 12.sp)
                     }
                 }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
+                    Text("Variables", color = c.text, fontSize = 13.sp)
+                }
+                Text("Reference any value as {{name}} in a URL, param, header or body.", color = c.dim, fontSize = 11.sp)
+                KeyValEditor(vVars) { vNew -> vVars.clear(); vVars.addAll(vNew) }
             }
         }
 
@@ -174,7 +183,19 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                     .verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Text(vReq.name, color = c.text, fontSize = 19.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(vReq.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
+                    vReqMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
+                    IconLabelChip(MaterialSymbols.FileCopy, "Duplicate") {
+                        val vSrc = vRequests[vSelected]
+                        vRequests.add(vSelected + 1, vSrc.copy(name = "${vSrc.name} copy"))
+                        vSelected += 1; vResponse = null; vReqMsg = null
+                    }
+                    IconLabelChip(MaterialSymbols.Terminal, "Copy as cURL") {
+                        currentClipboard.setText(toCurl(resolveVars(vRequests[vSelected], vVars)))
+                        vReqMsg = "Copied cURL."
+                    }
+                }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     MethodPicker(vReq.method) { m -> edit { it.copy(method = m) } }
@@ -182,16 +203,25 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                     Button(
                         onClick = {
                             if (vLoading) return@Button
-                            val vSend = vRequests[vSelected]
+                            val vOriginal = vRequests[vSelected]
+                            val vSend = resolveVars(vOriginal, vVars)
                             vLoading = true; vResponse = null
                             vScope.launch(Dispatchers.Main) {
                                 val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
                                 vResponse = vR; vLoading = false
-                                vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vSend))
+                                vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vOriginal))
                                 if (vHistory.size > 50) vHistory.removeAt(vHistory.size - 1)
                             }
                         },
                     ) { BtnContent(MaterialSymbols.Send, if (vLoading) "Sending" else "Send", c.onAccent) }
+                }
+
+                val vMissing = unresolvedVars(vReq, vVars)
+                if (vMissing.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 15.dp)
+                        Text("Undefined: ${vMissing.joinToString(", ") { "{{$it}}" }}", color = kWarnColor, fontSize = 11.sp)
+                    }
                 }
 
                 TabBar(listOf("Query (${vReq.params.size})", "Headers (${vReq.headers.size})", "Body"), vReqTab) { vReqTab = it }
@@ -218,8 +248,9 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
             inOnExport = {
                 showSaveFileDialog("${vPackName}.json") { vPath ->
                     if (vPath != null) {
-                        val vErr = exportPack(Pack(vPackName, vRequests.toList()), vPath)
-                        vNotice = vErr?.let { "Export failed: $it" } ?: "Saved ${vRequests.size} request(s)."
+                        val vErr = exportPack(Pack(vPackName, vRequests.toList(), vVars.toList()), vPath)
+                        vNotice = vErr?.let { "Export failed: $it" }
+                            ?: "Saved ${vRequests.size} request(s), ${vVars.size} variable(s)."
                     }
                 }
             },
@@ -229,8 +260,9 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                         onSuccess = { vP ->
                             vPackName = vP.name
                             vRequests.clear(); vRequests.addAll(vP.requests.ifEmpty { listOf(ApiRequest()) })
-                            vSelected = 0; vResponse = null
-                            vNotice = "Imported ${vP.requests.size} request(s)."
+                            vVars.clear(); vVars.addAll(vP.variables)
+                            vSelected = 0; vResponse = null; vReqMsg = null
+                            vNotice = "Imported ${vP.requests.size} request(s), ${vP.variables.size} variable(s)."
                         },
                         onFailure = { vNotice = "Import failed: ${it.message}" },
                     )
@@ -644,6 +676,9 @@ private fun BtnContent(inIcon: Int, inLabel: String, inColor: Color, inSize: Dp 
         Text(inLabel, color = inColor, fontSize = 13.sp)
     }
 }
+
+// Amber used to flag undefined {{variables}} in the request editor.
+private val kWarnColor = Color(0xFFFFAB00)
 
 private fun methodColor(inM: ReqMethod): Color = when (inM) {
     ReqMethod.GET -> Color(0xFF4C9AFF)
