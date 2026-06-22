@@ -18,7 +18,9 @@ import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbol
 import com.compose.desktop.native.nativeComposeWindow
 import com.compose.desktop.native.showOpenFileDialog
 import com.compose.desktop.native.showSaveFileDialog
+import com.compose.desktop.native.widgets.HorizontalSplitPane
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -69,6 +71,19 @@ private fun Root() {
 
 private class HistoryEntry(val method: ReqMethod, val url: String, val status: Int, val timeMs: Long, val request: ApiRequest)
 
+/* One request plus its live session state — the response, the in-flight job
+   (for cancel) and which sub-tabs are showing. Stable object identity lets the
+   sidebar list and the open-tab strip both point at the same request without
+   index juggling, and lets each open tab keep its own response. */
+private class ReqState(inInitial: ApiRequest) {
+    var req by mutableStateOf(inInitial)
+    var response by mutableStateOf<ApiResponse?>(null)
+    var loading by mutableStateOf(false)
+    var job: Job? = null
+    var reqTab by mutableStateOf(0)
+    var respTab by mutableStateOf(0)
+}
+
 // ==================
 // MARK: App
 // ==================
@@ -79,172 +94,240 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
     val vRunner = remember { HttpRunner() }
     val vScope = rememberCoroutineScope()
 
-    val vRequests = remember { mutableStateListOf<ApiRequest>().apply { addAll(Pack().requests) } }
+    val vRequests = remember { mutableStateListOf<ReqState>().apply { Pack().requests.forEach { add(ReqState(it)) } } }
     val vVars = remember { mutableStateListOf<KeyVal>().apply { addAll(Pack().variables) } }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
-    var vSelected by remember { mutableStateOf(0) }
+    val vOpenTabs = remember { mutableStateListOf<ReqState>().apply { vRequests.firstOrNull()?.let { add(it) } } }
+    var vActive by remember { mutableStateOf(vRequests.firstOrNull()) }
+
     var vSideTab by remember { mutableStateOf(0) }     // 0 Requests, 1 History, 2 Env
     var vReqMsg by remember { mutableStateOf<String?>(null) }
     var vPackName by remember { mutableStateOf("My Pack") }
     var vNotice by remember { mutableStateOf<String?>(null) }
     var vPackOpen by remember { mutableStateOf(false) }
-    var vRenameIdx by remember { mutableStateOf(-1) }
+    var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
-    var vDeleteIdx by remember { mutableStateOf(-1) }
+    var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
 
-    var vReqTab by remember { mutableStateOf(0) }
-    var vRespTab by remember { mutableStateOf(0) }
-    var vResponse by remember { mutableStateOf<ApiResponse?>(null) }
-    var vLoading by remember { mutableStateOf(false) }
-
+    // ============
+    //  Request actions (operate on ReqState identities, not indices)
+    fun open(inRs: ReqState) {
+        if (inRs !in vOpenTabs) vOpenTabs.add(inRs)
+        vActive = inRs
+        vReqMsg = null
+    }
+    fun closeTab(inRs: ReqState) {
+        val vIdx = vOpenTabs.indexOf(inRs)
+        vOpenTabs.remove(inRs)
+        if (vActive === inRs) vActive = vOpenTabs.getOrNull(vIdx) ?: vOpenTabs.lastOrNull()
+    }
     fun edit(inT: (ApiRequest) -> ApiRequest) {
-        if (vSelected in vRequests.indices) vRequests[vSelected] = inT(vRequests[vSelected])
+        val vRs = vActive ?: return
+        vRs.req = inT(vRs.req)
+    }
+    fun send(inRs: ReqState) {
+        if (inRs.loading) return
+        val vOriginal = inRs.req
+        val vSend = resolveVars(vOriginal, vVars)
+        inRs.loading = true
+        inRs.response = null
+        vReqMsg = null
+        inRs.job = vScope.launch(Dispatchers.Main) {
+            try {
+                val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
+                inRs.response = vR
+                vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vOriginal))
+                if (vHistory.size > 50) vHistory.removeAt(vHistory.size - 1)
+            } finally {
+                inRs.loading = false
+                inRs.job = null
+            }
+        }
+    }
+    fun cancel(inRs: ReqState) {
+        inRs.job?.cancel()
+        inRs.job = null
+        inRs.loading = false
+    }
+    fun reorderTabs(inFrom: Int, inTo: Int) {
+        if (inFrom == inTo || inFrom !in vOpenTabs.indices || inTo !in vOpenTabs.indices) return
+        vOpenTabs.add(inTo, vOpenTabs.removeAt(inFrom))
+    }
+    fun newRequest() {
+        val vRs = ReqState(ApiRequest(name = "Request ${vRequests.size + 1}"))
+        vRequests.add(vRs); open(vRs); vSideTab = 0
+    }
+    fun duplicate(inRs: ReqState) {
+        val vAt = (vRequests.indexOf(inRs) + 1).coerceIn(0, vRequests.size)
+        val vCopy = ReqState(inRs.req.copy(name = "${inRs.req.name} copy"))
+        vRequests.add(vAt, vCopy); open(vCopy)
+    }
+    fun delete(inRs: ReqState) {
+        cancel(inRs)
+        vOpenTabs.remove(inRs)
+        vRequests.remove(inRs)
+        if (vRequests.isEmpty()) vRequests.add(ReqState(ApiRequest()))
+        if (vActive === inRs) vActive = vOpenTabs.lastOrNull()
     }
 
-    Row(modifier = Modifier.fillMaxSize().background(c.bg)) {
-
-        // ============
-        //  Sidebar
-        Column(
-            modifier = Modifier.width(248.dp).fillMaxHeight().background(c.panel)
-                .verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(vPackName, color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
-                IconBtn(MaterialSymbols.Folder, "Pack") { vPackOpen = true }
-                OptionsMenu(inDark, inOnToggleTheme)
-            }
-            TabBar(listOf("Requests", "History", "Env (${vVars.size})"), vSideTab) { vSideTab = it }
-            Divider(color = c.border)
-
-            if (vSideTab == 0) {
-                vRequests.forEachIndexed { vI, vReq ->
-                    val vSel = vI == vSelected
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                            .background(if (vSel) c.accent.copy(alpha = 0.22f) else Color.Transparent, RoundedCornerShape(6.dp))
-                            .clickable { vSelected = vI; vResponse = null; vReqMsg = null }
-                            .padding(start = 8.dp, top = 3.dp, bottom = 3.dp, end = 2.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        MethodTag(vReq.method)
-                        Text(vReq.name, color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                        IconBtn(MaterialSymbols.Edit, "Rename", inSize = 16.dp) { vRenameIdx = vI; vRenameText = vReq.name }
-                        IconBtn(MaterialSymbols.Delete, "Delete", inSize = 16.dp) { vDeleteIdx = vI }
-                    }
+    HorizontalSplitPane(
+        modifier = Modifier.background(c.bg),
+        initialFirstSize = 248.dp,
+        minFirstSize = 190.dp,
+        minSecondSize = 520.dp,
+        dividerColor = c.border,
+        dividerHoverColor = c.accent,
+        first = {
+            // ============
+            //  Sidebar (Pack panel) — requests / history / variables
+            Column(
+                modifier = Modifier.fillMaxSize().background(c.panel)
+                    .verticalScroll(rememberScrollState()).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(vPackName, color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                    IconBtn(MaterialSymbols.Folder, "Pack") { vPackOpen = true }
+                    OptionsMenu(inDark, inOnToggleTheme)
                 }
-                OutlinedAction(MaterialSymbols.Add, "New request") {
-                    vRequests.add(ApiRequest(name = "Request ${vRequests.size + 1}"))
-                    vSelected = vRequests.size - 1; vResponse = null; vReqMsg = null; vSideTab = 0
-                }
-            } else if (vSideTab == 1) {
-                if (vHistory.isEmpty()) Text("No requests sent yet.", color = c.dim, fontSize = 12.sp)
-                vHistory.forEachIndexed { vI, vH ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                            .clickable {
-                                vRequests.add(vH.request.copy())
-                                vSelected = vRequests.size - 1; vSideTab = 0; vResponse = null; vReqMsg = null
+                TabBar(listOf("Requests", "History", "Env (${vVars.size})"), vSideTab) { vSideTab = it }
+                Divider(color = c.border)
+
+                when (vSideTab) {
+                    0 -> {
+                        vRequests.forEach { vRs ->
+                            key(vRs) {
+                                RequestRow(
+                                    inRs = vRs,
+                                    inSelected = vRs === vActive,
+                                    inOnOpen = { open(vRs) },
+                                    inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
+                                    inOnDuplicate = { duplicate(vRs) },
+                                    inOnDelete = { vDeleteTarget = vRs },
+                                )
                             }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        MethodTag(vH.method)
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(vH.url, color = c.text, fontSize = 11.sp, modifier = Modifier.fillMaxWidth())
-                            Text("#${vHistory.size - vI} · ${vH.timeMs} ms", color = c.dim, fontSize = 10.sp)
                         }
-                        Text(if (vH.status > 0) "${vH.status}" else "ERR", color = statusColor(vH.status), fontSize = 12.sp)
+                        OutlinedAction(MaterialSymbols.Add, "New request") { newRequest() }
                     }
+                    1 -> {
+                        if (vHistory.isEmpty()) Text("No requests sent yet.", color = c.dim, fontSize = 12.sp)
+                        vHistory.forEachIndexed { vI, vH ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+                                    .clickable {
+                                        val vRs = ReqState(vH.request.copy())
+                                        vRequests.add(vRs); open(vRs); vSideTab = 0
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                MethodTag(vH.method)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(vH.url, color = c.text, fontSize = 11.sp, modifier = Modifier.fillMaxWidth())
+                                    Text("#${vHistory.size - vI} · ${vH.timeMs} ms", color = c.dim, fontSize = 10.sp)
+                                }
+                                Text(if (vH.status > 0) "${vH.status}" else "ERR", color = statusColor(vH.status), fontSize = 12.sp)
+                            }
+                        }
+                    }
+                    else -> {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
+                            Text("Variables", color = c.text, fontSize = 13.sp)
+                        }
+                        Text("Reference any value as {{name}} in a URL, param, header or body.", color = c.dim, fontSize = 11.sp)
+                        KeyValEditor(vVars) { vNew -> vVars.clear(); vVars.addAll(vNew) }
+                    }
+                }
+            }
+        },
+        second = {
+            // ============
+            //  Main — tab strip over a resizable request | response split
+            val vAct = vActive
+            if (vAct == null) {
+                Box(modifier = Modifier.fillMaxSize().background(c.bg), contentAlignment = Alignment.Center) {
+                    Text("No request open — pick one from the sidebar.", color = c.dim)
                 }
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
-                    Text("Variables", color = c.text, fontSize = 13.sp)
-                }
-                Text("Reference any value as {{name}} in a URL, param, header or body.", color = c.dim, fontSize = 11.sp)
-                KeyValEditor(vVars) { vNew -> vVars.clear(); vVars.addAll(vNew) }
-            }
-        }
+                Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
+                    RequestTabStrip(
+                        inTabs = vOpenTabs,
+                        inActive = vAct,
+                        inOnSelect = { open(it) },
+                        inOnClose = { closeTab(it) },
+                        inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
+                    )
+                    Divider(color = c.border)
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        HorizontalSplitPane(
+                            initialFirstSize = 540.dp,
+                            minFirstSize = 360.dp,
+                            minSecondSize = 320.dp,
+                            dividerColor = c.border,
+                            dividerHoverColor = c.accent,
+                            first = {
+                                // Request editor (Request panel)
+                                val vReq = vAct.req
+                                Column(
+                                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(vReq.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
+                                        vReqMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
+                                        IconLabelChip(MaterialSymbols.FileCopy, "Duplicate") { duplicate(vAct) }
+                                        IconLabelChip(MaterialSymbols.Terminal, "Copy as cURL") {
+                                            currentClipboard.setText(toCurl(resolveVars(vAct.req, vVars)))
+                                            vReqMsg = "Copied cURL."
+                                        }
+                                    }
 
-        // ============
-        //  Main — request editor (left) | response panel (right)
-        val vReq = vRequests.getOrNull(vSelected)
-        if (vReq == null) {
-            Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                Text("No request selected.", color = c.dim)
-            }
-        } else {
-            Column(
-                modifier = Modifier.weight(1f).fillMaxHeight()
-                    .verticalScroll(rememberScrollState()).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(vReq.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
-                    vReqMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
-                    IconLabelChip(MaterialSymbols.FileCopy, "Duplicate") {
-                        val vSrc = vRequests[vSelected]
-                        vRequests.add(vSelected + 1, vSrc.copy(name = "${vSrc.name} copy"))
-                        vSelected += 1; vResponse = null; vReqMsg = null
+                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        MethodPicker(vReq.method) { m -> edit { it.copy(method = m) } }
+                                        ThinField(vReq.url, { v -> edit { it.copy(url = v) } }, inModifier = Modifier.weight(1f), inPlaceholder = "https://example.com/path")
+                                        if (vAct.loading) {
+                                            DangerButton("Cancel", MaterialSymbols.Stop) { cancel(vAct) }
+                                        } else {
+                                            Button(onClick = { send(vAct) }) { BtnContent(MaterialSymbols.Send, "Send", c.onAccent) }
+                                        }
+                                    }
+
+                                    val vMissing = unresolvedVars(vReq, vVars)
+                                    if (vMissing.isNotEmpty()) {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 15.dp)
+                                            Text("Undefined: ${vMissing.joinToString(", ") { "{{$it}}" }}", color = kWarnColor, fontSize = 11.sp)
+                                        }
+                                    }
+
+                                    val vHasBody = vReq.method.allowsBody && vReq.bodyType != BodyType.NONE && vReq.body.isNotBlank()
+                                    TabBar(
+                                        listOf("Query (${vReq.params.size})", "Headers (${vReq.headers.size})", "Body"),
+                                        vAct.reqTab,
+                                        inDots = if (vHasBody) setOf(2) else emptySet(),
+                                    ) { vAct.reqTab = it }
+                                    when (vAct.reqTab) {
+                                        0 -> KeyValEditor(vReq.params) { v -> edit { it.copy(params = v) } }
+                                        1 -> KeyValEditor(vReq.headers) { v -> edit { it.copy(headers = v) } }
+                                        else -> BodyEditor(vReq) { v -> edit(v) }
+                                    }
+                                }
+                            },
+                            second = {
+                                // Response panel
+                                ResponseView(vAct) { cancel(vAct) }
+                            },
+                        )
                     }
-                    IconLabelChip(MaterialSymbols.Terminal, "Copy as cURL") {
-                        currentClipboard.setText(toCurl(resolveVars(vRequests[vSelected], vVars)))
-                        vReqMsg = "Copied cURL."
-                    }
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MethodPicker(vReq.method) { m -> edit { it.copy(method = m) } }
-                    ThinField(vReq.url, { v -> edit { it.copy(url = v) } }, inModifier = Modifier.weight(1f), inPlaceholder = "https://example.com/path")
-                    Button(
-                        onClick = {
-                            if (vLoading) return@Button
-                            val vOriginal = vRequests[vSelected]
-                            val vSend = resolveVars(vOriginal, vVars)
-                            vLoading = true; vResponse = null
-                            vScope.launch(Dispatchers.Main) {
-                                val vR = withContext(Dispatchers.Default) { vRunner.run(vSend) }
-                                vResponse = vR; vLoading = false
-                                vHistory.add(0, HistoryEntry(vSend.method, vSend.url, vR.status, vR.timeMs, vOriginal))
-                                if (vHistory.size > 50) vHistory.removeAt(vHistory.size - 1)
-                            }
-                        },
-                    ) { BtnContent(MaterialSymbols.Send, if (vLoading) "Sending" else "Send", c.onAccent) }
-                }
-
-                val vMissing = unresolvedVars(vReq, vVars)
-                if (vMissing.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = kWarnColor, size = 15.dp)
-                        Text("Undefined: ${vMissing.joinToString(", ") { "{{$it}}" }}", color = kWarnColor, fontSize = 11.sp)
-                    }
-                }
-
-                val vHasBody = vReq.method.allowsBody && vReq.bodyType != BodyType.NONE && vReq.body.isNotBlank()
-                TabBar(
-                    listOf("Query (${vReq.params.size})", "Headers (${vReq.headers.size})", "Body"),
-                    vReqTab,
-                    inDots = if (vHasBody) setOf(2) else emptySet(),
-                ) { vReqTab = it }
-                when (vReqTab) {
-                    0 -> KeyValEditor(vReq.params) { v -> edit { it.copy(params = v) } }
-                    1 -> KeyValEditor(vReq.headers) { v -> edit { it.copy(headers = v) } }
-                    else -> BodyEditor(vReq) { v -> edit(v) }
                 }
             }
+        },
+    )
 
-            Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(c.border))
-
-            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                ResponseView(vLoading, vResponse, vRespTab) { vRespTab = it }
-            }
-        }
-    }
-
+    // ============
+    //  Dialogs
     if (vPackOpen) {
         PackDialog(
             inName = vPackName,
@@ -253,7 +336,7 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
             inOnExport = {
                 showSaveFileDialog("${vPackName}.json") { vPath ->
                     if (vPath != null) {
-                        val vErr = exportPack(Pack(vPackName, vRequests.toList(), vVars.toList()), vPath)
+                        val vErr = exportPack(Pack(vPackName, vRequests.map { it.req }, vVars.toList()), vPath)
                         vNotice = vErr?.let { "Export failed: $it" }
                             ?: "Saved ${vRequests.size} request(s), ${vVars.size} variable(s)."
                     }
@@ -264,9 +347,12 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                     if (vPath != null) importPack(vPath).fold(
                         onSuccess = { vP ->
                             vPackName = vP.name
-                            vRequests.clear(); vRequests.addAll(vP.requests.ifEmpty { listOf(ApiRequest()) })
+                            vRequests.clear()
+                            (vP.requests.ifEmpty { listOf(ApiRequest()) }).forEach { vRequests.add(ReqState(it)) }
                             vVars.clear(); vVars.addAll(vP.variables)
-                            vSelected = 0; vResponse = null; vReqMsg = null
+                            vOpenTabs.clear(); vRequests.firstOrNull()?.let { vOpenTabs.add(it) }
+                            vActive = vRequests.firstOrNull()
+                            vReqMsg = null
                             vNotice = "Imported ${vP.requests.size} request(s), ${vP.variables.size} variable(s)."
                         },
                         onFailure = { vNotice = "Import failed: ${it.message}" },
@@ -277,30 +363,29 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
         )
     }
 
-    if (vRenameIdx in vRequests.indices) {
-        Dialog(onDismissRequest = { vRenameIdx = -1 }) {
+    val vRen = vRenameTarget
+    if (vRen != null) {
+        Dialog(onDismissRequest = { vRenameTarget = null }) {
             Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Rename request", color = c.text, fontSize = 16.sp)
                     ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = {
-                            val vIdx = vRenameIdx
-                            if (vIdx in vRequests.indices && vRenameText.isNotBlank()) {
-                                vRequests[vIdx] = vRequests[vIdx].copy(name = vRenameText.trim())
-                            }
-                            vRenameIdx = -1
+                            if (vRenameText.isNotBlank()) vRen.req = vRen.req.copy(name = vRenameText.trim())
+                            vRenameTarget = null
                         }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
-                        OutlinedButton(onClick = { vRenameIdx = -1 }) { Text("Cancel", color = c.text) }
+                        OutlinedButton(onClick = { vRenameTarget = null }) { Text("Cancel", color = c.text) }
                     }
                 }
             }
         }
     }
 
-    if (vDeleteIdx in vRequests.indices) {
-        val vName = vRequests[vDeleteIdx].name
-        Dialog(onDismissRequest = { vDeleteIdx = -1 }) {
+    val vDel = vDeleteTarget
+    if (vDel != null) {
+        val vName = vDel.req.name
+        Dialog(onDismissRequest = { vDeleteTarget = null }) {
             Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -310,19 +395,134 @@ private fun App(inDark: Boolean, inOnToggleTheme: () -> Unit) {
                     Text("\"$vName\" will be removed from the pack. This can't be undone.", color = c.dim, fontSize = 13.sp)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlinedButton(onClick = { vDeleteIdx = -1 }) { Text("Cancel", color = c.text) }
-                            DangerButton("Delete", MaterialSymbols.Delete) {
-                                val vIdx = vDeleteIdx
-                                if (vIdx in vRequests.indices) {
-                                    vRequests.removeAt(vIdx)
-                                    if (vRequests.isEmpty()) vRequests.add(ApiRequest())
-                                    vSelected = vSelected.coerceIn(0, vRequests.size - 1)
-                                    vResponse = null
-                                }
-                                vDeleteIdx = -1
-                            }
+                            OutlinedButton(onClick = { vDeleteTarget = null }) { Text("Cancel", color = c.text) }
+                            DangerButton("Delete", MaterialSymbols.Delete) { delete(vDel); vDeleteTarget = null }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+// ==================
+// MARK: Sidebar request row (burger menu: rename / duplicate / delete)
+// ==================
+
+@Composable
+private fun RequestRow(
+    inRs: ReqState,
+    inSelected: Boolean,
+    inOnOpen: () -> Unit,
+    inOnRename: () -> Unit,
+    inOnDuplicate: () -> Unit,
+    inOnDelete: () -> Unit,
+) {
+    val c = LocalAppColors.current
+    val vReq = inRs.req
+    val vAnchor = rememberMenuAnchor()
+    var vMenu by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+            .background(if (inSelected) c.accent.copy(alpha = 0.22f) else Color.Transparent, RoundedCornerShape(6.dp))
+            .clickable { inOnOpen() }
+            .padding(start = 8.dp, top = 3.dp, bottom = 3.dp, end = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MethodTag(vReq.method)
+        Text(vReq.name, color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+        Box {
+            IconBtn(MaterialSymbols.MoreVert, "Options", inModifier = Modifier.menuAnchor(vAnchor), inSize = 18.dp) { vMenu = true }
+            DropdownMenu(expanded = vMenu, onDismissRequest = { vMenu = false }, anchor = vAnchor, minWidth = 168.dp) {
+                DropdownMenuItem(onClick = { vMenu = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename") }
+                DropdownMenuItem(onClick = { vMenu = false; inOnDuplicate() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }
+                DropdownMenuItem(onClick = { vMenu = false; inOnDelete() }) { MenuRow(MaterialSymbols.Delete, "Delete", methodColor(ReqMethod.DELETE)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuRow(inIcon: Int, inLabel: String, inColor: Color? = null) {
+    val c = LocalAppColors.current
+    val vCol = inColor ?: c.text
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        MaterialSymbolsOutlined(inIcon, tint = vCol, size = 16.dp)
+        Text(inLabel, color = vCol, fontSize = 13.sp)
+    }
+}
+
+// ==================
+// MARK: Request tab strip (open requests; drag a tab to reorder)
+// ==================
+
+/* The strip of open requests above the editor. Each tab carries both a click
+   handler (select) and an onDrag handler (reorder): a plain click selects, while
+   dragging past a neighbour's centre swaps order. Per-tab window-x/width are
+   tracked so the drag can hit-test neighbours; key(tab) keeps each tab's
+   LayoutNode stable across reorders so the captured drag node stays valid. */
+@Composable
+private fun RequestTabStrip(
+    inTabs: List<ReqState>,
+    inActive: ReqState?,
+    inOnSelect: (ReqState) -> Unit,
+    inOnClose: (ReqState) -> Unit,
+    inOnReorder: (Int, Int) -> Unit,
+) {
+    val c = LocalAppColors.current
+    val vLeft = remember { mutableStateMapOf<ReqState, Int>() }   // window-x of each tab's left edge
+    val vWidth = remember { mutableStateMapOf<ReqState, Int>() }  // measured tab width
+    var vDragging by remember { mutableStateOf<ReqState?>(null) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().background(c.panel)
+            .horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 5.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        inTabs.forEach { vRs ->
+            key(vRs) {
+                val vSel = vRs === inActive
+                val vReq = vRs.req
+                Row(
+                    modifier = Modifier
+                        .onGloballyPositioned { vLeft[vRs] = it.x }
+                        .onSizeChanged { vWidth[vRs] = it.width }
+                        .clip(RoundedCornerShape(7.dp))
+                        .background(if (vSel) c.accent.copy(alpha = 0.20f) else c.field, RoundedCornerShape(7.dp))
+                        .border(1.dp, if (vSel) c.accent else c.border, RoundedCornerShape(7.dp))
+                        .onDrag(
+                            onStart = { _, _ -> vDragging = vRs },
+                            onDrag = { vRelX, _ ->
+                                val vd = vDragging ?: return@onDrag
+                                val vCur = inTabs.indexOf(vd)
+                                if (vCur < 0) return@onDrag
+                                // onDrag's x is relative to the dragged node's current left,
+                                // so add that left back to recover the pointer's window-x.
+                                val vPointerX = (vLeft[vd] ?: 0) + vRelX
+                                if (vCur < inTabs.lastIndex) {
+                                    val vR = inTabs[vCur + 1]
+                                    val vCenter = (vLeft[vR] ?: 0) + (vWidth[vR] ?: 0) / 2
+                                    if (vPointerX > vCenter) { inOnReorder(vCur, vCur + 1); return@onDrag }
+                                }
+                                if (vCur > 0) {
+                                    val vL = inTabs[vCur - 1]
+                                    val vCenter = (vLeft[vL] ?: 0) + (vWidth[vL] ?: 0) / 2
+                                    if (vPointerX < vCenter) { inOnReorder(vCur, vCur - 1); return@onDrag }
+                                }
+                            },
+                            onEnd = { vDragging = null },
+                        )
+                        .clickable { inOnSelect(vRs) }
+                        .padding(start = 9.dp, top = 6.dp, bottom = 6.dp, end = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.size(7.dp).background(methodColor(vReq.method), RoundedCornerShape(4.dp)))
+                    Text(vReq.name, color = if (vSel) c.text else c.dim, fontSize = 13.sp)
+                    if (vRs.loading) Text("…", color = c.accent, fontSize = 13.sp)
+                    IconBtn(MaterialSymbols.Close, "Close", inSize = 13.dp) { inOnClose(vRs) }
                 }
             }
         }
@@ -446,25 +646,30 @@ private fun BodyEditor(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -
 // MARK: Response
 // ==================
 
-/* Response result as a bordered panel: status header, Body/Headers tabs, a
-   scrollable (selectable) content area, and a Copy / Save-as toolbar pinned to
-   the bottom. Fills its parent so it sits as the right-hand pane. */
+/* Response result as a bordered panel: status header (with a Cancel chip while
+   in-flight), Body/Headers tabs, a scrollable (selectable) content area, and a
+   Copy / Save-as toolbar pinned to the bottom. Reads its live state from the
+   active ReqState so each open tab shows its own response. */
 @Composable
-private fun ResponseView(inLoading: Boolean, inResp: ApiResponse?, inTab: Int, inSelectTab: (Int) -> Unit) {
+private fun ResponseView(inRs: ReqState, inOnCancel: () -> Unit) {
     val c = LocalAppColors.current
     var vMsg by remember { mutableStateOf<String?>(null) }
 
-    val vBody = if (inResp != null) prettyJsonOrRaw(inResp.body).take(20000) else ""
-    val vHeaders = if (inResp != null) inResp.headers.joinToString("\n") { (vK, vV) -> "$vK: $vV" }.ifEmpty { "(no headers)" } else ""
+    val vLoading = inRs.loading
+    val vResp = inRs.response
+    val vTab = inRs.respTab
+
+    val vBody = if (vResp != null) prettyJsonOrRaw(vResp.body).take(20000) else ""
+    val vHeaders = if (vResp != null) vResp.headers.joinToString("\n") { (vK, vV) -> "$vK: $vV" }.ifEmpty { "(no headers)" } else ""
     val vShown = when {
-        inResp == null -> ""
-        inResp.error != null -> inResp.error
-        inTab == 0 -> vBody
+        vResp == null -> ""
+        vResp.error != null -> vResp.error
+        vTab == 0 -> vBody
         else -> vHeaders
     }
 
     Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
-        // Header — label + status / time / size.
+        // Header — label + status / time / size (or a Cancel chip while loading).
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -473,12 +678,15 @@ private fun ResponseView(inLoading: Boolean, inResp: ApiResponse?, inTab: Int, i
             Text("RESPONSE", color = c.dim, fontSize = 11.sp)
             Spacer(Modifier.weight(1f))
             when {
-                inLoading -> Text("Sending…", color = c.dim, fontSize = 13.sp)
-                inResp?.error != null -> StatusPill(0, "FAILED")
-                inResp != null -> {
-                    StatusPill(inResp.status, "${inResp.status} ${inResp.statusText}")
-                    Text("${inResp.timeMs} ms", color = c.dim, fontSize = 12.sp)
-                    Text("${inResp.sizeBytes} B", color = c.dim, fontSize = 12.sp)
+                vLoading -> {
+                    Text("Sending…", color = c.dim, fontSize = 13.sp)
+                    IconLabelChip(MaterialSymbols.Stop, "Cancel") { inOnCancel() }
+                }
+                vResp?.error != null -> StatusPill(0, "FAILED")
+                vResp != null -> {
+                    StatusPill(vResp.status, "${vResp.status} ${vResp.statusText}")
+                    Text("${vResp.timeMs} ms", color = c.dim, fontSize = 12.sp)
+                    Text("${vResp.sizeBytes} B", color = c.dim, fontSize = 12.sp)
                 }
             }
         }
@@ -486,7 +694,7 @@ private fun ResponseView(inLoading: Boolean, inResp: ApiResponse?, inTab: Int, i
 
         // Tabs.
         Box(modifier = Modifier.padding(horizontal = 6.dp)) {
-            TabBar(listOf("Body", "Headers" + (inResp?.let { " (${it.headers.size})" } ?: "")), inTab, inOnSelect = inSelectTab)
+            TabBar(listOf("Body", "Headers" + (vResp?.let { " (${it.headers.size})" } ?: "")), vTab, inOnSelect = { inRs.respTab = it })
         }
         Divider(color = c.border)
 
@@ -498,12 +706,12 @@ private fun ResponseView(inLoading: Boolean, inResp: ApiResponse?, inTab: Int, i
                     .border(1.dp, c.border, RoundedCornerShape(8.dp))
                     .verticalScroll(rememberScrollState()).padding(12.dp),
             ) {
-                if (inResp == null && !inLoading) {
+                if (vResp == null && !vLoading) {
                     Text("Send a request to see the response.", color = c.dim, fontSize = 13.sp)
                 } else {
                     // Read-only BasicTextField → selectable + copyable (drag-select, Ctrl+C).
                     BasicTextField(
-                        value = if (inLoading) "…" else vShown.ifEmpty { "(empty)" },
+                        value = if (vLoading) "…" else vShown.ifEmpty { "(empty)" },
                         onValueChange = {},
                         readOnly = true,
                         color = c.text,
@@ -526,7 +734,7 @@ private fun ResponseView(inLoading: Boolean, inResp: ApiResponse?, inTab: Int, i
                 currentClipboard.setText(vShown); vMsg = "Copied."
             }
             IconLabelChip(MaterialSymbols.Save, "Save as…") {
-                showSaveFileDialog(if (inTab == 0) "response.json" else "headers.txt") { vPath ->
+                showSaveFileDialog(if (vTab == 0) "response.json" else "headers.txt") { vPath ->
                     if (vPath != null) vMsg = writeTextFile(vPath, vShown)?.let { "Save failed: $it" } ?: "Saved."
                 }
             }
@@ -646,7 +854,7 @@ private fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier:
     }
 }
 
-/* Small icon-only button (rename / delete / pack / options). */
+/* Small icon-only button (burger / pack / options / close). */
 @Composable
 private fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
@@ -662,7 +870,7 @@ private fun OutlinedAction(inIcon: Int, inLabel: String, inOnClick: () -> Unit) 
     OutlinedButton(onClick = inOnClick) { BtnContent(inIcon, inLabel, c.accent) }
 }
 
-/* Filled red icon+label button for destructive confirmations (delete). */
+/* Filled red icon+label button for destructive / stop actions (delete, cancel). */
 @Composable
 private fun DangerButton(inLabel: String, inIcon: Int, inOnClick: () -> Unit) {
     val vRed = methodColor(ReqMethod.DELETE)
@@ -672,7 +880,7 @@ private fun DangerButton(inLabel: String, inIcon: Int, inOnClick: () -> Unit) {
     ) { BtnContent(inIcon, inLabel, Color.White) }
 }
 
-/* Bordered icon+label chip (Copy / Save as). */
+/* Bordered icon+label chip (Copy / Save as / Cancel). */
 @Composable
 private fun IconLabelChip(inIcon: Int, inLabel: String, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
