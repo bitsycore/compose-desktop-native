@@ -76,7 +76,15 @@ Migration: `loadAppState` maps any old flat `packs: List<SavedPack>` → `roots`
 > - DONE: Env→Var / Global→Session UI rename.
 > - DONE: **P4** — Var/Header sub-tabs (session + pack settings).
 > - DONE: **P5** — header inheritance (session+pack) + Override in the request.
-> - NEXT: P6 (cert), P7 (linked pack), then P1/P2/P8 (tree).
+> - DONE: **P6** — client-cert inheritance + Override (Cert sub-tab + effectiveCert).
+> - DONE: **P7** — Linked Copy Pack (read-only mirror; own Var/Header/Cert).
+> - REMAINING: **P1/P2/P8 — the tree** (nested packs, loose requests, cross-pack
+>   drag). This is one atomic refactor of the core (~100 interconnected sites:
+>   vPacks→vRoots, PackState.requests→children, recursive sidebar + tab strip +
+>   recursive NodeData persistence + migration). No compilable sub-step — best
+>   landed as a dedicated focused push. When doing it: introduce
+>   `sealed interface TreeNode`, `PackState.children`, `vRoots`, migrate all refs,
+>   THEN add cross-pack drop + the `+`→New request/sub-pack entries.
 
 - [ ] **P1 — Tree model + persistence.** TreeNode/PackState.children/sub-packs;
       `vRoots` replaces `vPacks`; recursive serialized NodeData; migrate
