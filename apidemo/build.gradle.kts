@@ -117,6 +117,88 @@ val iconFontModules: List<Project> = run {
     vSet.toList()
 }
 
+// ==================
+// MARK: Material Symbols subsetting (-PsubsetIcons=true)
+// ==================
+// scripts/subset-material-symbols.py scans this module's Kotlin sources for
+// MaterialSymbols.<Name> references and writes build/icons/usage-codepoint.txt.
+// When -PsubsetIcons=true is passed, each icon-font module's downloaded TTF
+// is hb-subset'd against that file and the Zip below bundles the trimmed
+// font instead of the full one — typically 80-95% smaller.
+//
+// Needs: python3 + hb-subset on PATH (brew install harfbuzz /
+// apt install harfbuzz-utils).
+val subsetIcons = (findProperty("subsetIcons") as? String)?.toBoolean() ?: false
+val iconsBuildDir = layout.buildDirectory.dir("icons")
+
+val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") {
+    description = "Scan src/ for MaterialSymbols.<Name> usages → usage-codepoint.txt."
+    val vScript = rootProject.layout.projectDirectory.file("scripts/subset-material-symbols.py").asFile
+    val vConstants = rootProject.layout.projectDirectory.file(
+        "material-symbols/src/commonMain/kotlin/com/compose/desktop/native/icons/MaterialSymbols.kt").asFile
+    val vUsageFile = iconsBuildDir.get().file("usage-codepoint.txt").asFile
+    inputs.files(fileTree("src") { include("**/*.kt") })
+    inputs.file(vConstants)
+    outputs.file(vUsageFile)
+    commandLine(
+        "python3", vScript.absolutePath,
+        "--src", layout.projectDirectory.dir("src").asFile.absolutePath,
+        "--constants", vConstants.absolutePath,
+        "--out", vUsageFile.absolutePath,
+    )
+}
+
+/* Register `subsetMaterialSymbols<Style>` for a style module — hb-subsets
+   its downloaded TTF to only the codepoints in usage-codepoint.txt and
+   writes the output under this app's build/icons/ dir. */
+fun registerSubsetTask(inStyleProject: Project): TaskProvider<*> {
+    val vStyleName = inStyleProject.name.replaceFirstChar { it.uppercase() }
+    return tasks.register("subsetMaterialSymbols$vStyleName") {
+        description = "hb-subset the $vStyleName Material Symbols font to icons actually used."
+        @Suppress("UNCHECKED_CAST")
+        val vInputProvider = inStyleProject.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+        val vDownloadTask = inStyleProject.extra["iconFontDownloadTask"] as TaskProvider<*>
+        val vOut = iconsBuildDir.get().file("MaterialSymbols$vStyleName.subset.ttf").asFile
+        val vUsage = iconsBuildDir.get().file("usage-codepoint.txt").asFile
+        inputs.file(vInputProvider)
+        inputs.file(vUsage)
+        outputs.file(vOut)
+        dependsOn(findMaterialSymbolsUsage)
+        dependsOn(vDownloadTask)
+        doLast {
+            val vCodepoints = vUsage.readLines()
+                .filter { it.isNotBlank() && !it.startsWith("#") && it.contains("=") }
+                .map { it.substringAfter("=").trim().removePrefix("0x").removePrefix("0X") }
+            if (vCodepoints.isEmpty()) throw GradleException(
+                "usage-codepoint.txt has no entries — refusing to subset to an empty font.")
+            val vUnicodes = vCodepoints.joinToString(",") { "U+$it" }
+            vOut.parentFile.mkdirs()
+            val vBefore = vInputProvider.get().asFile.length()
+            // ProcessBuilder rather than project.exec — the latter isn't
+            // available inside doLast on Gradle 9 (only ExecOperations via
+            // an injected service is, which would mean a buildSrc plugin).
+            val vProc = ProcessBuilder(
+                "hb-subset",
+                vInputProvider.get().asFile.absolutePath,
+                "-o", vOut.absolutePath,
+                "--unicodes=$vUnicodes",
+            ).redirectErrorStream(true).start()
+            val vOutput = vProc.inputStream.bufferedReader().readText()
+            val vCode = vProc.waitFor()
+            if (vCode != 0) throw GradleException("hb-subset failed (exit $vCode):\n$vOutput")
+            val vAfter = vOut.length()
+            val vPct = if (vBefore == 0L) 0 else ((100 - 100 * vAfter / vBefore)).coerceAtLeast(0)
+            logger.lifecycle("[subset $vStyleName] ${vBefore / 1024}KB → ${vAfter / 1024}KB (-$vPct%) · ${vCodepoints.size} glyphs kept")
+        }
+    }
+}
+
+// Pre-create subset tasks per style module when enabled; the Zip below
+// uses them as the font source. Built outside the variant×target loop
+// so each style is subset once and reused across all bundle variants.
+val subsetTasksByModule: Map<Project, TaskProvider<*>> =
+    if (subsetIcons) iconFontModules.associateWith { registerSubsetTask(it) } else emptyMap()
+
 for (variant in variants) {
     for (target in nativeTargets) {
         val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -131,7 +213,20 @@ for (variant in variants) {
                 @Suppress("UNCHECKED_CAST")
                 val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
                 val vDownloadTask = vP.extra["iconFontDownloadTask"] as TaskProvider<*>
-                from(vFontFile) { into("font") }
+                val vSubsetTask = subsetTasksByModule[vP]
+                if (vSubsetTask != null) {
+                    // Trimmed font: depend on the subset task and bundle its output
+                    // with the original filename so the runtime IconFont registration
+                    // doesn't need to know the bundle was subset.
+                    val vOriginalName = vFontFile.get().asFile.name
+                    from(vSubsetTask.get().outputs.files) {
+                        into("font")
+                        rename { vOriginalName }
+                    }
+                    dependsOn(vSubsetTask)
+                } else {
+                    from(vFontFile) { into("font") }
+                }
                 dependsOn(vDownloadTask)
             }
         }
