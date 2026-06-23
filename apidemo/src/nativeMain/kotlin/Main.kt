@@ -140,6 +140,14 @@ private fun App() {
     var vQuitDialog by remember { mutableStateOf(false) }
     var vImgSeq by remember { mutableStateOf(0) }   // unique-key counter for response images
 
+    // Drag-to-reorder state for the request list (mirrors the open-tab strip).
+    var vDragRs by remember { mutableStateOf<ReqState?>(null) }   // row being dragged, or null
+    var vDragPressY by remember { mutableStateOf(0) }            // press point inside the row
+    var vDragDy by remember { mutableStateOf(0f) }               // visual follow offset
+    var vDragTarget by remember { mutableStateOf(-1) }           // drop slot among the other rows
+    val vRowTop = remember { mutableStateMapOf<ReqState, Int>() } // window-y of each row's top
+    val vRowH = remember { mutableStateMapOf<ReqState, Int>() }   // measured row height
+
     fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
 
@@ -282,6 +290,23 @@ private fun App() {
         }
         vWindow.setOnKeyShortcut { vKey ->
             if (vKey.type != KeyEventType.Down) return@setOnKeyShortcut false
+            // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
+            // open at a time, so run whichever action applies and clear them all.
+            if (vRenameTarget != null || vDeleteTarget != null || vQuitDialog) {
+                when (vKey.keyCode) {
+                    kScEscape -> {
+                        vRenameTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        return@setOnKeyShortcut true
+                    }
+                    kScEnter, kScKpEnter -> {
+                        vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
+                        vDeleteTarget?.let { deleteRequest(it) }
+                        if (vQuitDialog) savePack()
+                        vRenameTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        return@setOnKeyShortcut true
+                    }
+                }
+            }
             val vPrimary = vKey.modifiers.ctrl || vKey.modifiers.meta
             when {
                 vPrimary && vKey.keyCode == kScS -> { savePack(); true }
@@ -358,23 +383,70 @@ private fun App() {
                                     if (vP == null) {
                                         Text("No pack open — use the pack menu to open or create one.", color = c.dim, fontSize = 12.sp)
                                     } else {
+                                        val vReqs = vP.requests
+                                        // Drop indicator: before the row now sitting at the target
+                                        // slot (among the non-dragged rows), or at the very end.
+                                        val vDrag = vDragRs
+                                        val vShowBar = vDrag != null && vDragDy != 0f
+                                        val vOthers = if (vShowBar && vDrag != null) vReqs.filter { it !== vDrag } else emptyList()
+                                        val vBarBefore = if (vShowBar) vOthers.getOrNull(vDragTarget) else null
+                                        val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
                                         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                            vP.requests.forEach { vRs ->
+                                            vReqs.forEach { vRs ->
+                                                if (vRs === vBarBefore) RowDropBar()
                                                 key(vRs) {
-                                                    RequestRow(
-                                                        inRs = vRs,
-                                                        inSelected = vRs === vP.active,
-                                                        inOnOpen = { open(vRs) },
-                                                        inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
-                                                        inOnDuplicate = { duplicate(vRs) },
-                                                        inOnCopyCurl = {
-                                                            currentClipboard.setText(toCurl(resolveVars(vRs.req, effective(vP))))
-                                                            vReqMsg = "Copied cURL."
-                                                        },
-                                                        inOnDelete = { vDeleteTarget = vRs },
-                                                    )
+                                                    val vDragged = vRs === vDragRs
+                                                    var vMod = Modifier
+                                                        .onGloballyPositioned { vRowTop[vRs] = it.y }
+                                                        .onSizeChanged { vRowH[vRs] = it.height }
+                                                    // translate is draw-only (doesn't shift absoluteY), so
+                                                    // the follow offset below stays correct while dragging.
+                                                    if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(0f, vDragDy)
+                                                    Box(
+                                                        modifier = vMod.onDrag(
+                                                            onStart = { _, vRelY -> vDragRs = vRs; vDragPressY = vRelY; vDragDy = 0f; vDragTarget = vReqs.indexOf(vRs) },
+                                                            onDrag = { _, vRelY ->
+                                                                val vd = vDragRs ?: return@onDrag
+                                                                vDragDy = (vRelY - vDragPressY).toFloat()
+                                                                val vCursorY = (vRowTop[vd] ?: 0) + vRelY
+                                                                // Target slot = how many *other* rows the cursor passed the centre of.
+                                                                var vCount = 0
+                                                                vReqs.forEach { vT ->
+                                                                    if (vT !== vd) {
+                                                                        val vCenter = (vRowTop[vT] ?: 0) + (vRowH[vT] ?: 0) / 2
+                                                                        if (vCursorY > vCenter) vCount++
+                                                                    }
+                                                                }
+                                                                vDragTarget = vCount
+                                                            },
+                                                            onEnd = {
+                                                                val vd = vDragRs
+                                                                if (vd != null) {
+                                                                    val vFrom = vReqs.indexOf(vd)
+                                                                    if (vFrom >= 0 && vDragTarget >= 0 && vDragTarget != vFrom) {
+                                                                        vReqs.add(vDragTarget, vReqs.removeAt(vFrom)); vP.dirty = true
+                                                                    }
+                                                                }
+                                                                vDragRs = null; vDragDy = 0f; vDragTarget = -1
+                                                            },
+                                                        ),
+                                                    ) {
+                                                        RequestRow(
+                                                            inRs = vRs,
+                                                            inSelected = vRs === vP.active,
+                                                            inOnOpen = { open(vRs) },
+                                                            inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
+                                                            inOnDuplicate = { duplicate(vRs) },
+                                                            inOnCopyCurl = {
+                                                                currentClipboard.setText(toCurl(resolveVars(vRs.req, effective(vP))))
+                                                                vReqMsg = "Copied cURL."
+                                                            },
+                                                            inOnDelete = { vDeleteTarget = vRs },
+                                                        )
+                                                    }
                                                 }
                                             }
+                                            if (vBarAtEnd) RowDropBar()
                                         }
                                         OutlinedAction(MaterialSymbols.Add, "New request") { newRequest() }
                                     }
@@ -633,19 +705,36 @@ private fun RequestRow(
     val vReq = inRs.req
     val vAnchor = rememberMenuAnchor()
     var vMenu by remember { mutableStateOf(false) }
+    var vHover by remember { mutableStateOf(false) }
+    // Right-click opens the menu at the cursor; the ⋮ button anchors it to itself.
+    var vAtCursor by remember { mutableStateOf(false) }
+    var vMenuX by remember { mutableStateOf(0) }
+    var vMenuY by remember { mutableStateOf(0) }
     Row(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
             .background(if (inSelected) c.accent.copy(alpha = 0.22f) else Color.Transparent, RoundedCornerShape(6.dp))
+            .hoverable { vHover = it }
             .clickable { inOnOpen() }
+            .onSecondaryClick { x, y -> vMenuX = x; vMenuY = y; vAtCursor = true; vMenu = true }
             .padding(start = 8.dp, top = 1.dp, bottom = 1.dp, end = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MethodTag(vReq.method)
         Text(vReq.name, color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-        Box {
-            IconBtn(MaterialSymbols.MoreVert, "Options", inModifier = Modifier.menuAnchor(vAnchor), inSize = 16.dp, inPadding = 4.dp) { vMenu = true }
-            DropdownMenu(expanded = vMenu, onDismissRequest = { vMenu = false }, anchor = vAnchor, minWidth = 168.dp) {
+        // Overflow (vertical-dots) menu — always laid out so the row width
+        // never changes; only its opacity toggles on hover / while open. Delete
+        // lives inside this menu (no separate button on the row).
+        Box(modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f)) {
+            IconBtn(MaterialSymbols.MoreVert, "Options", inModifier = Modifier.menuAnchor(vAnchor), inSize = 16.dp, inPadding = 4.dp) { vAtCursor = false; vMenu = true }
+            DropdownMenu(
+                expanded = vMenu,
+                onDismissRequest = { vMenu = false },
+                anchor = if (vAtCursor) null else vAnchor,
+                offsetX = if (vAtCursor) vMenuX.dp else 0.dp,
+                offsetY = if (vAtCursor) vMenuY.dp else 0.dp,
+                minWidth = 168.dp,
+            ) {
                 DropdownMenuItem(onClick = { vMenu = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnDuplicate() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnCopyCurl() }) { MenuRow(MaterialSymbols.Terminal, "Copy as cURL") }
@@ -924,27 +1013,6 @@ private fun RequestBuilder(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header — status message + Preview toggle. The request name is
-        // already shown in the sidebar tab strip, no need to duplicate it.
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Spacer(Modifier.weight(1f))
-            inMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
-            val vPreviewOn = inRs.preview
-            Box(
-                modifier = Modifier.clip(RoundedCornerShape(6.dp))
-                    .background(if (vPreviewOn) c.accent.copy(alpha = 0.20f) else Color.Transparent, RoundedCornerShape(6.dp))
-                    .border(1.dp, if (vPreviewOn) c.accent else c.border, RoundedCornerShape(6.dp))
-                    .clickable { inRs.preview = !inRs.preview; if (inRs.preview) inRs.viewTab = 0 }
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
-            ) {
-                BtnContent(MaterialSymbols.Visibility, "Preview", if (vPreviewOn) c.accent else c.dim, 14.dp)
-            }
-        }
-
         if (inUnresolved.isNotEmpty()) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
@@ -956,12 +1024,35 @@ private fun RequestBuilder(
             }
         }
 
-        Box(modifier = Modifier.padding(horizontal = 12.dp)) {
+        // Tabs, with the status message and a Preview toggle (icon only) on the
+        // same line — the toggle no longer needs its own row.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 10.dp, top = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             TabBar(
                 listOf("Query (${inReq.params.size})", "Headers (${inReq.headers.size})", "Body"),
                 inRs.reqTab,
                 inDots = if (vBodySet) setOf(2) else emptySet(),
             ) { inRs.reqTab = it }
+            Spacer(Modifier.weight(1f))
+            inMsg?.let {
+                Text(it, color = c.dim, fontSize = 11.sp)
+                Spacer(Modifier.width(8.dp))
+            }
+            val vPreviewOn = inRs.preview
+            // Nudge up ~2dp so the icon's centre lines up with the tab text's
+            // optical centre (the tab labels' descenders pull their geometric
+            // centre down). offset is post-layout, so the row doesn't shift.
+            Box(
+                modifier = Modifier.offset(y = (-2).dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (vPreviewOn) c.accent.copy(alpha = 0.20f) else Color.Transparent, RoundedCornerShape(6.dp))
+                    .clickable { inRs.preview = !inRs.preview; if (inRs.preview) inRs.viewTab = 0 }
+                    .padding(6.dp),
+            ) {
+                MaterialSymbolsOutlined(MaterialSymbols.Visibility, contentDescription = "Preview", tint = if (vPreviewOn) c.accent else c.dim, size = 16.dp)
+            }
         }
         Divider(color = c.border)
 
@@ -1824,14 +1915,22 @@ private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Uni
 @Composable
 private fun MethodTag(inMethod: ReqMethod) {
     val vCol = methodColor(inMethod)
+    // No background — just the coloured method name, fixed width so the request
+    // names still line up in the sidebar list.
     Box(
-        modifier = Modifier.width(46.dp).clip(RoundedCornerShape(4.dp))
-            .background(vCol.copy(alpha = 0.18f), RoundedCornerShape(4.dp))
-            .padding(vertical = 2.dp),
+        modifier = Modifier.width(46.dp).padding(vertical = 2.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(inMethod.name, color = vCol, fontSize = 10.sp)
     }
+}
+
+/* Thin horizontal accent line showing where a dragged request row will drop
+   (the open-tab strip uses the vertical DropBar). */
+@Composable
+private fun RowDropBar() {
+    val c = LocalAppColors.current
+    Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(c.accent, RoundedCornerShape(1.dp)))
 }
 
 /* Tab indices listed in inDots get a small accent dot after their label — used
@@ -1958,6 +2057,7 @@ private const val kScN = 17
 private const val kScW = 26
 private const val kScEnter = 40
 private const val kScKpEnter = 88
+private const val kScEscape = 41
 
 private fun methodColor(inM: ReqMethod): Color = when (inM) {
     ReqMethod.GET -> Color(0xFF4C9AFF)
