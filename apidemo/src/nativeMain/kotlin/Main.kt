@@ -213,6 +213,12 @@ private fun App() {
         inReq.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
         return vOut.values.toList()
     }
+    // Client cert a request inherits: nearest scope that sets one (pack, else session).
+    fun inheritedCert(inP: PackState?): CertConfig? =
+        inP?.cert?.takeIf { it.isSet } ?: vSessionCert?.takeIf { it.isSet }
+    // The cert actually used: the request's own if set, else the inherited one.
+    fun effectiveCert(inReq: ApiRequest, inP: PackState?): CertConfig? =
+        if (inReq.hasClientCert) inReq.certConfig() else inheritedCert(inP)
 
     fun persist() {
         val vSaved = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) }
@@ -339,9 +345,10 @@ private fun App() {
         if (inRs.loading) return
         val vP = activePack() ?: return
         val vOriginal = inRs.req
-        // Fold inherited (session + pack) headers in before resolving vars.
-        val vWithHeaders = vOriginal.copy(headers = effectiveHeaders(vOriginal, vP))
-        val vSend = resolveVars(vWithHeaders, effective(vP))
+        // Fold inherited (session + pack) headers and cert in before resolving vars.
+        var vBase = vOriginal.copy(headers = effectiveHeaders(vOriginal, vP))
+        if (!vOriginal.hasClientCert) effectiveCert(vOriginal, vP)?.let { vBase = vBase.withCert(it) }
+        val vSend = resolveVars(vBase, effective(vP))
         inRs.loading = true; inRs.response = null; vReqMsg = null
         inRs.sentReq = vSend                      // snapshot what we actually send
         inRs.preview = false; inRs.viewTab = 1    // sending → show the Response tab
@@ -368,7 +375,9 @@ private fun App() {
     fun inspectChain(inRs: ReqState) {
         if (inRs.chainLoading) return
         val vP = activePack() ?: return
-        val vSend = resolveVars(inRs.req, effective(vP))
+        var vBase = inRs.req
+        if (!vBase.hasClientCert) effectiveCert(vBase, vP)?.let { vBase = vBase.withCert(it) }
+        val vSend = resolveVars(vBase, effective(vP))
         inRs.chainLoading = true; inRs.chainUrl = vSend.url
         vScope.launch(Dispatchers.Main) {
             try {
@@ -661,13 +670,21 @@ private fun App() {
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                         TogglePill("Var", vSettingsTab == 0) { vSettingsTab = 0 }
                                         TogglePill("Header", vSettingsTab == 1) { vSettingsTab = 1 }
+                                        TogglePill("Cert", vSettingsTab == 2) { vSettingsTab = 2 }
                                     }
-                                    if (vSettingsTab == 0) {
-                                        Text("Shared across every pack; override a pack's own vars. Used as {{name}}.", color = c.dim, fontSize = 11.sp)
-                                        KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
-                                    } else {
-                                        Text("Sent with every request in the session. Packs and requests can override by key.", color = c.dim, fontSize = 11.sp)
-                                        KeyValEditor(vSessionHeaders) { vNew -> vSessionHeaders.clear(); vSessionHeaders.addAll(vNew); persist() }
+                                    when (vSettingsTab) {
+                                        0 -> {
+                                            Text("Shared across every pack; override a pack's own vars. Used as {{name}}.", color = c.dim, fontSize = 11.sp)
+                                            KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
+                                        }
+                                        1 -> {
+                                            Text("Sent with every request in the session. Packs and requests can override by key.", color = c.dim, fontSize = 11.sp)
+                                            KeyValEditor(vSessionHeaders) { vNew -> vSessionHeaders.clear(); vSessionHeaders.addAll(vNew); persist() }
+                                        }
+                                        else -> {
+                                            Text("Fallback client cert for every request in the session, unless a pack or request sets its own.", color = c.dim, fontSize = 11.sp)
+                                            CertConfigEditor(vSessionCert ?: CertConfig(), "Session client certificate") { vCc -> vSessionCert = vCc.takeIf { it.isSet }; persist() }
+                                        }
                                     }
                                 }
                             }
@@ -723,13 +740,21 @@ private fun App() {
                                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                             TogglePill("Var", vSettingsTab == 0) { vSettingsTab = 0 }
                                             TogglePill("Header", vSettingsTab == 1) { vSettingsTab = 1 }
+                                            TogglePill("Cert", vSettingsTab == 2) { vSettingsTab = 2 }
                                         }
-                                        if (vSettingsTab == 0) {
-                                            Text("Used by every request in this pack as {{name}}. Session Var overrides these.", color = c.dim, fontSize = 12.sp)
-                                            KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true; persist() }
-                                        } else {
-                                            Text("Sent with every request in this pack. A request can override a header by the same key.", color = c.dim, fontSize = 12.sp)
-                                            KeyValEditor(vP.headers) { vNew -> vP.headers.clear(); vP.headers.addAll(vNew); vP.dirty = true; persist() }
+                                        when (vSettingsTab) {
+                                            0 -> {
+                                                Text("Used by every request in this pack as {{name}}. Session Var overrides these.", color = c.dim, fontSize = 12.sp)
+                                                KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true; persist() }
+                                            }
+                                            1 -> {
+                                                Text("Sent with every request in this pack. A request can override a header by the same key.", color = c.dim, fontSize = 12.sp)
+                                                KeyValEditor(vP.headers) { vNew -> vP.headers.clear(); vP.headers.addAll(vNew); vP.dirty = true; persist() }
+                                            }
+                                            else -> {
+                                                Text("Used by every request in this pack unless the request sets its own. Overrides the session cert.", color = c.dim, fontSize = 12.sp)
+                                                CertConfigEditor(vP.cert ?: CertConfig(), "Pack client certificate") { vCc -> vP.cert = vCc.takeIf { it.isSet }; vP.dirty = true; persist() }
+                                            }
                                         }
                                     }
                                 }
@@ -762,6 +787,7 @@ private fun App() {
                                                     inUnresolved = unresolvedVars(vReq, effective(vP)),
                                                     inMsg = vReqMsg,
                                                     inInheritedHeaders = inheritedHeaders(vP),
+                                                    inInheritedCert = inheritedCert(vP),
                                                     inEdit = { t -> edit(t) },
                                                 )
                                             },
@@ -1811,6 +1837,7 @@ private fun RequestBuilder(
     inUnresolved: List<String>,
     inMsg: String?,
     inInheritedHeaders: List<KeyVal>,
+    inInheritedCert: CertConfig?,
     inEdit: ((ApiRequest) -> ApiRequest) -> Unit,
 ) {
     val c = LocalAppColors.current
@@ -1870,7 +1897,7 @@ private fun RequestBuilder(
                 0 -> KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
                 1 -> HeadersTab(inReq, inInheritedHeaders, inEdit)
                 2 -> BodyContent(inReq, inRs) { v -> inEdit(v) }
-                else -> CertEditor(inReq) { v -> inEdit(v) }
+                else -> RequestCertTab(inReq, inInheritedCert, inEdit)
             }
         }
 
@@ -1938,11 +1965,11 @@ private fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> 
    they're imported into the certificate store for the request then removed
    (see CurlMtls). PKCS#12 bundles its own private key. */
 @Composable
-private fun CertEditor(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
+private fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client certificate (mTLS)", inOnChange: (CertConfig) -> Unit) {
     val c = LocalAppColors.current
-    val vHasCert = inReq.certPath.isNotBlank()
+    val vHasCert = inCert.certPath.isNotBlank()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Client certificate (mTLS)", color = c.text, fontSize = 14.sp)
+        Text(inHeading, color = c.text, fontSize = 14.sp)
         Text(
             "Presents your certificate to the server. PKCS#12 (.p12/.pfx) bundles its private key; PEM/DER take a separate key file unless the certificate file already contains it.",
             color = c.dim, fontSize = 11.sp,
@@ -1953,36 +1980,62 @@ private fun CertEditor(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -
         Text("Certificate", color = c.dim, fontSize = 12.sp)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedAction(MaterialSymbols.InsertDriveFile, "Choose certificate…") {
-                showOpenFileDialog { vPath -> if (vPath != null) inEdit { it.copy(certPath = vPath) } }
+                showOpenFileDialog { vPath -> if (vPath != null) inOnChange(inCert.copy(certPath = vPath)) }
             }
-            CertFormatMenu(inReq.certFormat) { vF -> inEdit { it.copy(certFormat = vF) } }
+            CertFormatMenu(inCert.certFormat) { vF -> inOnChange(inCert.copy(certFormat = vF)) }
             if (vHasCert) IconBtn(MaterialSymbols.Close, "Clear certificate") {
-                inEdit { it.copy(certPath = "", keyPath = "", certPassword = "", certFormat = CertFormat.PEM, keyFormat = CertFormat.PEM) }
+                inOnChange(CertConfig())
             }
         }
-        Text(if (vHasCert) inReq.certPath else "No certificate selected.", color = if (vHasCert) c.text else c.dim, fontSize = 12.sp)
+        Text(if (vHasCert) inCert.certPath else "No certificate selected.", color = if (vHasCert) c.text else c.dim, fontSize = 12.sp)
 
         // ============
         //  Private key (PKCS#12 carries its own key)
-        if (inReq.certFormat != CertFormat.PKCS12) {
+        if (inCert.certFormat != CertFormat.PKCS12) {
             Text("Private key", color = c.dim, fontSize = 12.sp)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedAction(MaterialSymbols.InsertDriveFile, "Choose key…") {
-                    showOpenFileDialog { vPath -> if (vPath != null) inEdit { it.copy(keyPath = vPath) } }
+                    showOpenFileDialog { vPath -> if (vPath != null) inOnChange(inCert.copy(keyPath = vPath)) }
                 }
-                CertFormatMenu(inReq.keyFormat) { vF -> inEdit { it.copy(keyFormat = vF) } }
-                if (inReq.keyPath.isNotBlank()) IconBtn(MaterialSymbols.Close, "Clear key") { inEdit { it.copy(keyPath = "", keyFormat = CertFormat.PEM) } }
+                CertFormatMenu(inCert.keyFormat) { vF -> inOnChange(inCert.copy(keyFormat = vF)) }
+                if (inCert.keyPath.isNotBlank()) IconBtn(MaterialSymbols.Close, "Clear key") { inOnChange(inCert.copy(keyPath = "", keyFormat = CertFormat.PEM)) }
             }
             Text(
-                if (inReq.keyPath.isNotBlank()) inReq.keyPath else "Optional — only if the key is in a separate file.",
-                color = if (inReq.keyPath.isNotBlank()) c.text else c.dim, fontSize = 12.sp,
+                if (inCert.keyPath.isNotBlank()) inCert.keyPath else "Optional — only if the key is in a separate file.",
+                color = if (inCert.keyPath.isNotBlank()) c.text else c.dim, fontSize = 12.sp,
             )
         }
 
         // ============
         //  Passphrase
         Text("Passphrase", color = c.dim, fontSize = 12.sp)
-        ThinField(inReq.certPassword, { v -> inEdit { it.copy(certPassword = v) } }, inPlaceholder = "Key / PKCS#12 password (optional)")
+        ThinField(inCert.certPassword, { v -> inOnChange(inCert.copy(certPassword = v)) }, inPlaceholder = "Key / PKCS#12 password (optional)")
+    }
+}
+
+/* The request's Cert tab: an inherited cert (from pack / session) shown read-only
+   with an Override action when the request has none, then the request's own cert
+   editor (its own cert overrides the inherited one). */
+@Composable
+private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: CertConfig?, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+    val c = LocalAppColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (!inReq.hasClientCert && inInheritedCert != null && inInheritedCert.isSet) {
+            Column(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Inherited client cert", color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    Box(
+                        modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
+                            .clickable { inEdit { it.withCert(inInheritedCert) } }.padding(horizontal = 8.dp, vertical = 3.dp),
+                    ) { Text("Override", color = c.accent, fontSize = 11.sp) }
+                }
+                Text(inInheritedCert.certPath, color = c.text, fontSize = 12.sp)
+            }
+        }
+        CertConfigEditor(inReq.certConfig()) { vCc -> inEdit { it.withCert(vCc) } }
     }
 }
 

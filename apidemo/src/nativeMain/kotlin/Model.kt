@@ -125,6 +125,18 @@ data class ApiRequest(
 val ApiRequest.hasClientCert: Boolean
     get() = certPath.isNotBlank()
 
+/* This request's cert fields as a CertConfig (certPath may be blank = none). */
+fun ApiRequest.certConfig(): CertConfig = CertConfig(certPath, certFormat, keyPath, keyFormat, certPassword)
+
+/* This request with its cert fields replaced by inCert's. */
+fun ApiRequest.withCert(inCert: CertConfig): ApiRequest =
+    copy(certPath = inCert.certPath, certFormat = inCert.certFormat,
+        keyPath = inCert.keyPath, keyFormat = inCert.keyFormat, certPassword = inCert.certPassword)
+
+/* True when this config actually selects a certificate. */
+val CertConfig.isSet: Boolean
+    get() = certPath.isNotBlank()
+
 /* Certificate / private-key encodings, mapped to libcurl's CURLOPT_SSLCERTTYPE
    / CURLOPT_SSLKEYTYPE string values and to `curl --cert-type` / `--key-type`.
    Runtime support depends on the TLS backend: OpenSSL (macOS/Linux) handles all
