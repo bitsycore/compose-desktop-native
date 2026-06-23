@@ -28,6 +28,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core"))
+            // Material widgets reference MaterialSymbols codepoints in
+            // their public defaults (e.g. Icon's default icon param).
+            api(project(":material-symbols"))
         }
     }
 

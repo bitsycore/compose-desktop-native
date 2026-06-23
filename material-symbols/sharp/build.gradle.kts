@@ -29,6 +29,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":core"))
             api(project(":material"))
+            api(project(":material-symbols"))
         }
     }
 }

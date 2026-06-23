@@ -45,6 +45,9 @@ kotlin {
             // The MaterialSymbols* objects emit Icon(...) and read
             // IconDefaults/MaterialIconAxisDefaults from :material.
             api(project(":material"))
+            // Codepoint constants — depending on any style module
+            // transparently pulls them in.
+            api(project(":material-symbols"))
         }
     }
 }
