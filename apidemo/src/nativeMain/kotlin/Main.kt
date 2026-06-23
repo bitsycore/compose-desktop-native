@@ -1604,8 +1604,9 @@ private fun CertCard(inIndex: Int, inCert: ChainCert) {
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
+        val vTitle = vSubject?.let { cnOf(it) } ?: if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex"
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex", color = c.accent, fontSize = 12.sp, modifier = Modifier.weight(1f))
+            Text(vTitle, color = c.accent, fontSize = 12.sp, modifier = Modifier.weight(1f))
             if (!inCert.fromServer) Text(if (vPem != null) "from OS store" else "not presented", color = c.dim, fontSize = 10.sp)
             if (vPem != null) CopyButton(vPem)
         }
@@ -1675,6 +1676,17 @@ private fun CertLine(inLabel: String, inValue: String) {
 /* Look up a CURLINFO_CERTINFO field by name (case-insensitive). */
 private fun certField(inFields: List<Pair<String, String>>, inName: String): String? =
     inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
+
+/* The CN= value out of a distinguished-name string (copes with ", " RDN and "/"
+   OpenSSL separators), e.g. "ISRG Root X1". Null when there's no CN. */
+private fun cnOf(inDn: String): String? {
+    val vStart = inDn.indexOf("CN=", ignoreCase = true)
+    if (vStart < 0) return null
+    var vRest = inDn.substring(vStart + 3).trimStart()
+    val vEnd = vRest.indexOfFirst { it == ',' || it == '/' }
+    if (vEnd >= 0) vRest = vRest.substring(0, vEnd)
+    return vRest.trim().ifBlank { null }
+}
 
 /* The host portion of a URL (for the chain dialog header). */
 private fun hostOf(inUrl: String): String =
