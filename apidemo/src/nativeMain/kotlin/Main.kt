@@ -1252,6 +1252,10 @@ private fun OptionsMenu(
             DropdownMenuItem(onClick = { if (inDark) inOnToggleTheme(); vOpen = false }) {
                 Text("Light mode", color = if (!inDark) c.accent else c.text, fontSize = 13.sp)
             }
+            Divider(color = c.border)
+            DropdownMenuItem(onClick = { vOpen = false; openSettingsFolder() }) {
+                MenuRow(MaterialSymbols.Folder, "Open settings folder")
+            }
         }
     }
 }

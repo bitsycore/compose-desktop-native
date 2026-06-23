@@ -1,6 +1,7 @@
 package apidemo
 
 import com.compose.desktop.native.appDataDir
+import com.compose.desktop.native.revealInFileManager
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okio.FileSystem
@@ -87,4 +88,12 @@ fun saveAppState(inState: AppState) {
     } catch (e: Throwable) {
         // ignore — nothing the user can act on, and packs can still be exported
     }
+}
+
+/* Open the per-user app-data folder where the state file lives in the OS file
+   manager. Revealing the state file opens its containing folder, which SDL has
+   already created even when nothing's been saved yet. */
+fun openSettingsFolder(): Boolean {
+    val vPath = stateFilePath() ?: return false
+    return revealInFileManager(vPath)
 }
