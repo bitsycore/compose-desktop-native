@@ -989,11 +989,11 @@ private fun SessionMenu(
             DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open session…") }
             if (inRecent.isNotEmpty()) {
                 Divider(color = c.border)
-                // Indented to the menu's label column (16 item-pad + 16 icon + 8 gap)
-                // so it lines up with the item labels above and the names below.
-                // Padding goes on a wrapping Box — a leaf Text's own start padding
-                // isn't applied to its draw position by this layout engine.
-                Box(modifier = Modifier.fillMaxWidth().padding(start = 40.dp, top = 6.dp, bottom = 2.dp)) {
+                // Aligned to the icon column (the DropdownMenuItem's 16dp pad), so
+                // it lines up with the recent items' file icon. Padding goes on a
+                // wrapping Box — a leaf Text's own start padding isn't applied to its
+                // draw position by this layout engine.
+                Box(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 6.dp, bottom = 2.dp)) {
                     Text("Recent", color = c.dim, fontSize = 11.sp)
                 }
                 inRecent.forEach { vPath ->
