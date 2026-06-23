@@ -198,6 +198,21 @@ private fun App() {
     fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
     fun selectPack(inP: PackState) { vActivePack = vPacks.indexOf(inP).coerceAtLeast(0); vReqMsg = null }
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
+    // Headers a request inherits from its scopes: session headers, then the pack's
+    // (pack overrides session by key). The request's own headers override these.
+    fun inheritedHeaders(inP: PackState?): List<KeyVal> {
+        val vOut = LinkedHashMap<String, KeyVal>()
+        vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
+        inP?.headers?.filter { it.key.isNotBlank() }?.forEach { vOut[it.key.lowercase()] = it }
+        return vOut.values.toList()
+    }
+    // The headers actually sent: inherited, then the request's own override by key.
+    fun effectiveHeaders(inReq: ApiRequest, inP: PackState?): List<KeyVal> {
+        val vOut = LinkedHashMap<String, KeyVal>()
+        inheritedHeaders(inP).forEach { vOut[it.key.lowercase()] = it }
+        inReq.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
+        return vOut.values.toList()
+    }
 
     fun persist() {
         val vSaved = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) }
@@ -324,7 +339,9 @@ private fun App() {
         if (inRs.loading) return
         val vP = activePack() ?: return
         val vOriginal = inRs.req
-        val vSend = resolveVars(vOriginal, effective(vP))
+        // Fold inherited (session + pack) headers in before resolving vars.
+        val vWithHeaders = vOriginal.copy(headers = effectiveHeaders(vOriginal, vP))
+        val vSend = resolveVars(vWithHeaders, effective(vP))
         inRs.loading = true; inRs.response = null; vReqMsg = null
         inRs.sentReq = vSend                      // snapshot what we actually send
         inRs.preview = false; inRs.viewTab = 1    // sending → show the Response tab
@@ -597,7 +614,7 @@ private fun App() {
                                                     inOnRenameRequest = { vRs -> selectPack(vPack); vRenameTarget = vRs; vRenameText = vRs.req.name },
                                                     inOnDuplicateRequest = { vRs -> selectPack(vPack); duplicate(vRs) },
                                                     inOnCopyCurl = { vRs ->
-                                                        currentClipboard.setText(toCurl(resolveVars(vRs.req, effective(vPack))))
+                                                        currentClipboard.setText(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vPack)), effective(vPack))))
                                                         vReqMsg = "Copied cURL."
                                                     },
                                                     inOnDeleteRequest = { vRs -> selectPack(vPack); vDeleteTarget = vRs },
@@ -744,13 +761,14 @@ private fun App() {
                                                     inRs = vReqActive,
                                                     inUnresolved = unresolvedVars(vReq, effective(vP)),
                                                     inMsg = vReqMsg,
+                                                    inInheritedHeaders = inheritedHeaders(vP),
                                                     inEdit = { t -> edit(t) },
                                                 )
                                             },
                                             second = {
                                                 ViewerPanel(
                                                     inRs = vReqActive,
-                                                    inResolved = resolveVars(vReq, effective(vP)),
+                                                    inResolved = resolveVars(vReq.copy(headers = effectiveHeaders(vReq, vP)), effective(vP)),
                                                 )
                                             },
                                         )
@@ -1792,6 +1810,7 @@ private fun RequestBuilder(
     inRs: ReqState,
     inUnresolved: List<String>,
     inMsg: String?,
+    inInheritedHeaders: List<KeyVal>,
     inEdit: ((ApiRequest) -> ApiRequest) -> Unit,
 ) {
     val c = LocalAppColors.current
@@ -1849,7 +1868,7 @@ private fun RequestBuilder(
         Box(modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(16.dp)) {
             when (inRs.reqTab) {
                 0 -> KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
-                1 -> KeyValEditor(inReq.headers) { v -> inEdit { it.copy(headers = v) } }
+                1 -> HeadersTab(inReq, inInheritedHeaders, inEdit)
                 2 -> BodyContent(inReq, inRs) { v -> inEdit(v) }
                 else -> CertEditor(inReq) { v -> inEdit(v) }
             }
@@ -2734,6 +2753,44 @@ private fun StatusPill(inStatus: Int, inLabel: String) {
     val vC = statusColor(inStatus)
     Box(modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(vC.copy(alpha = 0.20f), RoundedCornerShape(6.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
         Text(inLabel, color = vC, fontSize = 14.sp)
+    }
+}
+
+// ==================
+// MARK: Headers tab (inherited read-only + own editable)
+// ==================
+
+/* The request Headers tab: inherited session/pack headers shown read-only with
+   an Override action (copies the header into the request's own, editable list,
+   where a same-key value wins on send), then the request's own header editor. */
+@Composable
+private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+    val c = LocalAppColors.current
+    val vShown = inInherited.filter { it.key.isNotBlank() }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (vShown.isNotEmpty()) {
+            Text("Inherited — session / pack", color = c.dim, fontSize = 11.sp)
+            val vOwnKeys = inReq.headers.map { it.key.lowercase() }.toSet()
+            vShown.forEach { vH ->
+                val vOverridden = vH.key.lowercase() in vOwnKeys
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(vH.key, color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(0.4f))
+                    Text(vH.value, color = c.dim.copy(alpha = if (vOverridden) 0.45f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.6f))
+                    if (vOverridden) {
+                        Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
+                    } else {
+                        Box(
+                            modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
+                                .clickable { inEdit { it.copy(headers = it.headers + KeyVal(vH.key, vH.value)) } }
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                        ) { Text("Override", color = c.accent, fontSize = 11.sp) }
+                    }
+                }
+            }
+            Divider(color = c.border)
+            Text("Request headers", color = c.dim, fontSize = 11.sp)
+        }
+        KeyValEditor(inReq.headers) { v -> inEdit { it.copy(headers = v) } }
     }
 }
 
