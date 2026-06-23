@@ -108,9 +108,15 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     }
     var active by mutableStateOf(requests.getOrNull(inActive)?.takeIf { it in openTabs } ?: openTabs.firstOrNull())
     var expanded by mutableStateOf(true)   // sidebar fold state (transient — not part of the pack file)
+    var envOpen by mutableStateOf(false)   // whether this pack's env tab is open in the strip (transient)
 
     fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList(), color)
 }
+
+/* One entry in the unified tab strip: a request tab, or a pack's env tab when
+   req == null. The underlying ReqState / PackState is the stable identity. */
+private class StripTab(val pack: PackState, val req: ReqState?)
+private val StripTab.tabKey: Any get() = req ?: pack
 
 // ==================
 // MARK: App
@@ -161,7 +167,6 @@ private fun App() {
     val vRecent = remember { mutableStateListOf<String>().apply { addAll(vInitial.recentSessions) } }
 
     var vSideTab by remember { mutableStateOf(0) }      // 0 Requests, 1 History, 2 Env
-    var vEnvScope by remember { mutableStateOf(0) }     // 0 Pack env, 1 Global env
     var vReqMsg by remember { mutableStateOf<String?>(null) }
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
@@ -171,6 +176,7 @@ private fun App() {
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
     var vImgSeq by remember { mutableStateOf(0) }   // unique-key counter for response images
     var vSwitchAction by remember { mutableStateOf<(() -> Unit)?>(null) }  // pending session switch awaiting confirm
+    var vEnvActive by remember { mutableStateOf(false) }  // active tab is the active pack's env tab (vs a request)
 
     fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
     fun selectPack(inP: PackState) { vActivePack = vPacks.indexOf(inP).coerceAtLeast(0); vReqMsg = null }
@@ -211,36 +217,58 @@ private fun App() {
             if (vNext >= 0) { vActivePack = vNext; vPacks[vNext].active = vPacks[vNext].openTabs.firstOrNull() }
         }
     }
+    // The unified tab strip, flattened across packs: each pack contributes its
+    // env tab (if open) followed by its request tabs.
+    fun stripTabs(): List<StripTab> = vPacks.flatMap { vQ ->
+        buildList { if (vQ.envOpen) add(StripTab(vQ, null)); vQ.openTabs.forEach { add(StripTab(vQ, it)) } }
+    }
     fun open(inRs: ReqState) {
         val vP = packOf(inRs) ?: return
         if (inRs !in vP.openTabs) vP.openTabs.add(inRs)
-        vActivePack = vPacks.indexOf(vP); vP.active = inRs; vReqMsg = null
+        vActivePack = vPacks.indexOf(vP); vP.active = inRs; vEnvActive = false; vReqMsg = null
+    }
+    fun openEnv(inP: PackState) {
+        vActivePack = vPacks.indexOf(inP).coerceAtLeast(0)
+        inP.envOpen = true; vEnvActive = true; vReqMsg = null
     }
     fun closeTab(inRs: ReqState) {
         val vP = packOf(inRs) ?: return
         val vIdx = vP.openTabs.indexOf(inRs)
         vP.openTabs.remove(inRs)
         if (vP.active === inRs) vP.active = vP.openTabs.getOrNull(vIdx) ?: vP.openTabs.lastOrNull()
-        ensureFocusHasTabs()
+        if (!vEnvActive) ensureFocusHasTabs()
     }
-    fun closeOtherTabs(inRs: ReqState) {
-        val vKeep = packOf(inRs) ?: return
-        vPacks.forEach { vQ -> vQ.openTabs.removeAll { it !== inRs }; vQ.active = vQ.openTabs.firstOrNull() }
-        vActivePack = vPacks.indexOf(vKeep); vKeep.active = inRs
+    fun closeEnv(inP: PackState) {
+        inP.envOpen = false
+        if (vEnvActive && activePack() === inP) vEnvActive = false   // fall back to the active request
+    }
+    // Close every tab except inTab (a request or a pack-env tab).
+    fun closeOthers(inTab: StripTab) {
+        vPacks.forEach { vQ ->
+            vQ.openTabs.removeAll { it !== inTab.req }
+            vQ.active = vQ.openTabs.firstOrNull()
+            if (vQ !== inTab.pack || inTab.req != null) vQ.envOpen = false
+        }
+        vActivePack = vPacks.indexOf(inTab.pack)
+        if (inTab.req != null) { inTab.pack.active = inTab.req; vEnvActive = false }
+        else { inTab.pack.envOpen = true; vEnvActive = true }
     }
     fun closeAllTabs() {
-        vPacks.forEach { it.openTabs.clear(); it.active = null }
+        vPacks.forEach { it.openTabs.clear(); it.active = null; it.envOpen = false }
+        vEnvActive = false
     }
-    // inFrom / inTo index into the unified (flattened) tab list; the reorder is
-    // clamped to the dragged tab's own pack so a tab can't jump packs.
+    // inFrom / inTo index into the unified strip; only request tabs reorder, and
+    // the move is clamped to the dragged tab's own pack so it can't jump packs.
     fun reorderTabs(inFrom: Int, inTo: Int) {
-        val vFlat = vPacks.flatMap { it.openTabs }
-        val vRs = vFlat.getOrNull(inFrom) ?: return
-        val vP = packOf(vRs) ?: return
+        val vFlat = stripTabs()
+        val vTab = vFlat.getOrNull(inFrom) ?: return
+        val vRs = vTab.req ?: return
+        val vP = vTab.pack
         var vStart = 0
-        for (vQ in vPacks) { if (vQ === vP) break; vStart += vQ.openTabs.size }
+        for (vQ in vPacks) { if (vQ === vP) break; vStart += (if (vQ.envOpen) 1 else 0) + vQ.openTabs.size }
+        val vReqStart = vStart + (if (vP.envOpen) 1 else 0)
         val vLocalFrom = vP.openTabs.indexOf(vRs)
-        val vLocalTo = (inTo - vStart).coerceIn(0, (vP.openTabs.size - 1).coerceAtLeast(0))
+        val vLocalTo = (inTo - vReqStart).coerceIn(0, (vP.openTabs.size - 1).coerceAtLeast(0))
         if (vLocalFrom >= 0 && vLocalFrom != vLocalTo) vP.openTabs.add(vLocalTo, vP.openTabs.removeAt(vLocalFrom))
     }
     fun edit(inT: (ApiRequest) -> ApiRequest) {
@@ -438,10 +466,14 @@ private fun App() {
             when {
                 vPrimary && vKey.keyCode == kScS -> { saveSession(); true }
                 vPrimary && (vKey.keyCode == kScEnter || vKey.keyCode == kScKpEnter) -> {
-                    activePack()?.active?.let { send(it) }; true
+                    if (!vEnvActive) activePack()?.active?.let { send(it) }; true
                 }
                 vPrimary && vKey.keyCode == kScN -> { newRequest(); true }
-                vPrimary && vKey.keyCode == kScW -> { activePack()?.active?.let { closeTab(it) }; true }
+                vPrimary && vKey.keyCode == kScW -> {
+                    val vP = activePack()
+                    if (vEnvActive && vP != null) closeEnv(vP) else vP?.active?.let { closeTab(it) }
+                    true
+                }
                 else -> false
             }
         }
@@ -520,8 +552,9 @@ private fun App() {
                                             key(vPack) {
                                                 PackSection(
                                                     inPack = vPack,
-                                                    inIsActive = vPack === vP,
-                                                    inOnSelect = { selectPack(vPack); vPack.expanded = true },
+                                                    inHeaderActive = vEnvActive && vPack === vP,
+                                                    inActiveReq = if (!vEnvActive && vPack === vP) vPack.active else null,
+                                                    inOnSelect = { openEnv(vPack) },
                                                     inOnToggle = { vPack.expanded = !vPack.expanded },
                                                     inOnOpenRequest = { vRs -> selectPack(vPack); open(vRs) },
                                                     inOnNewRequest = { selectPack(vPack); newRequest() },
@@ -570,20 +603,10 @@ private fun App() {
                                 else -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                                         MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
-                                        Text("Variables", color = c.text, fontSize = 13.sp)
+                                        Text("Global variables", color = c.text, fontSize = 13.sp)
                                     }
-                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        TogglePill("Pack", vEnvScope == 0) { vEnvScope = 0 }
-                                        TogglePill("Global", vEnvScope == 1) { vEnvScope = 1 }
-                                    }
-                                    if (vEnvScope == 0) {
-                                        Text("Pack variables — {{name}} in this pack.", color = c.dim, fontSize = 11.sp)
-                                        if (vP == null) Text("No pack open.", color = c.dim, fontSize = 12.sp)
-                                        else KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true }
-                                    } else {
-                                        Text("Global variables override pack variables in every pack.", color = c.dim, fontSize = 11.sp)
-                                        KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
-                                    }
+                                    Text("Shared across every pack, and override a pack's own variables. Edit a pack's variables from its tab (click the pack).", color = c.dim, fontSize = 11.sp)
+                                    KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
                                 }
                             }
                         }
@@ -591,8 +614,10 @@ private fun App() {
                 },
                 second = {
                     // ============
-                    //  Main — tab strip over a resizable request | response split
-                    val vAct = vP?.active
+                    //  Main — unified tab strip over the editor (request) or pack env.
+                    val vTabs = stripTabs()
+                    val vReqActive = vP?.active
+                    val vEnvShown = vEnvActive && vP != null && vP.envOpen
                     if (vP == null) {
                         Column(modifier = Modifier.fillMaxSize().background(c.bg), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(Modifier.weight(1f))
@@ -604,61 +629,80 @@ private fun App() {
                             }
                             Spacer(Modifier.weight(1f))
                         }
-                    } else if (vAct == null) {
+                    } else if (vTabs.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize().background(c.bg), contentAlignment = Alignment.Center) {
-                            Text("No request open — pick one from the sidebar.", color = c.dim)
+                            Text("Nothing open — click a request, or a pack to edit its variables.", color = c.dim)
                         }
                     } else {
-                        val vReq = vAct.req
                         Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
-                            // Panel 1 — open-request tabs, unified across all packs.
+                            // Panel 1 — unified tab strip (request + pack-env tabs).
                             RequestTabStrip(
-                                inTabs = vPacks.flatMap { it.openTabs },
-                                inActive = vAct,
-                                inOnSelect = { open(it) },
-                                inOnClose = { closeTab(it) },
-                                inOnCloseOthers = { closeOtherTabs(it) },
+                                inTabs = vTabs,
+                                inActiveKey = if (vEnvShown) vP else vReqActive,
+                                inOnSelect = { vT -> if (vT.req != null) open(vT.req) else openEnv(vT.pack) },
+                                inOnClose = { vT -> if (vT.req != null) closeTab(vT.req) else closeEnv(vT.pack) },
+                                inOnCloseOthers = { vT -> closeOthers(vT) },
                                 inOnCloseAll = { closeAllTabs() },
                                 inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
                             )
                             Divider(color = c.border)
 
-                            // Panel 2 — unified method · url · send.
-                            UrlBar(
-                                inReq = vReq,
-                                inLoading = vAct.loading,
-                                inOnMethod = { m -> edit { it.copy(method = m) } },
-                                inOnUrl = { v -> edit { it.copy(url = v) } },
-                                inOnSend = { send(vAct) },
-                                inOnCancel = { cancel(vAct) },
-                            )
-                            Divider(color = c.border)
-
-                            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                                HorizontalSplitPane(
-                                    initialFirstSize = 460.dp,
-                                    minFirstSize = 320.dp,
-                                    minSecondSize = 320.dp,
-                                    dividerColor = c.border,
-                                    dividerHoverColor = c.accent,
-                                    first = {
-                                        // Panel 3 — request building.
-                                        RequestBuilder(
-                                            inReq = vReq,
-                                            inRs = vAct,
-                                            inUnresolved = unresolvedVars(vReq, effective(vP)),
-                                            inMsg = vReqMsg,
-                                            inEdit = { t -> edit(t) },
+                            when {
+                                vEnvShown && vP != null -> {
+                                    // Pack env editor (the pack's own variables).
+                                    Column(
+                                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            ColorDot(vP.color)
+                                            Text(vP.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
+                                            Text("pack variables", color = c.dim, fontSize = 12.sp)
+                                        }
+                                        Text("Used by every request in this pack as {{name}}. The global env overrides these.", color = c.dim, fontSize = 12.sp)
+                                        KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true; persist() }
+                                    }
+                                }
+                                vReqActive != null && vP != null -> {
+                                    val vReq = vReqActive.req
+                                    // Panel 2 — unified method · url · send.
+                                    UrlBar(
+                                        inReq = vReq,
+                                        inLoading = vReqActive.loading,
+                                        inOnMethod = { m -> edit { it.copy(method = m) } },
+                                        inOnUrl = { v -> edit { it.copy(url = v) } },
+                                        inOnSend = { send(vReqActive) },
+                                        inOnCancel = { cancel(vReqActive) },
+                                    )
+                                    Divider(color = c.border)
+                                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                                        HorizontalSplitPane(
+                                            initialFirstSize = 460.dp,
+                                            minFirstSize = 320.dp,
+                                            minSecondSize = 320.dp,
+                                            dividerColor = c.border,
+                                            dividerHoverColor = c.accent,
+                                            first = {
+                                                RequestBuilder(
+                                                    inReq = vReq,
+                                                    inRs = vReqActive,
+                                                    inUnresolved = unresolvedVars(vReq, effective(vP)),
+                                                    inMsg = vReqMsg,
+                                                    inEdit = { t -> edit(t) },
+                                                )
+                                            },
+                                            second = {
+                                                ViewerPanel(
+                                                    inRs = vReqActive,
+                                                    inResolved = resolveVars(vReq, effective(vP)),
+                                                )
+                                            },
                                         )
-                                    },
-                                    second = {
-                                        // Panel 4 — Request / Response viewer.
-                                        ViewerPanel(
-                                            inRs = vAct,
-                                            inResolved = resolveVars(vReq, effective(vP)),
-                                        )
-                                    },
-                                )
+                                    }
+                                }
+                                else -> Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    Text("Pick a tab above.", color = c.dim)
+                                }
                             }
                         }
                     }
@@ -949,7 +993,8 @@ private fun SessionMenu(
 @Composable
 private fun PackSection(
     inPack: PackState,
-    inIsActive: Boolean,
+    inHeaderActive: Boolean,        // this pack's env tab is the active tab
+    inActiveReq: ReqState?,         // the globally-active request (for row highlight)
     inOnSelect: () -> Unit,
     inOnToggle: () -> Unit,
     inOnOpenRequest: (ReqState) -> Unit,
@@ -986,7 +1031,7 @@ private fun PackSection(
         //  Pack header
         Row(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                .background(if (inIsActive) c.accent.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(6.dp))
+                .background(if (inHeaderActive) c.accent.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(6.dp))
                 .hoverable { vHover = it }
                 .onSecondaryClick { x, y -> vMenuX = x; vMenuY = y; vAtCursor = true; vMenu = true }
                 .padding(end = 2.dp),
@@ -1084,7 +1129,7 @@ private fun PackSection(
                         ) {
                             RequestRow(
                                 inRs = vRs,
-                                inSelected = inIsActive && vRs === inPack.active,
+                                inSelected = vRs === inActiveReq,
                                 inOnOpen = { inOnOpenRequest(vRs) },
                                 inOnRename = { inOnRenameRequest(vRs) },
                                 inOnDuplicate = { inOnDuplicateRequest(vRs) },
@@ -1180,40 +1225,35 @@ private fun MenuRow(inIcon: Int, inLabel: String, inColor: Color? = null) {
    tab's LayoutNode stable so the captured drag node stays valid. */
 @Composable
 private fun RequestTabStrip(
-    inTabs: List<ReqState>,
-    inActive: ReqState?,
-    inOnSelect: (ReqState) -> Unit,
-    inOnClose: (ReqState) -> Unit,
-    inOnCloseOthers: (ReqState) -> Unit,
+    inTabs: List<StripTab>,
+    inActiveKey: Any?,
+    inOnSelect: (StripTab) -> Unit,
+    inOnClose: (StripTab) -> Unit,
+    inOnCloseOthers: (StripTab) -> Unit,
     inOnCloseAll: () -> Unit,
     inOnReorder: (Int, Int) -> Unit,
 ) {
     val c = LocalAppColors.current
-    val vScroll = rememberScrollState()                          // strip's horizontal scroll
-    val vLeft = remember { mutableStateMapOf<ReqState, Int>() }   // window-x of each tab's left edge
-    val vWidth = remember { mutableStateMapOf<ReqState, Int>() }  // measured tab width
-    var vDragging by remember { mutableStateOf<ReqState?>(null) }
-    var vPressRelX by remember { mutableStateOf(0) }              // press point inside the tab
-    var vDragDx by remember { mutableStateOf(0f) }               // visual follow offset
-    var vDragTarget by remember { mutableStateOf(-1) }           // slot to drop into
+    val vScroll = rememberScrollState()                     // strip's horizontal scroll
+    val vLeft = remember { mutableStateMapOf<Any, Int>() }   // window-x of each tab's left edge, by tab key
+    val vWidth = remember { mutableStateMapOf<Any, Int>() }  // measured tab width, by tab key
+    var vDragKey by remember { mutableStateOf<Any?>(null) }
+    var vPressRelX by remember { mutableStateOf(0) }
+    var vDragDx by remember { mutableStateOf(0f) }
+    var vDragTarget by remember { mutableStateOf(-1) }
 
-    // One shared context menu for the strip, opened at the cursor over the
-    // right-clicked tab (kept out of the per-tab box so drag z-order is intact).
+    // One shared context menu, opened at the cursor over the right-clicked tab.
     var vMenu by remember { mutableStateOf(false) }
-    var vMenuRs by remember { mutableStateOf<ReqState?>(null) }
+    var vMenuTab by remember { mutableStateOf<StripTab?>(null) }
     var vMenuX by remember { mutableStateOf(0) }
     var vMenuY by remember { mutableStateOf(0) }
 
-    // Overflow list of all open tabs, shown when the strip can't fit them.
-    var vListOpen by remember { mutableStateOf(false) }
+    var vListOpen by remember { mutableStateOf(false) }   // overflow list
     val vListAnchor = rememberMenuAnchor()
 
-    // Where the drop indicator goes: before the tab now sitting at the target
-    // slot (among the non-dragged tabs), or at the very end.
-    val vDrag = vDragging
-    val vShowBar = vDrag != null && vDragDx != 0f
-    val vOthers = if (vShowBar && vDrag != null) inTabs.filter { it !== vDrag } else emptyList()
-    val vBarBefore = if (vShowBar) vOthers.getOrNull(vDragTarget) else null
+    val vShowBar = vDragKey != null && vDragDx != 0f
+    val vOthers = if (vShowBar) inTabs.filter { it.tabKey !== vDragKey } else emptyList()
+    val vBarBeforeKey = if (vShowBar) vOthers.getOrNull(vDragTarget)?.tabKey else null
     val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
 
     Row(
@@ -1226,16 +1266,16 @@ private fun RequestTabStrip(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        inTabs.forEach { vRs ->
-            if (vRs === vBarBefore) DropBar()
-            key(vRs) {
-                val vSel = vRs === inActive
-                val vReq = vRs.req
-                val vDragged = vRs === vDragging
+        inTabs.forEach { vTab ->
+            val vKey = vTab.tabKey
+            if (vKey === vBarBeforeKey) DropBar()
+            key(vKey) {
+                val vSel = vKey === inActiveKey
+                val vDragged = vKey === vDragKey
 
                 var vMod = Modifier
-                    .onGloballyPositioned { vLeft[vRs] = it.x }
-                    .onSizeChanged { vWidth[vRs] = it.width }
+                    .onGloballyPositioned { vLeft[vKey] = it.x }
+                    .onSizeChanged { vWidth[vKey] = it.width }
                 if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(vDragDx, 0f)
                 vMod = vMod
                     .clip(RoundedCornerShape(7.dp))
@@ -1243,34 +1283,33 @@ private fun RequestTabStrip(
                     .border(1.dp, if (vSel || vDragged) c.accent else c.border, RoundedCornerShape(7.dp))
                     .onDrag(
                         onStart = { vRelX, _ ->
-                            vDragging = vRs; vPressRelX = vRelX; vDragDx = 0f; vDragTarget = inTabs.indexOf(vRs)
+                            vDragKey = vKey; vPressRelX = vRelX; vDragDx = 0f; vDragTarget = inTabs.indexOfFirst { it.tabKey === vKey }
                         },
                         onDrag = { vRelX, _ ->
-                            val vd = vDragging ?: return@onDrag
+                            val vd = vDragKey ?: return@onDrag
                             vDragDx = (vRelX - vPressRelX).toFloat()
                             val vCursorX = (vLeft[vd] ?: 0) + vRelX
-                            // Drop slot = how many *other* tabs the cursor has passed the centre of.
                             var vCount = 0
                             inTabs.forEach { vT ->
-                                if (vT !== vd) {
-                                    val vCenter = (vLeft[vT] ?: 0) + (vWidth[vT] ?: 0) / 2
+                                if (vT.tabKey !== vd) {
+                                    val vCenter = (vLeft[vT.tabKey] ?: 0) + (vWidth[vT.tabKey] ?: 0) / 2
                                     if (vCursorX > vCenter) vCount++
                                 }
                             }
                             vDragTarget = vCount
                         },
                         onEnd = {
-                            val vd = vDragging
+                            val vd = vDragKey
                             if (vd != null) {
-                                val vFrom = inTabs.indexOf(vd)
+                                val vFrom = inTabs.indexOfFirst { it.tabKey === vd }
                                 if (vFrom >= 0 && vDragTarget >= 0 && vDragTarget != vFrom) inOnReorder(vFrom, vDragTarget)
                             }
-                            vDragging = null; vDragDx = 0f; vDragTarget = -1
+                            vDragKey = null; vDragDx = 0f; vDragTarget = -1
                         },
                     )
-                    .onMiddleClick { inOnClose(vRs) }
-                    .onSecondaryClick { x, y -> vMenuRs = vRs; vMenuX = x; vMenuY = y; vMenu = true }
-                    .clickable { inOnSelect(vRs) }
+                    .onMiddleClick { inOnClose(vTab) }
+                    .onSecondaryClick { x, y -> vMenuTab = vTab; vMenuX = x; vMenuY = y; vMenu = true }
+                    .clickable { inOnSelect(vTab) }
                     .padding(start = 9.dp, top = 6.dp, bottom = 6.dp, end = 3.dp)
 
                 Row(
@@ -1278,18 +1317,25 @@ private fun RequestTabStrip(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(modifier = Modifier.size(7.dp).background(methodColor(vReq.method), RoundedCornerShape(4.dp)))
-                    Text(vReq.name, color = if (vSel) c.text else c.dim, fontSize = 13.sp)
-                    if (vRs.loading) CircularProgressIndicator(modifier = Modifier.size(12.dp), color = c.accent, strokeWidth = 1.5.dp)
-                    IconBtn(MaterialSymbols.Close, "Close", inSize = 13.dp) { inOnClose(vRs) }
+                    val vRs = vTab.req
+                    if (vRs == null) {
+                        // Pack env tab.
+                        MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = if (vSel) c.accent else c.dim, size = 13.dp)
+                        Text(vTab.pack.name, color = if (vSel) c.text else c.dim, fontSize = 13.sp)
+                    } else {
+                        Box(modifier = Modifier.size(7.dp).background(methodColor(vRs.req.method), RoundedCornerShape(4.dp)))
+                        Text(vRs.req.name, color = if (vSel) c.text else c.dim, fontSize = 13.sp)
+                        if (vRs.loading) CircularProgressIndicator(modifier = Modifier.size(12.dp), color = c.accent, strokeWidth = 1.5.dp)
+                    }
+                    IconBtn(MaterialSymbols.Close, "Close", inSize = 13.dp) { inOnClose(vTab) }
                 }
             }
         }
         if (vBarAtEnd) DropBar()
 
         // Shared right-click menu, opened at the cursor over the clicked tab.
-        val vMRs = vMenuRs
-        if (vMenu && vMRs != null) {
+        val vMTab = vMenuTab
+        if (vMenu && vMTab != null) {
             DropdownMenu(
                 expanded = true,
                 onDismissRequest = { vMenu = false },
@@ -1298,8 +1344,8 @@ private fun RequestTabStrip(
                 offsetY = vMenuY.dp,
                 minWidth = 188.dp,
             ) {
-                DropdownMenuItem(onClick = { vMenu = false; inOnClose(vMRs) }) { MenuRow(MaterialSymbols.Close, "Close tab") }
-                DropdownMenuItem(onClick = { vMenu = false; inOnCloseOthers(vMRs) }) { MenuRow(MaterialSymbols.Clear, "Close other tabs") }
+                DropdownMenuItem(onClick = { vMenu = false; inOnClose(vMTab) }) { MenuRow(MaterialSymbols.Close, "Close tab") }
+                DropdownMenuItem(onClick = { vMenu = false; inOnCloseOthers(vMTab) }) { MenuRow(MaterialSymbols.Clear, "Close other tabs") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnCloseAll() }) { MenuRow(MaterialSymbols.Clear, "Close all tabs") }
             }
         }
@@ -1311,12 +1357,19 @@ private fun RequestTabStrip(
                 IconBtn(MaterialSymbols.ExpandMore, "All tabs", inModifier = Modifier.menuAnchor(vListAnchor)) { vListOpen = true }
                 DropdownMenu(expanded = vListOpen, onDismissRequest = { vListOpen = false }, anchor = vListAnchor, minWidth = 240.dp) {
                     Column(modifier = Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
-                        inTabs.forEach { vT ->
-                            DropdownMenuItem(onClick = { vListOpen = false; inOnSelect(vT) }) {
+                        inTabs.forEach { vTab ->
+                            DropdownMenuItem(onClick = { vListOpen = false; inOnSelect(vTab) }) {
                                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Box(modifier = Modifier.size(7.dp).background(methodColor(vT.req.method), RoundedCornerShape(4.dp)))
-                                    Text(vT.req.name, color = if (vT === inActive) c.accent else c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                                    if (vT.loading) CircularProgressIndicator(modifier = Modifier.size(12.dp), color = c.accent, strokeWidth = 1.5.dp)
+                                    val vSel = vTab.tabKey === inActiveKey
+                                    val vRs = vTab.req
+                                    if (vRs == null) {
+                                        MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = if (vSel) c.accent else c.dim, size = 13.dp)
+                                        Text("${vTab.pack.name} · env", color = if (vSel) c.accent else c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                                    } else {
+                                        Box(modifier = Modifier.size(7.dp).background(methodColor(vRs.req.method), RoundedCornerShape(4.dp)))
+                                        Text(vRs.req.name, color = if (vSel) c.accent else c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                                        if (vRs.loading) CircularProgressIndicator(modifier = Modifier.size(12.dp), color = c.accent, strokeWidth = 1.5.dp)
+                                    }
                                 }
                             }
                         }
