@@ -421,13 +421,14 @@ private fun App() {
                                     inOnOpenRecent = { openSession(it) },
                                     inModifier = Modifier.weight(1f),
                                 )
-                                AddPackMenu(inOnNew = { newPack() }, inOnImport = { openPackFile() })
+                                AddPackMenu(
+                                    inOnNew = { newPack() },
+                                    inOnImport = { openPackFile() },
+                                    inOnLoadDefault = { loadDefaultPack() },
+                                )
                                 OptionsMenu(
                                     inDark = vDark,
                                     inOnToggleTheme = { vDark = !vDark; persist() },
-                                    inOnSaveAs = { saveAsPack() },
-                                    inOnRemovePack = { activePack()?.let { vRemovePackTarget = it } },
-                                    inOnLoadDefault = { loadDefaultPack() },
                                 )
                             }
                             TabBar(listOf("Packs", "History", "Env (${vP?.variables?.size ?: 0})"), vSideTab) { vSideTab = it }
@@ -747,7 +748,8 @@ private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 /* The header '+' — a small menu to add a pack to the open session, either blank
    or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
-private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit) {
+private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit, inOnLoadDefault: () -> Unit) {
+    val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
     Box {
@@ -755,6 +757,8 @@ private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit) {
         DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 200.dp) {
             DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
             DropdownMenuItem(onClick = { vOpen = false; inOnImport() }) { MenuRow(MaterialSymbols.Download, "Import pack…") }
+            Divider(color = c.border)
+            DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
         }
     }
 }
@@ -1165,9 +1169,6 @@ private fun DropBar() {
 private fun OptionsMenu(
     inDark: Boolean,
     inOnToggleTheme: () -> Unit,
-    inOnSaveAs: () -> Unit,
-    inOnRemovePack: () -> Unit,
-    inOnLoadDefault: () -> Unit,
 ) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
@@ -1181,11 +1182,6 @@ private fun OptionsMenu(
             DropdownMenuItem(onClick = { if (inDark) inOnToggleTheme(); vOpen = false }) {
                 Text("Light mode", color = if (!inDark) c.accent else c.text, fontSize = 13.sp)
             }
-            Divider(color = c.border)
-            DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Save, "Export pack as…") }
-            DropdownMenuItem(onClick = { vOpen = false; inOnRemovePack() }) { MenuRow(MaterialSymbols.Delete, "Remove pack", methodColor(ReqMethod.DELETE)) }
-            Divider(color = c.border)
-            DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
         }
     }
 }
