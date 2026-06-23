@@ -21,6 +21,30 @@ import kotlin.time.TimeSource
 // from HttpRunner.run(); cancellation is best-effort (an in-flight perform can't
 // be interrupted — the result is simply discarded if the caller cancelled).
 
+/* A client certificate readied for libcurl: the CURLOPT_SSLCERT value plus the
+   other SSL options to set, and a cleanup to run once the request is done.
+   macOS/Linux (OpenSSL) just point curl at the files. Windows (Schannel) imports
+   the cert + key into CurrentUser\MY, references it by SHA-1 thumbprint, and the
+   cleanup removes it again so the store never accumulates entries. */
+class PreparedCert(
+	val sslCert: String,            // CURLOPT_SSLCERT (file path, or "CurrentUser\\MY\\<thumbprint>")
+	val sslCertType: String?,       // CURLOPT_SSLCERTTYPE (null for a store reference)
+	val sslKey: String?,            // CURLOPT_SSLKEY (null when the cert carries its key)
+	val sslKeyType: String?,        // CURLOPT_SSLKEYTYPE
+	val keyPassword: String?,       // CURLOPT_KEYPASSWD
+	val cleanup: () -> Unit,
+)
+
+/* Ready the request's client certificate for libcurl (platform-specific).
+   Throws with a user-facing message if the cert/key can't be loaded. */
+expect fun prepareClientCert(inReq: ApiRequest): PreparedCert
+
+/* Remove any temporary client certs (and their key containers) a previous run
+   left behind in the Windows store after a crash — identified by our prefix, so
+   the user's own certificates are never touched. No-op off Windows. Call once
+   at startup. */
+expect fun sweepTempClientCerts()
+
 /* Per-transfer accumulators handed to the C callbacks through a StableRef. */
 private class CurlSink
 	{
@@ -54,8 +78,10 @@ private fun onCurlHeader(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: s
 fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
 	{
 	val vMark = TimeSource.Monotonic.markNow()
+	val vCert = try { prepareClientCert(inReq) }
+		catch (e: Throwable) { return errorResponse(e.message ?: "Client certificate error", vMark.elapsedNow().inWholeMilliseconds) }
 	val vCurl = curl_easy_init()
-		?: return errorResponse("Could not initialize libcurl", vMark.elapsedNow().inWholeMilliseconds)
+		?: run { vCert.cleanup(); return errorResponse("Could not initialize libcurl", vMark.elapsedNow().inWholeMilliseconds) }
 
 	val vSink = CurlSink()
 	val vSinkRef = StableRef.create(vSink)
@@ -99,15 +125,13 @@ fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
 		curl_easy_setopt(vCurl, CURLOPT_HEADERDATA, vSinkRef.asCPointer())
 
 		// ============
-		//  Client certificate
-		curl_easy_setopt(vCurl, CURLOPT_SSLCERT, inReq.certPath)
-		curl_easy_setopt(vCurl, CURLOPT_SSLCERTTYPE, inReq.certFormat.curlName)
-		if (inReq.keyPath.isNotBlank())
-			{
-			curl_easy_setopt(vCurl, CURLOPT_SSLKEY, inReq.keyPath)
-			curl_easy_setopt(vCurl, CURLOPT_SSLKEYTYPE, inReq.keyFormat.curlName)
-			}
-		if (inReq.certPassword.isNotEmpty()) curl_easy_setopt(vCurl, CURLOPT_KEYPASSWD, inReq.certPassword)
+		//  Client certificate (prepared per-platform: cert/key files on the
+		//  OpenSSL backends, a CurrentUser\MY thumbprint on Windows/Schannel).
+		curl_easy_setopt(vCurl, CURLOPT_SSLCERT, vCert.sslCert)
+		vCert.sslCertType?.let { curl_easy_setopt(vCurl, CURLOPT_SSLCERTTYPE, it) }
+		vCert.sslKey?.let { curl_easy_setopt(vCurl, CURLOPT_SSLKEY, it) }
+		vCert.sslKeyType?.let { curl_easy_setopt(vCurl, CURLOPT_SSLKEYTYPE, it) }
+		vCert.keyPassword?.let { curl_easy_setopt(vCurl, CURLOPT_KEYPASSWD, it) }
 
 		// ============
 		//  Perform
@@ -153,6 +177,7 @@ fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
 		vHeaders?.let { curl_slist_free_all(it) }
 		curl_easy_cleanup(vCurl)
 		vSinkRef.dispose()
+		vCert.cleanup()
 		}
 	}
 

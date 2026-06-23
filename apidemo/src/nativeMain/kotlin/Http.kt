@@ -25,6 +25,12 @@ class HttpRunner {
 
     private val fClient = HttpClient(Curl)
 
+    init {
+        // Clear any temporary client certs a prior crash left in the Windows
+        // store (no-op on other platforms).
+        sweepTempClientCerts()
+    }
+
     suspend fun run(inReq: ApiRequest): ApiResponse {
         // Client-certificate requests bypass Ktor (no engine exposes a cert API)
         // and go straight through libcurl — same bundled TLS stack.

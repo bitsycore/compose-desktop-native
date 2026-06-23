@@ -48,6 +48,9 @@ kotlin {
                 "-lm", "-lkernel32", "-luser32", "-lgdi32", "-lwinmm", "-limm32",
                 "-lole32", "-loleaut32", "-lversion", "-luuid", "-ladvapi32",
                 "-lsetupapi", "-lshell32", "-ldinput8",
+                // crypt32: client-cert (mTLS) import into the Windows cert store
+                // (CertOpenStore / PFXImportCertStore / CertAddCertificateContextToStore…).
+                "-lcrypt32",
                 // Code-shrink: drop unused sections and strip symbols.
                 "-Wl,--gc-sections", "-Wl,-s",
             )
