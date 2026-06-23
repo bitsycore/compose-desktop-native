@@ -174,30 +174,47 @@ private fun App() {
 
     // ============
     //  Request actions (operate on the active pack, read live)
+    // Tabs are shown unified across all packs, so these act on the pack that
+    // owns the request (not just the active one) and keep focus on a pack that
+    // still has open tabs.
+    fun packOf(inRs: ReqState): PackState? = vPacks.firstOrNull { vQ -> vQ.requests.any { it === inRs } }
+    fun ensureFocusHasTabs() {
+        if (activePack()?.active == null) {
+            val vNext = vPacks.indexOfFirst { it.openTabs.isNotEmpty() }
+            if (vNext >= 0) { vActivePack = vNext; vPacks[vNext].active = vPacks[vNext].openTabs.firstOrNull() }
+        }
+    }
     fun open(inRs: ReqState) {
-        val vP = activePack() ?: return
+        val vP = packOf(inRs) ?: return
         if (inRs !in vP.openTabs) vP.openTabs.add(inRs)
-        vP.active = inRs; vReqMsg = null
+        vActivePack = vPacks.indexOf(vP); vP.active = inRs; vReqMsg = null
     }
     fun closeTab(inRs: ReqState) {
-        val vP = activePack() ?: return
+        val vP = packOf(inRs) ?: return
         val vIdx = vP.openTabs.indexOf(inRs)
         vP.openTabs.remove(inRs)
         if (vP.active === inRs) vP.active = vP.openTabs.getOrNull(vIdx) ?: vP.openTabs.lastOrNull()
+        ensureFocusHasTabs()
     }
     fun closeOtherTabs(inRs: ReqState) {
-        val vP = activePack() ?: return
-        vP.openTabs.removeAll { it !== inRs }
-        vP.active = vP.openTabs.firstOrNull()
+        val vKeep = packOf(inRs) ?: return
+        vPacks.forEach { vQ -> vQ.openTabs.removeAll { it !== inRs }; vQ.active = vQ.openTabs.firstOrNull() }
+        vActivePack = vPacks.indexOf(vKeep); vKeep.active = inRs
     }
     fun closeAllTabs() {
-        val vP = activePack() ?: return
-        vP.openTabs.clear(); vP.active = null
+        vPacks.forEach { it.openTabs.clear(); it.active = null }
     }
+    // inFrom / inTo index into the unified (flattened) tab list; the reorder is
+    // clamped to the dragged tab's own pack so a tab can't jump packs.
     fun reorderTabs(inFrom: Int, inTo: Int) {
-        val vP = activePack() ?: return
-        if (inFrom == inTo || inFrom !in vP.openTabs.indices || inTo !in vP.openTabs.indices) return
-        vP.openTabs.add(inTo, vP.openTabs.removeAt(inFrom))
+        val vFlat = vPacks.flatMap { it.openTabs }
+        val vRs = vFlat.getOrNull(inFrom) ?: return
+        val vP = packOf(vRs) ?: return
+        var vStart = 0
+        for (vQ in vPacks) { if (vQ === vP) break; vStart += vQ.openTabs.size }
+        val vLocalFrom = vP.openTabs.indexOf(vRs)
+        val vLocalTo = (inTo - vStart).coerceIn(0, (vP.openTabs.size - 1).coerceAtLeast(0))
+        if (vLocalFrom >= 0 && vLocalFrom != vLocalTo) vP.openTabs.add(vLocalTo, vP.openTabs.removeAt(vLocalFrom))
     }
     fun edit(inT: (ApiRequest) -> ApiRequest) {
         val vP = activePack() ?: return
@@ -295,9 +312,6 @@ private fun App() {
         vPacks.removeAt(inIdx)
         vActivePack = vActivePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))
         vReqMsg = null; persist()
-    }
-    fun loadDefaultPack() {
-        vPacks.add(PackState(defaultPack(), null, false)); vActivePack = vPacks.size - 1; vReqMsg = null; persist()
     }
     fun duplicatePack(inP: PackState) {
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
@@ -456,7 +470,6 @@ private fun App() {
                                 AddPackMenu(
                                     inOnNew = { newPack() },
                                     inOnImport = { openPackFile() },
-                                    inOnLoadDefault = { loadDefaultPack() },
                                 )
                                 TabBar(listOf("Packs", "History", "Env (${vP?.variables?.size ?: 0})"), vSideTab) { vSideTab = it }
                             }
@@ -569,9 +582,9 @@ private fun App() {
                     } else {
                         val vReq = vAct.req
                         Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
-                            // Panel 1 — open-request tabs.
+                            // Panel 1 — open-request tabs, unified across all packs.
                             RequestTabStrip(
-                                inTabs = vP.openTabs,
+                                inTabs = vPacks.flatMap { it.openTabs },
                                 inActive = vAct,
                                 inOnSelect = { open(it) },
                                 inOnClose = { closeTab(it) },
@@ -796,7 +809,7 @@ private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 /* The header '+' — a small menu to add a pack to the open session, either blank
    or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
-private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit, inOnLoadDefault: () -> Unit) {
+private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
@@ -805,8 +818,6 @@ private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit, inOnLoadDef
         DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 200.dp) {
             DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
             DropdownMenuItem(onClick = { vOpen = false; inOnImport() }) { MenuRow(MaterialSymbols.Download, "Import pack…") }
-            Divider(color = c.border)
-            DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
         }
     }
 }
@@ -1149,6 +1160,7 @@ private fun RequestTabStrip(
     inOnReorder: (Int, Int) -> Unit,
 ) {
     val c = LocalAppColors.current
+    val vScroll = rememberScrollState()                          // strip's horizontal scroll
     val vLeft = remember { mutableStateMapOf<ReqState, Int>() }   // window-x of each tab's left edge
     val vWidth = remember { mutableStateMapOf<ReqState, Int>() }  // measured tab width
     var vDragging by remember { mutableStateOf<ReqState?>(null) }
@@ -1163,6 +1175,10 @@ private fun RequestTabStrip(
     var vMenuX by remember { mutableStateOf(0) }
     var vMenuY by remember { mutableStateOf(0) }
 
+    // Overflow list of all open tabs, shown when the strip can't fit them.
+    var vListOpen by remember { mutableStateOf(false) }
+    val vListAnchor = rememberMenuAnchor()
+
     // Where the drop indicator goes: before the tab now sitting at the target
     // slot (among the non-dragged tabs), or at the very end.
     val vDrag = vDragging
@@ -1172,8 +1188,12 @@ private fun RequestTabStrip(
     val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
 
     Row(
-        modifier = Modifier.fillMaxWidth().background(c.panel)
-            .horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 5.dp),
+        modifier = Modifier.fillMaxWidth().background(c.panel),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Row(
+        modifier = Modifier.weight(1f)
+            .horizontalScroll(vScroll).padding(horizontal = 6.dp, vertical = 5.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1252,6 +1272,27 @@ private fun RequestTabStrip(
                 DropdownMenuItem(onClick = { vMenu = false; inOnClose(vMRs) }) { MenuRow(MaterialSymbols.Close, "Close tab") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnCloseOthers(vMRs) }) { MenuRow(MaterialSymbols.Clear, "Close other tabs") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnCloseAll() }) { MenuRow(MaterialSymbols.Clear, "Close all tabs") }
+            }
+        }
+      }
+
+        // Overflow → chevron opens a scrollable list of every open tab.
+        if (vScroll.maxValue > 0) {
+            Box(modifier = Modifier.padding(end = 4.dp)) {
+                IconBtn(MaterialSymbols.ExpandMore, "All tabs", inModifier = Modifier.menuAnchor(vListAnchor)) { vListOpen = true }
+                DropdownMenu(expanded = vListOpen, onDismissRequest = { vListOpen = false }, anchor = vListAnchor, minWidth = 240.dp) {
+                    Column(modifier = Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                        inTabs.forEach { vT ->
+                            DropdownMenuItem(onClick = { vListOpen = false; inOnSelect(vT) }) {
+                                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Box(modifier = Modifier.size(7.dp).background(methodColor(vT.req.method), RoundedCornerShape(4.dp)))
+                                    Text(vT.req.name, color = if (vT === inActive) c.accent else c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                                    if (vT.loading) CircularProgressIndicator(modifier = Modifier.size(12.dp), color = c.accent, strokeWidth = 1.5.dp)
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
