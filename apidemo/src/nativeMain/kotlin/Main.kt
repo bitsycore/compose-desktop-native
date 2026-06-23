@@ -182,7 +182,8 @@ private fun App() {
     var vSessionPath by remember { mutableStateOf(vInitial.currentSession) }
     val vRecent = remember { mutableStateListOf<String>().apply { addAll(vInitial.recentSessions) } }
 
-    var vSideTab by remember { mutableStateOf(0) }      // 0 Requests, 1 History, 2 Env
+    var vSideTab by remember { mutableStateOf(0) }      // 0 Requests, 1 History, 2 Var
+    var vSettingsTab by remember { mutableStateOf(0) }  // session/pack settings sub-tab: 0 Var, 1 Header
     var vReqMsg by remember { mutableStateOf<String?>(null) }
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
@@ -638,10 +639,19 @@ private fun App() {
                                 else -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                                         MaterialSymbolsOutlined(MaterialSymbols.Tune, tint = c.accent, size = 16.dp)
-                                        Text("Session Var", color = c.text, fontSize = 13.sp)
+                                        Text(if (vSettingsTab == 0) "Session Var" else "Session Header", color = c.text, fontSize = 13.sp)
                                     }
-                                    Text("Shared across every pack; override a pack's own vars. Edit a pack's vars from its tab (click the pack).", color = c.dim, fontSize = 11.sp)
-                                    KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        TogglePill("Var", vSettingsTab == 0) { vSettingsTab = 0 }
+                                        TogglePill("Header", vSettingsTab == 1) { vSettingsTab = 1 }
+                                    }
+                                    if (vSettingsTab == 0) {
+                                        Text("Shared across every pack; override a pack's own vars. Used as {{name}}.", color = c.dim, fontSize = 11.sp)
+                                        KeyValEditor(vGlobalEnv) { vNew -> vGlobalEnv.clear(); vGlobalEnv.addAll(vNew); persist() }
+                                    } else {
+                                        Text("Sent with every request in the session. Packs and requests can override by key.", color = c.dim, fontSize = 11.sp)
+                                        KeyValEditor(vSessionHeaders) { vNew -> vSessionHeaders.clear(); vSessionHeaders.addAll(vNew); persist() }
+                                    }
                                 }
                             }
                         }
@@ -684,7 +694,7 @@ private fun App() {
 
                             when {
                                 vEnvShown && vP != null -> {
-                                    // Pack env editor (the pack's own variables).
+                                    // Pack settings — the pack's own variables / headers.
                                     Column(
                                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -692,10 +702,18 @@ private fun App() {
                                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             ColorDot(vP.color)
                                             Text(vP.name, color = c.text, fontSize = 19.sp, modifier = Modifier.weight(1f))
-                                            Text("Pack Var", color = c.dim, fontSize = 12.sp)
                                         }
-                                        Text("Used by every request in this pack as {{name}}. Session Var overrides these.", color = c.dim, fontSize = 12.sp)
-                                        KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true; persist() }
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            TogglePill("Var", vSettingsTab == 0) { vSettingsTab = 0 }
+                                            TogglePill("Header", vSettingsTab == 1) { vSettingsTab = 1 }
+                                        }
+                                        if (vSettingsTab == 0) {
+                                            Text("Used by every request in this pack as {{name}}. Session Var overrides these.", color = c.dim, fontSize = 12.sp)
+                                            KeyValEditor(vP.variables) { vNew -> vP.variables.clear(); vP.variables.addAll(vNew); vP.dirty = true; persist() }
+                                        } else {
+                                            Text("Sent with every request in this pack. A request can override a header by the same key.", color = c.dim, fontSize = 12.sp)
+                                            KeyValEditor(vP.headers) { vNew -> vP.headers.clear(); vP.headers.addAll(vNew); vP.dirty = true; persist() }
+                                        }
                                     }
                                 }
                                 vReqActive != null && vP != null -> {
