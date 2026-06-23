@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnDragModifier
 import androidx.compose.ui.OnPressedModifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputElement
 import androidx.compose.ui.node.LayoutNode
@@ -291,38 +292,45 @@ fun nativeComposeWindow(
                             }
                             PointerEventType.Press -> {
                                 val vHit = rootNode.hitTest(vPx, vPy)
-                                cancelPress()
-                                val vPressable = vHit?.findPressable()
-                                if (vPressable != null) {
-                                    activePressNode = vPressable.first
-                                    activePressCallback = vPressable.second.onChange
-                                    vPressable.second.onChange(true)
-                                }
-                                armedClickNode = vHit?.findClickableNode()
-                                // Update focus: click on a focusable focuses it;
-                                // click on nothing focusable clears focus.
-                                val vFocusable = vHit?.findFocusableNode()
-                                setFocus(vFocusable?.first, vFocusable?.second?.onFocusChanged)
-                                // Positional press dispatch (TextField cursor placement).
-                                // Walk from the hit-test target up, firing each OnPressedModifier
-                                // with coordinates relative to that node's absolute top-left.
-                                var pn: LayoutNode? = vHit
-                                while (pn != null) {
-                                    val node = pn
-                                    val relX = vPx - node.absoluteX
-                                    val relY = vPy - node.absoluteY
-                                    node.modifier.foldIn(Unit) { _, el ->
-                                        if (el is OnPressedModifier) el.handler(relX, relY)
+                                if (event.event.button == PointerButton.Secondary) {
+                                    // Right-click: fire only the context-menu handler (with
+                                    // the window-coord click position); don't arm the
+                                    // primary press / click / drag / focus.
+                                    vHit?.findSecondaryClickHandler()?.invoke(vPx, vPy)
+                                } else {
+                                    cancelPress()
+                                    val vPressable = vHit?.findPressable()
+                                    if (vPressable != null) {
+                                        activePressNode = vPressable.first
+                                        activePressCallback = vPressable.second.onChange
+                                        vPressable.second.onChange(true)
                                     }
-                                    pn = node.parent
-                                }
-                                // Begin drag capture if the press lands on a draggable.
-                                val vDraggable = vHit?.findDraggable()
-                                if (vDraggable != null) {
-                                    dragNode = vDraggable.first
-                                    dragModifier = vDraggable.second
-                                    val dn = vDraggable.first
-                                    vDraggable.second.onStart(vPx - dn.absoluteX, vPy - dn.absoluteY)
+                                    armedClickNode = vHit?.findClickableNode()
+                                    // Update focus: click on a focusable focuses it;
+                                    // click on nothing focusable clears focus.
+                                    val vFocusable = vHit?.findFocusableNode()
+                                    setFocus(vFocusable?.first, vFocusable?.second?.onFocusChanged)
+                                    // Positional press dispatch (TextField cursor placement).
+                                    // Walk from the hit-test target up, firing each
+                                    // OnPressedModifier with node-relative coordinates.
+                                    var pn: LayoutNode? = vHit
+                                    while (pn != null) {
+                                        val node = pn
+                                        val relX = vPx - node.absoluteX
+                                        val relY = vPy - node.absoluteY
+                                        node.modifier.foldIn(Unit) { _, el ->
+                                            if (el is OnPressedModifier) el.handler(relX, relY)
+                                        }
+                                        pn = node.parent
+                                    }
+                                    // Begin drag capture if the press lands on a draggable.
+                                    val vDraggable = vHit?.findDraggable()
+                                    if (vDraggable != null) {
+                                        dragNode = vDraggable.first
+                                        dragModifier = vDraggable.second
+                                        val dn = vDraggable.first
+                                        vDraggable.second.onStart(vPx - dn.absoluteX, vPy - dn.absoluteY)
+                                    }
                                 }
                             }
                             PointerEventType.Release -> {
