@@ -993,16 +993,28 @@ private fun SessionMenu(
                 // so it lines up with the item labels above and the names below.
                 Text("Recent", color = c.dim, fontSize = 11.sp, modifier = Modifier.padding(start = 40.dp, top = 6.dp, bottom = 2.dp))
                 inRecent.forEach { vPath ->
-                    DropdownMenuItem(onClick = { vOpen = false; inOnOpenRecent(vPath) }) {
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            MaterialSymbolsOutlined(MaterialSymbols.InsertDriveFile, tint = c.dim, size = 16.dp)
-                            Column(modifier = Modifier.weight(1f).padding(vertical = 3.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                                Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp)
-                                Text(ellipsizeMiddle(vPath, 32), color = c.dim, fontSize = 10.sp, softWrap = false)
-                            }
-                            // Reveal this session's folder in the OS file manager.
-                            IconBtn(MaterialSymbols.Folder, "Reveal in ${fileManagerName()}", inSize = 15.dp, inPadding = 4.dp) {
-                                vOpen = false; revealInFileManager(vPath)
+                    key(vPath) {
+                        var vRevealHover by remember { mutableStateOf(false) }
+                        DropdownMenuItem(onClick = { vOpen = false; inOnOpenRecent(vPath) }) {
+                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                MaterialSymbolsOutlined(MaterialSymbols.InsertDriveFile, tint = c.dim, size = 16.dp)
+                                Column(modifier = Modifier.weight(1f).padding(vertical = 3.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                                    Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp)
+                                    Text(ellipsizeMiddle(vPath, 32), color = c.dim, fontSize = 10.sp, softWrap = false)
+                                }
+                                // Reveal this session's folder — its own hover + tooltip so it
+                                // reads as a separate action from "open the session".
+                                TooltipBox(text = "Reveal in ${fileManagerName()}") {
+                                    Box(
+                                        modifier = Modifier.clip(RoundedCornerShape(6.dp))
+                                            .background(if (vRevealHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
+                                            .hoverable { vRevealHover = it }
+                                            .clickable { vOpen = false; revealInFileManager(vPath) }
+                                            .padding(5.dp),
+                                    ) {
+                                        MaterialSymbolsOutlined(MaterialSymbols.Folder, contentDescription = "Reveal", tint = if (vRevealHover) c.accent else c.dim, size = 15.dp)
+                                    }
+                                }
                             }
                         }
                     }
