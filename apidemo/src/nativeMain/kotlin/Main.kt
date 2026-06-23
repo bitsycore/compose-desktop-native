@@ -91,6 +91,7 @@ private class ReqState(inInitial: ApiRequest) {
     var tlsChain by mutableStateOf<TlsChain?>(null)  // last fetched server cert chain
     var chainLoading by mutableStateOf(false)
     var showChain by mutableStateOf(false)           // chain dialog open
+    var chainUrl by mutableStateOf("")               // resolved URL the chain was fetched from
 }
 
 /* One open pack: its file path (null = never saved), a dirty flag (edits since
@@ -335,7 +336,7 @@ private fun App() {
         if (inRs.chainLoading) return
         val vP = activePack() ?: return
         val vSend = resolveVars(inRs.req, effective(vP))
-        inRs.chainLoading = true
+        inRs.chainLoading = true; inRs.chainUrl = vSend.url
         vScope.launch(Dispatchers.Main) {
             try {
                 val vChain = withContext(Dispatchers.Default) { inspectTlsChain(vSend) }
@@ -692,7 +693,7 @@ private fun App() {
                                         inOnCancel = { cancel(vReqActive) },
                                         inOnInspectChain = { inspectChain(vReqActive) },
                                     )
-                                    if (vReqActive.showChain) TlsChainDialog(vReqActive.tlsChain, vReq.url) { vReqActive.showChain = false }
+                                    if (vReqActive.showChain) TlsChainDialog(vReqActive.tlsChain, vReqActive.chainUrl) { vReqActive.showChain = false }
                                     Divider(color = c.border)
                                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                                         HorizontalSplitPane(
