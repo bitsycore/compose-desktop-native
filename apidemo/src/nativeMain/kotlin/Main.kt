@@ -1228,7 +1228,12 @@ private fun UrlBar(
             )
         }
 
-        if (inLoading) DangerButton("Cancel", MaterialSymbols.Stop) { inOnCancel() }
+        // Send and Cancel are the same Material Button (same MinHeight + padding)
+        // so the bar never changes height when toggling — Cancel is just red.
+        if (inLoading) Button(
+            onClick = inOnCancel,
+            colors = ButtonDefaults.buttonColors(backgroundColor = methodColor(ReqMethod.DELETE), contentColor = Color.White),
+        ) { BtnContent(MaterialSymbols.Stop, "Cancel", Color.White) }
         else Button(onClick = inOnSend) { BtnContent(MaterialSymbols.Send, "Send", c.onAccent) }
     }
 }
