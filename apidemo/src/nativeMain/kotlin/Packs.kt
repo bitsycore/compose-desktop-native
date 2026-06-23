@@ -35,6 +35,24 @@ fun importPack(inPath: String): Result<Pack> = try {
     Result.failure(e)
 }
 
+/* Write a whole self-contained session to inPath. Returns null on success. */
+fun exportSession(inSession: Session, inPath: String): String? = try {
+    FileSystem.SYSTEM.write(inPath.trim().toPath()) {
+        writeUtf8(fJson.encodeToString(inSession))
+    }
+    null
+} catch (e: Throwable) {
+    e.message ?: e.toString()
+}
+
+/* Read a session back from inPath. */
+fun importSession(inPath: String): Result<Session> = try {
+    val vText = FileSystem.SYSTEM.read(inPath.trim().toPath()) { readUtf8() }
+    Result.success(fJson.decodeFromString<Session>(vText))
+} catch (e: Throwable) {
+    Result.failure(e)
+}
+
 /* Write arbitrary text (a response body / headers dump) to inPath. Returns null
    on success, else the error message. */
 fun writeTextFile(inPath: String, inText: String): String? = try {

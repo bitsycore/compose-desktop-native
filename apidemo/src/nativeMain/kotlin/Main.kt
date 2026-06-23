@@ -95,14 +95,16 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean) {
     var name by mutableStateOf(inPack.name)
     var path by mutableStateOf(inPath)
     var dirty by mutableStateOf(inDirty)
+    var color by mutableStateOf(inPack.color)
     val requests = mutableStateListOf<ReqState>().apply {
         inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
     }
     val variables = mutableStateListOf<KeyVal>().apply { addAll(inPack.variables) }
     val openTabs = mutableStateListOf<ReqState>().apply { requests.firstOrNull()?.let { add(it) } }
     var active by mutableStateOf(requests.firstOrNull())
+    var expanded by mutableStateOf(true)   // sidebar fold state (transient — not part of the pack file)
 
-    fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList())
+    fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList(), color)
 }
 
 // ==================
@@ -131,24 +133,22 @@ private fun App() {
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
     var vActivePack by remember { mutableStateOf(vInitial.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))) }
 
+    // The single open session (self-contained working set) + recent session files.
+    var vSessionPath by remember { mutableStateOf(vInitial.currentSession) }
+    val vRecent = remember { mutableStateListOf<String>().apply { addAll(vInitial.recentSessions) } }
+
     var vSideTab by remember { mutableStateOf(0) }      // 0 Requests, 1 History, 2 Env
     var vEnvScope by remember { mutableStateOf(0) }     // 0 Pack env, 1 Global env
     var vReqMsg by remember { mutableStateOf<String?>(null) }
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
+    var vRenamePackTarget by remember { mutableStateOf<PackState?>(null) }
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
     var vQuitDialog by remember { mutableStateOf(false) }
     var vImgSeq by remember { mutableStateOf(0) }   // unique-key counter for response images
 
-    // Drag-to-reorder state for the request list (mirrors the open-tab strip).
-    var vDragRs by remember { mutableStateOf<ReqState?>(null) }   // row being dragged, or null
-    var vDragPressY by remember { mutableStateOf(0) }            // press point inside the row
-    var vDragDy by remember { mutableStateOf(0f) }               // visual follow offset
-    var vDragTarget by remember { mutableStateOf(-1) }           // drop slot among the other rows
-    val vRowTop = remember { mutableStateMapOf<ReqState, Int>() } // window-y of each row's top
-    val vRowH = remember { mutableStateMapOf<ReqState, Int>() }   // measured row height
-
     fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
+    fun selectPack(inP: PackState) { vActivePack = vPacks.indexOf(inP).coerceAtLeast(0); vReqMsg = null }
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
 
     fun persist() {
@@ -158,6 +158,8 @@ private fun App() {
             globalEnv = vGlobalEnv.toList(),
             packs = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) },
             activePack = vActivePack,
+            currentSession = vSessionPath,
+            recentSessions = vRecent.toList(),
         ))
     }
 
@@ -279,6 +281,61 @@ private fun App() {
     fun loadDefaultPack() {
         vPacks.add(PackState(defaultPack(), null, false)); vActivePack = vPacks.size - 1; vReqMsg = null; persist()
     }
+    fun duplicatePack(inP: PackState) {
+        val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
+        vPacks.add(vAt, PackState(inP.toPack().copy(name = "${inP.name} copy"), null, true))
+        vActivePack = vAt; vReqMsg = null; persist()
+    }
+    fun renamePack(inP: PackState, inName: String) {
+        if (inName.isNotBlank()) { inP.name = inName.trim(); inP.dirty = true; persist() }
+    }
+
+    // ============
+    //  Session actions (the whole working set; one session at a time)
+    fun rememberRecent(inPath: String) {
+        vRecent.remove(inPath); vRecent.add(0, inPath)
+        while (vRecent.size > 8) vRecent.removeAt(vRecent.size - 1)
+    }
+    fun currentSession(): Session = Session(
+        packs = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) },
+        globalEnv = vGlobalEnv.toList(),
+        activePack = vActivePack,
+    )
+    fun saveSessionTo(inPath: String) {
+        val vErr = exportSession(currentSession(), inPath)
+        if (vErr == null) { vSessionPath = inPath; rememberRecent(inPath); vReqMsg = "Session saved."; persist() }
+        else vReqMsg = "Save session failed: $vErr"
+    }
+    fun saveSessionAs() {
+        showSaveFileDialog("session.json") { vPath -> if (vPath != null) saveSessionTo(vPath) }
+    }
+    fun saveSession() {
+        val vPath = vSessionPath
+        if (vPath == null) saveSessionAs() else saveSessionTo(vPath)
+    }
+    fun loadSession(inSession: Session, inPath: String?) {
+        vPacks.clear()
+        inSession.packs.forEach { vPacks.add(PackState(it.pack, it.path, it.dirty)) }
+        if (vPacks.isEmpty()) vPacks.add(PackState(Pack(), null, false))
+        vGlobalEnv.clear(); vGlobalEnv.addAll(inSession.globalEnv)
+        vActivePack = inSession.activePack.coerceIn(0, vPacks.size - 1)
+        vSessionPath = inPath
+        if (inPath != null) rememberRecent(inPath)
+        vReqMsg = null; persist()
+    }
+    fun openSession(inPath: String) {
+        importSession(inPath).fold(
+            onSuccess = { loadSession(it, inPath); vReqMsg = "Opened session." },
+            onFailure = { vReqMsg = "Open session failed: ${it.message}" },
+        )
+    }
+    fun openSessionFile() {
+        showOpenFileDialog { vPath -> if (vPath != null) openSession(vPath) }
+    }
+    fun newSession() {
+        vPacks.clear(); vPacks.add(PackState(Pack(name = "My Pack"), null, false))
+        vGlobalEnv.clear(); vActivePack = 0; vSessionPath = null; vReqMsg = null; persist()
+    }
 
     // ============
     //  Warn-on-quit: persist always; veto if anything is unsaved-to-file.
@@ -292,17 +349,18 @@ private fun App() {
             if (vKey.type != KeyEventType.Down) return@setOnKeyShortcut false
             // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
             // open at a time, so run whichever action applies and clear them all.
-            if (vRenameTarget != null || vDeleteTarget != null || vQuitDialog) {
+            if (vRenameTarget != null || vRenamePackTarget != null || vDeleteTarget != null || vQuitDialog) {
                 when (vKey.keyCode) {
                     kScEscape -> {
-                        vRenameTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                     kScEnter, kScKpEnter -> {
                         vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
+                        vRenamePackTarget?.let { renamePack(it, vRenameText) }
                         vDeleteTarget?.let { deleteRequest(it) }
                         if (vQuitDialog) savePack()
-                        vRenameTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                 }
@@ -349,17 +407,20 @@ private fun App() {
                             modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                PackSwitcher(
-                                    inPacks = vPacks,
-                                    inActive = vActivePack,
-                                    inOnSelect = { vActivePack = it; vReqMsg = null },
-                                    inOnClose = { closePack(it) },
-                                    inOnNew = { newPack() },
-                                    inOnOpen = { openPackFile() },
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                SessionMenu(
+                                    inPath = vSessionPath,
+                                    inDirty = vPacks.any { it.dirty },
+                                    inRecent = vRecent,
+                                    inOnSave = { saveSession() },
+                                    inOnSaveAs = { saveSessionAs() },
+                                    inOnOpen = { openSessionFile() },
+                                    inOnNew = { newSession() },
+                                    inOnOpenRecent = { openSession(it) },
                                     inModifier = Modifier.weight(1f),
                                 )
-                                IconBtn(MaterialSymbols.Save, "Save pack", inSize = 18.dp) { savePack() }
+                                IconBtn(MaterialSymbols.Add, "New pack", inSize = 18.dp) { newPack() }
+                                IconBtn(MaterialSymbols.Folder, "Open pack…", inSize = 18.dp) { openPackFile() }
                                 OptionsMenu(
                                     inDark = vDark,
                                     inOnToggleTheme = { vDark = !vDark; persist() },
@@ -368,7 +429,7 @@ private fun App() {
                                     inOnLoadDefault = { loadDefaultPack() },
                                 )
                             }
-                            TabBar(listOf("Requests", "History", "Env (${vP?.variables?.size ?: 0})"), vSideTab) { vSideTab = it }
+                            TabBar(listOf("Packs", "History", "Env (${vP?.variables?.size ?: 0})"), vSideTab) { vSideTab = it }
                         }
                         Divider(color = c.border)
 
@@ -380,75 +441,34 @@ private fun App() {
                         ) {
                             when (vSideTab) {
                                 0 -> {
-                                    if (vP == null) {
-                                        Text("No pack open — use the pack menu to open or create one.", color = c.dim, fontSize = 12.sp)
+                                    if (vPacks.isEmpty()) {
+                                        Text("No pack open — use New or Open above to start.", color = c.dim, fontSize = 12.sp)
                                     } else {
-                                        val vReqs = vP.requests
-                                        // Drop indicator: before the row now sitting at the target
-                                        // slot (among the non-dragged rows), or at the very end.
-                                        val vDrag = vDragRs
-                                        val vShowBar = vDrag != null && vDragDy != 0f
-                                        val vOthers = if (vShowBar && vDrag != null) vReqs.filter { it !== vDrag } else emptyList()
-                                        val vBarBefore = if (vShowBar) vOthers.getOrNull(vDragTarget) else null
-                                        val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
-                                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                            vReqs.forEach { vRs ->
-                                                if (vRs === vBarBefore) RowDropBar()
-                                                key(vRs) {
-                                                    val vDragged = vRs === vDragRs
-                                                    var vMod = Modifier
-                                                        .onGloballyPositioned { vRowTop[vRs] = it.y }
-                                                        .onSizeChanged { vRowH[vRs] = it.height }
-                                                    // translate is draw-only (doesn't shift absoluteY), so
-                                                    // the follow offset below stays correct while dragging.
-                                                    if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(0f, vDragDy)
-                                                    Box(
-                                                        modifier = vMod.onDrag(
-                                                            onStart = { _, vRelY -> vDragRs = vRs; vDragPressY = vRelY; vDragDy = 0f; vDragTarget = vReqs.indexOf(vRs) },
-                                                            onDrag = { _, vRelY ->
-                                                                val vd = vDragRs ?: return@onDrag
-                                                                vDragDy = (vRelY - vDragPressY).toFloat()
-                                                                val vCursorY = (vRowTop[vd] ?: 0) + vRelY
-                                                                // Target slot = how many *other* rows the cursor passed the centre of.
-                                                                var vCount = 0
-                                                                vReqs.forEach { vT ->
-                                                                    if (vT !== vd) {
-                                                                        val vCenter = (vRowTop[vT] ?: 0) + (vRowH[vT] ?: 0) / 2
-                                                                        if (vCursorY > vCenter) vCount++
-                                                                    }
-                                                                }
-                                                                vDragTarget = vCount
-                                                            },
-                                                            onEnd = {
-                                                                val vd = vDragRs
-                                                                if (vd != null) {
-                                                                    val vFrom = vReqs.indexOf(vd)
-                                                                    if (vFrom >= 0 && vDragTarget >= 0 && vDragTarget != vFrom) {
-                                                                        vReqs.add(vDragTarget, vReqs.removeAt(vFrom)); vP.dirty = true
-                                                                    }
-                                                                }
-                                                                vDragRs = null; vDragDy = 0f; vDragTarget = -1
-                                                            },
-                                                        ),
-                                                    ) {
-                                                        RequestRow(
-                                                            inRs = vRs,
-                                                            inSelected = vRs === vP.active,
-                                                            inOnOpen = { open(vRs) },
-                                                            inOnRename = { vRenameTarget = vRs; vRenameText = vRs.req.name },
-                                                            inOnDuplicate = { duplicate(vRs) },
-                                                            inOnCopyCurl = {
-                                                                currentClipboard.setText(toCurl(resolveVars(vRs.req, effective(vP))))
-                                                                vReqMsg = "Copied cURL."
-                                                            },
-                                                            inOnDelete = { vDeleteTarget = vRs },
-                                                        )
-                                                    }
-                                                }
+                                        vPacks.forEach { vPack ->
+                                            key(vPack) {
+                                                PackSection(
+                                                    inPack = vPack,
+                                                    inIsActive = vPack === vP,
+                                                    inOnSelect = { selectPack(vPack); vPack.expanded = true },
+                                                    inOnToggle = { vPack.expanded = !vPack.expanded },
+                                                    inOnOpenRequest = { vRs -> selectPack(vPack); open(vRs) },
+                                                    inOnNewRequest = { selectPack(vPack); newRequest() },
+                                                    inOnRenameRequest = { vRs -> selectPack(vPack); vRenameTarget = vRs; vRenameText = vRs.req.name },
+                                                    inOnDuplicateRequest = { vRs -> selectPack(vPack); duplicate(vRs) },
+                                                    inOnCopyCurl = { vRs ->
+                                                        currentClipboard.setText(toCurl(resolveVars(vRs.req, effective(vPack))))
+                                                        vReqMsg = "Copied cURL."
+                                                    },
+                                                    inOnDeleteRequest = { vRs -> selectPack(vPack); vDeleteTarget = vRs },
+                                                    inOnRenamePack = { vRenamePackTarget = vPack; vRenameText = vPack.name },
+                                                    inOnDuplicatePack = { duplicatePack(vPack) },
+                                                    inOnSavePack = { selectPack(vPack); savePack() },
+                                                    inOnSaveAsPack = { selectPack(vPack); saveAsPack() },
+                                                    inOnClosePack = { closePack(vPacks.indexOf(vPack)) },
+                                                    inOnSetColor = { vCol -> vPack.color = vCol; vPack.dirty = true; persist() },
+                                                )
                                             }
-                                            if (vBarAtEnd) RowDropBar()
                                         }
-                                        OutlinedAction(MaterialSymbols.Add, "New request") { newRequest() }
                                     }
                                 }
                                 1 -> {
@@ -592,6 +612,25 @@ private fun App() {
                 }
             }
 
+            val vRenPack = vRenamePackTarget
+            if (vRenPack != null) {
+                Dialog(onDismissRequest = { vRenamePackTarget = null }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Rename pack", color = c.text, fontSize = 16.sp)
+                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Button(onClick = {
+                                    renamePack(vRenPack, vRenameText)
+                                    vRenamePackTarget = null
+                                }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
+                                OutlinedButton(onClick = { vRenamePackTarget = null }) { Text("Cancel", color = c.text) }
+                            }
+                        }
+                    }
+                }
+            }
+
             val vDel = vDeleteTarget
             if (vDel != null) {
                 val vName = vDel.req.name
@@ -641,48 +680,261 @@ private fun App() {
 }
 
 // ==================
-// MARK: Pack switcher (active pack name → dropdown of open packs)
+// MARK: Pack colour (palette dot + picker)
 // ==================
 
+/* A small rounded square in the pack's palette colour (neutral when unset).
+   The pack's visual identity in the sidebar's foldable pack header. */
 @Composable
-private fun PackSwitcher(
-    inPacks: List<PackState>,
-    inActive: Int,
-    inOnSelect: (Int) -> Unit,
-    inOnClose: (Int) -> Unit,
-    inOnNew: () -> Unit,
+private fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
+    val c = LocalAppColors.current
+    val vCol = packColor(inColor) ?: c.dim.copy(alpha = 0.35f)
+    Box(Modifier.size(inSize).background(vCol, RoundedCornerShape(3.dp)))
+}
+
+/* Two rows of ten swatches; tapping one sets the pack's colour (1-based index).
+   The current colour gets a ring. Lives inside each pack's ⋮ menu. */
+@Composable
+private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
+    val c = LocalAppColors.current
+    Column(
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text("Pack colour", color = c.dim, fontSize = 11.sp)
+        listOf(0, 10).forEach { vBase ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (vK in vBase until (vBase + 10)) {
+                    val vIdx = vK + 1
+                    Box(
+                        modifier = Modifier.size(17.dp).clip(RoundedCornerShape(4.dp))
+                            .background(Color(kPackColors[vK]), RoundedCornerShape(4.dp))
+                            .border(if (inSelected == vIdx) 2.dp else 0.dp, c.text, RoundedCornerShape(4.dp))
+                            .clickable { inOnPick(vIdx) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ==================
+// MARK: Session menu (save / open / new / recent)
+// ==================
+
+/* The last path segment of inPath (the file name), tolerant of either slash. */
+private fun fileLeaf(inPath: String): String =
+    inPath.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
+
+/* Header dropdown for the one open session: its file name (or "Untitled
+   session"), with Save / Save as… / Open… / New and a recent-sessions list.
+   A dot marks unsaved pack edits anywhere in the session. */
+@Composable
+private fun SessionMenu(
+    inPath: String?,
+    inDirty: Boolean,
+    inRecent: List<String>,
+    inOnSave: () -> Unit,
+    inOnSaveAs: () -> Unit,
     inOnOpen: () -> Unit,
+    inOnNew: () -> Unit,
+    inOnOpenRecent: (String) -> Unit,
     inModifier: Modifier = Modifier,
 ) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
-    val vActivePack = inPacks.getOrNull(inActive)
+    val vName = inPath?.let { fileLeaf(it) } ?: "Untitled session"
     Box(modifier = inModifier) {
         Row(
             modifier = Modifier.fillMaxWidth().menuAnchor(vAnchor).clip(RoundedCornerShape(6.dp))
                 .clickable { vOpen = true }.padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(vActivePack?.name ?: "No pack", color = c.text, fontSize = 17.sp, modifier = Modifier.weight(1f))
-            if (vActivePack?.dirty == true) Box(Modifier.size(6.dp).background(c.accent, RoundedCornerShape(3.dp)))
+            MaterialSymbolsOutlined(MaterialSymbols.InsertDriveFile, tint = c.dim, size = 15.dp)
+            Text(vName, color = c.text, fontSize = 14.sp, modifier = Modifier.weight(1f))
+            if (inDirty) Box(Modifier.size(6.dp).background(c.accent, RoundedCornerShape(3.dp)))
             MaterialSymbolsOutlined(MaterialSymbols.ExpandMore, tint = c.dim, size = 18.dp)
         }
-        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 224.dp) {
-            inPacks.forEachIndexed { vI, vP ->
-                DropdownMenuItem(onClick = { vOpen = false; inOnSelect(vI) }) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (vI == inActive) MaterialSymbolsOutlined(MaterialSymbols.Check, tint = c.accent, size = 16.dp)
-                        else Spacer(Modifier.width(16.dp))
-                        Text(vP.name + if (vP.dirty) " •" else "", color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                        IconBtn(MaterialSymbols.Close, "Close pack", inSize = 14.dp) { vOpen = false; inOnClose(vI) }
+        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 248.dp) {
+            DropdownMenuItem(onClick = { vOpen = false; inOnSave() }) { MenuRow(MaterialSymbols.Save, "Save session") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Download, "Save session as…") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open session…") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New session") }
+            if (inRecent.isNotEmpty()) {
+                Divider(color = c.border)
+                Text("Recent", color = c.dim, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+                inRecent.forEach { vPath ->
+                    DropdownMenuItem(onClick = { vOpen = false; inOnOpenRecent(vPath) }) {
+                        Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp, modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
-            Divider(color = c.border)
-            DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
-            DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open pack…") }
+        }
+    }
+}
+
+// ==================
+// MARK: Pack section (foldable pack in the sidebar)
+// ==================
+
+/* One open pack rendered as a foldable section: a header (fold chevron, colour
+   box, name, dirty dot, request count, ⋮ menu) over the pack's request list
+   when expanded. Clicking the header body selects the pack (so the Env tab and
+   main panel follow it); the chevron only folds. The request list drags to
+   reorder, scoped to this pack. Right-click the header for the pack menu. */
+@Composable
+private fun PackSection(
+    inPack: PackState,
+    inIsActive: Boolean,
+    inOnSelect: () -> Unit,
+    inOnToggle: () -> Unit,
+    inOnOpenRequest: (ReqState) -> Unit,
+    inOnNewRequest: () -> Unit,
+    inOnRenameRequest: (ReqState) -> Unit,
+    inOnDuplicateRequest: (ReqState) -> Unit,
+    inOnCopyCurl: (ReqState) -> Unit,
+    inOnDeleteRequest: (ReqState) -> Unit,
+    inOnRenamePack: () -> Unit,
+    inOnDuplicatePack: () -> Unit,
+    inOnSavePack: () -> Unit,
+    inOnSaveAsPack: () -> Unit,
+    inOnClosePack: () -> Unit,
+    inOnSetColor: (Int) -> Unit,
+) {
+    val c = LocalAppColors.current
+    val vAnchor = rememberMenuAnchor()
+    var vMenu by remember { mutableStateOf(false) }
+    var vHover by remember { mutableStateOf(false) }
+    var vAtCursor by remember { mutableStateOf(false) }
+    var vMenuX by remember { mutableStateOf(0) }
+    var vMenuY by remember { mutableStateOf(0) }
+
+    // Per-section drag-to-reorder state (each pack reorders independently).
+    var vDragRs by remember { mutableStateOf<ReqState?>(null) }
+    var vDragPressY by remember { mutableStateOf(0) }
+    var vDragDy by remember { mutableStateOf(0f) }
+    var vDragTarget by remember { mutableStateOf(-1) }
+    val vRowTop = remember { mutableStateMapOf<ReqState, Int>() }
+    val vRowH = remember { mutableStateMapOf<ReqState, Int>() }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // ============
+        //  Pack header
+        Row(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+                .background(if (inIsActive) c.accent.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(6.dp))
+                .hoverable { vHover = it }
+                .onSecondaryClick { x, y -> vMenuX = x; vMenuY = y; vAtCursor = true; vMenu = true }
+                .padding(end = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            IconBtn(if (inPack.expanded) MaterialSymbols.ExpandMore else MaterialSymbols.ChevronRight, "Fold", inSize = 18.dp, inPadding = 3.dp) { inOnToggle() }
+            Row(
+                modifier = Modifier.weight(1f).clip(RoundedCornerShape(5.dp)).clickable { inOnSelect() }.padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                ColorDot(inPack.color)
+                Text(inPack.name, color = c.text, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                if (inPack.dirty) Box(Modifier.size(6.dp).background(c.accent, RoundedCornerShape(3.dp)))
+                Text("${inPack.requests.size}", color = c.dim, fontSize = 11.sp)
+            }
+            // + (new request) and ⋮ (pack menu) — both reveal on hover only, so the
+            // header width never shifts (alpha, not conditional layout).
+            Row(modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f), verticalAlignment = Alignment.CenterVertically) {
+                IconBtn(MaterialSymbols.Add, "New request", inSize = 16.dp, inPadding = 4.dp) { inOnNewRequest() }
+                Box {
+                    IconBtn(MaterialSymbols.MoreHoriz, "Pack menu", inModifier = Modifier.menuAnchor(vAnchor), inSize = 16.dp, inPadding = 4.dp) { vAtCursor = false; vMenu = true }
+                    DropdownMenu(
+                        expanded = vMenu,
+                        onDismissRequest = { vMenu = false },
+                        anchor = if (vAtCursor) null else vAnchor,
+                        offsetX = if (vAtCursor) vMenuX.dp else 0.dp,
+                        offsetY = if (vAtCursor) vMenuY.dp else 0.dp,
+                        minWidth = 220.dp,
+                    ) {
+                        DropdownMenuItem(onClick = { vMenu = false; inOnRenamePack() }) { MenuRow(MaterialSymbols.Edit, "Rename pack") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnDuplicatePack() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate pack") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnSavePack() }) { MenuRow(MaterialSymbols.Save, "Save pack") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnSaveAsPack() }) { MenuRow(MaterialSymbols.Folder, "Save pack as…") }
+                        Divider(color = c.border)
+                        PackColorPicker(inPack.color) { inOnSetColor(it) }
+                        Divider(color = c.border)
+                        DropdownMenuItem(onClick = { vMenu = false; inOnClosePack() }) { MenuRow(MaterialSymbols.Close, "Close pack", c.dim) }
+                    }
+                }
+            }
+        }
+
+        // ============
+        //  Pack body — request list (expanded only)
+        if (inPack.expanded) {
+            val vReqs = inPack.requests
+            val vDrag = vDragRs
+            val vShowBar = vDrag != null && vDragDy != 0f
+            val vOthers = if (vShowBar && vDrag != null) vReqs.filter { it !== vDrag } else emptyList()
+            val vBarBefore = if (vShowBar) vOthers.getOrNull(vDragTarget) else null
+            val vBarAtEnd = vShowBar && vDragTarget >= vOthers.size
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 2.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                vReqs.forEach { vRs ->
+                    if (vRs === vBarBefore) RowDropBar()
+                    key(vRs) {
+                        val vDragged = vRs === vDragRs
+                        var vMod = Modifier
+                            .onGloballyPositioned { vRowTop[vRs] = it.y }
+                            .onSizeChanged { vRowH[vRs] = it.height }
+                        // translate is draw-only (doesn't shift absoluteY), so the
+                        // follow offset below stays correct while dragging.
+                        if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(0f, vDragDy)
+                        Box(
+                            modifier = vMod.onDrag(
+                                onStart = { _, vRelY -> vDragRs = vRs; vDragPressY = vRelY; vDragDy = 0f; vDragTarget = vReqs.indexOf(vRs) },
+                                onDrag = { _, vRelY ->
+                                    val vd = vDragRs ?: return@onDrag
+                                    vDragDy = (vRelY - vDragPressY).toFloat()
+                                    val vCursorY = (vRowTop[vd] ?: 0) + vRelY
+                                    // Target slot = how many *other* rows the cursor passed the centre of.
+                                    var vCount = 0
+                                    vReqs.forEach { vT ->
+                                        if (vT !== vd) {
+                                            val vCenter = (vRowTop[vT] ?: 0) + (vRowH[vT] ?: 0) / 2
+                                            if (vCursorY > vCenter) vCount++
+                                        }
+                                    }
+                                    vDragTarget = vCount
+                                },
+                                onEnd = {
+                                    val vd = vDragRs
+                                    if (vd != null) {
+                                        val vFrom = vReqs.indexOf(vd)
+                                        if (vFrom >= 0 && vDragTarget >= 0 && vDragTarget != vFrom) {
+                                            vReqs.add(vDragTarget, vReqs.removeAt(vFrom)); inPack.dirty = true
+                                        }
+                                    }
+                                    vDragRs = null; vDragDy = 0f; vDragTarget = -1
+                                },
+                            ),
+                        ) {
+                            RequestRow(
+                                inRs = vRs,
+                                inSelected = inIsActive && vRs === inPack.active,
+                                inOnOpen = { inOnOpenRequest(vRs) },
+                                inOnRename = { inOnRenameRequest(vRs) },
+                                inOnDuplicate = { inOnDuplicateRequest(vRs) },
+                                inOnCopyCurl = { inOnCopyCurl(vRs) },
+                                inOnDelete = { inOnDeleteRequest(vRs) },
+                            )
+                        }
+                    }
+                }
+                if (vBarAtEnd) RowDropBar()
+            }
         }
     }
 }
@@ -2067,6 +2319,19 @@ private fun methodColor(inM: ReqMethod): Color = when (inM) {
     ReqMethod.DELETE -> Color(0xFFFF5630)
     ReqMethod.HEAD, ReqMethod.OPTIONS -> Color(0xFF8777FF)
 }
+
+// 20-colour palette for the per-pack box icon. Pack.color is a 1-based index
+// into this list (0 = none → a neutral dot). Two rows of ten in the picker.
+private val kPackColors: List<Long> = listOf(
+    0xFFEF5350, 0xFFEC407A, 0xFFAB47BC, 0xFF7E57C2, 0xFF5C6BC0,
+    0xFF42A5F5, 0xFF29B6F6, 0xFF26C6DA, 0xFF26A69A, 0xFF66BB6A,
+    0xFF9CCC65, 0xFFD4E157, 0xFFFFEE58, 0xFFFFCA28, 0xFFFFA726,
+    0xFFFF7043, 0xFF8D6E63, 0xFF78909C, 0xFFBDBDBD, 0xFF5C7CFA,
+)
+
+/* The palette colour for a 1-based pack-colour index, or null when unset. */
+private fun packColor(inIndex: Int): Color? =
+    if (inIndex in 1..kPackColors.size) Color(kPackColors[inIndex - 1]) else null
 
 /* Default save name for an image response, by content type. */
 private fun imageFileName(inContentType: String?): String = when {

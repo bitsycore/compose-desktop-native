@@ -16,6 +16,7 @@ data class Pack(
     val name: String = "My Pack",
     val requests: List<ApiRequest> = listOf(ApiRequest()),
     val variables: List<KeyVal> = emptyList(),
+    val color: Int = 0,   // 1-based index into the pack-colour palette; 0 = none
 )
 
 /* The starter pack loaded on first launch (and on demand from the options menu)

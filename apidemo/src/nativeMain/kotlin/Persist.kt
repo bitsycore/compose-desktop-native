@@ -21,6 +21,8 @@ data class AppState(
     val globalEnv: List<KeyVal> = emptyList(),
     val packs: List<SavedPack> = emptyList(),
     val activePack: Int = 0,
+    val currentSession: String? = null,        // path of the session file currently open (null = unsaved)
+    val recentSessions: List<String> = emptyList(),   // most-recent-first session file paths
 )
 
 /* A pack as stored in the app state: the pack content plus where it was last
@@ -30,6 +32,16 @@ data class SavedPack(
     val path: String? = null,
     val dirty: Boolean = false,
     val pack: Pack = Pack(),
+)
+
+/* A whole session, the export/import unit for the working set: every open pack
+   (self-contained — full content embedded) plus the shared global env and which
+   pack was active. Only one session is open at a time. */
+@Serializable
+data class Session(
+    val packs: List<SavedPack> = emptyList(),
+    val globalEnv: List<KeyVal> = emptyList(),
+    val activePack: Int = 0,
 )
 
 // ==================
