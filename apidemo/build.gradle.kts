@@ -173,16 +173,27 @@ fun registerSubsetTask(inStyleProject: Project): TaskProvider<*> {
                 "usage-codepoint.txt has no entries — refusing to subset to an empty font.")
             val vUnicodes = vCodepoints.joinToString(",") { "U+$it" }
             vOut.parentFile.mkdirs()
-            val vBefore = vInputProvider.get().asFile.length()
+            val vInputFile = vInputProvider.get().asFile
+            val vBefore = vInputFile.length()
             // ProcessBuilder rather than project.exec — the latter isn't
             // available inside doLast on Gradle 9 (only ExecOperations via
             // an injected service is, which would mean a buildSrc plugin).
-            val vProc = ProcessBuilder(
-                "hb-subset",
-                vInputProvider.get().asFile.absolutePath,
-                "-o", vOut.absolutePath,
-                "--unicodes=$vUnicodes",
-            ).redirectErrorStream(true).start()
+            // hb-subset (HarfBuzz) is optional: if it isn't on PATH — common on
+            // Windows — bundle the full font instead of failing the build.
+            val vProc = try {
+                ProcessBuilder(
+                    "hb-subset",
+                    vInputFile.absolutePath,
+                    "-o", vOut.absolutePath,
+                    "--unicodes=$vUnicodes",
+                ).redirectErrorStream(true).start()
+            } catch (e: java.io.IOException) {
+                vInputFile.copyTo(vOut, overwrite = true)
+                logger.warn("[subset $vStyleName] hb-subset not found on PATH — bundling the full font " +
+                    "(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
+                    "pacman -S mingw-w64-x86_64-harfbuzz / apt install harfbuzz-utils).")
+                return@doLast
+            }
             val vOutput = vProc.inputStream.bufferedReader().readText()
             val vCode = vProc.waitFor()
             if (vCode != 0) throw GradleException("hb-subset failed (exit $vCode):\n$vOutput")
