@@ -989,12 +989,21 @@ private fun SessionMenu(
             DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open session…") }
             if (inRecent.isNotEmpty()) {
                 Divider(color = c.border)
-                Text("Recent", color = c.dim, fontSize = 11.sp, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 2.dp))
+                // Indented to the menu's label column (16 item-pad + 16 icon + 8 gap)
+                // so it lines up with the item labels above and the names below.
+                Text("Recent", color = c.dim, fontSize = 11.sp, modifier = Modifier.padding(start = 40.dp, top = 6.dp, bottom = 2.dp))
                 inRecent.forEach { vPath ->
                     DropdownMenuItem(onClick = { vOpen = false; inOnOpenRecent(vPath) }) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                            Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp)
-                            Text(ellipsizeMiddle(vPath), color = c.dim, fontSize = 10.sp, softWrap = false)
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            MaterialSymbolsOutlined(MaterialSymbols.InsertDriveFile, tint = c.dim, size = 16.dp)
+                            Column(modifier = Modifier.weight(1f).padding(vertical = 3.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                                Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp)
+                                Text(ellipsizeMiddle(vPath, 32), color = c.dim, fontSize = 10.sp, softWrap = false)
+                            }
+                            // Reveal this session's folder in the OS file manager.
+                            IconBtn(MaterialSymbols.Folder, "Reveal in ${fileManagerName()}", inSize = 15.dp, inPadding = 4.dp) {
+                                vOpen = false; revealInFileManager(vPath)
+                            }
                         }
                     }
                 }
