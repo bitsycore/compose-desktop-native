@@ -45,6 +45,12 @@ expect fun prepareClientCert(inReq: ApiRequest): PreparedCert
    at startup. */
 expect fun sweepTempClientCerts()
 
+/* The server's TLS certificate chain as reported by libcurl (CURLINFO_CERTINFO).
+   Each cert is a list of "name" → "content" fields (Subject / Issuer / the PEM
+   under "Cert" / dates …); fields vary by TLS backend. error is set instead when
+   the chain couldn't be fetched. */
+class TlsChain(val certs: List<List<Pair<String, String>>>, val error: String?)
+
 /* Per-transfer accumulators handed to the C callbacks through a StableRef. */
 private class CurlSink
 	{
@@ -71,6 +77,78 @@ private fun onCurlHeader(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: s
 	if (vLen > 0) vSink.headerRaw.append(inBuffer.readBytes(vLen.toInt()).decodeToString())
 	return vLen.convert()
 	}
+
+/* Sink callback that discards everything (used by the TLS-chain probe so the
+   response body/headers don't spill to stdout). */
+@OptIn(ExperimentalForeignApi::class)
+private fun onCurlDiscard(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: size_t, inUserdata: COpaquePointer): size_t =
+	(inSize * inCount)
+
+/* Open a TLS connection to the request's URL (handshake only — no body) and
+   return the server's certificate chain via CURLINFO_CERTINFO. Reuses the
+   request's client certificate if it has one (so mTLS endpoints work too).
+   inReq is already var-resolved. */
+@OptIn(ExperimentalForeignApi::class)
+fun inspectTlsChain(inReq: ApiRequest): TlsChain
+	{
+	val vCert = try { if (inReq.hasClientCert) prepareClientCert(inReq) else null }
+		catch (e: Throwable) { return TlsChain(emptyList(), e.message ?: "Client certificate error") }
+	val vCurl = curl_easy_init() ?: run { vCert?.cleanup(); return TlsChain(emptyList(), "Could not initialize libcurl") }
+	try
+		{
+		curl_easy_setopt(vCurl, CURLOPT_URL, urlWithParams(inReq))
+		curl_easy_setopt(vCurl, CURLOPT_NOBODY, 1L)            // just the handshake + headers
+		curl_easy_setopt(vCurl, CURLOPT_CERTINFO, 1L)
+		curl_easy_setopt(vCurl, CURLOPT_FOLLOWLOCATION, 0L)    // inspect the host as typed
+		curl_easy_setopt(vCurl, CURLOPT_WRITEFUNCTION, staticCFunction(::onCurlDiscard))
+		curl_easy_setopt(vCurl, CURLOPT_HEADERFUNCTION, staticCFunction(::onCurlDiscard))
+		vCert?.let { vC ->
+			curl_easy_setopt(vCurl, CURLOPT_SSLCERT, vC.sslCert)
+			vC.sslCertType?.let { curl_easy_setopt(vCurl, CURLOPT_SSLCERTTYPE, it) }
+			vC.sslKey?.let { curl_easy_setopt(vCurl, CURLOPT_SSLKEY, it) }
+			vC.sslKeyType?.let { curl_easy_setopt(vCurl, CURLOPT_SSLKEYTYPE, it) }
+			vC.keyPassword?.let { curl_easy_setopt(vCurl, CURLOPT_KEYPASSWD, it) }
+		}
+		val vCode = curl_easy_perform(vCurl)
+		if (vCode != CURLE_OK)
+			return TlsChain(emptyList(), curl_easy_strerror(vCode)?.toKString() ?: "libcurl error $vCode")
+		val vCerts = readCertInfo(vCurl)
+		return TlsChain(vCerts, if (vCerts.isEmpty()) "No certificate chain reported (not an HTTPS URL, or the TLS backend didn't expose it)." else null)
+		}
+	finally
+		{
+		curl_easy_cleanup(vCurl)
+		vCert?.cleanup()
+		}
+	}
+
+/* Read CURLINFO_CERTINFO off a performed handle into per-cert field lists. */
+@OptIn(ExperimentalForeignApi::class)
+private fun readCertInfo(inCurl: COpaquePointer): List<List<Pair<String, String>>> = memScoped {
+	val vPtr = alloc<COpaquePointerVar>()
+	if (curl_easy_getinfo(inCurl, CURLINFO_CERTINFO, vPtr.ptr) != CURLE_OK) return@memScoped emptyList()
+	val vInfo = vPtr.value?.reinterpret<curl_certinfo>()?.pointed ?: return@memScoped emptyList()
+	val vArr = vInfo.certinfo ?: return@memScoped emptyList()
+	val vResult = ArrayList<List<Pair<String, String>>>()
+	for (vI in 0 until vInfo.num_of_certs)
+		{
+		val vFields = ArrayList<Pair<String, String>>()
+		var vNode = vArr[vI]
+		while (vNode != null)
+			{
+			val vData = vNode.pointed.data?.toKString()
+			if (vData != null)
+				{
+				val vColon = vData.indexOf(':')
+				if (vColon > 0) vFields.add(vData.substring(0, vColon) to vData.substring(vColon + 1))
+				else vFields.add("" to vData)
+				}
+			vNode = vNode.pointed.next
+			}
+		vResult.add(vFields)
+		}
+	vResult
+}
 
 /* Send a client-certificate request through libcurl and adapt the result into
    the same ApiResponse the Ktor path produces. inReq is already var-resolved. */

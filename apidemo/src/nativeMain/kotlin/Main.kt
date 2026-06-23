@@ -88,6 +88,9 @@ private class ReqState(inInitial: ApiRequest) {
     // null = auto-detect from Content-Type each frame; non-null = user-pinned override.
     var respFormatOverride by mutableStateOf<BodyFormat?>(null)
     var reqFormat by mutableStateOf(BodyFormat.RAW)  // builder-side: how to highlight the JSON / TEXT body editor
+    var tlsChain by mutableStateOf<TlsChain?>(null)  // last fetched server cert chain
+    var chainLoading by mutableStateOf(false)
+    var showChain by mutableStateOf(false)           // chain dialog open
 }
 
 /* One open pack: its file path (null = never saved), a dirty flag (edits since
@@ -327,6 +330,19 @@ private fun App() {
         }
     }
     fun cancel(inRs: ReqState) { inRs.job?.cancel(); inRs.job = null; inRs.loading = false }
+    // Probe the URL's TLS chain (libcurl handshake) and show it in a dialog.
+    fun inspectChain(inRs: ReqState) {
+        if (inRs.chainLoading) return
+        val vP = activePack() ?: return
+        val vSend = resolveVars(inRs.req, effective(vP))
+        inRs.chainLoading = true
+        vScope.launch(Dispatchers.Main) {
+            try {
+                val vChain = withContext(Dispatchers.Default) { inspectTlsChain(vSend) }
+                inRs.tlsChain = vChain; inRs.showChain = true
+            } finally { inRs.chainLoading = false }
+        }
+    }
 
     // ============
     //  Pack actions
@@ -669,11 +685,14 @@ private fun App() {
                                     UrlBar(
                                         inReq = vReq,
                                         inLoading = vReqActive.loading,
+                                        inChainLoading = vReqActive.chainLoading,
                                         inOnMethod = { m -> edit { it.copy(method = m) } },
                                         inOnUrl = { v -> edit { it.copy(url = v) } },
                                         inOnSend = { send(vReqActive) },
                                         inOnCancel = { cancel(vReqActive) },
+                                        inOnInspectChain = { inspectChain(vReqActive) },
                                     )
+                                    if (vReqActive.showChain) TlsChainDialog(vReqActive.tlsChain, vReq.url) { vReqActive.showChain = false }
                                     Divider(color = c.border)
                                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                                         HorizontalSplitPane(
@@ -1427,10 +1446,12 @@ private fun OptionsMenu(
 private fun UrlBar(
     inReq: ApiRequest,
     inLoading: Boolean,
+    inChainLoading: Boolean,
     inOnMethod: (ReqMethod) -> Unit,
     inOnUrl: (String) -> Unit,
     inOnSend: () -> Unit,
     inOnCancel: () -> Unit,
+    inOnInspectChain: () -> Unit,
 ) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
@@ -1478,6 +1499,10 @@ private fun UrlBar(
             )
         }
 
+        // Inspect the server's TLS certificate chain (handshake-only probe).
+        if (inChainLoading) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = c.accent, strokeWidth = 2.dp)
+        else IconBtn(MaterialSymbols.Lock, "Inspect TLS chain", inSize = 18.dp, inOnClick = inOnInspectChain)
+
         // Send and Cancel are the same Material Button (same MinHeight + padding)
         // so the bar never changes height when toggling — Cancel is just red.
         if (inLoading) Button(
@@ -1515,6 +1540,78 @@ private fun BodyTypeMenu(inType: BodyType, inEnabled: Boolean, inOnPick: (BodyTy
         }
     }
 }
+
+/* Dialog showing the server's TLS certificate chain (one card per cert, plus a
+   Copy PEM action). Fetched on demand by the lock button in the URL bar. */
+@Composable
+private fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -> Unit) {
+    val c = LocalAppColors.current
+    Dialog(onDismissRequest = inOnDismiss) {
+        Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(620.dp)) {
+            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    MaterialSymbolsOutlined(MaterialSymbols.Lock, tint = c.accent, size = 20.dp)
+                    Text("TLS certificate chain", color = c.text, fontSize = 16.sp)
+                }
+                val vCerts = inChain?.certs.orEmpty()
+                when {
+                    inChain == null -> Text("Probing…", color = c.dim, fontSize = 13.sp)
+                    vCerts.isEmpty() -> Text(inChain.error ?: "No chain reported.", color = kWarnColor, fontSize = 13.sp)
+                    else -> {
+                        Text("${vCerts.size} certificate(s) presented by ${hostOf(inUrl)}", color = c.dim, fontSize = 12.sp)
+                        Column(
+                            modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) { vCerts.forEachIndexed { vI, vCert -> CertCard(vI, vCert) } }
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (vCerts.isNotEmpty()) IconLabelChip(MaterialSymbols.ContentCopy, "Copy PEM") {
+                            currentClipboard.setText(vCerts.mapNotNull { certField(it, "Cert") }.joinToString("\n"))
+                        }
+                        OutlinedButton(onClick = inOnDismiss) { Text("Close", color = c.text) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* One certificate's summary card (subject / issuer / validity). */
+@Composable
+private fun CertCard(inIndex: Int, inFields: List<Pair<String, String>>) {
+    val c = LocalAppColors.current
+    val vFrom = certField(inFields, "Start date") ?: certField(inFields, "Start Date")
+    val vTo = certField(inFields, "Expire date") ?: certField(inFields, "Expire Date")
+    Column(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+            .background(c.field, RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Text(if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex", color = c.accent, fontSize = 12.sp)
+        certField(inFields, "Subject")?.let { CertLine("Subject", it) }
+        certField(inFields, "Issuer")?.let { CertLine("Issuer", it) }
+        if (vFrom != null || vTo != null) CertLine("Valid", "${vFrom ?: "?"}  →  ${vTo ?: "?"}")
+    }
+}
+
+@Composable
+private fun CertLine(inLabel: String, inValue: String) {
+    val c = LocalAppColors.current
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("$inLabel:", color = c.dim, fontSize = 12.sp)
+        Text(inValue, color = c.text, fontSize = 12.sp)
+    }
+}
+
+/* Look up a CURLINFO_CERTINFO field by name (case-insensitive). */
+private fun certField(inFields: List<Pair<String, String>>, inName: String): String? =
+    inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
+
+/* The host portion of a URL (for the chain dialog header). */
+private fun hostOf(inUrl: String): String =
+    inUrl.substringAfter("://", inUrl).substringBefore("/").substringBefore("?").ifBlank { inUrl }
 
 // ==================
 // MARK: Panel 3 — request builder (Query / Headers / Body)
