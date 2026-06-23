@@ -143,6 +143,7 @@ private fun App() {
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
     var vRenamePackTarget by remember { mutableStateOf<PackState?>(null) }
+    var vRemovePackTarget by remember { mutableStateOf<PackState?>(null) }
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
     var vQuitDialog by remember { mutableStateOf(false) }
     var vImgSeq by remember { mutableStateOf(0) }   // unique-key counter for response images
@@ -349,18 +350,19 @@ private fun App() {
             if (vKey.type != KeyEventType.Down) return@setOnKeyShortcut false
             // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
             // open at a time, so run whichever action applies and clear them all.
-            if (vRenameTarget != null || vRenamePackTarget != null || vDeleteTarget != null || vQuitDialog) {
+            if (vRenameTarget != null || vRenamePackTarget != null || vRemovePackTarget != null || vDeleteTarget != null || vQuitDialog) {
                 when (vKey.keyCode) {
                     kScEscape -> {
-                        vRenameTarget = null; vRenamePackTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                     kScEnter, kScKpEnter -> {
                         vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
                         vRenamePackTarget?.let { renamePack(it, vRenameText) }
+                        vRemovePackTarget?.let { closePack(vPacks.indexOf(it)) }
                         vDeleteTarget?.let { deleteRequest(it) }
                         if (vQuitDialog) savePack()
-                        vRenameTarget = null; vRenamePackTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                 }
@@ -424,7 +426,7 @@ private fun App() {
                                     inDark = vDark,
                                     inOnToggleTheme = { vDark = !vDark; persist() },
                                     inOnSaveAs = { saveAsPack() },
-                                    inOnClosePack = { closePack(vActivePack) },
+                                    inOnRemovePack = { activePack()?.let { vRemovePackTarget = it } },
                                     inOnLoadDefault = { loadDefaultPack() },
                                 )
                             }
@@ -463,7 +465,7 @@ private fun App() {
                                                     inOnDuplicatePack = { duplicatePack(vPack) },
                                                     inOnSavePack = { selectPack(vPack); savePack() },
                                                     inOnSaveAsPack = { selectPack(vPack); saveAsPack() },
-                                                    inOnClosePack = { closePack(vPacks.indexOf(vPack)) },
+                                                    inOnRemovePack = { vRemovePackTarget = vPack },
                                                     inOnSetColor = { vCol -> vPack.color = vCol; vPack.dirty = true; persist() },
                                                 )
                                             }
@@ -652,6 +654,27 @@ private fun App() {
                 }
             }
 
+            val vRmPack = vRemovePackTarget
+            if (vRmPack != null) {
+                Dialog(onDismissRequest = { vRemovePackTarget = null }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(380.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                MaterialSymbolsOutlined(MaterialSymbols.Delete, tint = methodColor(ReqMethod.DELETE), size = 20.dp)
+                                Text("Remove pack", color = c.text, fontSize = 16.sp)
+                            }
+                            Text("\"${vRmPack.name}\" will be removed from the session. Unsaved changes are lost — export it first to keep them.", color = c.dim, fontSize = 13.sp)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedButton(onClick = { vRemovePackTarget = null }) { Text("Cancel", color = c.text) }
+                                    DangerButton("Remove", MaterialSymbols.Delete) { closePack(vPacks.indexOf(vRmPack)); vRemovePackTarget = null }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (vQuitDialog) {
                 val vDirty = vPacks.filter { it.dirty }.joinToString(", ") { it.name }
                 Dialog(onDismissRequest = { vQuitDialog = false }) {
@@ -691,24 +714,24 @@ private fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
     Box(Modifier.size(inSize).background(vCol, RoundedCornerShape(3.dp)))
 }
 
-/* Two rows of ten swatches; tapping one sets the pack's colour (1-based index).
-   The current colour gets a ring. Lives inside each pack's ⋮ menu. */
+/* A 5×4 grid of swatches; tapping one sets the pack's colour (1-based index).
+   The current colour gets a ring. Sized to fit inside the (fixed-width) ⋮ menu. */
 @Composable
 private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
     val c = LocalAppColors.current
     Column(
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text("Pack colour", color = c.dim, fontSize = 11.sp)
-        listOf(0, 10).forEach { vBase ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (vK in vBase until (vBase + 10)) {
+        listOf(0, 5, 10, 15).forEach { vBase ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (vK in vBase until (vBase + 5)) {
                     val vIdx = vK + 1
                     Box(
-                        modifier = Modifier.size(17.dp).clip(RoundedCornerShape(4.dp))
-                            .background(Color(kPackColors[vK]), RoundedCornerShape(4.dp))
-                            .border(if (inSelected == vIdx) 2.dp else 0.dp, c.text, RoundedCornerShape(4.dp))
+                        modifier = Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                            .background(Color(kPackColors[vK]), RoundedCornerShape(5.dp))
+                            .border(if (inSelected == vIdx) 2.dp else 0.dp, c.text, RoundedCornerShape(5.dp))
                             .clickable { inOnPick(vIdx) },
                     )
                 }
@@ -818,7 +841,7 @@ private fun PackSection(
     inOnDuplicatePack: () -> Unit,
     inOnSavePack: () -> Unit,
     inOnSaveAsPack: () -> Unit,
-    inOnClosePack: () -> Unit,
+    inOnRemovePack: () -> Unit,
     inOnSetColor: (Int) -> Unit,
 ) {
     val c = LocalAppColors.current
@@ -881,7 +904,7 @@ private fun PackSection(
                         Divider(color = c.border)
                         PackColorPicker(inPack.color) { inOnSetColor(it) }
                         Divider(color = c.border)
-                        DropdownMenuItem(onClick = { vMenu = false; inOnClosePack() }) { MenuRow(MaterialSymbols.Close, "Close pack", c.dim) }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnRemovePack() }) { MenuRow(MaterialSymbols.Delete, "Remove pack", methodColor(ReqMethod.DELETE)) }
                     }
                 }
             }
@@ -1143,7 +1166,7 @@ private fun OptionsMenu(
     inDark: Boolean,
     inOnToggleTheme: () -> Unit,
     inOnSaveAs: () -> Unit,
-    inOnClosePack: () -> Unit,
+    inOnRemovePack: () -> Unit,
     inOnLoadDefault: () -> Unit,
 ) {
     val c = LocalAppColors.current
@@ -1160,7 +1183,7 @@ private fun OptionsMenu(
             }
             Divider(color = c.border)
             DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Save, "Export pack as…") }
-            DropdownMenuItem(onClick = { vOpen = false; inOnClosePack() }) { MenuRow(MaterialSymbols.Close, "Close pack") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnRemovePack() }) { MenuRow(MaterialSymbols.Delete, "Remove pack", methodColor(ReqMethod.DELETE)) }
             Divider(color = c.border)
             DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
         }
