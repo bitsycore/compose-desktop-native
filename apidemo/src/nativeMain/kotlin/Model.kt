@@ -46,8 +46,11 @@ fun defaultSession(): Session = Session(
         KeyVal("user", "user"),
         KeyVal("password", "passwd"),
     ),
+    globalHeaders = listOf(KeyVal("X-Client", "compose-apidemo")),   // inherited by every request
     packs = listOf(
-        SavedPack(pack = Pack(name = "Methods", color = 1, requests = listOf(
+        SavedPack(pack = Pack(name = "Methods", id = "pk-methods", color = 1,
+            headers = listOf(KeyVal("Accept", "application/json")),   // pack-level header, inherited by its requests
+            requests = listOf(
             ApiRequest(name = "GET — query params", method = ReqMethod.GET, url = "{{baseUrl}}/get",
                 params = listOf(KeyVal("q", "compose"), KeyVal("page", "1"))),
             ApiRequest(name = "POST — JSON", method = ReqMethod.POST, url = "{{baseUrl}}/post",
@@ -97,6 +100,11 @@ fun defaultSession(): Session = Session(
             ApiRequest(name = "PDF document", method = ReqMethod.GET, url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"),
             ApiRequest(name = "Random bytes (binary)", method = ReqMethod.GET, url = "{{baseUrl}}/bytes/64"),
         ))),
+        // Linked copy of "Methods": mirrors its requests read-only but overrides
+        // baseUrl to the httpbingo sibling, so the same calls run against another
+        // host. Showcases linked packs + per-pack variable override.
+        SavedPack(pack = Pack(name = "Methods · httpbingo", color = 6, requests = emptyList(),
+            variables = listOf(KeyVal("baseUrl", "https://httpbingo.org")), linkedTo = "pk-methods")),
     ),
 )
 
