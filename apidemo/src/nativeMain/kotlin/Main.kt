@@ -104,9 +104,16 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     var path by mutableStateOf(inPath)
     var dirty by mutableStateOf(inDirty)
     var color by mutableStateOf(inPack.color)
-    val requests = mutableStateListOf<ReqState>().apply {
-        inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
+    // A linked copy mirrors its source's requests read-only; non-linked packs own
+    // their requests. `requests` resolves to whichever applies.
+    var linkedSource by mutableStateOf<PackState?>(null)
+    private val fOwnRequests = mutableStateListOf<ReqState>().apply {
+        if (inPack.linkedTo != null) inPack.requests.forEach { add(ReqState(it)) }   // linked: no synthetic blank
+        else inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
     }
+    val requests: androidx.compose.runtime.snapshots.SnapshotStateList<ReqState>
+        get() = linkedSource?.requests ?: fOwnRequests
+    val isLinked: Boolean get() = linkedSource != null
     val variables = mutableStateListOf<KeyVal>().apply { addAll(inPack.variables) }
     val headers = mutableStateListOf<KeyVal>().apply { addAll(inPack.headers) }   // pack-level, inherited by requests
     var cert by mutableStateOf(inPack.cert)                                        // pack-level client cert (inherited)
@@ -119,7 +126,12 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     var expanded by mutableStateOf(true)   // sidebar fold state (transient — not part of the pack file)
     var envOpen by mutableStateOf(false)   // whether this pack's env tab is open in the strip (transient)
 
-    fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList(), color, headers.toList(), cert, id)
+    fun toPack(): Pack = Pack(
+        name = name,
+        requests = if (isLinked) emptyList() else requests.map { it.req },   // linked: requests live in the source
+        variables = variables.toList(), color = color, headers = headers.toList(), cert = cert,
+        id = id, linkedTo = linkedSource?.id,
+    )
 }
 
 /* A fresh random id for a pack (used to wire linked-copy packs to their source
@@ -160,6 +172,10 @@ private fun App() {
                 val vTabs = if (vFirst) emptyList() else vInitial.openTabs.getOrElse(vI) { emptyList() }
                 val vActIdx = if (!vFirst && vI == vInitial.activePack) vInitial.activeReq else -1
                 add(PackState(vSp.pack, vSp.path, vSp.dirty, vTabs, vActIdx))
+            }
+            // Wire linked-copy packs to their source by id (second pass).
+            vBoot.packs.forEachIndexed { vI, vSp ->
+                vSp.pack.linkedTo?.let { vSrcId -> getOrNull(vI)?.linkedSource = firstOrNull { it.id == vSrcId } }
             }
         }
     }
@@ -314,6 +330,7 @@ private fun App() {
     }
     fun edit(inT: (ApiRequest) -> ApiRequest) {
         val vP = activePack() ?: return
+        if (vP.isLinked) return                 // linked copies are read-only; edit the source
         val vRs = vP.active ?: return
         vRs.req = inT(vRs.req); vP.dirty = true
     }
@@ -431,8 +448,21 @@ private fun App() {
     }
     fun duplicatePack(inP: PackState) {
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
-        vPacks.add(vAt, PackState(inP.toPack().copy(name = "${inP.name} copy"), null, true))
+        vPacks.add(vAt, PackState(inP.toPack().copy(name = "${inP.name} copy", id = "", linkedTo = null), null, true))
         vActivePack = vAt; vReqMsg = null; persist()
+    }
+    // A linked copy mirrors inP's requests read-only but gets its own (copied)
+    // variables / headers / cert — for running the same calls against another env.
+    fun createLinkedPack(inP: PackState) {
+        val vSource = inP.linkedSource ?: inP   // link to the real source, never to another link
+        val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
+        val vNew = PackState(Pack(
+            name = "${vSource.name} (linked)", requests = emptyList(),
+            variables = vSource.variables.toList(), color = vSource.color,
+            headers = vSource.headers.toList(), cert = vSource.cert, linkedTo = vSource.id,
+        ), null, true)
+        vNew.linkedSource = vSource
+        vPacks.add(vAt, vNew); vActivePack = vAt; vReqMsg = null; persist()
     }
     fun renamePack(inP: PackState, inName: String) {
         if (inName.isNotBlank()) { inP.name = inName.trim(); inP.dirty = true; persist() }
@@ -458,6 +488,9 @@ private fun App() {
     fun loadSession(inSession: Session, inPath: String?) {
         vPacks.clear()
         inSession.packs.forEach { vPacks.add(PackState(it.pack, it.path, it.dirty)) }
+        inSession.packs.forEachIndexed { vI, vSp ->   // wire linked copies to their source by id
+            vSp.pack.linkedTo?.let { vSrcId -> vPacks.getOrNull(vI)?.linkedSource = vPacks.firstOrNull { it.id == vSrcId } }
+        }
         if (vPacks.isEmpty()) vPacks.add(PackState(Pack(), null, false))
         vGlobalEnv.clear(); vGlobalEnv.addAll(inSession.globalEnv)
         vSessionHeaders.clear(); vSessionHeaders.addAll(inSession.globalHeaders)
@@ -629,6 +662,7 @@ private fun App() {
                                                     inOnDeleteRequest = { vRs -> selectPack(vPack); vDeleteTarget = vRs },
                                                     inOnRenamePack = { vRenamePackTarget = vPack; vRenameText = vPack.name },
                                                     inOnDuplicatePack = { duplicatePack(vPack) },
+                                                    inOnLinkedCopy = { createLinkedPack(vPack) },
                                                     inOnSavePack = { selectPack(vPack); savePack() },
                                                     inOnSaveAsPack = { selectPack(vPack); saveAsPack() },
                                                     inOnRemovePack = { vRemovePackTarget = vPack },
@@ -760,6 +794,15 @@ private fun App() {
                                 }
                                 vReqActive != null && vP != null -> {
                                     val vReq = vReqActive.req
+                                    if (vP.isLinked) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().background(c.accent.copy(alpha = 0.12f)).padding(horizontal = 12.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        ) {
+                                            MaterialSymbolsOutlined(MaterialSymbols.Share, tint = c.accent, size = 14.dp)
+                                            Text("Linked copy — read-only. Runs with this pack's Var/Header/Cert; edit the request in “${vP.linkedSource?.name ?: "source"}”.", color = c.dim, fontSize = 11.sp)
+                                        }
+                                    }
                                     // Panel 2 — unified method · url · send.
                                     UrlBar(
                                         inReq = vReq,
@@ -1130,6 +1173,7 @@ private fun PackSection(
     inOnDeleteRequest: (ReqState) -> Unit,
     inOnRenamePack: () -> Unit,
     inOnDuplicatePack: () -> Unit,
+    inOnLinkedCopy: () -> Unit,
     inOnSavePack: () -> Unit,
     inOnSaveAsPack: () -> Unit,
     inOnRemovePack: () -> Unit,
@@ -1170,13 +1214,15 @@ private fun PackSection(
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 ColorDot(inPack.color)
+                if (inPack.isLinked) MaterialSymbolsOutlined(MaterialSymbols.Share, tint = c.dim, size = 12.dp)
                 Text(inPack.name, color = c.text, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${inPack.requests.size}", color = c.dim, fontSize = 11.sp)
             }
             // + (new request) and ⋮ (pack menu) — both reveal on hover only, so the
-            // header width never shifts (alpha, not conditional layout).
+            // header width never shifts (alpha, not conditional layout). A linked
+            // copy mirrors its source's requests, so it has no "new request".
             Row(modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f), verticalAlignment = Alignment.CenterVertically) {
-                IconBtn(MaterialSymbols.Add, "New request", inSize = 16.dp, inPadding = 4.dp) { inOnNewRequest() }
+                if (!inPack.isLinked) IconBtn(MaterialSymbols.Add, "New request", inSize = 16.dp, inPadding = 4.dp) { inOnNewRequest() }
                 Box {
                     IconBtn(MaterialSymbols.MoreHoriz, "Pack menu", inModifier = Modifier.menuAnchor(vAnchor), inSize = 16.dp, inPadding = 4.dp) { vAtCursor = false; vMenu = true }
                     DropdownMenu(
@@ -1189,6 +1235,7 @@ private fun PackSection(
                     ) {
                         DropdownMenuItem(onClick = { vMenu = false; inOnRenamePack() }) { MenuRow(MaterialSymbols.Edit, "Rename pack") }
                         DropdownMenuItem(onClick = { vMenu = false; inOnDuplicatePack() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate pack") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnLinkedCopy() }) { MenuRow(MaterialSymbols.Share, "Linked copy") }
                         DropdownMenuItem(onClick = { vMenu = false; inOnSavePack() }) { MenuRow(MaterialSymbols.Save, "Export pack") }
                         DropdownMenuItem(onClick = { vMenu = false; inOnSaveAsPack() }) { MenuRow(MaterialSymbols.Folder, "Export pack as…") }
                         Divider(color = c.border)
@@ -1223,8 +1270,8 @@ private fun PackSection(
                         // translate is draw-only (doesn't shift absoluteY), so the
                         // follow offset below stays correct while dragging.
                         if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(0f, vDragDy)
-                        Box(
-                            modifier = vMod.onDrag(
+                        // Linked copies mirror the source's requests — no reorder.
+                        if (!inPack.isLinked) vMod = vMod.onDrag(
                                 onStart = { _, vRelY -> vDragRs = vRs; vDragPressY = vRelY; vDragDy = 0f; vDragTarget = vReqs.indexOf(vRs) },
                                 onDrag = { _, vRelY ->
                                     val vd = vDragRs ?: return@onDrag
@@ -1250,11 +1297,12 @@ private fun PackSection(
                                     }
                                     vDragRs = null; vDragDy = 0f; vDragTarget = -1
                                 },
-                            ),
-                        ) {
+                            )
+                        Box(modifier = vMod) {
                             RequestRow(
                                 inRs = vRs,
                                 inSelected = vRs === inActiveReq,
+                                inReadOnly = inPack.isLinked,
                                 inOnOpen = { inOnOpenRequest(vRs) },
                                 inOnRename = { inOnRenameRequest(vRs) },
                                 inOnDuplicate = { inOnDuplicateRequest(vRs) },
@@ -1283,6 +1331,7 @@ private fun RequestRow(
     inOnDuplicate: () -> Unit,
     inOnCopyCurl: () -> Unit,
     inOnDelete: () -> Unit,
+    inReadOnly: Boolean = false,   // linked-pack rows: mirror only, no rename/duplicate/delete
 ) {
     val c = LocalAppColors.current
     val vReq = inRs.req
@@ -1318,10 +1367,10 @@ private fun RequestRow(
                 offsetY = if (vAtCursor) vMenuY.dp else 0.dp,
                 minWidth = 168.dp,
             ) {
-                DropdownMenuItem(onClick = { vMenu = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename") }
-                DropdownMenuItem(onClick = { vMenu = false; inOnDuplicate() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }
+                if (!inReadOnly) DropdownMenuItem(onClick = { vMenu = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename") }
+                if (!inReadOnly) DropdownMenuItem(onClick = { vMenu = false; inOnDuplicate() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }
                 DropdownMenuItem(onClick = { vMenu = false; inOnCopyCurl() }) { MenuRow(MaterialSymbols.Terminal, "Copy as cURL") }
-                DropdownMenuItem(onClick = { vMenu = false; inOnDelete() }) { MenuRow(MaterialSymbols.Delete, "Delete", methodColor(ReqMethod.DELETE)) }
+                if (!inReadOnly) DropdownMenuItem(onClick = { vMenu = false; inOnDelete() }) { MenuRow(MaterialSymbols.Delete, "Delete", methodColor(ReqMethod.DELETE)) }
             }
         }
     }
