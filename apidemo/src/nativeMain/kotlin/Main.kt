@@ -31,6 +31,8 @@ import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbol
 import com.compose.desktop.native.nativeComposeWindow
 import com.compose.desktop.native.registerMemoryResource
 import com.compose.desktop.native.removeMemoryResource
+import com.compose.desktop.native.fileManagerName
+import com.compose.desktop.native.revealInFileManager
 import com.compose.desktop.native.showOpenFileDialog
 import com.compose.desktop.native.showSaveFileDialog
 import com.compose.desktop.native.widgets.HorizontalSplitPane
@@ -143,6 +145,7 @@ private fun App() {
     var vRenameTarget by remember { mutableStateOf<ReqState?>(null) }
     var vRenameText by remember { mutableStateOf("") }
     var vRenamePackTarget by remember { mutableStateOf<PackState?>(null) }
+    var vRenameSession by remember { mutableStateOf(false) }
     var vRemovePackTarget by remember { mutableStateOf<PackState?>(null) }
     var vDeleteTarget by remember { mutableStateOf<ReqState?>(null) }
     var vQuitDialog by remember { mutableStateOf(false) }
@@ -346,6 +349,14 @@ private fun App() {
         vPacks.clear(); vPacks.add(PackState(Pack(name = "My Pack"), null, false))
         vGlobalEnv.clear(); vActivePack = 0; vSessionPath = null; vReqMsg = null; persist()
     }
+    fun renameSession(inName: String) {
+        val vOld = vSessionPath ?: return
+        if (inName.isBlank()) return
+        renameFile(vOld, inName).fold(
+            onSuccess = { vNew -> vRecent.remove(vOld); vSessionPath = vNew; rememberRecent(vNew); vReqMsg = "Session renamed."; persist() },
+            onFailure = { vReqMsg = "Rename failed: ${it.message}" },
+        )
+    }
 
     // ============
     //  Warn-on-quit: persist always; veto if anything is unsaved-to-file.
@@ -359,19 +370,20 @@ private fun App() {
             if (vKey.type != KeyEventType.Down) return@setOnKeyShortcut false
             // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
             // open at a time, so run whichever action applies and clear them all.
-            if (vRenameTarget != null || vRenamePackTarget != null || vRemovePackTarget != null || vDeleteTarget != null || vQuitDialog) {
+            if (vRenameTarget != null || vRenamePackTarget != null || vRenameSession || vRemovePackTarget != null || vDeleteTarget != null || vQuitDialog) {
                 when (vKey.keyCode) {
                     kScEscape -> {
-                        vRenameTarget = null; vRenamePackTarget = null; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                     kScEnter, kScKpEnter -> {
                         vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
                         vRenamePackTarget?.let { renamePack(it, vRenameText) }
+                        if (vRenameSession) renameSession(vRenameText)
                         vRemovePackTarget?.let { closePack(vPacks.indexOf(it)) }
                         vDeleteTarget?.let { deleteRequest(it) }
                         if (vQuitDialog) savePack()
-                        vRenameTarget = null; vRenamePackTarget = null; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
+                        vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget = null; vDeleteTarget = null; vQuitDialog = false
                         return@setOnKeyShortcut true
                     }
                 }
@@ -425,6 +437,8 @@ private fun App() {
                                     inRecent = vRecent,
                                     inOnSave = { saveSession() },
                                     inOnSaveAs = { saveSessionAs() },
+                                    inOnRename = { vSessionPath?.let { vRenameSession = true; vRenameText = fileLeaf(it) } },
+                                    inOnReveal = { vSessionPath?.let { revealInFileManager(it) } },
                                     inOnOpen = { openSessionFile() },
                                     inOnNew = { newSession() },
                                     inOnOpenRecent = { openSession(it) },
@@ -644,6 +658,24 @@ private fun App() {
                 }
             }
 
+            if (vRenameSession) {
+                Dialog(onDismissRequest = { vRenameSession = false }) {
+                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Rename session", color = c.text, fontSize = 16.sp)
+                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "File name")
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Button(onClick = {
+                                    renameSession(vRenameText)
+                                    vRenameSession = false
+                                }) { BtnContent(MaterialSymbols.Check, "Rename", c.onAccent) }
+                                OutlinedButton(onClick = { vRenameSession = false }) { Text("Cancel", color = c.text) }
+                            }
+                        }
+                    }
+                }
+            }
+
             val vDel = vDeleteTarget
             if (vDel != null) {
                 val vName = vDel.req.name
@@ -792,6 +824,8 @@ private fun SessionMenu(
     inRecent: List<String>,
     inOnSave: () -> Unit,
     inOnSaveAs: () -> Unit,
+    inOnRename: () -> Unit,
+    inOnReveal: () -> Unit,
     inOnOpen: () -> Unit,
     inOnNew: () -> Unit,
     inOnOpenRecent: (String) -> Unit,
@@ -800,6 +834,7 @@ private fun SessionMenu(
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
+    val vSaved = inPath != null
     val vName = inPath?.let { fileLeaf(it) } ?: "Untitled session"
     Box(modifier = inModifier) {
         Row(
@@ -816,6 +851,11 @@ private fun SessionMenu(
         DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 248.dp) {
             DropdownMenuItem(onClick = { vOpen = false; inOnSave() }) { MenuRow(MaterialSymbols.Save, "Save session") }
             DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Download, "Save session as…") }
+            if (vSaved) {
+                DropdownMenuItem(onClick = { vOpen = false; inOnRename() }) { MenuRow(MaterialSymbols.Edit, "Rename session…") }
+                DropdownMenuItem(onClick = { vOpen = false; inOnReveal() }) { MenuRow(MaterialSymbols.Folder, "Reveal in ${fileManagerName()}") }
+            }
+            Divider(color = c.border)
             DropdownMenuItem(onClick = { vOpen = false; inOnOpen() }) { MenuRow(MaterialSymbols.Folder, "Open session…") }
             DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New session") }
             if (inRecent.isNotEmpty()) {

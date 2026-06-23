@@ -53,6 +53,18 @@ fun importSession(inPath: String): Result<Session> = try {
     Result.failure(e)
 }
 
+/* Rename inPath to inNewName within the same directory (adding a .json
+   extension when the new name has none), returning the new path on success. */
+fun renameFile(inPath: String, inNewName: String): Result<String> = try {
+    val vSrc = inPath.trim().toPath()
+    val vLeaf = inNewName.trim().let { if (it.contains('.')) it else "$it.json" }
+    val vDst = vSrc.parent?.div(vLeaf) ?: vLeaf.toPath()
+    FileSystem.SYSTEM.atomicMove(vSrc, vDst)
+    Result.success(vDst.toString())
+} catch (e: Throwable) {
+    Result.failure(e)
+}
+
 /* Write arbitrary text (a response body / headers dump) to inPath. Returns null
    on success, else the error message. */
 fun writeTextFile(inPath: String, inText: String): String? = try {
