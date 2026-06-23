@@ -36,7 +36,7 @@ import com.compose.desktop.native.revealInFileManager
 import com.compose.desktop.native.showOpenFileDialog
 import com.compose.desktop.native.showSaveFileDialog
 import com.compose.desktop.native.widgets.HorizontalSplitPane
-import androidx.compose.ui.window.PositionedPopup
+import androidx.compose.ui.window.Popup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -1550,7 +1550,10 @@ private fun BodyTypeMenu(inType: BodyType, inEnabled: Boolean, inOnPick: (BodyTy
 private fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -> Unit) {
     val c = LocalAppColors.current
     Dialog(onDismissRequest = inOnDismiss) {
-        Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(620.dp)) {
+        // Width must stay within DialogDefaults.MaxWidth (560dp) or content
+        // overflows the dialog's click-swallow box onto the scrim — which would
+        // make clicks there dismiss the dialog and swallow hover.
+        Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(540.dp)) {
             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     MaterialSymbolsOutlined(MaterialSymbols.Lock, tint = c.accent, size = 20.dp)
@@ -1570,10 +1573,8 @@ private fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () ->
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        val vAnyPem = vCerts.any { certField(it.fields, "Cert") != null }
-                        if (vAnyPem) IconLabelChip(MaterialSymbols.ContentCopy, "Copy chain") {
-                            currentClipboard.setText(vCerts.mapNotNull { certField(it.fields, "Cert") }.joinToString("\n"))
-                        }
+                        val vChainPem = vCerts.mapNotNull { certField(it.fields, "Cert") }.joinToString("\n")
+                        if (vChainPem.isNotEmpty()) CopyButton(vChainPem, "Copy chain")
                         OutlinedButton(onClick = inOnDismiss) { Text("Close", color = c.text) }
                     }
                 }
@@ -1606,7 +1607,7 @@ private fun CertCard(inIndex: Int, inCert: ChainCert) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex", color = c.accent, fontSize = 12.sp, modifier = Modifier.weight(1f))
             if (!inCert.fromServer) Text(if (vPem != null) "from OS store" else "not presented", color = c.dim, fontSize = 10.sp)
-            if (vPem != null) TooltipBox(text = "Copy PEM") { CopyPemButton(vPem) }
+            if (vPem != null) CopyButton(vPem)
         }
         vSubject?.let { CertLine("Subject", it) }
         if (vSelfSigned) Text("Self-signed", color = kSelfSignedColor, fontSize = 12.sp)
@@ -1617,10 +1618,12 @@ private fun CertCard(inIndex: Int, inCert: ChainCert) {
 
 private val kSelfSignedColor = Color(0xFF3FB950L)
 
-/* Rounded-square icon button (hover overlay, real click) that copies a PEM and
-   flashes a "Copied" popup for 2s — without dismissing the chain dialog. */
+/* Copy button — rounded, hover overlay, real click that copies inText and shows
+   a green check. Icon-only (per cert) flashes a small floating "Copied" bubble
+   for 2s; the labelled variant (Copy chain) flips its label to "Copied" instead.
+   Uses a non-catching Popup so it never dismisses the dialog or eats clicks. */
 @Composable
-private fun CopyPemButton(inPem: String) {
+private fun CopyButton(inText: String, inLabel: String? = null) {
     val c = LocalAppColors.current
     var vCopied by remember { mutableStateOf(false) }
     var vHover by remember { mutableStateOf(false) }
@@ -1628,29 +1631,33 @@ private fun CopyPemButton(inPem: String) {
     var vY by remember { mutableStateOf(0) }
     var vHeight by remember { mutableStateOf(0) }
     LaunchedEffect(vCopied) { if (vCopied) { delay(2000); vCopied = false } }
-    Box(
+    Row(
         modifier = Modifier
             .onGloballyPositioned { vX = it.x; vY = it.y }
             .onSizeChanged { vHeight = it.height }
-            .size(26.dp)
             .clip(RoundedCornerShape(7.dp))
-            .background(if (vHover) c.dim.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(7.dp))
+            .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(7.dp))
             .hoverable { vHover = it }
-            .clickable { currentClipboard.setText(inPem); vCopied = true },
-        contentAlignment = Alignment.Center,
+            .clickable { currentClipboard.setText(inText); vCopied = true }
+            .padding(horizontal = if (inLabel != null) 10.dp else 5.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         MaterialSymbolsOutlined(
             if (vCopied) MaterialSymbols.Check else MaterialSymbols.ContentCopy,
-            contentDescription = "Copy PEM",
+            contentDescription = inLabel ?: "Copy PEM",
             tint = if (vCopied) kSelfSignedColor else c.dim,
             size = 15.dp,
         )
+        if (inLabel != null) Text(if (vCopied) "Copied" else inLabel, color = if (vCopied) kSelfSignedColor else c.text, fontSize = 12.sp)
     }
-    if (vCopied) {
-        PositionedPopup(x = vX.dp, y = (vY + vHeight + 4).dp, onDismissRequest = { vCopied = false }) {
+    // Icon-only: float a tiny "Copied" bubble (non-catching popup → no dismiss).
+    if (vCopied && inLabel == null) {
+        Popup(modal = false) {
             Box(
-                modifier = Modifier.clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xE6111111L), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
+                modifier = Modifier.offset(vX.dp, (vY + vHeight + 4).dp)
+                    .clip(RoundedCornerShape(4.dp)).background(Color(0xE6111111L), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
             ) { Text("Copied", color = Color.White, fontSize = 11.sp) }
         }
     }
