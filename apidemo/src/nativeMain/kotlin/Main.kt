@@ -1677,15 +1677,17 @@ private fun CertLine(inLabel: String, inValue: String) {
 private fun certField(inFields: List<Pair<String, String>>, inName: String): String? =
     inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
 
-/* The CN= value out of a distinguished-name string (copes with ", " RDN and "/"
-   OpenSSL separators), e.g. "ISRG Root X1". Null when there's no CN. */
+/* The CN= value out of a distinguished-name string. Handles every
+   format the platform backends emit:
+     "CN=R3, O=Let's Encrypt, C=US"        (Windows CertGetNameStringA)
+     "/C=US/O=Let's Encrypt/CN=R3"          (OpenSSL X509_NAME_oneline)
+     "CN = R3, O = Let's Encrypt, C = US"   (OpenSSL X509_NAME_print_ex
+                                             default, with spaces — what
+                                             libcurl on macOS emits)
+   Null when there's no CN. */
 private fun cnOf(inDn: String): String? {
-    val vStart = inDn.indexOf("CN=", ignoreCase = true)
-    if (vStart < 0) return null
-    var vRest = inDn.substring(vStart + 3).trimStart()
-    val vEnd = vRest.indexOfFirst { it == ',' || it == '/' }
-    if (vEnd >= 0) vRest = vRest.substring(0, vEnd)
-    return vRest.trim().ifBlank { null }
+    val vMatch = Regex("""(?i)\bCN\s*=\s*([^,/]+)""").find(inDn) ?: return null
+    return vMatch.groupValues[1].trim().ifBlank { null }
 }
 
 /* The host portion of a URL (for the chain dialog header). */
