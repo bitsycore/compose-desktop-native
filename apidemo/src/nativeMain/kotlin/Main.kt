@@ -249,9 +249,9 @@ private fun App() {
             if (vPath != null) importPack(vPath).fold(
                 onSuccess = { vPk ->
                     vPacks.add(PackState(vPk, vPath, false)); vActivePack = vPacks.size - 1
-                    vReqMsg = "Opened ${vPk.name}."; persist()
+                    vReqMsg = "Imported ${vPk.name}."; persist()
                 },
-                onFailure = { vReqMsg = "Open failed: ${it.message}" },
+                onFailure = { vReqMsg = "Import failed: ${it.message}" },
             )
         }
     }
@@ -260,8 +260,8 @@ private fun App() {
         showSaveFileDialog("${vP.name}.json") { vPath ->
             if (vPath != null) {
                 val vErr = exportPack(vP.toPack(), vPath)
-                if (vErr == null) { vP.path = vPath; vP.dirty = false; vReqMsg = "Saved."; persist() }
-                else vReqMsg = "Save failed: $vErr"
+                if (vErr == null) { vP.path = vPath; vP.dirty = false; vReqMsg = "Exported."; persist() }
+                else vReqMsg = "Export failed: $vErr"
             }
         }
     }
@@ -270,7 +270,7 @@ private fun App() {
         val vPath = vP.path
         if (vPath == null) { saveAsPack(); return }
         val vErr = exportPack(vP.toPack(), vPath)
-        if (vErr == null) { vP.dirty = false; vReqMsg = "Saved."; persist() } else vReqMsg = "Save failed: $vErr"
+        if (vErr == null) { vP.dirty = false; vReqMsg = "Exported."; persist() } else vReqMsg = "Export failed: $vErr"
     }
     fun closePack(inIdx: Int) {
         if (inIdx !in vPacks.indices) return
@@ -419,8 +419,7 @@ private fun App() {
                                     inOnOpenRecent = { openSession(it) },
                                     inModifier = Modifier.weight(1f),
                                 )
-                                IconBtn(MaterialSymbols.Add, "New pack", inSize = 18.dp) { newPack() }
-                                IconBtn(MaterialSymbols.Folder, "Open pack…", inSize = 18.dp) { openPackFile() }
+                                AddPackMenu(inOnNew = { newPack() }, inOnImport = { openPackFile() })
                                 OptionsMenu(
                                     inDark = vDark,
                                     inOnToggleTheme = { vDark = !vDark; persist() },
@@ -527,7 +526,7 @@ private fun App() {
                             Text("No pack open.", color = c.dim)
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 OutlinedAction(MaterialSymbols.Add, "New pack") { newPack() }
-                                OutlinedAction(MaterialSymbols.Folder, "Open pack…") { openPackFile() }
+                                OutlinedAction(MaterialSymbols.Folder, "Import pack…") { openPackFile() }
                                 OutlinedAction(MaterialSymbols.Refresh, "Load default") { loadDefaultPack() }
                             }
                             Spacer(Modifier.weight(1f))
@@ -667,7 +666,7 @@ private fun App() {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedButton(onClick = { vQuitDialog = false }) { Text("Keep editing", color = c.text) }
-                                    Button(onClick = { vQuitDialog = false; savePack() }) { BtnContent(MaterialSymbols.Save, "Save pack", c.onAccent) }
+                                    Button(onClick = { vQuitDialog = false; savePack() }) { BtnContent(MaterialSymbols.Save, "Export pack", c.onAccent) }
                                     DangerButton("Quit anyway", MaterialSymbols.Close) { persist(); vWindow.close() }
                                 }
                             }
@@ -714,6 +713,25 @@ private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
                     )
                 }
             }
+        }
+    }
+}
+
+// ==================
+// MARK: Add-pack menu (header '+')
+// ==================
+
+/* The header '+' — a small menu to add a pack to the open session, either blank
+   or imported from a .json file. Importing a pack always lands it in the session. */
+@Composable
+private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit) {
+    val vAnchor = rememberMenuAnchor()
+    var vOpen by remember { mutableStateOf(false) }
+    Box {
+        IconBtn(MaterialSymbols.Add, "Add pack", inModifier = Modifier.menuAnchor(vAnchor), inSize = 18.dp) { vOpen = true }
+        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 200.dp) {
+            DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnImport() }) { MenuRow(MaterialSymbols.Download, "Import pack…") }
         }
     }
 }
@@ -858,8 +876,8 @@ private fun PackSection(
                     ) {
                         DropdownMenuItem(onClick = { vMenu = false; inOnRenamePack() }) { MenuRow(MaterialSymbols.Edit, "Rename pack") }
                         DropdownMenuItem(onClick = { vMenu = false; inOnDuplicatePack() }) { MenuRow(MaterialSymbols.FileCopy, "Duplicate pack") }
-                        DropdownMenuItem(onClick = { vMenu = false; inOnSavePack() }) { MenuRow(MaterialSymbols.Save, "Save pack") }
-                        DropdownMenuItem(onClick = { vMenu = false; inOnSaveAsPack() }) { MenuRow(MaterialSymbols.Folder, "Save pack as…") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnSavePack() }) { MenuRow(MaterialSymbols.Save, "Export pack") }
+                        DropdownMenuItem(onClick = { vMenu = false; inOnSaveAsPack() }) { MenuRow(MaterialSymbols.Folder, "Export pack as…") }
                         Divider(color = c.border)
                         PackColorPicker(inPack.color) { inOnSetColor(it) }
                         Divider(color = c.border)
@@ -1141,7 +1159,7 @@ private fun OptionsMenu(
                 Text("Light mode", color = if (!inDark) c.accent else c.text, fontSize = 13.sp)
             }
             Divider(color = c.border)
-            DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Save, "Save pack as…") }
+            DropdownMenuItem(onClick = { vOpen = false; inOnSaveAs() }) { MenuRow(MaterialSymbols.Save, "Export pack as…") }
             DropdownMenuItem(onClick = { vOpen = false; inOnClosePack() }) { MenuRow(MaterialSymbols.Close, "Close pack") }
             Divider(color = c.border)
             DropdownMenuItem(onClick = { vOpen = false; inOnLoadDefault() }) { MenuRow(MaterialSymbols.Refresh, "Load default pack") }
