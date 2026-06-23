@@ -1529,7 +1529,21 @@ private fun UrlBar(
 
         // Inspect the server's TLS certificate chain (handshake-only probe).
         if (inChainLoading) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = c.accent, strokeWidth = 2.dp)
-        else IconBtn(MaterialSymbols.Lock, "Inspect TLS chain", inSize = 18.dp, inOnClick = inOnInspectChain)
+        else {
+            var vLockHover by remember { mutableStateOf(false) }
+            TooltipBox(text = "Inspect TLS certificate chain") {
+                Box(
+                    modifier = Modifier.clip(RoundedCornerShape(6.dp))
+                        .background(if (vLockHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
+                        .hoverable { vLockHover = it }
+                        .clickable(onClick = inOnInspectChain)
+                        .padding(6.dp),
+                ) {
+                    MaterialSymbolsOutlined(MaterialSymbols.Lock, contentDescription = "Inspect TLS chain",
+                        tint = if (vLockHover) c.accent else c.dim, size = 18.dp)
+                }
+            }
+        }
 
         // Send and Cancel are the same Material Button (same MinHeight + padding)
         // so the bar never changes height when toggling — Cancel is just red.
