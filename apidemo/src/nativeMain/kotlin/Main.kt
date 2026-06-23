@@ -8,12 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.translate
 import androidx.compose.ui.draw.zIndex
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.StrokeCap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEventType
@@ -40,8 +36,10 @@ import com.compose.desktop.native.revealInFileManager
 import com.compose.desktop.native.showOpenFileDialog
 import com.compose.desktop.native.showSaveFileDialog
 import com.compose.desktop.native.widgets.HorizontalSplitPane
+import androidx.compose.ui.window.PositionedPopup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -1585,48 +1583,76 @@ private fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () ->
 }
 
 /* One certificate's summary card (subject / issuer / validity). Server-presented
-   certs get a solid outline; derived ones (issuer pulled from the OS store, or a
-   name-only placeholder) get a dotted outline. A copy-PEM button shows when the
-   cert carries its PEM. */
+   certs get a solid border; derived ones (issuer pulled from the OS store, or a
+   name-only placeholder) get an accent-coloured border + a label. A self-signed
+   cert shows "Self-signed" in green instead of repeating its issuer. */
 @Composable
 private fun CertCard(inIndex: Int, inCert: ChainCert) {
     val c = LocalAppColors.current
     val vFields = inCert.fields
+    val vSubject = certField(vFields, "Subject")
+    val vIssuer = certField(vFields, "Issuer")
+    val vSelfSigned = vIssuer != null && vIssuer == vSubject
     val vFrom = certField(vFields, "Start date") ?: certField(vFields, "Start Date")
     val vTo = certField(vFields, "Expire date") ?: certField(vFields, "Expire Date")
     val vPem = certField(vFields, "Cert")
-    var vMod = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
-        .background(c.field.copy(alpha = if (inCert.fromServer) 1f else 0.35f), RoundedCornerShape(8.dp))
-    vMod = if (inCert.fromServer) vMod.border(1.dp, c.border, RoundedCornerShape(8.dp)) else vMod.dottedBorder(c.dim)
-    Column(modifier = vMod.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+    Column(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+            .background(c.field.copy(alpha = if (inCert.fromServer) 1f else 0.4f), RoundedCornerShape(8.dp))
+            .border(if (inCert.fromServer) 1.dp else 1.5.dp, if (inCert.fromServer) c.border else c.accent, RoundedCornerShape(8.dp))
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex", color = c.accent, fontSize = 12.sp, modifier = Modifier.weight(1f))
             if (!inCert.fromServer) Text(if (vPem != null) "from OS store" else "not presented", color = c.dim, fontSize = 10.sp)
-            if (vPem != null) TooltipBox(text = "Copy PEM") {
-                IconBtn(MaterialSymbols.ContentCopy, "Copy PEM", inSize = 15.dp, inPadding = 3.dp) { currentClipboard.setText(vPem) }
-            }
+            if (vPem != null) TooltipBox(text = "Copy PEM") { CopyPemButton(vPem) }
         }
-        certField(vFields, "Subject")?.let { CertLine("Subject", it) }
-        certField(vFields, "Issuer")?.let { CertLine("Issuer", it) }
+        vSubject?.let { CertLine("Subject", it) }
+        if (vSelfSigned) Text("Self-signed", color = kSelfSignedColor, fontSize = 12.sp)
+        else vIssuer?.let { CertLine("Issuer", it) }
         if (vFrom != null || vTo != null) CertLine("Valid", "${vFrom ?: "?"}  →  ${vTo ?: "?"}")
     }
 }
 
-/* A hand-drawn dotted rectangular outline (no PathEffect in this renderer). */
-private fun Modifier.dottedBorder(inColor: Color): Modifier = this.drawBehind {
-    val vDash = 3f; val vStep = 7f; val vW = 1.5f
-    val vBrush = SolidColor(inColor)
-    var vX = 0f
-    while (vX < size.width) {
-        drawLine(vBrush, Offset(vX, 0f), Offset(minOf(vX + vDash, size.width), 0f), vW, StrokeCap.Round)
-        drawLine(vBrush, Offset(vX, size.height), Offset(minOf(vX + vDash, size.width), size.height), vW, StrokeCap.Round)
-        vX += vStep
+private val kSelfSignedColor = Color(0xFF3FB950L)
+
+/* Rounded-square icon button (hover overlay, real click) that copies a PEM and
+   flashes a "Copied" popup for 2s — without dismissing the chain dialog. */
+@Composable
+private fun CopyPemButton(inPem: String) {
+    val c = LocalAppColors.current
+    var vCopied by remember { mutableStateOf(false) }
+    var vHover by remember { mutableStateOf(false) }
+    var vX by remember { mutableStateOf(0) }
+    var vY by remember { mutableStateOf(0) }
+    var vHeight by remember { mutableStateOf(0) }
+    LaunchedEffect(vCopied) { if (vCopied) { delay(2000); vCopied = false } }
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned { vX = it.x; vY = it.y }
+            .onSizeChanged { vHeight = it.height }
+            .size(26.dp)
+            .clip(RoundedCornerShape(7.dp))
+            .background(if (vHover) c.dim.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(7.dp))
+            .hoverable { vHover = it }
+            .clickable { currentClipboard.setText(inPem); vCopied = true },
+        contentAlignment = Alignment.Center,
+    ) {
+        MaterialSymbolsOutlined(
+            if (vCopied) MaterialSymbols.Check else MaterialSymbols.ContentCopy,
+            contentDescription = "Copy PEM",
+            tint = if (vCopied) kSelfSignedColor else c.dim,
+            size = 15.dp,
+        )
     }
-    var vY = 0f
-    while (vY < size.height) {
-        drawLine(vBrush, Offset(0f, vY), Offset(0f, minOf(vY + vDash, size.height)), vW, StrokeCap.Round)
-        drawLine(vBrush, Offset(size.width, vY), Offset(size.width, minOf(vY + vDash, size.height)), vW, StrokeCap.Round)
-        vY += vStep
+    if (vCopied) {
+        PositionedPopup(x = vX.dp, y = (vY + vHeight + 4).dp, onDismissRequest = { vCopied = false }) {
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xE6111111L), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
+            ) { Text("Copied", color = Color.White, fontSize = 11.sp) }
+        }
     }
 }
 
