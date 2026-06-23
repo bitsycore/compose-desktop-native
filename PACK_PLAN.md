@@ -67,6 +67,17 @@ Migration: `loadAppState` maps any old flat `packs: List<SavedPack>` → `roots`
 
 ## Phases (each must build + be committed)
 
+> **Reordering note:** the tree restructure (P1/P2/P8) is the one big atomic
+> change and is highest-risk, so it's being landed LAST. The inheritance,
+> settings and linked-pack work (P3–P7) ships first on the current flat
+> session→pack→request model — the inheritance helpers already walk a chain, so
+> they extend to sub-packs for free once the tree lands. Progress:
+> - DONE: container-settings data (CertConfig, pack/session headers+cert+id).
+> - DONE: Env→Var / Global→Session UI rename.
+> - DONE: **P4** — Var/Header sub-tabs (session + pack settings).
+> - DONE: **P5** — header inheritance (session+pack) + Override in the request.
+> - NEXT: P6 (cert), P7 (linked pack), then P1/P2/P8 (tree).
+
 - [ ] **P1 — Tree model + persistence.** TreeNode/PackState.children/sub-packs;
       `vRoots` replaces `vPacks`; recursive serialized NodeData; migrate
       load/save/export/import; sidebar renders the tree recursively (indented
