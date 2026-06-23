@@ -24,6 +24,11 @@ data class AppState(
     val activePack: Int = 0,
     val currentSession: String? = null,        // path of the session file currently open (null = unsaved)
     val recentSessions: List<String> = emptyList(),   // most-recent-first session file paths
+    // Which tabs were open, per pack (indices into that pack's requests), and the
+    // active request within the active pack. Restored on relaunch but deliberately
+    // NOT part of Session, so exported session files don't carry open-tab state.
+    val openTabs: List<List<Int>> = emptyList(),
+    val activeReq: Int = -1,
 )
 
 /* A pack as stored in the app state: the pack content plus where it was last

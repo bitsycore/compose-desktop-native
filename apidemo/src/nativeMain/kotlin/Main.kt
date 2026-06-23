@@ -93,7 +93,7 @@ private class ReqState(inInitial: ApiRequest) {
 /* One open pack: its file path (null = never saved), a dirty flag (edits since
    last file save), and its own requests, variables and open-tab strip. Switching
    packs swaps the whole working set. */
-private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean) {
+private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenTabs: List<Int> = emptyList(), inActive: Int = -1) {
     var name by mutableStateOf(inPack.name)
     var path by mutableStateOf(inPath)
     var dirty by mutableStateOf(inDirty)
@@ -102,8 +102,11 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean) {
         inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
     }
     val variables = mutableStateListOf<KeyVal>().apply { addAll(inPack.variables) }
-    val openTabs = mutableStateListOf<ReqState>().apply { requests.firstOrNull()?.let { add(it) } }
-    var active by mutableStateOf(requests.firstOrNull())
+    // No auto-open: tabs start empty and are restored from persisted state only.
+    val openTabs = mutableStateListOf<ReqState>().apply {
+        inOpenTabs.forEach { vIdx -> requests.getOrNull(vIdx)?.let { add(it) } }
+    }
+    var active by mutableStateOf(requests.getOrNull(inActive)?.takeIf { it in openTabs } ?: openTabs.firstOrNull())
     var expanded by mutableStateOf(true)   // sidebar fold state (transient — not part of the pack file)
 
     fun toPack(): Pack = Pack(name, requests.map { it.req }, variables.toList(), color)
@@ -124,16 +127,34 @@ private fun App() {
 
     // First launch (or empty saved state) → boot from the default session (an
     // unsaved, multi-pack working set); otherwise restore the persisted session.
+    val vFirst = !vInitial.launched || vInitial.packs.isEmpty()
     val vBoot = remember {
-        if (!vInitial.launched || vInitial.packs.isEmpty()) defaultSession()
+        if (vFirst) defaultSession()
         else Session(vInitial.packs, vInitial.globalEnv, vInitial.activePack)
     }
     val vPacks = remember {
-        mutableStateListOf<PackState>().apply { vBoot.packs.forEach { add(PackState(it.pack, it.path, it.dirty)) } }
+        mutableStateListOf<PackState>().apply {
+            vBoot.packs.forEachIndexed { vI, vSp ->
+                // Open tabs are restored from the persisted app state (never from a
+                // session file), so a fresh / file-loaded session opens with no tabs.
+                val vTabs = if (vFirst) emptyList() else vInitial.openTabs.getOrElse(vI) { emptyList() }
+                val vActIdx = if (!vFirst && vI == vInitial.activePack) vInitial.activeReq else -1
+                add(PackState(vSp.pack, vSp.path, vSp.dirty, vTabs, vActIdx))
+            }
+        }
     }
     val vGlobalEnv = remember { mutableStateListOf<KeyVal>().apply { addAll(vBoot.globalEnv) } }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
-    var vActivePack by remember { mutableStateOf(vBoot.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))) }
+    // Focus the saved active pack, but fall back to one that actually has tabs so
+    // the strip shows whenever any tab is open.
+    var vActivePack by remember {
+        mutableStateOf(
+            vBoot.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0)).let { vIdx ->
+                if (vPacks.getOrNull(vIdx)?.openTabs?.isNotEmpty() == true) vIdx
+                else vPacks.indexOfFirst { it.openTabs.isNotEmpty() }.takeIf { it >= 0 } ?: vIdx
+            }
+        )
+    }
 
     // The single open session (self-contained working set) + recent session files.
     var vSessionPath by remember { mutableStateOf(vInitial.currentSession) }
@@ -158,6 +179,9 @@ private fun App() {
     fun persist() {
         val vSaved = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) }
         val vGE = vGlobalEnv.toList()
+        // Open-tab state — persisted in app state only, not in the session file.
+        val vOpen = vPacks.map { vP -> vP.openTabs.mapNotNull { vRs -> vP.requests.indexOf(vRs).takeIf { it >= 0 } } }
+        val vActiveReq = vPacks.getOrNull(vActivePack)?.let { it.requests.indexOf(it.active) } ?: -1
         saveAppState(AppState(
             launched = true,
             dark = vDark,
@@ -166,9 +190,12 @@ private fun App() {
             activePack = vActivePack,
             currentSession = vSessionPath,
             recentSessions = vRecent.toList(),
+            openTabs = vOpen,
+            activeReq = vActiveReq,
         ))
         // A session opened from / saved to a file auto-saves back to it on every
-        // change — once it has a file, it's always in sync (best-effort).
+        // change — once it has a file, it's always in sync (best-effort). The
+        // Session has no open-tab fields, so the file never carries them.
         vSessionPath?.let { exportSession(Session(vSaved, vGE, vActivePack), it) }
     }
 
@@ -276,8 +303,10 @@ private fun App() {
     // ============
     //  Pack actions
     fun newPack() {
-        vPacks.add(PackState(Pack(name = "Pack ${vPacks.size + 1}"), null, false))
-        vActivePack = vPacks.size - 1; vReqMsg = null; persist()
+        val vP = PackState(Pack(name = "Pack ${vPacks.size + 1}"), null, false)
+        vPacks.add(vP); vActivePack = vPacks.size - 1; vReqMsg = null
+        vP.requests.firstOrNull()?.let { vP.openTabs.add(it); vP.active = it }   // open its request so the editor isn't empty
+        persist()
     }
     fun openPackFile() {
         showOpenFileDialog { vPath ->
