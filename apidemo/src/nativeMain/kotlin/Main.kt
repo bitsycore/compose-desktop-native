@@ -279,20 +279,21 @@ private fun App() {
     fun stripTabs(): List<StripTab> = vPacks.flatMap { vQ ->
         buildList { if (vQ.envOpen) add(StripTab(vQ, null)); vQ.openTabs.forEach { add(StripTab(vQ, it)) } }
     }
-    fun open(inRs: ReqState) {
-        val vP = packOf(inRs) ?: return
-        if (inRs !in vP.openTabs) vP.openTabs.add(inRs)
-        vActivePack = vPacks.indexOf(vP); vP.active = inRs; vEnvActive = false; vReqMsg = null
+    // Open a request in a specific pack's context (a linked copy shares the
+    // source's ReqState objects, so the pack must be passed — packOf would
+    // resolve to the source, not the linked copy).
+    fun open(inRs: ReqState, inPack: PackState) {
+        if (inRs !in inPack.openTabs) inPack.openTabs.add(inRs)
+        vActivePack = vPacks.indexOf(inPack).coerceAtLeast(0); inPack.active = inRs; vEnvActive = false; vReqMsg = null
     }
     fun openEnv(inP: PackState) {
         vActivePack = vPacks.indexOf(inP).coerceAtLeast(0)
         inP.envOpen = true; vEnvActive = true; vReqMsg = null
     }
-    fun closeTab(inRs: ReqState) {
-        val vP = packOf(inRs) ?: return
-        val vIdx = vP.openTabs.indexOf(inRs)
-        vP.openTabs.remove(inRs)
-        if (vP.active === inRs) vP.active = vP.openTabs.getOrNull(vIdx) ?: vP.openTabs.lastOrNull()
+    fun closeTab(inRs: ReqState, inPack: PackState) {
+        val vIdx = inPack.openTabs.indexOf(inRs)
+        inPack.openTabs.remove(inRs)
+        if (inPack.active === inRs) inPack.active = inPack.openTabs.getOrNull(vIdx) ?: inPack.openTabs.lastOrNull()
         if (!vEnvActive) ensureFocusHasTabs()
     }
     fun closeEnv(inP: PackState) {
@@ -566,7 +567,7 @@ private fun App() {
                 vPrimary && vKey.keyCode == kScN -> { newRequest(); true }
                 vPrimary && vKey.keyCode == kScW -> {
                     val vP = activePack()
-                    if (vEnvActive && vP != null) closeEnv(vP) else vP?.active?.let { closeTab(it) }
+                    if (vEnvActive && vP != null) closeEnv(vP) else vP?.let { vQ -> vQ.active?.let { closeTab(it, vQ) } }
                     true
                 }
                 else -> false
@@ -651,7 +652,7 @@ private fun App() {
                                                     inActiveReq = if (!vEnvActive && vPack === vP) vPack.active else null,
                                                     inOnSelect = { openEnv(vPack) },
                                                     inOnToggle = { vPack.expanded = !vPack.expanded },
-                                                    inOnOpenRequest = { vRs -> selectPack(vPack); open(vRs) },
+                                                    inOnOpenRequest = { vRs -> open(vRs, vPack) },
                                                     inOnNewRequest = { selectPack(vPack); newRequest() },
                                                     inOnRenameRequest = { vRs -> selectPack(vPack); vRenameTarget = vRs; vRenameText = vRs.req.name },
                                                     inOnDuplicateRequest = { vRs -> selectPack(vPack); duplicate(vRs) },
@@ -752,8 +753,8 @@ private fun App() {
                             RequestTabStrip(
                                 inTabs = vTabs,
                                 inActiveKey = if (vEnvShown) vP else vReqActive,
-                                inOnSelect = { vT -> if (vT.req != null) open(vT.req) else openEnv(vT.pack) },
-                                inOnClose = { vT -> if (vT.req != null) closeTab(vT.req) else closeEnv(vT.pack) },
+                                inOnSelect = { vT -> if (vT.req != null) open(vT.req, vT.pack) else openEnv(vT.pack) },
+                                inOnClose = { vT -> if (vT.req != null) closeTab(vT.req, vT.pack) else closeEnv(vT.pack) },
                                 inOnCloseOthers = { vT -> closeOthers(vT) },
                                 inOnCloseAll = { closeAllTabs() },
                                 inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
@@ -813,6 +814,7 @@ private fun App() {
                                         inOnSend = { send(vReqActive) },
                                         inOnCancel = { cancel(vReqActive) },
                                         inOnInspectChain = { inspectChain(vReqActive) },
+                                        inReadOnly = vP.isLinked,
                                     )
                                     if (vReqActive.showChain) TlsChainDialog(vReqActive.tlsChain, vReqActive.chainUrl) { vReqActive.showChain = false }
                                     Divider(color = c.border)
@@ -831,6 +833,7 @@ private fun App() {
                                                     inMsg = vReqMsg,
                                                     inInheritedHeaders = inheritedHeaders(vP),
                                                     inInheritedCert = inheritedCert(vP),
+                                                    inReadOnly = vP.isLinked,
                                                     inEdit = { t -> edit(t) },
                                                 )
                                             },
@@ -1607,6 +1610,7 @@ private fun UrlBar(
     inOnSend: () -> Unit,
     inOnCancel: () -> Unit,
     inOnInspectChain: () -> Unit,
+    inReadOnly: Boolean = false,
 ) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
@@ -1616,7 +1620,7 @@ private fun UrlBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box {
+        Box(modifier = Modifier.alpha(if (inReadOnly) 0.55f else 1f)) {
             Row(
                 modifier = Modifier.menuAnchor(vAnchor).clip(RoundedCornerShape(6.dp))
                     .clickable { vOpen = true }.padding(horizontal = 6.dp, vertical = 6.dp),
@@ -1637,7 +1641,7 @@ private fun UrlBar(
 
         // Borderless URL field — no box, so it reads as part of the bar.
         Box(
-            modifier = Modifier.weight(1f).onKeyEvent { ev ->
+            modifier = Modifier.weight(1f).alpha(if (inReadOnly) 0.55f else 1f).onKeyEvent { ev ->
                 if (ev.key.type == KeyEventType.Down && (ev.key.keyCode == kScEnter || ev.key.keyCode == kScKpEnter)) { inOnSend(); true } else false
             },
         ) {
@@ -1887,6 +1891,7 @@ private fun RequestBuilder(
     inMsg: String?,
     inInheritedHeaders: List<KeyVal>,
     inInheritedCert: CertConfig?,
+    inReadOnly: Boolean,
     inEdit: ((ApiRequest) -> ApiRequest) -> Unit,
 ) {
     val c = LocalAppColors.current
@@ -1940,13 +1945,13 @@ private fun RequestBuilder(
         }
         Divider(color = c.border)
 
-        // Tab content — scrolls.
-        Box(modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(16.dp)) {
+        // Tab content — scrolls. Greyed when read-only (a linked-copy request).
+        Box(modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(16.dp).alpha(if (inReadOnly) 0.55f else 1f)) {
             when (inRs.reqTab) {
                 0 -> KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
-                1 -> HeadersTab(inReq, inInheritedHeaders, inEdit)
+                1 -> HeadersTab(inReq, inInheritedHeaders, inReadOnly, inEdit)
                 2 -> BodyContent(inReq, inRs) { v -> inEdit(v) }
-                else -> RequestCertTab(inReq, inInheritedCert, inEdit)
+                else -> RequestCertTab(inReq, inInheritedCert, inReadOnly, inEdit)
             }
         }
 
@@ -2066,7 +2071,7 @@ private fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client cer
    with an Override action when the request has none, then the request's own cert
    editor (its own cert overrides the inherited one). */
 @Composable
-private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: CertConfig?, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: CertConfig?, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
     val c = LocalAppColors.current
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (!inReq.hasClientCert && inInheritedCert != null && inInheritedCert.isSet) {
@@ -2076,7 +2081,7 @@ private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: CertConfig?, inEd
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Inherited client cert", color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Box(
+                    if (!inReadOnly) Box(
                         modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
                             .clickable { inEdit { it.withCert(inInheritedCert) } }.padding(horizontal = 8.dp, vertical = 3.dp),
                     ) { Text("Override", color = c.accent, fontSize = 11.sp) }
@@ -2866,7 +2871,7 @@ private fun StatusPill(inStatus: Int, inLabel: String) {
    an Override action (copies the header into the request's own, editable list,
    where a same-key value wins on send), then the request's own header editor. */
 @Composable
-private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
     val c = LocalAppColors.current
     val vShown = inInherited.filter { it.key.isNotBlank() }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2880,7 +2885,7 @@ private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inEdit: (((
                     Text(vH.value, color = c.dim.copy(alpha = if (vOverridden) 0.45f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.6f))
                     if (vOverridden) {
                         Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
-                    } else {
+                    } else if (!inReadOnly) {
                         Box(
                             modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
                                 .clickable { inEdit { it.copy(headers = it.headers + KeyVal(vH.key, vH.value)) } }
