@@ -113,6 +113,10 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     val requests: androidx.compose.runtime.snapshots.SnapshotStateList<ReqState>
         get() = linkedSource?.requests ?: fOwnRequests
     val isLinked: Boolean get() = linkedSource != null
+    var parent: PackState? = null                                                  // enclosing pack (null = top-level / root)
+    val subPacks = mutableStateListOf<PackState>().apply {
+        inPack.subPacks.forEach { add(PackState(it, null, false).also { vSp -> vSp.parent = this@PackState }) }
+    }
     val variables = mutableStateListOf<KeyVal>().apply { addAll(inPack.variables) }
     val headers = mutableStateListOf<KeyVal>().apply { addAll(inPack.headers) }   // pack-level, inherited by requests
     var cert by mutableStateOf(inPack.cert)                                        // pack-level client cert (inherited)
@@ -131,6 +135,7 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
         requests = if (isLinked) emptyList() else requests.map { it.req },   // linked: requests live in the source
         variables = variables.toList(), color = color, headers = headers.toList(), cert = cert,
         id = id, linkedTo = linkedSource?.id, isRoot = isRoot,
+        subPacks = subPacks.map { it.toPack() },
     )
 }
 
@@ -233,13 +238,21 @@ private fun App() {
     // Top-level index of a pack for persistence (-1 = loose root, sub-pack, or none).
     fun packIndex(inP: PackState?): Int = if (inP == null || inP === vRoot) -1 else vPacks.indexOf(inP)
     fun selectPack(inP: PackState) { vActivePackRef = inP; vReqMsg = null }
-    fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
-    // Headers a request inherits from its scopes: session headers, then the pack's
-    // (pack overrides session by key). The request's own headers override these.
+    // The scope chain from the outermost pack down to inP (root excluded). Used to
+    // resolve inheritance: Session → outer pack → … → inner pack, innermost wins.
+    fun scopeChain(inP: PackState?): List<PackState> {
+        val vChain = ArrayList<PackState>()
+        var vCur = inP
+        while (vCur != null && vCur !== vRoot) { vChain.add(vCur); vCur = vCur.parent }
+        return vChain.asReversed()
+    }
+    // Variables a request sees: session, then each enclosing pack (inner overrides).
+    fun effective(inP: PackState): List<KeyVal> = vGlobalEnv.toList() + scopeChain(inP).flatMap { it.variables }
+    // Headers a request inherits: session, then each enclosing pack (inner wins by key).
     fun inheritedHeaders(inP: PackState?): List<KeyVal> {
         val vOut = LinkedHashMap<String, KeyVal>()
         vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
-        inP?.headers?.filter { it.key.isNotBlank() }?.forEach { vOut[it.key.lowercase()] = it }
+        scopeChain(inP).forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it } }
         return vOut.values.toList()
     }
     // The headers actually sent: inherited, then the request's own override by key.
@@ -249,9 +262,11 @@ private fun App() {
         inReq.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
         return vOut.values.toList()
     }
-    // Client cert a request inherits: nearest scope that sets one (pack, else session).
-    fun inheritedCert(inP: PackState?): CertConfig? =
-        inP?.cert?.takeIf { it.isSet } ?: vSessionCert?.takeIf { it.isSet }
+    // Client cert a request inherits: nearest enclosing pack that sets one, else session.
+    fun inheritedCert(inP: PackState?): CertConfig? {
+        scopeChain(inP).asReversed().forEach { if (it.cert?.isSet == true) return it.cert }
+        return vSessionCert?.takeIf { it.isSet }
+    }
     // The cert actually used: the request's own if set, else the inherited one.
     fun effectiveCert(inReq: ApiRequest, inP: PackState?): CertConfig? =
         if (inReq.hasClientCert) inReq.certConfig() else inheritedCert(inP)

@@ -22,6 +22,7 @@ data class Pack(
     val id: String = "",                       // stable id (used by linked-copy packs)
     val linkedTo: String? = null,              // id of the source pack when this is a linked copy
     val isRoot: Boolean = false,               // the hidden session-root "pack" holding loose requests
+    val subPacks: List<Pack> = emptyList(),    // nested packs (a pack tree)
 )
 
 /* A client-certificate (mutual TLS) configuration. Lives on a request today and
