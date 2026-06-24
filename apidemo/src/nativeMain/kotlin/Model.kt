@@ -21,6 +21,7 @@ data class Pack(
     val cert: CertConfig? = null,              // pack-level client cert, inherited by requests
     val id: String = "",                       // stable id (used by linked-copy packs)
     val linkedTo: String? = null,              // id of the source pack when this is a linked copy
+    val isRoot: Boolean = false,               // the hidden session-root "pack" holding loose requests
 )
 
 /* A client-certificate (mutual TLS) configuration. Lives on a request today and

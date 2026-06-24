@@ -78,8 +78,13 @@ Migration: `loadAppState` maps any old flat `packs: List<SavedPack>` → `roots`
 > - DONE: **P5** — header inheritance (session+pack) + Override in the request.
 > - DONE: **P6** — client-cert inheritance + Override (Cert sub-tab + effectiveCert).
 > - DONE: **P7** — Linked Copy Pack (read-only mirror; own Var/Header/Cert).
-> - REMAINING: **P1/P2/P8 — the tree** (nested packs, loose requests, cross-pack
->   drag). This is one atomic refactor of the core (~100 interconnected sites:
+> - DONE: **tree slice 1 — loose requests.** A hidden session-root `PackState`
+>   (`vRoot`, active when `vActivePack < 0`) holds requests not in any pack; they
+>   render headerless at the top of the sidebar and inherit session settings only.
+>   Add via the `+` → "New request (loose)". Persisted as `Session.root` /
+>   `AppState.root` + `rootOpenTabs` (vPacks indices untouched).
+> - REMAINING: **tree slices 2/3** — nested packs (PackState.children) + cross-pack
+>   drag. This is one atomic refactor of the core (~100 interconnected sites:
 >   vPacks→vRoots, PackState.requests→children, recursive sidebar + tab strip +
 >   recursive NodeData persistence + migration). No compilable sub-step — best
 >   landed as a dedicated focused push. When doing it: introduce

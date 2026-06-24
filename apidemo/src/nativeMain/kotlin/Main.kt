@@ -118,6 +118,7 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     val headers = mutableStateListOf<KeyVal>().apply { addAll(inPack.headers) }   // pack-level, inherited by requests
     var cert by mutableStateOf(inPack.cert)                                        // pack-level client cert (inherited)
     val id: String = inPack.id.ifBlank { newPackId() }                            // stable id (linked copies reference it)
+    val isRoot: Boolean = inPack.isRoot                                            // the session-root "pack" (loose requests)
     // No auto-open: tabs start empty and are restored from persisted state only.
     val openTabs = mutableStateListOf<ReqState>().apply {
         inOpenTabs.forEach { vIdx -> requests.getOrNull(vIdx)?.let { add(it) } }
@@ -130,7 +131,7 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
         name = name,
         requests = if (isLinked) emptyList() else requests.map { it.req },   // linked: requests live in the source
         variables = variables.toList(), color = color, headers = headers.toList(), cert = cert,
-        id = id, linkedTo = linkedSource?.id,
+        id = id, linkedTo = linkedSource?.id, isRoot = isRoot,
     )
 }
 
@@ -168,7 +169,7 @@ private fun App() {
     val vFirst = !vInitial.launched || vInitial.packs.isEmpty()
     val vBoot = remember {
         if (vFirst) defaultSession()
-        else Session(packs = vInitial.packs, globalEnv = vInitial.globalEnv,
+        else Session(packs = vInitial.packs, root = vInitial.root, globalEnv = vInitial.globalEnv,
             globalHeaders = vInitial.globalHeaders, globalCert = vInitial.globalCert, activePack = vInitial.activePack)
     }
     val vPacks = remember {
@@ -189,6 +190,13 @@ private fun App() {
     val vGlobalEnv = remember { mutableStateListOf<KeyVal>().apply { addAll(vBoot.globalEnv) } }
     val vSessionHeaders = remember { mutableStateListOf<KeyVal>().apply { addAll(vBoot.globalHeaders) } }
     var vSessionCert by remember { mutableStateOf(vBoot.globalCert) }
+    // The hidden session-root pack holding loose requests (not in any pack). Kept
+    // out of vPacks so pack indices / persistence stay untouched; active when
+    // vActivePack < 0.
+    var vRoot by remember {
+        mutableStateOf(PackState(vBoot.root ?: Pack(isRoot = true, name = "", requests = emptyList()),
+            null, false, if (vFirst) emptyList() else vInitial.rootOpenTabs))
+    }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
     // Focus the saved active pack, but fall back to one that actually has tabs so
     // the strip shows whenever any tab is open.
@@ -220,8 +228,10 @@ private fun App() {
     var vSessionTabOpen by remember { mutableStateOf(false) }  // the session-settings tab is open in the strip
     var vSessionActive by remember { mutableStateOf(false) }   // and it's the active main-panel tab
 
-    fun activePack(): PackState? = vPacks.getOrNull(vActivePack)
-    fun selectPack(inP: PackState) { vActivePack = vPacks.indexOf(inP).coerceAtLeast(0); vReqMsg = null }
+    fun activePack(): PackState? = if (vActivePack < 0) vRoot else vPacks.getOrNull(vActivePack)
+    // Index for a pack: -1 for the loose root (not in vPacks), else its vPacks index.
+    fun packIndex(inP: PackState): Int = if (inP === vRoot) -1 else vPacks.indexOf(inP).coerceAtLeast(0)
+    fun selectPack(inP: PackState) { vActivePack = packIndex(inP); vReqMsg = null }
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
     // Headers a request inherits from its scopes: session headers, then the pack's
     // (pack overrides session by key). The request's own headers override these.
@@ -248,6 +258,8 @@ private fun App() {
     fun persist() {
         val vSaved = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) }
         val vGE = vGlobalEnv.toList()
+        val vRootPack = vRoot.toPack()
+        val vRootTabs = vRoot.openTabs.mapNotNull { vRs -> vRoot.requests.indexOf(vRs).takeIf { it >= 0 } }
         // Open-tab state — persisted in app state only, not in the session file.
         val vOpen = vPacks.map { vP -> vP.openTabs.mapNotNull { vRs -> vP.requests.indexOf(vRs).takeIf { it >= 0 } } }
         val vActiveReq = vPacks.getOrNull(vActivePack)?.let { it.requests.indexOf(it.active) } ?: -1
@@ -258,6 +270,8 @@ private fun App() {
             globalHeaders = vSessionHeaders.toList(),
             globalCert = vSessionCert,
             packs = vSaved,
+            root = vRootPack,
+            rootOpenTabs = vRootTabs,
             activePack = vActivePack,
             currentSession = vSessionPath,
             recentSessions = vRecent.toList(),
@@ -267,7 +281,7 @@ private fun App() {
         // A session opened from / saved to a file auto-saves back to it on every
         // change — once it has a file, it's always in sync (best-effort). The
         // Session has no open-tab fields, so the file never carries them.
-        vSessionPath?.let { exportSession(Session(packs = vSaved, globalEnv = vGE,
+        vSessionPath?.let { exportSession(Session(packs = vSaved, root = vRootPack, globalEnv = vGE,
             globalHeaders = vSessionHeaders.toList(), globalCert = vSessionCert, activePack = vActivePack), it) }
     }
 
@@ -287,6 +301,7 @@ private fun App() {
     // env tab (if open) followed by its request tabs.
     fun stripTabs(): List<StripTab> = buildList {
         if (vSessionTabOpen) add(StripTab(null, null, isSession = true))
+        vRoot.openTabs.forEach { add(StripTab(vRoot, it)) }   // loose request tabs (no env tab)
         vPacks.forEach { vQ ->
             if (vQ.envOpen) add(StripTab(vQ, null))
             vQ.openTabs.forEach { add(StripTab(vQ, it)) }
@@ -299,11 +314,11 @@ private fun App() {
     // resolve to the source, not the linked copy).
     fun open(inRs: ReqState, inPack: PackState) {
         if (inRs !in inPack.openTabs) inPack.openTabs.add(inRs)
-        vActivePack = vPacks.indexOf(inPack).coerceAtLeast(0); inPack.active = inRs
+        vActivePack = packIndex(inPack); inPack.active = inRs
         vEnvActive = false; vSessionActive = false; vReqMsg = null
     }
     fun openEnv(inP: PackState) {
-        vActivePack = vPacks.indexOf(inP).coerceAtLeast(0)
+        vActivePack = packIndex(inP)
         inP.envOpen = true; vEnvActive = true; vSessionActive = false; vReqMsg = null
     }
     fun closeTab(inRs: ReqState, inPack: PackState) {
@@ -318,6 +333,8 @@ private fun App() {
     }
     // Close every tab except inTab (a request, a pack-env, or the session tab).
     fun closeOthers(inTab: StripTab) {
+        vRoot.openTabs.removeAll { it !== inTab.req }
+        vRoot.active = vRoot.openTabs.firstOrNull()
         vPacks.forEach { vQ ->
             vQ.openTabs.removeAll { it !== inTab.req }
             vQ.active = vQ.openTabs.firstOrNull()
@@ -336,6 +353,7 @@ private fun App() {
         }
     }
     fun closeAllTabs() {
+        vRoot.openTabs.clear(); vRoot.active = null
         vPacks.forEach { it.openTabs.clear(); it.active = null; it.envOpen = false }
         vEnvActive = false; vSessionTabOpen = false; vSessionActive = false
     }
@@ -347,6 +365,13 @@ private fun App() {
         val vRs = vTab.req ?: return
         val vP = vTab.pack ?: return
         var vStart = if (vSessionTabOpen) 1 else 0   // session tab sits at flat index 0
+        if (vP === vRoot) {                          // loose tabs come right after the session tab
+            val vFromL = vRoot.openTabs.indexOf(vRs)
+            val vToL = (inTo - vStart).coerceIn(0, (vRoot.openTabs.size - 1).coerceAtLeast(0))
+            if (vFromL >= 0 && vFromL != vToL) vRoot.openTabs.add(vToL, vRoot.openTabs.removeAt(vFromL))
+            return
+        }
+        vStart += vRoot.openTabs.size                // root tabs precede pack tabs
         for (vQ in vPacks) { if (vQ === vP) break; vStart += (if (vQ.envOpen) 1 else 0) + vQ.openTabs.size }
         val vReqStart = vStart + (if (vP.envOpen) 1 else 0)
         val vLocalFrom = vP.openTabs.indexOf(vRs)
@@ -363,6 +388,12 @@ private fun App() {
         val vP = activePack() ?: return
         val vRs = ReqState(ApiRequest(name = "Request ${vP.requests.size + 1}"))
         vP.requests.add(vRs); vP.openTabs.add(vRs); vP.active = vRs; vP.dirty = true; vReqMsg = null; vSideTab = 0
+    }
+    // A loose request at the session root (no pack — inherits session settings only).
+    fun newLooseRequest() {
+        val vRs = ReqState(ApiRequest(name = "Request ${vRoot.requests.size + 1}"))
+        vRoot.requests.add(vRs); vRoot.openTabs.add(vRs); vRoot.active = vRs
+        vActivePack = -1; vEnvActive = false; vSessionActive = false; vReqMsg = null; vSideTab = 0; persist()
     }
     fun duplicate(inRs: ReqState) {
         val vP = activePack() ?: return
@@ -517,6 +548,7 @@ private fun App() {
             vSp.pack.linkedTo?.let { vSrcId -> vPacks.getOrNull(vI)?.linkedSource = vPacks.firstOrNull { it.id == vSrcId } }
         }
         if (vPacks.isEmpty()) vPacks.add(PackState(Pack(), null, false))
+        vRoot = PackState(inSession.root ?: Pack(isRoot = true, name = "", requests = emptyList()), null, false)
         vGlobalEnv.clear(); vGlobalEnv.addAll(inSession.globalEnv)
         vSessionHeaders.clear(); vSessionHeaders.addAll(inSession.globalHeaders)
         vSessionCert = inSession.globalCert
@@ -536,6 +568,7 @@ private fun App() {
     }
     fun newSession() {
         vPacks.clear(); vPacks.add(PackState(Pack(name = "My Pack"), null, false))
+        vRoot = PackState(Pack(isRoot = true, name = "", requests = emptyList()), null, false)
         vGlobalEnv.clear(); vSessionHeaders.clear(); vSessionCert = null
         vActivePack = 0; vSessionPath = null; vReqMsg = null; persist()
     }
@@ -610,7 +643,7 @@ private fun App() {
     MaterialTheme(colors = vMat) {
         CompositionLocalProvider(LocalAppColors provides vC) {
             val c = vC
-            val vP = vPacks.getOrNull(vActivePack)
+            val vP = activePack()   // may be the loose root (vActivePack < 0)
 
             HorizontalSplitPane(
                 modifier = Modifier.background(c.bg),
@@ -652,7 +685,7 @@ private fun App() {
                             // left slot so it doesn't shift the centring.
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                                    AddPackMenu(inOnNew = { newPack() }, inOnImport = { openPackFile() })
+                                    AddPackMenu(inOnNewRequest = { newLooseRequest() }, inOnNew = { newPack() }, inOnImport = { openPackFile() })
                                 }
                                 TabBar(listOf("Packs", "History"), vSideTab) { vSideTab = it }
                                 Spacer(modifier = Modifier.weight(1f))
@@ -668,8 +701,30 @@ private fun App() {
                         ) {
                             when (vSideTab) {
                                 0 -> {
-                                    if (vPacks.isEmpty()) {
-                                        Text("No pack open — use New or Open above to start.", color = c.dim, fontSize = 12.sp)
+                                    // Loose requests (session root) render headerless at the top.
+                                    if (vRoot.requests.isNotEmpty()) {
+                                        PackSection(
+                                            inPack = vRoot,
+                                            inHeaderless = true,
+                                            inHeaderActive = false,
+                                            inActiveReq = if (vActivePack < 0 && !vSessionActive) vRoot.active else null,
+                                            inOnSelect = {}, inOnToggle = {},
+                                            inOnOpenRequest = { vRs -> open(vRs, vRoot) },
+                                            inOnNewRequest = { newLooseRequest() },
+                                            inOnRenameRequest = { vRs -> selectPack(vRoot); vRenameTarget = vRs; vRenameText = vRs.req.name },
+                                            inOnDuplicateRequest = { vRs -> selectPack(vRoot); duplicate(vRs) },
+                                            inOnCopyCurl = { vRs ->
+                                                currentClipboard.setText(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vRoot)), effective(vRoot))))
+                                                vReqMsg = "Copied cURL."
+                                            },
+                                            inOnDeleteRequest = { vRs -> selectPack(vRoot); vDeleteTarget = vRs },
+                                            inOnRenamePack = {}, inOnDuplicatePack = {}, inOnLinkedCopy = {},
+                                            inOnSavePack = {}, inOnSaveAsPack = {}, inOnRemovePack = {}, inOnSetColor = {},
+                                        )
+                                        if (vPacks.isNotEmpty()) Divider(color = c.border)
+                                    }
+                                    if (vPacks.isEmpty() && vRoot.requests.isEmpty()) {
+                                        Text("Nothing here yet — use Add (+) for a request or pack, or Open above.", color = c.dim, fontSize = 12.sp)
                                     } else {
                                         vPacks.forEach { vPack ->
                                             key(vPack) {
@@ -1034,13 +1089,15 @@ private fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 /* The header '+' — a small menu to add a pack to the open session, either blank
    or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
-private fun AddPackMenu(inOnNew: () -> Unit, inOnImport: () -> Unit) {
+private fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnImport: () -> Unit) {
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
     Box {
-        IconBtn(MaterialSymbols.Add, "Add pack", inModifier = Modifier.menuAnchor(vAnchor), inSize = 18.dp) { vOpen = true }
+        IconBtn(MaterialSymbols.Add, "Add", inModifier = Modifier.menuAnchor(vAnchor), inSize = 18.dp) { vOpen = true }
         DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, minWidth = 200.dp) {
+            DropdownMenuItem(onClick = { vOpen = false; inOnNewRequest() }) { MenuRow(MaterialSymbols.Send, "New request (loose)") }
+            Divider(color = c.border)
             DropdownMenuItem(onClick = { vOpen = false; inOnNew() }) { MenuRow(MaterialSymbols.Add, "New pack") }
             DropdownMenuItem(onClick = { vOpen = false; inOnImport() }) { MenuRow(MaterialSymbols.Download, "Import pack…") }
         }
@@ -1175,6 +1232,7 @@ private fun PackSection(
     inPack: PackState,
     inHeaderActive: Boolean,        // this pack's env tab is the active tab
     inActiveReq: ReqState?,         // the globally-active request (for row highlight)
+    inHeaderless: Boolean = false,  // root (loose) section: no header, always expanded
     inOnSelect: () -> Unit,
     inOnToggle: () -> Unit,
     inOnOpenRequest: (ReqState) -> Unit,
@@ -1209,8 +1267,8 @@ private fun PackSection(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         // ============
-        //  Pack header
-        Row(
+        //  Pack header (skipped for the headerless loose-root section)
+        if (!inHeaderless) Row(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
                 .background(if (inHeaderActive) c.accent.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(6.dp))
                 .hoverable { vHover = it }
@@ -1260,8 +1318,8 @@ private fun PackSection(
         }
 
         // ============
-        //  Pack body — request list (expanded only)
-        if (inPack.expanded) {
+        //  Pack body — request list (expanded, or always for the loose root)
+        if (inPack.expanded || inHeaderless) {
             val vReqs = inPack.requests
             val vDrag = vDragRs
             val vShowBar = vDrag != null && vDragDy != 0f
