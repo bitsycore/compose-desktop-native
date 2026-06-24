@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.onDrag
+import com.compose.desktop.native.modifier.onDrag
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

@@ -8,14 +8,14 @@ import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.interaction.rememberMutableInteractionSource
+import com.compose.desktop.native.modifier.rememberMutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pressable
+import com.compose.desktop.native.modifier.pressable
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

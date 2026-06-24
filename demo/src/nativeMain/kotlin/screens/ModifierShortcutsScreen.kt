@@ -1,4 +1,5 @@
 package screens
+import androidx.compose.ui.graphics.graphicsLayer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.translate
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
@@ -67,12 +67,12 @@ internal fun ModifierShortcutsScreen() {
 				) {}
 				Box(modifier = Modifier
 					.size(64.dp)
-					.translate(20f, -10f)
+					.graphicsLayer(translationX = 20f, translationY = -10f)
 					.background(vSecondary, RoundedCornerShape(8.dp))
 				) {}
 				Box(modifier = Modifier
 					.size(64.dp)
-					.translate(-10f, 20f)
+					.graphicsLayer(translationX = -10f, translationY = 20f)
 					.background(vPrimary, RoundedCornerShape(8.dp))
 				) {}
 			}
@@ -86,18 +86,18 @@ internal fun ModifierShortcutsScreen() {
 			Box(modifier = Modifier.size(160.dp)) {
 				Box(modifier = Modifier
 					.size(80.dp)
-					.translate(0f, 0f)
+					.graphicsLayer(translationX = 0f, translationY = 0f)
 					.background(vPrimary, RoundedCornerShape(8.dp))
 				) {}
 				Box(modifier = Modifier
 					.size(80.dp)
-					.translate(40f, 20f)
+					.graphicsLayer(translationX = 40f, translationY = 20f)
 					.zIndex(2f)
 					.background(vSecondary, RoundedCornerShape(8.dp))
 				) {}
 				Box(modifier = Modifier
 					.size(80.dp)
-					.translate(80f, 40f)
+					.graphicsLayer(translationX = 80f, translationY = 40f)
 					.background(vPrimary, RoundedCornerShape(8.dp))
 				) {}
 			}

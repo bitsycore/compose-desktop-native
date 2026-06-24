@@ -1,4 +1,8 @@
 package apidemo
+import androidx.compose.ui.graphics.graphicsLayer
+import com.compose.desktop.native.modifier.onDrag
+import com.compose.desktop.native.modifier.onMiddleClick
+import com.compose.desktop.native.modifier.onSecondaryClick
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -12,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.translate
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -1654,7 +1657,7 @@ private fun PackSection(
         var vHeadMod = Modifier.fillMaxWidth()
             .onGloballyPositioned { inDrag.headTop[inPack] = it.y }
             .onSizeChanged { inDrag.headH[inPack] = it.height }
-        if (vHeaderDragged) vHeadMod = vHeadMod.zIndex(1f).alpha(0.65f).translate(0f, inDrag.dy)
+        if (vHeaderDragged) vHeadMod = vHeadMod.zIndex(1f).alpha(0.65f).graphicsLayer(translationX = 0f, translationY = inDrag.dy)
         vHeadMod = vHeadMod.clip(RoundedCornerShape(6.dp))
             .background(if (inHeaderActive || vIntoHi) c.accent.copy(alpha = if (vIntoHi) 0.24f else 0.14f) else Color.Transparent, RoundedCornerShape(6.dp))
         if (vIntoHi) vHeadMod = vHeadMod.border(1.dp, c.accent, RoundedCornerShape(6.dp))
@@ -1754,7 +1757,7 @@ private fun PackSection(
                             .onSizeChanged { inDrag.rowH[vRs] = it.height }
                         // translate is draw-only (doesn't shift absoluteY), so the
                         // cursor offset below stays correct while dragging.
-                        if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(0f, inDrag.dy)
+                        if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).graphicsLayer(translationX = 0f, translationY = inDrag.dy)
                         if (!inPack.isLinked) vMod = vMod.onDrag(
                                 onStart = { _, vRelY ->
                                     inDrag.clear()
@@ -1922,7 +1925,7 @@ private fun RequestTabStrip(
                 var vMod = Modifier
                     .onGloballyPositioned { vLeft[vKey] = it.x }
                     .onSizeChanged { vWidth[vKey] = it.width }
-                if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).translate(vDragDx, 0f)
+                if (vDragged) vMod = vMod.zIndex(1f).alpha(0.65f).graphicsLayer(translationX = vDragDx, translationY = 0f)
                 vMod = vMod
                     .clip(RoundedCornerShape(7.dp))
                     .background(if (vSel) c.accent.copy(alpha = 0.20f) else c.field, RoundedCornerShape(7.dp))

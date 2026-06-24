@@ -2,7 +2,6 @@ package androidx.compose.ui.draw
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.GraphicsLayerModifier
 import androidx.compose.ui.graphics.graphicsLayer
 
 // ==================
@@ -28,10 +27,3 @@ fun Modifier.scale(scale: Float): Modifier =
 fun Modifier.scale(scaleX: Float, scaleY: Float): Modifier =
 	if (scaleX == 1f && scaleY == 1f) this
 	else graphicsLayer(scaleX = scaleX, scaleY = scaleY)
-
-// NON-OFFICIAL convenience: visually shift this node and its subtree by (x, y)
-// without affecting layout. Official Compose has no Modifier.translate — use
-// graphicsLayer { translationX/Y } or Modifier.offset instead.
-fun Modifier.translate(x: Float, y: Float): Modifier =
-	if (x == 0f && y == 0f) this
-	else graphicsLayer(translationX = x, translationY = y)

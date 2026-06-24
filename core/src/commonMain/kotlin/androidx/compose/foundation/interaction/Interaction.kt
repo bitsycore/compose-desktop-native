@@ -63,13 +63,13 @@ interface MutableInteractionSource : InteractionSource {
 }
 
 // ==================
-// MARK: Composable factory
+// MARK: factory
 // ==================
 
-@Composable
-fun rememberMutableInteractionSource(): MutableInteractionSource = remember {
-	MutableInteractionSourceImpl()
-}
+/* Official top-level factory for a MutableInteractionSource. (The project's
+   rememberMutableInteractionSource() convenience lives in
+   com.compose.desktop.native.modifier.) */
+fun MutableInteractionSource(): MutableInteractionSource = MutableInteractionSourceImpl()
 
 private class MutableInteractionSourceImpl : MutableInteractionSource {
 	private var fPressCount: Int by mutableStateOf(0)

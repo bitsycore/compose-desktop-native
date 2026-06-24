@@ -445,6 +445,28 @@ doubt, the official ABI wins.
   onTextInput/onPressed/onDrag`, `SplitPane`, icon-font helpers). Keep, but
   **mark `internal` where possible and never present them as upstream API**.
 
+### Layering — `androidx.compose.*` is a faithful mirror only
+
+Anything that **diverges** from official Compose (no upstream equivalent, or a
+public shape that can't match) does **not** live in `androidx.compose.*`. It
+goes in the project's `com.compose.desktop.native.*` "layer on top" (where
+`SplitPane` / `IconFont` already live), or is made `internal`. Applied: the
+non-official `Modifier` extensions (`onSecondaryClick` / `onMiddleClick` /
+`pressable` / `onTextInput` / `onPressed` / `onDrag` / `translate`) and
+`rememberMutableInteractionSource` now live in
+`com.compose.desktop.native.modifier`; the official `MutableInteractionSource()`
+factory stays in `androidx.compose.foundation.interaction`.
+
+Irreducible exceptions (custom code that must stay in `androidx.compose.*` for
+now — mark each non-official in its doc comment): the render-bridge
+`Modifier.Element` data classes + `Outline` / `PathCommand` /
+`GraphicsLayerModifier` / `TextMeasurer` / `currentImageLoader` (public for
+cross-module renderer access — can't be `internal`); `FontFamily.Named` (a
+`sealed` subclass, load-bearing for icon fonts); the `androidx.compose.ui.res`
+resource system (`Res` / `ImageLoader` / `ResourceKind` /
+`painterResource(path, kind)` — generated-accessor-facing, and the one-arg
+`painterResource` overlaps official).
+
 ### Universal rules
 
 1. **Names**: public symbols and parameters use official/standard-Kotlin
