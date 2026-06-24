@@ -2413,8 +2413,14 @@ private fun RequestBuilder(
         }
         Divider(color = c.border)
 
-        // Tab content — scrolls. Greyed when read-only (a linked-copy request).
-        Box(modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(16.dp).alpha(if (inReadOnly) 0.55f else 1f)) {
+        // Tab content — scrolls, except a Text body which fills the whole panel
+        // (so it stays one editable surface you can click anywhere in). Greyed when
+        // read-only (a linked-copy request).
+        val vScroll = rememberScrollState()
+        val vFillBody = inRs.reqTab == 3 && inReq.bodyType == BodyType.TEXT
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)
+            .then(if (vFillBody) Modifier else Modifier.verticalScroll(vScroll))
+            .padding(16.dp).alpha(if (inReadOnly) 0.55f else 1f)) {
             when (inRs.reqTab) {
                 0 -> QueryTab(inReq, inInheritedParams, inReadOnly, inEdit)
                 1 -> VarTab(inReq, inInheritedVars, inReadOnly, inEdit)
@@ -2451,7 +2457,7 @@ private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) 
         BodyType.NONE -> ViewerEmpty(MaterialSymbols.Block, "No Body", Modifier.fillMaxWidth().height(240.dp))
         BodyType.TEXT -> BodyView(
             inText = inReq.body,
-            modifier = Modifier.fillMaxWidth().height(240.dp),
+            modifier = Modifier.fillMaxSize(),
             inOnChange = { v -> inEdit { it.copy(body = v) } },
             inFormat = inReq.bodyFormat,
         )
