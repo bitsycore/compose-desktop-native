@@ -208,6 +208,11 @@ private class TreeDrag {
 // Pixels the pointer must travel before a press is treated as a drag (drag slop).
 private const val kDragSlop = 5f
 
+// An inherited variable / header tagged with the scope level it comes from, and
+// the single inherited client cert tagged likewise — for the inheritance UI.
+private data class InheritedKv(val kv: KeyVal, val source: String)
+private data class InheritedCert(val cert: CertConfig, val source: String)
+
 // ==================
 // MARK: App
 // ==================
@@ -324,6 +329,34 @@ private fun App() {
     // The cert actually used: the request's own if set, else the inherited one.
     fun effectiveCert(inReq: ApiRequest, inP: PackState?): CertConfig? =
         if (inReq.hasClientCert) inReq.certConfig() else inheritedCert(inP)
+
+    // ============
+    //  Source-aware inheritance (for the "what do I inherit, and from where?" UI).
+    //  scopeName labels a level; the sourced* helpers walk a chain (outer→inner,
+    //  session first) and tag each surviving value with the level that provides it.
+    //  inChain for a request = scopeChain(owningPack) (its own pack included); for a
+    //  pack's settings = scopeChain(pack.parent) (ancestors only, the pack excluded).
+    fun scopeName(inP: PackState?): String = when {
+        inP == null -> "Session"
+        inP === vRoot -> "Loose"
+        else -> inP.name.ifBlank { "Pack" }
+    }
+    fun sourcedVars(inChain: List<PackState>): List<InheritedKv> {
+        val vOut = LinkedHashMap<String, InheritedKv>()   // vars are case-sensitive ({{name}})
+        vGlobalEnv.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session") }
+        inChain.forEach { vP -> vP.variables.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, scopeName(vP)) } }
+        return vOut.values.toList()
+    }
+    fun sourcedHeaders(inChain: List<PackState>): List<InheritedKv> {
+        val vOut = LinkedHashMap<String, InheritedKv>()   // headers are case-insensitive
+        vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Session") }
+        inChain.forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, scopeName(vP)) } }
+        return vOut.values.toList()
+    }
+    fun sourcedCert(inChain: List<PackState>): InheritedCert? {
+        inChain.asReversed().forEach { vP -> vP.cert?.takeIf { it.isSet }?.let { return InheritedCert(it, scopeName(vP)) } }
+        return vSessionCert?.takeIf { it.isSet }?.let { InheritedCert(it, "Session") }
+    }
 
     fun persist() {
         val vSaved = vPacks.map { SavedPack(it.path, it.dirty, it.toPack()) }
@@ -1076,6 +1109,10 @@ private fun App() {
                                         inCert = vP.cert, inOnCert = { vP.cert = it; vP.dirty = true; persist() },
                                         inCertHelp = "Used by every request in this pack unless the request sets its own. Overrides the session cert.",
                                         inCertHeading = "Pack client certificate",
+                                        // What this pack inherits from above (session + ancestor packs — itself excluded).
+                                        inInheritedVars = sourcedVars(scopeChain(vP.parent)),
+                                        inInheritedHeaders = sourcedHeaders(scopeChain(vP.parent)),
+                                        inInheritedCert = sourcedCert(scopeChain(vP.parent)),
                                     )
                                 }
                                 vReqActive != null && vP != null -> {
@@ -1116,8 +1153,9 @@ private fun App() {
                                                     inRs = vReqActive,
                                                     inUnresolved = unresolvedVars(vReq, effective(vP)),
                                                     inMsg = vReqMsg,
-                                                    inInheritedHeaders = inheritedHeaders(vP),
-                                                    inInheritedCert = inheritedCert(vP),
+                                                    inInheritedVars = sourcedVars(scopeChain(vP)),
+                                                    inInheritedHeaders = sourcedHeaders(scopeChain(vP)),
+                                                    inInheritedCert = sourcedCert(scopeChain(vP)),
                                                     inReadOnly = vP.isLinked,
                                                     inEdit = { t -> edit(t) },
                                                 )
@@ -2281,8 +2319,9 @@ private fun RequestBuilder(
     inRs: ReqState,
     inUnresolved: List<String>,
     inMsg: String?,
-    inInheritedHeaders: List<KeyVal>,
-    inInheritedCert: CertConfig?,
+    inInheritedVars: List<InheritedKv>,
+    inInheritedHeaders: List<InheritedKv>,
+    inInheritedCert: InheritedCert?,
     inReadOnly: Boolean,
     inEdit: ((ApiRequest) -> ApiRequest) -> Unit,
 ) {
@@ -2340,7 +2379,13 @@ private fun RequestBuilder(
         // Tab content — scrolls. Greyed when read-only (a linked-copy request).
         Box(modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).padding(16.dp).alpha(if (inReadOnly) 0.55f else 1f)) {
             when (inRs.reqTab) {
-                0 -> KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
+                0 -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // Inherited variables shown read-only with their source — a request
+                    // can't hold its own vars (only packs / session can), so no Override.
+                    InheritedKvSection("Inherited variables (read-only)", inInheritedVars, emptySet(), inCaseInsensitive = false, inOnOverride = null)
+                    if (inInheritedVars.any { it.kv.key.isNotBlank() }) { Divider(color = c.border); Text("Query params", color = c.dim, fontSize = 11.sp) }
+                    KeyValEditor(inReq.params) { v -> inEdit { it.copy(params = v) } }
+                }
                 1 -> HeadersTab(inReq, inInheritedHeaders, inReadOnly, inEdit)
                 2 -> BodyContent(inReq, inRs) { v -> inEdit(v) }
                 else -> RequestCertTab(inReq, inInheritedCert, inReadOnly, inEdit)
@@ -2411,11 +2456,14 @@ private fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> 
    they're imported into the certificate store for the request then removed
    (see CurlMtls). PKCS#12 bundles its own private key. */
 @Composable
-private fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client certificate (mTLS)", inOnChange: (CertConfig) -> Unit) {
+private fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client certificate (mTLS)", inOverrideSource: String? = null, inOnChange: (CertConfig) -> Unit) {
     val c = LocalAppColors.current
     val vHasCert = inCert.certPath.isNotBlank()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(inHeading, color = c.text, fontSize = 14.sp)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(inHeading, color = c.text, fontSize = 14.sp)
+            if (vHasCert && inOverrideSource != null) OverrideMark("client cert", inOverrideSource)
+        }
         Text(
             "Presents your certificate to the server. PKCS#12 (.p12/.pfx) bundles its private key; PEM/DER take a separate key file unless the certificate file already contains it.",
             color = c.dim, fontSize = 11.sp,
@@ -2459,29 +2507,40 @@ private fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client cer
     }
 }
 
-/* The request's Cert tab: an inherited cert (from pack / session) shown read-only
-   with an Override action when the request has none, then the request's own cert
-   editor (its own cert overrides the inherited one). */
+/* A read-only card for an inherited client cert: its source pill + path, plus an
+   Override action (copy it into this scope) when this scope hasn't set its own. */
 @Composable
-private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: CertConfig?, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+private fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, inReadOnly: Boolean, inOnOverride: () -> Unit) {
     val c = LocalAppColors.current
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (!inReq.hasClientCert && inInheritedCert != null && inInheritedCert.isSet) {
-            Column(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Inherited client cert", color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    if (!inReadOnly) Box(
-                        modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
-                            .clickable { inEdit { it.withCert(inInheritedCert) } }.padding(horizontal = 8.dp, vertical = 3.dp),
-                    ) { Text("Override", color = c.accent, fontSize = 11.sp) }
-                }
-                Text(inInheritedCert.certPath, color = c.text, fontSize = 12.sp)
+    Column(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SourceTag(inInherited.source)
+            Text("Inherited client cert", color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(1f))
+            when {
+                inOwnSet -> Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
+                !inReadOnly -> Box(
+                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
+                        .clickable { inOnOverride() }.padding(horizontal = 8.dp, vertical = 3.dp),
+                ) { Text("Override", color = c.accent, fontSize = 11.sp) }
             }
         }
-        CertConfigEditor(inReq.certConfig()) { vCc -> inEdit { it.withCert(vCc) } }
+        Text(inInherited.cert.certPath, color = c.text, fontSize = 12.sp)
+    }
+}
+
+/* The request's Cert tab: the inherited cert (from pack / session) shown read-only
+   with its source + an Override action when the request has none, then the
+   request's own cert editor (its own cert overrides the inherited one). */
+@Composable
+private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: InheritedCert?, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = inReq.hasClientCert, inReadOnly = inReadOnly) {
+            inEdit { it.withCert(inInheritedCert.cert) }
+        }
+        CertConfigEditor(inReq.certConfig(), inOverrideSource = if (inReq.hasClientCert) inInheritedCert?.source else null) { vCc -> inEdit { it.withCert(vCc) } }
     }
 }
 
@@ -2495,6 +2554,10 @@ private fun ScopeSettings(
     inVars: List<KeyVal>, inOnVars: (List<KeyVal>) -> Unit, inVarHelp: String,
     inHeaders: List<KeyVal>, inOnHeaders: (List<KeyVal>) -> Unit, inHeaderHelp: String,
     inCert: CertConfig?, inOnCert: (CertConfig?) -> Unit, inCertHelp: String, inCertHeading: String,
+    // What this scope inherits from above (empty for the session — it's the top).
+    inInheritedVars: List<InheritedKv> = emptyList(),
+    inInheritedHeaders: List<InheritedKv> = emptyList(),
+    inInheritedCert: InheritedCert? = null,
 ) {
     val c = LocalAppColors.current
     Column(
@@ -2508,9 +2571,26 @@ private fun ScopeSettings(
             TogglePill("Cert", inTab == 2) { inOnTab(2) }
         }
         when (inTab) {
-            0 -> { Text(inVarHelp, color = c.dim, fontSize = 12.sp); KeyValEditor(inVars, inOnVars) }
-            1 -> { Text(inHeaderHelp, color = c.dim, fontSize = 12.sp); KeyValEditor(inHeaders, inOnHeaders) }
-            else -> { Text(inCertHelp, color = c.dim, fontSize = 12.sp); CertConfigEditor(inCert ?: CertConfig(), inCertHeading) { vCc -> inOnCert(vCc.takeIf { it.isSet }) } }
+            0 -> {
+                Text(inVarHelp, color = c.dim, fontSize = 12.sp)
+                val vOwnKeys = inVars.filter { it.key.isNotBlank() }.map { it.key }.toSet()
+                InheritedKvSection("Inherited variables", inInheritedVars, vOwnKeys, inCaseInsensitive = false) { vKv -> inOnVars(inVars + vKv) }
+                if (inInheritedVars.any { it.kv.key.isNotBlank() }) { Divider(color = c.border); Text("This scope's variables", color = c.dim, fontSize = 11.sp) }
+                KeyValEditor(inVars, inOnChange = inOnVars, inOverrideInfo = { vR -> if (vR.key.isBlank()) null else inInheritedVars.firstOrNull { it.kv.key == vR.key }?.source })
+            }
+            1 -> {
+                Text(inHeaderHelp, color = c.dim, fontSize = 12.sp)
+                val vOwnKeys = inHeaders.filter { it.key.isNotBlank() }.map { it.key.lowercase() }.toSet()
+                InheritedKvSection("Inherited headers", inInheritedHeaders, vOwnKeys, inCaseInsensitive = true) { vKv -> inOnHeaders(inHeaders + vKv) }
+                if (inInheritedHeaders.any { it.kv.key.isNotBlank() }) { Divider(color = c.border); Text("This scope's headers", color = c.dim, fontSize = 11.sp) }
+                KeyValEditor(inHeaders, inOnChange = inOnHeaders, inOverrideInfo = { vR -> if (vR.key.isBlank()) null else inInheritedHeaders.firstOrNull { it.kv.key.equals(vR.key, ignoreCase = true) }?.source })
+            }
+            else -> {
+                Text(inCertHelp, color = c.dim, fontSize = 12.sp)
+                val vOwnSet = inCert?.isSet == true
+                if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = vOwnSet, inReadOnly = false) { inOnCert(inInheritedCert.cert) }
+                CertConfigEditor(inCert ?: CertConfig(), inCertHeading, inOverrideSource = if (vOwnSet) inInheritedCert?.source else null) { vCc -> inOnCert(vCc.takeIf { it.isSet }) }
+            }
         }
     }
 }
@@ -3289,37 +3369,81 @@ private fun StatusPill(inStatus: Int, inLabel: String) {
 // MARK: Headers tab (inherited read-only + own editable)
 // ==================
 
-/* The request Headers tab: inherited session/pack headers shown read-only with
-   an Override action (copies the header into the request's own, editable list,
-   where a same-key value wins on send), then the request's own header editor. */
+/* The request Headers tab: inherited session/pack headers shown read-only, each
+   tagged with its source, with an Override action (copies the header into the
+   request's own editable list, where a same-key value wins on send). The request's
+   own header editor flags any row that shadows an inherited header. */
 @Composable
-private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+private fun HeadersTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
     val c = LocalAppColors.current
-    val vShown = inInherited.filter { it.key.isNotBlank() }
+    val vOwnKeys = inReq.headers.filter { it.key.isNotBlank() }.map { it.key.lowercase() }.toSet()
+    val vOnOverride: ((KeyVal) -> Unit)? = if (inReadOnly) null else ({ vKv -> inEdit { it.copy(headers = it.headers + vKv) } })
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (vShown.isNotEmpty()) {
-            Text("Inherited — session / pack", color = c.dim, fontSize = 11.sp)
-            val vOwnKeys = inReq.headers.map { it.key.lowercase() }.toSet()
-            vShown.forEach { vH ->
-                val vOverridden = vH.key.lowercase() in vOwnKeys
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(vH.key, color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(0.4f))
-                    Text(vH.value, color = c.dim.copy(alpha = if (vOverridden) 0.45f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.6f))
-                    if (vOverridden) {
-                        Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
-                    } else if (!inReadOnly) {
-                        Box(
-                            modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
-                                .clickable { inEdit { it.copy(headers = it.headers + KeyVal(vH.key, vH.value)) } }
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
-                        ) { Text("Override", color = c.accent, fontSize = 11.sp) }
-                    }
+        InheritedKvSection("Inherited — session / pack", inInherited, vOwnKeys, inCaseInsensitive = true, inOnOverride = vOnOverride)
+        if (inInherited.any { it.kv.key.isNotBlank() }) { Divider(color = c.border); Text("Request headers", color = c.dim, fontSize = 11.sp) }
+        KeyValEditor(
+            inReq.headers,
+            inOnChange = { v -> inEdit { it.copy(headers = v) } },
+            inOverrideInfo = { vR -> if (vR.key.isBlank()) null else inInherited.firstOrNull { it.kv.key.equals(vR.key, ignoreCase = true) }?.source },
+        )
+    }
+}
+
+// ==================
+// MARK: Inheritance UI (source tags / override markers / inherited lists)
+// ==================
+
+/* A small pill naming the scope an inherited value comes from (Session / pack). */
+@Composable
+private fun SourceTag(inSource: String) {
+    val c = LocalAppColors.current
+    Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(c.accent.copy(alpha = 0.16f), RoundedCornerShape(4.dp)).padding(horizontal = 5.dp, vertical = 1.dp)) {
+        Text(inSource, color = c.accent, fontSize = 9.sp)
+    }
+}
+
+/* The tiny marker shown on an own value that shadows an inherited one — hover for
+   "Overrides <key> from <source>". */
+@Composable
+private fun OverrideMark(inKey: String, inSource: String) {
+    val c = LocalAppColors.current
+    TooltipBox(text = "Overrides “$inKey” from $inSource") {
+        MaterialSymbolsOutlined(MaterialSymbols.ArrowUpward, contentDescription = "Overrides $inSource", tint = c.accent, size = 13.dp)
+    }
+}
+
+/* Read-only list of inherited key/values, each tagged with its source. When not
+   already overridden in this scope (own key absent) and inOnOverride != null, a
+   row offers a one-click Override that copies it into this scope's own list. */
+@Composable
+private fun InheritedKvSection(
+    inTitle: String,
+    inItems: List<InheritedKv>,
+    inOwnKeys: Set<String>,            // keys present in this scope's own list (already-normalised)
+    inCaseInsensitive: Boolean,        // headers: compare keys case-insensitively
+    inOnOverride: ((KeyVal) -> Unit)?, // null → no override action (e.g. a request's inherited vars)
+) {
+    val c = LocalAppColors.current
+    val vShown = inItems.filter { it.kv.key.isNotBlank() }
+    if (vShown.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text(inTitle, color = c.dim, fontSize = 11.sp)
+        vShown.forEach { vIt ->
+            val vKey = if (inCaseInsensitive) vIt.kv.key.lowercase() else vIt.kv.key
+            val vOverridden = vKey in inOwnKeys
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SourceTag(vIt.source)
+                Text(vIt.kv.key, color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(0.42f))
+                Text(vIt.kv.value, color = c.dim.copy(alpha = if (vOverridden) 0.4f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.58f))
+                when {
+                    vOverridden -> Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
+                    inOnOverride != null -> Box(
+                        modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
+                            .clickable { inOnOverride(KeyVal(vIt.kv.key, vIt.kv.value)) }.padding(horizontal = 8.dp, vertical = 3.dp),
+                    ) { Text("Override", color = c.accent, fontSize = 11.sp) }
                 }
             }
-            Divider(color = c.border)
-            Text("Request headers", color = c.dim, fontSize = 11.sp)
         }
-        KeyValEditor(inReq.headers) { v -> inEdit { it.copy(headers = v) } }
     }
 }
 
@@ -3327,13 +3451,18 @@ private fun HeadersTab(inReq: ApiRequest, inInherited: List<KeyVal>, inReadOnly:
 // MARK: Key/value editor
 // ==================
 
+/* inOverrideInfo maps an own row to the source label it shadows (or null) so the
+   editor can flag overriding rows with an OverrideMark. It sits before inOnChange
+   so existing trailing-lambda calls (KeyValEditor(rows) { … }) still bind to onChange. */
 @Composable
-private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Unit) {
+private fun KeyValEditor(inRows: List<KeyVal>, inOverrideInfo: (KeyVal) -> String? = { null }, inOnChange: (List<KeyVal>) -> Unit) {
     val c = LocalAppColors.current
+    val vAnyOverride = inRows.any { inOverrideInfo(it) != null }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (inRows.isNotEmpty()) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Spacer(Modifier.width(28.dp))
+                if (vAnyOverride) Spacer(Modifier.width(18.dp))
                 Text("KEY", color = c.dim, fontSize = 11.sp, modifier = Modifier.weight(1f))
                 Text("VALUE", color = c.dim, fontSize = 11.sp, modifier = Modifier.weight(1.4f))
                 Spacer(Modifier.width(30.dp))
@@ -3353,6 +3482,9 @@ private fun KeyValEditor(inRows: List<KeyVal>, inOnChange: (List<KeyVal>) -> Uni
                         onCheckedChange = null,
                         colors = CheckboxDefaults.colors(checkedColor = c.accent, uncheckedColor = c.dim, checkmarkColor = c.onAccent),
                     )
+                }
+                if (vAnyOverride) Box(modifier = Modifier.width(18.dp), contentAlignment = Alignment.Center) {
+                    inOverrideInfo(vKv)?.let { vSrc -> OverrideMark(vKv.key, vSrc) }
                 }
                 ThinField(vKv.key, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(key = v) else vR }) }, inModifier = Modifier.weight(1f), inPlaceholder = "key")
                 ThinField(vKv.value, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(value = v) else vR }) }, inModifier = Modifier.weight(1.4f), inPlaceholder = "value")

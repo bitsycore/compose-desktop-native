@@ -105,6 +105,13 @@ Migration: `loadAppState` maps any old flat `packs: List<SavedPack>` → `roots`
 >   collapsed pack). The empty loose root shows a "Drop a request here" zone while
 >   dragging. Collapsing a pack now also hides its sub-pack subtree (keeps render +
 >   drop-target walks consistent).
+> - DONE: **inheritance visibility pass.** Inheritance is now source-aware
+>   everywhere: `sourcedVars/Headers/Cert(chain)` tag each inherited value with the
+>   level it comes from. Every pack/sub-pack settings sub-tab (Var/Header/Cert) and
+>   the request Query (vars, read-only)/Headers/Cert tabs list what they inherit with
+>   a `SourceTag` pill + one-click **Override**; an own value that shadows an
+>   inherited one shows an `OverrideMark` (↑) with a "Overrides «key» from «source»"
+>   tooltip. Requests have no own vars, so their inherited vars are reference-only.
 
 - [ ] **P1 — Tree model + persistence.** TreeNode/PackState.children/sub-packs;
       `vRoots` replaces `vPacks`; recursive serialized NodeData; migrate
