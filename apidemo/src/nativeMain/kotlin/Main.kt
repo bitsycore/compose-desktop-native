@@ -191,7 +191,7 @@ private fun App() {
     var vSessionCert by remember { mutableStateOf(vBoot.globalCert) }
     // The hidden session-root pack holding loose requests (not in any pack). Kept
     // out of vPacks so pack indices / persistence stay untouched; active when
-    // vActivePack < 0.
+    // vActivePackRef === vRoot.
     var vRoot by remember {
         mutableStateOf(PackState(vBoot.root ?: Pack(isRoot = true, name = "", requests = emptyList()),
             null, false, if (vFirst) emptyList() else vInitial.rootOpenTabs))
@@ -199,12 +199,14 @@ private fun App() {
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
     // Focus the saved active pack, but fall back to one that actually has tabs so
     // the strip shows whenever any tab is open.
-    var vActivePack by remember {
-        mutableStateOf(
+    // The active pack/scope as a reference (a top-level pack, a sub-pack, or the
+    // loose root) — a reference (not an index) so sub-packs can be active.
+    var vActivePackRef by remember {
+        mutableStateOf<PackState?>(
             vBoot.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0)).let { vIdx ->
                 if (vPacks.getOrNull(vIdx)?.openTabs?.isNotEmpty() == true) vIdx
                 else vPacks.indexOfFirst { it.openTabs.isNotEmpty() }.takeIf { it >= 0 } ?: vIdx
-            }
+            }.let { vPacks.getOrNull(it) }
         )
     }
 
@@ -227,10 +229,10 @@ private fun App() {
     var vSessionTabOpen by remember { mutableStateOf(false) }  // the session-settings tab is open in the strip
     var vSessionActive by remember { mutableStateOf(false) }   // and it's the active main-panel tab
 
-    fun activePack(): PackState? = if (vActivePack < 0) vRoot else vPacks.getOrNull(vActivePack)
-    // Index for a pack: -1 for the loose root (not in vPacks), else its vPacks index.
-    fun packIndex(inP: PackState): Int = if (inP === vRoot) -1 else vPacks.indexOf(inP).coerceAtLeast(0)
-    fun selectPack(inP: PackState) { vActivePack = packIndex(inP); vReqMsg = null }
+    fun activePack(): PackState? = vActivePackRef
+    // Top-level index of a pack for persistence (-1 = loose root, sub-pack, or none).
+    fun packIndex(inP: PackState?): Int = if (inP == null || inP === vRoot) -1 else vPacks.indexOf(inP)
+    fun selectPack(inP: PackState) { vActivePackRef = inP; vReqMsg = null }
     fun effective(inP: PackState): List<KeyVal> = inP.variables.toList() + vGlobalEnv.toList()
     // Headers a request inherits from its scopes: session headers, then the pack's
     // (pack overrides session by key). The request's own headers override these.
@@ -261,7 +263,7 @@ private fun App() {
         val vRootTabs = vRoot.openTabs.mapNotNull { vRs -> vRoot.requests.indexOf(vRs).takeIf { it >= 0 } }
         // Open-tab state — persisted in app state only, not in the session file.
         val vOpen = vPacks.map { vP -> vP.openTabs.mapNotNull { vRs -> vP.requests.indexOf(vRs).takeIf { it >= 0 } } }
-        val vActiveReq = vPacks.getOrNull(vActivePack)?.let { it.requests.indexOf(it.active) } ?: -1
+        val vActiveReq = vActivePackRef?.let { it.requests.indexOf(it.active) } ?: -1
         saveAppState(AppState(
             launched = true,
             dark = vDark,
@@ -271,7 +273,7 @@ private fun App() {
             packs = vSaved,
             root = vRootPack,
             rootOpenTabs = vRootTabs,
-            activePack = vActivePack,
+            activePack = packIndex(vActivePackRef),
             currentSession = vSessionPath,
             recentSessions = vRecent.toList(),
             openTabs = vOpen,
@@ -281,7 +283,7 @@ private fun App() {
         // change — once it has a file, it's always in sync (best-effort). The
         // Session has no open-tab fields, so the file never carries them.
         vSessionPath?.let { exportSession(Session(packs = vSaved, root = vRootPack, globalEnv = vGE,
-            globalHeaders = vSessionHeaders.toList(), globalCert = vSessionCert, activePack = vActivePack), it) }
+            globalHeaders = vSessionHeaders.toList(), globalCert = vSessionCert, activePack = packIndex(vActivePackRef)), it) }
     }
 
     // ============
@@ -292,8 +294,8 @@ private fun App() {
     fun packOf(inRs: ReqState): PackState? = vPacks.firstOrNull { vQ -> vQ.requests.any { it === inRs } }
     fun ensureFocusHasTabs() {
         if (activePack()?.active == null) {
-            val vNext = vPacks.indexOfFirst { it.openTabs.isNotEmpty() }
-            if (vNext >= 0) { vActivePack = vNext; vPacks[vNext].active = vPacks[vNext].openTabs.firstOrNull() }
+            val vNext = (if (vRoot.openTabs.isNotEmpty()) vRoot else null) ?: vPacks.firstOrNull { it.openTabs.isNotEmpty() }
+            if (vNext != null) { vActivePackRef = vNext; vNext.active = vNext.openTabs.firstOrNull() }
         }
     }
     // The unified tab strip, flattened across packs: each pack contributes its
@@ -313,11 +315,11 @@ private fun App() {
     // resolve to the source, not the linked copy).
     fun open(inRs: ReqState, inPack: PackState) {
         if (inRs !in inPack.openTabs) inPack.openTabs.add(inRs)
-        vActivePack = packIndex(inPack); inPack.active = inRs
+        vActivePackRef = inPack; inPack.active = inRs
         vEnvActive = false; vSessionActive = false; vReqMsg = null
     }
     fun openEnv(inP: PackState) {
-        vActivePack = packIndex(inP)
+        vActivePackRef = inP
         inP.envOpen = true; vEnvActive = true; vSessionActive = false; vReqMsg = null
     }
     fun closeTab(inRs: ReqState, inPack: PackState) {
@@ -345,7 +347,7 @@ private fun App() {
             vSessionTabOpen = false; vSessionActive = false
             val vKeep = inTab.pack
             if (vKeep != null) {
-                vActivePack = vPacks.indexOf(vKeep)
+                vActivePackRef = vKeep
                 if (inTab.req != null) { vKeep.active = inTab.req; vEnvActive = false }
                 else { vKeep.envOpen = true; vEnvActive = true }
             }
@@ -392,7 +394,7 @@ private fun App() {
     fun newLooseRequest() {
         val vRs = ReqState(ApiRequest(name = "Request ${vRoot.requests.size + 1}"))
         vRoot.requests.add(vRs); vRoot.openTabs.add(vRs); vRoot.active = vRs
-        vActivePack = -1; vEnvActive = false; vSessionActive = false; vReqMsg = null; vSideTab = 0; persist()
+        vActivePackRef = vRoot; vEnvActive = false; vSessionActive = false; vReqMsg = null; vSideTab = 0; persist()
     }
     fun duplicate(inRs: ReqState) {
         val vP = activePack() ?: return
@@ -462,15 +464,15 @@ private fun App() {
     //  Pack actions
     fun newPack() {
         val vP = PackState(Pack(name = "Pack ${vPacks.size + 1}"), null, false)
-        vPacks.add(vP); vActivePack = vPacks.size - 1; vReqMsg = null
-        vP.requests.firstOrNull()?.let { vP.openTabs.add(it); vP.active = it }   // open its request so the editor isn't empty
+        vPacks.add(vP); vActivePackRef = vP; vReqMsg = null
+        vP.requests.firstOrNull()?.let { vP.openTabs.add(it); vP.active = it }   // open its request if any
         persist()
     }
     fun openPackFile() {
         showOpenFileDialog { vPath ->
             if (vPath != null) importPack(vPath).fold(
                 onSuccess = { vPk ->
-                    vPacks.add(PackState(vPk, vPath, false)); vActivePack = vPacks.size - 1
+                    val vNewP = PackState(vPk, vPath, false); vPacks.add(vNewP); vActivePackRef = vNewP
                     vReqMsg = "Imported ${vPk.name}."; persist()
                 },
                 onFailure = { vReqMsg = "Import failed: ${it.message}" },
@@ -496,14 +498,14 @@ private fun App() {
     }
     fun closePack(inIdx: Int) {
         if (inIdx !in vPacks.indices) return
-        vPacks.removeAt(inIdx)
-        vActivePack = vActivePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0))
+        val vRemoved = vPacks.removeAt(inIdx)
+        if (vActivePackRef === vRemoved) vActivePackRef = vPacks.firstOrNull()
         vReqMsg = null; persist()
     }
     fun duplicatePack(inP: PackState) {
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
-        vPacks.add(vAt, PackState(inP.toPack().copy(name = "${inP.name} copy", id = "", linkedTo = null), null, true))
-        vActivePack = vAt; vReqMsg = null; persist()
+        val vNew = PackState(inP.toPack().copy(name = "${inP.name} copy", id = "", linkedTo = null), null, true)
+        vPacks.add(vAt, vNew); vActivePackRef = vNew; vReqMsg = null; persist()
     }
     // A linked copy mirrors inP's requests read-only but gets its own (copied)
     // variables / headers / cert — for running the same calls against another env.
@@ -516,7 +518,7 @@ private fun App() {
             headers = vSource.headers.toList(), cert = vSource.cert, linkedTo = vSource.id,
         ), null, true)
         vNew.linkedSource = vSource
-        vPacks.add(vAt, vNew); vActivePack = vAt; vReqMsg = null; persist()
+        vPacks.add(vAt, vNew); vActivePackRef = vNew; vReqMsg = null; persist()
     }
     fun renamePack(inP: PackState, inName: String) {
         if (inName.isNotBlank()) { inP.name = inName.trim(); inP.dirty = true; persist() }
@@ -550,7 +552,7 @@ private fun App() {
         vGlobalEnv.clear(); vGlobalEnv.addAll(inSession.globalEnv)
         vSessionHeaders.clear(); vSessionHeaders.addAll(inSession.globalHeaders)
         vSessionCert = inSession.globalCert
-        vActivePack = inSession.activePack.coerceIn(0, vPacks.size - 1)
+        vActivePackRef = vPacks.getOrNull(inSession.activePack) ?: vPacks.firstOrNull()
         vSessionPath = inPath
         if (inPath != null) rememberRecent(inPath)
         vReqMsg = null; persist()
@@ -568,7 +570,7 @@ private fun App() {
         vPacks.clear(); vPacks.add(PackState(Pack(name = "My Pack"), null, false))
         vRoot = PackState(Pack(isRoot = true, name = "", requests = emptyList()), null, false)
         vGlobalEnv.clear(); vSessionHeaders.clear(); vSessionCert = null
-        vActivePack = 0; vSessionPath = null; vReqMsg = null; persist()
+        vActivePackRef = vPacks.firstOrNull(); vSessionPath = null; vReqMsg = null; persist()
     }
     fun loadDefaultSession() { loadSession(defaultSession(), null) }
     // Switching to another session replaces the current working set. If the
@@ -641,7 +643,7 @@ private fun App() {
     MaterialTheme(colors = vMat) {
         CompositionLocalProvider(LocalAppColors provides vC) {
             val c = vC
-            val vP = activePack()   // may be the loose root (vActivePack < 0)
+            val vP = activePack()   // the active pack/scope (may be the loose root)
 
             HorizontalSplitPane(
                 modifier = Modifier.background(c.bg),
@@ -705,7 +707,7 @@ private fun App() {
                                             inPack = vRoot,
                                             inHeaderless = true,
                                             inHeaderActive = false,
-                                            inActiveReq = if (vActivePack < 0 && !vSessionActive) vRoot.active else null,
+                                            inActiveReq = if (vActivePackRef === vRoot && !vSessionActive) vRoot.active else null,
                                             inOnSelect = {}, inOnToggle = {},
                                             inOnOpenRequest = { vRs -> open(vRs, vRoot) },
                                             inOnNewRequest = { newLooseRequest() },
