@@ -2453,7 +2453,6 @@ private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) 
             inText = inReq.body,
             modifier = Modifier.fillMaxWidth().height(240.dp),
             inOnChange = { v -> inEdit { it.copy(body = v) } },
-            inPlaceholder = if (inReq.bodyFormat == BodyFormat.JSON) "{ }" else "text body",
             inFormat = inReq.bodyFormat,
         )
         BodyType.FORM -> KeyValEditor(inReq.form) { v -> inEdit { it.copy(form = v) } }
