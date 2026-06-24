@@ -2151,7 +2151,7 @@ private fun UrlBar(
     }
 }
 
-/* Bottom-of-panel-3 dropdown choosing the body type (None/Json/Text/Form/File). */
+/* Bottom-of-panel-3 dropdown choosing the body type (None/Text/Form/File). */
 @Composable
 private fun BodyTypeMenu(inType: BodyType, inEnabled: Boolean, inOnPick: (BodyType) -> Unit) {
     val c = LocalAppColors.current
@@ -2164,8 +2164,9 @@ private fun BodyTypeMenu(inType: BodyType, inEnabled: Boolean, inOnPick: (BodyTy
                 .clickable { if (inEnabled) vOpen = true }
                 .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
+            MaterialSymbolsOutlined(MaterialSymbols.Menu, tint = c.dim, size = 15.dp)
             Text(inType.label, color = if (inEnabled) c.text else c.dim, fontSize = 13.sp)
             MaterialSymbolsOutlined(MaterialSymbols.UnfoldMore, tint = c.dim, size = 15.dp)
         }
@@ -2424,7 +2425,7 @@ private fun RequestBuilder(
         }
 
         // Body-type selector — only on the Body tab, pinned at the bottom. For a
-        // Text body the format/type picker sits on the right: it drives both the
+        // Text body the format/type picker sits beside it; that type drives both the
         // syntax colours and the sent Content-Type.
         if (inRs.reqTab == 3) {
             Divider(color = c.border)
@@ -2433,13 +2434,9 @@ private fun RequestBuilder(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text("Body", color = c.dim, fontSize = 12.sp)
                 BodyTypeMenu(inReq.bodyType, true) { vT -> inEdit { it.copy(bodyType = vT) } }
-                Spacer(Modifier.weight(1f))
                 if (inReq.bodyType == BodyType.TEXT) {
-                    Text("Type", color = c.dim, fontSize = 12.sp)
-                    BodyFormatSelector(inSelected = inReq.bodyFormat, inOnChange = { vF -> inEdit { it.copy(bodyFormat = vF) } })
-                    Text(inReq.bodyFormat.contentType, color = c.dim, fontSize = 10.sp)
+                    BodyFormatSelector(inSelected = inReq.bodyFormat, inBordered = true, inOnChange = { vF -> inEdit { it.copy(bodyFormat = vF) } })
                 }
             }
         }
@@ -3267,32 +3264,38 @@ private fun isDarkBg(inColor: Color): Boolean {
 // MARK: BodyFormatSelector — small dropdown for RAW / JSON / XML / YAML / HTML
 // ==================
 
+/* Format / "type" picker. inBordered renders it as a full dropdown matching
+   BodyTypeMenu (the Body-tab Text-type picker); otherwise it's the compact inline
+   control used by the response viewer. */
 @Composable
 private fun BodyFormatSelector(
     inSelected: BodyFormat,
     inOnChange: (BodyFormat) -> Unit,
     inAutoLabel: String? = null,  // when set, shown as "FORMAT (auto)"
+    inBordered: Boolean = false,
 ) {
     val c = LocalAppColors.current
     var vOpen by remember { mutableStateOf(false) }
     val vAnchor = rememberMenuAnchor()
     val vLabel = if (inAutoLabel != null) "$inAutoLabel (auto)" else inSelected.label
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .clickable { vOpen = true }
-            .menuAnchor(vAnchor)
-            .padding(horizontal = 8.dp, vertical = 2.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(vLabel, color = c.dim, fontSize = 11.sp)
-            MaterialSymbolsOutlined(icon = MaterialSymbols.ArrowDropDown, tint = c.dim, size = 14.dp)
+    Box {
+        Row(
+            modifier = Modifier.menuAnchor(vAnchor)
+                .clip(RoundedCornerShape(if (inBordered) 6.dp else 4.dp))
+                .then(if (inBordered) Modifier.border(1.dp, c.border, RoundedCornerShape(6.dp)) else Modifier)
+                .clickable { vOpen = true }
+                .padding(horizontal = if (inBordered) 10.dp else 8.dp, vertical = if (inBordered) 6.dp else 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(if (inBordered) 5.dp else 4.dp),
+        ) {
+            Text(vLabel, color = if (inBordered) c.text else c.dim, fontSize = if (inBordered) 13.sp else 11.sp)
+            MaterialSymbolsOutlined(if (inBordered) MaterialSymbols.UnfoldMore else MaterialSymbols.ArrowDropDown, tint = c.dim, size = if (inBordered) 15.dp else 14.dp)
         }
-    }
-    DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, offsetY = (-4).dp) {
-        for (vF in BodyFormat.values()) {
-            DropdownMenuItem(onClick = { inOnChange(vF); vOpen = false }) {
-                Text(vF.label, color = if (vF == inSelected) c.accent else c.text)
+        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, offsetY = (-4).dp) {
+            for (vF in BodyFormat.values()) {
+                DropdownMenuItem(onClick = { inOnChange(vF); vOpen = false }) {
+                    Text(vF.label, color = if (vF == inSelected) c.accent else c.text)
+                }
             }
         }
     }
