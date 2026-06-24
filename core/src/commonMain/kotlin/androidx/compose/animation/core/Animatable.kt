@@ -17,51 +17,51 @@ import kotlinx.coroutines.CancellationException
    (suspend until the spec finishes). Concurrent animateTo calls cancel
    the previous one, like the upstream API. */
 class Animatable<T>(
-	inInitial: T,
-	private val fLerp: (T, T, Float) -> T,
+	initialValue: T,
+	private val lerp: (T, T, Float) -> T,
 ) {
-	private var fValue by mutableStateOf(inInitial)
+	private var fValue by mutableStateOf(initialValue)
 	private var fJobId: Int = 0  // bumped on every animateTo to cancel prior runs
 
 	val value: T get() = fValue
-	var targetValue: T = inInitial
+	var targetValue: T = initialValue
 		private set
 	var isRunning: Boolean = false
 		private set
 
 	/* Jump to the target without animating. Cancels any in-flight
 	   animateTo. */
-	suspend fun snapTo(inTarget: T) {
+	suspend fun snapTo(targetValue: T) {
 		fJobId++
-		fValue = inTarget
-		targetValue = inTarget
+		fValue = targetValue
+		this.targetValue = targetValue
 		isRunning = false
 	}
 
-	/* Animate from the current value to inTarget using the given spec.
-	   Suspends until the animation completes or is cancelled by a
+	/* Animate from the current value to targetValue using the given spec.
+	   Suspends until the animation completes or is superseded by a
 	   subsequent call (or coroutine cancellation). */
 	suspend fun animateTo(
-		inTarget: T,
-		inSpec: AnimationSpec<T> = tween(),
+		targetValue: T,
+		animationSpec: AnimationSpec<T> = spring(),
 	): AnimationResult<T> {
 		fJobId++
-		val vMyId = fJobId
-		val vFrom = fValue
-		targetValue = inTarget
+		val myId = fJobId
+		val from = fValue
+		this.targetValue = targetValue
 		isRunning = true
 
-		val vStartNanos = withFrameNanos { it }
+		val startNanos = withFrameNanos { it }
 		try {
 			while (true) {
-				val vNow = withFrameNanos { it }
-				if (fJobId != vMyId) return AnimationResult(fValue, AnimationEndReason.Cancelled)
-				val vElapsedMs = ((vNow - vStartNanos) / 1_000_000).toInt()
-				val (vV, vDone) = evaluateSpec(inSpec, vFrom, inTarget, vElapsedMs, fLerp)
-				fValue = vV
-				if (vDone) {
+				val now = withFrameNanos { it }
+				if (fJobId != myId) return AnimationResult(fValue, AnimationEndReason.BoundReached)
+				val elapsedMs = ((now - startNanos) / 1_000_000).toInt()
+				val (v, done) = evaluateSpec(animationSpec, from, targetValue, elapsedMs, lerp)
+				fValue = v
+				if (done) {
 					isRunning = false
-					return AnimationResult(vV, AnimationEndReason.Finished)
+					return AnimationResult(v, AnimationEndReason.Finished)
 				}
 			}
 		} catch (t: CancellationException) {
@@ -77,7 +77,7 @@ class Animatable<T>(
 	}
 }
 
-enum class AnimationEndReason { Finished, Cancelled }
+enum class AnimationEndReason { BoundReached, Finished }
 
 data class AnimationResult<T>(val endValue: T, val endReason: AnimationEndReason)
 
@@ -86,5 +86,5 @@ data class AnimationResult<T>(val endValue: T, val endReason: AnimationEndReason
 // ==================
 
 @Composable
-fun Animatable(inInitial: Float): Animatable<Float> =
-	remember { Animatable(inInitial) { vA, vB, vF -> vA + (vB - vA) * vF } }
+fun Animatable(initialValue: Float): Animatable<Float> =
+	remember { Animatable(initialValue) { a, b, f -> a + (b - a) * f } }

@@ -17,7 +17,7 @@ import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontStyle
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Typeface
-import androidx.compose.ui.text.FontVariation as ComposeFontVariation
+import androidx.compose.ui.text.font.FontVariation as ComposeFontVariation
 import org.jetbrains.skia.FontVariation as SkiaFontVariation
 
 // ==================

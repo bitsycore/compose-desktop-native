@@ -378,7 +378,288 @@ Follow `~/.claude/CLAUDE.md`:
     ```
 - Concise function-level comments only where the name is not
   self-documenting; avoid line-by-line commentary.
+- **Comment style**: use plain `/* ... */` block comments and `//` line
+  comments — **never** KDoc/Javadoc `/** ... */`. In a multi-line `/* */`
+  block, do **not** start continuation lines with `*`; the comment text
+  begins each line directly. (This applies to Kotlin and Java here; Swift/C
+  in other projects use `/** */`.)
 - Kotlin standard syntax — no Spirtech internal rules apply here.
+- **Exception for the re-implemented Compose API** (everything under
+  `androidx.compose.*`): public symbols and parameters use **official
+  Compose / standard-Kotlin names** (`modifier`, `content`, `onClick`,
+  `degrees`, `fraction`, `targetValue`, …) — **never** the `in`/`v`/`k`/`f`
+  prefix convention. The prefixes apply only to project-internal code
+  (`com.compose.desktop.native.*`, `private`/`internal` helpers, local
+  variables, constants). See **Compose API Fidelity** below.
+
+## Compose API Fidelity (mirroring official Compose Multiplatform)
+
+The `androidx.compose.*` packages here are a **re-implementation** whose
+**public surface must track official Compose Multiplatform as closely as
+possible** (same package, same names, same parameter order/defaults/return
+types), written in standard Kotlin. Keep this section authoritative; when in
+doubt, the official ABI wins.
+
+### Ground truth & the runtime boundary
+
+- **Official source** = `JetBrains/compose-multiplatform-core`. Keep a local
+  clone (this repo was audited against one at `C:/Dev/cmp-ref`; sparse +
+  shallow:
+  `git clone --filter=blob:none --depth 1 https://github.com/JetBrains/compose-multiplatform-core`
+  then `git sparse-checkout set compose/foundation compose/ui compose/animation`).
+  The authoritative public **Kotlin/Native ABI** is each module's
+  `<module>/api/<module>.klib.api` — grep it for exact members, return types,
+  and which params have defaults (shown as `= ...`). Read the `commonMain`
+  `.kt` source for exact **parameter names + default values** (the klib shows
+  types, not names).
+- **The runtime is OFFICIAL**: the build depends on
+  `org.jetbrains.compose.runtime:runtime` (1.11.1) + the official compose
+  compiler plugin. **Never re-implement or "fix" anything in
+  `androidx.compose.runtime.*`** — `@Composable`, `remember`,
+  `mutableStateOf`, `derivedStateOf`, `ComposeNode`, `AbstractApplier`,
+  `Recomposer`, `Snapshot`, `CompositionLocal`, `MonotonicFrameClock` are the
+  genuine artifact and are correct by definition.
+- Only `androidx.compose.foundation*`, `androidx.compose.animation*`, and
+  `androidx.compose.ui*` are re-implemented (they had to be redone to compile
+  for native targets) — those are what must mirror official.
+
+### Three fix strategies (classify every symbol)
+
+- **pull-verbatim** — pure data/math types with **no platform / `expect`-`actual`
+  / internal-node dependency** (`Dp`, `Sp`/`TextUnit`, `Color`, `Offset`,
+  `Size`, `Rect`, `CornerRadius`, `Constraints`, `IntOffset`/`IntSize`,
+  `TextRange`, `TextAlign`, `FontWeight`, easing curves, `Spring` constants…).
+  The right fix is to **copy the official `commonMain` `.kt` verbatim**. The
+  only prerequisite is porting the `androidx.compose.ui.util` packing/`lerp`
+  helpers (`packFloats`/`packInts`/`unpackFloat*`/`unpackInt*`/`fastRoundToInt`/
+  `lerp`/`toStringAsFixed`) and a `requirePrecondition` shim into core first.
+- **surface-match** — types bound to this project's custom layout / render /
+  event pipeline (`Modifier` elements, `LayoutNode`, `MeasurePolicy`,
+  `DrawScope`, `Painter`, `Shape`/`Outline`, pointer/key events, `Arrangement`).
+  Official `commonMain` for these is welded to the internal Compose engine and
+  cannot be pulled. **Keep the simplified custom impl; align only the public
+  signature** (names, order, defaults, return type, package).
+- **intentional-custom** — deliberate stand-ins with no official common
+  equivalent (`androidx.compose.ui.res` resource system, `ImageLoader`,
+  `TextMeasurer`, `FontFamily.Named`, `Modifier.onSecondaryClick/onMiddleClick/
+  onTextInput/onPressed/onDrag`, `SplitPane`, icon-font helpers). Keep, but
+  **mark `internal` where possible and never present them as upstream API**.
+
+### Universal rules
+
+1. **Names**: public symbols and parameters use official/standard-Kotlin
+   names — no `in`/`v`/`k`/`f` prefixes (`degrees` not `inDegrees`,
+   `targetValue` not `inTarget`, `other` not `inOther`, `fraction` not
+   `inFraction`).
+2. **Package**: declare each symbol in its official package (see map below).
+3. **Signature**: match parameter order, names, defaults and return type
+   exactly. Layout/widget composables are `modifier` first → behavior params →
+   **`content` last** with its scoped receiver and **no default**; for the
+   "no content" case add a separate content-less overload (e.g.
+   `Box(modifier)`, `Spacer(modifier)`) rather than `content: … = {}`.
+4. **Companions**: expose **only** the official companion members/constants —
+   no extras (no `Dp.Zero`/`Sp.Zero`/`TransformOrigin.TopLeft`/
+   `Brush.solidColor`). Construct via official idioms (`0.dp`,
+   `TransformOrigin(0f, 0f)`, `SolidColor(color)`).
+5. **Value-class types**: official types that wrap a packed `Int`/`Long`
+   (`Color`, `Offset`, `Size`, `TextRange`, `TextAlign`, `TextOverflow`,
+   `FontStyle`, `FontWeight`, `StrokeCap`, `TileMode`, `TransformOrigin`,
+   `KeyEventType`, `PointerEventType`, `PointerButton`, `IntOffset`/`IntSize`)
+   are modeled as `value class` + a `Companion` of named constants
+   (+ `values()`/`valueOf()` where official has them) — **never** as `enum` or
+   `data class`. A plain float/int-pair `data class` is tolerable as a reduced
+   impl **only** if construction syntax + every official member match; prefer
+   pulling the real value class.
+6. **No invented public API** in official packages. Project-only helpers live
+   under `com.compose.desktop.native.*`, or are `internal`, or are explicitly
+   documented as non-official.
+7. **Render-bridge glue stays internal**: the `Modifier.Element` data classes,
+   `Outline`, `Path.commands`/`PathCommand`, `GraphicsLayerModifier`,
+   `TextMeasurer`, `currentImageLoader`, native event backings — keep
+   `internal` (or per-module if cross-module renderers must read them) and
+   expose only the official extension/factory in front of them.
+8. **Additive-first**: prefer *adding* missing official params/members (even
+   when no-op or ignored by this renderer — accept-and-ignore) over reshaping.
+   Keep unimplemented official params present and defaulted so upstream call
+   sites compile.
+
+### Package map (official placement — APPLIED, keep here)
+
+These symbols now live in their official packages (relocated in the fidelity
+pass). Keep them there; do **not** move them back:
+
+| Symbol(s) | Official package |
+| --- | --- |
+| `FontWeight`, `FontStyle`, `FontFamily`, `FontVariation` | `androidx.compose.ui.text.font` |
+| `RoundedCornerShape`, `CircleShape` | `androidx.compose.foundation.shape` (`RectangleShape` stays in `ui.graphics`) |
+| `Modifier.clip` | `androidx.compose.ui.draw` |
+| `Modifier.zIndex` (+ `ZIndexModifier`) | `androidx.compose.ui` |
+| `Modifier.onSizeChanged`, `Modifier.onGloballyPositioned` | `androidx.compose.ui.layout` |
+| `Modifier.onKeyEvent` | `androidx.compose.ui.input.key` |
+| `animateColorAsState` | `androidx.compose.animation` (the rest of `animate*AsState` stay in `.core`) |
+| `TextRange.coerceIn` | top-level extension in `ui.text` (not a member) |
+
+Still mis-placed (not yet moved): `InfiniteTransition.animateColor` (should be
+in `androidx.compose.animation`).
+
+### Per-area cheat-sheet
+
+- **ui.unit** — `Dp.Infinity == Float.POSITIVE_INFINITY` (not `MAX_VALUE`);
+  `Dp.compareTo` returns `0` when either side is `NaN`. Companions: `Dp`
+  {`Hairline`,`Infinity`,`Unspecified`} (no `Zero`); `IntOffset` {`Zero`,`Max`};
+  `IntSize`/`DpSize`/`DpOffset` {`Zero`,`Unspecified`}. Provide the standard
+  `Dp` helpers (`lerp`/`min`/`max`/`coerceIn`/`coerceAtLeast`/`coerceAtMost`/
+  `isSpecified`/`isUnspecified`/`isFinite`/`takeOrElse`, scalar
+  `Int|Float|Double.times(Dp)`). Constrain via official `Constraints`
+  extensions (`constrain(IntSize)`, `constrainWidth/Height`, `isSatisfiedBy`,
+  `offset`) — not a bespoke `constrain(Int,Int)`. Text sizes are `TextUnit`
+  (`.sp`/`.em`); `Sp` is a documented simplification.
+- **ui.geometry** — `Offset`/`Size`/`CornerRadius` are value classes over a
+  packed `Long`; the 2-arg forms are top-level `inline fun` factories.
+  Complete the operator set + companions (`Offset.{Zero,Infinite,Unspecified}`,
+  `Size.{Zero,Unspecified}`) + `lerp`. `min/maxDimension` use `abs`. Add the
+  missing types (`Rect`, `MutableRect`, `CornerRadius`, `RoundRect`) when
+  needed.
+- **ui.graphics** — `Color`/`StrokeCap`/`StrokeJoin`/`TileMode`/
+  `TransformOrigin` are value classes + companion constants + top-level
+  factory funcs. `Shape.createOutline(size, layoutDirection, density): Outline`
+  with `Outline.Rectangle(Rect)`/`Rounded(RoundRect)`/`Generic(Path)`. `Path`
+  comes from top-level `fun Path()`, member names official, `Rect`-based
+  `addRect/addOval`. Gradients via `Brush.linearGradient/verticalGradient/
+  horizontalGradient/radialGradient/sweepGradient` (List<Color> + vararg
+  `Pair<Float,Color>` overloads); `SolidColor.value`. `graphicsLayer` uses the
+  official param order (`scaleX, scaleY, alpha, translationX, translationY,
+  shadowElevation, rotationX/Y/Z, …, transformOrigin, shape, clip`) + a
+  `GraphicsLayerScope` lambda overload. `draw*` keep official param order with
+  `alpha`, `style`, `colorFilter`, `blendMode` trailing.
+- **ui.text** — see package map for font types. `TextAlign`/`TextOverflow`/
+  `FontStyle`/`FontWeight`/`TextRange` are value classes with full constant
+  sets. Sizes are `TextUnit`. `Range` is nested `AnnotatedString.Range<T>`
+  (with optional `tag`); `AnnotatedString : CharSequence` + `plus`. Keep
+  `SpanStyle`/`ParagraphStyle`/`TextStyle` field **order** = official subset;
+  keep `merge()`/`plus()`. `TextMeasurer`/`WrappedText`/
+  `TextRendererCapabilities` are intentional-custom render glue.
+- **ui core (Modifier/Alignment/draw/focus)** — `Alignment.align` and
+  `Alignment.Horizontal.align` take a trailing `layoutDirection: LayoutDirection`
+  (Vertical does not); keep `Horizontal.plus(Vertical)`/`Vertical.plus(Horizontal)`.
+  `Modifier` adds `all`/`any` predicates. `FocusRequester` public surface is
+  `requestFocus()`/`freeFocus(): Boolean` (+ `Companion.Default`); hide
+  `attachedNode`/`focusManager`. Element data classes are internal glue.
+- **ui.layout / ui.node** — `ContentScale` is an `interface` with
+  `computeScaleFactor(srcSize, dstSize): ScaleFactor` + companion
+  `Fit/Crop/FillBounds/FillHeight/FillWidth/Inside/None` and sibling
+  `FixedScale`. `Placeable` nests `PlacementScope`; placement via
+  `Placeable.PlacementScope.place(x, y, zIndex = 0f)`, `placeAt` protected.
+  `MeasureScope.layout(width, height, alignmentLines = emptyMap()) { … }` with a
+  `Placeable.PlacementScope` receiver. `MeasurePolicy` params are
+  `measurables`/`constraints`. Keep the internal node-measure policy a distinct
+  `internal` name (don't collide with the public `ui.layout.MeasurePolicy`).
+- **ui.input / platform / window** — `KeyEvent`/`PointerEvent` are not flat
+  data classes: expose state via value-class types (`Key`, `KeyEventType`,
+  `PointerEventType`, `PointerButton`, `PointerId`) and extension props
+  (`KeyEvent.key/type/utf16CodePoint/isCtrlPressed/…`;
+  `PointerEvent.changes/type/buttons`). `KeyEventType.KeyDown/KeyUp/Unknown`
+  (not `Down`/`Up`); `PointerButton.Primary/Secondary/Tertiary/Back/Forward`
+  (not `Middle`); `PointerInputChange.isConsumed`. `awaitPointerEvent(pass =
+  PointerEventPass.Main): PointerEvent`. No public `KeyModifiers`, no mutable
+  `currentClipboard`. `Popup(alignment = Alignment.TopStart, offset =
+  IntOffset(0,0), onDismissRequest: (() -> Unit)? = null, properties =
+  PopupProperties(), content)` + a `PopupPositionProvider` overload — not
+  `modal`/`scrimColor`.
+- **foundation** — `clickable(enabled, onClickLabel, role, onClick)` and
+  `hoverable`/`focusable(interactionSource, enabled)` emit interactions; expose
+  state via `collectIs*AsState`. `Interaction` is a non-sealed interface;
+  `PressInteraction`/`HoverInteraction`/`FocusInteraction` are interfaces whose
+  nested `Press`(`pressPosition`)/`Enter`/`Focus`… implement them.
+  `MutableInteractionSource.tryEmit: Boolean` + suspend `emit`;
+  `InteractionSource.interactions: Flow<Interaction>`. `BorderStroke` wraps a
+  `Brush` (+ top-level `BorderStroke(width, color)`). `BasicText`/
+  `BasicTextField` take `style`/`textStyle: TextStyle` + `cursorBrush: Brush`,
+  not flattened `color`/`fontSize`/`cursorColor`. `Image(painter,
+  contentDescription, modifier, alignment = Alignment.Center, contentScale =
+  ContentScale.Fit, alpha = DefaultAlpha, colorFilter = null)`. `verticalScroll`/
+  `horizontalScroll(state, enabled, flingBehavior, reverseScrolling)`. Gesture
+  detectors match official param order (`detectTapGestures(onDoubleTap,
+  onLongPress, onPress, onTap)`).
+- **foundation.layout** — `RowScope`/`ColumnScope`/`BoxScope` are
+  `@LayoutScopeMarker interface`s with instance objects as receivers
+  (`RowScope`: `weight`/`align`/`alignBy`×2/`alignByBaseline`; `ColumnScope`:
+  `weight`/`align`/`alignBy`×2; `BoxScope`: `align`/`matchParentSize`).
+  `Arrangement.Horizontal/Vertical` keep the official
+  `fun Density.arrange(totalSize, sizes: IntArray, [layoutDirection,]
+  outPositions: IntArray)` + `val spacing: Dp`. Dp defaults are `0.dp` /
+  `Dp.Unspecified` (never `Dp.Zero`). `fillMax*(fraction)` must scale;
+  `required*` must override constraints.
+- **foundation.lazy** — entry points declare the full defaulted param set in
+  order (`modifier, state, contentPadding, reverseLayout, arrangement/alignment,
+  flingBehavior, userScrollEnabled, …, content` last). `item(key, contentType,
+  content)`/`items(count, key, contentType, itemContent)` are the only
+  interface members, with `LazyItemScope`/`LazyGridItemScope` receivers;
+  `List<T>`/`Array<T>` `items`/`itemsIndexed` are top-level `inline` extensions.
+  `LazyListState` exposes `firstVisibleItemIndex`/`firstVisibleItemScrollOffset`
+  + `scrollToItem`/`animateScrollToItem` (not `ScrollState`-style
+  `value`/`maxValue`). `GridCells` is an interface with
+  `fun Density.calculateCrossAxisCellSizes(...)`; `Fixed`/`Adaptive`/`FixedSize`
+  ctor params are `private`.
+- **animation.core** — all `animate*AsState`/`Animatable` default spec is
+  `spring()` (never `tween()`); `animateFloatAsState`/`spring()`/`SpringSpec`
+  carry `visibilityThreshold`. `TweenSpec`/`SnapSpec` field is `delay` while
+  the `tween()`/`snap()` factories take `delayMillis`. `repeatable`/
+  `infiniteRepeatable` accept the duration-based spec family + `initialStartOffset`.
+  `Spring` keeps `StiffnessMediumLow = 400f` and
+  `DefaultDisplacementThreshold = 0.01f`. `AnimationEndReason` =
+  {`BoundReached`,`Finished`}. The `AnimationVector`/`TwoWayConverter`/
+  `Vectorized*` pipeline is intentionally absent — the sealed `AnimationSpec` +
+  lerp-lambda design is the documented stand-in; don't fake the converter APIs.
+- **ui.res** — intentional custom stand-in for `org.jetbrains.compose.resources`
+  (the official `ui.res` is platform-only and not in the common ABI). Keep
+  `Res`/`ImageLoader`/`ResourceKind`/`AndroidVectorToSvg` as documented glue,
+  prefer `internal`; only `painterResource(resourcePath: String): Painter`
+  genuinely overlaps official (use that param name).
+
+### Known-diverging surface (still TODO — runtime-critical, compile-only here)
+
+These reshapes ripple into the renderers / event pipeline / every call site
+and can only be **compile**-verified on Windows (no runtime check), so they're
+left for a focused pass — do each one alone, then build **and** run a demo
+`--screenshot` to confirm nothing broke at runtime:
+
+- `KeyEvent`/`PointerEvent`/`PointerEventType`/`PointerButton`/`KeyEventType`
+  value-class + extension-prop redesign (touches `SDL3EventMapper`,
+  `ComposeWindow`, `BasicTextField`, apidemo — the live input path).
+- `BasicText`/`BasicTextField` → `style: TextStyle` / `cursorBrush: Brush`
+  (touches material `Text`/`TextField` + every call site; note the project
+  deviations `fontFamily: String?` and `fontVariationSettings` for icon fonts
+  don't map cleanly to official `TextStyle`).
+- `Color` → `value class` over packed `ULong` and `Sp` → `TextUnit`:
+  **representation-only** gaps — the current `data class` / `Sp` already match
+  the official *construction + member* surface (rule 5), so these are low
+  priority; the repack is pervasive and packing-correctness can't be unit-tested
+  here. Keep `r8`/`g8`/`b8`/`lighten`/`darken`/`blend` documented as non-official.
+- `Shape.createOutline(size, layoutDirection, density)` + official `Outline`
+  (`Rectangle(Rect)`/`Rounded(RoundRect)`/`Generic(Path)`) — currently
+  `Shape.outline(Int,Int)` + pixel-int `Outline`; both renderers read it.
+- `Arrangement.Horizontal/Vertical` `Density`-receiver + `IntArray` + `spacing:
+  Dp`; `RowScope`/`ColumnScope`/`BoxScope` `object`→`@LayoutScopeMarker interface`;
+  `Placeable.place`/`PlacementScope`.
+
+**Done in the fidelity pass** (no longer diverging): all `in`/`v`/`f`-prefixed
+public params renamed; the package moves above; `ContentScale` enum→interface
+(+`ScaleFactor`/`FixedScale`); `Popup` → official `alignment`/`offset`/
+`onDismissRequest?`/`properties: PopupProperties` (+ scrim moved into `Dialog`);
+`Dp`/`Offset`/`Size`/`Constraints`/`IntOffset` operator+companion+helper surface;
+`spring()` defaults + `Spring` constants + `visibilityThreshold`;
+`FontWeight: Comparable` + `W100..W900`; `lerp(Color,…)`.
+
+### Verifying fidelity
+
+Re-grep the official ABI any time you add/rename a public symbol, e.g.
+`grep -n "compose.ui.unit/Dp" C:/Dev/cmp-ref/compose/ui/ui-unit/api/ui-unit.klib.api`.
+Build with `./gradlew :apidemo:compileKotlinMingwX64 :demo:compileKotlinMingwX64`
+(compile-only on Windows verifies the whole common+native+mingw graph,
+including `:material`/`:window`/`:renderer-sdl3`, without a full static link;
+`:renderer-skia` is not in the mingw graph — grep it manually for any renamed
+symbol).
 
 ## Common Pitfalls
 

@@ -61,7 +61,8 @@ fun Color.darken(amount: Float): Color {
 }
 
 /* Linear blend toward an arbitrary color. amount=0 returns this; amount=1
-   returns the other color. Used for Material state-layer overlays. */
+   returns the other color. NON-OFFICIAL — used for Material state-layer
+   overlays; official code uses lerp(...) / compositeOver(...). */
 fun Color.blend(other: Color, amount: Float): Color {
     val a = amount.coerceIn(0f, 1f)
     return Color(
@@ -69,5 +70,16 @@ fun Color.blend(other: Color, amount: Float): Color {
         green + (other.green - green) * a,
         blue + (other.blue - blue) * a,
         alpha + (other.alpha - alpha) * a
+    )
+}
+
+/* Official linear interpolation between two colors (straight-alpha RGB). */
+fun lerp(start: Color, stop: Color, fraction: Float): Color {
+    val t = fraction.coerceIn(0f, 1f)
+    return Color(
+        start.red + (stop.red - start.red) * t,
+        start.green + (stop.green - start.green) * t,
+        start.blue + (stop.blue - start.blue) * t,
+        start.alpha + (stop.alpha - start.alpha) * t,
     )
 }

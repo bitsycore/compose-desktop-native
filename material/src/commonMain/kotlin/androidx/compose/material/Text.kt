@@ -11,7 +11,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.FontVariation
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -234,8 +234,8 @@ private fun splitIntoRuns(inText: AnnotatedString): List<Run> {
 
 /* FontFamily → renderer family name. Today only Named falls through;
    the generic families resolve to the default font. */
-private fun familyName(inFamily: androidx.compose.ui.text.FontFamily?): String? = when (inFamily) {
-    is androidx.compose.ui.text.FontFamily.Named -> inFamily.name
+private fun familyName(inFamily: androidx.compose.ui.text.font.FontFamily?): String? = when (inFamily) {
+    is androidx.compose.ui.text.font.FontFamily.Named -> inFamily.name
     else                                          -> null
 }
 

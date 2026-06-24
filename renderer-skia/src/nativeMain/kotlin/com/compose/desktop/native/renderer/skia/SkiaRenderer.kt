@@ -1,4 +1,6 @@
 package com.compose.desktop.native.renderer.skia
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.draw.clip
 
 import androidx.compose.ui.BackgroundModifier
 import androidx.compose.ui.BorderModifier

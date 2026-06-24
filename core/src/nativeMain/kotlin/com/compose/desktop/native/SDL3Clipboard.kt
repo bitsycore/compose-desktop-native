@@ -22,7 +22,7 @@ class SDL3Clipboard : Clipboard {
         return vText.ifEmpty { null }
     }
 
-    override fun setText(inText: String) {
-        SDL_SetClipboardText(inText)
+    override fun setText(text: String) {
+        SDL_SetClipboardText(text)
     }
 }

@@ -46,7 +46,7 @@ class PointerInputEvent(val changes: List<PointerInputChange>)
 interface PointerInputScope {
 
 	suspend fun <R> awaitPointerEventScope(
-		inBlock: suspend AwaitPointerEventScope.() -> R,
+		block: suspend AwaitPointerEventScope.() -> R,
 	): R
 }
 
@@ -83,7 +83,7 @@ class PointerInputScopeImpl : PointerInputScope {
 	private var fLastChange: PointerInputChange? = null
 
 	override suspend fun <R> awaitPointerEventScope(
-		inBlock: suspend AwaitPointerEventScope.() -> R,
+		block: suspend AwaitPointerEventScope.() -> R,
 	): R {
 		val vScope = object : AwaitPointerEventScope {
 			override suspend fun awaitPointerEvent(): PointerInputEvent {
@@ -97,20 +97,20 @@ class PointerInputScopeImpl : PointerInputScope {
 				}
 			}
 		}
-		return vScope.inBlock()
+		return vScope.block()
 	}
 
 	/* Deliver a change from the host. Computes pressed-transition fields
 	   off the LAST change we delivered. If nothing is awaiting, the
 	   event is dropped — same as upstream when no suspension is active.
 	   Called by the renderer host (:window) — not API for app code. */
-	fun deliverChange(inPos: Offset, inPressed: Boolean, inId: Long) {
+	fun deliverChange(position: Offset, pressed: Boolean, id: Long) {
 		val vPrev = fLastChange
 		val vChange = PointerInputChange(
-			id = inId,
-			position = inPos,
-			pressed = inPressed,
-			previousPosition = vPrev?.position ?: inPos,
+			id = id,
+			position = position,
+			pressed = pressed,
+			previousPosition = vPrev?.position ?: position,
 			previousPressed = vPrev?.pressed ?: false,
 		)
 		fLastChange = vChange

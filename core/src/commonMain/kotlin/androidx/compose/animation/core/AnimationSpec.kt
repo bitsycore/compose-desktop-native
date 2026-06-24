@@ -16,7 +16,7 @@ sealed interface AnimationSpec<T>
 
 data class TweenSpec<T>(
 	val durationMillis: Int = 300,
-	val delayMillis: Int = 0,
+	val delay: Int = 0,
 	val easing: Easing = FastOutSlowInEasing,
 ) : AnimationSpec<T>
 
@@ -29,7 +29,7 @@ fun <T> tween(
 // ============
 //  SnapSpec — instant jump (optional delay)
 
-data class SnapSpec<T>(val delayMillis: Int = 0) : AnimationSpec<T>
+data class SnapSpec<T>(val delay: Int = 0) : AnimationSpec<T>
 
 fun <T> snap(delayMillis: Int = 0): SnapSpec<T> = SnapSpec(delayMillis)
 
@@ -41,6 +41,7 @@ fun <T> snap(delayMillis: Int = 0): SnapSpec<T> = SnapSpec(delayMillis)
 data class SpringSpec<T>(
 	val dampingRatio: Float = Spring.DampingRatioNoBouncy,
 	val stiffness: Float = Spring.StiffnessMedium,
+	val visibilityThreshold: T? = null,
 ) : AnimationSpec<T>
 
 object Spring {
@@ -51,14 +52,18 @@ object Spring {
 
 	const val StiffnessHigh = 10_000f
 	const val StiffnessMedium = 1500f
+	const val StiffnessMediumLow = 400f
 	const val StiffnessLow = 200f
 	const val StiffnessVeryLow = 50f
+
+	const val DefaultDisplacementThreshold = 0.01f
 }
 
 fun <T> spring(
 	dampingRatio: Float = Spring.DampingRatioNoBouncy,
 	stiffness: Float = Spring.StiffnessMedium,
-): SpringSpec<T> = SpringSpec(dampingRatio, stiffness)
+	visibilityThreshold: T? = null,
+): SpringSpec<T> = SpringSpec(dampingRatio, stiffness, visibilityThreshold)
 
 // ============
 //  Repeatable + InfiniteRepeatable
@@ -111,7 +116,7 @@ internal fun <T> evaluateSpec(
 private fun <T> evalTween(
 	inSpec: TweenSpec<T>, inA: T, inB: T, inT: Int, inLerp: (T, T, Float) -> T,
 ): Pair<T, Boolean> {
-	val vEff = inT - inSpec.delayMillis
+	val vEff = inT - inSpec.delay
 	if (vEff <= 0) return inA to false
 	if (inSpec.durationMillis <= 0) return inB to true
 	if (vEff >= inSpec.durationMillis) return inB to true
@@ -121,7 +126,7 @@ private fun <T> evalTween(
 
 private fun <T> evalSnap(
 	inSpec: SnapSpec<T>, inA: T, inB: T, inT: Int, @Suppress("UNUSED_PARAMETER") inLerp: (T, T, Float) -> T,
-): Pair<T, Boolean> = if (inT < inSpec.delayMillis) inA to false else inB to true
+): Pair<T, Boolean> = if (inT < inSpec.delay) inA to false else inB to true
 
 /* Critically-damped spring approximation: derive an effective duration
    from stiffness, then run a smoothstep-ish easing. Not physically
@@ -146,7 +151,7 @@ private fun <T> evalSpring(
 private fun <T> evalRepeatable(
 	inSpec: RepeatableSpec<T>, inA: T, inB: T, inT: Int, inLerp: (T, T, Float) -> T,
 ): Pair<T, Boolean> {
-	val vCycle = inSpec.animation.durationMillis + inSpec.animation.delayMillis
+	val vCycle = inSpec.animation.durationMillis + inSpec.animation.delay
 	if (vCycle <= 0) return inB to true
 	val vTotal = vCycle * inSpec.iterations
 	if (inT >= vTotal) return inB to true
@@ -161,7 +166,7 @@ private fun <T> evalRepeatable(
 private fun <T> evalInfinite(
 	inSpec: InfiniteRepeatableSpec<T>, inA: T, inB: T, inT: Int, inLerp: (T, T, Float) -> T,
 ): Pair<T, Boolean> {
-	val vCycle = inSpec.animation.durationMillis + inSpec.animation.delayMillis
+	val vCycle = inSpec.animation.durationMillis + inSpec.animation.delay
 	if (vCycle <= 0) return inA to false
 	val vIdx = inT / vCycle
 	val vLocal = inT % vCycle

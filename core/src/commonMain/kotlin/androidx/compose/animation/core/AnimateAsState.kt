@@ -25,7 +25,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun animateFloatAsState(
 	targetValue: Float,
-	animationSpec: AnimationSpec<Float> = tween(),
+	animationSpec: AnimationSpec<Float> = spring(),
+	visibilityThreshold: Float = 0.01f,
 	label: String = "FloatAnimation",
 	finishedListener: ((Float) -> Unit)? = null,
 ): State<Float> = animateValueAsState(
@@ -35,7 +36,7 @@ fun animateFloatAsState(
 @Composable
 fun animateIntAsState(
 	targetValue: Int,
-	animationSpec: AnimationSpec<Int> = tween(),
+	animationSpec: AnimationSpec<Int> = spring(),
 	label: String = "IntAnimation",
 	finishedListener: ((Int) -> Unit)? = null,
 ): State<Int> = animateValueAsState(
@@ -45,22 +46,12 @@ fun animateIntAsState(
 @Composable
 fun animateDpAsState(
 	targetValue: Dp,
-	animationSpec: AnimationSpec<Dp> = tween(),
+	animationSpec: AnimationSpec<Dp> = spring(),
 	label: String = "DpAnimation",
 	finishedListener: ((Dp) -> Unit)? = null,
 ): State<Dp> = animateValueAsState(
 	targetValue, animationSpec, label, finishedListener,
 ) { vA, vB, vF -> (vA.value + (vB.value - vA.value) * vF).dp }
-
-@Composable
-fun animateColorAsState(
-	targetValue: Color,
-	animationSpec: AnimationSpec<Color> = tween(),
-	label: String = "ColorAnimation",
-	finishedListener: ((Color) -> Unit)? = null,
-): State<Color> = animateValueAsState(
-	targetValue, animationSpec, label, finishedListener,
-) { vA, vB, vF -> lerpColor(vA, vB, vF) }
 
 /* Generic primitive — the public animateFooAsState helpers wrap this
    with the right lerp. Exposed in case downstream code wants to animate
@@ -68,7 +59,7 @@ fun animateColorAsState(
 @Composable
 fun <T> animateValueAsState(
 	targetValue: T,
-	animationSpec: AnimationSpec<T> = tween(),
+	animationSpec: AnimationSpec<T> = spring(),
 	label: String = "ValueAnimation",
 	finishedListener: ((T) -> Unit)? = null,
 	lerp: (T, T, Float) -> T,

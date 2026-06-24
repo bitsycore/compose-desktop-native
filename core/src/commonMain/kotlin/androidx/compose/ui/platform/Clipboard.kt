@@ -9,12 +9,12 @@ package androidx.compose.ui.platform
    tests / unset configurations don't crash on read. */
 interface Clipboard {
     fun getText(): String?
-    fun setText(inText: String)
+    fun setText(text: String)
 }
 
 private object NoOpClipboard : Clipboard {
     override fun getText(): String? = null
-    override fun setText(inText: String) {}
+    override fun setText(text: String) {}
 }
 
 var currentClipboard: Clipboard = NoOpClipboard

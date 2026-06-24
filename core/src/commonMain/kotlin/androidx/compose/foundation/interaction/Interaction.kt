@@ -59,7 +59,7 @@ interface InteractionSource {
    isPressed / isHovered / isFocused state. */
 interface MutableInteractionSource : InteractionSource {
 
-	fun tryEmit(inInteraction: Interaction)
+	fun tryEmit(interaction: Interaction)
 }
 
 // ==================
@@ -80,8 +80,8 @@ private class MutableInteractionSourceImpl : MutableInteractionSource {
 	override val isHovered: Boolean get() = fHoverCount > 0
 	override val isFocused: Boolean get() = fFocused
 
-	override fun tryEmit(inInteraction: Interaction) {
-		when (inInteraction) {
+	override fun tryEmit(interaction: Interaction) {
+		when (interaction) {
 			is PressInteraction.Press   -> fPressCount += 1
 			is PressInteraction.Release -> fPressCount = (fPressCount - 1).coerceAtLeast(0)
 			is PressInteraction.Cancel  -> fPressCount = (fPressCount - 1).coerceAtLeast(0)

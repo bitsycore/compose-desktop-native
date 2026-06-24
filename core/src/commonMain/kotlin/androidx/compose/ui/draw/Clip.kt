@@ -1,4 +1,4 @@
-package androidx.compose.foundation
+package androidx.compose.ui.draw
 
 import androidx.compose.ui.ClipModifier
 import androidx.compose.ui.Modifier

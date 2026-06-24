@@ -17,12 +17,12 @@ data class TextRange(val start: Int, val end: Int) {
     val max: Int get() = max(start, end)
     val reversed: Boolean get() = end < start
 
-    fun coerceIn(inMin: Int, inMax: Int): TextRange =
-        TextRange(start.coerceIn(inMin, inMax), end.coerceIn(inMin, inMax))
-
     companion object {
         val Zero: TextRange = TextRange(0, 0)
     }
 }
 
 fun TextRange(index: Int): TextRange = TextRange(index, index)
+
+fun TextRange.coerceIn(minimumValue: Int, maximumValue: Int): TextRange =
+    TextRange(start.coerceIn(minimumValue, maximumValue), end.coerceIn(minimumValue, maximumValue))

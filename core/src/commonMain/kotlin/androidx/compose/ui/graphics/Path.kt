@@ -19,35 +19,36 @@ class Path {
 	/* Read-only view for renderers. */
 	val commands: List<PathCommand> get() = fCommands
 
-	fun moveTo(inX: Float, inY: Float) { fCommands.add(PathCommand.MoveTo(inX, inY)) }
-	fun lineTo(inX: Float, inY: Float) { fCommands.add(PathCommand.LineTo(inX, inY)) }
-	fun quadraticBezierTo(inCx: Float, inCy: Float, inX: Float, inY: Float) {
-		fCommands.add(PathCommand.QuadTo(inCx, inCy, inX, inY))
+	fun moveTo(x: Float, y: Float) { fCommands.add(PathCommand.MoveTo(x, y)) }
+	fun lineTo(x: Float, y: Float) { fCommands.add(PathCommand.LineTo(x, y)) }
+	fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float) {
+		fCommands.add(PathCommand.QuadTo(x1, y1, x2, y2))
 	}
 	fun cubicTo(
-		inC1x: Float, inC1y: Float,
-		inC2x: Float, inC2y: Float,
-		inX: Float, inY: Float,
+		x1: Float, y1: Float,
+		x2: Float, y2: Float,
+		x3: Float, y3: Float,
 	) {
-		fCommands.add(PathCommand.CubicTo(inC1x, inC1y, inC2x, inC2y, inX, inY))
+		fCommands.add(PathCommand.CubicTo(x1, y1, x2, y2, x3, y3))
 	}
 	fun close() { fCommands.add(PathCommand.Close) }
 	fun reset() { fCommands.clear() }
 
-	/* Convenience builders for common figures. */
-	fun addRect(inTopLeft: Offset, inSize: Size) {
-		moveTo(inTopLeft.x, inTopLeft.y)
-		lineTo(inTopLeft.x + inSize.width, inTopLeft.y)
-		lineTo(inTopLeft.x + inSize.width, inTopLeft.y + inSize.height)
-		lineTo(inTopLeft.x, inTopLeft.y + inSize.height)
+	/* Convenience builders for common figures. NOTE: official addRect/addOval
+	   take a Rect; these (Offset, Size) forms are a reduced project shape. */
+	fun addRect(topLeft: Offset, size: Size) {
+		moveTo(topLeft.x, topLeft.y)
+		lineTo(topLeft.x + size.width, topLeft.y)
+		lineTo(topLeft.x + size.width, topLeft.y + size.height)
+		lineTo(topLeft.x, topLeft.y + size.height)
 		close()
 	}
 
-	fun addOval(inTopLeft: Offset, inSize: Size) {
-		val vCx = inTopLeft.x + inSize.width / 2f
-		val vCy = inTopLeft.y + inSize.height / 2f
-		val vRx = inSize.width / 2f
-		val vRy = inSize.height / 2f
+	fun addOval(topLeft: Offset, size: Size) {
+		val vCx = topLeft.x + size.width / 2f
+		val vCy = topLeft.y + size.height / 2f
+		val vRx = size.width / 2f
+		val vRy = size.height / 2f
 		// 4-segment Bézier circle approximation: kappa ≈ 0.5522847498f
 		val vK = 0.5522847498f
 		moveTo(vCx + vRx, vCy)

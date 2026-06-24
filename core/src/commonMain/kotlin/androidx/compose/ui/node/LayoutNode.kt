@@ -60,7 +60,7 @@ class LayoutNode {
        wght/FILL/GRAD/opsz, or any custom axis the bundled font supports).
        null or empty = default axis values. Currently honored by the Skia
        renderer; SDL3_ttf ignores them (no axis-set API in 3.2). */
-    var fontVariationSettings: List<androidx.compose.ui.text.FontVariation>? = null
+    var fontVariationSettings: List<androidx.compose.ui.text.font.FontVariation>? = null
 
     // ============
     //  Content for image leaf nodes (set by the Image composable). The renderer
@@ -111,7 +111,7 @@ class LayoutNode {
     val zIndex: Float get() {
         var v = 0f
         modifier.foldIn(Unit) { _, e ->
-            if (e is androidx.compose.ui.draw.ZIndexModifier) v += e.zIndex
+            if (e is androidx.compose.ui.ZIndexModifier) v += e.zIndex
         }
         return v
     }

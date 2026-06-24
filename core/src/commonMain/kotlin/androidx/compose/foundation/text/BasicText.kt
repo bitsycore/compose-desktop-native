@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
-import androidx.compose.ui.text.FontVariation
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize

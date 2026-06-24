@@ -1,7 +1,7 @@
 package androidx.compose.foundation.text
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clip
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.onDrag
-import androidx.compose.foundation.onKeyEvent
-import androidx.compose.foundation.onSizeChanged
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.onTextInput
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

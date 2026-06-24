@@ -1,4 +1,8 @@
 package apidemo
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.draw.clip
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -9,17 +13,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.translate
-import androidx.compose.ui.draw.zIndex
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.FontWeight
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
@@ -962,7 +966,7 @@ private fun App() {
                                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                                     AddPackMenu(inOnNewRequest = { newLooseRequest() }, inOnNew = { newPack() }, inOnImport = { openPackFile() })
                                 }
-                                TabBar(listOf("Packs", "History"), vSideTab) { vSideTab = it }
+                                TabBar(listOf("Requests", "History"), vSideTab) { vSideTab = it }
                                 Spacer(modifier = Modifier.weight(1f))
                             }
                         }
@@ -2303,7 +2307,7 @@ private fun CopyButton(inText: String, inLabel: String? = null) {
     }
     // Icon-only: float a tiny "Copied" bubble (non-catching popup → no dismiss).
     if (vCopied && inLabel == null) {
-        Popup(modal = false) {
+        Popup {
             Box(
                 modifier = Modifier.offset(vX.dp, (vY + vHeight + 4).dp)
                     .clip(RoundedCornerShape(4.dp)).background(Color(0xE6111111L), RoundedCornerShape(4.dp))

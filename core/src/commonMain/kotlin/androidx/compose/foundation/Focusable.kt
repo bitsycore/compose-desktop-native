@@ -1,16 +1,10 @@
 package androidx.compose.foundation
 
 import androidx.compose.ui.FocusableModifier
-import androidx.compose.ui.GloballyPositionedModifier
-import androidx.compose.ui.KeyEventDispatch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.OnDragModifier
-import androidx.compose.ui.OnKeyEventModifier
 import androidx.compose.ui.OnPressedModifier
-import androidx.compose.ui.OnSizeChangedModifier
 import androidx.compose.ui.OnTextInputModifier
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 
 // ==================
 // MARK: Focus + keyboard modifiers
@@ -20,12 +14,6 @@ import androidx.compose.ui.unit.IntSize
    ancestor becomes the focused node; clicks elsewhere remove focus. */
 fun Modifier.focusable(onFocusChanged: (Boolean) -> Unit = {}) =
     then(FocusableModifier(onFocusChanged))
-
-/* Receives raw key events while the node (or a focusable descendant) is
-   focused. Return true to consume the event; false bubbles to the next
-   handler up the focus chain. */
-fun Modifier.onKeyEvent(handler: (KeyEventDispatch) -> Boolean) =
-    then(OnKeyEventModifier(handler))
 
 /* Receives IME-committed text (SDL_EVENT_TEXT_INPUT) while focused. Use
    for the text-insertion path of a TextField. Key events (arrows,
@@ -50,16 +38,3 @@ fun Modifier.onDrag(
     onDrag: (relX: Int, relY: Int) -> Unit = { _, _ -> },
     onEnd: () -> Unit = {},
 ) = then(OnDragModifier(onStart, onDrag, onEnd))
-
-/* Fires whenever the modified node's measured size changes. State writes
-   in the callback schedule a recomposition next frame. */
-fun Modifier.onSizeChanged(onChange: (IntSize) -> Unit) =
-    then(OnSizeChangedModifier(onChange))
-
-/* Fires after each layout pass with this node's absolute (window-level)
-   coordinates whenever they change. Use it to anchor overlay popups
-   (DropdownMenu, Tooltip, ContextMenu) to a moving target — the value
-   becomes available one frame after the layout that produced it, which is
-   fine for non-animated UI. */
-fun Modifier.onGloballyPositioned(onChange: (IntOffset) -> Unit) =
-    then(GloballyPositionedModifier(onChange))

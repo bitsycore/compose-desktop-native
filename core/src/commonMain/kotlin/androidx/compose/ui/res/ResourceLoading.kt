@@ -18,8 +18,8 @@ enum class ResourceKind {
 }
 
 /* Picks a ResourceKind from a file extension. */
-fun resourceKindForPath(inPath: String): ResourceKind {
-	val vExt = inPath.substringAfterLast('.', "").lowercase()
+fun resourceKindForPath(path: String): ResourceKind {
+	val vExt = path.substringAfterLast('.', "").lowercase()
 	return when (vExt) {
 		"svg"                                              -> ResourceKind.Svg
 		"xml"                                              -> ResourceKind.AndroidVector
@@ -42,15 +42,15 @@ interface ImageLoader {
 	/* Intrinsic pixel size of the decoded resource, treated as logical points
 	   by the layout pass. IntSize(-1, -1) when the resource is missing or can't
 	   be decoded. */
-	fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize
+	fun intrinsicSize(path: String, kind: ResourceKind): IntSize
 
 	/* Raw bytes of a bundled resource of any kind, or null if missing. */
-	fun readBytes(inPath: String): ByteArray?
+	fun readBytes(path: String): ByteArray?
 }
 
 private val kFallbackImageLoader = object : ImageLoader {
-	override fun intrinsicSize(inPath: String, inKind: ResourceKind) = IntSize(-1, -1)
-	override fun readBytes(inPath: String): ByteArray? = null
+	override fun intrinsicSize(path: String, kind: ResourceKind) = IntSize(-1, -1)
+	override fun readBytes(path: String): ByteArray? = null
 }
 
 /* Installed by ComposeWindow from renderBackend.imageLoader. */
@@ -64,9 +64,9 @@ var currentImageLoader: ImageLoader = kFallbackImageLoader
    composeResources/ (e.g. "drawable/logo.png"). The generated Res.drawable.*
    accessors call this; it's also fine to call directly. Kind is inferred from
    the extension. */
-fun painterResource(inPath: String): Painter =
-	Painter(inPath, resourceKindForPath(inPath))
+fun painterResource(resourcePath: String): Painter =
+	Painter(resourcePath, resourceKindForPath(resourcePath))
 
-/* Same, with an explicit kind when the extension is ambiguous. */
-fun painterResource(inPath: String, inKind: ResourceKind): Painter =
-	Painter(inPath, inKind)
+/* NON-OFFICIAL overload: explicit kind when the extension is ambiguous. */
+fun painterResource(resourcePath: String, kind: ResourceKind): Painter =
+	Painter(resourcePath, kind)

@@ -1,5 +1,6 @@
 package androidx.compose.ui.text
 
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.IntSize
 
 // ==================

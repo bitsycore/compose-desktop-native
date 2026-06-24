@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.onGloballyPositioned
-import androidx.compose.foundation.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -74,7 +74,7 @@ fun DropdownMenu(
     val vAnchorBottom = vAnchorTop + (anchor?.size?.height ?: 0)
     val vBaseX = (anchor?.position?.x ?: 0) + offsetX.value.toInt()
 
-    Popup(onDismissRequest = onDismissRequest, modal = false) {
+    Popup(onDismissRequest = onDismissRequest) {
         // The fullscreen scrim measures the window; the menu measures itself. With
         // both known we flip the menu above the anchor when it would overflow the
         // bottom, and clamp X into the window — this renderer has no position

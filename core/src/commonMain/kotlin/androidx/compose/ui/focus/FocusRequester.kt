@@ -44,7 +44,7 @@ class FocusRequester {
    without reaching into the window event loop. */
 interface FocusManager {
 
-	fun focusOnNode(inNode: LayoutNode)
+	fun focusOnNode(node: LayoutNode)
 	fun clearFocus()
 }
 
@@ -60,8 +60,8 @@ class FocusRequesterModifier(val focusRequester: FocusRequester) : Modifier.Elem
 
 /* Bind a FocusRequester to this node. Pair with Modifier.focusable so
    the node actually accepts focus. */
-fun Modifier.focusRequester(inRequester: FocusRequester): Modifier =
-	this.then(FocusRequesterModifier(inRequester))
+fun Modifier.focusRequester(focusRequester: FocusRequester): Modifier =
+	this.then(FocusRequesterModifier(focusRequester))
 
 // ==================
 // MARK: onFocusChanged (standalone)
@@ -72,5 +72,5 @@ fun Modifier.focusRequester(inRequester: FocusRequester): Modifier =
    the focusable's onFocusChanged slot. */
 class OnFocusChangedModifier(val onChange: (Boolean) -> Unit) : Modifier.Element
 
-fun Modifier.onFocusChanged(inOnChange: (Boolean) -> Unit): Modifier =
-	this.then(OnFocusChangedModifier(inOnChange))
+fun Modifier.onFocusChanged(onFocusChanged: (Boolean) -> Unit): Modifier =
+	this.then(OnFocusChangedModifier(onFocusChanged))

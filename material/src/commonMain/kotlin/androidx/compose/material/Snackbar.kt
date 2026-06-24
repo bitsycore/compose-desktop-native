@@ -16,7 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -36,7 +36,7 @@ fun Snackbar(
     action: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    Popup(modal = false) {
+    Popup {
         Box(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             contentAlignment = Alignment.BottomCenter,

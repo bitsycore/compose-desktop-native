@@ -19,7 +19,6 @@ value class Sp(val value: Float) : Comparable<Sp> {
     operator fun unaryMinus() = Sp(-value)
 
     companion object {
-        val Zero = Sp(0f)
         val Unspecified = Sp(Float.NaN)
     }
 }

@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.translate
-import androidx.compose.ui.draw.zIndex
-import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
 // ==================

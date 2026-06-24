@@ -1,6 +1,6 @@
 package com.compose.desktop.native.renderer.sdl
 
-import androidx.compose.ui.text.FontVariation
+import androidx.compose.ui.text.font.FontVariation
 import freetype.*
 import kotlinx.cinterop.*
 import sdl3.*

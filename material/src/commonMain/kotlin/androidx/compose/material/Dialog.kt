@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -12,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RoundedCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,15 +33,25 @@ fun Dialog(
     onDismissRequest: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Popup(onDismissRequest = onDismissRequest, modal = true) {
-        // Stop scrim click-through: any click inside the dialog body itself
-        // should be a no-op (it landed inside the content, not on the scrim).
+    // Official Popup has no scrim/modality — Dialog draws its own fullscreen
+    // scrim and centres the content; clicking the scrim dismisses.
+    Popup(onDismissRequest = onDismissRequest) {
         Box(
             modifier = Modifier
-                .widthIn(min = DialogDefaults.MinWidth, max = DialogDefaults.MaxWidth)
-                .background(MaterialTheme.colors.surface, DialogDefaults.Shape)
-                .clickable { /* swallow */ },
-        ) { content() }
+                .fillMaxSize()
+                .background(Color(0x80000000L))
+                .clickable { onDismissRequest() },
+            contentAlignment = Alignment.Center,
+        ) {
+            // Stop scrim click-through: any click inside the dialog body itself
+            // should be a no-op (it landed inside the content, not on the scrim).
+            Box(
+                modifier = Modifier
+                    .widthIn(min = DialogDefaults.MinWidth, max = DialogDefaults.MaxWidth)
+                    .background(MaterialTheme.colors.surface, DialogDefaults.Shape)
+                    .clickable { /* swallow */ },
+            ) { content() }
+        }
     }
 }
 

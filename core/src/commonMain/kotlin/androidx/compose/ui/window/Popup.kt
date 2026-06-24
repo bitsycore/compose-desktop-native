@@ -1,6 +1,5 @@
 package androidx.compose.ui.window
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +15,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 
 // ==================
 // MARK: PopupHostState
@@ -81,44 +81,79 @@ fun PopupLayer(inHost: PopupHostState) {
 }
 
 // ==================
+// MARK: PopupProperties
+// ==================
+
+/* Behaviour flags for a Popup. This renderer hosts overlay content without a
+   focus system, so focusable / dismissOnBackPress / dismissOnClickOutside /
+   clippingEnabled are accepted for source-compatibility with official Compose
+   but not all are acted on — callers handle outside-click dismissal via their
+   own click-catcher (see DropdownMenu) and Dialog draws its own scrim. */
+class PopupProperties(
+	val focusable: Boolean = false,
+	val dismissOnBackPress: Boolean = true,
+	val dismissOnClickOutside: Boolean = true,
+	val clippingEnabled: Boolean = true,
+	val usePlatformDefaultWidth: Boolean = true,
+) {
+	override fun equals(other: Any?): Boolean =
+		other is PopupProperties &&
+			focusable == other.focusable &&
+			dismissOnBackPress == other.dismissOnBackPress &&
+			dismissOnClickOutside == other.dismissOnClickOutside &&
+			clippingEnabled == other.clippingEnabled &&
+			usePlatformDefaultWidth == other.usePlatformDefaultWidth
+
+	override fun hashCode(): Int {
+		var result = focusable.hashCode()
+		result = 31 * result + dismissOnBackPress.hashCode()
+		result = 31 * result + dismissOnClickOutside.hashCode()
+		result = 31 * result + clippingEnabled.hashCode()
+		result = 31 * result + usePlatformDefaultWidth.hashCode()
+		return result
+	}
+}
+
+// ==================
 // MARK: Popup
 // ==================
 
-/* Low-level overlay primitive. Renders `content` at the root of the window
-   (above the main tree). Positioning is the caller's responsibility — use
-   Modifier.offset(...) or wrap in a Box(contentAlignment = ...). For modal
-   blocking, set `modal = true` and the popup is wrapped in a fullscreen
-   scrim that intercepts pointer events. */
+/* Overlay primitive matching official Compose's signature. Renders `content`
+   at the root of the window (above the main tree), positioned by `alignment`
+   within the window and shifted by `offset` (logical points). Outside-click
+   dismissal and modality are the caller's responsibility (Dialog draws a
+   scrim; DropdownMenu installs its own click-catcher) — see PopupProperties. */
 @Composable
 fun Popup(
-	onDismissRequest: () -> Unit = {},
-	modal: Boolean = false,
-	scrimColor: Color = if (modal) Color(0x80000000L) else Color.Transparent,
+	alignment: Alignment = Alignment.TopStart,
+	offset: IntOffset = IntOffset(0, 0),
+	onDismissRequest: (() -> Unit)? = null,
+	properties: PopupProperties = PopupProperties(),
 	content: @Composable () -> Unit,
 ) {
 	val vHost = LocalPopupHost.current
 	val vId = remember { Any() }
 	// Snapshot the CompositionLocals in scope at the call site. PopupLayer renders
 	// the hosted content at the composition root, so without re-providing these it
-	// would only see the root defaults — MaterialTheme and app-level locals (e.g. a
-	// light/dark palette) set further down the tree would never reach the popup,
-	// leaving dialogs and menus stuck on the default theme.
+	// would only see the root defaults — MaterialTheme and app-level locals set
+	// further down the tree would never reach the popup.
 	val vLocals = currentCompositionLocalContext
-	SideEffect {
-		vHost.upsert(vId) {
-			CompositionLocalProvider(vLocals) {
-				if (modal) {
-					Box(
-						modifier = Modifier
-							.fillMaxSize()
-							.background(scrimColor)
-							.clickable { onDismissRequest() },
-						contentAlignment = Alignment.Center,
-					) { content() }
-				} else {
-					content()
+	// Default (TopStart / no offset) renders content verbatim — callers that
+	// position themselves (DropdownMenu, Snackbar) are unaffected. Otherwise wrap
+	// in a fullscreen aligner + offset.
+	val vPositioned: @Composable () -> Unit =
+		if (alignment == Alignment.TopStart && offset.x == 0 && offset.y == 0) {
+			content
+		} else {
+			{
+				Box(modifier = Modifier.fillMaxSize(), contentAlignment = alignment) {
+					Box(modifier = Modifier.offset(offset.x.dp, offset.y.dp)) { content() }
 				}
 			}
+		}
+	SideEffect {
+		vHost.upsert(vId) {
+			CompositionLocalProvider(vLocals) { vPositioned() }
 		}
 	}
 	DisposableEffect(Unit) {
@@ -127,13 +162,12 @@ fun Popup(
 }
 
 // ==================
-// MARK: PositionedPopup
+// MARK: PositionedPopup (non-official project helper)
 // ==================
 
 /* Convenience overlay anchored at an absolute window position. Used by
-   DropdownMenu and ContextMenu. The full screen is still occupied by a
-   click-catcher that closes the popup when the user clicks elsewhere
-   (non-modal dismiss). */
+   Tooltip / ContextMenu. A fullscreen click-catcher closes the popup when the
+   user clicks elsewhere. Not part of official Compose — prefer Popup(offset).*/
 @Composable
 fun PositionedPopup(
 	x: Dp,
@@ -141,7 +175,7 @@ fun PositionedPopup(
 	onDismissRequest: () -> Unit,
 	content: @Composable () -> Unit,
 ) {
-	Popup(onDismissRequest = onDismissRequest, modal = false) {
+	Popup(onDismissRequest = onDismissRequest) {
 		Box(modifier = Modifier.fillMaxSize().clickable { onDismissRequest() }) {
 			Box(modifier = Modifier.offset(x, y)) { content() }
 		}
