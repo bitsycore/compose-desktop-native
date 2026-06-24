@@ -9,12 +9,12 @@ import kotlinx.serialization.Serializable
 /* A "pack" is a savable collection of requests plus its environment variables
    — the export/import unit. Variables are referenced as {{name}} in any URL,
    query value, header or body and substituted just before the request is sent
-   (see resolveVars in Tools.kt). A fresh pack holds one blank request; the rich
-   starter set lives in defaultSession(). */
+   (see resolveVars in Tools.kt). Packs may be empty; the rich starter set lives
+   in defaultSession(). */
 @Serializable
 data class Pack(
     val name: String = "My Pack",
-    val requests: List<ApiRequest> = listOf(ApiRequest()),
+    val requests: List<ApiRequest> = emptyList(),
     val variables: List<KeyVal> = emptyList(),
     val color: Int = 0,   // 1-based index into the pack-colour palette; 0 = none
     val headers: List<KeyVal> = emptyList(),   // pack-level headers, inherited by requests

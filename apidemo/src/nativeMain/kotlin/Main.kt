@@ -108,8 +108,7 @@ private class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenT
     // their requests. `requests` resolves to whichever applies.
     var linkedSource by mutableStateOf<PackState?>(null)
     private val fOwnRequests = mutableStateListOf<ReqState>().apply {
-        if (inPack.linkedTo != null) inPack.requests.forEach { add(ReqState(it)) }   // linked: no synthetic blank
-        else inPack.requests.ifEmpty { listOf(ApiRequest()) }.forEach { add(ReqState(it)) }
+        inPack.requests.forEach { add(ReqState(it)) }   // packs (and the loose root) may be empty
     }
     val requests: androidx.compose.runtime.snapshots.SnapshotStateList<ReqState>
         get() = linkedSource?.requests ?: fOwnRequests
@@ -405,8 +404,7 @@ private fun App() {
         val vP = activePack() ?: return
         inRs.job?.cancel()
         inRs.imageKey?.let { removeMemoryResource(it) }
-        vP.openTabs.remove(inRs); vP.requests.remove(inRs)
-        if (vP.requests.isEmpty()) vP.requests.add(ReqState(ApiRequest()))
+        vP.openTabs.remove(inRs); vP.requests.remove(inRs)   // a pack may now be empty
         if (vP.active === inRs) vP.active = vP.openTabs.lastOrNull()
         vP.dirty = true
     }
