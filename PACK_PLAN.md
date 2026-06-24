@@ -83,8 +83,14 @@ Migration: `loadAppState` maps any old flat `packs: List<SavedPack>` → `roots`
 >   render headerless at the top of the sidebar and inherit session settings only.
 >   Add via the `+` → "New request (loose)". Persisted as `Session.root` /
 >   `AppState.root` + `rootOpenTabs` (vPacks indices untouched).
-> - REMAINING: **tree slices 2/3** — nested packs (PackState.children) + cross-pack
->   drag. This is one atomic refactor of the core (~100 interconnected sites:
+> - DONE: **tree slice 2 — nested packs.** Active-pack tracking is now a reference
+>   (`vActivePackRef`) so a sub-pack can be active; `PackState` has `parent` +
+>   `subPacks` (persisted via `Pack.subPacks`); inheritance walks the scope chain
+>   (Session→pack→sub-pack, innermost wins — also fixed pack>session order); the
+>   sidebar renders the tree recursively (`PackTree`/`PackOps`, indented); pack ⋮ →
+>   "New sub-pack"; strip / reorder / remove are tree-aware.
+> - REMAINING: **tree slice 3 — cross-pack drag** (drag a request/pack into another
+>   pack or the root). Convenience only; create/remove already organise the tree. This is one atomic refactor of the core (~100 interconnected sites:
 >   vPacks→vRoots, PackState.requests→children, recursive sidebar + tab strip +
 >   recursive NodeData persistence + migration). No compilable sub-step — best
 >   landed as a dedicated focused push. When doing it: introduce
