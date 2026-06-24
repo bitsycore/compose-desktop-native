@@ -2964,7 +2964,11 @@ private fun BodyView(
         //  - JSON / XML / HTML / YAML read-only: Text(AnnotatedString)
         //    with the tokeniser's colour spans. Selection is lost but the
         //    overflow menu's Copy actions cover that case.
-        Box(modifier = Modifier.weight(1f)) {
+        // When editable, the field fills the whole panel height so a click
+        // anywhere (not just on the text line) focuses it and starts writing.
+        // Read-only (response) keeps wrap-height so it grows with content.
+        val vEditable = inOnChange != null
+        Box(modifier = Modifier.weight(1f).then(if (vEditable) Modifier.fillMaxHeight() else Modifier)) {
             if (inText.isEmpty() && inPlaceholder.isNotEmpty()) {
                 Text(inPlaceholder, color = c.dim, fontSize = 12.sp)
             }
@@ -2975,7 +2979,7 @@ private fun BodyView(
                     readOnly = inOnChange == null,
                     color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
                     fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = if (vEditable) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
                 )
             } else {
                 // Pick a palette by background luminance — light theme gets
