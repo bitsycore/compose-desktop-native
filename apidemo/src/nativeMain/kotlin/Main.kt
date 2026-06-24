@@ -209,10 +209,11 @@ private class TreeDrag {
 // Pixels the pointer must travel before a press is treated as a drag (drag slop).
 private const val kDragSlop = 5f
 
-// An inherited variable / header tagged with the scope level it comes from, and
-// the single inherited client cert tagged likewise — for the inheritance UI.
-private data class InheritedKv(val kv: KeyVal, val source: String)
-private data class InheritedCert(val cert: CertConfig, val source: String)
+// An inherited variable / header tagged with where it comes from: `source` is the
+// short pill label ("Session" / "Pack"), `path` the full path for the tooltip
+// ("Session" or e.g. "Methods / Nested"). The single inherited cert is tagged the same.
+private data class InheritedKv(val kv: KeyVal, val source: String, val path: String)
+private data class InheritedCert(val cert: CertConfig, val source: String, val path: String)
 
 // ==================
 // MARK: App
@@ -350,36 +351,39 @@ private fun App() {
 
     // ============
     //  Source-aware inheritance (for the "what do I inherit, and from where?" UI).
-    //  scopeName labels a level; the sourced* helpers walk a chain (outer→inner,
-    //  session first) and tag each surviving value with the level that provides it.
-    //  inChain for a request = scopeChain(owningPack) (its own pack included); for a
-    //  pack's settings = scopeChain(pack.parent) (ancestors only, the pack excluded).
-    fun scopeName(inP: PackState?): String = when {
-        inP == null -> "Session"
-        inP === vRoot -> "Loose"
-        else -> inP.name.ifBlank { "Pack" }
+    //  The sourced* helpers walk a chain (outer→inner, session first) and tag each
+    //  surviving value with a short label ("Session" / "Pack") + its scopePath for
+    //  the tooltip. inChain for a request = scopeChain(owningPack) (its own pack
+    //  included); for a pack's settings = scopeChain(pack.parent) (ancestors only).
+    // The full path of a scope for the source tooltip: "Methods" for a top-level
+    // pack, "Methods / Nested" for a sub-pack (root excluded — it's never inherited).
+    fun scopePath(inP: PackState): String {
+        val vParts = ArrayList<String>()
+        var vCur: PackState? = inP
+        while (vCur != null && vCur !== vRoot) { vParts.add(0, vCur.name.ifBlank { "Pack" }); vCur = vCur.parent }
+        return vParts.joinToString(" / ")
     }
     fun sourcedVars(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // vars are case-sensitive ({{name}})
-        vGlobalEnv.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session") }
-        inChain.forEach { vP -> vP.variables.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, scopeName(vP)) } }
+        vGlobalEnv.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session", "Session") }
+        inChain.forEach { vP -> vP.variables.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) } }
         return vOut.values.toList()
     }
     fun sourcedHeaders(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // headers are case-insensitive
-        vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Session") }
-        inChain.forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, scopeName(vP)) } }
+        vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Session", "Session") }
+        inChain.forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Pack", scopePath(vP)) } }
         return vOut.values.toList()
     }
     fun sourcedParams(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // query keys are case-sensitive
-        vSessionParams.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session") }
-        inChain.forEach { vP -> vP.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, scopeName(vP)) } }
+        vSessionParams.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session", "Session") }
+        inChain.forEach { vP -> vP.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) } }
         return vOut.values.toList()
     }
     fun sourcedCert(inChain: List<PackState>): InheritedCert? {
-        inChain.asReversed().forEach { vP -> vP.cert?.takeIf { it.isSet }?.let { return InheritedCert(it, scopeName(vP)) } }
-        return vSessionCert?.takeIf { it.isSet }?.let { InheritedCert(it, "Session") }
+        inChain.asReversed().forEach { vP -> vP.cert?.takeIf { it.isSet }?.let { return InheritedCert(it, "Pack", scopePath(vP)) } }
+        return vSessionCert?.takeIf { it.isSet }?.let { InheritedCert(it, "Session", "Session") }
     }
 
     fun persist() {
@@ -2545,7 +2549,7 @@ private fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, inR
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SourceTag(inInherited.source)
+            SourceTag(inInherited.source, inInherited.path)
             Text("Inherited client cert", color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(1f))
             when {
                 inOwnSet -> Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
@@ -2568,7 +2572,7 @@ private fun RequestCertTab(inReq: ApiRequest, inInheritedCert: InheritedCert?, i
         if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = inReq.hasClientCert, inReadOnly = inReadOnly) {
             inEdit { it.withCert(inInheritedCert.cert) }
         }
-        CertConfigEditor(inReq.certConfig(), inOverrideSource = if (inReq.hasClientCert) inInheritedCert?.source else null) { vCc -> inEdit { it.withCert(vCc) } }
+        CertConfigEditor(inReq.certConfig(), inOverrideSource = if (inReq.hasClientCert) inInheritedCert?.path else null) { vCc -> inEdit { it.withCert(vCc) } }
     }
 }
 
@@ -2626,7 +2630,7 @@ private fun ScopeSettings(
                 Text(inCertHelp, color = c.dim, fontSize = 12.sp)
                 val vOwnSet = inCert?.isSet == true
                 if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = vOwnSet, inReadOnly = false) { inOnCert(inInheritedCert.cert) }
-                CertConfigEditor(inCert ?: CertConfig(), inCertHeading, inOverrideSource = if (vOwnSet) inInheritedCert?.source else null) { vCc -> inOnCert(vCc.takeIf { it.isSet }) }
+                CertConfigEditor(inCert ?: CertConfig(), inCertHeading, inOverrideSource = if (vOwnSet) inInheritedCert?.path else null) { vCc -> inOnCert(vCc.takeIf { it.isSet }) }
             }
         }
     }
@@ -3419,7 +3423,7 @@ private fun InheritedEditableTab(
     inOwnTitle: String,
     inOnOverride: (KeyVal) -> Unit,        // copy an inherited entry into the own list
     inOnChange: (List<KeyVal>) -> Unit,    // own editor change
-    inInheritedTitle: String = "Inherited — session / pack",
+    inInheritedTitle: String = "Inherited",
 ) {
     val c = LocalAppColors.current
     fun norm(inKey: String) = if (inCaseInsensitive) inKey.lowercase() else inKey
@@ -3429,7 +3433,7 @@ private fun InheritedEditableTab(
             inOnOverride = if (inReadOnly) null else inOnOverride)
         if (inInherited.any { it.kv.key.isNotBlank() }) { Divider(color = c.border); Text(inOwnTitle, color = c.dim, fontSize = 11.sp) }
         KeyValEditor(inOwn, inOnChange = inOnChange, inOverrideInfo = { vR ->
-            if (vR.key.isBlank()) null else inInherited.firstOrNull { norm(it.kv.key) == norm(vR.key) }?.source
+            if (vR.key.isBlank()) null else inInherited.firstOrNull { norm(it.kv.key) == norm(vR.key) }?.path
         })
     }
 }
@@ -3461,22 +3465,27 @@ private fun VarTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly
 // MARK: Inheritance UI (source tags / override markers / inherited lists)
 // ==================
 
-/* A small pill naming the scope an inherited value comes from (Session / pack). */
+/* A small pill naming the kind of scope an inherited value comes from ("Session"
+   / "Pack"); hover shows the full path (e.g. "Methods / Nested"). The path tooltip
+   is skipped when it would just repeat the label (the session). */
 @Composable
-private fun SourceTag(inSource: String) {
+private fun SourceTag(inLabel: String, inPath: String) {
     val c = LocalAppColors.current
-    Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(c.accent.copy(alpha = 0.16f), RoundedCornerShape(4.dp)).padding(horizontal = 5.dp, vertical = 1.dp)) {
-        Text(inSource, color = c.accent, fontSize = 9.sp)
+    val vPill = @Composable {
+        Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(c.accent.copy(alpha = 0.16f), RoundedCornerShape(4.dp)).padding(horizontal = 5.dp, vertical = 1.dp)) {
+            Text(inLabel, color = c.accent, fontSize = 9.sp)
+        }
     }
+    if (inPath.isBlank() || inPath == inLabel) vPill() else TooltipBox(text = inPath) { vPill() }
 }
 
 /* The tiny marker shown on an own value that shadows an inherited one — hover for
-   "Overrides <key> from <source>". */
+   "Overrides <key> from <path>". */
 @Composable
-private fun OverrideMark(inKey: String, inSource: String) {
+private fun OverrideMark(inKey: String, inPath: String) {
     val c = LocalAppColors.current
-    TooltipBox(text = "Overrides “$inKey” from $inSource") {
-        MaterialSymbolsOutlined(MaterialSymbols.ArrowUpward, contentDescription = "Overrides $inSource", tint = c.accent, size = 13.dp)
+    TooltipBox(text = "Overrides “$inKey” from $inPath") {
+        MaterialSymbolsOutlined(MaterialSymbols.ArrowUpward, contentDescription = "Overrides $inPath", tint = c.accent, size = 13.dp)
     }
 }
 
@@ -3500,7 +3509,7 @@ private fun InheritedKvSection(
             val vKey = if (inCaseInsensitive) vIt.kv.key.lowercase() else vIt.kv.key
             val vOverridden = vKey in inOwnKeys
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SourceTag(vIt.source)
+                SourceTag(vIt.source, vIt.path)
                 Text(vIt.kv.key, color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(0.42f))
                 Text(vIt.kv.value, color = c.dim.copy(alpha = if (vOverridden) 0.4f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.58f))
                 when {
