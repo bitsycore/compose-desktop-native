@@ -19,17 +19,34 @@ package com.compose.desktop.native.icons
 object IconFont {
 
 	private val fFonts = mutableMapOf<String, ByteArray>()
+	// Families that render as single variable-axis glyphs (Material Symbols),
+	// vs ordinary text fonts. The SDL3 renderer routes only these through its
+	// single-glyph FreeType icon path; text families (e.g. a bundled
+	// monospace) must go through normal full-string rendering.
+	private val fIconFamilies = mutableSetOf<String>()
 
-	/* Register a font family's bytes (typically loaded from the module's
-	   bundled composeResources). Idempotent — a second call with the same
-	   family replaces the previous bytes. */
+	/* Register a TEXT font family's bytes (rendered as full strings; e.g. a
+	   bundled monospace). Idempotent — a second call with the same family
+	   replaces the previous bytes. */
 	fun register(inFamily: String, inBytes: ByteArray) {
 		fFonts[inFamily] = inBytes
+	}
+
+	/* Register an ICON font family (Material Symbols et al.) — variable-axis,
+	   drawn one glyph at a time on the SDL3 backend. Same byte store as
+	   register(), but also flags the family as an icon font. */
+	fun registerIcon(inFamily: String, inBytes: ByteArray) {
+		fFonts[inFamily] = inBytes
+		fIconFamilies += inFamily
 	}
 
 	/* Bytes for a registered family, or null if not registered. Renderers
 	   fall back to the default font when this returns null. */
 	fun bytesFor(inFamily: String): ByteArray? = fFonts[inFamily]
+
+	/* True only for families registered via registerIcon() — icon fonts that
+	   need single-glyph (variable-axis) rendering, not text fonts. */
+	fun isIconFamily(inFamily: String): Boolean = inFamily in fIconFamilies
 
 	val families: Set<String> get() = fFonts.keys
 }

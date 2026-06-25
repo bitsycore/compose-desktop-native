@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +37,7 @@ import com.compose.desktop.native.LocalComposeNativeWindow
 import com.compose.desktop.native.icons.MaterialSymbols
 import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.desktop.native.nativeComposeWindow
+import com.compose.desktop.native.TextLayoutConfig
 import com.compose.desktop.native.registerMemoryResource
 import com.compose.desktop.native.removeMemoryResource
 import com.compose.desktop.native.fileManagerName
@@ -2408,15 +2410,13 @@ private fun RequestBuilder(
             // Nudge up ~2dp so the icon's centre lines up with the tab text's
             // optical centre (the tab labels' descenders pull their geometric
             // centre down). offset is post-layout, so the row doesn't shift.
-            Box(
-                modifier = Modifier.offset(y = (-2).dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(if (vPreviewOn) c.accent.copy(alpha = 0.20f) else Color.Transparent, RoundedCornerShape(6.dp))
-                    .clickable { inRs.preview = !inRs.preview; if (inRs.preview) inRs.viewTab = 0 }
-                    .padding(6.dp),
-            ) {
-                MaterialSymbolsOutlined(MaterialSymbols.Visibility, contentDescription = "Preview", tint = if (vPreviewOn) c.accent else c.dim, size = 16.dp)
-            }
+            HoverIconBtn(
+                MaterialSymbols.Visibility, "Preview request",
+                inOnClick = { inRs.preview = !inRs.preview; if (inRs.preview) inRs.viewTab = 0 },
+                inActive = vPreviewOn,
+                inSize = 16.dp,
+                inModifier = Modifier.offset(y = (-2).dp),
+            )
         }
         Divider(color = c.border)
 
@@ -2450,6 +2450,12 @@ private fun RequestBuilder(
                 BodyTypeMenu(inReq.bodyType, true) { vT -> inEdit { it.copy(bodyType = vT) } }
                 if (inReq.bodyType == BodyType.TEXT) {
                     BodyFormatSelector(inSelected = inReq.bodyFormat, inBordered = true, inOnChange = { vF -> inEdit { it.copy(bodyFormat = vF) } })
+                    // Magic-wand auto-format, pushed to the right edge of the bar.
+                    if (inReq.bodyFormat == BodyFormat.JSON || inReq.bodyFormat == BodyFormat.XML) {
+                        Spacer(Modifier.weight(1f))
+                        TabSizeSelector()
+                        FormatButton { inEdit { it.copy(body = formatBody(it.body, it.bodyFormat)) } }
+                    }
                 }
             }
         }
@@ -2470,6 +2476,83 @@ private fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) 
         )
         BodyType.FORM -> KeyValEditor(inReq.form) { v -> inEdit { it.copy(form = v) } }
         BodyType.FILE -> FileBody(inReq) { v -> inEdit(v) }
+    }
+}
+
+/* Magic-wand button that pretty-prints the current body in place (JSON /
+   XML). Lives at the right end of the body type/format bar. */
+@Composable
+private fun FormatButton(inOnClick: () -> Unit) {
+    HoverIconBtn(MaterialSymbols.AutoFixHigh, "Format (pretty-print)", inOnClick)
+}
+
+/* Icon button with the toolbar's standard hover treatment — accent-tinted
+   background + accent icon on hover (matching the TLS chain button). inActive
+   keeps it lit, for toggles such as the preview eye. */
+@Composable
+private fun HoverIconBtn(
+    inIcon: Int,
+    inTooltip: String,
+    inOnClick: () -> Unit,
+    inActive: Boolean = false,
+    inSize: Dp = 18.dp,
+    inModifier: Modifier = Modifier,
+) {
+    val c = LocalAppColors.current
+    var vHover by remember { mutableStateOf(false) }
+    val vBg = when {
+        inActive -> c.accent.copy(alpha = 0.20f)
+        vHover   -> c.accent.copy(alpha = 0.18f)
+        else     -> Color.Transparent
+    }
+    TooltipBox(text = inTooltip) {
+        Box(
+            modifier = inModifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(vBg, RoundedCornerShape(6.dp))
+                .hoverable { vHover = it }
+                .clickable(onClick = inOnClick)
+                .padding(6.dp),
+        ) {
+            MaterialSymbolsOutlined(inIcon, contentDescription = inTooltip,
+                tint = if (inActive || vHover) c.accent else c.dim, size = inSize)
+        }
+    }
+}
+
+/* Tab-size picker (2 / 4 / 8), shown left of the format button. Sets the global
+   editor tab width via TextLayoutConfig — how wide a typed '\t' renders AND how
+   deep the formatter indents. Snapshot-backed, so the change is live. */
+@Composable
+private fun TabSizeSelector() {
+    val c = LocalAppColors.current
+    var vOpen by remember { mutableStateOf(false) }
+    var vHover by remember { mutableStateOf(false) }
+    val vAnchor = rememberMenuAnchor()
+    val vSize = TextLayoutConfig.tabWidth
+    TooltipBox(text = "Editor tab size") {
+        Box {
+            Row(
+                modifier = Modifier.menuAnchor(vAnchor)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
+                    .hoverable { vHover = it }
+                    .clickable { vOpen = true }
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                Text("Tab $vSize", color = if (vHover) c.accent else c.dim, fontSize = 12.sp)
+                MaterialSymbolsOutlined(MaterialSymbols.UnfoldMore, tint = if (vHover) c.accent else c.dim, size = 14.dp)
+            }
+            DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, offsetY = (-4).dp) {
+                for (vN in listOf(2, 4, 8)) {
+                    DropdownMenuItem(onClick = { TextLayoutConfig.tabWidth = vN; vOpen = false }) {
+                        Text("$vN spaces", color = if (vN == vSize) c.accent else c.text)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -2967,38 +3050,52 @@ private fun BodyView(
             modifier = Modifier.width(vGutterWidth),
         ) {
             for (vI in vLines.indices) {
-                Text("${vI + 1}", color = vNumColor, fontSize = 12.sp)
+                Text("${vI + 1}", color = vNumColor, fontSize = 12.sp, fontFamily = monoFontFamily)
             }
         }
         Spacer(Modifier.width(6.dp))
         // Body. Two render paths:
-        //  - RAW or editable: BasicTextField, selectable/editable, no
-        //    syntax colouring (BasicTextField can't show per-char spans).
-        //  - JSON / XML / HTML / YAML read-only: Text(AnnotatedString)
-        //    with the tokeniser's colour spans. Selection is lost but the
-        //    overflow menu's Copy actions cover that case.
+        //  - RAW or editable: BasicTextField. A colour-only visualTransform
+        //    feeds the tokeniser's spans so the EDITABLE field is syntax-
+        //    coloured while the cursor/selection still map to the plain text.
+        //  - JSON / XML / HTML / YAML read-only: Text(AnnotatedString) with
+        //    the tokeniser's colour spans.
         // When editable, the field fills the whole panel height so a click
         // anywhere (not just on the text line) focuses it and starts writing.
         // Read-only (response) keeps wrap-height so it grows with content.
         val vEditable = inOnChange != null
         Box(modifier = Modifier.weight(1f).then(if (vEditable) Modifier.fillMaxHeight() else Modifier)) {
             if (inText.isEmpty() && inPlaceholder.isNotEmpty()) {
-                Text(inPlaceholder, color = c.dim, fontSize = 12.sp)
+                Text(inPlaceholder, color = c.dim, fontSize = 12.sp, fontFamily = monoFontFamily)
             }
-            if (inFormat == BodyFormat.RAW || inOnChange != null) {
+            if (inOnChange != null) {
+                // EDITABLE request body: BasicTextField with a colour-only
+                // syntax-highlight visualTransform — cursor / selection map to
+                // the plain text. RAW = no highlight. Remembered per (format,
+                // theme) so typing and cursor-blink reuse it.
+                val vDark = isDarkBg(c.bg)
+                val vHl: ((String) -> AnnotatedString)? = remember(inFormat, vDark) {
+                    if (inFormat == BodyFormat.RAW) null
+                    else { t: String -> highlight(t, inFormat, SyntaxPalette.forDark(vDark)) }
+                }
                 BasicTextField(
                     value = inText,
-                    onValueChange = inOnChange ?: {},
-                    readOnly = inOnChange == null,
+                    onValueChange = inOnChange,
                     color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
                     fontSize = 12.sp,
-                    modifier = if (vEditable) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
+                    fontFamily = monoFontFamily,
+                    visualTransform = vHl,
+                    modifier = Modifier.fillMaxSize(),
                 )
             } else {
-                // Pick a palette by background luminance — light theme gets
-                // dark-on-light VS Code colours, dark gets the inverse.
-                val vPalette = SyntaxPalette.forDark(isDarkBg(c.bg))
-                Text(highlight(inText, inFormat, vPalette), color = c.text, fontSize = 12.sp)
+                // READ-ONLY body (the received response): drag-selectable across
+                // the block + Ctrl/Cmd+C, and syntax-coloured. The palette picks
+                // dark-on-light vs the inverse by background luminance.
+                val vBody = if (inFormat == BodyFormat.RAW) AnnotatedString(inText)
+                            else highlight(inText, inFormat, SyntaxPalette.forDark(isDarkBg(c.bg)))
+                SelectionContainer {
+                    Text(vBody, color = c.text, fontSize = 12.sp, fontFamily = monoFontFamily)
+                }
             }
         }
     }
@@ -3057,7 +3154,7 @@ private fun formatStatusLine(inResp: ApiResponse?, inColors: AppColors): Annotat
     }
     if (inResp.error != null) return buildAnnotatedString {
         pushStyle(SpanStyle(color = inColors.dim))
-        append(inResp?.httpVersion ?: "HTTP/1.1")
+        append(inResp.httpVersion)
         pop()
         append("   ")
         pushStyle(SpanStyle(color = Color(0xFFFF5630), fontWeight = FontWeight.Bold))
@@ -3066,7 +3163,7 @@ private fun formatStatusLine(inResp: ApiResponse?, inColors: AppColors): Annotat
     }
     return buildAnnotatedString {
         pushStyle(SpanStyle(color = inColors.dim))
-        append(inResp?.httpVersion ?: "HTTP/1.1")
+        append(inResp.httpVersion)
         pop()
         append("   ")
         pushStyle(SpanStyle(color = statusColor(inResp.status), fontWeight = FontWeight.Bold))

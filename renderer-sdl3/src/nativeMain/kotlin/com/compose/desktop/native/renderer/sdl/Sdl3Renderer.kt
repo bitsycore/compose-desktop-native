@@ -391,7 +391,8 @@ internal class Sdl3Renderer(
             // (e.g. a singleLine field) must NOT wrap — it stays one line and
             // overflows, matching the measure pass and the cursor math.
             val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
-            val vLines = textRenderer.textMeasurer.wrap(vText, inNode.fontSize, vWrapWidth, inNode.fontFamily).lines
+            val vWrapped = textRenderer.textMeasurer.wrap(vText, inNode.fontSize, vWrapWidth, inNode.fontFamily)
+            val vLines = vWrapped.lines
             val vLineHeight = textRenderer.textMeasurer.lineHeight(inNode.fontSize, inNode.fontFamily).toInt()
             if (vLines.size == 1 && '\n' !in vText) {
                 textRenderer.drawText(
@@ -401,6 +402,8 @@ internal class Sdl3Renderer(
                     inNode.textColor, inNode.fontSize, inNode.textAlign,
                     inNode.fontFamily,
                     inNode.fontVariationSettings,
+                    inNode.textSpans,
+                    vWrapped.lineStarts[0],
                 )
             } else {
                 for ((idx, line) in vLines.withIndex()) {
@@ -412,6 +415,8 @@ internal class Sdl3Renderer(
                         inNode.textColor, inNode.fontSize, inNode.textAlign,
                         inNode.fontFamily,
                         inNode.fontVariationSettings,
+                        inNode.textSpans,
+                        vWrapped.lineStarts[idx],
                     )
                 }
             }

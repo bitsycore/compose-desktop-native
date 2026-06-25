@@ -244,6 +244,7 @@ class SkiaRenderer internal constructor(
                 inNode.softWrap,
                 inNode.fontFamily,
                 inNode.fontVariationSettings,
+                inNode.textSpans,
             )
         }
 

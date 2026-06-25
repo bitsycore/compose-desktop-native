@@ -112,9 +112,18 @@ val variants = listOf("debug", "release")
 // ==================
 // MARK: Bundle the default font (data.kres) next to each native executable
 // ==================
-// Reuses :core's bundled Roboto so the text renderers have a font at startup.
+// Default UI font (Noto Sans) + monospace body font (Noto Sans Mono) are
+// downloaded by :core and exposed through these generic "extra" handles (the
+// same handshake the :material-symbols:* modules use). The renderers load
+// NotoSans (variable) as the default; apidemo registers NotoSansMono (variable)
+// with IconFont under "noto-mono" for the body editor.
 val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
-val libComposeResourcesDir = rootProject.layout.projectDirectory.dir("core/src/nativeMain/composeResources")
+// :core downloads the variable Noto fonts into its build/fonts. Reference them
+// by layout (lazy providers, no evaluation of :core needed) and depend on the
+// download task by path so ordering doesn't rely on :core being configured first.
+val coreBuildDir = rootProject.project(":core").layout.buildDirectory
+val notoSansFile = coreBuildDir.file("fonts/NotoSans.ttf")
+val notoMonoFile = coreBuildDir.file("fonts/NotoSansMono.ttf")
 
 // Material Symbols icon-font modules this app depends on — each exposes its
 // downloaded .ttf via extra["iconFontFile"]; we pull it into data.kres/font/
@@ -234,7 +243,9 @@ for (variant in variants) {
             archiveFileName.set("data.kres")
             destinationDirectory.set(outDir)
             entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) org.gradle.api.tasks.bundling.ZipEntryCompression.DEFLATED else org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
-            from(libComposeResourcesDir)
+            from(notoSansFile) { into("font") }
+            from(notoMonoFile) { into("font") }
+            dependsOn(":core:downloadNotoFonts")
             iconFontModules.forEach { vP ->
                 @Suppress("UNCHECKED_CAST")
                 val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>

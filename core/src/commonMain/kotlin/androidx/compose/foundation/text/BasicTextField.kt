@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.platform.currentClipboard
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.currentTextMeasurer
@@ -53,6 +54,8 @@ fun BasicTextField(
     cursorColor: Color = Color.Black,
     selectionColor: Color = Color(0x661E88E5L),
     fontSize: Sp = 16.sp,
+    fontFamily: String? = null,
+    visualTransform: ((String) -> AnnotatedString)? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
     singleLine: Boolean = false,
@@ -73,6 +76,8 @@ fun BasicTextField(
         cursorColor = cursorColor,
         selectionColor = selectionColor,
         fontSize = fontSize,
+        fontFamily = fontFamily,
+        visualTransform = visualTransform,
         enabled = enabled,
         readOnly = readOnly,
         singleLine = singleLine,
@@ -89,6 +94,8 @@ fun BasicTextField(
     cursorColor: Color = Color.Black,
     selectionColor: Color = Color(0x661E88E5L),
     fontSize: Sp = 16.sp,
+    fontFamily: String? = null,
+    visualTransform: ((String) -> AnnotatedString)? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
     singleLine: Boolean = false,
@@ -128,19 +135,19 @@ fun BasicTextField(
     val vFontSize = fontSize.value.toInt()
     // Pull the renderer's exact line height — sub-pixel-accurate so multi-
     // line click / cursor positions line up with what's actually drawn.
-    val vLineHeight = currentTextMeasurer.lineHeight(vFontSize)
+    val vLineHeight = currentTextMeasurer.lineHeight(vFontSize, fontFamily)
 
     // Compute the wrapped layout once per composition. Single-line forces
     // unbounded wrap so explicit \n becomes one logical line per segment
     // (and there shouldn't be any since Return is suppressed below).
     val vWrapWidth = if (singleLine) Int.MAX_VALUE else fieldWidthPx
-    val vWrap: WrappedText = currentTextMeasurer.wrap(value.text, vFontSize, vWrapWidth)
+    val vWrap: WrappedText = currentTextMeasurer.wrap(value.text, vFontSize, vWrapWidth, fontFamily)
 
     // Cursor position in wrapped coordinates + pixel position.
     val vCursorIdx = value.selection.end.coerceIn(0, value.text.length)
     val (vCursorLine, vCursorCol) = wrappedPosOf(vWrap, vCursorIdx)
     val vCursorLineText = vWrap.lines.getOrElse(vCursorLine) { "" }
-    val vCursorOffsetPx = prefixWidth(vCursorLineText, vCursorCol, vFontSize)
+    val vCursorOffsetPx = prefixWidth(vCursorLineText, vCursorCol, vFontSize, fontFamily)
     val vCursorYPx = (vCursorLine * vLineHeight)
 
     // Horizontal scroll for single-line fields: once the caret runs past the
@@ -203,7 +210,7 @@ fun BasicTextField(
             .onDrag(
                 onStart = { relX, relY ->
                     if (!enabled) return@onDrag
-                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight)
+                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight, fontFamily)
                     val vNow = nowMillis()
                     val vIsDoubleClick = vIndex == lastPressIndex && (vNow - lastPressMs) < 350
                     lastPressMs = vNow
@@ -221,7 +228,7 @@ fun BasicTextField(
                 },
                 onDrag = { relX, relY ->
                     if (!enabled || dragAnchor < 0) return@onDrag
-                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight)
+                    val vIndex = charIndexAtWrappedPoint(vWrap, vFontSize, relX + vScrollX, relY, vLineHeight, fontFamily)
                     cursorOnlyEdit(value.copy(selection = TextRange(dragAnchor, vIndex)))
                 },
                 onEnd = {
@@ -236,6 +243,7 @@ fun BasicTextField(
                     inValue = value,
                     inWrap = vWrap,
                     inFontSize = vFontSize,
+                    inFontFamily = fontFamily,
                     inReadOnly = readOnly,
                     inSingleLine = singleLine,
                     inGetPrefColX = { preferredCol },
@@ -264,8 +272,8 @@ fun BasicTextField(
                 val vLineStr = vWrap.lines.getOrElse(vLine) { "" }
                 val vStartCol = if (vLine == vMinLine) vMinCol else 0
                 val vEndCol = if (vLine == vMaxLine) vMaxCol else vLineStr.length
-                val vSx = prefixWidth(vLineStr, vStartCol, vFontSize)
-                val vEx = prefixWidth(vLineStr, vEndCol, vFontSize)
+                val vSx = prefixWidth(vLineStr, vStartCol, vFontSize, fontFamily)
+                val vEx = prefixWidth(vLineStr, vEndCol, vFontSize, fontFamily)
                 Box(
                     modifier = Modifier
                         .offset(x = (vSx - vScrollX).dp, y = (vLine * vLineHeight).dp)
@@ -280,13 +288,31 @@ fun BasicTextField(
         // wrap our cursor / selection math used. fillMaxWidth so it gets the
         // same width constraint our onSizeChanged saw. Single-line shifts left
         // by the horizontal scroll offset instead of wrapping.
-        BasicText(
-            text = value.text,
-            color = color,
-            fontSize = fontSize,
-            softWrap = !singleLine,
-            modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),
-        )
+        // Display layer. With a visualTransform, the plain text maps to a
+        // colour-spanned AnnotatedString for display (syntax highlighting). The
+        // transform MUST preserve the text exactly (colour-only) so cursor /
+        // selection — which operate on value.text — stay aligned. Without it,
+        // the plain single-colour path.
+        val vDisplay = remember(value.text, visualTransform) { visualTransform?.invoke(value.text) }
+        if (vDisplay != null) {
+            BasicText(
+                text = vDisplay,
+                color = color,
+                fontSize = fontSize,
+                fontFamily = fontFamily,
+                softWrap = !singleLine,
+                modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),
+            )
+        } else {
+            BasicText(
+                text = value.text,
+                color = color,
+                fontSize = fontSize,
+                fontFamily = fontFamily,
+                softWrap = !singleLine,
+                modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),
+            )
+        }
 
         if (isFocused && cursorBlinkVisible) {
             Box(
@@ -313,19 +339,19 @@ private fun insertAtCursor(inValue: TextFieldValue, inText: String): TextFieldVa
 }
 
 /* Width of `text[0..end]` in pixels using the active TextMeasurer. */
-private fun prefixWidth(inText: String, inEnd: Int, inFontSize: Int): Int {
+private fun prefixWidth(inText: String, inEnd: Int, inFontSize: Int, inFontFamily: String? = null): Int {
     if (inEnd <= 0 || inText.isEmpty()) return 0
     val vEnd = inEnd.coerceAtMost(inText.length)
-    return currentTextMeasurer.measure(inText.substring(0, vEnd), inFontSize).width
+    return currentTextMeasurer.measure(inText.substring(0, vEnd), inFontSize, inFontFamily = inFontFamily).width
 }
 
 /* Character index whose left edge is closest to `inX` pixels from the text
    start. Linear scan growing the prefix one char at a time. Single-line. */
-private fun charIndexAtX(inText: String, inFontSize: Int, inX: Int): Int {
+private fun charIndexAtX(inText: String, inFontSize: Int, inX: Int, inFontFamily: String? = null): Int {
     if (inX <= 0 || inText.isEmpty()) return 0
     var vPrev = 0
     for (i in inText.indices) {
-        val vNext = currentTextMeasurer.measure(inText.substring(0, i + 1), inFontSize).width
+        val vNext = currentTextMeasurer.measure(inText.substring(0, i + 1), inFontSize, inFontFamily = inFontFamily).width
         if (vNext > inX) {
             return if ((inX - vPrev) < (vNext - inX)) i else i + 1
         }
@@ -381,11 +407,12 @@ private fun charIndexAtWrappedPoint(
     inX: Int,
     inY: Int,
     inLineHeight: Float,
+    inFontFamily: String? = null,
 ): Int {
     if (inWrap.lines.isEmpty()) return 0
     val vLine = (inY / inLineHeight).toInt().coerceIn(0, inWrap.lines.size - 1)
     val vLineStr = inWrap.lines[vLine]
-    val vCol = charIndexAtX(vLineStr, inFontSize, inX)
+    val vCol = charIndexAtX(vLineStr, inFontSize, inX, inFontFamily)
     return inWrap.lineStarts[vLine] + vCol
 }
 
@@ -469,6 +496,7 @@ private const val SCANCODE_UP         = 82
 private const val SCANCODE_DELETE     = 76
 private const val SCANCODE_HOME       = 74
 private const val SCANCODE_END        = 77
+private const val SCANCODE_TAB        = 43
 
 /* Selection update rule shared by every navigation key: build the new
    cursor head; if Shift is held, keep selection.start (the anchor) and
@@ -492,6 +520,7 @@ private fun handleKey(
     inValue: TextFieldValue,
     inWrap: WrappedText,
     inFontSize: Int,
+    inFontFamily: String?,
     inReadOnly: Boolean,
     inSingleLine: Boolean,
     inGetPrefColX: () -> Int,
@@ -553,10 +582,10 @@ private fun handleKey(
                 return true
             }
             val vCurX = if (inGetPrefColX() >= 0) inGetPrefColX()
-                        else prefixWidth(lineStrAt(vLine), vCol, inFontSize)
+                        else prefixWidth(lineStrAt(vLine), vCol, inFontSize, inFontFamily)
             inSetPrefColX(vCurX)
             val vTargetLine = vLine - 1
-            val vTargetCol = charIndexAtX(lineStrAt(vTargetLine), inFontSize, vCurX)
+            val vTargetCol = charIndexAtX(lineStrAt(vTargetLine), inFontSize, vCurX, inFontFamily)
             inCursorOnlyEdit(moveCursor(inValue, lineStartAt(vTargetLine) + vTargetCol, vShift))
             return true
         }
@@ -568,10 +597,10 @@ private fun handleKey(
                 return true
             }
             val vCurX = if (inGetPrefColX() >= 0) inGetPrefColX()
-                        else prefixWidth(lineStrAt(vLine), vCol, inFontSize)
+                        else prefixWidth(lineStrAt(vLine), vCol, inFontSize, inFontFamily)
             inSetPrefColX(vCurX)
             val vTargetLine = vLine + 1
-            val vTargetCol = charIndexAtX(lineStrAt(vTargetLine), inFontSize, vCurX)
+            val vTargetCol = charIndexAtX(lineStrAt(vTargetLine), inFontSize, vCurX, inFontFamily)
             inCursorOnlyEdit(moveCursor(inValue, lineStartAt(vTargetLine) + vTargetCol, vShift))
             return true
         }
@@ -589,6 +618,12 @@ private fun handleKey(
         }
         SCANCODE_RETURN -> if (!inReadOnly && !inSingleLine) {
             inTypingEdit(insertAtCursor(inValue, "\n"))
+            return true
+        }
+        // Tab inserts a literal '\t' in multi-line fields (the body editor);
+        // the renderers expand it to a tab stop. Single-line fields ignore it.
+        SCANCODE_TAB -> if (!inReadOnly && !inSingleLine) {
+            inTypingEdit(insertAtCursor(inValue, "\t"))
             return true
         }
         SCANCODE_A -> if (vPrimary) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.LocalInSelectionContainer
+import androidx.compose.foundation.text.selection.SelectableText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -40,10 +41,13 @@ fun Text(
     // fontFamily / fontVariationSettings — selection trades a bit of
     // styling for the copy gesture.
     if (LocalInSelectionContainer.current) {
-        BasicTextField(
-            value = text, onValueChange = {}, readOnly = true,
-            color = color, fontSize = fontSize,
+        SelectableText(
+            text = AnnotatedString(text),
             modifier = modifier,
+            color = color,
+            fontSize = fontSize,
+            softWrap = softWrap,
+            fontFamily = fontFamily,
         )
     } else {
         BasicText(
@@ -94,10 +98,13 @@ fun Text(
     // upgrading would require BasicTextField to carry per-char colour
     // spans, which the Skia / SDL3 text path doesn't.
     if (LocalInSelectionContainer.current) {
-        BasicTextField(
-            value = text.text, onValueChange = {}, readOnly = true,
-            color = color, fontSize = fontSize,
+        SelectableText(
+            text = text,
             modifier = modifier,
+            color = color,
+            fontSize = fontSize,
+            softWrap = softWrap,
+            fontFamily = fontFamily,
         )
         return
     }

@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText
+import androidx.compose.ui.text.Range
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
@@ -113,6 +115,7 @@ class SkiaTextRenderer {
         inSoftWrap: Boolean = true,
         inFontFamily: String? = null,
         inFontVariations: List<ComposeFontVariation>? = null,
+        inSpans: List<Range<SpanStyle>>? = null,
     ) {
         val vKey = TypefaceKey(inFontFamily, variationsKey(inFontVariations))
         val vFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
@@ -135,21 +138,45 @@ class SkiaTextRenderer {
             }
         }
 
+        // Draw one wrapped line at its baseline. With colour spans, split the
+        // line into same-colour segments (mapped from original-text indices via
+        // inLineStart) and paint each at its prefix x in its own colour.
+        fun drawLine(inLine: String, inLineStart: Int, inBaseline: Float) {
+            val vPenX = penXFor(inLine)
+            if (inSpans == null) {
+                inCanvas.drawString(expandTabs(inLine), vPenX, inBaseline, vFont, vPaint)
+                return
+            }
+            var i = 0
+            val n = inLine.length
+            while (i < n) {
+                val vSegColor = spanColorAt(inSpans, inLineStart + i, inColor)
+                var j = i + 1
+                while (j < n && spanColorAt(inSpans, inLineStart + j, inColor) == vSegColor) j++
+                val vSegX = vPenX + estimateTextWidth(inLine.substring(0, i), inFontSize, inFontFamily, inFontVariations).toFloat()
+                val vSegPaint = Paint().apply { color = toSkiaColor(vSegColor); isAntiAlias = true }
+                inCanvas.drawString(expandTabs(inLine.substring(i, j)), vSegX, inBaseline, vFont, vSegPaint)
+                vSegPaint.close()
+                i = j
+            }
+        }
+
         // Use the same wrap algorithm as measureText so layout and rendering
         // produce identical line breakdowns. softWrap = false (e.g. a
         // singleLine field) stays one line and overflows the box width.
         val vWrapWidth = if (inSoftWrap) inBoxWidth else Int.MAX_VALUE
-        val vLines = wrapTextWithStarts(inText, inFontSize, vWrapWidth, inFontFamily, inFontVariations).lines
+        val vWrapped = wrapTextWithStarts(inText, inFontSize, vWrapWidth, inFontFamily, inFontVariations)
+        val vLines = vWrapped.lines
         if (vLines.size == 1 && '\n' !in inText) {
             // Single line, no wrap, no explicit newlines: cap-centre across
             // the full box (button text in a taller container).
             val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
-            inCanvas.drawString(vLines[0], penXFor(vLines[0]), vBaseline, vFont, vPaint)
+            drawLine(vLines[0], vWrapped.lineStarts[0], vBaseline)
         } else {
             for ((vIdx, vLine) in vLines.withIndex()) {
                 val vSlotTop = inY + vIdx * vLineHeight
                 val vBaseline = vSlotTop + (vLineHeight + vCapHeight) / 2f
-                inCanvas.drawString(vLine, penXFor(vLine), vBaseline, vFont, vPaint)
+                drawLine(vLine, vWrapped.lineStarts[vIdx], vBaseline)
             }
         }
 
@@ -251,10 +278,13 @@ class SkiaTextRenderer {
     private fun estimateTextWidth(inText: String, inFontSize: Int, inFontFamily: String? = null, inFontVariations: List<ComposeFontVariation>? = null): Int {
         if (inText.isEmpty()) return 0
         val vKey = TypefaceKey(inFontFamily, variationsKey(inFontVariations))
-        val vCacheKey = Triple(vKey, inText, inFontSize)
+        // Key tab-containing text by the current tab width so changing "tab
+        // size" re-measures instead of returning a stale cached width.
+        val vCacheText = if ('\t' in inText) "${TextLayoutConfig.tabWidth} $inText" else inText
+        val vCacheKey = Triple(vKey, vCacheText, inFontSize)
         fWidthCache[vCacheKey]?.let { return it }
         val vFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
-        val vGlyphs = vFont.getStringGlyphs(inText)
+        val vGlyphs = vFont.getStringGlyphs(expandTabs(inText))
         val vAdvances = vFont.getWidths(vGlyphs)
         // Round up so the layout box never falls short of the drawn glyphs;
         // a 0.5px undershoot still clips antialiased pixels on the right edge.
@@ -356,12 +386,34 @@ class SkiaTextRenderer {
     }
 
     private fun bundledTypeface(): Typeface? {
-        val vBytes = loadComposeResourceBytes("font/Roboto-Regular.ttf") ?: return null
+        val vBytes = loadComposeResourceBytes("font/NotoSans.ttf") ?: return null
         val vTf = fFontMgr.makeFromData(Data.makeFromBytes(vBytes), 0) ?: return null
-        println("SkiaTextRenderer: loaded bundled font from data.kres (font/Roboto-Regular.ttf)")
+        println("SkiaTextRenderer: loaded bundled font from data.kres (font/NotoSans.ttf)")
         return vTf
     }
 }
 
 internal fun toSkiaColor(inC: ComposeColor): Int =
     Color.makeARGB(inC.a8, inC.r8, inC.g8, inC.b8)
+
+// Tab stops are rendered as a fixed run of spaces so a literal '\t' (e.g. in
+// the API body editor) shows as indentation instead of a font-dependent,
+// often zero-width glyph. Expansion is width-only / draw-only — callers keep
+// the original '\t' in the text, so cursor / selection indices stay correct.
+private fun expandTabs(inText: String): String =
+    if ('\t' in inText) inText.replace("\t", " ".repeat(TextLayoutConfig.tabWidth)) else inText
+
+// Colour at original-text index inIndex, scanning the spans (last matching
+// span wins, per AnnotatedString semantics). Unspecified span colours and gaps
+// fall back to inDefault. Shared by the per-span colour draw path.
+private fun spanColorAt(
+    inSpans: List<Range<SpanStyle>>,
+    inIndex: Int,
+    inDefault: ComposeColor,
+): ComposeColor {
+    var vC = inDefault
+    for (vS in inSpans) {
+        if (inIndex >= vS.start && inIndex < vS.end && vS.item.color != ComposeColor.Unspecified) vC = vS.item.color
+    }
+    return vC
+}

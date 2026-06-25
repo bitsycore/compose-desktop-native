@@ -185,7 +185,7 @@ internal class FreeTypeIcons {
 		return true
 	}
 
-	fun hasFamily(inFamily: String): Boolean = IconFont.bytesFor(inFamily) != null
+	fun hasFamily(inFamily: String): Boolean = IconFont.isIconFamily(inFamily)
 
 	// ============
 	//  Family / variant / glyph resolution

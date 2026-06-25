@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText
+import androidx.compose.ui.text.Range
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
@@ -241,6 +243,24 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
     }
 
+    // Tab stops are rendered as a fixed run of spaces so a literal '\t'
+    // (e.g. in the API body editor) shows as indentation instead of a
+    // font-dependent, often zero-width glyph. Expansion is width-only /
+    // draw-only — callers keep the original '\t' so the text's character
+    // indices (cursor / selection) stay correct.
+    private fun expandTabs(inText: String): String =
+        if ('\t' in inText) inText.replace("\t", " ".repeat(TextLayoutConfig.tabWidth)) else inText
+
+    // Colour at original-text index inIndex (last matching span wins, per
+    // AnnotatedString semantics). Gaps and Unspecified span colours → inDefault.
+    private fun spanColorAt(inSpans: List<Range<SpanStyle>>, inIndex: Int, inDefault: ComposeColor): ComposeColor {
+        var vC = inDefault
+        for (vS in inSpans) {
+            if (inIndex >= vS.start && inIndex < vS.end && vS.item.color != ComposeColor.Unspecified) vC = vS.item.color
+        }
+        return vC
+    }
+
     /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
        so TTF_GetStringSize reports physical pixels — divide by DPR to
        get back to logical. */
@@ -251,15 +271,18 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         inFontVariations: List<androidx.compose.ui.text.font.FontVariation>? = null,
     ): Int {
         if (inText.isEmpty()) return 0
+        // Tabs → spaces for measurement (width-only; original '\t' kept).
+        val vText = expandTabs(inText)
         // When variations are present, defer to FreeTypeText so the
         // measured width matches the (weighted) glyphs we'll paint.
         if (shouldUseFreeTypeText(inFontFamily, inFontVariations)) {
-            return fFreeTypeText.measureString(inFontFamily, inText, inFontSize, inFontVariations!!)
+            return fFreeTypeText.measureString(inFontFamily, vText, inFontSize, inFontVariations!!)
         }
-        val vKey = Triple(inFontFamily, inText, inFontSize)
+        // Key tab-containing text by the current tab width (see SkiaTextRenderer).
+        val vKey = Triple(inFontFamily, if ('\t' in inText) "${TextLayoutConfig.tabWidth} $inText" else inText, inFontSize)
         fWidthCache[vKey]?.let { return it }
         val vFont = getFont(inFontFamily, inFontSize) ?: run {
-            val vEst = (inText.length * inFontSize * 0.6f).toInt()
+            val vEst = (vText.length * inFontSize * 0.6f).toInt()
             fWidthCache[vKey] = vEst
             return vEst
         }
@@ -271,7 +294,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             // pass inText.length: that's UTF-16 code-unit count, but the C
             // side wants byte count. Non-ASCII chars (e.g. em-dash → 3
             // UTF-8 bytes) would otherwise truncate the tail of the string.
-            if (TTF_GetStringSize(vFont.reinterpret(), inText, 0u, vW.ptr, vH.ptr)) {
+            if (TTF_GetStringSize(vFont.reinterpret(), vText, 0u, vW.ptr, vH.ptr)) {
                 vPhys = vW.value
             }
         }
@@ -294,6 +317,8 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         inAlign: TextAlign,
         inFontFamily: String? = null,
         inFontVariations: List<androidx.compose.ui.text.font.FontVariation>? = null,
+        inSpans: List<Range<SpanStyle>>? = null,
+        inTextStart: Int = 0,
     ) {
         if (inText.isEmpty()) return
         val vRenderer = backend.renderer ?: return
@@ -321,11 +346,14 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             // (missing family, no glyph, etc.) so we at least show *something*.
         }
 
+        // Tabs → spaces for non-icon text (draw-only; callers keep '\t').
+        val vText = expandTabs(inText)
+
         // Variable-axis text path: when the caller passed any variations
         // (typically wght from a SpanStyle.fontWeight), rasterise through
         // FreeType so the axis interpolation actually applies.
         if (shouldUseFreeTypeText(inFontFamily, inFontVariations)) {
-            val vWidth = fFreeTypeText.measureString(inFontFamily, inText, inFontSize, inFontVariations!!)
+            val vWidth = fFreeTypeText.measureString(inFontFamily, vText, inFontSize, inFontVariations!!)
             val vHeight = fFreeTypeText.lineHeight(inFontFamily, inFontSize, inFontVariations).toInt().coerceAtLeast(1)
             val vPenX = when (inAlign) {
                 TextAlign.Start  -> inX.toFloat()
@@ -336,7 +364,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             val vDrew = fFreeTypeText.drawString(
                 inSdlRenderer = vRenderer,
                 inFamily = inFontFamily,
-                inText = inText,
+                inText = vText,
                 inPixelSize = inFontSize,
                 inColor = inColor,
                 inVariations = inFontVariations,
@@ -348,7 +376,46 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             // Otherwise fall through to SDL3_ttf with default styling.
         }
 
-        val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inColor) ?: return
+        // Per-span colours: split this (already-wrapped) line into same-colour
+        // segments — mapped from original-text indices via inTextStart — and
+        // blit each as its own texture at its prefix x. Tabs expand for both the
+        // prefix measure and the texture so offsets and glyphs agree.
+        if (inSpans != null) {
+            val vLineW = measureWidth(inText, inFontSize, inFontFamily).toFloat()
+            val vPenX0 = when (inAlign) {
+                TextAlign.Start  -> inX.toFloat()
+                TextAlign.Center -> inX + (inBoxWidth - vLineW) / 2f
+                TextAlign.End    -> inX + (inBoxWidth - vLineW)
+            }
+            fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
+            var i = 0
+            val n = inText.length
+            while (i < n) {
+                val vSegColor = spanColorAt(inSpans, inTextStart + i, inColor)
+                var j = i + 1
+                while (j < n && spanColorAt(inSpans, inTextStart + j, inColor) == vSegColor) j++
+                val vSeg = expandTabs(inText.substring(i, j))
+                val vSegX = vPenX0 + measureWidth(inText.substring(0, i), inFontSize, inFontFamily).toFloat()
+                val vCachedSeg = getOrCreateTexture(inFontFamily, vSeg, inFontSize, vSegColor)
+                if (vCachedSeg != null) {
+                    val vLogW = vCachedSeg.w / fDpr
+                    val vLogH = vCachedSeg.h / fDpr
+                    val vPenY = inY + (inBoxHeight - vLogH) / 2f
+                    memScoped {
+                        val vDst = alloc<SDL_FRect>()
+                        vDst.x = snap(vSegX)
+                        vDst.y = snap(vPenY)
+                        vDst.w = vLogW
+                        vDst.h = vLogH
+                        SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
+                    }
+                }
+                i = j
+            }
+            return
+        }
+
+        val vCached = getOrCreateTexture(inFontFamily, vText, inFontSize, inColor) ?: return
 
         // Texture dimensions are physical pixels (rasterised at fontSize *
         // DPR). Convert to logical for the dst rect so SDL_SetRenderScale's
@@ -504,7 +571,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return vFont
     }
 
-    private fun defaultFontBytes(): ByteArray? = loadComposeResourceBytes("font/Roboto-Regular.ttf")
+    private fun defaultFontBytes(): ByteArray? = loadComposeResourceBytes("font/NotoSans.ttf")
 
     /* Lazily uploads a family's bytes into the native heap (once per family),
        then opens a fresh TTF_Font on a new SDL_IOFromConstMem stream. Each

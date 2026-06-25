@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +34,43 @@ fun BasicText(
         factory = { LayoutNode() },
         update = {
             set(text) { this.text = it }
+            set(color) { this.textColor = it }
+            set(fontSize) { this.fontSize = it.value.toInt() }
+            set(textAlign) { this.textAlign = it }
+            set(softWrap) { this.softWrap = it }
+            set(fontFamily) { this.fontFamily = it }
+            set(fontVariationSettings) { this.fontVariationSettings = it }
+            set(modifier) { this.modifier = it }
+            set(Unit) {
+                this.textSpans = null
+                this.measurePolicy = TextMeasurePolicy
+            }
+        }
+    )
+}
+
+/* AnnotatedString overload — draws `text.text` with per-span colours
+   (text.spanStyles) in a single text node. Spans are color-only for layout:
+   the plain text drives measurement/wrap, so this is safe to use as the
+   display layer of an editable field (cursor / selection map to the plain
+   text). Per-span weight / decoration aren't applied here — for those use the
+   Material Text(AnnotatedString) overload, which lays out per-run. */
+@Composable
+fun BasicText(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    fontSize: Sp = 16.sp,
+    textAlign: TextAlign = TextAlign.Start,
+    softWrap: Boolean = true,
+    fontFamily: String? = null,
+    fontVariationSettings: List<FontVariation>? = null,
+) {
+    ComposeNode<LayoutNode, NodeApplier>(
+        factory = { LayoutNode() },
+        update = {
+            set(text.text) { this.text = it }
+            set(text.spanStyles) { this.textSpans = it }
             set(color) { this.textColor = it }
             set(fontSize) { this.fontSize = it.value.toInt() }
             set(textAlign) { this.textAlign = it }

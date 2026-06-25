@@ -37,7 +37,7 @@ object MaterialSymbolsRounded {
 			)
 			return false
 		}
-		IconFont.register(Family, vBytes)
+		IconFont.registerIcon(Family, vBytes)
 		fInstalled = true
 		if (TextRendererCapabilities.supportsFontVariations == false) {
 			println(

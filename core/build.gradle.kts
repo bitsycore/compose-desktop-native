@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.net.URI
 
 // :core — the renderer-agnostic base: the androidx.compose.* re-impl,
 // RenderBackend interface, GpuMode, SDL3Backend + window/event/clipboard/IO,
@@ -69,3 +70,45 @@ kotlin {
         )
     }
 }
+
+// ==================
+// MARK: Default + monospace fonts (Google Noto, downloaded at build time)
+// ==================
+// The default UI font (Noto Sans) and the monospace family (Noto Sans Mono)
+// are fetched from the Noto Fonts project at build time into build/fonts/ and
+// stitched into each app's data.kres by the app's Zip task (see
+// demo/apidemo build.gradle.kts), exactly like the Material Symbols fonts —
+// no Compose resources runtime involved. The renderers load "font/
+// NotoSans-Regular.ttf" as the default; apidemo registers
+// "font/NotoSansMono-Regular.ttf" with IconFont under "noto-mono".
+
+val notoSansFont = layout.buildDirectory.file("fonts/NotoSans.ttf")
+val notoSansMonoFont = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
+
+val downloadNotoFonts = tasks.register("downloadNotoFonts") {
+    // Variable fonts (wdth,wght axes) so the renderers' weight path
+    // (SpanStyle.fontWeight → FontVariation.Weight → Skia makeClone / SDL3
+    // FreeType) actually varies the weight rather than no-op'ing on a static
+    // Regular. Plain local vals so the configuration cache can serialize doLast.
+    val vDownloads = listOf(
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
+            to notoSansFont.get().asFile,
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf"
+            to notoSansMonoFont.get().asFile,
+    )
+    outputs.files(vDownloads.map { it.second })
+    doLast {
+        for ((vUrl, vOut) in vDownloads) {
+            if (vOut.exists() && vOut.length() > 0) continue
+            vOut.parentFile.mkdirs()
+            println("Downloading $vUrl")
+            URI(vUrl).toURL().openStream().use { vIn -> vOut.outputStream().use { vIn.copyTo(it) } }
+            println("Saved ${vOut.length() / 1024} KiB to $vOut")
+        }
+    }
+}
+
+// The app Zip tasks (demo / apidemo) reference these outputs by build-dir
+// layout and depend on `:core:downloadNotoFonts` by task path — no cross-
+// project "extra" handshake, so it doesn't matter whether :core is configured
+// before the app project.

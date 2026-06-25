@@ -45,6 +45,12 @@ class LayoutNode {
     //  Content for leaf nodes
     var text: String? = null
     var textColor: Color = Color.White
+    /* Optional per-character colour spans over `text` (an AnnotatedString's
+       spanStyles). null = single colour (textColor). Color-only as far as layout
+       goes: renderers paint each span's range in its colour (gaps fall back to
+       textColor), but measurement / wrap use the plain text, so a text field's
+       cursor & selection math is unaffected. */
+    var textSpans: List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>? = null
     /* Pixel font size — Composables that take a Sp param resolve it to an
        integer pixel count before storing here so the renderer never sees Sp. */
     var fontSize: Int = 16

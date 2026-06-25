@@ -151,19 +151,21 @@ tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
 // Two roots merge into a single archive <exe>/data.kres, loaded at
 // runtime via SDL_GetBasePath() + "data.kres":
 //   - the demo's own assets (drawable/, files/), and
-//   - the library's default font (font/Roboto-Regular.ttf) that the text
-//     renderers load at startup.
+//   - the library's default font (font/NotoSans.ttf, variable wght/wdth),
+//     downloaded by :core, that the text renderers load at startup.
 // Entries are STORED (no compression) so the ZIP reader in ResourceIO.kt can
 // hand the raw bytes to SDL3_image / SDL3_ttf / Skia without inflating anything
 // — readBytes is an fseek+fread per entry, not a whole-archive memory load.
-// Pass -PbundleDefaultFont=false to ship without the bundled Roboto; the text
+// Pass -PbundleDefaultFont=false to ship without the bundled Noto Sans; the text
 // renderers then fall back to a system font. The generated Res accessors (see
 // generateComposeResAccessors above) only scan the demo's resources.
 
 val composeResourcesDir = layout.projectDirectory.dir("src/nativeMain/composeResources")
-val libComposeResourcesDir = rootProject.layout.projectDirectory.dir(
-    "core/src/nativeMain/composeResources"
-)
+// :core downloads the variable Noto Sans default font into its build/fonts.
+// Reference it by layout (a lazy provider, no evaluation of :core needed) and
+// depend on the download task by path so ordering doesn't rely on :core being
+// configured first.
+val notoSansFile = rootProject.project(":core").layout.buildDirectory.file("fonts/NotoSans.ttf")
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
 // Walk the demo's declared dependencies and pick out every :material-symbols:*
@@ -206,8 +208,10 @@ for (variant in variants) {
             destinationDirectory.set(outDir)
             entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) org.gradle.api.tasks.bundling.ZipEntryCompression.DEFLATED else org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
             from(composeResourcesDir)
-            from(libComposeResourcesDir) {
-                if (!bundleDefaultFont) exclude("font/Roboto-Regular.ttf")
+            // Default UI font (Noto Sans), downloaded by :core.
+            if (bundleDefaultFont) {
+                from(notoSansFile) { into("font") }
+                dependsOn(":core:downloadNotoFonts")
             }
             // Pull each icon-font module's downloaded .ttf into the font/ entry.
             iconFontModules.forEach { vP ->

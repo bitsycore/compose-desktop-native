@@ -75,6 +75,7 @@ object MaterialSymbols {
 	const val Redo            = 0xe15a
 	const val Tune            = 0xe429
 	const val Terminal        = 0xeb8e
+	const val AutoFixHigh     = 0xe663
 
 	// ============
 	//  Status / feedback

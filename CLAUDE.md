@@ -178,10 +178,13 @@ How the build wires that up:
 
 `data.kres` (STORED, no compression) is bundled next to every binary by the
 per-(variant × target) `copy*ComposeResources*` Zip tasks — drawables, files,
-the default `font/Roboto-Regular.ttf` the text renderers load at startup, plus
-each depended `material-symbols` style font. Pass `-PbundleDefaultFont=false`
-to ship without the bundled Roboto (the renderers then fall back to a system
-font).
+the default `font/NotoSans.ttf` (a variable wght/wdth font the text renderers
+load at startup), each depended `material-symbols` style font, and — for
+`:apidemo` — `font/NotoSansMono.ttf` (registered under the `noto-mono` family
+for the body editor). The Noto fonts are downloaded from Google Fonts by
+`:core`'s `downloadNotoFonts` task into `core/build/fonts/`. Pass
+`-PbundleDefaultFont=false` to ship without the bundled Noto Sans (the
+renderers then fall back to a system font).
 
 FreeType is used by the SDL3 renderer for variable-font axis support on
 Material Symbols icons (SDL3_ttf has no axis-set API; we go directly to
@@ -214,10 +217,10 @@ Drop assets under `demo/src/nativeMain/composeResources/` — `drawable/` for
 images (png / jpg / svg / android `<vector>` xml), `files/` for raw bytes.
 The `generateComposeResAccessors` Gradle task scans that tree and emits typed
 `Res.drawable.<name>` (→ `Painter`) and `Res.files.<name>` (→ path string for
-`Res.readBytes`). `:core` keeps its default font under
-`core/src/nativeMain/composeResources/font/`; both roots merge into
-a single `<exe>/data.kres` at build time (STORED, no compression —
-see `-PbundleDefaultFont`). At runtime `ResourceIO.kt` opens that archive
+`Res.readBytes`). `:core` downloads the default font (Noto Sans) into
+`core/build/fonts/` via its `downloadNotoFonts` task; the demo's resources and
+that font merge into a single `<exe>/data.kres` at build time (STORED, no
+compression — see `-PbundleDefaultFont`). At runtime `ResourceIO.kt` opens that archive
 once via `SDL_GetBasePath()`, parses its central directory, and serves each
 entry with an `fseek` + `fread` on demand — no whole-archive memory load.
 The official Compose resources runtime can't be used here — its generated

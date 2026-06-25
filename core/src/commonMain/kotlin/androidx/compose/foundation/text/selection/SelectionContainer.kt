@@ -1,51 +1,90 @@
 package androidx.compose.foundation.text.selection
 
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.currentClipboard
+import com.compose.desktop.native.modifier.onDrag
 
 // ==================
 // MARK: SelectionContainer
 // ==================
 
-/* Makes the text inside selectable with the mouse + copyable with the
-   platform Copy shortcut.
+/* Makes descendant Text blocks selectable with the mouse and copyable with the
+   platform Copy shortcut — including ONE selection that spans MULTIPLE sibling
+   Texts.
 
-   The upstream API is content-agnostic — any descendant Text becomes
-   selectable. Our re-implementation supports the *common* case where
-   the content is a single Text (or Text(AnnotatedString)) read-only
-   block: the text composable checks LocalInSelectionContainer at
-   composition time and, when true, routes its render through the
-   selectable BasicTextField path (which already supports drag-select
-   and clipboard copy).
+   Each descendant Text renders as a SelectableText, registering its window
+   bounds + offset mapping with the SelectionRegistrar provided here. This
+   container owns the gesture: a press sets the anchor (block, offset); each
+   move extends the head to the block/offset under the cursor; every block
+   paints the slice of the selection that falls in it (keeping its own
+   colours). Ctrl/Cmd+C copies the concatenated selection, blocks joined by
+   newlines.
 
-   Limitation: when wrapped around a styled Text(AnnotatedString), the
-   per-run colours are dropped — BasicTextField doesn't carry per-char
-   colour spans yet. Selection + copy work; the highlight palette is
-   the cost of opting into selectability. Plain Text(String) keeps its
-   appearance entirely.
-
-   Selection across multiple sibling Texts isn't tracked here yet
-   (each child has its own field, so drag stops at the boundary). */
+   Limitations: blocks are ordered by window position (top, then left), so the
+   common vertical / reading-order layouts work; exotic layouts and editable
+   fields nested inside aren't special-cased. */
 @Composable
 fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-	CompositionLocalProvider(LocalInSelectionContainer provides true) {
-		Box(modifier = modifier) { content() }
+	val vReg = remember { SelectionRegistrar() }
+	var vWinX by remember { mutableStateOf(0) }
+	var vWinY by remember { mutableStateOf(0) }
+	val vClipboard = currentClipboard
+	CompositionLocalProvider(
+		LocalInSelectionContainer provides true,
+		LocalSelectionRegistrar provides vReg,
+	) {
+		Box(
+			modifier = modifier
+				.onGloballyPositioned { vWinX = it.x; vWinY = it.y }
+				.focusable { }
+				.onKeyEvent { ev ->
+					val vK = ev.key
+					if (vK.type == KeyEventType.Down &&
+						(vK.modifiers.ctrl || vK.modifiers.meta) &&
+						vK.keyCode == kCopyScancode && vReg.hasSelection
+					) {
+						vClipboard.setText(vReg.selectedText())
+						true
+					} else {
+						false
+					}
+				}
+				// onDrag coords are relative to this Box; add its window origin
+				// to get the window coords the registrar matches against blocks.
+				.onDrag(
+					onStart = { rx, ry -> vReg.startAt(vWinX + rx, vWinY + ry) },
+					onDrag = { rx, ry -> vReg.dragTo(vWinX + rx, vWinY + ry) },
+				)
+		) { content() }
 	}
 }
 
-/* True when the composition is inside a SelectionContainer. Text
-   composables observe this to decide between their default
-   non-selectable render and a selectable BasicTextField fallback. */
+// SDL3 scancode for the 'C' key — matches BasicTextField's copy binding.
+private const val kCopyScancode = 6
+
+/* True when the composition is inside a SelectionContainer. Text composables
+   observe this to switch to their selectable (SelectableText) render. */
 val LocalInSelectionContainer = compositionLocalOf { false }
 
-/* Disables selection for any descendant Text — used by widgets like
-   chips and tabs that want their own click semantics rather than being
-   highjacked by a surrounding SelectionContainer. Matches upstream's
-   DisableSelection. */
+/* Disables selection for descendants — for widgets (chips, tabs) that want
+   their own click semantics rather than being captured by a surrounding
+   SelectionContainer. */
 @Composable
 fun DisableSelection(content: @Composable () -> Unit) {
-	CompositionLocalProvider(LocalInSelectionContainer provides false) { content() }
+	CompositionLocalProvider(
+		LocalInSelectionContainer provides false,
+		LocalSelectionRegistrar provides null,
+	) { content() }
 }

@@ -63,7 +63,7 @@ object MaterialSymbolsOutlined {
 			)
 			return false
 		}
-		IconFont.register(Family, vBytes)
+		IconFont.registerIcon(Family, vBytes)
 		fInstalled = true
 		warnIfRendererSkipsAxes()
 		return true
