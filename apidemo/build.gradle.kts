@@ -30,6 +30,7 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().all {
         val isMingw = name == "mingwX64"
+        val isLinuxX64 = name == "linuxX64"
         binaries.executable {
             if (buildType == NativeBuildType.RELEASE) {
                 linkerOpts(
@@ -68,6 +69,11 @@ kotlin {
                 // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
                 // fail to link, since Kotlin/Native emits `main`.
                 "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
+            )
+            // Linux (Skia/Skiko): system graphics stack Skia references.
+            // libcurl + OpenSSL come bundled (static) inside the Ktor Curl klib.
+            if (isLinuxX64) linkerOpts(
+                "-lfontconfig", "-lGL", "-lX11",
             )
         }
     }

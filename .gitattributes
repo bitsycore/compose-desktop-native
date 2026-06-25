@@ -1,0 +1,12 @@
+# Keep the Gradle wrapper and shell scripts LF so they run under
+# WSL / Linux / macOS / CI even when checked out on Windows (autocrlf).
+gradlew     text eol=lf
+*.sh        text eol=lf
+
+# Treat the resource archive + fonts as binary (no EOL munging).
+*.kres      binary
+*.ttf       binary
+*.otf       binary
+*.png       binary
+*.jpg       binary
+*.webp      binary
