@@ -44,7 +44,7 @@ APIs keep their upstream `androidx.compose.*` names, in `core/commonMain`.
   Skia/Skiko renderer (Metal / OpenGL / CPU bridges). Same two functions.
   **macOS + Linux only** — Skiko publishes no mingwX64 artifact.
 - `window/` (publishes as `compose-desktop-native`) — what apps depend on.
-  Owns `composeWindow()` and selects a renderer per target by depending on
+  Owns `nativeComposeWindow()` and selects a renderer per target by depending on
   exactly one renderer module: mingwX64 → sdl3 (always); macOS/Linux →
   skia, or sdl3 under `-Prenderer=sdl3`. Re-exports `:core` + `:material`
   via `api`.
@@ -245,7 +245,7 @@ SDL_IOStream's reads stay valid for every opened size (closed in `destroy()`).
 - Composables build a `LayoutNode` tree via `NodeApplier`
   (`AbstractApplier<LayoutNode>`).
 - `Recomposer.runRecomposeAndApplyChanges()` runs as a child coroutine
-  of the `runBlocking(frameClock)` in `composeWindow`.
+  of the `runBlocking(frameClock)` in `nativeComposeWindow`.
 - `SDL3FrameClock` is a `MonotonicFrameClock` driven by
   `frameCh.trySend(...)` once per main-loop iteration.
 - **Snapshot apply notifications**: `Snapshot.sendApplyNotifications()`
@@ -331,7 +331,7 @@ fallback.
 Reactive handle on the window. Available two ways:
 
 ```kotlin
-composeWindow(...) {
+nativeComposeWindow(...) {
     // `this: ComposeWindowScope` — root scope
     window.setTitle("Hello")
 }

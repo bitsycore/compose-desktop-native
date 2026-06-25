@@ -32,7 +32,7 @@ CLI: `--gpu=…`, `--screen=<Name>` (one screen, no sidebar),
 
 ## apidemo — API Manager
 
-<img src="screenshots/demoapi.png" width="100%" alt="ComposeNativeSDL3 API Manager" />
+<img src="screenshots/apidemo.png" width="100%" alt="ComposeNativeSDL3 API Manager" />
 
 `:apidemo` is a Postman-style REST client built entirely on the library:
 request collections (**packs**, nested sub-packs, linked copies), a
@@ -55,9 +55,9 @@ renderer everywhere.
 
 ```kotlin
 import androidx.compose.material.Text
-import com.compose.desktop.native.composeWindow
+import com.compose.desktop.native.nativeComposeWindow
 
-fun main() = composeWindow(title = "Hello") {
+fun main() = nativeComposeWindow(title = "Hello") {
     Text("Hello from ComposeNativeSDL3")
 }
 ```

@@ -51,6 +51,11 @@ kotlin {
                 "-lsetupapi", "-lshell32", "-ldinput8",
                 // Code-shrink: drop unused sections and strip symbols.
                 "-Wl,--gc-sections", "-Wl,-s",
+                // GUI subsystem so launching the .exe pops no console window.
+                // Keep the standard C `main` entry — ld would otherwise default
+                // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
+                // fail to link, since Kotlin/Native emits `main`.
+                "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
             )
         }
     }

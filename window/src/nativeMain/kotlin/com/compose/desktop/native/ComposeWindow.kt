@@ -109,7 +109,7 @@ fun nativeComposeWindow(
         // Lazy FocusManager — body filled in once setFocus is in scope below.
         var focusManagerImpl: androidx.compose.ui.focus.FocusManager? = null
         val focusManagerProxy = object : androidx.compose.ui.focus.FocusManager {
-            override fun focusOnNode(inNode: LayoutNode) { focusManagerImpl?.focusOnNode(inNode) }
+            override fun focusOnNode(node: LayoutNode) { focusManagerImpl?.focusOnNode(node) }
             override fun clearFocus() { focusManagerImpl?.clearFocus() }
         }
         composition.setContent {
@@ -168,12 +168,12 @@ fun nativeComposeWindow(
            callback fires; falls back to focusing-without-callback if
            the node has no focusable. */
         focusManagerImpl = object : androidx.compose.ui.focus.FocusManager {
-            override fun focusOnNode(inNode: LayoutNode) {
+            override fun focusOnNode(node: LayoutNode) {
                 var vCallback: ((Boolean) -> Unit)? = null
-                inNode.modifier.foldIn(Unit) { _, vEl ->
+                node.modifier.foldIn(Unit) { _, vEl ->
                     if (vEl is androidx.compose.ui.FocusableModifier) vCallback = vEl.onFocusChanged
                 }
-                setFocus(inNode, vCallback)
+                setFocus(node, vCallback)
             }
             override fun clearFocus() = setFocus(null, null)
         }

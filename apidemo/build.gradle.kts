@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 // :apidemo — a Postman-style REST API manager built on the compose-desktop-native
 // stack. Uses Ktor with the Curl engine on every desktop target (bundled
@@ -30,6 +31,15 @@ kotlin {
     targets.withType<KotlinNativeTarget>().all {
         val isMingw = name == "mingwX64"
         binaries.executable {
+            if (buildType == NativeBuildType.RELEASE) {
+                linkerOpts(
+                    "-Wl,--gc-sections"
+                )
+                compilerOptions {
+                    freeCompilerArgs.add("-opt")
+                }
+            }
+
             entryPoint = "apidemo.main"
             if (isMingw) linkerOpts(
                 "-L$vLibs/SDL3/lib",
@@ -53,6 +63,11 @@ kotlin {
                 "-lcrypt32",
                 // Code-shrink: drop unused sections and strip symbols.
                 "-Wl,--gc-sections", "-Wl,-s",
+                // GUI subsystem so launching the .exe pops no console window.
+                // Keep the standard C `main` entry — ld would otherwise default
+                // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
+                // fail to link, since Kotlin/Native emits `main`.
+                "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
             )
         }
     }
