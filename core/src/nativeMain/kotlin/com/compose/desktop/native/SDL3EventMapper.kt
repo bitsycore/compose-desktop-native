@@ -65,7 +65,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
             val kk = e.key
             AppEvent.Key(KeyEvent(
                 keyCode = kk.scancode.toInt(),
-                char = null,
+                char = keyChar(kk.key),
                 type = KeyEventType.Down,
                 modifiers = mapKeyMods(kk.mod)
             ))
@@ -75,7 +75,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
             val kk = e.key
             AppEvent.Key(KeyEvent(
                 keyCode = kk.scancode.toInt(),
-                char = null,
+                char = keyChar(kk.key),
                 type = KeyEventType.Up,
                 modifiers = mapKeyMods(kk.mod)
             ))
@@ -107,6 +107,16 @@ private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
     2 -> PointerButton.Middle
     3 -> PointerButton.Secondary
     else -> PointerButton.Primary
+}
+
+/* The character a key produces under the active layout (SDL_Keycode), so
+   letter shortcuts (Ctrl+A/C/V/X/Z) match the real key on any layout — AZERTY,
+   Dvorak, … — not the physical QWERTY position the scancode encodes. SDL maps
+   non-character keys (arrows, F-keys) into a high range via SDL_SCANCODE_MASK,
+   so the printable-ASCII guard returns null for those. */
+private fun keyChar(inKeycode: UInt): Char? {
+    val v = inKeycode.toInt()
+    return if (v in 0x20..0x7E) v.toChar() else null
 }
 
 private fun mapKeyMods(mod: UShort): KeyModifiers = KeyModifiers(

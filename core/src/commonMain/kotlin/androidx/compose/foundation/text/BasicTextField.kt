@@ -482,11 +482,8 @@ private fun wordBoundaryRight(inText: String, inFrom: Int): Int {
 // module doesn't depend on the sdl3 cinterop. These are scancode values
 // (physical key positions), not keysyms.
 
-private const val SCANCODE_A          = 4
-private const val SCANCODE_C          = 6
-private const val SCANCODE_V          = 25
-private const val SCANCODE_X          = 27
-private const val SCANCODE_Z          = 29
+// Letter shortcuts (A/C/V/X/Z) are matched by produced character, not scancode
+// (see handleKey), so they work on any keyboard layout — no scancode consts here.
 private const val SCANCODE_RETURN     = 40
 private const val SCANCODE_BACKSPACE  = 42
 private const val SCANCODE_DOWN       = 81
@@ -548,6 +545,38 @@ private fun handleKey(
         lineStartAt(inLine) + inWrap.lines.getOrElse(inLine) { "" }.length
     fun lineStrAt(inLine: Int): String =
         inWrap.lines.getOrElse(inLine) { "" }
+
+    // Letter shortcuts match the PRODUCED character (layout-aware), not the
+    // physical scancode — so Ctrl/Cmd+A/C/X/V/Z hit the right key on AZERTY,
+    // Dvorak, etc., where the letters sit at different physical positions.
+    if (vPrimary) {
+        when (inKey.char?.lowercaseChar()) {
+            'a' -> {
+                inCursorOnlyEdit(inValue.copy(selection = TextRange(0, inValue.text.length)))
+                return true
+            }
+            'c' -> if (!inValue.selection.collapsed) {
+                currentClipboard.setText(inValue.text.substring(inValue.selection.min, inValue.selection.max))
+                return true
+            }
+            'x' -> if (!inValue.selection.collapsed && !inReadOnly) {
+                currentClipboard.setText(inValue.text.substring(inValue.selection.min, inValue.selection.max))
+                val vNewText = inValue.text.substring(0, inValue.selection.min) +
+                               inValue.text.substring(inValue.selection.max)
+                inStructuralEdit(TextFieldValue(vNewText, TextRange(inValue.selection.min)))
+                return true
+            }
+            'v' -> if (!inReadOnly) {
+                val vPaste = currentClipboard.getText() ?: return true
+                inStructuralEdit(insertAtCursor(inValue, vPaste))
+                return true
+            }
+            'z' -> {
+                if (vShift) inRedo() else inUndo()
+                return true
+            }
+        }
+    }
 
     when (inKey.keyCode) {
         SCANCODE_LEFT -> {
@@ -624,34 +653,6 @@ private fun handleKey(
         // the renderers expand it to a tab stop. Single-line fields ignore it.
         SCANCODE_TAB -> if (!inReadOnly && !inSingleLine) {
             inTypingEdit(insertAtCursor(inValue, "\t"))
-            return true
-        }
-        SCANCODE_A -> if (vPrimary) {
-            inCursorOnlyEdit(inValue.copy(selection = TextRange(0, inValue.text.length)))
-            return true
-        }
-        SCANCODE_C -> if (vPrimary && !inValue.selection.collapsed) {
-            // Copy selection — non-destructive, doesn't go through the edit
-            // helpers. Bare clipboard write.
-            val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
-            currentClipboard.setText(vSel)
-            return true
-        }
-        SCANCODE_X -> if (vPrimary && !inValue.selection.collapsed && !inReadOnly) {
-            val vSel = inValue.text.substring(inValue.selection.min, inValue.selection.max)
-            currentClipboard.setText(vSel)
-            val vNewText = inValue.text.substring(0, inValue.selection.min) +
-                           inValue.text.substring(inValue.selection.max)
-            inStructuralEdit(TextFieldValue(vNewText, TextRange(inValue.selection.min)))
-            return true
-        }
-        SCANCODE_V -> if (vPrimary && !inReadOnly) {
-            val vPaste = currentClipboard.getText() ?: return true
-            inStructuralEdit(insertAtCursor(inValue, vPaste))
-            return true
-        }
-        SCANCODE_Z -> if (vPrimary) {
-            if (vShift) inRedo() else inUndo()
             return true
         }
         SCANCODE_BACKSPACE -> if (!inReadOnly) {

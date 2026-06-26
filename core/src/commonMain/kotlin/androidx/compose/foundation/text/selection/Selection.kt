@@ -80,6 +80,17 @@ class SelectionRegistrar {
 
 	fun clear() { anchorId = -1L; headId = -1L; anchorOffset = 0; headOffset = 0 }
 
+	/* Select every registered block, from the start of the first to the end of
+	   the last (reading order) — the Ctrl/Cmd+A action. */
+	fun selectAll() {
+		val vOrd = ordered()
+		if (vOrd.isEmpty()) return
+		val vFirst = vOrd.first()
+		val vLast = vOrd.last()
+		anchorId = vFirst.id; anchorOffset = 0
+		headId = vLast.id; headOffset = vLast.text.length
+	}
+
 	// Normalized selection in reading order as [startIdx, startOff, endIdx,
 	// endOff] over ordered(), or null when there's no selection.
 	private fun normalized(inOrdered: List<Selectable>): IntArray? {

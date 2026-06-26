@@ -51,14 +51,15 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 				.focusable { }
 				.onKeyEvent { ev ->
 					val vK = ev.key
-					if (vK.type == KeyEventType.Down &&
-						(vK.modifiers.ctrl || vK.modifiers.meta) &&
-						vK.keyCode == kCopyScancode && vReg.hasSelection
-					) {
-						vClipboard.setText(vReg.selectedText())
-						true
-					} else {
-						false
+					// Cmd on macOS, Ctrl on Windows / Linux. Match the produced
+					// character (layout-aware), not the physical scancode, so
+					// Ctrl+A / Ctrl+C work on AZERTY, Dvorak, etc.
+					val vPrimary = vK.modifiers.ctrl || vK.modifiers.meta
+					if (vK.type != KeyEventType.Down || !vPrimary) return@onKeyEvent false
+					when (vK.char?.lowercaseChar()) {
+						'a' -> { vReg.selectAll(); true }
+						'c' -> if (vReg.hasSelection) { vClipboard.setText(vReg.selectedText()); true } else false
+						else -> false
 					}
 				}
 				// onDrag coords are relative to this Box; add its window origin
@@ -71,8 +72,6 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 	}
 }
 
-// SDL3 scancode for the 'C' key — matches BasicTextField's copy binding.
-private const val kCopyScancode = 6
 
 /* True when the composition is inside a SelectionContainer. Text composables
    observe this to switch to their selectable (SelectableText) render. */
