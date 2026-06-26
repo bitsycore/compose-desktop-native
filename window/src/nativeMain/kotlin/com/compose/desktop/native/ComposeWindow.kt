@@ -400,6 +400,9 @@ fun nativeComposeWindow(
 
             // Advance any in-flight smooth (eased) scrolls before composing.
             ScrollAnimator.tick()
+            // Publish the viewport height so commonMain composables can cull
+            // off-screen work (e.g. selection highlights) during composition.
+            androidx.compose.ui.text.currentViewportHeight = backend.windowHeight
 
             // ============
             //  Signal frame to recomposer

@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.currentTextMeasurer
+import androidx.compose.ui.text.currentViewportHeight
 import androidx.compose.ui.unit.Sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,28 +81,39 @@ fun SelectableText(
 			.onGloballyPositioned { vWinX = it.x; vWinY = it.y }
 			.onSizeChanged { vW = it.width; vH = it.height }
 	) {
-		// Highlight this block's selected slice (behind the glyphs), one rect
-		// per wrapped line — same math as BasicTextField's selection.
+		// Highlight this block's selected slice (behind the glyphs), one rect per
+		// wrapped line so it hugs each line's text. Only the lines actually
+		// on-screen are emitted — selecting a huge body would otherwise create
+		// one node per selected line and stall layout (~10fps). The wrap is
+		// remembered so scrolling with a live selection doesn't re-wrap the whole
+		// body each frame.
+		val vWrapW = if (softWrap && vW > 0) vW else Int.MAX_VALUE
+		val vWrap = remember(text.text, vWrapW, vFontSize, fontFamily) {
+			currentTextMeasurer.wrap(text.text, vFontSize, vWrapW, fontFamily)
+		}
+		val vLh = currentTextMeasurer.lineHeight(vFontSize, fontFamily).coerceAtLeast(1f)
 		val vSel = vReg.rangeFor(vId)
 		if (vSel != null) {
-			val vWrapW = if (softWrap && vW > 0) vW else Int.MAX_VALUE
-			val vWrap = currentTextMeasurer.wrap(text.text, vFontSize, vWrapW, fontFamily)
-			val vLh = currentTextMeasurer.lineHeight(vFontSize, fontFamily).coerceAtLeast(1f)
 			val (vMinLine, vMinCol) = wrappedPosOf(vWrap, vSel.start)
 			val (vMaxLine, vMaxCol) = wrappedPosOf(vWrap, vSel.end)
-			for (vLine in vMinLine..vMaxLine) {
+			// Cull to the visible line range (vWinY = this block's window-Y; the
+			// viewport is [0, currentViewportHeight]). vWinY lags one frame, so
+			// pad a whole screenful of "bleeding edge" each side — the rects for
+			// lines scrolled into view this frame are then already there, no
+			// pop-in even on a fast fling. Still ~3 screens of rects, not N.
+			val vVpH = currentViewportHeight
+			val vPad = if (vLh > 0f) (vVpH / vLh).toInt() + 4 else 4
+			val vFrom = if (vVpH > 0) maxOf(vMinLine, ((-vWinY) / vLh).toInt() - vPad) else vMinLine
+			val vTo = if (vVpH > 0) minOf(vMaxLine, ((vVpH - vWinY) / vLh).toInt() + vPad) else vMaxLine
+			var vLine = vFrom
+			while (vLine <= vTo) {
 				val vLineStr = vWrap.lines.getOrElse(vLine) { "" }
 				val vSc = if (vLine == vMinLine) vMinCol else 0
 				val vEc = if (vLine == vMaxLine) vMaxCol else vLineStr.length
-				val vSx = prefixW(vLineStr, vSc, vFontSize, fontFamily)
-				val vEx = prefixW(vLineStr, vEc, vFontSize, fontFamily)
-				Box(
-					modifier = Modifier
-						.offset(x = vSx.dp, y = (vLine * vLh).dp)
-						.width((vEx - vSx).coerceAtLeast(1).dp)
-						.height(vLh.dp)
-						.background(selectionColor)
-				)
+				val vSx = prefixW(vLineStr, vSc, vFontSize, fontFamily).toFloat()
+				val vEx = prefixW(vLineStr, vEc, vFontSize, fontFamily).toFloat()
+				SelectionRect(vSx, vLine * vLh, vEx - vSx, vLh, selectionColor)
+				vLine++
 			}
 		}
 		BasicText(
@@ -113,6 +125,19 @@ fun SelectableText(
 			modifier = Modifier.fillMaxWidth(),
 		)
 	}
+}
+
+/* One selection-highlight rectangle (logical px), painted behind the glyphs.
+   Shared by SelectableText and BasicTextField. */
+@Composable
+internal fun SelectionRect(inX: Float, inY: Float, inW: Float, inH: Float, inColor: Color) {
+	Box(
+		modifier = Modifier
+			.offset(x = inX.dp, y = inY.dp)
+			.width(inW.coerceAtLeast(1f).dp)
+			.height(inH.coerceAtLeast(1f).dp)
+			.background(inColor)
+	)
 }
 
 /* Mutable Selectable backing one SelectableText; the composable refreshes its

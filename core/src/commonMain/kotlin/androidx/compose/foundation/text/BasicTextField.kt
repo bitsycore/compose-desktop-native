@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import com.compose.desktop.native.modifier.onDrag
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.text.selection.SelectionRect
 import com.compose.desktop.native.modifier.onTextInput
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.currentTextMeasurer
+import androidx.compose.ui.text.currentViewportHeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Sp
 import androidx.compose.ui.unit.dp
@@ -111,6 +114,9 @@ fun BasicTextField(
     // after every measure pass; stays Int.MAX_VALUE until the first measure
     // so initial composition gets the no-wrap path.
     var fieldWidthPx by remember { mutableStateOf(Int.MAX_VALUE) }
+    // Window-Y of the field, for culling the selection highlight to on-screen
+    // lines (a huge selected body otherwise emits one node per line).
+    var fieldWinY by remember { mutableStateOf(0) }
     // Undo / redo stacks of TextFieldValue snapshots. Most-recent at top.
     // We push a snapshot before each "edit run" (a sequence of typings is
     // grouped, but any non-typing edit closes the run).
@@ -202,6 +208,7 @@ fun BasicTextField(
         modifier = modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = (fontSize.value * 1.4f).dp)
             .onSizeChanged { fieldWidthPx = it.width }
+            .onGloballyPositioned { fieldWinY = it.y }
             .clip(RectangleShape)
             .focusable {
                 isFocused = it
@@ -263,24 +270,30 @@ fun BasicTextField(
                 typingEdit(insertAtCursor(value, vSafe))
             }
     ) {
-        // Selection rect(s) drawn FIRST so they sit behind glyphs. Multi-line
-        // selections emit one rect per spanned line — wrap-aware.
+        // Selection rect(s) drawn FIRST so they sit behind glyphs — one per
+        // wrapped line so they hug each line's text. Only on-screen lines are
+        // emitted (a fully-selected huge body would otherwise create one node
+        // per selected line and stall layout).
         if (!value.selection.collapsed) {
             val (vMinLine, vMinCol) = wrappedPosOf(vWrap, value.selection.min)
             val (vMaxLine, vMaxCol) = wrappedPosOf(vWrap, value.selection.max)
-            for (vLine in vMinLine..vMaxLine) {
+            val vSxOff = vScrollX.toFloat()
+            // Pad a whole screenful each side ("bleeding edge") so lines
+            // scrolled in this frame already have their rects — fieldWinY lags a
+            // frame, so a tight range would pop in on a fast fling.
+            val vVpH = currentViewportHeight
+            val vPad = if (vLineHeight > 0f) (vVpH / vLineHeight).toInt() + 4 else 4
+            val vFrom = if (vVpH > 0) maxOf(vMinLine, ((-fieldWinY) / vLineHeight).toInt() - vPad) else vMinLine
+            val vTo = if (vVpH > 0) minOf(vMaxLine, ((vVpH - fieldWinY) / vLineHeight).toInt() + vPad) else vMaxLine
+            var vLine = vFrom
+            while (vLine <= vTo) {
                 val vLineStr = vWrap.lines.getOrElse(vLine) { "" }
                 val vStartCol = if (vLine == vMinLine) vMinCol else 0
                 val vEndCol = if (vLine == vMaxLine) vMaxCol else vLineStr.length
-                val vSx = prefixWidth(vLineStr, vStartCol, vFontSize, fontFamily)
-                val vEx = prefixWidth(vLineStr, vEndCol, vFontSize, fontFamily)
-                Box(
-                    modifier = Modifier
-                        .offset(x = (vSx - vScrollX).dp, y = (vLine * vLineHeight).dp)
-                        .width((vEx - vSx).coerceAtLeast(1).dp)
-                        .height(vLineHeight.dp)
-                        .background(selectionColor)
-                )
+                val vSx = prefixWidth(vLineStr, vStartCol, vFontSize, fontFamily).toFloat()
+                val vEx = prefixWidth(vLineStr, vEndCol, vFontSize, fontFamily).toFloat()
+                SelectionRect(vSx - vSxOff, vLine * vLineHeight, vEx - vSx, vLineHeight, selectionColor)
+                vLine++
             }
         }
 

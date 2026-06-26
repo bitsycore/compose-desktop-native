@@ -74,3 +74,9 @@ private val kFallbackTextMeasurer = object : TextMeasurer {
 }
 
 var currentTextMeasurer: TextMeasurer = kFallbackTextMeasurer
+
+/* Logical height of the window, set by the render loop each frame. Lets
+   commonMain composables (e.g. text-selection highlights) cull their per-line
+   work to what's on screen without a hard dependency on the window layer.
+   0 until first set — callers treat that as "viewport unknown, don't cull". */
+var currentViewportHeight: Int = 0
