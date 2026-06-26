@@ -57,26 +57,33 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # ---------------- Linux (x64 + arm64) ----------------
-      - name: Install Linux deps
+      # Skia/Skiko links fontconfig + GL + X11; SDL3 is linked from the system
+      # (sdl3.def: -lSDL3). Prefer the distro libsdl3-dev; only build SDL3 from
+      # source if the runner's apt doesn't carry it.
+      - name: Install Linux deps (+ SDL3)
         if: runner.os == 'Linux'
+        env:
+          SDL_REF: release-3.4.10
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build pkg-config \
             libfontconfig-dev libgl-dev libx11-dev libxext-dev libxrandr-dev \
             libxi-dev libxcursor-dev libxinerama-dev
-
-      - name: Build & install SDL3 from source (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          git clone --depth 1 -b release-3.4.10 https://github.com/libsdl-org/SDL.git /tmp/SDL
-          cmake -S /tmp/SDL -B /tmp/SDL/build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=ON -DSDL_STATIC=OFF \
-            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
-            -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/${{ matrix.multiarch }}
-          cmake --build /tmp/SDL/build
-          sudo cmake --install /tmp/SDL/build
-          sudo ldconfig
+          if sudo apt-get install -y libsdl3-dev; then
+            echo "::notice::Using distro libsdl3-dev"
+          else
+            echo "::notice::libsdl3-dev not in apt — building SDL3 $SDL_REF from source"
+            sudo apt-get install -y --no-install-recommends cmake ninja-build pkg-config \
+              libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev
+            git clone --depth 1 -b "$SDL_REF" https://github.com/libsdl-org/SDL.git /tmp/SDL
+            cmake -S /tmp/SDL -B /tmp/SDL/build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+              -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/${{ matrix.multiarch }}
+            cmake --build /tmp/SDL/build
+            sudo cmake --install /tmp/SDL/build
+            sudo ldconfig
+          fi
 
       # ---------------- macOS ----------------
       - name: Install macOS deps
@@ -98,19 +105,28 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          if [ ! -f libs/SDL3/lib/libSDL3.a ]; then
-            export PATH="/c/mingw64/bin:$PATH"   # runner-preinstalled mingw-w64
-            command -v gcc >/dev/null || { echo "::error::mingw-w64 gcc not found"; exit 1; }
-            tools/build-all.sh
-          else
-            echo "libs/ restored from cache"
+          if [ -f libs/SDL3/lib/libSDL3.a ]; then echo "libs/ restored from cache"; exit 0; fi
+          # tools/build-all.sh needs a system mingw-w64 gcc (K/N uses its OWN
+          # bundled mingw for the Kotlin link — this is only for the static libs).
+          for d in /c/mingw64/bin "/c/ProgramData/mingw64/mingw64/bin" \
+                   "/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin" /c/msys64/mingw64/bin; do
+            [ -x "$d/gcc.exe" ] && PATH="$d:$PATH" && break
+          done
+          if ! command -v gcc >/dev/null; then
+            choco install -y mingw >/dev/null
+            for d in "/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin" /c/mingw64/bin; do
+              [ -x "$d/gcc.exe" ] && PATH="$d:$PATH" && break
+            done
           fi
+          command -v gcc >/dev/null || { echo "::error::mingw-w64 gcc not found on runner"; exit 1; }
+          export PATH
+          gcc --version | head -1
+          tools/build-all.sh
 
       # ---------------- Build ----------------
       - name: Build demo + apidemo (${{ matrix.target }})
         shell: bash
         run: |
-          export PATH="/c/mingw64/bin:$PATH"
           ./gradlew --no-daemon -PsubsetIcons=false \
             :demo:linkReleaseExecutable${{ matrix.gradle }} \
             :apidemo:linkReleaseExecutable${{ matrix.gradle }}
