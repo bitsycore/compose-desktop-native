@@ -1,6 +1,5 @@
 package androidx.compose.ui.window
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -10,13 +9,18 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 // ==================
@@ -50,6 +54,41 @@ class PopupHostState internal constructor() {
 
 	internal fun remove(inId: Any) {
 		entries.removeAll { it.id === inId }
+	}
+
+	// ============
+	//  Outside-press dismissal (event-level, non-consuming)
+	//  A popup registers its content's window rect + onDismiss here. The window's
+	//  press dispatch calls notifyOutsidePress BEFORE resolving the click and
+	//  does NOT consume it — so a press outside an open menu/tooltip both
+	//  dismisses it AND reaches whatever is under it (no dead "first click").
+	//  This replaces the old fullscreen click-catcher, which swallowed that click.
+
+	internal class Dismisser(val id: Any) {
+		var x = 0; var y = 0; var w = 0; var h = 0
+		var onDismiss: () -> Unit = {}
+		fun contains(inX: Int, inY: Int) = inX >= x && inX < x + w && inY >= y && inY < y + h
+	}
+
+	private val fDismissers = mutableListOf<Dismisser>()
+
+	internal fun setDismisser(inId: Any, inX: Int, inY: Int, inW: Int, inH: Int, inOnDismiss: () -> Unit) {
+		val vD = fDismissers.firstOrNull { it.id === inId } ?: Dismisser(inId).also { fDismissers.add(it) }
+		vD.x = inX; vD.y = inY; vD.w = inW; vD.h = inH; vD.onDismiss = inOnDismiss
+	}
+
+	internal fun removeDismisser(inId: Any) {
+		fDismissers.removeAll { it.id === inId }
+	}
+
+	/* Dismiss every registered popup whose content rect does NOT contain the
+	   press. Called from the window's press dispatch; never consumes the press. */
+	fun notifyOutsidePress(inX: Int, inY: Int) {
+		if (fDismissers.isEmpty()) return
+		// Copy: an onDismiss typically removes the dismisser (state write).
+		for (vD in fDismissers.toList()) {
+			if (vD.w > 0 && vD.h > 0 && !vD.contains(inX, inY)) vD.onDismiss()
+		}
 	}
 }
 
@@ -165,9 +204,22 @@ fun Popup(
 // MARK: PositionedPopup (non-official project helper)
 // ==================
 
+/* Registers an event-level "dismiss on press outside [inX,inY,inW,inH]" with the
+   popup host so the dismissing press is NOT consumed (it still reaches whatever
+   is under it — no dead first click). The caller supplies the content's window
+   rect (position is known; size comes from onSizeChanged). */
+@Composable
+fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest: () -> Unit) {
+	val vHost = LocalPopupHost.current
+	val vId = remember { Any() }
+	SideEffect { vHost.setDismisser(vId, inX, inY, inW, inH, onDismissRequest) }
+	DisposableEffect(Unit) { onDispose { vHost.removeDismisser(vId) } }
+}
+
 /* Convenience overlay anchored at an absolute window position. Used by
-   Tooltip / ContextMenu. A fullscreen click-catcher closes the popup when the
-   user clicks elsewhere. Not part of official Compose — prefer Popup(offset).*/
+   Tooltip / ContextMenu. Closes on a press outside its bounds via the host's
+   event-level dismissal — so that press also reaches the content under it (no
+   fullscreen catcher to swallow it). Not part of official Compose. */
 @Composable
 fun PositionedPopup(
 	x: Dp,
@@ -176,8 +228,8 @@ fun PositionedPopup(
 	content: @Composable () -> Unit,
 ) {
 	Popup(onDismissRequest = onDismissRequest) {
-		Box(modifier = Modifier.fillMaxSize().clickable { onDismissRequest() }) {
-			Box(modifier = Modifier.offset(x, y)) { content() }
-		}
+		var vSize by remember { mutableStateOf(IntSize.Zero) }
+		Box(modifier = Modifier.offset(x, y).onSizeChanged { vSize = it }) { content() }
+		PopupOutsideDismiss(x.value.toInt(), y.value.toInt(), vSize.width, vSize.height, onDismissRequest)
 	}
 }

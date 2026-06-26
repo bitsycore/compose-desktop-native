@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -28,7 +27,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.currentViewportHeight
+import androidx.compose.ui.text.currentViewportWidth
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupOutsideDismiss
 
 // ==================
 // MARK: DropdownMenu
@@ -75,34 +77,33 @@ fun DropdownMenu(
     val vBaseX = (anchor?.position?.x ?: 0) + offsetX.value.toInt()
 
     Popup(onDismissRequest = onDismissRequest) {
-        // The fullscreen scrim measures the window; the menu measures itself. With
-        // both known we flip the menu above the anchor when it would overflow the
-        // bottom, and clamp X into the window — this renderer has no position
-        // provider that does it automatically like real Compose.
-        var vWin by remember { mutableStateOf(IntSize.Zero) }
+        // Window size from the live viewport (no fullscreen scrim needed): flip
+        // the menu above the anchor when it would overflow the bottom, and clamp
+        // X into the window — this renderer has no auto position provider.
+        val vWinW = currentViewportWidth
+        val vWinH = currentViewportHeight
         var vMenu by remember { mutableStateOf(IntSize.Zero) }
+        val vBelowY = vAnchorBottom
+        val vAboveY = vAnchorTop - vMenu.height
+        val vY = if (vMenu.height > 0 && vWinH > 0 && vBelowY + vMenu.height > vWinH && vAboveY >= 0) vAboveY else vBelowY
+        val vX = if (vMenu.width > 0 && vWinW > 0) vBaseX.coerceIn(0, (vWinW - vMenu.width).coerceAtLeast(0)) else vBaseX
         Box(
-            modifier = Modifier.fillMaxSize().onSizeChanged { vWin = it }.clickable { onDismissRequest() },
+            modifier = Modifier
+                .offset(vX.dp, vY.dp)
+                .onSizeChanged { vMenu = it }
+                .width(minWidth)
+                .background(MaterialTheme.colors.surface, DropdownMenuDefaults.Shape)
+                // No elevation/shadow in this renderer, so a hairline outline keeps
+                // the menu legible against similar-coloured content behind it.
+                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.18f), DropdownMenuDefaults.Shape)
+                .padding(vertical = 4.dp)
+                .clickable { /* swallow clicks landed inside the menu */ }
         ) {
-            val vBelowY = vAnchorBottom
-            val vAboveY = vAnchorTop - vMenu.height
-            val vY = if (vMenu.height > 0 && vWin.height > 0 && vBelowY + vMenu.height > vWin.height && vAboveY >= 0) vAboveY else vBelowY
-            val vX = if (vMenu.width > 0 && vWin.width > 0) vBaseX.coerceIn(0, (vWin.width - vMenu.width).coerceAtLeast(0)) else vBaseX
-            Box(
-                modifier = Modifier
-                    .offset(vX.dp, vY.dp)
-                    .onSizeChanged { vMenu = it }
-                    .width(minWidth)
-                    .background(MaterialTheme.colors.surface, DropdownMenuDefaults.Shape)
-                    // No elevation/shadow in this renderer, so a hairline outline keeps
-                    // the menu legible against similar-coloured content behind it.
-                    .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.18f), DropdownMenuDefaults.Shape)
-                    .padding(vertical = 4.dp)
-                    .clickable { /* swallow clicks landed inside the menu */ }
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) { content() }
-            }
+            Column(modifier = Modifier.fillMaxWidth()) { content() }
         }
+        // Close on a press outside the menu; non-consuming, so that same press
+        // also activates whatever it lands on (no dead "first click").
+        PopupOutsideDismiss(vX, vY, vMenu.width, vMenu.height, onDismissRequest)
     }
 }
 

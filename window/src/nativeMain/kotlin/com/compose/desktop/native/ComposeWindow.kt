@@ -299,6 +299,10 @@ fun nativeComposeWindow(
                                 }
                             }
                             PointerEventType.Press -> {
+                                // Close any open popup the press landed outside of
+                                // (menu / tooltip). Non-consuming: the same press
+                                // still hits whatever is under it below.
+                                popupHost.notifyOutsidePress(vPx, vPy)
                                 val vHit = rootNode.hitTest(vPx, vPy)
                                 if (event.event.button == PointerButton.Secondary) {
                                     // Right-click: fire only the context-menu handler (with
@@ -400,9 +404,11 @@ fun nativeComposeWindow(
 
             // Advance any in-flight smooth (eased) scrolls before composing.
             ScrollAnimator.tick()
-            // Publish the viewport height so commonMain composables can cull
-            // off-screen work (e.g. selection highlights) during composition.
+            // Publish the viewport size so commonMain composables can cull
+            // off-screen work (selection highlights) and self-position
+            // (DropdownMenu) during composition.
             androidx.compose.ui.text.currentViewportHeight = backend.windowHeight
+            androidx.compose.ui.text.currentViewportWidth = backend.windowWidth
 
             // ============
             //  Signal frame to recomposer
