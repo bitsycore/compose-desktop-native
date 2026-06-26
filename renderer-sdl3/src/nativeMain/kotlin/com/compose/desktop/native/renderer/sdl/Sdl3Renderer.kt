@@ -104,8 +104,10 @@ internal class Sdl3Renderer(
         if (vLayer == null || !vLayer.needsTransform) {
             val vTop = inNode.absoluteY
             val vLeft = inNode.absoluteX
-            val vOffscreen = vTop + inNode.height < 0 || vTop > backend.windowHeight ||
-                             vLeft + inNode.width < 0 || vLeft > backend.windowWidth
+            // Long math so a very large node size can't overflow `x + width`
+            // into a negative (which would wrongly read as off-screen).
+            val vOffscreen = vTop.toLong() + inNode.height < 0L || vTop > backend.windowHeight ||
+                             vLeft.toLong() + inNode.width < 0L || vLeft > backend.windowWidth
             if (vOffscreen && (inNode.children.isEmpty() || clipsChildren(inNode))) return
         }
 

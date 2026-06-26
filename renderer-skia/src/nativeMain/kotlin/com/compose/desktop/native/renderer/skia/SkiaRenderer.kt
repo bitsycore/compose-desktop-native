@@ -75,7 +75,8 @@ class SkiaRenderer internal constructor(
         if ((vLayer == null || !vLayer.needsTransform) &&
             (inNode.children.isEmpty() || clipsChildren(inNode))) {
             val vTop = inNode.absoluteY
-            if (vTop + inNode.height < 0 || vTop > fViewportHeight) return
+            // Long math so a very large node height can't overflow into a negative.
+            if (vTop.toLong() + inNode.height < 0L || vTop > fViewportHeight) return
         }
 
         val vWantsTransform = vLayer != null && vLayer.needsTransform

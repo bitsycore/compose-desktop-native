@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -99,6 +100,7 @@ private class ReqState(inInitial: ApiRequest) {
     var imageKey: String? = null          // memory-resource key when the response is an image
     // null = auto-detect from Content-Type each frame; non-null = user-pinned override.
     var respFormatOverride by mutableStateOf<BodyFormat?>(null)
+    var bodyWrap by mutableStateOf(true)  // body view: true = soft-wrap, false = no wrap + horizontal scroll
     var tlsChain by mutableStateOf<TlsChain?>(null)  // last fetched server cert chain
     var chainLoading by mutableStateOf(false)
     var showChain by mutableStateOf(false)           // chain dialog open
@@ -2769,7 +2771,13 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
     val vPreview = inRs.preview
     val vShowRequest = vPreview || inRs.viewTab == 0
 
-    val vRespBody = if (vResp != null) (vResp.error ?: prettyJsonOrRaw(vResp.body).take(20000)) else ""
+    // Pretty-print once per received body (not every recomposition) — the whole
+    // body is shown; the renderer line-culls + wrap-caches so even a 20k-line
+    // payload stays cheap. (Previously capped at 20000 chars, which silently cut
+    // long responses off around line ~1100.)
+    val vRespBody = remember(vResp?.body, vResp?.error) {
+        if (vResp != null) (vResp.error ?: prettyJsonOrRaw(vResp.body)) else ""
+    }
     val vRespImage = vResp?.isImage == true && vResp.error == null && inRs.imageKey != null
 
     Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
@@ -2849,6 +2857,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                         inHeadersCollapsed = vHeadersCollapsed,
                         inOnToggleCollapse = { vHeadersCollapsed = !vHeadersCollapsed },
                         inShowSecureLock = isTlsValidated(vR.url, inRs.response),
+                        inSoftWrap = inRs.bodyWrap,
                     )
                 }
                 vResp == null && !vLoading -> ViewerEmpty(MaterialSymbols.Download, "Not received")
@@ -2871,6 +2880,7 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                         inOnToggleCollapse = { vHeadersCollapsed = !vHeadersCollapsed },
                         inShowSecureLock = isTlsValidated(inRs.sentReq?.url ?: inResolved.url, vResp),
                         inBodyFormat = vBodyFmt,
+                        inSoftWrap = inRs.bodyWrap,
                     )
                 }
             }
@@ -2900,6 +2910,27 @@ private fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
                         },
                         inAutoLabel = if (inRs.respFormatOverride == null) vAuto.label else null,
                     )
+                }
+                // Wrap toggle — soft-wrap long lines (default) vs. no wrap +
+                // horizontal scroll (one source line per row). Shown for any text
+                // body (request preview or response), hidden for an image.
+                val vHasTextBody = (vRespHasContent && vResp != null && !vRespImage) || vReqHasContent
+                if (vHasTextBody) {
+                    val vWrapOn = inRs.bodyWrap
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { inRs.bodyWrap = !inRs.bodyWrap }
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            MaterialSymbolsOutlined(MaterialSymbols.WrapText, tint = if (vWrapOn) c.accent else c.dim, size = 14.dp)
+                            Text("Wrap", color = if (vWrapOn) c.accent else c.dim, fontSize = 11.sp)
+                        }
+                    }
                 }
                 vMsg?.let { Text(it, color = c.dim, fontSize = 11.sp) }
                 Spacer(Modifier.weight(1f))
@@ -2948,6 +2979,7 @@ private fun HttpFlowView(
     inOnToggleCollapse: () -> Unit,
     inShowSecureLock: Boolean = false,
     inBodyFormat: BodyFormat = BodyFormat.RAW,
+    inSoftWrap: Boolean = true,
 ) {
     val c = LocalAppColors.current
     Column(
@@ -2992,6 +3024,7 @@ private fun HttpFlowView(
                     inText = inBody,
                     modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
                     inFormat = inBodyFormat,
+                    inSoftWrap = inSoftWrap,
                 )
             }
         }
@@ -3034,6 +3067,7 @@ private fun BodyView(
     inOnChange: ((String) -> Unit)? = null,
     inPlaceholder: String = "",
     inFormat: BodyFormat = BodyFormat.RAW,
+    inSoftWrap: Boolean = true,
 ) {
     val c = LocalAppColors.current
     val vLines = if (inText.isEmpty()) listOf("") else inText.split('\n')
@@ -3042,18 +3076,40 @@ private fun BodyView(
     // side keeps the numbers from kissing the body text or the panel edge.
     val vDigits = vLines.size.toString().length
     val vGutterWidth = (vDigits * 7 + 4).dp
+    // Body wrap width (logical px), reported by the body Box once it's laid out
+    // (0 on the first frame). The gutter numbering depends on it — see vNumbers.
+    var vBodyWidthPx by remember { mutableStateOf(0) }
+    // Horizontal scroll for no-wrap mode (read-only body only); dormant when wrapping.
+    val vHScroll = rememberScrollState()
     Row(modifier = modifier) {
         // Numbers are reference-only — half-alpha so they stay legible without
         // competing with the body. Rendered as ONE '\n'-joined multi-line Text
         // (not one Text per line): a 1000-line gutter is then a single node the
         // renderer line-culls + wrap-caches exactly like the body, instead of
         // 1000 leaf nodes — which lagged and tripped SDL's ~16384px draw-
-        // coordinate limit (line numbers vanished past ~955). softWrap = false
-        // keeps exactly one number per source line so they stay aligned.
+        // coordinate limit (line numbers vanished past ~955).
+        //
+        // When the body soft-wraps, a source line can span several visual rows.
+        // To keep the numbers aligned we emit each line's number once (on its
+        // first row) followed by one blank row per wrapped continuation — by
+        // re-running the SAME wrap the body uses (same measurer, font, width),
+        // so the gutter ends up with exactly as many rows as the body. Without
+        // this, a line wrapping into 3 rows would read 10/11/12 instead of
+        // 10/blank/blank and the columns drift apart. In no-wrap mode each
+        // source line is exactly one row, so a naive 1..N is correct (and we
+        // also use it for the first frame, before the body reports its width).
         val vNumColor = c.dim.copy(alpha = 0.45f)
-        val vNumbers = remember(vLines.size) {
+        val vNumbers = remember(inText, vBodyWidthPx, inSoftWrap) {
+            val vM = if (inSoftWrap && vBodyWidthPx > 0) currentTextMeasurer else null
             buildString {
-                for (vI in 1..vLines.size) { append(vI); if (vI < vLines.size) append('\n') }
+                for ((vIdx, vSrc) in vLines.withIndex()) {
+                    if (vIdx > 0) append('\n')
+                    append(vIdx + 1)
+                    if (vM != null) {
+                        val vRows = vM.wrap(vSrc, 12, vBodyWidthPx, monoFontFamily).lines.size.coerceAtLeast(1)
+                        repeat(vRows - 1) { append('\n') }
+                    }
+                }
             }
         }
         Text(
@@ -3073,7 +3129,9 @@ private fun BodyView(
         // anywhere (not just on the text line) focuses it and starts writing.
         // Read-only (response) keeps wrap-height so it grows with content.
         val vEditable = inOnChange != null
-        Box(modifier = Modifier.weight(1f).then(if (vEditable) Modifier.fillMaxHeight() else Modifier)) {
+        Box(modifier = Modifier.weight(1f)
+                .onSizeChanged { vBodyWidthPx = it.width }
+                .then(if (vEditable) Modifier.fillMaxHeight() else Modifier)) {
             if (inText.isEmpty() && inPlaceholder.isNotEmpty()) {
                 Text(inPlaceholder, color = c.dim, fontSize = 12.sp, fontFamily = monoFontFamily)
             }
@@ -3099,11 +3157,26 @@ private fun BodyView(
             } else {
                 // READ-ONLY body (the received response): drag-selectable across
                 // the block + Ctrl/Cmd+C, and syntax-coloured. The palette picks
-                // dark-on-light vs the inverse by background luminance.
-                val vBody = if (inFormat == BodyFormat.RAW) AnnotatedString(inText)
-                            else highlight(inText, inFormat, SyntaxPalette.forDark(isDarkBg(c.bg)))
+                // dark-on-light vs the inverse by background luminance. Highlight
+                // is memoised so a huge body is tokenised once, not every frame.
+                val vDark = isDarkBg(c.bg)
+                val vBody = remember(inText, inFormat, vDark) {
+                    if (inFormat == BodyFormat.RAW) AnnotatedString(inText)
+                    else highlight(inText, inFormat, SyntaxPalette.forDark(vDark))
+                }
                 SelectionContainer {
-                    Text(vBody, color = c.text, fontSize = 12.sp, fontFamily = monoFontFamily)
+                    // No-wrap mode: one source line per row, long lines overflow
+                    // and the body pans horizontally (the gutter stays pinned —
+                    // it's outside this scroll). The scroll must sit on a PARENT
+                    // of the Text: a node's own scroll offset shifts its children,
+                    // not itself. Wrap mode: plain soft-wrapping Text.
+                    if (inSoftWrap) {
+                        Text(vBody, color = c.text, fontSize = 12.sp, fontFamily = monoFontFamily, softWrap = true)
+                    } else {
+                        Box(modifier = Modifier.horizontalScroll(vHScroll)) {
+                            Text(vBody, color = c.text, fontSize = 12.sp, fontFamily = monoFontFamily, softWrap = false)
+                        }
+                    }
                 }
             }
         }

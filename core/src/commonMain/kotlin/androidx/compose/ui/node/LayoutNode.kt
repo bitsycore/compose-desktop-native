@@ -345,8 +345,14 @@ class LayoutNode {
 
                 if (element.width >= 0) { minW = element.width; maxW = element.width }
                 if (element.height >= 0) { minH = element.height; maxH = element.height }
-                if (element.fillMaxWidth) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
-                if (element.fillMaxHeight) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
+                // fillMax* is a no-op when the incoming max on that axis is
+                // unbounded (e.g. inside a scroll measured at Infinity) — matches
+                // official Compose. Without the guard the node would size to
+                // Int.MAX_VALUE, overflowing downstream math (e.g. the renderer's
+                // off-screen cull `x + width`), which blanked a no-wrap body
+                // inside a horizontalScroll.
+                if (element.fillMaxWidth && incoming.maxWidth != Constraints.Infinity) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
+                if (element.fillMaxHeight && incoming.maxHeight != Constraints.Infinity) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
                 if (element.minWidth >= 0) {
                     // defaultMinSize: only apply if nothing upstream pinned the min.
                     if (!element.isDefaultMin || minW == 0) minW = max(minW, element.minWidth)
