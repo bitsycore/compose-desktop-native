@@ -69,6 +69,66 @@ class LayoutNode {
     var fontVariationSettings: List<androidx.compose.ui.text.font.FontVariation>? = null
 
     // ============
+    //  Cached wrap + measured size for the text leaf. A large static body
+    //  (e.g. a 13k-line response) would otherwise be re-wrapped — splitting on
+    //  '\n' and allocating one substring per line — on every measure AND every
+    //  draw, every frame. We cache the WrappedText keyed by the inputs that
+    //  affect wrapping, identity-comparing `text` so an unchanged body reuses
+    //  the result and measure + draw share one wrap. Content width is computed
+    //  lazily (textContentWidth) only when the node isn't a fixed/fill width,
+    //  so the common fillMaxWidth body never measures all N lines.
+    private var fWrapCache: androidx.compose.ui.text.WrappedText? = null
+    private var fWrapText: String? = null
+    private var fWrapMaxW = -1
+    private var fWrapSize = -1
+    private var fWrapFamily: String? = null
+    private var fWrapTab = -1
+    private var fWrapVars: List<androidx.compose.ui.text.font.FontVariation>? = null
+    private var fContentW = -1
+    /* Measured pixel height of the wrapped text (line count × line height). */
+    var textMeasuredHeight = 0; private set
+
+    /* Wrap `text` to inMaxWidth, caching the result so an unchanged text leaf
+       isn't re-wrapped every frame. Also fixes textMeasuredHeight. Both the
+       measure policy and the renderers call this so they share one wrap. */
+    fun layoutText(inMaxWidth: Int): androidx.compose.ui.text.WrappedText {
+        val vText = text ?: ""
+        val vTab = com.compose.desktop.native.TextLayoutConfig.tabWidth
+        val vCached = fWrapCache
+        if (vCached != null && fWrapText === vText && fWrapMaxW == inMaxWidth &&
+            fWrapSize == fontSize && fWrapFamily == fontFamily && fWrapTab == vTab &&
+            fWrapVars == fontVariationSettings) {
+            return vCached
+        }
+        val vM = androidx.compose.ui.text.currentTextMeasurer
+        val vWrap = vM.wrap(vText, fontSize, inMaxWidth, fontFamily, fontVariationSettings)
+        val vLh = vM.lineHeight(fontSize, fontFamily, fontVariationSettings)
+        fWrapCache = vWrap
+        fWrapText = vText; fWrapMaxW = inMaxWidth; fWrapSize = fontSize
+        fWrapFamily = fontFamily; fWrapTab = vTab; fWrapVars = fontVariationSettings
+        fContentW = -1
+        textMeasuredHeight = (vLh * vWrap.lines.size.coerceAtLeast(1)).toInt()
+        return vWrap
+    }
+
+    /* Widest wrapped line in pixels — the text's intrinsic content width.
+       Computed lazily off the cached wrap (so a fillMaxWidth body, which
+       ignores this, never pays for N per-line measures) and cached until the
+       next layoutText recompute. */
+    fun textContentWidth(): Int {
+        if (fContentW >= 0) return fContentW
+        val vWrap = fWrapCache ?: return 0
+        val vM = androidx.compose.ui.text.currentTextMeasurer
+        var vMax = 0
+        for (vLine in vWrap.lines) {
+            val vw = vM.measure(vLine, fWrapSize, Int.MAX_VALUE, fWrapFamily, fWrapVars).width
+            if (vw > vMax) vMax = vw
+        }
+        fContentW = vMax
+        return vMax
+    }
+
+    // ============
     //  Content for image leaf nodes (set by the Image composable). The renderer
     //  reads painter (resource path + kind) to resolve a cached decoded
     //  texture, then paints it into the node bounds per contentScale / alpha.

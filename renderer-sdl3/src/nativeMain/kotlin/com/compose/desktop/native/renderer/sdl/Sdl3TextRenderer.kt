@@ -9,6 +9,7 @@ import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.Range
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.lineColorRuns
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
@@ -251,16 +252,6 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     private fun expandTabs(inText: String): String =
         if ('\t' in inText) inText.replace("\t", " ".repeat(TextLayoutConfig.tabWidth)) else inText
 
-    // Colour at original-text index inIndex (last matching span wins, per
-    // AnnotatedString semantics). Gaps and Unspecified span colours → inDefault.
-    private fun spanColorAt(inSpans: List<Range<SpanStyle>>, inIndex: Int, inDefault: ComposeColor): ComposeColor {
-        var vC = inDefault
-        for (vS in inSpans) {
-            if (inIndex >= vS.start && inIndex < vS.end && vS.item.color != ComposeColor.Unspecified) vC = vS.item.color
-        }
-        return vC
-    }
-
     /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
        so TTF_GetStringSize reports physical pixels — divide by DPR to
        get back to logical. */
@@ -388,29 +379,24 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 TextAlign.End    -> inX + (inBoxWidth - vLineW)
             }
             fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
-            var i = 0
-            val n = inText.length
-            while (i < n) {
-                val vSegColor = spanColorAt(inSpans, inTextStart + i, inColor)
-                var j = i + 1
-                while (j < n && spanColorAt(inSpans, inTextStart + j, inColor) == vSegColor) j++
-                val vSeg = expandTabs(inText.substring(i, j))
-                val vSegX = vPenX0 + measureWidth(inText.substring(0, i), inFontSize, inFontFamily).toFloat()
-                val vCachedSeg = getOrCreateTexture(inFontFamily, vSeg, inFontSize, vSegColor)
-                if (vCachedSeg != null) {
-                    val vLogW = vCachedSeg.w / fDpr
-                    val vLogH = vCachedSeg.h / fDpr
-                    val vPenY = inY + (inBoxHeight - vLogH) / 2f
-                    memScoped {
-                        val vDst = alloc<SDL_FRect>()
-                        vDst.x = snap(vSegX)
-                        vDst.y = snap(vPenY)
-                        vDst.w = vLogW
-                        vDst.h = vLogH
-                        SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
-                    }
+            // O(spans + line length) colour runs, instead of an O(chars × spans)
+            // per-character span scan, so a highlighted body with thousands of
+            // spans stays cheap per visible line.
+            for (vRun in lineColorRuns(inText, inTextStart, inSpans, inColor)) {
+                val vSeg = expandTabs(inText.substring(vRun.start, vRun.end))
+                val vSegX = vPenX0 + measureWidth(inText.substring(0, vRun.start), inFontSize, inFontFamily).toFloat()
+                val vCachedSeg = getOrCreateTexture(inFontFamily, vSeg, inFontSize, vRun.color) ?: continue
+                val vLogW = vCachedSeg.w / fDpr
+                val vLogH = vCachedSeg.h / fDpr
+                val vPenY = inY + (inBoxHeight - vLogH) / 2f
+                memScoped {
+                    val vDst = alloc<SDL_FRect>()
+                    vDst.x = snap(vSegX)
+                    vDst.y = snap(vPenY)
+                    vDst.w = vLogW
+                    vDst.h = vLogH
+                    SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
                 }
-                i = j
             }
             return
         }

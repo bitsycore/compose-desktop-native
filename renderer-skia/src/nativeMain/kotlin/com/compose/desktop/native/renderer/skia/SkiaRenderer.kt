@@ -40,7 +40,12 @@ class SkiaRenderer internal constructor(
     private val fCache = mutableMapOf<LayoutNode, CachedLayer>()
     private val fSeenThisFrame = mutableSetOf<LayoutNode>()
 
-    fun draw(inRoot: LayoutNode, inCanvas: Canvas) {
+    // Logical window height for the current frame — used to cull off-screen
+    // text lines. Set by draw(); Int.MAX_VALUE means "no culling".
+    private var fViewportHeight = Int.MAX_VALUE
+
+    fun draw(inRoot: LayoutNode, inCanvas: Canvas, inViewportHeight: Int = Int.MAX_VALUE) {
+        fViewportHeight = inViewportHeight
         inCanvas.clear(kClearColor)
         fSeenThisFrame.clear()
         drawNode(inRoot, inCanvas)
@@ -62,6 +67,17 @@ class SkiaRenderer internal constructor(
     private fun drawNode(inNode: LayoutNode, inCanvas: Canvas) {
         val vAlpha = inNode.nodeAlpha
         val vLayer = inNode.graphicsLayer
+
+        // Cull fully off-screen leaves (or clip/scroll subtrees) so a huge
+        // line-number gutter (one Text leaf per line) doesn't redraw thousands
+        // of off-screen nodes every frame. Skipped when a transform could
+        // translate the node back into view.
+        if ((vLayer == null || !vLayer.needsTransform) &&
+            (inNode.children.isEmpty() || clipsChildren(inNode))) {
+            val vTop = inNode.absoluteY
+            if (vTop + inNode.height < 0 || vTop > fViewportHeight) return
+        }
+
         val vWantsTransform = vLayer != null && vLayer.needsTransform
         val vWantsCache = vLayer != null && vLayer.cacheKey != null
         val vWantsAlpha = vAlpha < 1f
@@ -91,6 +107,16 @@ class SkiaRenderer internal constructor(
         }
 
         if (vWantsTransform) inCanvas.restore()
+    }
+
+    /* True if the node clips its children to its own bounds (clip modifier or
+       scroll viewport), so culling the whole subtree when off-screen is safe. */
+    private fun clipsChildren(inNode: LayoutNode): Boolean {
+        var v = false
+        inNode.modifier.foldIn(Unit) { _, e ->
+            if (e is ClipModifier || e is VerticalScrollModifier || e is HorizontalScrollModifier) v = true
+        }
+        return v
     }
 
     /* Pivot-aware scale / rotation / translation. Pivot is the node's
@@ -237,6 +263,10 @@ class SkiaRenderer internal constructor(
         //  Text leaf
         val vText = inNode.text
         if (!vText.isNullOrEmpty()) {
+            // Reuse the wrap the measure pass cached on the node, and cull lines
+            // outside the window so a 13k-line body draws only what's on screen.
+            val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
+            val vWrapped = inNode.layoutText(vWrapWidth)
             textRenderer.drawText(
                 inCanvas, vText,
                 vAx, vAy, inNode.width, inNode.height,
@@ -245,6 +275,8 @@ class SkiaRenderer internal constructor(
                 inNode.fontFamily,
                 inNode.fontVariationSettings,
                 inNode.textSpans,
+                vWrapped,
+                0f, fViewportHeight.toFloat(),
             )
         }
 

@@ -9,7 +9,6 @@ import androidx.compose.ui.node.MeasurePolicy
 import androidx.compose.ui.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontVariation
-import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Sp
@@ -90,12 +89,15 @@ fun BasicText(
    the measurer wraps lines to constraints.maxWidth; when false the text
    reports its natural width (potentially overflowing its container). */
 internal val TextMeasurePolicy = MeasurePolicy { node, constraints ->
-    val t = node.text ?: ""
     val wrapWidth = if (node.softWrap && constraints.maxWidth != androidx.compose.ui.unit.Constraints.Infinity)
         constraints.maxWidth else Int.MAX_VALUE
-    val measured = currentTextMeasurer.measure(t, node.fontSize, wrapWidth, node.fontFamily, node.fontVariationSettings)
-
-    val w = measured.width.coerceIn(constraints.minWidth, constraints.maxWidth)
-    val h = measured.height.coerceIn(constraints.minHeight, constraints.maxHeight)
+    // Cache the wrap on the node so a huge static body isn't re-wrapped every
+    // frame; the renderer reuses the same WrappedText for drawing.
+    node.layoutText(wrapWidth)
+    // Skip the per-line content-width scan when the width is already pinned
+    // (fillMaxWidth / fixed) — coerceIn would discard it anyway.
+    val w = if (constraints.minWidth >= constraints.maxWidth) constraints.maxWidth
+            else node.textContentWidth().coerceIn(constraints.minWidth, constraints.maxWidth)
+    val h = node.textMeasuredHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
     IntSize(w, h)
 }

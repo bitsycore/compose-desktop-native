@@ -60,7 +60,9 @@ internal class SkiaRenderBackend(
 
     override fun draw(inRoot: LayoutNode) {
         val canvas = fCurrentCanvas ?: return
-        fSkiaRenderer.draw(inRoot, canvas)
+        // Pass the logical window height so the renderer can cull off-screen
+        // text lines (canvas is DPR-scaled, so layout/logical coords).
+        fSkiaRenderer.draw(inRoot, canvas, sdl.windowHeight)
     }
 
     override fun endFrame() {

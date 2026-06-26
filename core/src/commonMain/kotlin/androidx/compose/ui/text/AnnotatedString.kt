@@ -165,3 +165,49 @@ inline fun buildAnnotatedString(inBlock: AnnotatedString.Builder.() -> Unit): An
 
 /* Convenience to wrap a literal string. */
 fun AnnotatedString(inText: String): AnnotatedString = AnnotatedString(text = inText)
+
+// ==================
+// MARK: Per-line colour runs (renderer helper)
+// ==================
+
+/* A run of one colour within a wrapped line, in line-local [start, end) cols. */
+class ColorRun(val start: Int, val end: Int, val color: Color)
+
+/* Colour runs for a single wrapped line, given the AnnotatedString spans (whose
+   start/end index the ORIGINAL text) and this line's start offset. Gaps and
+   Unspecified span colours use inDefault; later spans win on overlap. Runs in
+   O(spans + line length) — used by the renderers instead of a per-character
+   span scan so highlighting a huge body stays cheap. */
+fun lineColorRuns(
+	inLine: String,
+	inLineStart: Int,
+	inSpans: List<Range<SpanStyle>>,
+	inDefault: Color,
+): List<ColorRun> {
+	val vN = inLine.length
+	if (vN == 0) return emptyList()
+	// Per-column colour (null = default), painted by each overlapping span in
+	// order so the last one wins.
+	val vCols = arrayOfNulls<Color>(vN)
+	for (vS in inSpans) {
+		val vColor = vS.item.color
+		if (vColor == Color.Unspecified) continue
+		val vA = vS.start - inLineStart
+		val vB = vS.end - inLineStart
+		if (vB <= 0 || vA >= vN) continue
+		var i = if (vA < 0) 0 else vA
+		val vEnd = if (vB > vN) vN else vB
+		while (i < vEnd) { vCols[i] = vColor; i++ }
+	}
+	// Coalesce equal-colour columns into runs.
+	val vRuns = ArrayList<ColorRun>()
+	var i = 0
+	while (i < vN) {
+		val vC = vCols[i] ?: inDefault
+		var j = i + 1
+		while (j < vN && (vCols[j] ?: inDefault) == vC) j++
+		vRuns.add(ColorRun(i, j, vC))
+		i = j
+	}
+	return vRuns
+}

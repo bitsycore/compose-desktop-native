@@ -92,6 +92,23 @@ internal class Sdl3Renderer(
     private fun drawNode(inNode: LayoutNode) {
         val vAlpha = inNode.nodeAlpha
         val vLayer = inNode.graphicsLayer
+
+        // Cull fully off-screen nodes. A node whose bounds fall entirely outside
+        // the window contributes nothing, and skipping it avoids asking SDL to
+        // draw at coordinates beyond its ~16384px render limit — which it
+        // silently drops. That limit is why a 1000-line line-number gutter (one
+        // Text leaf per line, no internal culling) cut off around line 955.
+        // Only safe for a leaf or a node that clips its children to its own
+        // bounds (a non-clipping parent's children may sit outside it); and not
+        // when a graphics-layer transform could translate it back into view.
+        if (vLayer == null || !vLayer.needsTransform) {
+            val vTop = inNode.absoluteY
+            val vLeft = inNode.absoluteX
+            val vOffscreen = vTop + inNode.height < 0 || vTop > backend.windowHeight ||
+                             vLeft + inNode.width < 0 || vLeft > backend.windowWidth
+            if (vOffscreen && (inNode.children.isEmpty() || clipsChildren(inNode))) return
+        }
+
         val vWantsTransform = vLayer != null && vLayer.needsTransform
         val vWantsCache = vLayer != null && vLayer.cacheKey != null
         val vWantsAlpha = vAlpha < 1f
@@ -102,6 +119,17 @@ internal class Sdl3Renderer(
             vWantsAlpha              -> drawNodeLayered(inNode, vAlpha)
             else                     -> drawNodeContent(inNode)
         }
+    }
+
+    /* True if the node clips its children to its own bounds (a clip modifier or
+       a scroll viewport) — i.e. children can't escape it, so it's safe to cull
+       the whole subtree when the node is off-screen. */
+    private fun clipsChildren(inNode: LayoutNode): Boolean {
+        var v = false
+        inNode.modifier.foldIn(Unit) { _, e ->
+            if (e is ClipModifier || e is VerticalScrollModifier || e is HorizontalScrollModifier) v = true
+        }
+        return v
     }
 
     /* Renders the node's subtree into an offscreen texture, then composites it
@@ -391,7 +419,9 @@ internal class Sdl3Renderer(
             // (e.g. a singleLine field) must NOT wrap — it stays one line and
             // overflows, matching the measure pass and the cursor math.
             val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
-            val vWrapped = textRenderer.textMeasurer.wrap(vText, inNode.fontSize, vWrapWidth, inNode.fontFamily)
+            // Reuse the wrap the measure pass cached on the node — a 13k-line
+            // body is wrapped once, not re-split + re-substringed every frame.
+            val vWrapped = inNode.layoutText(vWrapWidth)
             val vLines = vWrapped.lines
             val vLineHeight = textRenderer.textMeasurer.lineHeight(inNode.fontSize, inNode.fontFamily).toInt()
             if (vLines.size == 1 && '\n' !in vText) {
@@ -406,8 +436,14 @@ internal class Sdl3Renderer(
                     vWrapped.lineStarts[0],
                 )
             } else {
+                // Cull lines outside the window — a huge scrolled body draws
+                // only the screenful that's visible. The node still holds the
+                // full text, so cross-element selection is unaffected; this
+                // only skips the *drawing* of off-screen lines.
+                val vViewBottom = backend.windowHeight
                 for ((idx, line) in vLines.withIndex()) {
                     val vSlotTop = inNode.absoluteY + idx * vLineHeight
+                    if (vSlotTop + vLineHeight < 0 || vSlotTop > vViewBottom) continue
                     textRenderer.drawText(
                         line,
                         inNode.absoluteX, vSlotTop,

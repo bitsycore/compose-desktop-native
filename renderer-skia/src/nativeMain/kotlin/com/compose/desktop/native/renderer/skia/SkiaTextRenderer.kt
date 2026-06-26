@@ -9,6 +9,7 @@ import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.Range
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.lineColorRuns
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
@@ -116,6 +117,12 @@ class SkiaTextRenderer {
         inFontFamily: String? = null,
         inFontVariations: List<ComposeFontVariation>? = null,
         inSpans: List<Range<SpanStyle>>? = null,
+        // Pre-computed wrap (cached on the LayoutNode by the measure pass) so a
+        // huge body isn't re-wrapped here every frame. Null = wrap inline.
+        inWrapped: WrappedText? = null,
+        // Visible vertical band in canvas coords; lines outside it are skipped.
+        inViewTop: Float = Float.NEGATIVE_INFINITY,
+        inViewBottom: Float = Float.POSITIVE_INFINITY,
     ) {
         val vKey = TypefaceKey(inFontFamily, variationsKey(inFontVariations))
         val vFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
@@ -147,25 +154,23 @@ class SkiaTextRenderer {
                 inCanvas.drawString(expandTabs(inLine), vPenX, inBaseline, vFont, vPaint)
                 return
             }
-            var i = 0
-            val n = inLine.length
-            while (i < n) {
-                val vSegColor = spanColorAt(inSpans, inLineStart + i, inColor)
-                var j = i + 1
-                while (j < n && spanColorAt(inSpans, inLineStart + j, inColor) == vSegColor) j++
-                val vSegX = vPenX + estimateTextWidth(inLine.substring(0, i), inFontSize, inFontFamily, inFontVariations).toFloat()
-                val vSegPaint = Paint().apply { color = toSkiaColor(vSegColor); isAntiAlias = true }
-                inCanvas.drawString(expandTabs(inLine.substring(i, j)), vSegX, inBaseline, vFont, vSegPaint)
+            // O(spans + line length) colour runs, instead of an O(chars × spans)
+            // per-character span scan, so a highlighted body with many spans
+            // stays cheap per visible line.
+            for (vRun in lineColorRuns(inLine, inLineStart, inSpans, inColor)) {
+                val vSegX = vPenX + estimateTextWidth(inLine.substring(0, vRun.start), inFontSize, inFontFamily, inFontVariations).toFloat()
+                val vSegPaint = Paint().apply { color = toSkiaColor(vRun.color); isAntiAlias = true }
+                inCanvas.drawString(expandTabs(inLine.substring(vRun.start, vRun.end)), vSegX, inBaseline, vFont, vSegPaint)
                 vSegPaint.close()
-                i = j
             }
         }
 
         // Use the same wrap algorithm as measureText so layout and rendering
         // produce identical line breakdowns. softWrap = false (e.g. a
         // singleLine field) stays one line and overflows the box width.
+        // Reuse the measure pass's cached wrap when supplied.
         val vWrapWidth = if (inSoftWrap) inBoxWidth else Int.MAX_VALUE
-        val vWrapped = wrapTextWithStarts(inText, inFontSize, vWrapWidth, inFontFamily, inFontVariations)
+        val vWrapped = inWrapped ?: wrapTextWithStarts(inText, inFontSize, vWrapWidth, inFontFamily, inFontVariations)
         val vLines = vWrapped.lines
         if (vLines.size == 1 && '\n' !in inText) {
             // Single line, no wrap, no explicit newlines: cap-centre across
@@ -175,6 +180,10 @@ class SkiaTextRenderer {
         } else {
             for ((vIdx, vLine) in vLines.withIndex()) {
                 val vSlotTop = inY + vIdx * vLineHeight
+                // Cull lines outside the visible band — a huge scrolled body
+                // draws only the on-screen lines. The node keeps the full text,
+                // so cross-element selection is unaffected.
+                if (vSlotTop + vLineHeight < inViewTop || vSlotTop > inViewBottom) continue
                 val vBaseline = vSlotTop + (vLineHeight + vCapHeight) / 2f
                 drawLine(vLine, vWrapped.lineStarts[vIdx], vBaseline)
             }
@@ -402,18 +411,3 @@ internal fun toSkiaColor(inC: ComposeColor): Int =
 // the original '\t' in the text, so cursor / selection indices stay correct.
 private fun expandTabs(inText: String): String =
     if ('\t' in inText) inText.replace("\t", " ".repeat(TextLayoutConfig.tabWidth)) else inText
-
-// Colour at original-text index inIndex, scanning the spans (last matching
-// span wins, per AnnotatedString semantics). Unspecified span colours and gaps
-// fall back to inDefault. Shared by the per-span colour draw path.
-private fun spanColorAt(
-    inSpans: List<Range<SpanStyle>>,
-    inIndex: Int,
-    inDefault: ComposeColor,
-): ComposeColor {
-    var vC = inDefault
-    for (vS in inSpans) {
-        if (inIndex >= vS.start && inIndex < vS.end && vS.item.color != ComposeColor.Unspecified) vC = vS.item.color
-    }
-    return vC
-}

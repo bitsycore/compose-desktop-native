@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -3042,17 +3043,25 @@ private fun BodyView(
     val vDigits = vLines.size.toString().length
     val vGutterWidth = (vDigits * 7 + 4).dp
     Row(modifier = modifier) {
-        // Numbers are reference-only — half-alpha so they stay legible
-        // without competing with the body content for attention.
+        // Numbers are reference-only — half-alpha so they stay legible without
+        // competing with the body. Rendered as ONE '\n'-joined multi-line Text
+        // (not one Text per line): a 1000-line gutter is then a single node the
+        // renderer line-culls + wrap-caches exactly like the body, instead of
+        // 1000 leaf nodes — which lagged and tripped SDL's ~16384px draw-
+        // coordinate limit (line numbers vanished past ~955). softWrap = false
+        // keeps exactly one number per source line so they stay aligned.
         val vNumColor = c.dim.copy(alpha = 0.45f)
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(vGutterWidth),
-        ) {
-            for (vI in vLines.indices) {
-                Text("${vI + 1}", color = vNumColor, fontSize = 12.sp, fontFamily = monoFontFamily)
+        val vNumbers = remember(vLines.size) {
+            buildString {
+                for (vI in 1..vLines.size) { append(vI); if (vI < vLines.size) append('\n') }
             }
         }
+        Text(
+            vNumbers,
+            color = vNumColor, fontSize = 12.sp, fontFamily = monoFontFamily,
+            textAlign = TextAlign.End, softWrap = false,
+            modifier = Modifier.width(vGutterWidth),
+        )
         Spacer(Modifier.width(6.dp))
         // Body. Two render paths:
         //  - RAW or editable: BasicTextField. A colour-only visualTransform
