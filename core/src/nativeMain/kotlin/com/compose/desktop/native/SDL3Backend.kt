@@ -30,6 +30,9 @@ class SDL3Backend(
     // On Retina with HIGH_PIXEL_DENSITY this is 2x the logical size.
     var pixelWidth: Int = width; private set
     var pixelHeight: Int = height; private set
+    // True when the active renderer paces itself to the display (vsync), so the
+    // main loop can skip its manual frame delay. Set for the SDL renderer path.
+    var vsyncEnabled: Boolean = false; private set
 
     fun init(): Boolean {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -90,6 +93,11 @@ class SDL3Backend(
                     return false
                 }
                 SDL_SetRenderDrawBlendMode(renderer?.reinterpret(), SDL_BLENDMODE_BLEND)
+                // Pace presentation to the display — smooth + tear-free, and lets
+                // the main loop drop its manual SDL_Delay. Stays false if the
+                // driver can't vsync (e.g. the software renderer), so the loop
+                // keeps its fallback frame cap.
+                vsyncEnabled = SDL_SetRenderVSync(renderer?.reinterpret(), 1)
             }
             is GpuMode.Auto -> error("unreachable")
         }

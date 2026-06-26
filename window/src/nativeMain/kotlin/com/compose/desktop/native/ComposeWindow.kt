@@ -1,5 +1,6 @@
 package com.compose.desktop.native
 
+import androidx.compose.foundation.ScrollAnimator
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -27,7 +28,10 @@ import androidx.compose.ui.window.createPopupHostState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import kotlinx.cinterop.reinterpret
 import sdl3.SDL_Delay
+import sdl3.SDL_GetTicks
+import sdl3.SDL_SetWindowTitle
 
 // ==================
 // MARK: ComposeWindow
@@ -134,6 +138,10 @@ fun nativeComposeWindow(
         //  Main loop
         var running = true
         var frameIndex = 0
+        // FPS sampling — count frames over ~1s windows; publish to the window
+        // handle and append to the OS title bar.
+        var vFpsFrames = 0
+        var vFpsLastMs = SDL_GetTicks()
 
         // ============
         //  Interaction state (hover / press / click target) — keyed by
@@ -370,14 +378,14 @@ fun nativeComposeWindow(
                         val vScrollY = vHit?.findVerticalScrollAncestor()
                         val vScrollX = vHit?.findHorizontalScrollAncestor()
                         if (vScrollY != null && event.deltaY != 0f) {
-                            vScrollY.scrollBy(-(event.deltaY * 50f).toInt())
+                            vScrollY.smoothScrollBy(-(event.deltaY * 50f).toInt())
                         } else if (vScrollX != null && event.deltaY != 0f) {
                             // No vertical scroller under the cursor but a horizontal one is
                             // (e.g. the tab strip) — let the wheel scroll it sideways.
-                            vScrollX.scrollBy(-(event.deltaY * 50f).toInt())
+                            vScrollX.smoothScrollBy(-(event.deltaY * 50f).toInt())
                         }
                         if (vScrollX != null && event.deltaX != 0f) {
-                            vScrollX.scrollBy(-(event.deltaX * 50f).toInt())
+                            vScrollX.smoothScrollBy(-(event.deltaX * 50f).toInt())
                         }
                     }
                 }
@@ -389,6 +397,9 @@ fun nativeComposeWindow(
             //  recomposer, so any state writes they perform land in this
             //  frame's composition rather than the next one.
             mainDispatcher.drainPending()
+
+            // Advance any in-flight smooth (eased) scrolls before composing.
+            ScrollAnimator.tick()
 
             // ============
             //  Signal frame to recomposer
@@ -428,7 +439,23 @@ fun nativeComposeWindow(
             renderBackend.endFrame()
             frameIndex++
 
-            SDL_Delay(16u)
+            // ============
+            //  FPS — sample once a second, publish + show in the title bar.
+            vFpsFrames++
+            val vNowMs = SDL_GetTicks()
+            val vElapsed = (vNowMs - vFpsLastMs).toInt()
+            if (vElapsed >= 1000) {
+                val vFps = vFpsFrames * 1000 / vElapsed
+                composeWindow.updateFps(vFps)
+                SDL_SetWindowTitle(backend.window?.reinterpret(), "${composeWindow.title} · $vFps FPS")
+                vFpsFrames = 0
+                vFpsLastMs = vNowMs
+            }
+
+            // When the renderer paces itself to the display (vsync), endFrame
+            // already blocked ~one refresh — just yield the CPU briefly. Without
+            // vsync, cap to ~60fps the old way.
+            SDL_Delay(if (backend.vsyncEnabled) 1u else 16u)
         }
 
         snapshotHandle.dispose()

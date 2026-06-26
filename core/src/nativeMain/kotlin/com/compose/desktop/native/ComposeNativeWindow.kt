@@ -43,6 +43,7 @@ class ComposeNativeWindow constructor(
     private var fMaximized by mutableStateOf(false)
     private var fFullscreen by mutableStateOf(false)
     private var fCloseRequested by mutableStateOf(false)
+    private var fFps by mutableStateOf(0)
 
     // ============
     //  State
@@ -58,6 +59,9 @@ class ComposeNativeWindow constructor(
     val isMaximized: Boolean get() = fMaximized
     val isFullscreen: Boolean get() = fFullscreen
     val pixelDensity: Float get() = backend.pixelDensity
+    /* Frames per second, refreshed ~once a second by the render loop. Snapshot-
+       backed, so reading it in a composable recomposes when it changes. */
+    val fps: Int get() = fFps
 
     /* Human-readable name of the rendering pipeline:
         "Skia / Metal", "Skia / OpenGL", "Skia / CPU"
@@ -158,6 +162,9 @@ class ComposeNativeWindow constructor(
         fPixelWidth = backend.pixelWidth
         fPixelHeight = backend.pixelHeight
     }
+
+    /* Called by the main loop ~once a second with the measured frame rate. */
+    fun updateFps(inFps: Int) { fFps = inFps }
 
     val isCloseRequested: Boolean get() = fCloseRequested
 

@@ -264,10 +264,10 @@ class SkiaRenderer internal constructor(
         //  Text leaf
         val vText = inNode.text
         if (!vText.isNullOrEmpty()) {
-            // Reuse the wrap the measure pass cached on the node, and cull lines
-            // outside the window so a 13k-line body draws only what's on screen.
-            val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
-            val vWrapped = inNode.layoutText(vWrapWidth)
+            // Reuse the exact wrap the measure pass cached on the node (don't
+            // re-wrap at a different width — that thrashed the cache and
+            // re-wrapped a huge body every frame; see LayoutNode.cachedWrap).
+            val vWrapped = inNode.cachedWrap()
             textRenderer.drawText(
                 inCanvas, vText,
                 vAx, vAy, inNode.width, inNode.height,

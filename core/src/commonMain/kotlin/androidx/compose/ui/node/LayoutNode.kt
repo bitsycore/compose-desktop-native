@@ -111,6 +111,20 @@ class LayoutNode {
         return vWrap
     }
 
+    /* The wrap from the most recent layoutText — what the measure pass
+       (TextMeasurePolicy, which runs every frame before draw) computed. The
+       renderers draw from THIS instead of calling layoutText again with a
+       different width: a soft-wrap body is wrapped at its container width by
+       measure but its node width settles to the (narrower) content width, so a
+       draw-time layoutText(width) used a different cache key and re-wrapped —
+       plus reset + rescanned textContentWidth — every single frame. For a huge
+       body that alone dropped a static screen from 75 to ~18 fps. Falls back to
+       a fresh wrap only before the first measure. */
+    fun cachedWrap(): androidx.compose.ui.text.WrappedText {
+        fWrapCache?.let { return it }
+        return layoutText(if (softWrap && width > 0) width else Int.MAX_VALUE)
+    }
+
     /* Widest wrapped line in pixels — the text's intrinsic content width.
        Computed lazily off the cached wrap (so a fillMaxWidth body, which
        ignores this, never pays for N per-line measures) and cached until the

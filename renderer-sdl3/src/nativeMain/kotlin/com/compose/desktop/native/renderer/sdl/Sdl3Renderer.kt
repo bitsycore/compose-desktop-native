@@ -416,14 +416,10 @@ internal class Sdl3Renderer(
         //  Text leaf
         val vText = inNode.text
         if (!vText.isNullOrEmpty()) {
-            // Word-wrap to the box width so multi-line text renders the
-            // same lines the layout pass measured against. softWrap = false
-            // (e.g. a singleLine field) must NOT wrap — it stays one line and
-            // overflows, matching the measure pass and the cursor math.
-            val vWrapWidth = if (inNode.softWrap) inNode.width else Int.MAX_VALUE
-            // Reuse the wrap the measure pass cached on the node — a 13k-line
-            // body is wrapped once, not re-split + re-substringed every frame.
-            val vWrapped = inNode.layoutText(vWrapWidth)
+            // Reuse the exact wrap the measure pass cached on the node (don't
+            // re-wrap here at a different width — that thrashed the cache and
+            // re-wrapped a huge body every frame; see LayoutNode.cachedWrap).
+            val vWrapped = inNode.cachedWrap()
             val vLines = vWrapped.lines
             val vLineHeight = textRenderer.textMeasurer.lineHeight(inNode.fontSize, inNode.fontFamily).toInt()
             if (vLines.size == 1 && '\n' !in vText) {
@@ -439,23 +435,30 @@ internal class Sdl3Renderer(
                 )
             } else {
                 // Cull lines outside the window — a huge scrolled body draws
-                // only the screenful that's visible. The node still holds the
-                // full text, so cross-element selection is unaffected; this
-                // only skips the *drawing* of off-screen lines.
+                // only the screenful that's visible. Compute the visible index
+                // RANGE directly so we don't iterate (and allocate for) all
+                // N lines every frame; the per-line check stays as a guard. The
+                // node still holds the full text, so selection is unaffected.
                 val vViewBottom = backend.windowHeight
-                for ((idx, line) in vLines.withIndex()) {
+                val vLh = if (vLineHeight > 0) vLineHeight else 1
+                val vFirst = (((-inNode.absoluteY) / vLh) - 1).coerceIn(0, vLines.size - 1)
+                val vLast = (((vViewBottom - inNode.absoluteY) / vLh) + 1).coerceIn(0, vLines.size - 1)
+                var idx = vFirst
+                while (idx <= vLast) {
                     val vSlotTop = inNode.absoluteY + idx * vLineHeight
-                    if (vSlotTop + vLineHeight < 0 || vSlotTop > vViewBottom) continue
-                    textRenderer.drawText(
-                        line,
-                        inNode.absoluteX, vSlotTop,
-                        inNode.width, vLineHeight,
-                        inNode.textColor, inNode.fontSize, inNode.textAlign,
-                        inNode.fontFamily,
-                        inNode.fontVariationSettings,
-                        inNode.textSpans,
-                        vWrapped.lineStarts[idx],
-                    )
+                    if (vSlotTop + vLineHeight >= 0 && vSlotTop <= vViewBottom) {
+                        textRenderer.drawText(
+                            vLines[idx],
+                            inNode.absoluteX, vSlotTop,
+                            inNode.width, vLineHeight,
+                            inNode.textColor, inNode.fontSize, inNode.textAlign,
+                            inNode.fontFamily,
+                            inNode.fontVariationSettings,
+                            inNode.textSpans,
+                            vWrapped.lineStarts[idx],
+                        )
+                    }
+                    idx++
                 }
             }
         }
