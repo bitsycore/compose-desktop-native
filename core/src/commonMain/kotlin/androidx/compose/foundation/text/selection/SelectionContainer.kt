@@ -17,7 +17,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.currentClipboard
 import com.compose.desktop.native.modifier.onDrag
-import com.compose.desktop.native.text.LocalInSelectionContainer
 
 // ==================
 // MARK: SelectionContainer
@@ -27,7 +26,7 @@ import com.compose.desktop.native.text.LocalInSelectionContainer
    platform Copy shortcut — including ONE selection that spans MULTIPLE sibling
    Texts.
 
-   Each descendant Text renders as a SelectableText, registering its window
+   Each descendant BasicText is selection-aware, registering its window
    bounds + offset mapping with the SelectionRegistrar provided here. This
    container owns the gesture: a press sets the anchor (block, offset); each
    move extends the head to the block/offset under the cursor; every block
@@ -50,7 +49,6 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 	var vLastClickY by remember { mutableStateOf(0) }
 	val vClipboard = currentClipboard
 	CompositionLocalProvider(
-		LocalInSelectionContainer provides true,
 		LocalSelectionRegistrar provides vReg,
 	) {
 		Box(
@@ -101,7 +99,6 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 @Composable
 fun DisableSelection(content: @Composable () -> Unit) {
 	CompositionLocalProvider(
-		LocalInSelectionContainer provides false,
 		LocalSelectionRegistrar provides null,
 	) { content() }
 }

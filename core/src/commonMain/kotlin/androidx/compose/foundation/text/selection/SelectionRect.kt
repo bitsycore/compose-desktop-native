@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 // ==================
 
 /* One selection-highlight rectangle (logical px), painted behind the glyphs.
-   Internal render glue shared by SelectableText and BasicTextField. */
+   Internal render glue shared by BasicText (selection-aware) and BasicTextField. */
 @Composable
 internal fun SelectionRect(inX: Float, inY: Float, inW: Float, inH: Float, inColor: Color) {
 	Box(

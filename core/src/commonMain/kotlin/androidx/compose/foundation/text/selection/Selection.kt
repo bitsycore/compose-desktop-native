@@ -149,6 +149,6 @@ internal class SelectionRegistrar {
 	}
 }
 
-/* Non-null inside a SelectionContainer; SelectableText registers with it and
-   reads its selection to paint highlights. */
+/* Non-null inside a SelectionContainer; a selection-aware BasicText registers
+   with it and reads its selection to paint highlights. */
 internal val LocalSelectionRegistrar = compositionLocalOf<SelectionRegistrar?> { null }
