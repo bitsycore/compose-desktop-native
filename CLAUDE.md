@@ -359,14 +359,7 @@ driver string ("metal", "opengl", "direct3d11", …) shows what
 
 ## Conventions
 
-Follow `~/.claude/CLAUDE.md`:
-
-- Constants: `k` prefix camelCase (`kSomeConstant`).
-- Local variables: `v` prefix (`vParts`, `vResult`).
-- Function parameters: `in` prefix (`inPath`).
-- Class member fields in Java only: `f` prefix.
-- Indent with tabs (this repo uses 4-space indent in existing code —
-  match what's already in each file rather than reflowing).
+Follow the Kotlin standard conventions, force KDOC when needed.
 - Section headers in Kotlin:
   - Major sections (file-level / between classes):
     ```kotlin
@@ -381,19 +374,6 @@ Follow `~/.claude/CLAUDE.md`:
     ```
 - Concise function-level comments only where the name is not
   self-documenting; avoid line-by-line commentary.
-- **Comment style**: use plain `/* ... */` block comments and `//` line
-  comments — **never** KDoc/Javadoc `/** ... */`. In a multi-line `/* */`
-  block, do **not** start continuation lines with `*`; the comment text
-  begins each line directly. (This applies to Kotlin and Java here; Swift/C
-  in other projects use `/** */`.)
-- Kotlin standard syntax — no Spirtech internal rules apply here.
-- **Exception for the re-implemented Compose API** (everything under
-  `androidx.compose.*`): public symbols and parameters use **official
-  Compose / standard-Kotlin names** (`modifier`, `content`, `onClick`,
-  `degrees`, `fraction`, `targetValue`, …) — **never** the `in`/`v`/`k`/`f`
-  prefix convention. The prefixes apply only to project-internal code
-  (`com.compose.desktop.native.*`, `private`/`internal` helpers, local
-  variables, constants). See **Compose API Fidelity** below.
 
 ## Compose API Fidelity (mirroring official Compose Multiplatform)
 
@@ -476,9 +456,7 @@ the one-arg `painterResource` overlaps official).
 ### Universal rules
 
 1. **Names**: public symbols and parameters use official/standard-Kotlin
-   names — no `in`/`v`/`k`/`f` prefixes (`degrees` not `inDegrees`,
-   `targetValue` not `inTarget`, `other` not `inOther`, `fraction` not
-   `inFraction`).
+   names
 2. **Package**: declare each symbol in its official package (see map below).
 3. **Signature**: match parameter order, names, defaults and return type
    exactly. Layout/widget composables are `modifier` first → behavior params →
