@@ -1749,48 +1749,6 @@ final class androidx.compose.ui.text/WrappedText { // androidx.compose.ui.text/W
         final fun <get-lines>(): kotlin.collections/List<kotlin/String> // androidx.compose.ui.text/WrappedText.lines.<get-lines>|<get-lines>(){}[0]
 }
 
-final class androidx.compose.ui.unit/Constraints { // androidx.compose.ui.unit/Constraints|null[0]
-    constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...) // androidx.compose.ui.unit/Constraints.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
-
-    final val hasBoundedHeight // androidx.compose.ui.unit/Constraints.hasBoundedHeight|{}hasBoundedHeight[0]
-        final fun <get-hasBoundedHeight>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasBoundedHeight.<get-hasBoundedHeight>|<get-hasBoundedHeight>(){}[0]
-    final val hasBoundedWidth // androidx.compose.ui.unit/Constraints.hasBoundedWidth|{}hasBoundedWidth[0]
-        final fun <get-hasBoundedWidth>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasBoundedWidth.<get-hasBoundedWidth>|<get-hasBoundedWidth>(){}[0]
-    final val hasFixedHeight // androidx.compose.ui.unit/Constraints.hasFixedHeight|{}hasFixedHeight[0]
-        final fun <get-hasFixedHeight>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedHeight.<get-hasFixedHeight>|<get-hasFixedHeight>(){}[0]
-    final val hasFixedWidth // androidx.compose.ui.unit/Constraints.hasFixedWidth|{}hasFixedWidth[0]
-        final fun <get-hasFixedWidth>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedWidth.<get-hasFixedWidth>|<get-hasFixedWidth>(){}[0]
-    final val isZero // androidx.compose.ui.unit/Constraints.isZero|{}isZero[0]
-        final fun <get-isZero>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.isZero.<get-isZero>|<get-isZero>(){}[0]
-    final val maxHeight // androidx.compose.ui.unit/Constraints.maxHeight|{}maxHeight[0]
-        final fun <get-maxHeight>(): kotlin/Int // androidx.compose.ui.unit/Constraints.maxHeight.<get-maxHeight>|<get-maxHeight>(){}[0]
-    final val maxWidth // androidx.compose.ui.unit/Constraints.maxWidth|{}maxWidth[0]
-        final fun <get-maxWidth>(): kotlin/Int // androidx.compose.ui.unit/Constraints.maxWidth.<get-maxWidth>|<get-maxWidth>(){}[0]
-    final val minHeight // androidx.compose.ui.unit/Constraints.minHeight|{}minHeight[0]
-        final fun <get-minHeight>(): kotlin/Int // androidx.compose.ui.unit/Constraints.minHeight.<get-minHeight>|<get-minHeight>(){}[0]
-    final val minWidth // androidx.compose.ui.unit/Constraints.minWidth|{}minWidth[0]
-        final fun <get-minWidth>(): kotlin/Int // androidx.compose.ui.unit/Constraints.minWidth.<get-minWidth>|<get-minWidth>(){}[0]
-
-    final fun component1(): kotlin/Int // androidx.compose.ui.unit/Constraints.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // androidx.compose.ui.unit/Constraints.component2|component2(){}[0]
-    final fun component3(): kotlin/Int // androidx.compose.ui.unit/Constraints.component3|component3(){}[0]
-    final fun component4(): kotlin/Int // androidx.compose.ui.unit/Constraints.component4|component4(){}[0]
-    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
-    final fun copyMaxDimensions(): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copyMaxDimensions|copyMaxDimensions(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.unit/Constraints.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // androidx.compose.ui.unit/Constraints.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.unit/Constraints.toString|toString(){}[0]
-
-    final object Companion { // androidx.compose.ui.unit/Constraints.Companion|null[0]
-        final const val Infinity // androidx.compose.ui.unit/Constraints.Companion.Infinity|{}Infinity[0]
-            final fun <get-Infinity>(): kotlin/Int // androidx.compose.ui.unit/Constraints.Companion.Infinity.<get-Infinity>|<get-Infinity>(){}[0]
-
-        final fun fixed(kotlin/Int, kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixed|fixed(kotlin.Int;kotlin.Int){}[0]
-        final fun fixedHeight(kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixedHeight|fixedHeight(kotlin.Int){}[0]
-        final fun fixedWidth(kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixedWidth|fixedWidth(kotlin.Int){}[0]
-    }
-}
-
 final class androidx.compose.ui.unit/DpRect { // androidx.compose.ui.unit/DpRect|null[0]
     constructor <init>(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp) // androidx.compose.ui.unit/DpRect.<init>|<init>(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
     constructor <init>(androidx.compose.ui.unit/DpOffset, androidx.compose.ui.unit/DpSize) // androidx.compose.ui.unit/DpRect.<init>|<init>(androidx.compose.ui.unit.DpOffset;androidx.compose.ui.unit.DpSize){}[0]
@@ -2607,6 +2565,49 @@ final value class androidx.compose.ui.text/TextRange { // androidx.compose.ui.te
     }
 }
 
+final value class androidx.compose.ui.unit/Constraints { // androidx.compose.ui.unit/Constraints|null[0]
+    constructor <init>(kotlin/Long) // androidx.compose.ui.unit/Constraints.<init>|<init>(kotlin.Long){}[0]
+
+    final val hasBoundedHeight // androidx.compose.ui.unit/Constraints.hasBoundedHeight|{}hasBoundedHeight[0]
+        final fun <get-hasBoundedHeight>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasBoundedHeight.<get-hasBoundedHeight>|<get-hasBoundedHeight>(){}[0]
+    final val hasBoundedWidth // androidx.compose.ui.unit/Constraints.hasBoundedWidth|{}hasBoundedWidth[0]
+        final fun <get-hasBoundedWidth>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasBoundedWidth.<get-hasBoundedWidth>|<get-hasBoundedWidth>(){}[0]
+    final val hasFixedHeight // androidx.compose.ui.unit/Constraints.hasFixedHeight|{}hasFixedHeight[0]
+        final fun <get-hasFixedHeight>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedHeight.<get-hasFixedHeight>|<get-hasFixedHeight>(){}[0]
+    final val hasFixedWidth // androidx.compose.ui.unit/Constraints.hasFixedWidth|{}hasFixedWidth[0]
+        final fun <get-hasFixedWidth>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedWidth.<get-hasFixedWidth>|<get-hasFixedWidth>(){}[0]
+    final val isZero // androidx.compose.ui.unit/Constraints.isZero|{}isZero[0]
+        final fun <get-isZero>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.isZero.<get-isZero>|<get-isZero>(){}[0]
+    final val maxHeight // androidx.compose.ui.unit/Constraints.maxHeight|{}maxHeight[0]
+        final fun <get-maxHeight>(): kotlin/Int // androidx.compose.ui.unit/Constraints.maxHeight.<get-maxHeight>|<get-maxHeight>(){}[0]
+    final val maxWidth // androidx.compose.ui.unit/Constraints.maxWidth|{}maxWidth[0]
+        final fun <get-maxWidth>(): kotlin/Int // androidx.compose.ui.unit/Constraints.maxWidth.<get-maxWidth>|<get-maxWidth>(){}[0]
+    final val minHeight // androidx.compose.ui.unit/Constraints.minHeight|{}minHeight[0]
+        final fun <get-minHeight>(): kotlin/Int // androidx.compose.ui.unit/Constraints.minHeight.<get-minHeight>|<get-minHeight>(){}[0]
+    final val minWidth // androidx.compose.ui.unit/Constraints.minWidth|{}minWidth[0]
+        final fun <get-minWidth>(): kotlin/Int // androidx.compose.ui.unit/Constraints.minWidth.<get-minWidth>|<get-minWidth>(){}[0]
+    final val value // androidx.compose.ui.unit/Constraints.value|{}value[0]
+        final fun <get-value>(): kotlin/Long // androidx.compose.ui.unit/Constraints.value.<get-value>|<get-value>(){}[0]
+
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.unit/Constraints.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.unit/Constraints.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.unit/Constraints.toString|toString(){}[0]
+    final inline fun copyMaxDimensions(): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copyMaxDimensions|copyMaxDimensions(){}[0]
+
+    final object Companion { // androidx.compose.ui.unit/Constraints.Companion|null[0]
+        final const val Infinity // androidx.compose.ui.unit/Constraints.Companion.Infinity|{}Infinity[0]
+            final fun <get-Infinity>(): kotlin/Int // androidx.compose.ui.unit/Constraints.Companion.Infinity.<get-Infinity>|<get-Infinity>(){}[0]
+
+        final fun fitPrioritizingHeight(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fitPrioritizingHeight|fitPrioritizingHeight(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun fitPrioritizingWidth(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fitPrioritizingWidth|fitPrioritizingWidth(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun fixed(kotlin/Int, kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixed|fixed(kotlin.Int;kotlin.Int){}[0]
+        final fun fixedHeight(kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixedHeight|fixedHeight(kotlin.Int){}[0]
+        final fun fixedWidth(kotlin/Int): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.fixedWidth|fixedWidth(kotlin.Int){}[0]
+        final fun restrictConstraints(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Boolean = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.Companion.restrictConstraints|restrictConstraints(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean){}[0]
+    }
+}
+
 final value class androidx.compose.ui.unit/Dp : kotlin/Comparable<androidx.compose.ui.unit/Dp> { // androidx.compose.ui.unit/Dp|null[0]
     constructor <init>(kotlin/Float) // androidx.compose.ui.unit/Dp.<init>|<init>(kotlin.Float){}[0]
 
@@ -3239,6 +3240,8 @@ final const val androidx.compose.ui.geometry/UnspecifiedPackedFloats // androidx
     final fun <get-UnspecifiedPackedFloats>(): kotlin/Long // androidx.compose.ui.geometry/UnspecifiedPackedFloats.<get-UnspecifiedPackedFloats>|<get-UnspecifiedPackedFloats>(){}[0]
 final const val androidx.compose.ui.graphics/UnspecifiedColor // androidx.compose.ui.graphics/UnspecifiedColor|{}UnspecifiedColor[0]
     final fun <get-UnspecifiedColor>(): kotlin/ULong // androidx.compose.ui.graphics/UnspecifiedColor.<get-UnspecifiedColor>|<get-UnspecifiedColor>(){}[0]
+final const val androidx.compose.ui.unit/MaxDimensionsAndFocusMask // androidx.compose.ui.unit/MaxDimensionsAndFocusMask|{}MaxDimensionsAndFocusMask[0]
+    final fun <get-MaxDimensionsAndFocusMask>(): kotlin/Long // androidx.compose.ui.unit/MaxDimensionsAndFocusMask.<get-MaxDimensionsAndFocusMask>|<get-MaxDimensionsAndFocusMask>(){}[0]
 
 final val androidx.compose.animation.core/FastOutLinearInEasing // androidx.compose.animation.core/FastOutLinearInEasing|{}FastOutLinearInEasing[0]
     final fun <get-FastOutLinearInEasing>(): androidx.compose.animation.core/Easing // androidx.compose.animation.core/FastOutLinearInEasing.<get-FastOutLinearInEasing>|<get-FastOutLinearInEasing>(){}[0]
@@ -3410,7 +3413,6 @@ final val androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop
 final val androidx.compose.ui.text/androidx_compose_ui_text_TextRendererCapabilities$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_TextRendererCapabilities$stableprop|#static{}androidx_compose_ui_text_TextRendererCapabilities$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop|#static{}androidx_compose_ui_text_TextStyle$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_WrappedText$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_WrappedText$stableprop|#static{}androidx_compose_ui_text_WrappedText$stableprop[0]
-final val androidx.compose.ui.unit/androidx_compose_ui_unit_Constraints$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_Constraints$stableprop|#static{}androidx_compose_ui_unit_Constraints$stableprop[0]
 final val androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop|#static{}androidx_compose_ui_unit_DpRect$stableprop[0]
 final val androidx.compose.ui.unit/androidx_compose_ui_unit_IntRect$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_IntRect$stableprop|#static{}androidx_compose_ui_unit_IntRect$stableprop[0]
 final val androidx.compose.ui.unit/center // androidx.compose.ui.unit/center|@androidx.compose.ui.unit.DpSize{}center[0]
@@ -3785,12 +3787,12 @@ final fun androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop
 final fun androidx.compose.ui.text/androidx_compose_ui_text_TextRendererCapabilities$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_TextRendererCapabilities$stableprop_getter|androidx_compose_ui_text_TextRendererCapabilities$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter|androidx_compose_ui_text_TextStyle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_WrappedText$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_WrappedText$stableprop_getter|androidx_compose_ui_text_WrappedText$stableprop_getter(){}[0]
+final fun androidx.compose.ui.unit/Constraints(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints|Constraints(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.unit/DpSize(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp): androidx.compose.ui.unit/DpSize // androidx.compose.ui.unit/DpSize|DpSize(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
 final fun androidx.compose.ui.unit/IntRect(androidx.compose.ui.unit/IntOffset, androidx.compose.ui.unit/IntOffset): androidx.compose.ui.unit/IntRect // androidx.compose.ui.unit/IntRect|IntRect(androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntOffset){}[0]
 final fun androidx.compose.ui.unit/IntRect(androidx.compose.ui.unit/IntOffset, androidx.compose.ui.unit/IntSize): androidx.compose.ui.unit/IntRect // androidx.compose.ui.unit/IntRect|IntRect(androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntSize){}[0]
 final fun androidx.compose.ui.unit/IntRect(androidx.compose.ui.unit/IntOffset, kotlin/Int): androidx.compose.ui.unit/IntRect // androidx.compose.ui.unit/IntRect|IntRect(androidx.compose.ui.unit.IntOffset;kotlin.Int){}[0]
 final fun androidx.compose.ui.unit/Velocity(kotlin/Float, kotlin/Float): androidx.compose.ui.unit/Velocity // androidx.compose.ui.unit/Velocity|Velocity(kotlin.Float;kotlin.Float){}[0]
-final fun androidx.compose.ui.unit/androidx_compose_ui_unit_Constraints$stableprop_getter(): kotlin/Int // androidx.compose.ui.unit/androidx_compose_ui_unit_Constraints$stableprop_getter|androidx_compose_ui_unit_Constraints$stableprop_getter(){}[0]
 final fun androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop_getter(): kotlin/Int // androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop_getter|androidx_compose_ui_unit_DpRect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.unit/androidx_compose_ui_unit_IntRect$stableprop_getter(): kotlin/Int // androidx.compose.ui.unit/androidx_compose_ui_unit_IntRect$stableprop_getter|androidx_compose_ui_unit_IntRect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.unit/lerp(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, kotlin/Float): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/lerp|lerp(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;kotlin.Float){}[0]

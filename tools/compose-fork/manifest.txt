@@ -24,6 +24,7 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntOffset.kt  
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt                core/src/vendor/common/kotlin/androidx/compose/ui/unit/IntSize.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt                core/src/vendor/common/kotlin/androidx/compose/ui/unit/IntRect.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt               core/src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Constraints.kt            core/src/vendor/common/kotlin/androidx/compose/ui/unit/Constraints.kt
 
 # ── androidx.compose.ui.graphics.Color (+ colorspace subsystem) ───────────
 # Color is a value class over a packed ULong whose bits encode a ColorSpace, so
