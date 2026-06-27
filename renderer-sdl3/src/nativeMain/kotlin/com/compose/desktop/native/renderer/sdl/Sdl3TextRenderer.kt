@@ -4,6 +4,10 @@ import com.compose.desktop.native.*
 import com.compose.desktop.native.icons.IconFont
 
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.r8
+import androidx.compose.ui.graphics.g8
+import androidx.compose.ui.graphics.b8
+import androidx.compose.ui.graphics.a8
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRendererCapabilities
 import androidx.compose.ui.text.WrappedText

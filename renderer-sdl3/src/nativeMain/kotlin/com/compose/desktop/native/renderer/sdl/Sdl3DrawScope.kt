@@ -4,6 +4,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.r8
+import androidx.compose.ui.graphics.g8
+import androidx.compose.ui.graphics.b8
+import androidx.compose.ui.graphics.a8
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.PathCommand

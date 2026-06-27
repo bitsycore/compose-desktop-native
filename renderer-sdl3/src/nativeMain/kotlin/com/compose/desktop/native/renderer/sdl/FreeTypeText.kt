@@ -7,6 +7,10 @@ import sdl3.*
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.r8
+import androidx.compose.ui.graphics.g8
+import androidx.compose.ui.graphics.b8
+import androidx.compose.ui.graphics.a8
 
 // Coverage gamma: alpha' = 255*(cov/255)^kTextGamma. With kTextGamma < 1 this
 // boosts partial coverage so antialiased stems read heavier and smoother for
