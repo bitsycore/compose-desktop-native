@@ -14,6 +14,15 @@ compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/InlineClassHel
 compose/ui/ui-util/src/nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHelper.nonJvm.kt    core/src/nativeMain/kotlin/androidx/compose/ui/util/InlineClassHelper.native.kt
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt                 core/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt
 
+# ── androidx.compose.ui.unit (packed int value types) ─────────────────────
+# Replaces the hand-written IntSize.kt (IntSize + IntOffset data classes).
+# Dp / Sp(TextUnit) / Constraints / Density stay hand-written for now.
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt      core/src/commonMain/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntOffset.kt              core/src/commonMain/kotlin/androidx/compose/ui/unit/IntOffset.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt                core/src/commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt                core/src/commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt               core/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt
+
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt              core/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt
