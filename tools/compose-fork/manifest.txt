@@ -52,6 +52,8 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMo
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt             core/src/commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt          core/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt

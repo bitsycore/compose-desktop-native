@@ -24,8 +24,4 @@ class TextDecoration internal constructor(val mask: Int) {
 	}
 }
 
-// ==================
-// MARK: TextOverflow
-// ==================
-
-enum class TextOverflow { Clip, Ellipsis, Visible }
+// TextOverflow lives in its own vendored file (androidx.compose.ui.text.style.TextOverflow).

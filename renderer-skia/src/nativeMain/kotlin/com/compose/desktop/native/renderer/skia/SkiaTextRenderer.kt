@@ -146,6 +146,7 @@ class SkiaTextRenderer {
                 TextAlign.Start  -> inX
                 TextAlign.Center -> inX + (inBoxWidth - vLineWidth) / 2f
                 TextAlign.End    -> inX + inBoxWidth.toFloat() - vLineWidth
+                else             -> inX
             }
         }
 

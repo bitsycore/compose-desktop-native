@@ -354,6 +354,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 TextAlign.Start  -> inX.toFloat()
                 TextAlign.Center -> inX + (inBoxWidth - vWidth) / 2f
                 TextAlign.End    -> inX + (inBoxWidth - vWidth).toFloat()
+                else             -> inX.toFloat()
             }
             val vPenY = inY + (inBoxHeight - vHeight) / 2f
             val vDrew = fFreeTypeText.drawString(
@@ -381,6 +382,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 TextAlign.Start  -> inX.toFloat()
                 TextAlign.Center -> inX + (inBoxWidth - vLineW) / 2f
                 TextAlign.End    -> inX + (inBoxWidth - vLineW)
+                else             -> inX.toFloat()
             }
             fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
             // O(spans + line length) colour runs, instead of an O(chars × spans)
@@ -417,6 +419,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
             TextAlign.Start  -> inX.toFloat()
             TextAlign.Center -> inX + (inBoxWidth - vLogW) / 2f
             TextAlign.End    -> inX + (inBoxWidth - vLogW)
+                else             -> inX.toFloat()
         }
         // Vertically centre — matches the Skia path which cap-centres the
         // glyphs inside the box.

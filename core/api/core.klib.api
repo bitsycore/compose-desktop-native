@@ -111,30 +111,6 @@ final enum class androidx.compose.ui.text.font/FontStyle : kotlin/Enum<androidx.
     final fun values(): kotlin/Array<androidx.compose.ui.text.font/FontStyle> // androidx.compose.ui.text.font/FontStyle.values|values#static(){}[0]
 }
 
-final enum class androidx.compose.ui.text.style/TextAlign : kotlin/Enum<androidx.compose.ui.text.style/TextAlign> { // androidx.compose.ui.text.style/TextAlign|null[0]
-    enum entry Center // androidx.compose.ui.text.style/TextAlign.Center|null[0]
-    enum entry End // androidx.compose.ui.text.style/TextAlign.End|null[0]
-    enum entry Start // androidx.compose.ui.text.style/TextAlign.Start|null[0]
-
-    final val entries // androidx.compose.ui.text.style/TextAlign.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.text.style/TextAlign> // androidx.compose.ui.text.style/TextAlign.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.text.style/TextAlign> // androidx.compose.ui.text.style/TextAlign.values|values#static(){}[0]
-}
-
-final enum class androidx.compose.ui.text.style/TextOverflow : kotlin/Enum<androidx.compose.ui.text.style/TextOverflow> { // androidx.compose.ui.text.style/TextOverflow|null[0]
-    enum entry Clip // androidx.compose.ui.text.style/TextOverflow.Clip|null[0]
-    enum entry Ellipsis // androidx.compose.ui.text.style/TextOverflow.Ellipsis|null[0]
-    enum entry Visible // androidx.compose.ui.text.style/TextOverflow.Visible|null[0]
-
-    final val entries // androidx.compose.ui.text.style/TextOverflow.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.text.style/TextOverflow> // androidx.compose.ui.text.style/TextOverflow.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.text.style/TextOverflow> // androidx.compose.ui.text.style/TextOverflow.values|values#static(){}[0]
-}
-
 final enum class androidx.compose.ui.unit/LayoutDirection : kotlin/Enum<androidx.compose.ui.unit/LayoutDirection> { // androidx.compose.ui.unit/LayoutDirection|null[0]
     enum entry Ltr // androidx.compose.ui.unit/LayoutDirection.Ltr|null[0]
     enum entry Rtl // androidx.compose.ui.unit/LayoutDirection.Rtl|null[0]
@@ -2562,6 +2538,54 @@ final value class androidx.compose.ui.graphics/TileMode { // androidx.compose.ui
     }
 }
 
+final value class androidx.compose.ui.text.style/TextAlign { // androidx.compose.ui.text.style/TextAlign|null[0]
+    final val value // androidx.compose.ui.text.style/TextAlign.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // androidx.compose.ui.text.style/TextAlign.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text.style/TextAlign.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.text.style/TextAlign.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.text.style/TextAlign.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.text.style/TextAlign.Companion|null[0]
+        final val Center // androidx.compose.ui.text.style/TextAlign.Companion.Center|{}Center[0]
+            final fun <get-Center>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Center.<get-Center>|<get-Center>(){}[0]
+        final val End // androidx.compose.ui.text.style/TextAlign.Companion.End|{}End[0]
+            final fun <get-End>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.End.<get-End>|<get-End>(){}[0]
+        final val Justify // androidx.compose.ui.text.style/TextAlign.Companion.Justify|{}Justify[0]
+            final fun <get-Justify>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Justify.<get-Justify>|<get-Justify>(){}[0]
+        final val Left // androidx.compose.ui.text.style/TextAlign.Companion.Left|{}Left[0]
+            final fun <get-Left>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Left.<get-Left>|<get-Left>(){}[0]
+        final val Right // androidx.compose.ui.text.style/TextAlign.Companion.Right|{}Right[0]
+            final fun <get-Right>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Right.<get-Right>|<get-Right>(){}[0]
+        final val Start // androidx.compose.ui.text.style/TextAlign.Companion.Start|{}Start[0]
+            final fun <get-Start>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Start.<get-Start>|<get-Start>(){}[0]
+        final val Unspecified // androidx.compose.ui.text.style/TextAlign.Companion.Unspecified|{}Unspecified[0]
+            final fun <get-Unspecified>(): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.Unspecified.<get-Unspecified>|<get-Unspecified>(){}[0]
+
+        final fun valueOf(kotlin/Int): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/TextAlign.Companion.valueOf|valueOf(kotlin.Int){}[0]
+        final fun values(): kotlin.collections/List<androidx.compose.ui.text.style/TextAlign> // androidx.compose.ui.text.style/TextAlign.Companion.values|values(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.text.style/TextOverflow { // androidx.compose.ui.text.style/TextOverflow|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text.style/TextOverflow.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.text.style/TextOverflow.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.text.style/TextOverflow.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.text.style/TextOverflow.Companion|null[0]
+        final val Clip // androidx.compose.ui.text.style/TextOverflow.Companion.Clip|{}Clip[0]
+            final fun <get-Clip>(): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.Companion.Clip.<get-Clip>|<get-Clip>(){}[0]
+        final val Ellipsis // androidx.compose.ui.text.style/TextOverflow.Companion.Ellipsis|{}Ellipsis[0]
+            final fun <get-Ellipsis>(): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.Companion.Ellipsis.<get-Ellipsis>|<get-Ellipsis>(){}[0]
+        final val MiddleEllipsis // androidx.compose.ui.text.style/TextOverflow.Companion.MiddleEllipsis|{}MiddleEllipsis[0]
+            final fun <get-MiddleEllipsis>(): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.Companion.MiddleEllipsis.<get-MiddleEllipsis>|<get-MiddleEllipsis>(){}[0]
+        final val StartEllipsis // androidx.compose.ui.text.style/TextOverflow.Companion.StartEllipsis|{}StartEllipsis[0]
+            final fun <get-StartEllipsis>(): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.Companion.StartEllipsis.<get-StartEllipsis>|<get-StartEllipsis>(){}[0]
+        final val Visible // androidx.compose.ui.text.style/TextOverflow.Companion.Visible|{}Visible[0]
+            final fun <get-Visible>(): androidx.compose.ui.text.style/TextOverflow // androidx.compose.ui.text.style/TextOverflow.Companion.Visible.<get-Visible>|<get-Visible>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.text/TextRange { // androidx.compose.ui.text/TextRange|null[0]
     final val collapsed // androidx.compose.ui.text/TextRange.collapsed|{}collapsed[0]
         final fun <get-collapsed>(): kotlin/Boolean // androidx.compose.ui.text/TextRange.collapsed.<get-collapsed>|<get-collapsed>(){}[0]
@@ -3330,6 +3354,8 @@ final val androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontVariat
 final val androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontWeight$stableprop // androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontWeight$stableprop|#static{}androidx_compose_ui_text_font_FontWeight$stableprop[0]
 final val androidx.compose.ui.text.input/androidx_compose_ui_text_input_TextFieldValue$stableprop // androidx.compose.ui.text.input/androidx_compose_ui_text_input_TextFieldValue$stableprop|#static{}androidx_compose_ui_text_input_TextFieldValue$stableprop[0]
 final val androidx.compose.ui.text.style/androidx_compose_ui_text_style_TextDecoration$stableprop // androidx.compose.ui.text.style/androidx_compose_ui_text_style_TextDecoration$stableprop|#static{}androidx_compose_ui_text_style_TextDecoration$stableprop[0]
+final val androidx.compose.ui.text.style/isSpecified // androidx.compose.ui.text.style/isSpecified|@androidx.compose.ui.text.style.TextAlign{}isSpecified[0]
+    final inline fun (androidx.compose.ui.text.style/TextAlign).<get-isSpecified>(): kotlin/Boolean // androidx.compose.ui.text.style/isSpecified.<get-isSpecified>|<get-isSpecified>@androidx.compose.ui.text.style.TextAlign(){}[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop|#static{}androidx_compose_ui_text_AnnotatedString$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop|#static{}androidx_compose_ui_text_AnnotatedString_Builder$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop|#static{}androidx_compose_ui_text_ParagraphStyle$stableprop[0]
@@ -3585,7 +3611,9 @@ final fun androidx.compose.foundation.shape/RoundedCornerShape(kotlin/Int): andr
 final fun androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter(): kotlin/Int // androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter|androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.text.selection/DisableSelection(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // androidx.compose.foundation.text.selection/DisableSelection|DisableSelection(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text.selection/SelectionContainer(androidx.compose.ui/Modifier?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text.selection/SelectionContainer|SelectionContainer(androidx.compose.ui.Modifier?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun androidx.compose.foundation.text/BasicText(androidx.compose.ui.text/AnnotatedString, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, androidx.compose.ui.text.style/TextAlign, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(androidx.compose.ui.text.AnnotatedString;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;androidx.compose.ui.text.style.TextAlign;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicText(androidx.compose.ui.text/AnnotatedString, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, androidx.compose.ui.text.style/TextAlign?, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(androidx.compose.ui.text.AnnotatedString;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;androidx.compose.ui.text.style.TextAlign?;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun androidx.compose.foundation.text/BasicText(kotlin/String, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, androidx.compose.ui.text.style/TextAlign, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(kotlin.String;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;androidx.compose.ui.text.style.TextAlign;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicText(kotlin/String, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, androidx.compose.ui.text.style/TextAlign?, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(kotlin.String;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;androidx.compose.ui.text.style.TextAlign?;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicTextField(androidx.compose.ui.text.input/TextFieldValue, kotlin/Function1<androidx.compose.ui.text.input/TextFieldValue, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, kotlin/String?, kotlin/Function1<kotlin/String, androidx.compose.ui.text/AnnotatedString>?, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Function1<kotlin/Boolean, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicTextField|BasicTextField(androidx.compose.ui.text.input.TextFieldValue;kotlin.Function1<androidx.compose.ui.text.input.TextFieldValue,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;kotlin.String?;kotlin.Function1<kotlin.String,androidx.compose.ui.text.AnnotatedString>?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Function1<kotlin.Boolean,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicTextField(kotlin/String, kotlin/Function1<kotlin/String, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Sp, kotlin/String?, kotlin/Function1<kotlin/String, androidx.compose.ui.text/AnnotatedString>?, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Function1<kotlin/Boolean, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicTextField|BasicTextField(kotlin.String;kotlin.Function1<kotlin.String,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Sp;kotlin.String?;kotlin.Function1<kotlin.String,androidx.compose.ui.text.AnnotatedString>?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Function1<kotlin.Boolean,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
@@ -3794,6 +3822,7 @@ final fun com.compose.desktop.native/showSaveFileDialog(kotlin/String? = ..., ko
 final inline fun (androidx.compose.ui.geometry/Offset).androidx.compose.ui.geometry/takeOrElse(kotlin/Function0<androidx.compose.ui.geometry/Offset>): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/takeOrElse|takeOrElse@androidx.compose.ui.geometry.Offset(kotlin.Function0<androidx.compose.ui.geometry.Offset>){}[0]
 final inline fun (androidx.compose.ui.geometry/Size).androidx.compose.ui.geometry/takeOrElse(kotlin/Function0<androidx.compose.ui.geometry/Size>): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/takeOrElse|takeOrElse@androidx.compose.ui.geometry.Size(kotlin.Function0<androidx.compose.ui.geometry.Size>){}[0]
 final inline fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/takeOrElse(kotlin/Function0<androidx.compose.ui.graphics/Color>): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/takeOrElse|takeOrElse@androidx.compose.ui.graphics.Color(kotlin.Function0<androidx.compose.ui.graphics.Color>){}[0]
+final inline fun (androidx.compose.ui.text.style/TextAlign).androidx.compose.ui.text.style/takeOrElse(kotlin/Function0<androidx.compose.ui.text.style/TextAlign>): androidx.compose.ui.text.style/TextAlign // androidx.compose.ui.text.style/takeOrElse|takeOrElse@androidx.compose.ui.text.style.TextAlign(kotlin.Function0<androidx.compose.ui.text.style.TextAlign>){}[0]
 final inline fun (androidx.compose.ui.unit/Dp).androidx.compose.ui.unit/takeOrElse(kotlin/Function0<androidx.compose.ui.unit/Dp>): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/takeOrElse|takeOrElse@androidx.compose.ui.unit.Dp(kotlin.Function0<androidx.compose.ui.unit.Dp>){}[0]
 final inline fun (androidx.compose.ui.unit/IntOffset).androidx.compose.ui.unit/toOffset(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.unit/toOffset|toOffset@androidx.compose.ui.unit.IntOffset(){}[0]
 final inline fun (kotlin/Double).androidx.compose.ui.geometry/times(androidx.compose.ui.geometry/Size): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/times|times@kotlin.Double(androidx.compose.ui.geometry.Size){}[0]
