@@ -7,7 +7,6 @@ import androidx.compose.foundation.text.kMultiClickSlopPx
 import androidx.compose.foundation.text.monotonicMillis
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +17,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.currentClipboard
 import com.compose.desktop.native.modifier.onDrag
+import com.compose.desktop.native.text.LocalInSelectionContainer
 
 // ==================
 // MARK: SelectionContainer
@@ -94,11 +94,6 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 		) { content() }
 	}
 }
-
-
-/* True when the composition is inside a SelectionContainer. Text composables
-   observe this to switch to their selectable (SelectableText) render. */
-val LocalInSelectionContainer = compositionLocalOf { false }
 
 /* Disables selection for descendants — for widgets (chips, tabs) that want
    their own click semantics rather than being captured by a surrounding

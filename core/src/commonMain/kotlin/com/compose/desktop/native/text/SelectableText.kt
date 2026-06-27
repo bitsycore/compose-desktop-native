@@ -1,12 +1,11 @@
-package androidx.compose.foundation.text.selection
+package com.compose.desktop.native.text
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.selection.LocalSelectionRegistrar
+import androidx.compose.foundation.text.selection.Selectable
+import androidx.compose.foundation.text.selection.SelectionRect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -22,15 +21,16 @@ import androidx.compose.ui.text.WrappedText
 import androidx.compose.ui.text.currentTextMeasurer
 import androidx.compose.ui.text.currentViewportHeight
 import androidx.compose.ui.unit.Sp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // ==================
 // MARK: SelectableText
 // ==================
 
-/* A text block that joins cross-element selection when inside a
-   SelectionContainer. Renders exactly like BasicText (colour spans honoured),
+/* Non-official project composable: a text block that joins cross-element
+   selection when inside a SelectionContainer. Lives in the
+   com.compose.desktop.native layer (official Compose has no public
+   SelectableText). Renders exactly like BasicText (colour spans honoured),
    and — when a SelectionRegistrar is present — registers its window bounds +
    offset mapping and paints the highlight for its slice of the global
    selection. The container owns the drag and the Copy shortcut; this block
@@ -125,19 +125,6 @@ fun SelectableText(
 			modifier = Modifier.fillMaxWidth(),
 		)
 	}
-}
-
-/* One selection-highlight rectangle (logical px), painted behind the glyphs.
-   Shared by SelectableText and BasicTextField. */
-@Composable
-internal fun SelectionRect(inX: Float, inY: Float, inW: Float, inH: Float, inColor: Color) {
-	Box(
-		modifier = Modifier
-			.offset(x = inX.dp, y = inY.dp)
-			.width(inW.coerceAtLeast(1f).dp)
-			.height(inH.coerceAtLeast(1f).dp)
-			.background(inColor)
-	)
 }
 
 /* Mutable Selectable backing one SelectableText; the composable refreshes its
