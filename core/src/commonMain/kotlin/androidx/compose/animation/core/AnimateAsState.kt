@@ -53,11 +53,12 @@ fun animateDpAsState(
 	targetValue, animationSpec, label, finishedListener,
 ) { vA, vB, vF -> (vA.value + (vB.value - vA.value) * vF).dp }
 
-/* Generic primitive — the public animateFooAsState helpers wrap this
-   with the right lerp. Exposed in case downstream code wants to animate
-   a custom T (e.g. Offset). */
+/* Generic primitive the public animateFooAsState helpers wrap with the right
+   lerp. Internal — the official animateValueAsState takes a TwoWayConverter
+   (which this lerp-lambda stand-in deliberately omits), so it isn't exposed as
+   official public API here. */
 @Composable
-fun <T> animateValueAsState(
+internal fun <T> animateValueAsState(
 	targetValue: T,
 	animationSpec: AnimationSpec<T> = spring(),
 	label: String = "ValueAnimation",

@@ -6,9 +6,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 
 // ==================
 // MARK: InfiniteTransition
@@ -78,30 +75,6 @@ fun InfiniteTransition.animateFloat(
 	return vState
 }
 
-@Composable
-fun InfiniteTransition.animateColor(
-	initialValue: Color,
-	targetValue: Color,
-	animationSpec: InfiniteRepeatableSpec<Color>,
-	label: String = "ColorAnimation",
-): State<Color> {
-	val vState = remember { mutableStateOf(initialValue) }
-	remember(initialValue, targetValue) {
-		add(InfiniteTransition.Child(vState, initialValue, targetValue, animationSpec) { vA, vB, vF -> lerpColor(vA, vB, vF) })
-	}
-	return vState
-}
-
-@Composable
-fun InfiniteTransition.animateDp(
-	initialValue: Dp,
-	targetValue: Dp,
-	animationSpec: InfiniteRepeatableSpec<Dp>,
-	label: String = "DpAnimation",
-): State<Dp> {
-	val vState = remember { mutableStateOf(initialValue) }
-	remember(initialValue, targetValue) {
-		add(InfiniteTransition.Child(vState, initialValue, targetValue, animationSpec) { vA, vB, vF -> (vA.value + (vB.value - vA.value) * vF).dp })
-	}
-	return vState
-}
+// InfiniteTransition.animateColor lives in androidx.compose.animation (its official
+// package); InfiniteTransition.animateDp — a non-official convenience — lives in
+// com.compose.desktop.native.animation.

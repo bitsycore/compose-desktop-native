@@ -30,7 +30,7 @@ class LayoutNode {
     val children = mutableListOf<LayoutNode>()
 
     var modifier: Modifier = Modifier
-    var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
+    internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
 
     // ============
     //  Geometry (pixels, post-layout)
@@ -601,12 +601,14 @@ class LayoutNode {
 // MARK: MeasurePolicy
 // ==================
 
-fun interface MeasurePolicy {
+// Internal node-level measure policy — distinct from (and kept off the public
+// ABI to avoid colliding with) the official androidx.compose.ui.layout.MeasurePolicy.
+internal fun interface MeasurePolicy {
     fun measure(node: LayoutNode, constraints: Constraints): IntSize
 }
 
 // Default: wrap children stacked at (0,0)
-val DefaultMeasurePolicy = MeasurePolicy { node, constraints ->
+internal val DefaultMeasurePolicy = MeasurePolicy { node, constraints ->
     var maxW = 0; var maxH = 0
     for (child in node.children) {
         val childSize = child.measure(constraints)

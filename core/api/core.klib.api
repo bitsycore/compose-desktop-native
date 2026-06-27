@@ -148,16 +148,23 @@ final enum class androidx.compose.ui.text.style/TextOverflow : kotlin/Enum<andro
     final fun values(): kotlin/Array<androidx.compose.ui.text.style/TextOverflow> // androidx.compose.ui.text.style/TextOverflow.values|values#static(){}[0]
 }
 
+final enum class androidx.compose.ui.unit/LayoutDirection : kotlin/Enum<androidx.compose.ui.unit/LayoutDirection> { // androidx.compose.ui.unit/LayoutDirection|null[0]
+    enum entry Ltr // androidx.compose.ui.unit/LayoutDirection.Ltr|null[0]
+    enum entry Rtl // androidx.compose.ui.unit/LayoutDirection.Rtl|null[0]
+
+    final val entries // androidx.compose.ui.unit/LayoutDirection.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.unit/LayoutDirection> // androidx.compose.ui.unit/LayoutDirection.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): androidx.compose.ui.unit/LayoutDirection // androidx.compose.ui.unit/LayoutDirection.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<androidx.compose.ui.unit/LayoutDirection> // androidx.compose.ui.unit/LayoutDirection.values|values#static(){}[0]
+}
+
 abstract fun interface androidx.compose.animation.core/Easing { // androidx.compose.animation.core/Easing|null[0]
     abstract fun transform(kotlin/Float): kotlin/Float // androidx.compose.animation.core/Easing.transform|transform(kotlin.Float){}[0]
 }
 
 abstract fun interface androidx.compose.ui.layout/MeasurePolicy { // androidx.compose.ui.layout/MeasurePolicy|null[0]
     abstract fun (androidx.compose.ui.layout/MeasureScope).measure(kotlin.collections/List<androidx.compose.ui.layout/Measurable>, androidx.compose.ui.unit/Constraints): androidx.compose.ui.layout/MeasureResult // androidx.compose.ui.layout/MeasurePolicy.measure|measure@androidx.compose.ui.layout.MeasureScope(kotlin.collections.List<androidx.compose.ui.layout.Measurable>;androidx.compose.ui.unit.Constraints){}[0]
-}
-
-abstract fun interface androidx.compose.ui.node/MeasurePolicy { // androidx.compose.ui.node/MeasurePolicy|null[0]
-    abstract fun measure(androidx.compose.ui.node/LayoutNode, androidx.compose.ui.unit/Constraints): androidx.compose.ui.unit/IntSize // androidx.compose.ui.node/MeasurePolicy.measure|measure(androidx.compose.ui.node.LayoutNode;androidx.compose.ui.unit.Constraints){}[0]
 }
 
 abstract fun interface androidx.compose.ui/Alignment { // androidx.compose.ui/Alignment|null[0]
@@ -733,6 +740,7 @@ final class androidx.compose.ui.geometry/Offset { // androidx.compose.ui.geometr
     final fun getDistance(): kotlin/Float // androidx.compose.ui.geometry/Offset.getDistance|getDistance(){}[0]
     final fun getDistanceSquared(): kotlin/Float // androidx.compose.ui.geometry/Offset.getDistanceSquared|getDistanceSquared(){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.geometry/Offset.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // androidx.compose.ui.geometry/Offset.isValid|isValid(){}[0]
     final fun minus(androidx.compose.ui.geometry/Offset): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/Offset.minus|minus(androidx.compose.ui.geometry.Offset){}[0]
     final fun plus(androidx.compose.ui.geometry/Offset): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/Offset.plus|plus(androidx.compose.ui.geometry.Offset){}[0]
     final fun rem(kotlin/Float): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/Offset.rem|rem(kotlin.Float){}[0]
@@ -1230,9 +1238,6 @@ final class androidx.compose.ui.node/LayoutNode { // androidx.compose.ui.node/La
     final var imageAlpha // androidx.compose.ui.node/LayoutNode.imageAlpha|{}imageAlpha[0]
         final fun <get-imageAlpha>(): kotlin/Float // androidx.compose.ui.node/LayoutNode.imageAlpha.<get-imageAlpha>|<get-imageAlpha>(){}[0]
         final fun <set-imageAlpha>(kotlin/Float) // androidx.compose.ui.node/LayoutNode.imageAlpha.<set-imageAlpha>|<set-imageAlpha>(kotlin.Float){}[0]
-    final var measurePolicy // androidx.compose.ui.node/LayoutNode.measurePolicy|{}measurePolicy[0]
-        final fun <get-measurePolicy>(): androidx.compose.ui.node/MeasurePolicy // androidx.compose.ui.node/LayoutNode.measurePolicy.<get-measurePolicy>|<get-measurePolicy>(){}[0]
-        final fun <set-measurePolicy>(androidx.compose.ui.node/MeasurePolicy) // androidx.compose.ui.node/LayoutNode.measurePolicy.<set-measurePolicy>|<set-measurePolicy>(androidx.compose.ui.node.MeasurePolicy){}[0]
     final var modifier // androidx.compose.ui.node/LayoutNode.modifier|{}modifier[0]
         final fun <get-modifier>(): androidx.compose.ui/Modifier // androidx.compose.ui.node/LayoutNode.modifier.<get-modifier>|<get-modifier>(){}[0]
         final fun <set-modifier>(androidx.compose.ui/Modifier) // androidx.compose.ui.node/LayoutNode.modifier.<set-modifier>|<set-modifier>(androidx.compose.ui.Modifier){}[0]
@@ -1593,6 +1598,8 @@ final class androidx.compose.ui.unit/Constraints { // androidx.compose.ui.unit/C
         final fun <get-hasFixedHeight>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedHeight.<get-hasFixedHeight>|<get-hasFixedHeight>(){}[0]
     final val hasFixedWidth // androidx.compose.ui.unit/Constraints.hasFixedWidth|{}hasFixedWidth[0]
         final fun <get-hasFixedWidth>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.hasFixedWidth.<get-hasFixedWidth>|<get-hasFixedWidth>(){}[0]
+    final val isZero // androidx.compose.ui.unit/Constraints.isZero|{}isZero[0]
+        final fun <get-isZero>(): kotlin/Boolean // androidx.compose.ui.unit/Constraints.isZero.<get-isZero>|<get-isZero>(){}[0]
     final val maxHeight // androidx.compose.ui.unit/Constraints.maxHeight|{}maxHeight[0]
         final fun <get-maxHeight>(): kotlin/Int // androidx.compose.ui.unit/Constraints.maxHeight.<get-maxHeight>|<get-maxHeight>(){}[0]
     final val maxWidth // androidx.compose.ui.unit/Constraints.maxWidth|{}maxWidth[0]
@@ -1607,6 +1614,7 @@ final class androidx.compose.ui.unit/Constraints { // androidx.compose.ui.unit/C
     final fun component3(): kotlin/Int // androidx.compose.ui.unit/Constraints.component3|component3(){}[0]
     final fun component4(): kotlin/Int // androidx.compose.ui.unit/Constraints.component4|component4(){}[0]
     final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun copyMaxDimensions(): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints.copyMaxDimensions|copyMaxDimensions(){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.unit/Constraints.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.unit/Constraints.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.ui.unit/Constraints.toString|toString(){}[0]
@@ -2687,8 +2695,6 @@ final val androidx.compose.ui.layout/androidx_compose_ui_layout_LayoutModifierEl
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop|#static{}androidx_compose_ui_layout_Placeable$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop|#static{}androidx_compose_ui_layout_PlacementScope$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop|#static{}androidx_compose_ui_layout_ScaleFactor$stableprop[0]
-final val androidx.compose.ui.node/DefaultMeasurePolicy // androidx.compose.ui.node/DefaultMeasurePolicy|{}DefaultMeasurePolicy[0]
-    final fun <get-DefaultMeasurePolicy>(): androidx.compose.ui.node/MeasurePolicy // androidx.compose.ui.node/DefaultMeasurePolicy.<get-DefaultMeasurePolicy>|<get-DefaultMeasurePolicy>(){}[0]
 final val androidx.compose.ui.node/androidx_compose_ui_node_LayoutNode$stableprop // androidx.compose.ui.node/androidx_compose_ui_node_LayoutNode$stableprop|#static{}androidx_compose_ui_node_LayoutNode$stableprop[0]
 final val androidx.compose.ui.node/androidx_compose_ui_node_NodeApplier$stableprop // androidx.compose.ui.node/androidx_compose_ui_node_NodeApplier$stableprop|#static{}androidx_compose_ui_node_NodeApplier$stableprop[0]
 final val androidx.compose.ui.platform/LocalClipboardManager // androidx.compose.ui.platform/LocalClipboardManager|{}LocalClipboardManager[0]
@@ -2819,9 +2825,9 @@ final var androidx.compose.ui.text/currentViewportWidth // androidx.compose.ui.t
     final fun <get-currentViewportWidth>(): kotlin/Int // androidx.compose.ui.text/currentViewportWidth.<get-currentViewportWidth>|<get-currentViewportWidth>(){}[0]
     final fun <set-currentViewportWidth>(kotlin/Int) // androidx.compose.ui.text/currentViewportWidth.<set-currentViewportWidth>|<set-currentViewportWidth>(kotlin.Int){}[0]
 
-final fun (androidx.compose.animation.core/InfiniteTransition).androidx.compose.animation.core/animateColor(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.animation.core/InfiniteRepeatableSpec<androidx.compose.ui.graphics/Color>, kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.graphics/Color> // androidx.compose.animation.core/animateColor|animateColor@androidx.compose.animation.core.InfiniteTransition(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.animation.core.InfiniteRepeatableSpec<androidx.compose.ui.graphics.Color>;kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
-final fun (androidx.compose.animation.core/InfiniteTransition).androidx.compose.animation.core/animateDp(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.animation.core/InfiniteRepeatableSpec<androidx.compose.ui.unit/Dp>, kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.unit/Dp> // androidx.compose.animation.core/animateDp|animateDp@androidx.compose.animation.core.InfiniteTransition(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.animation.core.InfiniteRepeatableSpec<androidx.compose.ui.unit.Dp>;kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun (androidx.compose.animation.core/InfiniteTransition).androidx.compose.animation.core/animateFloat(kotlin/Float, kotlin/Float, androidx.compose.animation.core/InfiniteRepeatableSpec<kotlin/Float>, kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<kotlin/Float> // androidx.compose.animation.core/animateFloat|animateFloat@androidx.compose.animation.core.InfiniteTransition(kotlin.Float;kotlin.Float;androidx.compose.animation.core.InfiniteRepeatableSpec<kotlin.Float>;kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun (androidx.compose.animation.core/InfiniteTransition).androidx.compose.animation/animateColor(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, androidx.compose.animation.core/InfiniteRepeatableSpec<androidx.compose.ui.graphics/Color>, kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.graphics/Color> // androidx.compose.animation/animateColor|animateColor@androidx.compose.animation.core.InfiniteTransition(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;androidx.compose.animation.core.InfiniteRepeatableSpec<androidx.compose.ui.graphics.Color>;kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun (androidx.compose.animation.core/InfiniteTransition).com.compose.desktop.native.animation/animateDp(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.animation.core/InfiniteRepeatableSpec<androidx.compose.ui.unit/Dp>, kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.unit/Dp> // com.compose.desktop.native.animation/animateDp|animateDp@androidx.compose.animation.core.InfiniteTransition(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.animation.core.InfiniteRepeatableSpec<androidx.compose.ui.unit.Dp>;kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun (androidx.compose.foundation.interaction/InteractionSource).androidx.compose.foundation.interaction/collectIsFocusedAsState(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.runtime/State<kotlin/Boolean> // androidx.compose.foundation.interaction/collectIsFocusedAsState|collectIsFocusedAsState@androidx.compose.foundation.interaction.InteractionSource(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun (androidx.compose.foundation.interaction/InteractionSource).androidx.compose.foundation.interaction/collectIsHoveredAsState(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.runtime/State<kotlin/Boolean> // androidx.compose.foundation.interaction/collectIsHoveredAsState|collectIsHoveredAsState@androidx.compose.foundation.interaction.InteractionSource(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun (androidx.compose.foundation.interaction/InteractionSource).androidx.compose.foundation.interaction/collectIsPressedAsState(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.runtime/State<kotlin/Boolean> // androidx.compose.foundation.interaction/collectIsPressedAsState|collectIsPressedAsState@androidx.compose.foundation.interaction.InteractionSource(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
@@ -2895,7 +2901,6 @@ final fun (kotlin/Double).androidx.compose.ui.geometry/times(androidx.compose.ui
 final fun (kotlin/Float).androidx.compose.ui.geometry/times(androidx.compose.ui.geometry/Size): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/times|times@kotlin.Float(androidx.compose.ui.geometry.Size){}[0]
 final fun (kotlin/Int).androidx.compose.ui.geometry/times(androidx.compose.ui.geometry/Size): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/times|times@kotlin.Int(androidx.compose.ui.geometry.Size){}[0]
 final fun (kotlin/Int).androidx.compose.ui.unit/times(androidx.compose.ui.unit/IntSize): androidx.compose.ui.unit/IntSize // androidx.compose.ui.unit/times|times@kotlin.Int(androidx.compose.ui.unit.IntSize){}[0]
-final fun <#A: kotlin/Any?> androidx.compose.animation.core/animateValueAsState(#A, androidx.compose.animation.core/AnimationSpec<#A>?, kotlin/String?, kotlin/Function1<#A, kotlin/Unit>?, kotlin/Function3<#A, #A, kotlin/Float, #A>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<#A> // androidx.compose.animation.core/animateValueAsState|animateValueAsState(0:0;androidx.compose.animation.core.AnimationSpec<0:0>?;kotlin.String?;kotlin.Function1<0:0,kotlin.Unit>?;kotlin.Function3<0:0,0:0,kotlin.Float,0:0>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/infiniteRepeatable(androidx.compose.animation.core/TweenSpec<#A>, androidx.compose.animation.core/RepeatMode = ...): androidx.compose.animation.core/InfiniteRepeatableSpec<#A> // androidx.compose.animation.core/infiniteRepeatable|infiniteRepeatable(androidx.compose.animation.core.TweenSpec<0:0>;androidx.compose.animation.core.RepeatMode){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/repeatable(kotlin/Int, androidx.compose.animation.core/TweenSpec<#A>, androidx.compose.animation.core/RepeatMode = ...): androidx.compose.animation.core/RepeatableSpec<#A> // androidx.compose.animation.core/repeatable|repeatable(kotlin.Int;androidx.compose.animation.core.TweenSpec<0:0>;androidx.compose.animation.core.RepeatMode){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/snap(kotlin/Int = ...): androidx.compose.animation.core/SnapSpec<#A> // androidx.compose.animation.core/snap|snap(kotlin.Int){0§<kotlin.Any?>}[0]

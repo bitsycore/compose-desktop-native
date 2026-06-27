@@ -25,6 +25,10 @@ data class Offset(val x: Float, val y: Float) {
 	fun getDistance() = sqrt(x * x + y * y)
 	fun getDistanceSquared() = x * x + y * y
 
+	// True unless either component is NaN (the Unspecified marker). Infinities
+	// are valid — matches official Offset.isValid().
+	fun isValid(): Boolean = !x.isNaN() && !y.isNaN()
+
 	companion object {
 		val Zero = Offset(0f, 0f)
 		val Infinite = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)

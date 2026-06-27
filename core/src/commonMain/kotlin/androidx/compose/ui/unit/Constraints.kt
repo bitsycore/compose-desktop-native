@@ -15,6 +15,12 @@ data class Constraints(
     val hasFixedWidth get() = minWidth == maxWidth
     val hasFixedHeight get() = minHeight == maxHeight
 
+    // No space available for content (either max dimension is 0) — official member.
+    val isZero get() = maxWidth == 0 || maxHeight == 0
+
+    // Same max bounds but with both minimums zeroed — official member.
+    fun copyMaxDimensions() = Constraints(0, maxWidth, 0, maxHeight)
+
     companion object {
         const val Infinity = Int.MAX_VALUE
 
