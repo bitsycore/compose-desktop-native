@@ -1,5 +1,7 @@
 package androidx.compose.ui.graphics.drawscope
 
+import androidx.compose.ui.graphics.StrokeCap
+
 // ==================
 // MARK: DrawStyle
 // ==================
@@ -27,15 +29,4 @@ data class Stroke(
 	}
 }
 
-// ==================
-// MARK: StrokeCap
-// ==================
-
-/* Shape of stroke endpoints. Round adds a half-circle cap of radius
-   width/2; Square extends the stroke by width/2 in the line direction;
-   Butt ends flat at the geometric endpoint. */
-enum class StrokeCap {
-	Butt,
-	Round,
-	Square,
-}
+// StrokeCap lives in its own vendored file (androidx.compose.ui.graphics.StrokeCap).

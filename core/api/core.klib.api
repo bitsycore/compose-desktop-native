@@ -32,18 +32,6 @@ final enum class androidx.compose.animation.core/RepeatMode : kotlin/Enum<androi
     final fun values(): kotlin/Array<androidx.compose.animation.core/RepeatMode> // androidx.compose.animation.core/RepeatMode.values|values#static(){}[0]
 }
 
-final enum class androidx.compose.ui.graphics.drawscope/StrokeCap : kotlin/Enum<androidx.compose.ui.graphics.drawscope/StrokeCap> { // androidx.compose.ui.graphics.drawscope/StrokeCap|null[0]
-    enum entry Butt // androidx.compose.ui.graphics.drawscope/StrokeCap.Butt|null[0]
-    enum entry Round // androidx.compose.ui.graphics.drawscope/StrokeCap.Round|null[0]
-    enum entry Square // androidx.compose.ui.graphics.drawscope/StrokeCap.Square|null[0]
-
-    final val entries // androidx.compose.ui.graphics.drawscope/StrokeCap.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.graphics.drawscope/StrokeCap> // androidx.compose.ui.graphics.drawscope/StrokeCap.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): androidx.compose.ui.graphics.drawscope/StrokeCap // androidx.compose.ui.graphics.drawscope/StrokeCap.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.graphics.drawscope/StrokeCap> // androidx.compose.ui.graphics.drawscope/StrokeCap.values|values#static(){}[0]
-}
-
 final enum class androidx.compose.ui.input.key/KeyEventType : kotlin/Enum<androidx.compose.ui.input.key/KeyEventType> { // androidx.compose.ui.input.key/KeyEventType|null[0]
     enum entry Down // androidx.compose.ui.input.key/KeyEventType.Down|null[0]
     enum entry Up // androidx.compose.ui.input.key/KeyEventType.Up|null[0]
@@ -291,14 +279,14 @@ abstract interface androidx.compose.ui.graphics.drawscope/DrawScope { // android
 
     abstract fun drawArc(androidx.compose.ui.graphics/Brush, kotlin/Float, kotlin/Float, kotlin/Boolean = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawArc|drawArc(androidx.compose.ui.graphics.Brush;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     abstract fun drawCircle(androidx.compose.ui.graphics/Brush, kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawCircle|drawCircle(androidx.compose.ui.graphics.Brush;kotlin.Float;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
-    abstract fun drawLine(androidx.compose.ui.graphics/Brush, androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/StrokeCap = ..., kotlin/Float = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawLine|drawLine(androidx.compose.ui.graphics.Brush;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.drawscope.StrokeCap;kotlin.Float){}[0]
+    abstract fun drawLine(androidx.compose.ui.graphics/Brush, androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, kotlin/Float = ..., androidx.compose.ui.graphics/StrokeCap = ..., kotlin/Float = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawLine|drawLine(androidx.compose.ui.graphics.Brush;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.StrokeCap;kotlin.Float){}[0]
     abstract fun drawOval(androidx.compose.ui.graphics/Brush, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawOval|drawOval(androidx.compose.ui.graphics.Brush;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     abstract fun drawPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Brush, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawPath|drawPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Brush;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     abstract fun drawRect(androidx.compose.ui.graphics/Brush, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawRect|drawRect(androidx.compose.ui.graphics.Brush;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     abstract fun drawRoundRect(androidx.compose.ui.graphics/Brush, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawRoundRect|drawRoundRect(androidx.compose.ui.graphics.Brush;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     open fun drawArc(androidx.compose.ui.graphics/Color, kotlin/Float, kotlin/Float, kotlin/Boolean = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawArc|drawArc(androidx.compose.ui.graphics.Color;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     open fun drawCircle(androidx.compose.ui.graphics/Color, kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawCircle|drawCircle(androidx.compose.ui.graphics.Color;kotlin.Float;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
-    open fun drawLine(androidx.compose.ui.graphics/Color, androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/StrokeCap = ..., kotlin/Float = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawLine|drawLine(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.drawscope.StrokeCap;kotlin.Float){}[0]
+    open fun drawLine(androidx.compose.ui.graphics/Color, androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, kotlin/Float = ..., androidx.compose.ui.graphics/StrokeCap = ..., kotlin/Float = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawLine|drawLine(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.StrokeCap;kotlin.Float){}[0]
     open fun drawOval(androidx.compose.ui.graphics/Color, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawOval|drawOval(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     open fun drawPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Color, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawPath|drawPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Color;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
     open fun drawRect(androidx.compose.ui.graphics/Color, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawRect|drawRect(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
@@ -1050,16 +1038,16 @@ final class androidx.compose.ui.graphics.colorspace/WhitePoint { // androidx.com
 }
 
 final class androidx.compose.ui.graphics.drawscope/Stroke : androidx.compose.ui.graphics.drawscope/DrawStyle { // androidx.compose.ui.graphics.drawscope/Stroke|null[0]
-    constructor <init>(kotlin/Float, androidx.compose.ui.graphics.drawscope/StrokeCap = ...) // androidx.compose.ui.graphics.drawscope/Stroke.<init>|<init>(kotlin.Float;androidx.compose.ui.graphics.drawscope.StrokeCap){}[0]
+    constructor <init>(kotlin/Float, androidx.compose.ui.graphics/StrokeCap = ...) // androidx.compose.ui.graphics.drawscope/Stroke.<init>|<init>(kotlin.Float;androidx.compose.ui.graphics.StrokeCap){}[0]
 
     final val cap // androidx.compose.ui.graphics.drawscope/Stroke.cap|{}cap[0]
-        final fun <get-cap>(): androidx.compose.ui.graphics.drawscope/StrokeCap // androidx.compose.ui.graphics.drawscope/Stroke.cap.<get-cap>|<get-cap>(){}[0]
+        final fun <get-cap>(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics.drawscope/Stroke.cap.<get-cap>|<get-cap>(){}[0]
     final val width // androidx.compose.ui.graphics.drawscope/Stroke.width|{}width[0]
         final fun <get-width>(): kotlin/Float // androidx.compose.ui.graphics.drawscope/Stroke.width.<get-width>|<get-width>(){}[0]
 
     final fun component1(): kotlin/Float // androidx.compose.ui.graphics.drawscope/Stroke.component1|component1(){}[0]
-    final fun component2(): androidx.compose.ui.graphics.drawscope/StrokeCap // androidx.compose.ui.graphics.drawscope/Stroke.component2|component2(){}[0]
-    final fun copy(kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/StrokeCap = ...): androidx.compose.ui.graphics.drawscope/Stroke // androidx.compose.ui.graphics.drawscope/Stroke.copy|copy(kotlin.Float;androidx.compose.ui.graphics.drawscope.StrokeCap){}[0]
+    final fun component2(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics.drawscope/Stroke.component2|component2(){}[0]
+    final fun copy(kotlin/Float = ..., androidx.compose.ui.graphics/StrokeCap = ...): androidx.compose.ui.graphics.drawscope/Stroke // androidx.compose.ui.graphics.drawscope/Stroke.copy|copy(kotlin.Float;androidx.compose.ui.graphics.StrokeCap){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics.drawscope/Stroke.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics.drawscope/Stroke.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.ui.graphics.drawscope/Stroke.toString|toString(){}[0]
@@ -2448,6 +2436,21 @@ final value class androidx.compose.ui.graphics/Color { // androidx.compose.ui.gr
 
         final fun hsl(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics.colorspace/Rgb = ...): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color.Companion.hsl|hsl(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.colorspace.Rgb){}[0]
         final fun hsv(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics.colorspace/Rgb = ...): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color.Companion.hsv|hsv(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.colorspace.Rgb){}[0]
+    }
+}
+
+final value class androidx.compose.ui.graphics/StrokeCap { // androidx.compose.ui.graphics/StrokeCap|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/StrokeCap.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/StrokeCap.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/StrokeCap.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.graphics/StrokeCap.Companion|null[0]
+        final val Butt // androidx.compose.ui.graphics/StrokeCap.Companion.Butt|{}Butt[0]
+            final fun <get-Butt>(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics/StrokeCap.Companion.Butt.<get-Butt>|<get-Butt>(){}[0]
+        final val Round // androidx.compose.ui.graphics/StrokeCap.Companion.Round|{}Round[0]
+            final fun <get-Round>(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics/StrokeCap.Companion.Round.<get-Round>|<get-Round>(){}[0]
+        final val Square // androidx.compose.ui.graphics/StrokeCap.Companion.Square|{}Square[0]
+            final fun <get-Square>(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics/StrokeCap.Companion.Square.<get-Square>|<get-Square>(){}[0]
     }
 }
 

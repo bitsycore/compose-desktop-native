@@ -50,8 +50,10 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colors
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt
 
 # ── androidx.compose.ui.graphics value types ──────────────────────────────
-# TileMode replaces the hand-written enum in Brush.kt (value class over Int).
+# TileMode replaces the hand-written enum in Brush.kt; StrokeCap replaces the
+# enum in drawscope/DrawStyle.kt (also fixes its package: graphics, not drawscope).
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMode.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/TileMode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/StrokeCap.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/StrokeCap.kt
 
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt

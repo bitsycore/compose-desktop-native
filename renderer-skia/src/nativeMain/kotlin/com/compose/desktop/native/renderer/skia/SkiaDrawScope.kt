@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.StrokeCap as ComposeStrokeCap
+import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
 import org.jetbrains.skia.Color4f
@@ -208,6 +208,7 @@ internal class SkiaDrawScope(
 					ComposeStrokeCap.Butt -> PaintStrokeCap.BUTT
 					ComposeStrokeCap.Round -> PaintStrokeCap.ROUND
 					ComposeStrokeCap.Square -> PaintStrokeCap.SQUARE
+					else -> PaintStrokeCap.BUTT
 				}
 			}
 		}
