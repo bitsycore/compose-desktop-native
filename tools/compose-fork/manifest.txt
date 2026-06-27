@@ -1,0 +1,25 @@
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :core.
+#
+# These are the pure, platform-independent leaf types (math/value classes) that
+# have no dependency on the Compose engine, Skiko, or platform glue — the
+# "pull-verbatim" set. Everything else (LayoutNode / Modifier / DrawScope /
+# widgets / renderers) is re-implemented by hand and is NOT listed here:
+# that's the "fill what's missing" half.
+#
+# Format (whitespace-separated):  <upstream-path-under-clone>   <dest-under-repo-root>
+# Re-sync with: tools/compose-fork/sync.sh   (after bumping compose-ref.txt)
+
+# ── androidx.compose.ui.util ──────────────────────────────────────────────
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/InlineClassHelper.kt          core/src/commonMain/kotlin/androidx/compose/ui/util/InlineClassHelper.kt
+compose/ui/ui-util/src/nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHelper.nonJvm.kt    core/src/nativeMain/kotlin/androidx/compose/ui/util/InlineClassHelper.native.kt
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt                 core/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt
+
+# ── androidx.compose.ui.geometry ──────────────────────────────────────────
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt              core/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Size.kt                core/src/commonMain/kotlin/androidx/compose/ui/geometry/Size.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/CornerRadius.kt        core/src/commonMain/kotlin/androidx/compose/ui/geometry/CornerRadius.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Rect.kt                core/src/commonMain/kotlin/androidx/compose/ui/geometry/Rect.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/RoundRect.kt           core/src/commonMain/kotlin/androidx/compose/ui/geometry/RoundRect.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/MutableRect.kt         core/src/commonMain/kotlin/androidx/compose/ui/geometry/MutableRect.kt
+compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt       core/src/commonMain/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt

@@ -1,0 +1,6 @@
+# Pinned upstream ref for the vendored Compose files (tools/compose-fork/sync.sh).
+# Repo: https://github.com/JetBrains/compose-multiplatform-core
+# Keep this close to the Compose version the build targets (currently runtime
+# 1.11.1); the pure leaf value types vendored here are stable across minors.
+# Tag at this commit: v1.12.0-beta01+dev4324
+1be9d64ad12db0c79f44aedf9d9388e644c60871
