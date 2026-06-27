@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.r8
 import androidx.compose.ui.graphics.g8
 import androidx.compose.ui.graphics.b8
 import androidx.compose.ui.graphics.a8
-import androidx.compose.ui.graphics.GraphicsLayerModifier
+import com.compose.desktop.native.element.GraphicsLayerModifier
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape

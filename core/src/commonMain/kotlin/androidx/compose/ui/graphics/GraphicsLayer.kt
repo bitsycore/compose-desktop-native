@@ -1,6 +1,7 @@
 package androidx.compose.ui.graphics
 
 import androidx.compose.ui.Modifier
+import com.compose.desktop.native.element.GraphicsLayerModifier
 
 // ==================
 // MARK: TransformOrigin
@@ -15,48 +16,8 @@ data class TransformOrigin(val pivotFractionX: Float, val pivotFractionY: Float)
 	}
 }
 
-// ==================
-// MARK: GraphicsLayerModifier
-// ==================
-
-/* A "graphics layer" element: alpha + 2D transform (scale / rotation /
-   translation), with an optional cacheKey that opts the subtree into
-   render-to-texture caching across frames.
-
-   Caching semantics:
-   - cacheKey == null  -> no caching; the subtree is drawn every frame, but
-     transforms / alpha still apply via the renderer's transform stack.
-   - cacheKey != null  -> the renderer renders the subtree into an offscreen
-     target on the first frame, stores it keyed by (node, cacheKey), and
-     reuses the target while the key compares equal. Any state in the
-     subtree must therefore be reflected in the key — change the key to
-     invalidate the cache.
-
-   needsLayer means the renderer must always promote the subtree to an
-   offscreen layer for this frame (because of alpha or because we're
-   caching). needsTransform means a non-identity scale / rotation /
-   translation has been requested. */
-data class GraphicsLayerModifier(
-	val alpha: Float = 1f,
-	val scaleX: Float = 1f,
-	val scaleY: Float = 1f,
-	val rotationZ: Float = 0f,
-	val translationX: Float = 0f,
-	val translationY: Float = 0f,
-	val transformOrigin: TransformOrigin = TransformOrigin.Center,
-	val cacheKey: Any? = null,
-) : Modifier.Element {
-
-	val needsLayer: Boolean
-		get() = alpha < 1f || cacheKey != null
-
-	val needsTransform: Boolean
-		get() = scaleX != 1f || scaleY != 1f || rotationZ != 0f ||
-			translationX != 0f || translationY != 0f
-
-	val isIdentity: Boolean
-		get() = !needsLayer && !needsTransform
-}
+// GraphicsLayerModifier (the element this builds) lives in
+// com.compose.desktop.native.element.
 
 // ==================
 // MARK: Modifier.graphicsLayer

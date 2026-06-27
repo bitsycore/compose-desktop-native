@@ -183,7 +183,7 @@ class LayoutNode {
     val nodeAlpha: Float get() = modifier.foldIn(1f) { acc, e ->
         when (e) {
             is AlphaModifier                                                -> acc * e.alpha
-            is androidx.compose.ui.graphics.GraphicsLayerModifier           -> acc * e.alpha
+            is com.compose.desktop.native.element.GraphicsLayerModifier           -> acc * e.alpha
             else                                                            -> acc
         }
     }
@@ -199,10 +199,10 @@ class LayoutNode {
     }
     /* The (last) GraphicsLayerModifier in this node's chain, or null if
        none. Used by renderers to apply transforms and per-node caching. */
-    val graphicsLayer: androidx.compose.ui.graphics.GraphicsLayerModifier? get() {
-        var v: androidx.compose.ui.graphics.GraphicsLayerModifier? = null
+    val graphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? get() {
+        var v: com.compose.desktop.native.element.GraphicsLayerModifier? = null
         modifier.foldIn(Unit) { _, e ->
-            if (e is androidx.compose.ui.graphics.GraphicsLayerModifier) v = e
+            if (e is com.compose.desktop.native.element.GraphicsLayerModifier) v = e
         }
         return v
     }

@@ -9,7 +9,7 @@ import com.compose.desktop.native.element.DrawBehindModifier
 import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.VerticalScrollModifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.GraphicsLayerModifier
+import com.compose.desktop.native.element.GraphicsLayerModifier
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape

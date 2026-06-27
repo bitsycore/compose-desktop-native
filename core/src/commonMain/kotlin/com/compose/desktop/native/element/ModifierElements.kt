@@ -4,6 +4,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
 
 // ==================
 // MARK: Modifier Elements (render-bridge — non-official)
@@ -147,3 +148,33 @@ data class LayoutWeightModifier(val weight: Float, val fill: Boolean) : Modifier
    inside doesn't double-blend. Multiple AlphaModifiers multiply. Applied by
    the renderer (Skia saveLayer / SDL3 render-to-texture). */
 data class AlphaModifier(val alpha: Float) : Modifier.Element
+
+// ==================
+// MARK: GraphicsLayerModifier
+// ==================
+
+/* A "graphics layer" element: alpha + 2D transform (scale / rotation /
+   translation), with an optional cacheKey that opts the subtree into
+   render-to-texture caching across frames. See Modifier.graphicsLayer (in
+   androidx.compose.ui.graphics) for the caching semantics. */
+data class GraphicsLayerModifier(
+    val alpha: Float = 1f,
+    val scaleX: Float = 1f,
+    val scaleY: Float = 1f,
+    val rotationZ: Float = 0f,
+    val translationX: Float = 0f,
+    val translationY: Float = 0f,
+    val transformOrigin: TransformOrigin = TransformOrigin.Center,
+    val cacheKey: Any? = null,
+) : Modifier.Element {
+
+    val needsLayer: Boolean
+        get() = alpha < 1f || cacheKey != null
+
+    val needsTransform: Boolean
+        get() = scaleX != 1f || scaleY != 1f || rotationZ != 0f ||
+            translationX != 0f || translationY != 0f
+
+    val isIdentity: Boolean
+        get() = !needsLayer && !needsTransform
+}
