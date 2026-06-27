@@ -17,7 +17,7 @@ import com.compose.desktop.native.element.GraphicsLayerModifier
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.LayoutNode
 import kotlinx.cinterop.*
 import sdl3.*
 import kotlin.math.PI

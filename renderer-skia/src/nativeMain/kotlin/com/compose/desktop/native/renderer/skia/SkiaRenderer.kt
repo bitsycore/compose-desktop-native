@@ -13,7 +13,7 @@ import com.compose.desktop.native.element.GraphicsLayerModifier
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.LayoutNode
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.Paint

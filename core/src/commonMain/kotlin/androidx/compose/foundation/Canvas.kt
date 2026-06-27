@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ComposeNode
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.node.LayoutNode
-import androidx.compose.ui.node.NodeApplier
+import com.compose.desktop.native.node.LayoutNode
+import com.compose.desktop.native.node.NodeApplier
 
 // ==================
 // MARK: Canvas

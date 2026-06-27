@@ -16,8 +16,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputElement
-import androidx.compose.ui.node.LayoutNode
-import androidx.compose.ui.node.NodeApplier
+import com.compose.desktop.native.node.LayoutNode
+import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.currentImageLoader
 import androidx.compose.ui.text.currentTextMeasurer
