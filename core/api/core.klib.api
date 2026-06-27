@@ -1229,13 +1229,6 @@ final class androidx.compose.ui.layout/FixedScale : androidx.compose.ui.layout/C
     final fun toString(): kotlin/String // androidx.compose.ui.layout/FixedScale.toString|toString(){}[0]
 }
 
-final class androidx.compose.ui.layout/LayoutModifierElement : androidx.compose.ui/Modifier.Element { // androidx.compose.ui.layout/LayoutModifierElement|null[0]
-    constructor <init>(kotlin/Function3<androidx.compose.ui.layout/MeasureScope, androidx.compose.ui.layout/Measurable, androidx.compose.ui.unit/Constraints, androidx.compose.ui.layout/MeasureResult>) // androidx.compose.ui.layout/LayoutModifierElement.<init>|<init>(kotlin.Function3<androidx.compose.ui.layout.MeasureScope,androidx.compose.ui.layout.Measurable,androidx.compose.ui.unit.Constraints,androidx.compose.ui.layout.MeasureResult>){}[0]
-
-    final val onMeasure // androidx.compose.ui.layout/LayoutModifierElement.onMeasure|{}onMeasure[0]
-        final fun <get-onMeasure>(): kotlin/Function3<androidx.compose.ui.layout/MeasureScope, androidx.compose.ui.layout/Measurable, androidx.compose.ui.unit/Constraints, androidx.compose.ui.layout/MeasureResult> // androidx.compose.ui.layout/LayoutModifierElement.onMeasure.<get-onMeasure>|<get-onMeasure>(){}[0]
-}
-
 final class androidx.compose.ui.layout/ScaleFactor { // androidx.compose.ui.layout/ScaleFactor|null[0]
     constructor <init>(kotlin/Float, kotlin/Float) // androidx.compose.ui.layout/ScaleFactor.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
 
@@ -2706,7 +2699,6 @@ final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_Po
 final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputEvent$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputEvent$stableprop|#static{}androidx_compose_ui_input_pointer_PointerInputEvent$stableprop[0]
 final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop|#static{}androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop|#static{}androidx_compose_ui_layout_FixedScale$stableprop[0]
-final val androidx.compose.ui.layout/androidx_compose_ui_layout_LayoutModifierElement$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_LayoutModifierElement$stableprop|#static{}androidx_compose_ui_layout_LayoutModifierElement$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop|#static{}androidx_compose_ui_layout_Placeable$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop|#static{}androidx_compose_ui_layout_PlacementScope$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop|#static{}androidx_compose_ui_layout_ScaleFactor$stableprop[0]
@@ -3021,7 +3013,6 @@ final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_Po
 final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop_getter|androidx_compose_ui_input_pointer_PointerInputScopeImpl$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/Layout(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.ui.layout/MeasurePolicy, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.ui.layout/Layout|Layout(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.ui.layout.MeasurePolicy;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter|androidx_compose_ui_layout_FixedScale$stableprop_getter(){}[0]
-final fun androidx.compose.ui.layout/androidx_compose_ui_layout_LayoutModifierElement$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_LayoutModifierElement$stableprop_getter|androidx_compose_ui_layout_LayoutModifierElement$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop_getter|androidx_compose_ui_layout_Placeable$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop_getter|androidx_compose_ui_layout_PlacementScope$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_ScaleFactor$stableprop_getter|androidx_compose_ui_layout_ScaleFactor$stableprop_getter(){}[0]

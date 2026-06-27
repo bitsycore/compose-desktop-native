@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.Constraints
    it via layout(width, height) { /* place */ }. The Box / Row / Column
    that hosts this node sees the size declared by the modifier rather
    than the child's natural size. */
-class LayoutModifierElement(
+internal class LayoutModifierElement(
 	val onMeasure: MeasureScope.(Measurable, Constraints) -> MeasureResult,
 ) : Modifier.Element
 
@@ -26,5 +26,5 @@ class LayoutModifierElement(
    shifting child position by something computed from its measured size,
    or for forcing a child to a specific size while keeping its place call. */
 fun Modifier.layout(
-	inMeasure: MeasureScope.(Measurable, Constraints) -> MeasureResult,
-): Modifier = this.then(LayoutModifierElement(inMeasure))
+	measure: MeasureScope.(Measurable, Constraints) -> MeasureResult,
+): Modifier = this.then(LayoutModifierElement(measure))
