@@ -45,6 +45,14 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colors
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/WhitePoint.kt              core/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/WhitePoint.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt                     core/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt
 
+# ── androidx.compose.ui.graphics value types ──────────────────────────────
+# TileMode replaces the hand-written enum in Brush.kt (value class over Int).
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMode.kt           core/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMode.kt
+
+# ── androidx.compose.ui.text value types ──────────────────────────────────
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt
+
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt              core/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt

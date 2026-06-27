@@ -54,19 +54,7 @@ data class SweepGradient(
 	val center: Offset,
 ) : Brush()
 
-// ==================
-// MARK: TileMode
-// ==================
-
-/* How a gradient samples outside its [0..1] stop range. Clamp = repeat the
-   first / last colour. Repeated = tile. Mirror = reflect. Matches the
-   names upstream Compose / Skia use. */
-enum class TileMode {
-	Clamp,
-	Repeated,
-	Mirror,
-	Decal,
-}
+// TileMode lives in its own vendored file (androidx.compose.ui.graphics.TileMode).
 
 // ==================
 // MARK: Brush factories
