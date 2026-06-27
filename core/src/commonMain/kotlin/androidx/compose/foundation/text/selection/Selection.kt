@@ -11,13 +11,13 @@ import androidx.compose.runtime.setValue
 // ==================
 
 /* A selected character range [start, end) within one Selectable's text. */
-data class TextSel(val start: Int, val end: Int)
+internal data class TextSel(val start: Int, val end: Int)
 
 /* One registered selectable text block. Reports its window-absolute bounds and
    maps a point (in its own local coordinates) to a character offset, using the
    active TextMeasurer. SelectionContainer's registrar drives a single drag
    selection across every registered Selectable. */
-interface Selectable {
+internal interface Selectable {
 	val id: Long
 	val text: String
 	val windowX: Int
@@ -32,7 +32,7 @@ interface Selectable {
    where the drag began; head = the current drag point — each is a
    (selectableId, charOffset). State is snapshot-backed so each block's
    highlight and the copy action recompose as the drag moves. */
-class SelectionRegistrar {
+internal class SelectionRegistrar {
 	private var fNextId = 0L
 	private val fSelectables = mutableStateListOf<Selectable>()
 
@@ -151,4 +151,4 @@ class SelectionRegistrar {
 
 /* Non-null inside a SelectionContainer; SelectableText registers with it and
    reads its selection to paint highlights. */
-val LocalSelectionRegistrar = compositionLocalOf<SelectionRegistrar?> { null }
+internal val LocalSelectionRegistrar = compositionLocalOf<SelectionRegistrar?> { null }

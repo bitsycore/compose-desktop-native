@@ -40,11 +40,11 @@ class ScrollState(initial: Int = 0) {
     /* Total content length along the scroll axis = scroll range + viewport.
        Before the first layout pass (maxValue still Int.MAX_VALUE) this is just
        the viewport so a Scrollbar treats the content as non-scrollable. */
-    val contentSize: Int get() = if (_maxValue == Int.MAX_VALUE) _viewportSize else _maxValue + _viewportSize
+    internal val contentSize: Int get() = if (_maxValue == Int.MAX_VALUE) _viewportSize else _maxValue + _viewportSize
 
     /* Internal: the layout sets the max + viewport each frame as content /
        viewport sizes change. */
-    fun setMaxInternal(inMax: Int, inViewport: Int = _viewportSize) {
+    internal fun setMaxInternal(inMax: Int, inViewport: Int = _viewportSize) {
         val vClamped = inMax.coerceAtLeast(0)
         _maxValue = vClamped
         _viewportSize = inViewport.coerceAtLeast(0)
