@@ -54,6 +54,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/Inlin
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt             core/src/commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt          core/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt              core/src/commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt             core/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt

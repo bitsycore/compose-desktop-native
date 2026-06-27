@@ -100,17 +100,6 @@ final enum class androidx.compose.ui.state/ToggleableState : kotlin/Enum<android
     final fun values(): kotlin/Array<androidx.compose.ui.state/ToggleableState> // androidx.compose.ui.state/ToggleableState.values|values#static(){}[0]
 }
 
-final enum class androidx.compose.ui.text.font/FontStyle : kotlin/Enum<androidx.compose.ui.text.font/FontStyle> { // androidx.compose.ui.text.font/FontStyle|null[0]
-    enum entry Italic // androidx.compose.ui.text.font/FontStyle.Italic|null[0]
-    enum entry Normal // androidx.compose.ui.text.font/FontStyle.Normal|null[0]
-
-    final val entries // androidx.compose.ui.text.font/FontStyle.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.text.font/FontStyle> // androidx.compose.ui.text.font/FontStyle.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): androidx.compose.ui.text.font/FontStyle // androidx.compose.ui.text.font/FontStyle.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.text.font/FontStyle> // androidx.compose.ui.text.font/FontStyle.values|values#static(){}[0]
-}
-
 final enum class androidx.compose.ui.unit/LayoutDirection : kotlin/Enum<androidx.compose.ui.unit/LayoutDirection> { // androidx.compose.ui.unit/LayoutDirection|null[0]
     enum entry Ltr // androidx.compose.ui.unit/LayoutDirection.Ltr|null[0]
     enum entry Rtl // androidx.compose.ui.unit/LayoutDirection.Rtl|null[0]
@@ -2538,6 +2527,26 @@ final value class androidx.compose.ui.graphics/TileMode { // androidx.compose.ui
     }
 }
 
+final value class androidx.compose.ui.text.font/FontStyle { // androidx.compose.ui.text.font/FontStyle|null[0]
+    constructor <init>(kotlin/Int) // androidx.compose.ui.text.font/FontStyle.<init>|<init>(kotlin.Int){}[0]
+
+    final val value // androidx.compose.ui.text.font/FontStyle.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // androidx.compose.ui.text.font/FontStyle.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text.font/FontStyle.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.text.font/FontStyle.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.text.font/FontStyle.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.text.font/FontStyle.Companion|null[0]
+        final val Italic // androidx.compose.ui.text.font/FontStyle.Companion.Italic|{}Italic[0]
+            final fun <get-Italic>(): androidx.compose.ui.text.font/FontStyle // androidx.compose.ui.text.font/FontStyle.Companion.Italic.<get-Italic>|<get-Italic>(){}[0]
+        final val Normal // androidx.compose.ui.text.font/FontStyle.Companion.Normal|{}Normal[0]
+            final fun <get-Normal>(): androidx.compose.ui.text.font/FontStyle // androidx.compose.ui.text.font/FontStyle.Companion.Normal.<get-Normal>|<get-Normal>(){}[0]
+
+        final fun values(): kotlin.collections/List<androidx.compose.ui.text.font/FontStyle> // androidx.compose.ui.text.font/FontStyle.Companion.values|values(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.text.style/TextAlign { // androidx.compose.ui.text.style/TextAlign|null[0]
     final val value // androidx.compose.ui.text.style/TextAlign.value|{}value[0]
         final fun <get-value>(): kotlin/Int // androidx.compose.ui.text.style/TextAlign.value.<get-value>|<get-value>(){}[0]
@@ -3713,6 +3722,7 @@ final fun androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontFamily
 final fun androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontFamily_Serif$stableprop_getter(): kotlin/Int // androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontFamily_Serif$stableprop_getter|androidx_compose_ui_text_font_FontFamily_Serif$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontVariation$stableprop_getter(): kotlin/Int // androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontVariation$stableprop_getter|androidx_compose_ui_text_font_FontVariation$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontWeight$stableprop_getter(): kotlin/Int // androidx.compose.ui.text.font/androidx_compose_ui_text_font_FontWeight$stableprop_getter|androidx_compose_ui_text_font_FontWeight$stableprop_getter(){}[0]
+final fun androidx.compose.ui.text.font/lerp(androidx.compose.ui.text.font/FontWeight, androidx.compose.ui.text.font/FontWeight, kotlin/Float): androidx.compose.ui.text.font/FontWeight // androidx.compose.ui.text.font/lerp|lerp(androidx.compose.ui.text.font.FontWeight;androidx.compose.ui.text.font.FontWeight;kotlin.Float){}[0]
 final fun androidx.compose.ui.text.input/androidx_compose_ui_text_input_TextFieldValue$stableprop_getter(): kotlin/Int // androidx.compose.ui.text.input/androidx_compose_ui_text_input_TextFieldValue$stableprop_getter|androidx_compose_ui_text_input_TextFieldValue$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text.style/androidx_compose_ui_text_style_TextDecoration$stableprop_getter(): kotlin/Int // androidx.compose.ui.text.style/androidx_compose_ui_text_style_TextDecoration$stableprop_getter|androidx_compose_ui_text_style_TextDecoration$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/AnnotatedString(kotlin/String): androidx.compose.ui.text/AnnotatedString // androidx.compose.ui.text/AnnotatedString|AnnotatedString(kotlin.String){}[0]
