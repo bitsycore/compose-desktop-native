@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.constrain
 import kotlin.math.max
 import kotlin.math.min
 
@@ -613,5 +614,5 @@ val DefaultMeasurePolicy = MeasurePolicy { node, constraints ->
         maxW = max(maxW, childSize.width)
         maxH = max(maxH, childSize.height)
     }
-    constraints.constrain(maxW, maxH)
+    constraints.constrain(IntSize(maxW, maxH))
 }

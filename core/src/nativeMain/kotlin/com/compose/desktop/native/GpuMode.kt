@@ -33,7 +33,7 @@ sealed class GpuMode {
 
     /* Skia CPU raster — paints into a host pixel buffer that
        SDL_Renderer uploads as a texture each frame. */
-    object Software : GpuMode() { override fun toString() = "None" }
+    object Software : GpuMode() { override fun toString() = "Software" }
 
     /* Skia GPU bridges. Available on macOS / Linux only. */
     sealed class Skia : GpuMode() {

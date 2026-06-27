@@ -15,11 +15,6 @@ data class Constraints(
     val hasFixedWidth get() = minWidth == maxWidth
     val hasFixedHeight get() = minHeight == maxHeight
 
-    fun constrain(width: Int, height: Int) = IntSize(
-        width.coerceIn(minWidth, maxWidth),
-        height.coerceIn(minHeight, maxHeight)
-    )
-
     companion object {
         const val Infinity = Int.MAX_VALUE
 

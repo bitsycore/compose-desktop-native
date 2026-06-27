@@ -16,7 +16,7 @@ fun createRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
 	if (vResolved is GpuMode.Skia) {
 		error("$vResolved isn't available in this build — Skiko isn't linked. " +
 			"Rerun without -Prenderer=sdl3 (on macOS / Linux) to use Skia, " +
-			"or pick a GpuMode.Sdl3.* / GpuMode.None.")
+			"or pick a GpuMode.Sdl3.* / GpuMode.Software.")
 	}
 	return try {
 		Sdl3RenderBackend(inSdl)

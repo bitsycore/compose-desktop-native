@@ -73,9 +73,8 @@ enum class TileMode {
 // ==================
 
 /* Companion-extension factories so call sites read like upstream Compose:
-   Brush.linearGradient(...), Brush.radialGradient(...), etc. */
-
-fun Brush.Companion.solidColor(inColor: Color): Brush = SolidColor(inColor)
+   Brush.linearGradient(...), Brush.radialGradient(...), etc. (Construct a solid
+   brush via the official SolidColor(color), not an invented Brush.solidColor.) */
 
 fun Brush.Companion.linearGradient(
 	colors: List<Color>,

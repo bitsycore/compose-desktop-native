@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 data class TransformOrigin(val pivotFractionX: Float, val pivotFractionY: Float) {
 	companion object {
 		val Center = TransformOrigin(0.5f, 0.5f)
-		val TopLeft = TransformOrigin(0f, 0f)
 	}
 }
 
