@@ -29,15 +29,27 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     var parent: LayoutNode? = null
     val children = mutableListOf<LayoutNode>()
 
+    /**
+     * Modifier chain attached to this layout. The setter rebuilds
+     * [nodes] (the Modifier.Node chain) on every assignment so that
+     * vendored DelegatableNode traversals see live nodes. The renderer
+     * still walks `modifier.foldIn` directly — Phase 4i scaffolding.
+     */
     var modifier: Modifier = Modifier
+        set(value) {
+            if (field === value) return
+            field = value
+            nodes.update(value)
+        }
     internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
 
     // ============
-    //  Phase 1 node-engine bring-up surface — see NODE_ENGINE_PORT.md.
-    //  Stubs that satisfy vendored DelegatableNode + Modifier.Node member
-    //  access without doing real work. Delete in Phase 4 when our LayoutNode
-    //  is replaced by upstream's.
-    internal val nodes: androidx.compose.ui.node.NodeChain = androidx.compose.ui.node.NodeChain()
+    //  Phase 4 node-engine bring-up — see NODE_ENGINE_PORT.md.
+    //  NodeChain + NodeCoordinator are real (not shims) but the renderer
+    //  doesn't drive Modifier.Node lifecycle yet. Delete in a future phase
+    //  when our LayoutNode is replaced by upstream's (Phase 5+).
+    internal val nodes: androidx.compose.ui.node.NodeChain = androidx.compose.ui.node.NodeChain(this)
+    internal val coordinator: androidx.compose.ui.node.NodeCoordinator = androidx.compose.ui.node.NodeCoordinator(this)
     internal val _children get() = children
     internal val zSortedChildren get() = children
     internal var owner: androidx.compose.ui.node.Owner? = null
