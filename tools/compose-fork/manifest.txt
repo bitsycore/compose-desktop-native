@@ -508,6 +508,9 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/WindowInfo.kt  
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt                                                      core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutInfo.kt
 # IntrinsicsPolicy needs upstream-shape LayoutNode with outerCoordinator/childMeasurables — skip.
 
+# AutofillManager — pure abstract class with two abstract methods.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillManager.kt                                               core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillManager.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
