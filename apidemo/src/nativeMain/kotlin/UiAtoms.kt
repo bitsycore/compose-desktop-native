@@ -27,6 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -109,7 +112,7 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
         .border(1.dp, c.border, RoundedCornerShape(6.dp))
         .padding(horizontal = 10.dp, vertical = 9.dp)
     if (inOnEnter != null) vBoxMod = vBoxMod.onKeyEvent { ev ->
-        if (ev.key.type == KeyEventType.Down && (ev.key.keyCode == kScEnter || ev.key.keyCode == kScKpEnter)) { inOnEnter(); true } else false
+        if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) { inOnEnter(); true } else false
     }
     Box(
         modifier = vBoxMod,

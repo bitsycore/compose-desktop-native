@@ -13,7 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.currentClipboard
 import com.compose.desktop.native.modifier.onDrag
@@ -56,13 +60,14 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 				.onGloballyPositioned { vWinX = it.x; vWinY = it.y }
 				.focusable { }
 				.onKeyEvent { ev ->
-					val vK = ev.key
+					val vK = ev
 					// Cmd on macOS, Ctrl on Windows / Linux. Match the produced
 					// character (layout-aware), not the physical scancode, so
 					// Ctrl+A / Ctrl+C work on AZERTY, Dvorak, etc.
-					val vPrimary = vK.modifiers.ctrl || vK.modifiers.meta
-					if (vK.type != KeyEventType.Down || !vPrimary) return@onKeyEvent false
-					when (vK.char?.lowercaseChar()) {
+					val vPrimary = vK.isCtrlPressed || vK.isMetaPressed
+					if (vK.type != KeyEventType.KeyDown || !vPrimary) return@onKeyEvent false
+					val vChar = vK.utf16CodePoint.let { if (it in 0x20..0x7E) it.toChar() else null }
+					when (vChar?.lowercaseChar()) {
 						'a' -> { vReg.selectAll(); true }
 						'c' -> if (vReg.hasSelection) { vClipboard.setText(vReg.selectedText()); true } else false
 						else -> false

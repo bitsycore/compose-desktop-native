@@ -7,7 +7,6 @@ import com.compose.desktop.native.element.GloballyPositionedModifier
 import androidx.compose.ui.unit.IntOffset
 import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.HoverableModifier
-import com.compose.desktop.native.element.KeyEventDispatch
 import com.compose.desktop.native.element.OnDragModifier
 import com.compose.desktop.native.element.OnKeyEventModifier
 import com.compose.desktop.native.element.OnSizeChangedModifier
@@ -560,14 +559,14 @@ class LayoutNode {
     /* Dispatch a key event up the chain (this node + its ancestors). The
        first OnKeyEventModifier that returns true consumes; otherwise the
        event keeps bubbling. */
-    fun dispatchKeyEvent(inDispatch: KeyEventDispatch): Boolean {
+    fun dispatchKeyEvent(inKeyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
         var n: LayoutNode? = this
         while (n != null) {
             val current = n
             var consumed = false
             current.modifier.foldIn(Unit) { _, e ->
                 if (!consumed && e is OnKeyEventModifier) {
-                    if (e.handler(inDispatch)) consumed = true
+                    if (e.handler(inKeyEvent)) consumed = true
                 }
             }
             if (consumed) return true

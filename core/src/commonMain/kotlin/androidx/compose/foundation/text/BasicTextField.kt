@@ -10,7 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import com.compose.desktop.native.modifier.onDrag
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.text.selection.SelectionRect
@@ -246,9 +254,9 @@ fun BasicTextField(
             )
             .onKeyEvent { ev ->
                 if (!enabled) return@onKeyEvent false
-                if (ev.key.type != KeyEventType.Down) return@onKeyEvent false
+                if (ev.type != KeyEventType.KeyDown) return@onKeyEvent false
                 handleKey(
-                    inKey = ev.key,
+                    inKey = ev,
                     inValue = value,
                     inWrap = vWrap,
                     inFontSize = vFontSize,
@@ -499,16 +507,15 @@ private fun wordBoundaryRight(inText: String, inFrom: Int): Int {
 
 // Letter shortcuts (A/C/V/X/Z) are matched by produced character, not scancode
 // (see handleKey), so they work on any keyboard layout — no scancode consts here.
-private const val SCANCODE_RETURN     = 40
-private const val SCANCODE_BACKSPACE  = 42
-private const val SCANCODE_DOWN       = 81
-private const val SCANCODE_RIGHT      = 79
-private const val SCANCODE_LEFT       = 80
-private const val SCANCODE_UP         = 82
-private const val SCANCODE_DELETE     = 76
-private const val SCANCODE_HOME       = 74
-private const val SCANCODE_END        = 77
-private const val SCANCODE_TAB        = 43
+// (former SCANCODE_* constants replaced by Key.X comparisons after the
+// vendored Key value-class landing — keystroke handling is now layout-aware
+// via Key, not a raw SDL3 scancode int.)
+
+/* Helper: turn a KeyEvent.utf16CodePoint back into a printable Char (returns
+   null for non-printable / unknown codepoints). Letter shortcuts use this so
+   Ctrl+A / Cmd+C resolve via the *produced* character, not scancode. */
+private fun charFromCodePoint(inCode: Int): Char? =
+	if (inCode in 0x20..0x7E) inCode.toChar() else null
 
 /* Selection update rule shared by every navigation key: build the new
    cursor head; if Shift is held, keep selection.start (the anchor) and
@@ -543,15 +550,14 @@ private fun handleKey(
     inUndo: () -> Unit,
     inRedo: () -> Unit,
 ): Boolean {
-    val vMods = inKey.modifiers
-    val vShift = vMods.shift
-    val vMeta = vMods.meta
-    val vAlt = vMods.alt
+    val vShift = inKey.isShiftPressed
+    val vMeta = inKey.isMetaPressed
+    val vAlt = inKey.isAltPressed
     // The "shortcut" modifier is Cmd on macOS and Ctrl on Windows / Linux, so
     // accept either for copy / cut / paste / undo / select-all. Word-jump is
     // Option (macOS) or Ctrl (Windows / Linux).
-    val vPrimary = vMeta || vMods.ctrl
-    val vWord = vAlt || vMods.ctrl
+    val vPrimary = vMeta || inKey.isCtrlPressed
+    val vWord = vAlt || inKey.isCtrlPressed
 
     fun resetPrefX() { inSetPrefColX(-1) }
     fun lineStartAt(inLine: Int): Int =
@@ -565,7 +571,7 @@ private fun handleKey(
     // physical scancode — so Ctrl/Cmd+A/C/X/V/Z hit the right key on AZERTY,
     // Dvorak, etc., where the letters sit at different physical positions.
     if (vPrimary) {
-        when (inKey.char?.lowercaseChar()) {
+        when (charFromCodePoint(inKey.utf16CodePoint)?.lowercaseChar()) {
             'a' -> {
                 inCursorOnlyEdit(inValue.copy(selection = TextRange(0, inValue.text.length)))
                 return true
@@ -593,8 +599,8 @@ private fun handleKey(
         }
     }
 
-    when (inKey.keyCode) {
-        SCANCODE_LEFT -> {
+    when (inKey.key) {
+        Key.DirectionLeft -> {
             resetPrefX()
             val vCurrent = inValue.selection.end
             val vNewHead = when {
@@ -606,7 +612,7 @@ private fun handleKey(
             inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
             return true
         }
-        SCANCODE_RIGHT -> {
+        Key.DirectionRight -> {
             resetPrefX()
             val vCurrent = inValue.selection.end
             val vNewHead = when {
@@ -618,7 +624,7 @@ private fun handleKey(
             inCursorOnlyEdit(moveCursor(inValue, vNewHead, vShift))
             return true
         }
-        SCANCODE_UP -> {
+        Key.DirectionUp -> {
             val vCurrent = inValue.selection.end
             val (vLine, vCol) = wrappedPosOf(inWrap, vCurrent)
             if (vLine == 0) {
@@ -633,7 +639,7 @@ private fun handleKey(
             inCursorOnlyEdit(moveCursor(inValue, lineStartAt(vTargetLine) + vTargetCol, vShift))
             return true
         }
-        SCANCODE_DOWN -> {
+        Key.DirectionDown -> {
             val vCurrent = inValue.selection.end
             val (vLine, vCol) = wrappedPosOf(inWrap, vCurrent)
             if (vLine >= inWrap.lines.size - 1) {
@@ -648,29 +654,29 @@ private fun handleKey(
             inCursorOnlyEdit(moveCursor(inValue, lineStartAt(vTargetLine) + vTargetCol, vShift))
             return true
         }
-        SCANCODE_HOME -> {
+        Key.MoveHome -> {
             resetPrefX()
             val vLine = wrappedPosOf(inWrap, inValue.selection.end).first
             inCursorOnlyEdit(moveCursor(inValue, lineStartAt(vLine), vShift))
             return true
         }
-        SCANCODE_END -> {
+        Key.MoveEnd -> {
             resetPrefX()
             val vLine = wrappedPosOf(inWrap, inValue.selection.end).first
             inCursorOnlyEdit(moveCursor(inValue, lineEndAt(vLine), vShift))
             return true
         }
-        SCANCODE_RETURN -> if (!inReadOnly && !inSingleLine) {
+        Key.Enter -> if (!inReadOnly && !inSingleLine) {
             inTypingEdit(insertAtCursor(inValue, "\n"))
             return true
         }
         // Tab inserts a literal '\t' in multi-line fields (the body editor);
         // the renderers expand it to a tab stop. Single-line fields ignore it.
-        SCANCODE_TAB -> if (!inReadOnly && !inSingleLine) {
+        Key.Tab -> if (!inReadOnly && !inSingleLine) {
             inTypingEdit(insertAtCursor(inValue, "\t"))
             return true
         }
-        SCANCODE_BACKSPACE -> if (!inReadOnly) {
+        Key.Backspace -> if (!inReadOnly) {
             val vMin = inValue.selection.min
             val vMax = inValue.selection.max
             if (vMin == vMax && vMin == 0) return true
@@ -680,7 +686,7 @@ private fun handleKey(
             inStructuralEdit(TextFieldValue(vNewText, TextRange(vDeleteFrom)))
             return true
         }
-        SCANCODE_DELETE -> if (!inReadOnly) {
+        Key.Delete -> if (!inReadOnly) {
             val vMin = inValue.selection.min
             val vMax = inValue.selection.max
             if (vMin == vMax && vMax >= inValue.text.length) return true

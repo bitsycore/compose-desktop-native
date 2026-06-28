@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composition
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.snapshots.Snapshot
-import com.compose.desktop.native.element.KeyEventDispatch
 import androidx.compose.ui.Modifier
 import com.compose.desktop.native.foundation.smoothScrollByPx
 import com.compose.desktop.native.scroll.ScrollAnimator
@@ -367,7 +366,7 @@ fun nativeComposeWindow(
                     }
 
                     is AppEvent.Key -> {
-                        val vConsumed = focusedNode?.dispatchKeyEvent(KeyEventDispatch(event.event)) ?: false
+                        val vConsumed = focusedNode?.dispatchKeyEvent(event.event) ?: false
                         if (!vConsumed) composeWindow.dispatchKeyShortcut(event.event)
                     }
 

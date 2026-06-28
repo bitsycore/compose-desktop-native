@@ -366,6 +366,17 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # isSystemInDarkTheme — public Composable + internal expect. Native actual
 # returns false (no platform dark-mode signal hooked up yet).
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/DarkTheme.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/DarkTheme.kt
+# Key value class — 272-key Companion. Native actual in
+# core/src/nativeMain/.../androidx/compose/ui/input/key/Key.native.kt
+# assigns sequential Long codes to each named key (no platform-keycode
+# mapping; SDL3EventMapper picks the right Key.X by switch on SDL
+# scancode).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/Key.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/input/key/Key.kt
+# KeyEvent (value class wrapping NativeKeyEvent) + KeyEventType + extension
+# props for key / type / utf16CodePoint / isXxxPressed. Native actuals in
+# core/src/nativeMain/.../androidx/compose/ui/input/key/KeyEvent.native.kt
+# back NativeKeyEvent with a project InternalKeyEvent data class.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyEvent.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyEvent.kt
 # PointerEvent — the big one. Brings PointerEventType / PointerButton /
 # PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
 # value classes) + the multi-touch PointerEvent (expect class with skiko

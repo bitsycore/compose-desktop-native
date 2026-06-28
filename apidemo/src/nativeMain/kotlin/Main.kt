@@ -21,7 +21,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.currentClipboard
@@ -718,16 +723,16 @@ private fun App() {
     DisposableEffect(Unit) {
         vWindow.setOnCloseRequest { persist(); true }
         vWindow.setOnKeyShortcut { vKey ->
-            if (vKey.type != KeyEventType.Down) return@setOnKeyShortcut false
+            if (vKey.type != KeyEventType.KeyDown) return@setOnKeyShortcut false
             // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
             // open at a time, so run whichever action applies and clear them all.
             if (vRenameTarget != null || vRenamePackTarget != null || vRenameSession || vRemovePackTarget != null || vDeleteTarget != null) {
-                when (vKey.keyCode) {
-                    kScEscape -> {
+                when (vKey.key) {
+                    Key.Escape -> {
                         vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget = null; vDeleteTarget = null
                         return@setOnKeyShortcut true
                     }
-                    kScEnter, kScKpEnter -> {
+                    Key.Enter, Key.NumPadEnter -> {
                         vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
                         vRenamePackTarget?.let { renamePack(it, vRenameText) }
                         if (vRenameSession) renameSession(vRenameText)
@@ -738,14 +743,14 @@ private fun App() {
                     }
                 }
             }
-            val vPrimary = vKey.modifiers.ctrl || vKey.modifiers.meta
+            val vPrimary = vKey.isCtrlPressed || vKey.isMetaPressed
             when {
-                vPrimary && vKey.keyCode == kScS -> { saveSession(); true }
-                vPrimary && (vKey.keyCode == kScEnter || vKey.keyCode == kScKpEnter) -> {
+                vPrimary && vKey.key == Key.S -> { saveSession(); true }
+                vPrimary && (vKey.key == Key.Enter || vKey.key == Key.NumPadEnter) -> {
                     if (!vEnvActive) activePack()?.active?.let { send(it) }; true
                 }
-                vPrimary && vKey.keyCode == kScN -> { newRequest(); true }
-                vPrimary && vKey.keyCode == kScW -> {
+                vPrimary && vKey.key == Key.N -> { newRequest(); true }
+                vPrimary && vKey.key == Key.W -> {
                     val vP = activePack()
                     if (vEnvActive && vP != null) closeEnv(vP) else vP?.let { vQ -> vQ.active?.let { closeTab(it, vQ) } }
                     true

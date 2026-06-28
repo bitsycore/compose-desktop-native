@@ -30,6 +30,22 @@ open annotation class androidx.compose.animation/ExperimentalLookaheadAnimationV
     constructor <init>() // androidx.compose.animation/ExperimentalLookaheadAnimationVisualDebugApi.<init>|<init>(){}[0]
 }
 
+open annotation class androidx.compose.animation/ExperimentalSharedTransitionApi : kotlin/Annotation { // androidx.compose.animation/ExperimentalSharedTransitionApi|null[0]
+    constructor <init>() // androidx.compose.animation/ExperimentalSharedTransitionApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation.layout/ExperimentalFlexBoxApi : kotlin/Annotation { // androidx.compose.foundation.layout/ExperimentalFlexBoxApi|null[0]
+    constructor <init>() // androidx.compose.foundation.layout/ExperimentalFlexBoxApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation.layout/ExperimentalGridApi : kotlin/Annotation { // androidx.compose.foundation.layout/ExperimentalGridApi|null[0]
+    constructor <init>() // androidx.compose.foundation.layout/ExperimentalGridApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation.layout/ExperimentalLayoutApi : kotlin/Annotation { // androidx.compose.foundation.layout/ExperimentalLayoutApi|null[0]
+    constructor <init>() // androidx.compose.foundation.layout/ExperimentalLayoutApi.<init>|<init>(){}[0]
+}
+
 open annotation class androidx.compose.foundation.layout/LayoutScopeMarker : kotlin/Annotation { // androidx.compose.foundation.layout/LayoutScopeMarker|null[0]
     constructor <init>() // androidx.compose.foundation.layout/LayoutScopeMarker.<init>|<init>(){}[0]
 }
@@ -52,6 +68,14 @@ open annotation class androidx.compose.foundation/InternalFoundationApi : kotlin
 
 open annotation class androidx.compose.ui.graphics/ExperimentalGraphicsApi : kotlin/Annotation { // androidx.compose.ui.graphics/ExperimentalGraphicsApi|null[0]
     constructor <init>() // androidx.compose.ui.graphics/ExperimentalGraphicsApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui.layout/PlacementScopeMarker : kotlin/Annotation { // androidx.compose.ui.layout/PlacementScopeMarker|null[0]
+    constructor <init>() // androidx.compose.ui.layout/PlacementScopeMarker.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui.text/ExperimentalTextApi : kotlin/Annotation { // androidx.compose.ui.text/ExperimentalTextApi|null[0]
+    constructor <init>() // androidx.compose.ui.text/ExperimentalTextApi.<init>|<init>(){}[0]
 }
 
 open annotation class androidx.compose.ui.text/InternalTextApi : kotlin/Annotation { // androidx.compose.ui.text/InternalTextApi|null[0]
@@ -641,6 +665,39 @@ abstract interface androidx.compose.ui.graphics.drawscope/DrawScope { // android
     open fun drawRoundRect(androidx.compose.ui.graphics/Color, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Size = ..., kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics.drawscope/DrawStyle = ...) // androidx.compose.ui.graphics.drawscope/DrawScope.drawRoundRect|drawRoundRect(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.drawscope.DrawStyle){}[0]
 }
 
+abstract interface androidx.compose.ui.graphics/Canvas { // androidx.compose.ui.graphics/Canvas|null[0]
+    abstract fun clipPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/ClipOp = ...) // androidx.compose.ui.graphics/Canvas.clipPath|clipPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.ClipOp){}[0]
+    abstract fun clipRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/ClipOp = ...) // androidx.compose.ui.graphics/Canvas.clipRect|clipRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.ClipOp){}[0]
+    abstract fun concat(androidx.compose.ui.graphics/Matrix) // androidx.compose.ui.graphics/Canvas.concat|concat(androidx.compose.ui.graphics.Matrix){}[0]
+    abstract fun disableZ() // androidx.compose.ui.graphics/Canvas.disableZ|disableZ(){}[0]
+    abstract fun drawArc(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawArc|drawArc(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawCircle(androidx.compose.ui.geometry/Offset, kotlin/Float, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawCircle|drawCircle(androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawImage(androidx.compose.ui.graphics/ImageBitmap, androidx.compose.ui.geometry/Offset, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawImage|drawImage(androidx.compose.ui.graphics.ImageBitmap;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawImageRect(androidx.compose.ui.graphics/ImageBitmap, androidx.compose.ui.unit/IntOffset = ..., androidx.compose.ui.unit/IntSize = ..., androidx.compose.ui.unit/IntOffset = ..., androidx.compose.ui.unit/IntSize = ..., androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawImageRect|drawImageRect(androidx.compose.ui.graphics.ImageBitmap;androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntSize;androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntSize;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawLine(androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawLine|drawLine(androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawOval(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawOval|drawOval(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawPath|drawPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawPoints(androidx.compose.ui.graphics/PointMode, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawPoints|drawPoints(androidx.compose.ui.graphics.PointMode;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawRawPoints(androidx.compose.ui.graphics/PointMode, kotlin/FloatArray, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawRawPoints|drawRawPoints(androidx.compose.ui.graphics.PointMode;kotlin.FloatArray;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawRect|drawRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawRoundRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawRoundRect|drawRoundRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun drawVertices(androidx.compose.ui.graphics/Vertices, androidx.compose.ui.graphics/BlendMode, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawVertices|drawVertices(androidx.compose.ui.graphics.Vertices;androidx.compose.ui.graphics.BlendMode;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun enableZ() // androidx.compose.ui.graphics/Canvas.enableZ|enableZ(){}[0]
+    abstract fun restore() // androidx.compose.ui.graphics/Canvas.restore|restore(){}[0]
+    abstract fun rotate(kotlin/Float) // androidx.compose.ui.graphics/Canvas.rotate|rotate(kotlin.Float){}[0]
+    abstract fun save() // androidx.compose.ui.graphics/Canvas.save|save(){}[0]
+    abstract fun saveLayer(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.saveLayer|saveLayer(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Paint){}[0]
+    abstract fun scale(kotlin/Float, kotlin/Float = ...) // androidx.compose.ui.graphics/Canvas.scale|scale(kotlin.Float;kotlin.Float){}[0]
+    abstract fun skew(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Canvas.skew|skew(kotlin.Float;kotlin.Float){}[0]
+    abstract fun translate(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Canvas.translate|translate(kotlin.Float;kotlin.Float){}[0]
+    open fun clipRect(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/ClipOp = ...) // androidx.compose.ui.graphics/Canvas.clipRect|clipRect(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.ClipOp){}[0]
+    open fun drawArc(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawArc|drawArc(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.graphics.Paint){}[0]
+    open fun drawArcRad(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawArcRad|drawArcRad(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.graphics.Paint){}[0]
+    open fun drawOval(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawOval|drawOval(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Paint){}[0]
+    open fun drawRect(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Paint) // androidx.compose.ui.graphics/Canvas.drawRect|drawRect(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Paint){}[0]
+    open fun skewRad(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Canvas.skewRad|skewRad(kotlin.Float;kotlin.Float){}[0]
+}
+
 abstract interface androidx.compose.ui.graphics/GraphicsLayerScope { // androidx.compose.ui.graphics/GraphicsLayerScope|null[0]
     open val size // androidx.compose.ui.graphics/GraphicsLayerScope.size|{}size[0]
         open fun <get-size>(): androidx.compose.ui.geometry/Size // androidx.compose.ui.graphics/GraphicsLayerScope.size.<get-size>|<get-size>(){}[0]
@@ -695,12 +752,74 @@ abstract interface androidx.compose.ui.graphics/GraphicsLayerScope { // androidx
         abstract fun <set-translationY>(kotlin/Float) // androidx.compose.ui.graphics/GraphicsLayerScope.translationY.<set-translationY>|<set-translationY>(kotlin.Float){}[0]
 }
 
+abstract interface androidx.compose.ui.graphics/ImageBitmap { // androidx.compose.ui.graphics/ImageBitmap|null[0]
+    abstract val colorSpace // androidx.compose.ui.graphics/ImageBitmap.colorSpace|{}colorSpace[0]
+        abstract fun <get-colorSpace>(): androidx.compose.ui.graphics.colorspace/ColorSpace // androidx.compose.ui.graphics/ImageBitmap.colorSpace.<get-colorSpace>|<get-colorSpace>(){}[0]
+    abstract val config // androidx.compose.ui.graphics/ImageBitmap.config|{}config[0]
+        abstract fun <get-config>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmap.config.<get-config>|<get-config>(){}[0]
+    abstract val hasAlpha // androidx.compose.ui.graphics/ImageBitmap.hasAlpha|{}hasAlpha[0]
+        abstract fun <get-hasAlpha>(): kotlin/Boolean // androidx.compose.ui.graphics/ImageBitmap.hasAlpha.<get-hasAlpha>|<get-hasAlpha>(){}[0]
+    abstract val height // androidx.compose.ui.graphics/ImageBitmap.height|{}height[0]
+        abstract fun <get-height>(): kotlin/Int // androidx.compose.ui.graphics/ImageBitmap.height.<get-height>|<get-height>(){}[0]
+    abstract val width // androidx.compose.ui.graphics/ImageBitmap.width|{}width[0]
+        abstract fun <get-width>(): kotlin/Int // androidx.compose.ui.graphics/ImageBitmap.width.<get-width>|<get-width>(){}[0]
+
+    abstract fun prepareToDraw() // androidx.compose.ui.graphics/ImageBitmap.prepareToDraw|prepareToDraw(){}[0]
+    abstract fun readPixels(kotlin/IntArray, kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...) // androidx.compose.ui.graphics/ImageBitmap.readPixels|readPixels(kotlin.IntArray;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+
+    final object Companion // androidx.compose.ui.graphics/ImageBitmap.Companion|null[0]
+}
+
 abstract interface androidx.compose.ui.graphics/Interpolatable { // androidx.compose.ui.graphics/Interpolatable|null[0]
     abstract fun lerp(kotlin/Any?, kotlin/Float): kotlin/Any? // androidx.compose.ui.graphics/Interpolatable.lerp|lerp(kotlin.Any?;kotlin.Float){}[0]
 
     final object Companion { // androidx.compose.ui.graphics/Interpolatable.Companion|null[0]
         final fun lerp(kotlin/Any?, kotlin/Any?, kotlin/Float): kotlin/Any? // androidx.compose.ui.graphics/Interpolatable.Companion.lerp|lerp(kotlin.Any?;kotlin.Any?;kotlin.Float){}[0]
     }
+}
+
+abstract interface androidx.compose.ui.graphics/Paint { // androidx.compose.ui.graphics/Paint|null[0]
+    abstract var alpha // androidx.compose.ui.graphics/Paint.alpha|{}alpha[0]
+        abstract fun <get-alpha>(): kotlin/Float // androidx.compose.ui.graphics/Paint.alpha.<get-alpha>|<get-alpha>(){}[0]
+        abstract fun <set-alpha>(kotlin/Float) // androidx.compose.ui.graphics/Paint.alpha.<set-alpha>|<set-alpha>(kotlin.Float){}[0]
+    abstract var blendMode // androidx.compose.ui.graphics/Paint.blendMode|{}blendMode[0]
+        abstract fun <get-blendMode>(): androidx.compose.ui.graphics/BlendMode // androidx.compose.ui.graphics/Paint.blendMode.<get-blendMode>|<get-blendMode>(){}[0]
+        abstract fun <set-blendMode>(androidx.compose.ui.graphics/BlendMode) // androidx.compose.ui.graphics/Paint.blendMode.<set-blendMode>|<set-blendMode>(androidx.compose.ui.graphics.BlendMode){}[0]
+    abstract var color // androidx.compose.ui.graphics/Paint.color|{}color[0]
+        abstract fun <get-color>(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Paint.color.<get-color>|<get-color>(){}[0]
+        abstract fun <set-color>(androidx.compose.ui.graphics/Color) // androidx.compose.ui.graphics/Paint.color.<set-color>|<set-color>(androidx.compose.ui.graphics.Color){}[0]
+    abstract var colorFilter // androidx.compose.ui.graphics/Paint.colorFilter|{}colorFilter[0]
+        abstract fun <get-colorFilter>(): androidx.compose.ui.graphics/ColorFilter? // androidx.compose.ui.graphics/Paint.colorFilter.<get-colorFilter>|<get-colorFilter>(){}[0]
+        abstract fun <set-colorFilter>(androidx.compose.ui.graphics/ColorFilter?) // androidx.compose.ui.graphics/Paint.colorFilter.<set-colorFilter>|<set-colorFilter>(androidx.compose.ui.graphics.ColorFilter?){}[0]
+    abstract var filterQuality // androidx.compose.ui.graphics/Paint.filterQuality|{}filterQuality[0]
+        abstract fun <get-filterQuality>(): androidx.compose.ui.graphics/FilterQuality // androidx.compose.ui.graphics/Paint.filterQuality.<get-filterQuality>|<get-filterQuality>(){}[0]
+        abstract fun <set-filterQuality>(androidx.compose.ui.graphics/FilterQuality) // androidx.compose.ui.graphics/Paint.filterQuality.<set-filterQuality>|<set-filterQuality>(androidx.compose.ui.graphics.FilterQuality){}[0]
+    abstract var isAntiAlias // androidx.compose.ui.graphics/Paint.isAntiAlias|{}isAntiAlias[0]
+        abstract fun <get-isAntiAlias>(): kotlin/Boolean // androidx.compose.ui.graphics/Paint.isAntiAlias.<get-isAntiAlias>|<get-isAntiAlias>(){}[0]
+        abstract fun <set-isAntiAlias>(kotlin/Boolean) // androidx.compose.ui.graphics/Paint.isAntiAlias.<set-isAntiAlias>|<set-isAntiAlias>(kotlin.Boolean){}[0]
+    abstract var pathEffect // androidx.compose.ui.graphics/Paint.pathEffect|{}pathEffect[0]
+        abstract fun <get-pathEffect>(): androidx.compose.ui.graphics/PathEffect? // androidx.compose.ui.graphics/Paint.pathEffect.<get-pathEffect>|<get-pathEffect>(){}[0]
+        abstract fun <set-pathEffect>(androidx.compose.ui.graphics/PathEffect?) // androidx.compose.ui.graphics/Paint.pathEffect.<set-pathEffect>|<set-pathEffect>(androidx.compose.ui.graphics.PathEffect?){}[0]
+    abstract var shader // androidx.compose.ui.graphics/Paint.shader|{}shader[0]
+        abstract fun <get-shader>(): androidx.compose.ui.graphics/Shader? // androidx.compose.ui.graphics/Paint.shader.<get-shader>|<get-shader>(){}[0]
+        abstract fun <set-shader>(androidx.compose.ui.graphics/Shader?) // androidx.compose.ui.graphics/Paint.shader.<set-shader>|<set-shader>(androidx.compose.ui.graphics.Shader?){}[0]
+    abstract var strokeCap // androidx.compose.ui.graphics/Paint.strokeCap|{}strokeCap[0]
+        abstract fun <get-strokeCap>(): androidx.compose.ui.graphics/StrokeCap // androidx.compose.ui.graphics/Paint.strokeCap.<get-strokeCap>|<get-strokeCap>(){}[0]
+        abstract fun <set-strokeCap>(androidx.compose.ui.graphics/StrokeCap) // androidx.compose.ui.graphics/Paint.strokeCap.<set-strokeCap>|<set-strokeCap>(androidx.compose.ui.graphics.StrokeCap){}[0]
+    abstract var strokeJoin // androidx.compose.ui.graphics/Paint.strokeJoin|{}strokeJoin[0]
+        abstract fun <get-strokeJoin>(): androidx.compose.ui.graphics/StrokeJoin // androidx.compose.ui.graphics/Paint.strokeJoin.<get-strokeJoin>|<get-strokeJoin>(){}[0]
+        abstract fun <set-strokeJoin>(androidx.compose.ui.graphics/StrokeJoin) // androidx.compose.ui.graphics/Paint.strokeJoin.<set-strokeJoin>|<set-strokeJoin>(androidx.compose.ui.graphics.StrokeJoin){}[0]
+    abstract var strokeMiterLimit // androidx.compose.ui.graphics/Paint.strokeMiterLimit|{}strokeMiterLimit[0]
+        abstract fun <get-strokeMiterLimit>(): kotlin/Float // androidx.compose.ui.graphics/Paint.strokeMiterLimit.<get-strokeMiterLimit>|<get-strokeMiterLimit>(){}[0]
+        abstract fun <set-strokeMiterLimit>(kotlin/Float) // androidx.compose.ui.graphics/Paint.strokeMiterLimit.<set-strokeMiterLimit>|<set-strokeMiterLimit>(kotlin.Float){}[0]
+    abstract var strokeWidth // androidx.compose.ui.graphics/Paint.strokeWidth|{}strokeWidth[0]
+        abstract fun <get-strokeWidth>(): kotlin/Float // androidx.compose.ui.graphics/Paint.strokeWidth.<get-strokeWidth>|<get-strokeWidth>(){}[0]
+        abstract fun <set-strokeWidth>(kotlin/Float) // androidx.compose.ui.graphics/Paint.strokeWidth.<set-strokeWidth>|<set-strokeWidth>(kotlin.Float){}[0]
+    abstract var style // androidx.compose.ui.graphics/Paint.style|{}style[0]
+        abstract fun <get-style>(): androidx.compose.ui.graphics/PaintingStyle // androidx.compose.ui.graphics/Paint.style.<get-style>|<get-style>(){}[0]
+        abstract fun <set-style>(androidx.compose.ui.graphics/PaintingStyle) // androidx.compose.ui.graphics/Paint.style.<set-style>|<set-style>(androidx.compose.ui.graphics.PaintingStyle){}[0]
+
+    open fun asFrameworkPaint(): androidx.compose.ui.graphics/NativePaint // androidx.compose.ui.graphics/Paint.asFrameworkPaint|asFrameworkPaint(){}[0]
 }
 
 abstract interface androidx.compose.ui.graphics/Path { // androidx.compose.ui.graphics/Path|null[0]
@@ -765,6 +884,15 @@ abstract interface androidx.compose.ui.graphics/Path { // androidx.compose.ui.gr
     }
 }
 
+abstract interface androidx.compose.ui.graphics/PathEffect { // androidx.compose.ui.graphics/PathEffect|null[0]
+    final object Companion { // androidx.compose.ui.graphics/PathEffect.Companion|null[0]
+        final fun chainPathEffect(androidx.compose.ui.graphics/PathEffect, androidx.compose.ui.graphics/PathEffect): androidx.compose.ui.graphics/PathEffect // androidx.compose.ui.graphics/PathEffect.Companion.chainPathEffect|chainPathEffect(androidx.compose.ui.graphics.PathEffect;androidx.compose.ui.graphics.PathEffect){}[0]
+        final fun cornerPathEffect(kotlin/Float): androidx.compose.ui.graphics/PathEffect // androidx.compose.ui.graphics/PathEffect.Companion.cornerPathEffect|cornerPathEffect(kotlin.Float){}[0]
+        final fun dashPathEffect(kotlin/FloatArray, kotlin/Float = ...): androidx.compose.ui.graphics/PathEffect // androidx.compose.ui.graphics/PathEffect.Companion.dashPathEffect|dashPathEffect(kotlin.FloatArray;kotlin.Float){}[0]
+        final fun stampedPathEffect(androidx.compose.ui.graphics/Path, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/StampedPathEffectStyle): androidx.compose.ui.graphics/PathEffect // androidx.compose.ui.graphics/PathEffect.Companion.stampedPathEffect|stampedPathEffect(androidx.compose.ui.graphics.Path;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.StampedPathEffectStyle){}[0]
+    }
+}
+
 abstract interface androidx.compose.ui.graphics/PathIterator : kotlin.collections/Iterator<androidx.compose.ui.graphics/PathSegment> { // androidx.compose.ui.graphics/PathIterator|null[0]
     abstract val conicEvaluation // androidx.compose.ui.graphics/PathIterator.conicEvaluation|{}conicEvaluation[0]
         abstract fun <get-conicEvaluation>(): androidx.compose.ui.graphics/PathIterator.ConicEvaluation // androidx.compose.ui.graphics/PathIterator.conicEvaluation.<get-conicEvaluation>|<get-conicEvaluation>(){}[0]
@@ -788,6 +916,16 @@ abstract interface androidx.compose.ui.graphics/PathIterator : kotlin.collection
         final fun valueOf(kotlin/String): androidx.compose.ui.graphics/PathIterator.ConicEvaluation // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.valueOf|valueOf#static(kotlin.String){}[0]
         final fun values(): kotlin/Array<androidx.compose.ui.graphics/PathIterator.ConicEvaluation> // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.values|values#static(){}[0]
     }
+}
+
+abstract interface androidx.compose.ui.graphics/PathMeasure { // androidx.compose.ui.graphics/PathMeasure|null[0]
+    abstract val length // androidx.compose.ui.graphics/PathMeasure.length|{}length[0]
+        abstract fun <get-length>(): kotlin/Float // androidx.compose.ui.graphics/PathMeasure.length.<get-length>|<get-length>(){}[0]
+
+    abstract fun getPosition(kotlin/Float): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/PathMeasure.getPosition|getPosition(kotlin.Float){}[0]
+    abstract fun getSegment(kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Path, kotlin/Boolean = ...): kotlin/Boolean // androidx.compose.ui.graphics/PathMeasure.getSegment|getSegment(kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Path;kotlin.Boolean){}[0]
+    abstract fun getTangent(kotlin/Float): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/PathMeasure.getTangent|getTangent(kotlin.Float){}[0]
+    abstract fun setPath(androidx.compose.ui.graphics/Path?, kotlin/Boolean) // androidx.compose.ui.graphics/PathMeasure.setPath|setPath(androidx.compose.ui.graphics.Path?;kotlin.Boolean){}[0]
 }
 
 abstract interface androidx.compose.ui.graphics/Shape { // androidx.compose.ui.graphics/Shape|null[0]
@@ -868,6 +1006,22 @@ abstract interface androidx.compose.ui.layout/MeasureScope { // androidx.compose
     abstract fun layout(kotlin/Int, kotlin/Int, kotlin/Function1<androidx.compose.ui.layout/PlacementScope, kotlin/Unit>): androidx.compose.ui.layout/MeasureResult // androidx.compose.ui.layout/MeasureScope.layout|layout(kotlin.Int;kotlin.Int;kotlin.Function1<androidx.compose.ui.layout.PlacementScope,kotlin.Unit>){}[0]
 }
 
+abstract interface androidx.compose.ui.layout/ParentDataModifier : androidx.compose.ui/Modifier.Element { // androidx.compose.ui.layout/ParentDataModifier|null[0]
+    abstract fun (androidx.compose.ui.unit/Density).modifyParentData(kotlin/Any?): kotlin/Any? // androidx.compose.ui.layout/ParentDataModifier.modifyParentData|modifyParentData@androidx.compose.ui.unit.Density(kotlin.Any?){}[0]
+}
+
+abstract interface androidx.compose.ui.layout/PinnableContainer { // androidx.compose.ui.layout/PinnableContainer|null[0]
+    abstract fun pin(): androidx.compose.ui.layout/PinnableContainer.PinnedHandle // androidx.compose.ui.layout/PinnableContainer.pin|pin(){}[0]
+
+    abstract fun interface PinnedHandle { // androidx.compose.ui.layout/PinnableContainer.PinnedHandle|null[0]
+        abstract fun release() // androidx.compose.ui.layout/PinnableContainer.PinnedHandle.release|release(){}[0]
+    }
+}
+
+abstract interface androidx.compose.ui.platform/AccessibilityManager { // androidx.compose.ui.platform/AccessibilityManager|null[0]
+    abstract fun calculateRecommendedTimeoutMillis(kotlin/Long, kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): kotlin/Long // androidx.compose.ui.platform/AccessibilityManager.calculateRecommendedTimeoutMillis|calculateRecommendedTimeoutMillis(kotlin.Long;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+}
+
 abstract interface androidx.compose.ui.platform/Clipboard { // androidx.compose.ui.platform/Clipboard|null[0]
     abstract fun getText(): kotlin/String? // androidx.compose.ui.platform/Clipboard.getText|getText(){}[0]
     abstract fun setText(kotlin/String) // androidx.compose.ui.platform/Clipboard.setText|setText(kotlin.String){}[0]
@@ -895,6 +1049,10 @@ abstract interface androidx.compose.ui.platform/InspectableValue { // androidx.c
         open fun <get-nameFallback>(): kotlin/String? // androidx.compose.ui.platform/InspectableValue.nameFallback.<get-nameFallback>|<get-nameFallback>(){}[0]
     open val valueOverride // androidx.compose.ui.platform/InspectableValue.valueOverride|{}valueOverride[0]
         open fun <get-valueOverride>(): kotlin/Any? // androidx.compose.ui.platform/InspectableValue.valueOverride.<get-valueOverride>|<get-valueOverride>(){}[0]
+}
+
+abstract interface androidx.compose.ui.platform/SoundEffect { // androidx.compose.ui.platform/SoundEffect|null[0]
+    abstract fun playClickSound() // androidx.compose.ui.platform/SoundEffect.playClickSound|playClickSound(){}[0]
 }
 
 abstract interface androidx.compose.ui.platform/ViewConfiguration { // androidx.compose.ui.platform/ViewConfiguration|null[0]
@@ -933,19 +1091,37 @@ abstract interface androidx.compose.ui.text.input/OffsetMapping { // androidx.co
     }
 }
 
-abstract interface androidx.compose.ui.unit/Density { // androidx.compose.ui.unit/Density|null[0]
+abstract interface androidx.compose.ui.unit/Density : androidx.compose.ui.unit/FontScaling { // androidx.compose.ui.unit/Density|null[0]
     abstract val density // androidx.compose.ui.unit/Density.density|{}density[0]
         abstract fun <get-density>(): kotlin/Float // androidx.compose.ui.unit/Density.density.<get-density>|<get-density>(){}[0]
-    abstract val fontScale // androidx.compose.ui.unit/Density.fontScale|{}fontScale[0]
-        abstract fun <get-fontScale>(): kotlin/Float // androidx.compose.ui.unit/Density.fontScale.<get-fontScale>|<get-fontScale>(){}[0]
 
+    open fun (androidx.compose.ui.geometry/Size).toDpSize(): androidx.compose.ui.unit/DpSize // androidx.compose.ui.unit/Density.toDpSize|toDpSize@androidx.compose.ui.geometry.Size(){}[0]
     open fun (androidx.compose.ui.unit/Dp).roundToPx(): kotlin/Int // androidx.compose.ui.unit/Density.roundToPx|roundToPx@androidx.compose.ui.unit.Dp(){}[0]
     open fun (androidx.compose.ui.unit/Dp).toPx(): kotlin/Float // androidx.compose.ui.unit/Density.toPx|toPx@androidx.compose.ui.unit.Dp(){}[0]
-    open fun (androidx.compose.ui.unit/Dp).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/Density.toSp|toSp@androidx.compose.ui.unit.Dp(){}[0]
-    open fun (androidx.compose.ui.unit/TextUnit).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/Density.toDp|toDp@androidx.compose.ui.unit.TextUnit(){}[0]
+    open fun (androidx.compose.ui.unit/DpRect).toRect(): androidx.compose.ui.geometry/Rect // androidx.compose.ui.unit/Density.toRect|toRect@androidx.compose.ui.unit.DpRect(){}[0]
+    open fun (androidx.compose.ui.unit/DpSize).toSize(): androidx.compose.ui.geometry/Size // androidx.compose.ui.unit/Density.toSize|toSize@androidx.compose.ui.unit.DpSize(){}[0]
+    open fun (androidx.compose.ui.unit/TextUnit).roundToPx(): kotlin/Int // androidx.compose.ui.unit/Density.roundToPx|roundToPx@androidx.compose.ui.unit.TextUnit(){}[0]
     open fun (androidx.compose.ui.unit/TextUnit).toPx(): kotlin/Float // androidx.compose.ui.unit/Density.toPx|toPx@androidx.compose.ui.unit.TextUnit(){}[0]
     open fun (kotlin/Float).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/Density.toDp|toDp@kotlin.Float(){}[0]
+    open fun (kotlin/Float).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/Density.toSp|toSp@kotlin.Float(){}[0]
     open fun (kotlin/Int).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/Density.toDp|toDp@kotlin.Int(){}[0]
+    open fun (kotlin/Int).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/Density.toSp|toSp@kotlin.Int(){}[0]
+}
+
+abstract interface androidx.compose.ui.unit/FontScaling { // androidx.compose.ui.unit/FontScaling|null[0]
+    abstract val fontScale // androidx.compose.ui.unit/FontScaling.fontScale|{}fontScale[0]
+        abstract fun <get-fontScale>(): kotlin/Float // androidx.compose.ui.unit/FontScaling.fontScale.<get-fontScale>|<get-fontScale>(){}[0]
+
+    open fun (androidx.compose.ui.unit/Dp).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/FontScaling.toSp|toSp@androidx.compose.ui.unit.Dp(){}[0]
+    open fun (androidx.compose.ui.unit/TextUnit).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/FontScaling.toDp|toDp@androidx.compose.ui.unit.TextUnit(){}[0]
+}
+
+abstract interface androidx.compose.ui.unit/FontScalingLinear { // androidx.compose.ui.unit/FontScalingLinear|null[0]
+    abstract val fontScale // androidx.compose.ui.unit/FontScalingLinear.fontScale|{}fontScale[0]
+        abstract fun <get-fontScale>(): kotlin/Float // androidx.compose.ui.unit/FontScalingLinear.fontScale.<get-fontScale>|<get-fontScale>(){}[0]
+
+    open fun (androidx.compose.ui.unit/Dp).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/FontScalingLinear.toSp|toSp@androidx.compose.ui.unit.Dp(){}[0]
+    open fun (androidx.compose.ui.unit/TextUnit).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/FontScalingLinear.toDp|toDp@androidx.compose.ui.unit.TextUnit(){}[0]
 }
 
 abstract interface androidx.compose.ui/Modifier { // androidx.compose.ui/Modifier|null[0]
@@ -2139,6 +2315,32 @@ final class androidx.compose.ui.graphics.painter/Painter { // androidx.compose.u
     final fun toString(): kotlin/String // androidx.compose.ui.graphics.painter/Painter.toString|toString(){}[0]
 }
 
+final class androidx.compose.ui.graphics/BlendModeColorFilter : androidx.compose.ui.graphics/ColorFilter { // androidx.compose.ui.graphics/BlendModeColorFilter|null[0]
+    constructor <init>(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/BlendMode) // androidx.compose.ui.graphics/BlendModeColorFilter.<init>|<init>(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.BlendMode){}[0]
+
+    final val blendMode // androidx.compose.ui.graphics/BlendModeColorFilter.blendMode|{}blendMode[0]
+        final fun <get-blendMode>(): androidx.compose.ui.graphics/BlendMode // androidx.compose.ui.graphics/BlendModeColorFilter.blendMode.<get-blendMode>|<get-blendMode>(){}[0]
+    final val color // androidx.compose.ui.graphics/BlendModeColorFilter.color|{}color[0]
+        final fun <get-color>(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/BlendModeColorFilter.color.<get-color>|<get-color>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/BlendModeColorFilter.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/BlendModeColorFilter.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/BlendModeColorFilter.toString|toString(){}[0]
+}
+
+final class androidx.compose.ui.graphics/BlurEffect : androidx.compose.ui.graphics/RenderEffect { // androidx.compose.ui.graphics/BlurEffect|null[0]
+    constructor <init>(androidx.compose.ui.graphics/RenderEffect?, kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...) // androidx.compose.ui.graphics/BlurEffect.<init>|<init>(androidx.compose.ui.graphics.RenderEffect?;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+}
+
+final class androidx.compose.ui.graphics/ColorMatrixColorFilter : androidx.compose.ui.graphics/ColorFilter { // androidx.compose.ui.graphics/ColorMatrixColorFilter|null[0]
+    constructor <init>(androidx.compose.ui.graphics/ColorMatrix) // androidx.compose.ui.graphics/ColorMatrixColorFilter.<init>|<init>(androidx.compose.ui.graphics.ColorMatrix){}[0]
+
+    final fun copyColorMatrix(androidx.compose.ui.graphics/ColorMatrix = ...): androidx.compose.ui.graphics/ColorMatrix // androidx.compose.ui.graphics/ColorMatrixColorFilter.copyColorMatrix|copyColorMatrix(androidx.compose.ui.graphics.ColorMatrix){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/ColorMatrixColorFilter.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/ColorMatrixColorFilter.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/ColorMatrixColorFilter.toString|toString(){}[0]
+}
+
 final class androidx.compose.ui.graphics/LayerOutsets { // androidx.compose.ui.graphics/LayerOutsets|null[0]
     constructor <init>(androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ...) // androidx.compose.ui.graphics/LayerOutsets.<init>|<init>(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
 
@@ -2161,6 +2363,19 @@ final class androidx.compose.ui.graphics/LayerOutsets { // androidx.compose.ui.g
     }
 }
 
+final class androidx.compose.ui.graphics/LightingColorFilter : androidx.compose.ui.graphics/ColorFilter { // androidx.compose.ui.graphics/LightingColorFilter|null[0]
+    constructor <init>(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color) // androidx.compose.ui.graphics/LightingColorFilter.<init>|<init>(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color){}[0]
+
+    final val add // androidx.compose.ui.graphics/LightingColorFilter.add|{}add[0]
+        final fun <get-add>(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/LightingColorFilter.add.<get-add>|<get-add>(){}[0]
+    final val multiply // androidx.compose.ui.graphics/LightingColorFilter.multiply|{}multiply[0]
+        final fun <get-multiply>(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/LightingColorFilter.multiply.<get-multiply>|<get-multiply>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/LightingColorFilter.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/LightingColorFilter.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/LightingColorFilter.toString|toString(){}[0]
+}
+
 final class androidx.compose.ui.graphics/LinearGradient : androidx.compose.ui.graphics/Brush { // androidx.compose.ui.graphics/LinearGradient|null[0]
     constructor <init>(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>?, androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, androidx.compose.ui.graphics/TileMode = ...) // androidx.compose.ui.graphics/LinearGradient.<init>|<init>(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.TileMode){}[0]
 
@@ -2175,15 +2390,20 @@ final class androidx.compose.ui.graphics/LinearGradient : androidx.compose.ui.gr
     final val tileMode // androidx.compose.ui.graphics/LinearGradient.tileMode|{}tileMode[0]
         final fun <get-tileMode>(): androidx.compose.ui.graphics/TileMode // androidx.compose.ui.graphics/LinearGradient.tileMode.<get-tileMode>|<get-tileMode>(){}[0]
 
-    final fun component1(): kotlin.collections/List<androidx.compose.ui.graphics/Color> // androidx.compose.ui.graphics/LinearGradient.component1|component1(){}[0]
-    final fun component2(): kotlin.collections/List<kotlin/Float>? // androidx.compose.ui.graphics/LinearGradient.component2|component2(){}[0]
-    final fun component3(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/LinearGradient.component3|component3(){}[0]
-    final fun component4(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/LinearGradient.component4|component4(){}[0]
-    final fun component5(): androidx.compose.ui.graphics/TileMode // androidx.compose.ui.graphics/LinearGradient.component5|component5(){}[0]
-    final fun copy(kotlin.collections/List<androidx.compose.ui.graphics/Color> = ..., kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/LinearGradient // androidx.compose.ui.graphics/LinearGradient.copy|copy(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.TileMode){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/LinearGradient.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/LinearGradient.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.graphics/LinearGradient.toString|toString(){}[0]
+}
+
+final class androidx.compose.ui.graphics/NativeCanvas { // androidx.compose.ui.graphics/NativeCanvas|null[0]
+    constructor <init>() // androidx.compose.ui.graphics/NativeCanvas.<init>|<init>(){}[0]
+}
+
+final class androidx.compose.ui.graphics/NativePaint { // androidx.compose.ui.graphics/NativePaint|null[0]
+    constructor <init>() // androidx.compose.ui.graphics/NativePaint.<init>|<init>(){}[0]
+}
+
+final class androidx.compose.ui.graphics/OffsetEffect : androidx.compose.ui.graphics/RenderEffect { // androidx.compose.ui.graphics/OffsetEffect|null[0]
+    constructor <init>(androidx.compose.ui.graphics/RenderEffect?, androidx.compose.ui.geometry/Offset) // androidx.compose.ui.graphics/OffsetEffect.<init>|<init>(androidx.compose.ui.graphics.RenderEffect?;androidx.compose.ui.geometry.Offset){}[0]
 }
 
 final class androidx.compose.ui.graphics/PathSegment { // androidx.compose.ui.graphics/PathSegment|null[0]
@@ -2215,6 +2435,23 @@ final class androidx.compose.ui.graphics/PathSegment { // androidx.compose.ui.gr
     }
 }
 
+final class androidx.compose.ui.graphics/PixelMap { // androidx.compose.ui.graphics/PixelMap|null[0]
+    constructor <init>(kotlin/IntArray, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int) // androidx.compose.ui.graphics/PixelMap.<init>|<init>(kotlin.IntArray;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+
+    final val buffer // androidx.compose.ui.graphics/PixelMap.buffer|{}buffer[0]
+        final fun <get-buffer>(): kotlin/IntArray // androidx.compose.ui.graphics/PixelMap.buffer.<get-buffer>|<get-buffer>(){}[0]
+    final val bufferOffset // androidx.compose.ui.graphics/PixelMap.bufferOffset|{}bufferOffset[0]
+        final fun <get-bufferOffset>(): kotlin/Int // androidx.compose.ui.graphics/PixelMap.bufferOffset.<get-bufferOffset>|<get-bufferOffset>(){}[0]
+    final val height // androidx.compose.ui.graphics/PixelMap.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // androidx.compose.ui.graphics/PixelMap.height.<get-height>|<get-height>(){}[0]
+    final val stride // androidx.compose.ui.graphics/PixelMap.stride|{}stride[0]
+        final fun <get-stride>(): kotlin/Int // androidx.compose.ui.graphics/PixelMap.stride.<get-stride>|<get-stride>(){}[0]
+    final val width // androidx.compose.ui.graphics/PixelMap.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // androidx.compose.ui.graphics/PixelMap.width.<get-width>|<get-width>(){}[0]
+
+    final fun get(kotlin/Int, kotlin/Int): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/PixelMap.get|get(kotlin.Int;kotlin.Int){}[0]
+}
+
 final class androidx.compose.ui.graphics/RadialGradient : androidx.compose.ui.graphics/Brush { // androidx.compose.ui.graphics/RadialGradient|null[0]
     constructor <init>(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>?, androidx.compose.ui.geometry/Offset, kotlin/Float, androidx.compose.ui.graphics/TileMode = ...) // androidx.compose.ui.graphics/RadialGradient.<init>|<init>(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
 
@@ -2229,16 +2466,11 @@ final class androidx.compose.ui.graphics/RadialGradient : androidx.compose.ui.gr
     final val tileMode // androidx.compose.ui.graphics/RadialGradient.tileMode|{}tileMode[0]
         final fun <get-tileMode>(): androidx.compose.ui.graphics/TileMode // androidx.compose.ui.graphics/RadialGradient.tileMode.<get-tileMode>|<get-tileMode>(){}[0]
 
-    final fun component1(): kotlin.collections/List<androidx.compose.ui.graphics/Color> // androidx.compose.ui.graphics/RadialGradient.component1|component1(){}[0]
-    final fun component2(): kotlin.collections/List<kotlin/Float>? // androidx.compose.ui.graphics/RadialGradient.component2|component2(){}[0]
-    final fun component3(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/RadialGradient.component3|component3(){}[0]
-    final fun component4(): kotlin/Float // androidx.compose.ui.graphics/RadialGradient.component4|component4(){}[0]
-    final fun component5(): androidx.compose.ui.graphics/TileMode // androidx.compose.ui.graphics/RadialGradient.component5|component5(){}[0]
-    final fun copy(kotlin.collections/List<androidx.compose.ui.graphics/Color> = ..., kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/RadialGradient // androidx.compose.ui.graphics/RadialGradient.copy|copy(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/RadialGradient.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/RadialGradient.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.graphics/RadialGradient.toString|toString(){}[0]
 }
+
+final class androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/Shader|null[0]
 
 final class androidx.compose.ui.graphics/Shadow { // androidx.compose.ui.graphics/Shadow|null[0]
     constructor <init>(androidx.compose.ui.graphics/Color = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/Shadow.<init>|<init>(androidx.compose.ui.graphics.Color;androidx.compose.ui.geometry.Offset;kotlin.Float){}[0]
@@ -2267,8 +2499,6 @@ final class androidx.compose.ui.graphics/SolidColor : androidx.compose.ui.graphi
     final val value // androidx.compose.ui.graphics/SolidColor.value|{}value[0]
         final fun <get-value>(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/SolidColor.value.<get-value>|<get-value>(){}[0]
 
-    final fun component1(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/SolidColor.component1|component1(){}[0]
-    final fun copy(androidx.compose.ui.graphics/Color = ...): androidx.compose.ui.graphics/SolidColor // androidx.compose.ui.graphics/SolidColor.copy|copy(androidx.compose.ui.graphics.Color){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/SolidColor.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/SolidColor.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.ui.graphics/SolidColor.toString|toString(){}[0]
@@ -2284,13 +2514,8 @@ final class androidx.compose.ui.graphics/SweepGradient : androidx.compose.ui.gra
     final val stops // androidx.compose.ui.graphics/SweepGradient.stops|{}stops[0]
         final fun <get-stops>(): kotlin.collections/List<kotlin/Float>? // androidx.compose.ui.graphics/SweepGradient.stops.<get-stops>|<get-stops>(){}[0]
 
-    final fun component1(): kotlin.collections/List<androidx.compose.ui.graphics/Color> // androidx.compose.ui.graphics/SweepGradient.component1|component1(){}[0]
-    final fun component2(): kotlin.collections/List<kotlin/Float>? // androidx.compose.ui.graphics/SweepGradient.component2|component2(){}[0]
-    final fun component3(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/SweepGradient.component3|component3(){}[0]
-    final fun copy(kotlin.collections/List<androidx.compose.ui.graphics/Color> = ..., kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.graphics/SweepGradient // androidx.compose.ui.graphics/SweepGradient.copy|copy(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.geometry.Offset){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/SweepGradient.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/SweepGradient.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.graphics/SweepGradient.toString|toString(){}[0]
 }
 
 final class androidx.compose.ui.graphics/TransformOrigin { // androidx.compose.ui.graphics/TransformOrigin|null[0]
@@ -3371,6 +3596,97 @@ final class com.compose.desktop.native.element/VerticalScrollModifier : androidx
         final fun <get-state>(): androidx.compose.foundation/ScrollState // com.compose.desktop.native.element/VerticalScrollModifier.state.<get-state>|<get-state>(){}[0]
 }
 
+final class com.compose.desktop.native.graphics/ProjectCanvas : androidx.compose.ui.graphics/Canvas { // com.compose.desktop.native.graphics/ProjectCanvas|null[0]
+    constructor <init>() // com.compose.desktop.native.graphics/ProjectCanvas.<init>|<init>(){}[0]
+
+    final fun clipPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/ClipOp) // com.compose.desktop.native.graphics/ProjectCanvas.clipPath|clipPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.ClipOp){}[0]
+    final fun clipRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/ClipOp) // com.compose.desktop.native.graphics/ProjectCanvas.clipRect|clipRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.ClipOp){}[0]
+    final fun concat(androidx.compose.ui.graphics/Matrix) // com.compose.desktop.native.graphics/ProjectCanvas.concat|concat(androidx.compose.ui.graphics.Matrix){}[0]
+    final fun disableZ() // com.compose.desktop.native.graphics/ProjectCanvas.disableZ|disableZ(){}[0]
+    final fun drawArc(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawArc|drawArc(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawCircle(androidx.compose.ui.geometry/Offset, kotlin/Float, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawCircle|drawCircle(androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawImage(androidx.compose.ui.graphics/ImageBitmap, androidx.compose.ui.geometry/Offset, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawImage|drawImage(androidx.compose.ui.graphics.ImageBitmap;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawImageRect(androidx.compose.ui.graphics/ImageBitmap, androidx.compose.ui.unit/IntOffset, androidx.compose.ui.unit/IntSize, androidx.compose.ui.unit/IntOffset, androidx.compose.ui.unit/IntSize, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawImageRect|drawImageRect(androidx.compose.ui.graphics.ImageBitmap;androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntSize;androidx.compose.ui.unit.IntOffset;androidx.compose.ui.unit.IntSize;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawLine(androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawLine|drawLine(androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawOval(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawOval|drawOval(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawPath|drawPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawPoints(androidx.compose.ui.graphics/PointMode, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawPoints|drawPoints(androidx.compose.ui.graphics.PointMode;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawRawPoints(androidx.compose.ui.graphics/PointMode, kotlin/FloatArray, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawRawPoints|drawRawPoints(androidx.compose.ui.graphics.PointMode;kotlin.FloatArray;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawRect|drawRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawRoundRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawRoundRect|drawRoundRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.Paint){}[0]
+    final fun drawVertices(androidx.compose.ui.graphics/Vertices, androidx.compose.ui.graphics/BlendMode, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.drawVertices|drawVertices(androidx.compose.ui.graphics.Vertices;androidx.compose.ui.graphics.BlendMode;androidx.compose.ui.graphics.Paint){}[0]
+    final fun enableZ() // com.compose.desktop.native.graphics/ProjectCanvas.enableZ|enableZ(){}[0]
+    final fun restore() // com.compose.desktop.native.graphics/ProjectCanvas.restore|restore(){}[0]
+    final fun rotate(kotlin/Float) // com.compose.desktop.native.graphics/ProjectCanvas.rotate|rotate(kotlin.Float){}[0]
+    final fun save() // com.compose.desktop.native.graphics/ProjectCanvas.save|save(){}[0]
+    final fun saveLayer(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Paint) // com.compose.desktop.native.graphics/ProjectCanvas.saveLayer|saveLayer(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Paint){}[0]
+    final fun scale(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectCanvas.scale|scale(kotlin.Float;kotlin.Float){}[0]
+    final fun skew(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectCanvas.skew|skew(kotlin.Float;kotlin.Float){}[0]
+    final fun translate(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectCanvas.translate|translate(kotlin.Float;kotlin.Float){}[0]
+}
+
+final class com.compose.desktop.native.graphics/ProjectImageBitmap : androidx.compose.ui.graphics/ImageBitmap { // com.compose.desktop.native.graphics/ProjectImageBitmap|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, androidx.compose.ui.graphics/ImageBitmapConfig = ..., kotlin/Boolean = ..., androidx.compose.ui.graphics.colorspace/ColorSpace = ...) // com.compose.desktop.native.graphics/ProjectImageBitmap.<init>|<init>(kotlin.Int;kotlin.Int;androidx.compose.ui.graphics.ImageBitmapConfig;kotlin.Boolean;androidx.compose.ui.graphics.colorspace.ColorSpace){}[0]
+
+    final val colorSpace // com.compose.desktop.native.graphics/ProjectImageBitmap.colorSpace|{}colorSpace[0]
+        final fun <get-colorSpace>(): androidx.compose.ui.graphics.colorspace/ColorSpace // com.compose.desktop.native.graphics/ProjectImageBitmap.colorSpace.<get-colorSpace>|<get-colorSpace>(){}[0]
+    final val config // com.compose.desktop.native.graphics/ProjectImageBitmap.config|{}config[0]
+        final fun <get-config>(): androidx.compose.ui.graphics/ImageBitmapConfig // com.compose.desktop.native.graphics/ProjectImageBitmap.config.<get-config>|<get-config>(){}[0]
+    final val hasAlpha // com.compose.desktop.native.graphics/ProjectImageBitmap.hasAlpha|{}hasAlpha[0]
+        final fun <get-hasAlpha>(): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectImageBitmap.hasAlpha.<get-hasAlpha>|<get-hasAlpha>(){}[0]
+    final val height // com.compose.desktop.native.graphics/ProjectImageBitmap.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // com.compose.desktop.native.graphics/ProjectImageBitmap.height.<get-height>|<get-height>(){}[0]
+    final val width // com.compose.desktop.native.graphics/ProjectImageBitmap.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // com.compose.desktop.native.graphics/ProjectImageBitmap.width.<get-width>|<get-width>(){}[0]
+
+    final fun prepareToDraw() // com.compose.desktop.native.graphics/ProjectImageBitmap.prepareToDraw|prepareToDraw(){}[0]
+    final fun readPixels(kotlin/IntArray, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int) // com.compose.desktop.native.graphics/ProjectImageBitmap.readPixels|readPixels(kotlin.IntArray;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+}
+
+final class com.compose.desktop.native.graphics/ProjectPaint : androidx.compose.ui.graphics/Paint { // com.compose.desktop.native.graphics/ProjectPaint|null[0]
+    constructor <init>() // com.compose.desktop.native.graphics/ProjectPaint.<init>|<init>(){}[0]
+
+    final var alpha // com.compose.desktop.native.graphics/ProjectPaint.alpha|{}alpha[0]
+        final fun <get-alpha>(): kotlin/Float // com.compose.desktop.native.graphics/ProjectPaint.alpha.<get-alpha>|<get-alpha>(){}[0]
+        final fun <set-alpha>(kotlin/Float) // com.compose.desktop.native.graphics/ProjectPaint.alpha.<set-alpha>|<set-alpha>(kotlin.Float){}[0]
+    final var blendMode // com.compose.desktop.native.graphics/ProjectPaint.blendMode|{}blendMode[0]
+        final fun <get-blendMode>(): androidx.compose.ui.graphics/BlendMode // com.compose.desktop.native.graphics/ProjectPaint.blendMode.<get-blendMode>|<get-blendMode>(){}[0]
+        final fun <set-blendMode>(androidx.compose.ui.graphics/BlendMode) // com.compose.desktop.native.graphics/ProjectPaint.blendMode.<set-blendMode>|<set-blendMode>(androidx.compose.ui.graphics.BlendMode){}[0]
+    final var color // com.compose.desktop.native.graphics/ProjectPaint.color|{}color[0]
+        final fun <get-color>(): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/ProjectPaint.color.<get-color>|<get-color>(){}[0]
+        final fun <set-color>(androidx.compose.ui.graphics/Color) // com.compose.desktop.native.graphics/ProjectPaint.color.<set-color>|<set-color>(androidx.compose.ui.graphics.Color){}[0]
+    final var colorFilter // com.compose.desktop.native.graphics/ProjectPaint.colorFilter|{}colorFilter[0]
+        final fun <get-colorFilter>(): androidx.compose.ui.graphics/ColorFilter? // com.compose.desktop.native.graphics/ProjectPaint.colorFilter.<get-colorFilter>|<get-colorFilter>(){}[0]
+        final fun <set-colorFilter>(androidx.compose.ui.graphics/ColorFilter?) // com.compose.desktop.native.graphics/ProjectPaint.colorFilter.<set-colorFilter>|<set-colorFilter>(androidx.compose.ui.graphics.ColorFilter?){}[0]
+    final var filterQuality // com.compose.desktop.native.graphics/ProjectPaint.filterQuality|{}filterQuality[0]
+        final fun <get-filterQuality>(): androidx.compose.ui.graphics/FilterQuality // com.compose.desktop.native.graphics/ProjectPaint.filterQuality.<get-filterQuality>|<get-filterQuality>(){}[0]
+        final fun <set-filterQuality>(androidx.compose.ui.graphics/FilterQuality) // com.compose.desktop.native.graphics/ProjectPaint.filterQuality.<set-filterQuality>|<set-filterQuality>(androidx.compose.ui.graphics.FilterQuality){}[0]
+    final var isAntiAlias // com.compose.desktop.native.graphics/ProjectPaint.isAntiAlias|{}isAntiAlias[0]
+        final fun <get-isAntiAlias>(): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectPaint.isAntiAlias.<get-isAntiAlias>|<get-isAntiAlias>(){}[0]
+        final fun <set-isAntiAlias>(kotlin/Boolean) // com.compose.desktop.native.graphics/ProjectPaint.isAntiAlias.<set-isAntiAlias>|<set-isAntiAlias>(kotlin.Boolean){}[0]
+    final var pathEffect // com.compose.desktop.native.graphics/ProjectPaint.pathEffect|{}pathEffect[0]
+        final fun <get-pathEffect>(): androidx.compose.ui.graphics/PathEffect? // com.compose.desktop.native.graphics/ProjectPaint.pathEffect.<get-pathEffect>|<get-pathEffect>(){}[0]
+        final fun <set-pathEffect>(androidx.compose.ui.graphics/PathEffect?) // com.compose.desktop.native.graphics/ProjectPaint.pathEffect.<set-pathEffect>|<set-pathEffect>(androidx.compose.ui.graphics.PathEffect?){}[0]
+    final var shader // com.compose.desktop.native.graphics/ProjectPaint.shader|{}shader[0]
+        final fun <get-shader>(): androidx.compose.ui.graphics/Shader? // com.compose.desktop.native.graphics/ProjectPaint.shader.<get-shader>|<get-shader>(){}[0]
+        final fun <set-shader>(androidx.compose.ui.graphics/Shader?) // com.compose.desktop.native.graphics/ProjectPaint.shader.<set-shader>|<set-shader>(androidx.compose.ui.graphics.Shader?){}[0]
+    final var strokeCap // com.compose.desktop.native.graphics/ProjectPaint.strokeCap|{}strokeCap[0]
+        final fun <get-strokeCap>(): androidx.compose.ui.graphics/StrokeCap // com.compose.desktop.native.graphics/ProjectPaint.strokeCap.<get-strokeCap>|<get-strokeCap>(){}[0]
+        final fun <set-strokeCap>(androidx.compose.ui.graphics/StrokeCap) // com.compose.desktop.native.graphics/ProjectPaint.strokeCap.<set-strokeCap>|<set-strokeCap>(androidx.compose.ui.graphics.StrokeCap){}[0]
+    final var strokeJoin // com.compose.desktop.native.graphics/ProjectPaint.strokeJoin|{}strokeJoin[0]
+        final fun <get-strokeJoin>(): androidx.compose.ui.graphics/StrokeJoin // com.compose.desktop.native.graphics/ProjectPaint.strokeJoin.<get-strokeJoin>|<get-strokeJoin>(){}[0]
+        final fun <set-strokeJoin>(androidx.compose.ui.graphics/StrokeJoin) // com.compose.desktop.native.graphics/ProjectPaint.strokeJoin.<set-strokeJoin>|<set-strokeJoin>(androidx.compose.ui.graphics.StrokeJoin){}[0]
+    final var strokeMiterLimit // com.compose.desktop.native.graphics/ProjectPaint.strokeMiterLimit|{}strokeMiterLimit[0]
+        final fun <get-strokeMiterLimit>(): kotlin/Float // com.compose.desktop.native.graphics/ProjectPaint.strokeMiterLimit.<get-strokeMiterLimit>|<get-strokeMiterLimit>(){}[0]
+        final fun <set-strokeMiterLimit>(kotlin/Float) // com.compose.desktop.native.graphics/ProjectPaint.strokeMiterLimit.<set-strokeMiterLimit>|<set-strokeMiterLimit>(kotlin.Float){}[0]
+    final var strokeWidth // com.compose.desktop.native.graphics/ProjectPaint.strokeWidth|{}strokeWidth[0]
+        final fun <get-strokeWidth>(): kotlin/Float // com.compose.desktop.native.graphics/ProjectPaint.strokeWidth.<get-strokeWidth>|<get-strokeWidth>(){}[0]
+        final fun <set-strokeWidth>(kotlin/Float) // com.compose.desktop.native.graphics/ProjectPaint.strokeWidth.<set-strokeWidth>|<set-strokeWidth>(kotlin.Float){}[0]
+    final var style // com.compose.desktop.native.graphics/ProjectPaint.style|{}style[0]
+        final fun <get-style>(): androidx.compose.ui.graphics/PaintingStyle // com.compose.desktop.native.graphics/ProjectPaint.style.<get-style>|<get-style>(){}[0]
+        final fun <set-style>(androidx.compose.ui.graphics/PaintingStyle) // com.compose.desktop.native.graphics/ProjectPaint.style.<set-style>|<set-style>(androidx.compose.ui.graphics.PaintingStyle){}[0]
+}
+
 final class com.compose.desktop.native.graphics/ProjectPath : androidx.compose.ui.graphics/Path { // com.compose.desktop.native.graphics/ProjectPath|null[0]
     constructor <init>() // com.compose.desktop.native.graphics/ProjectPath.<init>|<init>(){}[0]
 
@@ -3483,13 +3799,19 @@ final class com.compose.desktop.native.input/PointerInputScopeImpl : androidx.co
     final val viewConfiguration // com.compose.desktop.native.input/PointerInputScopeImpl.viewConfiguration|{}viewConfiguration[0]
         final fun <get-viewConfiguration>(): androidx.compose.ui.platform/ViewConfiguration // com.compose.desktop.native.input/PointerInputScopeImpl.viewConfiguration.<get-viewConfiguration>|<get-viewConfiguration>(){}[0]
 
+    final fun (androidx.compose.ui.geometry/Size).toDpSize(): androidx.compose.ui.unit/DpSize // com.compose.desktop.native.input/PointerInputScopeImpl.toDpSize|toDpSize@androidx.compose.ui.geometry.Size(){}[0]
     final fun (androidx.compose.ui.unit/Dp).roundToPx(): kotlin/Int // com.compose.desktop.native.input/PointerInputScopeImpl.roundToPx|roundToPx@androidx.compose.ui.unit.Dp(){}[0]
     final fun (androidx.compose.ui.unit/Dp).toPx(): kotlin/Float // com.compose.desktop.native.input/PointerInputScopeImpl.toPx|toPx@androidx.compose.ui.unit.Dp(){}[0]
     final fun (androidx.compose.ui.unit/Dp).toSp(): androidx.compose.ui.unit/TextUnit // com.compose.desktop.native.input/PointerInputScopeImpl.toSp|toSp@androidx.compose.ui.unit.Dp(){}[0]
+    final fun (androidx.compose.ui.unit/DpRect).toRect(): androidx.compose.ui.geometry/Rect // com.compose.desktop.native.input/PointerInputScopeImpl.toRect|toRect@androidx.compose.ui.unit.DpRect(){}[0]
+    final fun (androidx.compose.ui.unit/DpSize).toSize(): androidx.compose.ui.geometry/Size // com.compose.desktop.native.input/PointerInputScopeImpl.toSize|toSize@androidx.compose.ui.unit.DpSize(){}[0]
+    final fun (androidx.compose.ui.unit/TextUnit).roundToPx(): kotlin/Int // com.compose.desktop.native.input/PointerInputScopeImpl.roundToPx|roundToPx@androidx.compose.ui.unit.TextUnit(){}[0]
     final fun (androidx.compose.ui.unit/TextUnit).toDp(): androidx.compose.ui.unit/Dp // com.compose.desktop.native.input/PointerInputScopeImpl.toDp|toDp@androidx.compose.ui.unit.TextUnit(){}[0]
     final fun (androidx.compose.ui.unit/TextUnit).toPx(): kotlin/Float // com.compose.desktop.native.input/PointerInputScopeImpl.toPx|toPx@androidx.compose.ui.unit.TextUnit(){}[0]
     final fun (kotlin/Float).toDp(): androidx.compose.ui.unit/Dp // com.compose.desktop.native.input/PointerInputScopeImpl.toDp|toDp@kotlin.Float(){}[0]
+    final fun (kotlin/Float).toSp(): androidx.compose.ui.unit/TextUnit // com.compose.desktop.native.input/PointerInputScopeImpl.toSp|toSp@kotlin.Float(){}[0]
     final fun (kotlin/Int).toDp(): androidx.compose.ui.unit/Dp // com.compose.desktop.native.input/PointerInputScopeImpl.toDp|toDp@kotlin.Int(){}[0]
+    final fun (kotlin/Int).toSp(): androidx.compose.ui.unit/TextUnit // com.compose.desktop.native.input/PointerInputScopeImpl.toSp|toSp@kotlin.Int(){}[0]
     final fun deliverChange(androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Long) // com.compose.desktop.native.input/PointerInputScopeImpl.deliverChange|deliverChange(androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long){}[0]
     final suspend fun <#A1: kotlin/Any?> awaitPointerEventScope(kotlin.coroutines/SuspendFunction1<androidx.compose.ui.input.pointer/AwaitPointerEventScope, #A1>): #A1 // com.compose.desktop.native.input/PointerInputScopeImpl.awaitPointerEventScope|awaitPointerEventScope(kotlin.coroutines.SuspendFunction1<androidx.compose.ui.input.pointer.AwaitPointerEventScope,0:0>){0§<kotlin.Any?>}[0]
 }
@@ -4093,6 +4415,28 @@ final value class androidx.compose.ui.graphics/FilterQuality { // androidx.compo
     }
 }
 
+final value class androidx.compose.ui.graphics/ImageBitmapConfig { // androidx.compose.ui.graphics/ImageBitmapConfig|null[0]
+    final val value // androidx.compose.ui.graphics/ImageBitmapConfig.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // androidx.compose.ui.graphics/ImageBitmapConfig.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/ImageBitmapConfig.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/ImageBitmapConfig.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/ImageBitmapConfig.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.graphics/ImageBitmapConfig.Companion|null[0]
+        final val Alpha8 // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Alpha8|{}Alpha8[0]
+            final fun <get-Alpha8>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Alpha8.<get-Alpha8>|<get-Alpha8>(){}[0]
+        final val Argb8888 // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Argb8888|{}Argb8888[0]
+            final fun <get-Argb8888>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Argb8888.<get-Argb8888>|<get-Argb8888>(){}[0]
+        final val F16 // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.F16|{}F16[0]
+            final fun <get-F16>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.F16.<get-F16>|<get-F16>(){}[0]
+        final val Gpu // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Gpu|{}Gpu[0]
+            final fun <get-Gpu>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Gpu.<get-Gpu>|<get-Gpu>(){}[0]
+        final val Rgb565 // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Rgb565|{}Rgb565[0]
+            final fun <get-Rgb565>(): androidx.compose.ui.graphics/ImageBitmapConfig // androidx.compose.ui.graphics/ImageBitmapConfig.Companion.Rgb565.<get-Rgb565>|<get-Rgb565>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.graphics/Matrix { // androidx.compose.ui.graphics/Matrix|null[0]
     constructor <init>(kotlin/FloatArray = ...) // androidx.compose.ui.graphics/Matrix.<init>|<init>(kotlin.FloatArray){}[0]
 
@@ -4201,6 +4545,21 @@ final value class androidx.compose.ui.graphics/PointMode { // androidx.compose.u
             final fun <get-Points>(): androidx.compose.ui.graphics/PointMode // androidx.compose.ui.graphics/PointMode.Companion.Points.<get-Points>|<get-Points>(){}[0]
         final val Polygon // androidx.compose.ui.graphics/PointMode.Companion.Polygon|{}Polygon[0]
             final fun <get-Polygon>(): androidx.compose.ui.graphics/PointMode // androidx.compose.ui.graphics/PointMode.Companion.Polygon.<get-Polygon>|<get-Polygon>(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.graphics/StampedPathEffectStyle { // androidx.compose.ui.graphics/StampedPathEffectStyle|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/StampedPathEffectStyle.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/StampedPathEffectStyle.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/StampedPathEffectStyle.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion|null[0]
+        final val Morph // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Morph|{}Morph[0]
+            final fun <get-Morph>(): androidx.compose.ui.graphics/StampedPathEffectStyle // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Morph.<get-Morph>|<get-Morph>(){}[0]
+        final val Rotate // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Rotate|{}Rotate[0]
+            final fun <get-Rotate>(): androidx.compose.ui.graphics/StampedPathEffectStyle // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Rotate.<get-Rotate>|<get-Rotate>(){}[0]
+        final val Translate // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Translate|{}Translate[0]
+            final fun <get-Translate>(): androidx.compose.ui.graphics/StampedPathEffectStyle // androidx.compose.ui.graphics/StampedPathEffectStyle.Companion.Translate.<get-Translate>|<get-Translate>(){}[0]
     }
 }
 
@@ -4679,6 +5038,19 @@ final value class androidx.compose.ui.text/PlaceholderVerticalAlign { // android
     }
 }
 
+final value class androidx.compose.ui.text/TextGranularity { // androidx.compose.ui.text/TextGranularity|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/TextGranularity.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.text/TextGranularity.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.text/TextGranularity.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.text/TextGranularity.Companion|null[0]
+        final val Character // androidx.compose.ui.text/TextGranularity.Companion.Character|{}Character[0]
+            final fun <get-Character>(): androidx.compose.ui.text/TextGranularity // androidx.compose.ui.text/TextGranularity.Companion.Character.<get-Character>|<get-Character>(){}[0]
+        final val Word // androidx.compose.ui.text/TextGranularity.Companion.Word|{}Word[0]
+            final fun <get-Word>(): androidx.compose.ui.text/TextGranularity // androidx.compose.ui.text/TextGranularity.Companion.Word.<get-Word>|<get-Word>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.text/TextRange { // androidx.compose.ui.text/TextRange|null[0]
     final val collapsed // androidx.compose.ui.text/TextRange.collapsed|{}collapsed[0]
         final fun <get-collapsed>(): kotlin/Boolean // androidx.compose.ui.text/TextRange.collapsed.<get-collapsed>|<get-collapsed>(){}[0]
@@ -4988,6 +5360,14 @@ open class androidx.compose.ui.graphics.colorspace/Connector { // androidx.compo
     open fun transform(kotlin/FloatArray): kotlin/FloatArray // androidx.compose.ui.graphics.colorspace/Connector.transform|transform(kotlin.FloatArray){}[0]
 }
 
+open class androidx.compose.ui.graphics/ColorFilter { // androidx.compose.ui.graphics/ColorFilter|null[0]
+    final object Companion { // androidx.compose.ui.graphics/ColorFilter.Companion|null[0]
+        final fun colorMatrix(androidx.compose.ui.graphics/ColorMatrix): androidx.compose.ui.graphics/ColorFilter // androidx.compose.ui.graphics/ColorFilter.Companion.colorMatrix|colorMatrix(androidx.compose.ui.graphics.ColorMatrix){}[0]
+        final fun lighting(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color): androidx.compose.ui.graphics/ColorFilter // androidx.compose.ui.graphics/ColorFilter.Companion.lighting|lighting(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color){}[0]
+        final fun tint(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/BlendMode = ...): androidx.compose.ui.graphics/ColorFilter // androidx.compose.ui.graphics/ColorFilter.Companion.tint|tint(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.BlendMode){}[0]
+    }
+}
+
 open class androidx.compose.ui.text.input/PlatformImeOptions { // androidx.compose.ui.text.input/PlatformImeOptions|null[0]
     constructor <init>() // androidx.compose.ui.text.input/PlatformImeOptions.<init>|<init>(){}[0]
 }
@@ -5128,6 +5508,10 @@ sealed class androidx.compose.ui.graphics/Outline { // androidx.compose.ui.graph
         final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/Outline.Rounded.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/Outline.Rounded.hashCode|hashCode(){}[0]
     }
+}
+
+sealed class androidx.compose.ui.graphics/RenderEffect { // androidx.compose.ui.graphics/RenderEffect|null[0]
+    open fun isSupported(): kotlin/Boolean // androidx.compose.ui.graphics/RenderEffect.isSupported|isSupported(){}[0]
 }
 
 sealed class androidx.compose.ui.layout/AlignmentLine { // androidx.compose.ui.layout/AlignmentLine|null[0]
@@ -5570,6 +5954,8 @@ final const val androidx.compose.ui.geometry/Uint64Low32 // androidx.compose.ui.
     final fun <get-Uint64Low32>(): kotlin/Long // androidx.compose.ui.geometry/Uint64Low32.<get-Uint64Low32>|<get-Uint64Low32>(){}[0]
 final const val androidx.compose.ui.geometry/UnspecifiedPackedFloats // androidx.compose.ui.geometry/UnspecifiedPackedFloats|{}UnspecifiedPackedFloats[0]
     final fun <get-UnspecifiedPackedFloats>(): kotlin/Long // androidx.compose.ui.geometry/UnspecifiedPackedFloats.<get-UnspecifiedPackedFloats>|<get-UnspecifiedPackedFloats>(){}[0]
+final const val androidx.compose.ui.graphics/DefaultAlpha // androidx.compose.ui.graphics/DefaultAlpha|{}DefaultAlpha[0]
+    final fun <get-DefaultAlpha>(): kotlin/Float // androidx.compose.ui.graphics/DefaultAlpha.<get-DefaultAlpha>|<get-DefaultAlpha>(){}[0]
 final const val androidx.compose.ui.graphics/UnspecifiedColor // androidx.compose.ui.graphics/UnspecifiedColor|{}UnspecifiedColor[0]
     final fun <get-UnspecifiedColor>(): kotlin/ULong // androidx.compose.ui.graphics/UnspecifiedColor.<get-UnspecifiedColor>|<get-UnspecifiedColor>(){}[0]
 final const val androidx.compose.ui.unit/MaxDimensionsAndFocusMask // androidx.compose.ui.unit/MaxDimensionsAndFocusMask|{}MaxDimensionsAndFocusMask[0]
@@ -5842,15 +6228,26 @@ final val androidx.compose.ui.graphics/DoneSegment // androidx.compose.ui.graphi
     final fun <get-DoneSegment>(): androidx.compose.ui.graphics/PathSegment // androidx.compose.ui.graphics/DoneSegment.<get-DoneSegment>|<get-DoneSegment>(){}[0]
 final val androidx.compose.ui.graphics/RectangleShape // androidx.compose.ui.graphics/RectangleShape|{}RectangleShape[0]
     final fun <get-RectangleShape>(): androidx.compose.ui.graphics/Shape // androidx.compose.ui.graphics/RectangleShape.<get-RectangleShape>|<get-RectangleShape>(){}[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop|#static{}androidx_compose_ui_graphics_BlendModeColorFilter$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop|#static{}androidx_compose_ui_graphics_BlurEffect$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop|#static{}androidx_compose_ui_graphics_Brush$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorFilter$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorFilter$stableprop|#static{}androidx_compose_ui_graphics_ColorFilter$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop|#static{}androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop|#static{}androidx_compose_ui_graphics_LayerOutsets$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop|#static{}androidx_compose_ui_graphics_LightingColorFilter$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop|#static{}androidx_compose_ui_graphics_LinearGradient$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop|#static{}androidx_compose_ui_graphics_NativeCanvas$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop|#static{}androidx_compose_ui_graphics_NativePaint$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop|#static{}androidx_compose_ui_graphics_OffsetEffect$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop|#static{}androidx_compose_ui_graphics_Outline$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop|#static{}androidx_compose_ui_graphics_Outline_Generic$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop|#static{}androidx_compose_ui_graphics_Outline_Rectangle$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop|#static{}androidx_compose_ui_graphics_Outline_Rounded$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop|#static{}androidx_compose_ui_graphics_PathSegment$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_PixelMap$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PixelMap$stableprop|#static{}androidx_compose_ui_graphics_PixelMap$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop|#static{}androidx_compose_ui_graphics_RadialGradient$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_RenderEffect$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RenderEffect$stableprop|#static{}androidx_compose_ui_graphics_RenderEffect$stableprop[0]
+final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stableprop|#static{}androidx_compose_ui_graphics_Shader$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop|#static{}androidx_compose_ui_graphics_Shadow$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop|#static{}androidx_compose_ui_graphics_SolidColor$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop|#static{}androidx_compose_ui_graphics_SweepGradient$stableprop[0]
@@ -5923,6 +6320,8 @@ final val androidx.compose.ui.layout/FirstBaseline // androidx.compose.ui.layout
     final fun <get-FirstBaseline>(): androidx.compose.ui.layout/HorizontalAlignmentLine // androidx.compose.ui.layout/FirstBaseline.<get-FirstBaseline>|<get-FirstBaseline>(){}[0]
 final val androidx.compose.ui.layout/LastBaseline // androidx.compose.ui.layout/LastBaseline|{}LastBaseline[0]
     final fun <get-LastBaseline>(): androidx.compose.ui.layout/HorizontalAlignmentLine // androidx.compose.ui.layout/LastBaseline.<get-LastBaseline>|<get-LastBaseline>(){}[0]
+final val androidx.compose.ui.layout/LocalPinnableContainer // androidx.compose.ui.layout/LocalPinnableContainer|{}LocalPinnableContainer[0]
+    final fun <get-LocalPinnableContainer>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui.layout/PinnableContainer?> // androidx.compose.ui.layout/LocalPinnableContainer.<get-LocalPinnableContainer>|<get-LocalPinnableContainer>(){}[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$stableprop|#static{}androidx_compose_ui_layout_AlignmentLine$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop|#static{}androidx_compose_ui_layout_FixedScale$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop|#static{}androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop[0]
@@ -5935,6 +6334,8 @@ final val androidx.compose.ui.layout/isUnspecified // androidx.compose.ui.layout
     final inline fun (androidx.compose.ui.layout/ScaleFactor).<get-isUnspecified>(): kotlin/Boolean // androidx.compose.ui.layout/isUnspecified.<get-isUnspecified>|<get-isUnspecified>@androidx.compose.ui.layout.ScaleFactor(){}[0]
 final val androidx.compose.ui.platform/LocalClipboardManager // androidx.compose.ui.platform/LocalClipboardManager|{}LocalClipboardManager[0]
     final fun <get-LocalClipboardManager>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui.platform/ClipboardManager> // androidx.compose.ui.platform/LocalClipboardManager.<get-LocalClipboardManager>|<get-LocalClipboardManager>(){}[0]
+final val androidx.compose.ui.platform/LocalInspectionMode // androidx.compose.ui.platform/LocalInspectionMode|{}LocalInspectionMode[0]
+    final fun <get-LocalInspectionMode>(): androidx.compose.runtime/ProvidableCompositionLocal<kotlin/Boolean> // androidx.compose.ui.platform/LocalInspectionMode.<get-LocalInspectionMode>|<get-LocalInspectionMode>(){}[0]
 final val androidx.compose.ui.platform/NoInspectorInfo // androidx.compose.ui.platform/NoInspectorInfo|{}NoInspectorInfo[0]
     final fun <get-NoInspectorInfo>(): kotlin/Function1<androidx.compose.ui.platform/InspectorInfo, kotlin/Unit> // androidx.compose.ui.platform/NoInspectorInfo.<get-NoInspectorInfo>|<get-NoInspectorInfo>(){}[0]
 final val androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop // androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop|#static{}androidx_compose_ui_platform_InspectableModifier$stableprop[0]
@@ -6078,6 +6479,9 @@ final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphic
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop[0]
+final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectCanvas$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectCanvas$stableprop|#static{}com_compose_desktop_native_graphics_ProjectCanvas$stableprop[0]
+final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop|#static{}com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop[0]
+final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPaint$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPaint$stableprop|#static{}com_compose_desktop_native_graphics_ProjectPaint$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop|#static{}com_compose_desktop_native_graphics_ProjectPath$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop|#static{}com_compose_desktop_native_graphics_ProjectPathIterator$stableprop[0]
 final val com.compose.desktop.native.graphics/g8 // com.compose.desktop.native.graphics/g8|@androidx.compose.ui.graphics.Color{}g8[0]
@@ -6176,12 +6580,16 @@ final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.gra
 final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/radialGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/radialGradient|radialGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
 final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/sweepGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/sweepGradient|sweepGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset){}[0]
 final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/verticalGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/verticalGradient|verticalGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/rotate(kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/rotate|rotate@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/rotateRad(kotlin/Float, kotlin/Float = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/rotateRad|rotateRad@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/scale(kotlin/Float, kotlin/Float = ..., kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/scale|scale@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/compositeOver(androidx.compose.ui.graphics/Color): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/compositeOver|compositeOver@androidx.compose.ui.graphics.Color(androidx.compose.ui.graphics.Color){}[0]
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/luminance(): kotlin/Float // androidx.compose.ui.graphics/luminance|luminance@androidx.compose.ui.graphics.Color(){}[0]
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/toArgb(): kotlin/Int // androidx.compose.ui.graphics/toArgb|toArgb@androidx.compose.ui.graphics.Color(){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/blend(androidx.compose.ui.graphics/Color, kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/blend|blend@androidx.compose.ui.graphics.Color(androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/darken(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/darken|darken@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/lighten(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/lighten|lighten@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
+final fun (androidx.compose.ui.graphics/ImageBitmap).androidx.compose.ui.graphics/toPixelMap(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/IntArray = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.graphics/PixelMap // androidx.compose.ui.graphics/toPixelMap|toPixelMap@androidx.compose.ui.graphics.ImageBitmap(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.IntArray;kotlin.Int;kotlin.Int){}[0]
 final fun (androidx.compose.ui.graphics/Matrix).androidx.compose.ui.graphics/isIdentity(): kotlin/Boolean // androidx.compose.ui.graphics/isIdentity|isIdentity@androidx.compose.ui.graphics.Matrix(){}[0]
 final fun (androidx.compose.ui.graphics/Path).androidx.compose.ui.graphics/copy(): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/copy|copy@androidx.compose.ui.graphics.Path(){}[0]
 final fun (androidx.compose.ui.graphics/TileMode).androidx.compose.ui.graphics/isSupported(): kotlin/Boolean // androidx.compose.ui.graphics/isSupported|isSupported@androidx.compose.ui.graphics.TileMode(){}[0]
@@ -6271,6 +6679,7 @@ final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/onP
 final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/onSecondaryClick(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.desktop.native.modifier/onSecondaryClick|onSecondaryClick@androidx.compose.ui.Modifier(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
 final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/onTextInput(kotlin/Function1<kotlin/String, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.desktop.native.modifier/onTextInput|onTextInput@androidx.compose.ui.Modifier(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
 final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/pressable(kotlin/Function1<kotlin/Boolean, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.desktop.native.modifier/pressable|pressable@androidx.compose.ui.Modifier(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
+final fun (kotlin/ByteArray).androidx.compose.ui.graphics/decodeToImageBitmap(): androidx.compose.ui.graphics/ImageBitmap // androidx.compose.ui.graphics/decodeToImageBitmap|decodeToImageBitmap@kotlin.ByteArray(){}[0]
 final fun (kotlin/CharSequence).androidx.compose.ui.text/substring(androidx.compose.ui.text/TextRange): kotlin/String // androidx.compose.ui.text/substring|substring@kotlin.CharSequence(androidx.compose.ui.text.TextRange){}[0]
 final fun <#A: androidx.compose.animation.core/AnimationVector> (androidx.compose.animation.core/VectorizedAnimationSpec<#A>).androidx.compose.animation.core/createAnimation(#A, #A, #A): androidx.compose.animation.core/TargetBasedAnimation<#A, #A> // androidx.compose.animation.core/createAnimation|createAnimation@androidx.compose.animation.core.VectorizedAnimationSpec<0:0>(0:0;0:0;0:0){0§<androidx.compose.animation.core.AnimationVector>}[0]
 final fun <#A: kotlin/Any> (kotlin.collections/List<#A?>).androidx.compose.ui.util/fastFilterNotNull(): kotlin.collections/List<#A> // androidx.compose.ui.util/fastFilterNotNull|fastFilterNotNull@kotlin.collections.List<0:0?>(){0§<kotlin.Any>}[0]
@@ -6492,6 +6901,7 @@ final fun androidx.compose.foundation/androidx_compose_foundation_MutatorMutex$s
 final fun androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop_getter|androidx_compose_foundation_ScrollState$stableprop_getter(){}[0]
 final fun androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop_getter|androidx_compose_foundation_ScrollbarStyle$stableprop_getter(){}[0]
 final fun androidx.compose.foundation/defaultScrollbarStyle(): androidx.compose.foundation/ScrollbarStyle // androidx.compose.foundation/defaultScrollbarStyle|defaultScrollbarStyle(){}[0]
+final fun androidx.compose.foundation/isSystemInDarkTheme(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/Boolean // androidx.compose.foundation/isSystemInDarkTheme|isSystemInDarkTheme(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun androidx.compose.foundation/rememberScrollState(kotlin/Int, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.foundation/ScrollState // androidx.compose.foundation/rememberScrollState|rememberScrollState(kotlin.Int;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation/rememberScrollbarAdapter(androidx.compose.foundation/ScrollState, androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.foundation/ScrollbarAdapter // androidx.compose.foundation/rememberScrollbarAdapter|rememberScrollbarAdapter(androidx.compose.foundation.ScrollState;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun androidx.compose.ui.focus/androidx_compose_ui_focus_FocusRequester$stableprop_getter(): kotlin/Int // androidx.compose.ui.focus/androidx_compose_ui_focus_FocusRequester$stableprop_getter|androidx_compose_ui_focus_FocusRequester$stableprop_getter(){}[0]
@@ -6528,23 +6938,45 @@ final fun androidx.compose.ui.graphics.drawscope/androidx_compose_ui_graphics_dr
 final fun androidx.compose.ui.graphics.drawscope/androidx_compose_ui_graphics_drawscope_Fill$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics.drawscope/androidx_compose_ui_graphics_drawscope_Fill$stableprop_getter|androidx_compose_ui_graphics_drawscope_Fill$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics.drawscope/androidx_compose_ui_graphics_drawscope_Stroke$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics.drawscope/androidx_compose_ui_graphics_drawscope_Stroke$stableprop_getter|androidx_compose_ui_graphics_drawscope_Stroke$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics.painter/androidx_compose_ui_graphics_painter_Painter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics.painter/androidx_compose_ui_graphics_painter_Painter$stableprop_getter|androidx_compose_ui_graphics_painter_Painter$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/BlurEffect(kotlin/Float, kotlin/Float, androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/BlurEffect // androidx.compose.ui.graphics/BlurEffect|BlurEffect(kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+final fun androidx.compose.ui.graphics/Canvas(androidx.compose.ui.graphics/ImageBitmap): androidx.compose.ui.graphics/Canvas // androidx.compose.ui.graphics/Canvas|Canvas(androidx.compose.ui.graphics.ImageBitmap){}[0]
 final fun androidx.compose.ui.graphics/Color(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., androidx.compose.ui.graphics.colorspace/ColorSpace = ...): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color|Color(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.colorspace.ColorSpace){}[0]
 final fun androidx.compose.ui.graphics/Color(kotlin/Int): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color|Color(kotlin.Int){}[0]
 final fun androidx.compose.ui.graphics/Color(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ...): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color|Color(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.graphics/Color(kotlin/Long): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color|Color(kotlin.Long){}[0]
+final fun androidx.compose.ui.graphics/CompositeShader(androidx.compose.ui.graphics/Shader, androidx.compose.ui.graphics/Shader, androidx.compose.ui.graphics/BlendMode): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/CompositeShader|CompositeShader(androidx.compose.ui.graphics.Shader;androidx.compose.ui.graphics.Shader;androidx.compose.ui.graphics.BlendMode){}[0]
+final fun androidx.compose.ui.graphics/ImageBitmap(kotlin/Int, kotlin/Int, androidx.compose.ui.graphics/ImageBitmapConfig = ..., kotlin/Boolean = ..., androidx.compose.ui.graphics.colorspace/ColorSpace = ...): androidx.compose.ui.graphics/ImageBitmap // androidx.compose.ui.graphics/ImageBitmap|ImageBitmap(kotlin.Int;kotlin.Int;androidx.compose.ui.graphics.ImageBitmapConfig;kotlin.Boolean;androidx.compose.ui.graphics.colorspace.ColorSpace){}[0]
+final fun androidx.compose.ui.graphics/ImageShader(androidx.compose.ui.graphics/ImageBitmap, androidx.compose.ui.graphics/TileMode = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/ImageShader|ImageShader(androidx.compose.ui.graphics.ImageBitmap;androidx.compose.ui.graphics.TileMode;androidx.compose.ui.graphics.TileMode){}[0]
 final fun androidx.compose.ui.graphics/LayerOutsets(androidx.compose.ui.unit/Dp): androidx.compose.ui.graphics/LayerOutsets // androidx.compose.ui.graphics/LayerOutsets|LayerOutsets(androidx.compose.ui.unit.Dp){}[0]
 final fun androidx.compose.ui.graphics/LayerOutsets(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp): androidx.compose.ui.graphics/LayerOutsets // androidx.compose.ui.graphics/LayerOutsets|LayerOutsets(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
+final fun androidx.compose.ui.graphics/LinearGradientShader(androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/LinearGradientShader|LinearGradientShader(androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.graphics.TileMode){}[0]
+final fun androidx.compose.ui.graphics/OffsetEffect(kotlin/Float, kotlin/Float): androidx.compose.ui.graphics/OffsetEffect // androidx.compose.ui.graphics/OffsetEffect|OffsetEffect(kotlin.Float;kotlin.Float){}[0]
+final fun androidx.compose.ui.graphics/Paint(): androidx.compose.ui.graphics/Paint // androidx.compose.ui.graphics/Paint|Paint(){}[0]
 final fun androidx.compose.ui.graphics/Path(): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path|Path(){}[0]
 final fun androidx.compose.ui.graphics/PathIterator(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/PathIterator.ConicEvaluation = ..., kotlin/Float = ...): androidx.compose.ui.graphics/PathIterator // androidx.compose.ui.graphics/PathIterator|PathIterator(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.PathIterator.ConicEvaluation;kotlin.Float){}[0]
+final fun androidx.compose.ui.graphics/PathMeasure(): androidx.compose.ui.graphics/PathMeasure // androidx.compose.ui.graphics/PathMeasure|PathMeasure(){}[0]
+final fun androidx.compose.ui.graphics/RadialGradientShader(androidx.compose.ui.geometry/Offset, kotlin/Float, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/RadialGradientShader|RadialGradientShader(androidx.compose.ui.geometry.Offset;kotlin.Float;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.graphics.TileMode){}[0]
+final fun androidx.compose.ui.graphics/SweepGradientShader(androidx.compose.ui.geometry/Offset, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>? = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/SweepGradientShader|SweepGradientShader(androidx.compose.ui.geometry.Offset;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter|androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop_getter|androidx_compose_ui_graphics_BlurEffect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter|androidx_compose_ui_graphics_Brush$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorFilter$stableprop_getter|androidx_compose_ui_graphics_ColorFilter$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop_getter|androidx_compose_ui_graphics_ColorMatrixColorFilter$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter|androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter|androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter|androidx_compose_ui_graphics_LinearGradient$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop_getter|androidx_compose_ui_graphics_NativeCanvas$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop_getter|androidx_compose_ui_graphics_NativePaint$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop_getter|androidx_compose_ui_graphics_OffsetEffect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop_getter|androidx_compose_ui_graphics_Outline$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter|androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter|androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter|androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop_getter|androidx_compose_ui_graphics_PathSegment$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_PixelMap$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PixelMap$stableprop_getter|androidx_compose_ui_graphics_PixelMap$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop_getter|androidx_compose_ui_graphics_RadialGradient$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_RenderEffect$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RenderEffect$stableprop_getter|androidx_compose_ui_graphics_RenderEffect$stableprop_getter(){}[0]
+final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stableprop_getter|androidx_compose_ui_graphics_Shader$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter|androidx_compose_ui_graphics_Shadow$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop_getter|androidx_compose_ui_graphics_SolidColor$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop_getter|androidx_compose_ui_graphics_SweepGradient$stableprop_getter(){}[0]
@@ -6647,6 +7079,7 @@ final fun androidx.compose.ui.util/lerp(kotlin/Int, kotlin/Int, kotlin/Float): k
 final fun androidx.compose.ui.util/lerp(kotlin/Long, kotlin/Long, kotlin/Float): kotlin/Long // androidx.compose.ui.util/lerp|lerp(kotlin.Long;kotlin.Long;kotlin.Float){}[0]
 final fun androidx.compose.ui.util/throwNoSuchElementException(kotlin/String): kotlin/Nothing // androidx.compose.ui.util/throwNoSuchElementException|throwNoSuchElementException(kotlin.String){}[0]
 final fun androidx.compose.ui.util/throwUnsupportedOperationException(kotlin/String) // androidx.compose.ui.util/throwUnsupportedOperationException|throwUnsupportedOperationException(kotlin.String){}[0]
+final fun androidx.compose.ui.util/traceValue(kotlin/String, kotlin/Long) // androidx.compose.ui.util/traceValue|traceValue(kotlin.String;kotlin.Long){}[0]
 final fun androidx.compose.ui.window/Popup(androidx.compose.ui/Alignment?, androidx.compose.ui.unit/IntOffset, kotlin/Function0<kotlin/Unit>?, androidx.compose.ui.window/PopupProperties?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.ui.window/Popup|Popup(androidx.compose.ui.Alignment?;androidx.compose.ui.unit.IntOffset;kotlin.Function0<kotlin.Unit>?;androidx.compose.ui.window.PopupProperties?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.window/androidx_compose_ui_window_PopupProperties$stableprop_getter(): kotlin/Int // androidx.compose.ui.window/androidx_compose_ui_window_PopupProperties$stableprop_getter|androidx_compose_ui_window_PopupProperties$stableprop_getter(){}[0]
 final fun androidx.compose.ui/androidx_compose_ui_AbsoluteAlignment$stableprop_getter(): kotlin/Int // androidx.compose.ui/androidx_compose_ui_AbsoluteAlignment$stableprop_getter|androidx_compose_ui_AbsoluteAlignment$stableprop_getter(){}[0]
@@ -6687,6 +7120,9 @@ final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphic
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectCanvas$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectCanvas$stableprop_getter|com_compose_desktop_native_graphics_ProjectCanvas$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop_getter|com_compose_desktop_native_graphics_ProjectImageBitmap$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPaint$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPaint$stableprop_getter|com_compose_desktop_native_graphics_ProjectPaint$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop_getter|com_compose_desktop_native_graphics_ProjectPath$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter|com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter(): kotlin/Int // com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter|com_compose_desktop_native_icons_IconFont$stableprop_getter(){}[0]
@@ -6748,6 +7184,8 @@ final fun com.compose.desktop.native/showOpenFileDialog(kotlin/Function1<kotlin/
 final fun com.compose.desktop.native/showSaveFileDialog(kotlin/String? = ..., kotlin/Function1<kotlin/String?, kotlin/Unit>) // com.compose.desktop.native/showSaveFileDialog|showSaveFileDialog(kotlin.String?;kotlin.Function1<kotlin.String?,kotlin.Unit>){}[0]
 final inline fun (androidx.compose.ui.geometry/Offset).androidx.compose.ui.geometry/takeOrElse(kotlin/Function0<androidx.compose.ui.geometry/Offset>): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/takeOrElse|takeOrElse@androidx.compose.ui.geometry.Offset(kotlin.Function0<androidx.compose.ui.geometry.Offset>){}[0]
 final inline fun (androidx.compose.ui.geometry/Size).androidx.compose.ui.geometry/takeOrElse(kotlin/Function0<androidx.compose.ui.geometry/Size>): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/takeOrElse|takeOrElse@androidx.compose.ui.geometry.Size(kotlin.Function0<androidx.compose.ui.geometry.Size>){}[0]
+final inline fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/withSave(kotlin/Function0<kotlin/Unit>) // androidx.compose.ui.graphics/withSave|withSave@androidx.compose.ui.graphics.Canvas(kotlin.Function0<kotlin.Unit>){}[0]
+final inline fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/withSaveLayer(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Paint, kotlin/Function0<kotlin/Unit>) // androidx.compose.ui.graphics/withSaveLayer|withSaveLayer@androidx.compose.ui.graphics.Canvas(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Paint;kotlin.Function0<kotlin.Unit>){}[0]
 final inline fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/takeOrElse(kotlin/Function0<androidx.compose.ui.graphics/Color>): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/takeOrElse|takeOrElse@androidx.compose.ui.graphics.Color(kotlin.Function0<androidx.compose.ui.graphics.Color>){}[0]
 final inline fun (androidx.compose.ui.layout/ScaleFactor).androidx.compose.ui.layout/takeOrElse(kotlin/Function0<androidx.compose.ui.layout/ScaleFactor>): androidx.compose.ui.layout/ScaleFactor // androidx.compose.ui.layout/takeOrElse|takeOrElse@androidx.compose.ui.layout.ScaleFactor(kotlin.Function0<androidx.compose.ui.layout.ScaleFactor>){}[0]
 final inline fun (androidx.compose.ui.text.style/BaselineShift).androidx.compose.ui.text.style/takeOrElse(kotlin/Function0<androidx.compose.ui.text.style/BaselineShift>): androidx.compose.ui.text.style/BaselineShift // androidx.compose.ui.text.style/takeOrElse|takeOrElse@androidx.compose.ui.text.style.BaselineShift(kotlin.Function0<androidx.compose.ui.text.style.BaselineShift>){}[0]
@@ -6827,6 +7265,7 @@ final inline fun <#A: kotlin/Any?> (kotlin.collections/List<#A>).androidx.compos
 final inline fun <#A: kotlin/Any?> (kotlin.collections/List<#A>).androidx.compose.ui.util/fastForEachReversed(kotlin/Function1<#A, kotlin/Unit>) // androidx.compose.ui.util/fastForEachReversed|fastForEachReversed@kotlin.collections.List<0:0>(kotlin.Function1<0:0,kotlin.Unit>){0§<kotlin.Any?>}[0]
 final inline fun <#A: kotlin/Any?> (kotlin.collections/List<#A>).androidx.compose.ui.util/fastLastOrNull(kotlin/Function1<#A, kotlin/Boolean>): #A? // androidx.compose.ui.util/fastLastOrNull|fastLastOrNull@kotlin.collections.List<0:0>(kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any?>}[0]
 final inline fun <#A: kotlin/Any?> (kotlin.collections/List<#A>).androidx.compose.ui.util/fastSumBy(kotlin/Function1<#A, kotlin/Int>): kotlin/Int // androidx.compose.ui.util/fastSumBy|fastSumBy@kotlin.collections.List<0:0>(kotlin.Function1<0:0,kotlin.Int>){0§<kotlin.Any?>}[0]
+final inline fun <#A: kotlin/Any?> androidx.compose.ui.util/trace(kotlin/String, kotlin/Function0<#A>): #A // androidx.compose.ui.util/trace|trace(kotlin.String;kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
 final inline fun androidx.compose.ui.geometry/CornerRadius(kotlin/Float, kotlin/Float = ...): androidx.compose.ui.geometry/CornerRadius // androidx.compose.ui.geometry/CornerRadius|CornerRadius(kotlin.Float;kotlin.Float){}[0]
 final inline fun androidx.compose.ui.geometry/Offset(kotlin/Float, kotlin/Float): androidx.compose.ui.geometry/Offset // androidx.compose.ui.geometry/Offset|Offset(kotlin.Float;kotlin.Float){}[0]
 final inline fun androidx.compose.ui.geometry/Size(kotlin/Float, kotlin/Float): androidx.compose.ui.geometry/Size // androidx.compose.ui.geometry/Size|Size(kotlin.Float;kotlin.Float){}[0]

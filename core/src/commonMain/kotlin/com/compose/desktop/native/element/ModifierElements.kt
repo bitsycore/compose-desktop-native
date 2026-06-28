@@ -84,7 +84,7 @@ class FocusableModifier(val onFocusChanged: (Boolean) -> Unit) : Modifier.Elemen
 
 /* Receives raw key events while the node (or a descendant) is focused.
    Return true to consume; false lets the event bubble up the focus chain. */
-class OnKeyEventModifier(val handler: (KeyEventDispatch) -> Boolean) : Modifier.Element
+class OnKeyEventModifier(val handler: (androidx.compose.ui.input.key.KeyEvent) -> Boolean) : Modifier.Element
 
 /* Receives IME-committed text while the node is focused. Use it to insert
    into a TextFieldValue. */
@@ -123,13 +123,6 @@ class OnSizeChangedModifier(val onChange: (androidx.compose.ui.unit.IntSize) -> 
 class VerticalScrollModifier(val state: androidx.compose.foundation.ScrollState) : Modifier.Element
 
 class HorizontalScrollModifier(val state: androidx.compose.foundation.ScrollState) : Modifier.Element
-
-/* Wrapper around a key event the modifier sees. Wrapping rather than
-   re-exporting androidx.compose.ui.input.key.KeyEvent so we don't pin the
-   key-event type prematurely. */
-class KeyEventDispatch(
-    val key: androidx.compose.ui.input.key.KeyEvent,
-)
 
 /* Clips this node's children to the given shape. The node's own bg/border
    drawing is not clipped (they already follow the shape via their own
