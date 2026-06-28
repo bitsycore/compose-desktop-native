@@ -7,7 +7,7 @@ import androidx.compose.material.MaterialIconAxisDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextRendererCapabilities
+import com.compose.desktop.native.text.TextRendererCapabilities
 import androidx.compose.ui.unit.Dp
 import com.compose.desktop.native.icons.IconFont
 import com.compose.desktop.native.loadComposeResourceBytes

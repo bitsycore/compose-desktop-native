@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.currentTextMeasurer
+import com.compose.desktop.native.text.currentTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString

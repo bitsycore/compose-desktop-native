@@ -1,11 +1,17 @@
-package androidx.compose.ui.text
+package com.compose.desktop.native.text
 
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.IntSize
 
 // ==================
-// MARK: TextMeasurer
+// MARK: TextMeasurer (project-only render-bridge)
 // ==================
+
+/* Upstream Compose has its own androidx.compose.ui.text.TextMeasurer (a class
+   that returns TextLayoutResult) — different shape, engine-tied. Per FIDELITY's
+   relocate rule, our reduced render-bridge interface lives here instead of
+   colliding on the official name. The native backend installs an impl at
+   startup (Skia / SDL3) via currentTextMeasurer. */
 
 /* Wrapped layout result. `lines[i]` is the visible text of wrapped line i;
    `lineStarts[i]` is the offset into the original text where that line

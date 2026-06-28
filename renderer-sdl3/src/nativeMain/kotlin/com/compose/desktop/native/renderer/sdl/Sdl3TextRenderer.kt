@@ -8,9 +8,9 @@ import androidx.compose.ui.graphics.r8
 import androidx.compose.ui.graphics.g8
 import androidx.compose.ui.graphics.b8
 import androidx.compose.ui.graphics.a8
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextRendererCapabilities
-import androidx.compose.ui.text.WrappedText
+import com.compose.desktop.native.text.TextMeasurer
+import com.compose.desktop.native.text.TextRendererCapabilities
+import com.compose.desktop.native.text.WrappedText
 import androidx.compose.ui.text.Range
 import androidx.compose.ui.text.SpanStyle
 import com.compose.desktop.native.text.lineColorRuns

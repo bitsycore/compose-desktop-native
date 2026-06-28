@@ -20,7 +20,7 @@ import com.compose.desktop.native.node.LayoutNode
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.currentImageLoader
-import androidx.compose.ui.text.currentTextMeasurer
+import com.compose.desktop.native.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import com.compose.desktop.native.window.LocalPopupHost
 import com.compose.desktop.native.window.PopupLayer
@@ -407,8 +407,8 @@ fun nativeComposeWindow(
             // Publish the viewport size so commonMain composables can cull
             // off-screen work (selection highlights) and self-position
             // (DropdownMenu) during composition.
-            androidx.compose.ui.text.currentViewportHeight = backend.windowHeight
-            androidx.compose.ui.text.currentViewportWidth = backend.windowWidth
+            com.compose.desktop.native.text.currentViewportHeight = backend.windowHeight
+            com.compose.desktop.native.text.currentViewportWidth = backend.windowWidth
 
             // ============
             //  Signal frame to recomposer

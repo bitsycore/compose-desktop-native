@@ -29,9 +29,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.WrappedText
-import androidx.compose.ui.text.currentTextMeasurer
-import androidx.compose.ui.text.currentViewportHeight
+import com.compose.desktop.native.text.WrappedText
+import com.compose.desktop.native.text.currentTextMeasurer
+import com.compose.desktop.native.text.currentViewportHeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp

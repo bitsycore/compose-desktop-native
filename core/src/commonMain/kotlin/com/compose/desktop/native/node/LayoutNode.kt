@@ -79,7 +79,7 @@ class LayoutNode {
     //  the result and measure + draw share one wrap. Content width is computed
     //  lazily (textContentWidth) only when the node isn't a fixed/fill width,
     //  so the common fillMaxWidth body never measures all N lines.
-    private var fWrapCache: androidx.compose.ui.text.WrappedText? = null
+    private var fWrapCache: com.compose.desktop.native.text.WrappedText? = null
     private var fWrapText: String? = null
     private var fWrapMaxW = -1
     private var fWrapSize = -1
@@ -93,7 +93,7 @@ class LayoutNode {
     /* Wrap `text` to inMaxWidth, caching the result so an unchanged text leaf
        isn't re-wrapped every frame. Also fixes textMeasuredHeight. Both the
        measure policy and the renderers call this so they share one wrap. */
-    fun layoutText(inMaxWidth: Int): androidx.compose.ui.text.WrappedText {
+    fun layoutText(inMaxWidth: Int): com.compose.desktop.native.text.WrappedText {
         val vText = text ?: ""
         val vTab = com.compose.desktop.native.TextLayoutConfig.tabWidth
         val vCached = fWrapCache
@@ -102,7 +102,7 @@ class LayoutNode {
             fWrapVars == fontVariationSettings) {
             return vCached
         }
-        val vM = androidx.compose.ui.text.currentTextMeasurer
+        val vM = com.compose.desktop.native.text.currentTextMeasurer
         val vWrap = vM.wrap(vText, fontSize, inMaxWidth, fontFamily, fontVariationSettings)
         val vLh = vM.lineHeight(fontSize, fontFamily, fontVariationSettings)
         fWrapCache = vWrap
@@ -122,7 +122,7 @@ class LayoutNode {
        plus reset + rescanned textContentWidth — every single frame. For a huge
        body that alone dropped a static screen from 75 to ~18 fps. Falls back to
        a fresh wrap only before the first measure. */
-    fun cachedWrap(): androidx.compose.ui.text.WrappedText {
+    fun cachedWrap(): com.compose.desktop.native.text.WrappedText {
         fWrapCache?.let { return it }
         return layoutText(if (softWrap && width > 0) width else Int.MAX_VALUE)
     }
@@ -134,7 +134,7 @@ class LayoutNode {
     fun textContentWidth(): Int {
         if (fContentW >= 0) return fContentW
         val vWrap = fWrapCache ?: return 0
-        val vM = androidx.compose.ui.text.currentTextMeasurer
+        val vM = com.compose.desktop.native.text.currentTextMeasurer
         var vMax = 0
         for (vLine in vWrap.lines) {
             val vw = vM.measure(vLine, fWrapSize, Int.MAX_VALUE, fWrapFamily, fWrapVars).width

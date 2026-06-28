@@ -22,9 +22,9 @@ import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Range
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.WrappedText
-import androidx.compose.ui.text.currentTextMeasurer
-import androidx.compose.ui.text.currentViewportHeight
+import com.compose.desktop.native.text.WrappedText
+import com.compose.desktop.native.text.currentTextMeasurer
+import com.compose.desktop.native.text.currentViewportHeight
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize

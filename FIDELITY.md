@@ -140,9 +140,12 @@ All of the above already verified working on Windows/SDL3.
   the ~22 `Modifier.Element` classes + `GraphicsLayerModifier` → `.element`;
   `LayoutNode` + `NodeApplier` (+ internal node `MeasurePolicy`) → `.node`;
   `PathCommand` (render-bridge sealed type, no upstream equivalent) →
-  `.graphics`; `ScrollAnimator` → `.scroll`; Popup host infra → `.window`;
-  `ColorRun` + `SelectableText`/`LocalInSelectionContainer` (folded into
-  selection-aware
+  `.graphics`; `TextMeasurer` / `WrappedText` / `TextRendererCapabilities` +
+  `currentTextMeasurer` / `currentViewportHeight/Width` → `.text` (upstream
+  has its own `androidx.compose.ui.text.TextMeasurer` with a different
+  shape — class returning `TextLayoutResult`); `ScrollAnimator` → `.scroll`;
+  Popup host infra → `.window`; `ColorRun` + `SelectableText`/
+  `LocalInSelectionContainer` (folded into selection-aware
   BasicText) → `.text`; `InfiniteTransition.animateDp` → `.animation`.
 - **Reshaped to match official**: `PaddingValues` → interface
   (`calculate*Padding` + `calculateStart/EndPadding`); `ToggleableState`→`ui.state`,
@@ -162,13 +165,14 @@ All of the above already verified working on Windows/SDL3.
   (`PathCommand` already relocated.)
 - (bigger, app-facing) the `ui.res` system (`Res`/`ImageLoader`/`ResourceKind`/…)
 
-**Match-upstream reshapes**: `SpanStyle`/`TextStyle`/`ParagraphStyle` + the
-animation specs (`SpringSpec`/`TweenSpec`/…) `data class` → plain class with
-manual equals/hashCode (drop `component*`/`copy`). (`BorderStroke` →
-wraps a `Brush`: done. `Outline`/`Shape`/`Density` reshape: done —
-`Shape.createOutline(size, layoutDirection, density)`, `Outline.Rectangle(rect)`,
-`Outline.Rounded(roundRect)`, `Outline.Generic(path)` now match upstream;
-`SolidColor.color` renamed to `.value`.)
+**Match-upstream reshapes**: `SpanStyle`/`TextStyle`/`ParagraphStyle`
+`data class` → plain class with manual equals/hashCode (drop `component*`/
+`copy`). (`BorderStroke` → wraps a `Brush`: done. `Outline`/`Shape`/`Density`
+reshape: done — `Shape.createOutline(size, layoutDirection, density)`,
+`Outline.Rectangle(rect)`, `Outline.Rounded(roundRect)`, `Outline.Generic(path)`
+now match upstream; `SolidColor.color` renamed to `.value`. Animation specs:
+done — `TweenSpec` / `SnapSpec` / `SpringSpec` / `RepeatableSpec` /
+`InfiniteRepeatableSpec` are now plain classes with manual equals/hashCode.)
 
 **Runtime-critical (do last, screenshot-test)**: `KeyEvent` / `PointerEvent` /
 `PointerEventType` / `PointerButton` enum/data-class → official value classes —

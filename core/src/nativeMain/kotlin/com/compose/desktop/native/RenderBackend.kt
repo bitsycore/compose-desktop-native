@@ -2,7 +2,7 @@ package com.compose.desktop.native
 
 import com.compose.desktop.native.node.LayoutNode
 import androidx.compose.ui.res.ImageLoader
-import androidx.compose.ui.text.TextMeasurer
+import com.compose.desktop.native.text.TextMeasurer
 
 // ==================
 // MARK: RenderBackend

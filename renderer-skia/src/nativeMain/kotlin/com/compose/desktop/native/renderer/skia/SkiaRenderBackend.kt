@@ -3,7 +3,7 @@ package com.compose.desktop.native.renderer.skia
 import com.compose.desktop.native.node.LayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
-import androidx.compose.ui.text.TextMeasurer
+import com.compose.desktop.native.text.TextMeasurer
 import androidx.compose.ui.unit.IntSize
 import com.compose.desktop.native.*
 import org.jetbrains.skia.Canvas

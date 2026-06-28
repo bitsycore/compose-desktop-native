@@ -11,14 +11,27 @@ package androidx.compose.animation.core
    we just lerp between two T values via a caller-supplied lerp lambda). */
 sealed interface AnimationSpec<T>
 
+// Reshape note (FIDELITY.md): upstream's spec classes are plain classes with
+// manual equals/hashCode — no `component*` / `copy`. That's what matches the
+// Compose ABI we're tracking, so we mirror it here. The actual evaluation
+// machinery (evalTween / evalSpring / …) still uses the same fields.
+
 // ============
 //  TweenSpec — duration + easing
 
-data class TweenSpec<T>(
+class TweenSpec<T>(
 	val durationMillis: Int = 300,
 	val delay: Int = 0,
 	val easing: Easing = FastOutSlowInEasing,
-) : AnimationSpec<T>
+) : AnimationSpec<T> {
+	override fun equals(other: Any?): Boolean =
+		other is TweenSpec<*> &&
+			other.durationMillis == durationMillis &&
+			other.delay == delay &&
+			other.easing == easing
+	override fun hashCode(): Int =
+		(durationMillis * 31 + delay) * 31 + easing.hashCode()
+}
 
 fun <T> tween(
 	durationMillis: Int = 300,
@@ -29,7 +42,10 @@ fun <T> tween(
 // ============
 //  SnapSpec — instant jump (optional delay)
 
-data class SnapSpec<T>(val delay: Int = 0) : AnimationSpec<T>
+class SnapSpec<T>(val delay: Int = 0) : AnimationSpec<T> {
+	override fun equals(other: Any?): Boolean = other is SnapSpec<*> && other.delay == delay
+	override fun hashCode(): Int = delay
+}
 
 fun <T> snap(delayMillis: Int = 0): SnapSpec<T> = SnapSpec(delayMillis)
 
@@ -38,11 +54,20 @@ fun <T> snap(delayMillis: Int = 0): SnapSpec<T> = SnapSpec(delayMillis)
 //  spring (no velocity-aware overshoot); duration is derived from
 //  stiffness so it behaves close enough for typical UI accents.
 
-data class SpringSpec<T>(
+class SpringSpec<T>(
 	val dampingRatio: Float = Spring.DampingRatioNoBouncy,
 	val stiffness: Float = Spring.StiffnessMedium,
 	val visibilityThreshold: T? = null,
-) : AnimationSpec<T>
+) : AnimationSpec<T> {
+	override fun equals(other: Any?): Boolean =
+		other is SpringSpec<*> &&
+			other.dampingRatio == dampingRatio &&
+			other.stiffness == stiffness &&
+			other.visibilityThreshold == visibilityThreshold
+	override fun hashCode(): Int =
+		(dampingRatio.hashCode() * 31 + stiffness.hashCode()) * 31 +
+			(visibilityThreshold?.hashCode() ?: 0)
+}
 
 object Spring {
 	const val DampingRatioNoBouncy = 1f
@@ -70,11 +95,19 @@ fun <T> spring(
 
 enum class RepeatMode { Restart, Reverse }
 
-data class RepeatableSpec<T>(
+class RepeatableSpec<T>(
 	val iterations: Int,
 	val animation: TweenSpec<T>,
 	val repeatMode: RepeatMode = RepeatMode.Restart,
-) : AnimationSpec<T>
+) : AnimationSpec<T> {
+	override fun equals(other: Any?): Boolean =
+		other is RepeatableSpec<*> &&
+			other.iterations == iterations &&
+			other.animation == animation &&
+			other.repeatMode == repeatMode
+	override fun hashCode(): Int =
+		(iterations * 31 + animation.hashCode()) * 31 + repeatMode.hashCode()
+}
 
 fun <T> repeatable(
 	iterations: Int,
@@ -82,10 +115,16 @@ fun <T> repeatable(
 	repeatMode: RepeatMode = RepeatMode.Restart,
 ): RepeatableSpec<T> = RepeatableSpec(iterations, animation, repeatMode)
 
-data class InfiniteRepeatableSpec<T>(
+class InfiniteRepeatableSpec<T>(
 	val animation: TweenSpec<T>,
 	val repeatMode: RepeatMode = RepeatMode.Restart,
-) : AnimationSpec<T>
+) : AnimationSpec<T> {
+	override fun equals(other: Any?): Boolean =
+		other is InfiniteRepeatableSpec<*> &&
+			other.animation == animation &&
+			other.repeatMode == repeatMode
+	override fun hashCode(): Int = animation.hashCode() * 31 + repeatMode.hashCode()
+}
 
 fun <T> infiniteRepeatable(
 	animation: TweenSpec<T>,

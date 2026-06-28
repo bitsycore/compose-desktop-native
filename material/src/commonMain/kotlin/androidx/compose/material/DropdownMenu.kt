@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.currentViewportHeight
-import androidx.compose.ui.text.currentViewportWidth
+import com.compose.desktop.native.text.currentViewportHeight
+import com.compose.desktop.native.text.currentViewportWidth
 import androidx.compose.ui.window.Popup
 import com.compose.desktop.native.window.PopupOutsideDismiss
 
