@@ -522,6 +522,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentDataType.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/UriHandler.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/UriHandler.kt
 # ShapeContainingUtil — outline + path geometric tests.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt                                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt
+
+# Scrollable-container helpers (CheckScrollableContainerConstraints / ClipScrollableContainer).
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
