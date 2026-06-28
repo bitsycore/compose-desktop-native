@@ -104,6 +104,15 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDeco
 # SpanStyle.kt is engine-tied so we don't vendor the whole file).
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextIndent.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextIndent.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/InternalTextApi.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/InternalTextApi.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Placeholder.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/text/Placeholder.kt
+# Text input value-class fundamentals (pure, no engine deps).
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardType.kt          core/src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardType.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt core/src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt    core/src/vendor/common/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt core/src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
 # LineBreak / TextMotion are expect classes; the skikoMain actuals are pure
 # data (no Skia refs), so we vendor them too.
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
@@ -129,6 +138,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/UiComposable.kt         
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ComposeUiFlags.kt        core/src/vendor/common/kotlin/androidx/compose/ui/ComposeUiFlags.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRateCategory.kt     core/src/vendor/common/kotlin/androidx/compose/ui/FrameRateCategory.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/state/ToggleableState.kt core/src/vendor/common/kotlin/androidx/compose/ui/state/ToggleableState.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/SessionMutex.kt          core/src/vendor/common/kotlin/androidx/compose/ui/SessionMutex.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/AtomicReference.kt       core/src/vendor/common/kotlin/androidx/compose/ui/AtomicReference.kt
+compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/AtomicReference.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/ui/AtomicReference.native.kt
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/InternalComposeUiApi.kt core/src/vendor/common/kotlin/androidx/compose/ui/InternalComposeUiApi.kt
 # Draw modifiers — thin wrappers over Modifier.graphicsLayer (accept-and-ignore
 # the `clip` param for now; renderer-level support is a follow-up).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Alpha.kt            core/src/vendor/common/kotlin/androidx/compose/ui/draw/Alpha.kt
@@ -167,6 +180,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ViewConfigurati
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/InternalFoundationTextApi.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/InternalFoundationTextApi.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyCommand.kt                                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyCommand.kt
+# ContextMenuStrings.kt blocked on the l10n/intl Locale machinery — skip
+# until those are vendored. (commonMain alone is fine, but the skiko actual
+# pulls in androidx.compose.ui.text.intl.Locale + l10n strings table.)
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyItemScope.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyItemScope.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyScopeMarker.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyScopeMarker.kt
 # Foundation internal precondition helpers (requirePrecondition etc.)
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/InlineClassHelper.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/internal/InlineClassHelper.kt
 # Suspend-pipeline support (ScrollableState port): expect/actual cancellation
