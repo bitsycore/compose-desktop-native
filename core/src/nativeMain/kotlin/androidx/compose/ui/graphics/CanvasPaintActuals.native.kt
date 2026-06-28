@@ -24,8 +24,12 @@ import com.compose.desktop.native.graphics.ProjectPaint
 
 // ============
 //  Paint
+//  Typealias to Any matching skiko pattern (upstream desktop maps to
+//  org.jetbrains.skia.Paint; we don't have a single backend type since
+//  Skia and SDL3 renderers each carry their own paint state).
 
-actual class NativePaint
+@Suppress("DEPRECATION_ERROR")
+actual typealias NativePaint = Any
 actual fun Paint(): Paint = ProjectPaint()
 
 // ============
@@ -121,9 +125,9 @@ internal actual fun createImageBitmap(bytes: ByteArray): ImageBitmap =
 	throw UnsupportedOperationException("ImageBitmap from bytes not supported; use Res.painter")
 
 // ============
-//  Canvas
+//  Canvas — typealias matching skiko pattern.
 
-actual class NativeCanvas
+actual typealias NativeCanvas = Any
 
 internal actual fun ActualCanvas(image: ImageBitmap): Canvas = ProjectCanvas()
 

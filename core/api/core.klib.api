@@ -808,7 +808,7 @@ abstract interface androidx.compose.ui.graphics/Paint { // androidx.compose.ui.g
         abstract fun <get-style>(): androidx.compose.ui.graphics/PaintingStyle // androidx.compose.ui.graphics/Paint.style.<get-style>|<get-style>(){}[0]
         abstract fun <set-style>(androidx.compose.ui.graphics/PaintingStyle) // androidx.compose.ui.graphics/Paint.style.<set-style>|<set-style>(androidx.compose.ui.graphics.PaintingStyle){}[0]
 
-    open fun asFrameworkPaint(): androidx.compose.ui.graphics/NativePaint // androidx.compose.ui.graphics/Paint.asFrameworkPaint|asFrameworkPaint(){}[0]
+    open fun asFrameworkPaint(): kotlin/Any // androidx.compose.ui.graphics/Paint.asFrameworkPaint|asFrameworkPaint(){}[0]
 }
 
 abstract interface androidx.compose.ui.graphics/Path { // androidx.compose.ui.graphics/Path|null[0]
@@ -2381,14 +2381,6 @@ final class androidx.compose.ui.graphics/LinearGradient : androidx.compose.ui.gr
 
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/LinearGradient.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/LinearGradient.hashCode|hashCode(){}[0]
-}
-
-final class androidx.compose.ui.graphics/NativeCanvas { // androidx.compose.ui.graphics/NativeCanvas|null[0]
-    constructor <init>() // androidx.compose.ui.graphics/NativeCanvas.<init>|<init>(){}[0]
-}
-
-final class androidx.compose.ui.graphics/NativePaint { // androidx.compose.ui.graphics/NativePaint|null[0]
-    constructor <init>() // androidx.compose.ui.graphics/NativePaint.<init>|<init>(){}[0]
 }
 
 final class androidx.compose.ui.graphics/OffsetEffect : androidx.compose.ui.graphics/RenderEffect { // androidx.compose.ui.graphics/OffsetEffect|null[0]
@@ -6048,7 +6040,13 @@ sealed class androidx.compose.animation.core/AnimationVector // androidx.compose
 sealed class androidx.compose.ui.graphics.drawscope/DrawStyle // androidx.compose.ui.graphics.drawscope/DrawStyle|null[0]
 
 sealed class androidx.compose.ui.graphics/Brush { // androidx.compose.ui.graphics/Brush|null[0]
-    final object Companion // androidx.compose.ui.graphics/Brush.Companion|null[0]
+    final object Companion { // androidx.compose.ui.graphics/Brush.Companion|null[0]
+        final fun horizontalGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/Brush.Companion.horizontalGradient|horizontalGradient(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+        final fun linearGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/Brush.Companion.linearGradient|linearGradient(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.TileMode){}[0]
+        final fun radialGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/Brush.Companion.radialGradient|radialGradient(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+        final fun sweepGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/Brush.Companion.sweepGradient|sweepGradient(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset){}[0]
+        final fun verticalGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/Brush.Companion.verticalGradient|verticalGradient(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
+    }
 }
 
 sealed class androidx.compose.ui.graphics/Outline { // androidx.compose.ui.graphics/Outline|null[0]
@@ -6815,8 +6813,6 @@ final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixC
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop|#static{}androidx_compose_ui_graphics_LayerOutsets$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop|#static{}androidx_compose_ui_graphics_LightingColorFilter$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop|#static{}androidx_compose_ui_graphics_LinearGradient$stableprop[0]
-final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop|#static{}androidx_compose_ui_graphics_NativeCanvas$stableprop[0]
-final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop|#static{}androidx_compose_ui_graphics_NativePaint$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop|#static{}androidx_compose_ui_graphics_OffsetEffect$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop|#static{}androidx_compose_ui_graphics_Outline$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop|#static{}androidx_compose_ui_graphics_Outline_Generic$stableprop[0]
@@ -7165,11 +7161,6 @@ final fun (androidx.compose.ui.geometry/Size).androidx.compose.ui.unit/toIntSize
 final fun (androidx.compose.ui.graphics.colorspace/ColorSpace).androidx.compose.ui.graphics.colorspace/adapt(androidx.compose.ui.graphics.colorspace/WhitePoint, androidx.compose.ui.graphics.colorspace/Adaptation = ...): androidx.compose.ui.graphics.colorspace/ColorSpace // androidx.compose.ui.graphics.colorspace/adapt|adapt@androidx.compose.ui.graphics.colorspace.ColorSpace(androidx.compose.ui.graphics.colorspace.WhitePoint;androidx.compose.ui.graphics.colorspace.Adaptation){}[0]
 final fun (androidx.compose.ui.graphics.colorspace/ColorSpace).androidx.compose.ui.graphics.colorspace/connect(androidx.compose.ui.graphics.colorspace/ColorSpace = ..., androidx.compose.ui.graphics.colorspace/RenderIntent = ...): androidx.compose.ui.graphics.colorspace/Connector // androidx.compose.ui.graphics.colorspace/connect|connect@androidx.compose.ui.graphics.colorspace.ColorSpace(androidx.compose.ui.graphics.colorspace.ColorSpace;androidx.compose.ui.graphics.colorspace.RenderIntent){}[0]
 final fun (androidx.compose.ui.graphics/BlendMode).androidx.compose.ui.graphics/isSupported(): kotlin/Boolean // androidx.compose.ui.graphics/isSupported|isSupported@androidx.compose.ui.graphics.BlendMode(){}[0]
-final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/horizontalGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/horizontalGradient|horizontalGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
-final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/linearGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.geometry/Offset = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/linearGradient|linearGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Offset;androidx.compose.ui.graphics.TileMode){}[0]
-final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/radialGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/radialGradient|radialGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
-final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/sweepGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/sweepGradient|sweepGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;androidx.compose.ui.geometry.Offset){}[0]
-final fun (androidx.compose.ui.graphics/Brush.Companion).androidx.compose.ui.graphics/verticalGradient(kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Brush // androidx.compose.ui.graphics/verticalGradient|verticalGradient@androidx.compose.ui.graphics.Brush.Companion(kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.TileMode){}[0]
 final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/rotate(kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/rotate|rotate@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/rotateRad(kotlin/Float, kotlin/Float = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/rotateRad|rotateRad@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/scale(kotlin/Float, kotlin/Float = ..., kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/scale|scale@androidx.compose.ui.graphics.Canvas(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
@@ -7551,8 +7542,6 @@ final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_ColorMatrixC
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter|androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter|androidx_compose_ui_graphics_LightingColorFilter$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter|androidx_compose_ui_graphics_LinearGradient$stableprop_getter(){}[0]
-final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativeCanvas$stableprop_getter|androidx_compose_ui_graphics_NativeCanvas$stableprop_getter(){}[0]
-final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_NativePaint$stableprop_getter|androidx_compose_ui_graphics_NativePaint$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_OffsetEffect$stableprop_getter|androidx_compose_ui_graphics_OffsetEffect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stableprop_getter|androidx_compose_ui_graphics_Outline$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter|androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(){}[0]

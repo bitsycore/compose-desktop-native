@@ -16,7 +16,56 @@ import androidx.compose.ui.geometry.Offset
    of the gradient's primary axis (0..1). If no stops are supplied the
    colours are spread evenly. */
 sealed class Brush {
-	companion object
+	companion object {
+
+		/* Linear gradient between [start] and [end] in the shape's local
+		   coordinate space. Companion member (not extension) to match
+		   upstream's ABI placement. */
+		fun linearGradient(
+			colors: List<Color>,
+			start: Offset = Offset.Zero,
+			end: Offset = Offset(Float.POSITIVE_INFINITY, 0f),
+			tileMode: TileMode = TileMode.Clamp,
+		): Brush = LinearGradient(colors, stops = null, start = start, end = end, tileMode = tileMode)
+
+		fun verticalGradient(
+			colors: List<Color>,
+			startY: Float = 0f,
+			endY: Float = Float.POSITIVE_INFINITY,
+			tileMode: TileMode = TileMode.Clamp,
+		): Brush = LinearGradient(
+			colors = colors,
+			stops = null,
+			start = Offset(0f, startY),
+			end = Offset(0f, endY),
+			tileMode = tileMode,
+		)
+
+		fun horizontalGradient(
+			colors: List<Color>,
+			startX: Float = 0f,
+			endX: Float = Float.POSITIVE_INFINITY,
+			tileMode: TileMode = TileMode.Clamp,
+		): Brush = LinearGradient(
+			colors = colors,
+			stops = null,
+			start = Offset(startX, 0f),
+			end = Offset(endX, 0f),
+			tileMode = tileMode,
+		)
+
+		fun radialGradient(
+			colors: List<Color>,
+			center: Offset = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+			radius: Float = Float.POSITIVE_INFINITY,
+			tileMode: TileMode = TileMode.Clamp,
+		): Brush = RadialGradient(colors, stops = null, center = center, radius = radius, tileMode = tileMode)
+
+		fun sweepGradient(
+			colors: List<Color>,
+			center: Offset = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+		): Brush = SweepGradient(colors, stops = null, center = center)
+	}
 }
 
 /* The Brush for a single flat colour — created implicitly when a draw
@@ -95,56 +144,3 @@ class SweepGradient(
 }
 
 // TileMode lives in its own vendored file (androidx.compose.ui.graphics.TileMode).
-
-// ==================
-// MARK: Brush factories
-// ==================
-
-/* Companion-extension factories so call sites read like upstream Compose:
-   Brush.linearGradient(...), Brush.radialGradient(...), etc. (Construct a solid
-   brush via the official SolidColor(color), not an invented Brush.solidColor.) */
-
-fun Brush.Companion.linearGradient(
-	colors: List<Color>,
-	start: Offset = Offset.Zero,
-	end: Offset = Offset(Float.POSITIVE_INFINITY, 0f),
-	tileMode: TileMode = TileMode.Clamp,
-): Brush = LinearGradient(colors, stops = null, start = start, end = end, tileMode = tileMode)
-
-fun Brush.Companion.verticalGradient(
-	colors: List<Color>,
-	startY: Float = 0f,
-	endY: Float = Float.POSITIVE_INFINITY,
-	tileMode: TileMode = TileMode.Clamp,
-): Brush = LinearGradient(
-	colors = colors,
-	stops = null,
-	start = Offset(0f, startY),
-	end = Offset(0f, endY),
-	tileMode = tileMode,
-)
-
-fun Brush.Companion.horizontalGradient(
-	colors: List<Color>,
-	startX: Float = 0f,
-	endX: Float = Float.POSITIVE_INFINITY,
-	tileMode: TileMode = TileMode.Clamp,
-): Brush = LinearGradient(
-	colors = colors,
-	stops = null,
-	start = Offset(startX, 0f),
-	end = Offset(endX, 0f),
-	tileMode = tileMode,
-)
-
-fun Brush.Companion.radialGradient(
-	colors: List<Color>,
-	center: Offset = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
-	radius: Float = Float.POSITIVE_INFINITY,
-	tileMode: TileMode = TileMode.Clamp,
-): Brush = RadialGradient(colors, stops = null, center = center, radius = radius, tileMode = tileMode)
-
-fun Brush.Companion.sweepGradient(
-	colors: List<Color>,
-	center: Offset = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
-): Brush = SweepGradient(colors, stops = null, center = center)
