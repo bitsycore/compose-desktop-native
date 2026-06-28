@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -23,12 +24,67 @@ import androidx.compose.ui.unit.dp
 // MARK: GridCells
 // ==================
 
-/* Describes the column structure of a LazyVerticalGrid. Fixed(n) makes
-   N equally-sized columns. Adaptive(minSize) computes the number of
-   columns from the parent width as floor(width / minSize). */
-sealed class GridCells {
-	class Fixed(val count: Int) : GridCells()
-	class Adaptive(val minSize: Dp) : GridCells()
+/* Describes the cross-axis structure of a lazy grid. Public surface
+   matches upstream Compose: an `interface` (not sealed class) with a
+   single Density-receiver method `calculateCrossAxisCellSizes` returning
+   the size of each cell. `Fixed`/`Adaptive`/`FixedSize` constructor
+   params are private — callers can't read them back (matches upstream's
+   "describe the grid via the method, not the data" design). */
+@androidx.compose.runtime.Stable
+interface GridCells {
+	fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int>
+
+	/* Fixed number of columns / rows, each taking 1/count of the parent
+	   minus inter-cell spacing. */
+	class Fixed(private val count: Int) : GridCells {
+		init { require(count > 0) { "Provided count should be larger than zero" } }
+		override fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int> =
+			calculateCellsCrossAxisSizeImpl(availableSize, count, spacing)
+		override fun hashCode(): Int = -count // different sign from Adaptive
+		override fun equals(other: Any?): Boolean = other is Fixed && other.hashCode() == hashCode()
+	}
+
+	/* Pack as many columns as fit with each at least `minSize` wide;
+	   extra pixels are distributed evenly among the cells. */
+	class Adaptive(private val minSize: Dp) : GridCells {
+		init { require(minSize > 0.dp) { "Provided min size should be larger than zero." } }
+		override fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int> {
+			val vCount = maxOf((availableSize + spacing) / (minSize.roundToPx() + spacing), 1)
+			return calculateCellsCrossAxisSizeImpl(availableSize, vCount, spacing)
+		}
+		override fun hashCode(): Int = minSize.hashCode()
+		override fun equals(other: Any?): Boolean = other is Adaptive && other.minSize == minSize
+	}
+
+	/* Pack as many cells of exactly `size` as fit, no stretching.
+	   Remaining space is arranged via the lazy grid's arrangement. */
+	class FixedSize(private val size: Dp) : GridCells {
+		init { require(size > 0.dp) { "Provided size should be larger than zero." } }
+		override fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int> {
+			val vCell = size.roundToPx()
+			return if (vCell + spacing < availableSize + spacing) {
+				val vCount = (availableSize + spacing) / (vCell + spacing)
+				List(vCount) { vCell }
+			} else {
+				List(1) { availableSize }
+			}
+		}
+		override fun hashCode(): Int = size.hashCode()
+		override fun equals(other: Any?): Boolean = other is FixedSize && other.size == size
+	}
+}
+
+/* Distribute [gridSize - spacing*(slotCount-1)] across [slotCount] cells,
+   handing the remainder pixels to the leading cells (matches upstream). */
+private fun calculateCellsCrossAxisSizeImpl(
+	gridSize: Int,
+	slotCount: Int,
+	spacing: Int,
+): List<Int> {
+	val vAvail = gridSize - spacing * (slotCount - 1)
+	val vSlot = vAvail / slotCount
+	val vRemainder = vAvail % slotCount
+	return List(slotCount) { vSlot + if (it < vRemainder) 1 else 0 }
 }
 
 // ==================
@@ -93,14 +149,13 @@ fun LazyVerticalGrid(
 	val vItems = vScope.composables
 
 	var vMeasuredWidth by remember { mutableStateOf(0) }
-	val vColumnCount: Int = when (columns) {
-		is GridCells.Fixed    -> columns.count.coerceAtLeast(1)
-		is GridCells.Adaptive -> {
-			val vMin = columns.minSize.value.toInt().coerceAtLeast(1)
-			if (vMeasuredWidth <= 0) 4 // first-frame fallback
-			else (vMeasuredWidth / vMin).coerceAtLeast(1)
-		}
-	}
+	// Compute cross-axis cell sizes via the GridCells interface. Renderer
+	// runs in logical points so density = 1; cell spacing is folded into
+	// the row arrangement (horizontalArrangement) separately.
+	val vDensity: Density = remember { Density(1f) }
+	val vAvail = if (vMeasuredWidth > 0) vMeasuredWidth else 480 // first-frame fallback
+	val vCellSizes: List<Int> = with(columns) { vDensity.calculateCrossAxisCellSizes(vAvail, 0) }
+	val vColumnCount: Int = vCellSizes.size.coerceAtLeast(1)
 
 	Column(
 		modifier = modifier

@@ -316,6 +316,34 @@ abstract interface androidx.compose.foundation.layout/PaddingValues { // android
     abstract fun calculateTopPadding(): androidx.compose.ui.unit/Dp // androidx.compose.foundation.layout/PaddingValues.calculateTopPadding|calculateTopPadding(){}[0]
 }
 
+abstract interface androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells|null[0]
+    abstract fun (androidx.compose.ui.unit/Density).calculateCrossAxisCellSizes(kotlin/Int, kotlin/Int): kotlin.collections/List<kotlin/Int> // androidx.compose.foundation.lazy.grid/GridCells.calculateCrossAxisCellSizes|calculateCrossAxisCellSizes@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+
+    final class Adaptive : androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells.Adaptive|null[0]
+        constructor <init>(androidx.compose.ui.unit/Dp) // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.<init>|<init>(androidx.compose.ui.unit.Dp){}[0]
+
+        final fun (androidx.compose.ui.unit/Density).calculateCrossAxisCellSizes(kotlin/Int, kotlin/Int): kotlin.collections/List<kotlin/Int> // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.calculateCrossAxisCellSizes|calculateCrossAxisCellSizes@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.hashCode|hashCode(){}[0]
+    }
+
+    final class Fixed : androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells.Fixed|null[0]
+        constructor <init>(kotlin/Int) // androidx.compose.foundation.lazy.grid/GridCells.Fixed.<init>|<init>(kotlin.Int){}[0]
+
+        final fun (androidx.compose.ui.unit/Density).calculateCrossAxisCellSizes(kotlin/Int, kotlin/Int): kotlin.collections/List<kotlin/Int> // androidx.compose.foundation.lazy.grid/GridCells.Fixed.calculateCrossAxisCellSizes|calculateCrossAxisCellSizes@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.lazy.grid/GridCells.Fixed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridCells.Fixed.hashCode|hashCode(){}[0]
+    }
+
+    final class FixedSize : androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells.FixedSize|null[0]
+        constructor <init>(androidx.compose.ui.unit/Dp) // androidx.compose.foundation.lazy.grid/GridCells.FixedSize.<init>|<init>(androidx.compose.ui.unit.Dp){}[0]
+
+        final fun (androidx.compose.ui.unit/Density).calculateCrossAxisCellSizes(kotlin/Int, kotlin/Int): kotlin.collections/List<kotlin/Int> // androidx.compose.foundation.lazy.grid/GridCells.FixedSize.calculateCrossAxisCellSizes|calculateCrossAxisCellSizes@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.lazy.grid/GridCells.FixedSize.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridCells.FixedSize.hashCode|hashCode(){}[0]
+    }
+}
+
 abstract interface androidx.compose.foundation.lazy.grid/LazyGridScope { // androidx.compose.foundation.lazy.grid/LazyGridScope|null[0]
     abstract fun <#A1: kotlin/Any?> items(kotlin.collections/List<#A1>, kotlin/Function3<#A1, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy.grid/LazyGridScope.items|items(kotlin.collections.List<0:0>;kotlin.Function3<0:0,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){0§<kotlin.Any?>}[0]
     abstract fun <#A1: kotlin/Any?> itemsIndexed(kotlin.collections/List<#A1>, kotlin/Function4<kotlin/Int, #A1, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy.grid/LazyGridScope.itemsIndexed|itemsIndexed(kotlin.collections.List<0:0>;kotlin.Function4<kotlin.Int,0:0,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){0§<kotlin.Any?>}[0]
@@ -474,6 +502,7 @@ abstract interface androidx.compose.ui.unit/Density { // androidx.compose.ui.uni
     abstract val fontScale // androidx.compose.ui.unit/Density.fontScale|{}fontScale[0]
         abstract fun <get-fontScale>(): kotlin/Float // androidx.compose.ui.unit/Density.fontScale.<get-fontScale>|<get-fontScale>(){}[0]
 
+    open fun (androidx.compose.ui.unit/Dp).roundToPx(): kotlin/Int // androidx.compose.ui.unit/Density.roundToPx|roundToPx@androidx.compose.ui.unit.Dp(){}[0]
     open fun (androidx.compose.ui.unit/Dp).toPx(): kotlin/Float // androidx.compose.ui.unit/Density.toPx|toPx@androidx.compose.ui.unit.Dp(){}[0]
     open fun (androidx.compose.ui.unit/Dp).toSp(): androidx.compose.ui.unit/TextUnit // androidx.compose.ui.unit/Density.toSp|toSp@androidx.compose.ui.unit.Dp(){}[0]
     open fun (androidx.compose.ui.unit/TextUnit).toDp(): androidx.compose.ui.unit/Dp // androidx.compose.ui.unit/Density.toDp|toDp@androidx.compose.ui.unit.TextUnit(){}[0]
@@ -767,13 +796,13 @@ final class androidx.compose.animation.core/InfiniteTransition // androidx.compo
 final class androidx.compose.foundation.lazy/LazyListState { // androidx.compose.foundation.lazy/LazyListState|null[0]
     constructor <init>(kotlin/Int = ...) // androidx.compose.foundation.lazy/LazyListState.<init>|<init>(kotlin.Int){}[0]
 
-    final val maxValue // androidx.compose.foundation.lazy/LazyListState.maxValue|{}maxValue[0]
-        final fun <get-maxValue>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListState.maxValue.<get-maxValue>|<get-maxValue>(){}[0]
-    final val value // androidx.compose.foundation.lazy/LazyListState.value|{}value[0]
-        final fun <get-value>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListState.value.<get-value>|<get-value>(){}[0]
+    final val maxScrollOffsetPx // androidx.compose.foundation.lazy/LazyListState.maxScrollOffsetPx|{}maxScrollOffsetPx[0]
+        final fun <get-maxScrollOffsetPx>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListState.maxScrollOffsetPx.<get-maxScrollOffsetPx>|<get-maxScrollOffsetPx>(){}[0]
+    final val scrollOffsetPx // androidx.compose.foundation.lazy/LazyListState.scrollOffsetPx|{}scrollOffsetPx[0]
+        final fun <get-scrollOffsetPx>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListState.scrollOffsetPx.<get-scrollOffsetPx>|<get-scrollOffsetPx>(){}[0]
 
-    final fun scrollBy(kotlin/Int) // androidx.compose.foundation.lazy/LazyListState.scrollBy|scrollBy(kotlin.Int){}[0]
-    final fun scrollTo(kotlin/Int) // androidx.compose.foundation.lazy/LazyListState.scrollTo|scrollTo(kotlin.Int){}[0]
+    final fun scrollByPx(kotlin/Int) // androidx.compose.foundation.lazy/LazyListState.scrollByPx|scrollByPx(kotlin.Int){}[0]
+    final fun scrollToPx(kotlin/Int) // androidx.compose.foundation.lazy/LazyListState.scrollToPx|scrollToPx(kotlin.Int){}[0]
 }
 
 final class androidx.compose.foundation.shape/AbsoluteCutCornerShape : androidx.compose.foundation.shape/CornerBasedShape { // androidx.compose.foundation.shape/AbsoluteCutCornerShape|null[0]
@@ -852,9 +881,9 @@ final class androidx.compose.foundation/ScrollState { // androidx.compose.founda
     final val viewportSize // androidx.compose.foundation/ScrollState.viewportSize|{}viewportSize[0]
         final fun <get-viewportSize>(): kotlin/Int // androidx.compose.foundation/ScrollState.viewportSize.<get-viewportSize>|<get-viewportSize>(){}[0]
 
-    final fun scrollBy(kotlin/Int) // androidx.compose.foundation/ScrollState.scrollBy|scrollBy(kotlin.Int){}[0]
-    final fun scrollTo(kotlin/Int) // androidx.compose.foundation/ScrollState.scrollTo|scrollTo(kotlin.Int){}[0]
-    final fun smoothScrollBy(kotlin/Int) // androidx.compose.foundation/ScrollState.smoothScrollBy|smoothScrollBy(kotlin.Int){}[0]
+    final fun scrollByPx(kotlin/Int) // androidx.compose.foundation/ScrollState.scrollByPx|scrollByPx(kotlin.Int){}[0]
+    final fun scrollToPx(kotlin/Int) // androidx.compose.foundation/ScrollState.scrollToPx|scrollToPx(kotlin.Int){}[0]
+    final fun smoothScrollByPx(kotlin/Int) // androidx.compose.foundation/ScrollState.smoothScrollByPx|smoothScrollByPx(kotlin.Int){}[0]
 
     final object Companion // androidx.compose.foundation/ScrollState.Companion|null[0]
 }
@@ -3532,22 +3561,6 @@ open class androidx.compose.ui.graphics.colorspace/Connector { // androidx.compo
     open fun transform(kotlin/FloatArray): kotlin/FloatArray // androidx.compose.ui.graphics.colorspace/Connector.transform|transform(kotlin.FloatArray){}[0]
 }
 
-sealed class androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells|null[0]
-    final class Adaptive : androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells.Adaptive|null[0]
-        constructor <init>(androidx.compose.ui.unit/Dp) // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.<init>|<init>(androidx.compose.ui.unit.Dp){}[0]
-
-        final val minSize // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.minSize|{}minSize[0]
-            final fun <get-minSize>(): androidx.compose.ui.unit/Dp // androidx.compose.foundation.lazy.grid/GridCells.Adaptive.minSize.<get-minSize>|<get-minSize>(){}[0]
-    }
-
-    final class Fixed : androidx.compose.foundation.lazy.grid/GridCells { // androidx.compose.foundation.lazy.grid/GridCells.Fixed|null[0]
-        constructor <init>(kotlin/Int) // androidx.compose.foundation.lazy.grid/GridCells.Fixed.<init>|<init>(kotlin.Int){}[0]
-
-        final val count // androidx.compose.foundation.lazy.grid/GridCells.Fixed.count|{}count[0]
-            final fun <get-count>(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridCells.Fixed.count.<get-count>|<get-count>(){}[0]
-    }
-}
-
 sealed class androidx.compose.ui.graphics.drawscope/DrawStyle // androidx.compose.ui.graphics.drawscope/DrawStyle|null[0]
 
 sealed class androidx.compose.ui.graphics/Brush { // androidx.compose.ui.graphics/Brush|null[0]
@@ -4129,9 +4142,9 @@ final val androidx.compose.foundation.interaction/androidx_compose_foundation_in
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop|#static{}androidx_compose_foundation_layout_Arrangement$stableprop[0]
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop|#static{}androidx_compose_foundation_layout_ColumnScope$stableprop[0]
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop|#static{}androidx_compose_foundation_layout_RowScope$stableprop[0]
-final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells$stableprop[0]
 final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop[0]
 final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop[0]
+final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop[0]
 final val androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop // androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop|#static{}androidx_compose_foundation_lazy_LazyListState$stableprop[0]
 final val androidx.compose.foundation.shape/CircleShape // androidx.compose.foundation.shape/CircleShape|{}CircleShape[0]
     final fun <get-CircleShape>(): androidx.compose.foundation.shape/RoundedCornerShape // androidx.compose.foundation.shape/CircleShape.<get-CircleShape>|<get-CircleShape>(){}[0]
@@ -4600,9 +4613,9 @@ final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_
 final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop_getter|androidx_compose_foundation_layout_ColumnScope$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop_getter|androidx_compose_foundation_layout_RowScope$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy.grid/LazyVerticalGrid(androidx.compose.foundation.lazy.grid/GridCells, androidx.compose.ui/Modifier?, androidx.compose.foundation.lazy/LazyListState?, androidx.compose.foundation.layout/Arrangement.Vertical?, androidx.compose.foundation.layout/Arrangement.Horizontal?, kotlin/Function1<androidx.compose.foundation.lazy.grid/LazyGridScope, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.lazy.grid/LazyVerticalGrid|LazyVerticalGrid(androidx.compose.foundation.lazy.grid.GridCells;androidx.compose.ui.Modifier?;androidx.compose.foundation.lazy.LazyListState?;androidx.compose.foundation.layout.Arrangement.Vertical?;androidx.compose.foundation.layout.Arrangement.Horizontal?;kotlin.Function1<androidx.compose.foundation.lazy.grid.LazyGridScope,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
-final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy/LazyColumn(androidx.compose.ui/Modifier?, androidx.compose.foundation.lazy/LazyListState?, androidx.compose.foundation.layout/Arrangement.Vertical?, androidx.compose.ui/Alignment.Horizontal?, kotlin/Function1<androidx.compose.foundation.lazy/LazyListScope, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.lazy/LazyColumn|LazyColumn(androidx.compose.ui.Modifier?;androidx.compose.foundation.lazy.LazyListState?;androidx.compose.foundation.layout.Arrangement.Vertical?;androidx.compose.ui.Alignment.Horizontal?;kotlin.Function1<androidx.compose.foundation.lazy.LazyListScope,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.lazy/LazyRow(androidx.compose.ui/Modifier?, androidx.compose.foundation.lazy/LazyListState?, androidx.compose.foundation.layout/Arrangement.Horizontal?, androidx.compose.ui/Alignment.Vertical?, kotlin/Function1<androidx.compose.foundation.lazy/LazyListScope, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.lazy/LazyRow|LazyRow(androidx.compose.ui.Modifier?;androidx.compose.foundation.lazy.LazyListState?;androidx.compose.foundation.layout.Arrangement.Horizontal?;androidx.compose.ui.Alignment.Vertical?;kotlin.Function1<androidx.compose.foundation.lazy.LazyListScope,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop_getter|androidx_compose_foundation_lazy_LazyListState$stableprop_getter(){}[0]

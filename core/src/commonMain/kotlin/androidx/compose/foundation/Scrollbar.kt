@@ -96,7 +96,7 @@ private class ScrollStateScrollbarAdapter(private val state: ScrollState) : Scro
     override val contentSize: Double get() = state.contentSize.toDouble()
     override val viewportSize: Double get() = state.viewportSize.toDouble()
     override suspend fun scrollTo(scrollOffset: Double) {
-        state.scrollTo(scrollOffset.roundToInt())
+        state.scrollToPx(scrollOffset.roundToInt())
     }
 }
 

@@ -15,17 +15,21 @@ import androidx.compose.ui.Modifier
 // ==================
 
 /* Thin wrapper around ScrollState that exposes the scroll offset under a
-   "lazy"-flavoured API. Real Compose tracks firstVisibleItemIndex +
-   firstVisibleItemScrollOffset; we keep it simpler since our LazyColumn
-   doesn't actually virtualise yet — see LazyColumn doc. */
+   "lazy"-flavoured API. Upstream Compose tracks
+   firstVisibleItemIndex/firstVisibleItemScrollOffset + suspend
+   scrollToItem(index)/animateScrollToItem(index) — item-based; ours is
+   pixel-based since our LazyColumn doesn't actually virtualise yet.
+   Members are named with the `Px` suffix to flag the project-only
+   pixel-based design — keeping upstream's names (`value`/`scrollBy`/
+   `scrollTo`) would collide with their item-based / suspend signatures. */
 class LazyListState(initialFirstVisibleItemIndex: Int = 0) {
     internal val scrollState: ScrollState = ScrollState()
 
-    val value: Int get() = scrollState.value
-    val maxValue: Int get() = scrollState.maxValue
+    val scrollOffsetPx: Int get() = scrollState.value
+    val maxScrollOffsetPx: Int get() = scrollState.maxValue
 
-    fun scrollBy(inDelta: Int) = scrollState.scrollBy(inDelta)
-    fun scrollTo(inPosition: Int) = scrollState.scrollTo(inPosition)
+    fun scrollByPx(inDelta: Int) = scrollState.scrollByPx(inDelta)
+    fun scrollToPx(inPosition: Int) = scrollState.scrollToPx(inPosition)
 }
 
 @Composable

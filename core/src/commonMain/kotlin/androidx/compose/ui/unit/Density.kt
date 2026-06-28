@@ -18,6 +18,7 @@ interface Density {
 	val fontScale: Float
 
 	fun Dp.toPx(): Float = value * density
+	fun Dp.roundToPx(): Int = (value * density + 0.5f).toInt()
 	fun Dp.toSp(): TextUnit = (value / fontScale).sp
 	fun TextUnit.toDp(): Dp {
 		check(type == TextUnitType.Sp) { "Only Sp can convert to Dp" }

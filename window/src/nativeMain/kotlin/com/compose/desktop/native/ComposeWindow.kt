@@ -382,14 +382,14 @@ fun nativeComposeWindow(
                         val vScrollY = vHit?.findVerticalScrollAncestor()
                         val vScrollX = vHit?.findHorizontalScrollAncestor()
                         if (vScrollY != null && event.deltaY != 0f) {
-                            vScrollY.smoothScrollBy(-(event.deltaY * 50f).toInt())
+                            vScrollY.smoothScrollByPx(-(event.deltaY * 50f).toInt())
                         } else if (vScrollX != null && event.deltaY != 0f) {
                             // No vertical scroller under the cursor but a horizontal one is
                             // (e.g. the tab strip) — let the wheel scroll it sideways.
-                            vScrollX.smoothScrollBy(-(event.deltaY * 50f).toInt())
+                            vScrollX.smoothScrollByPx(-(event.deltaY * 50f).toInt())
                         }
                         if (vScrollX != null && event.deltaX != 0f) {
-                            vScrollX.smoothScrollBy(-(event.deltaX * 50f).toInt())
+                            vScrollX.smoothScrollByPx(-(event.deltaX * 50f).toInt())
                         }
                     }
                 }

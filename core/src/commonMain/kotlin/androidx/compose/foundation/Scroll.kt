@@ -53,12 +53,17 @@ class ScrollState(initial: Int = 0) {
         if (_animTarget > vClamped) _animTarget = vClamped
     }
 
-    fun scrollBy(inDelta: Int) {
+    /* Non-suspend, pixel-based scroll APIs — named with the `Px` suffix
+       because upstream's ScrollState.scrollBy / scrollTo are suspend
+       coroutine entries taking Float and returning the consumed delta
+       (via ScrollableState). Keeping the upstream names would collide on
+       the ABI; the `Px` suffix marks these as project-only. */
+    fun scrollByPx(inDelta: Int) {
         _value = (_value + inDelta).coerceIn(0, _maxValue)
         _animTarget = _value
     }
 
-    fun scrollTo(inPosition: Int) {
+    fun scrollToPx(inPosition: Int) {
         _value = inPosition.coerceIn(0, _maxValue)
         _animTarget = _value
     }
@@ -66,7 +71,7 @@ class ScrollState(initial: Int = 0) {
     /* Eased scroll: accumulate into a target the frame loop glides toward, so a
        mouse-wheel notch animates instead of jumping. Repeated notches add up
        (momentum). Registers with ScrollAnimator so the loop ticks it. */
-    fun smoothScrollBy(inDelta: Int) {
+    fun smoothScrollByPx(inDelta: Int) {
         _animTarget = (_animTarget + inDelta).coerceIn(0, _maxValue)
         if (_animTarget != _value) ScrollAnimator.register(this)
     }
