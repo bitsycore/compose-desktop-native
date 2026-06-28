@@ -235,6 +235,10 @@ compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animatio
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt
 # DeferredTargetAnimation — small utility, used by lookahead.
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt
+# Transition — the big animation state machine (2415 lines). Defines
+# AnimationDebugDurationScale so the supplementary
+# TransitionDebugDurationScale.kt is no longer needed.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Transition.kt             core/src/vendor/common/kotlin/androidx/compose/animation/core/Transition.kt
 # animation-core expect/actual:
 #  - Expect.kt: AtomicReference + getCurrentThread
 #  - AtomicReference.nonJvm.kt: atomicfu-backed actual for AtomicReference
@@ -254,6 +258,18 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimati
 # AnimateColorAsState / InfiniteTransitionColor.
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt              core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt              core/src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
+# More animation module pieces — pure / minimal deps.
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                   core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                  core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt         core/src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
+# Upstream's nonAndroid actual for defaultDecayAnimationSpec (it just delegates
+# to rememberSplineBasedDecay).
+compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt core/src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt           core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt    core/src/vendor/common/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                 core/src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
