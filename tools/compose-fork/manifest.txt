@@ -474,6 +474,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InvertMatrix.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/LinkStateInteractionSourceObserver.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/LinkStateInteractionSourceObserver.kt
 # CompositingStrategy: pure value class used by graphicsLayer.
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/layer/CompositingStrategy.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/layer/CompositingStrategy.kt
+# Skiko-side sibling of our common ComposeUiFlags — adds SkikoComposeUiFlags object.
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/ComposeUiFlags.skiko.kt                                                    core/src/vendor/native/kotlin/androidx/compose/ui/ComposeUiFlags.native.kt
 
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
