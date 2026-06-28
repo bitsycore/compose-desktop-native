@@ -646,14 +646,13 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # (Each entry shows the upstream path + the destination we'd put it at if vendored.)
 
 # ──────────────────────────────────────────────────────────────────────────
-# ▼ candidate-small (236 files)
+# ▼ candidate-small (228 files)
 # ──────────────────────────────────────────────────────────────────────────
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt
 # compose/animation/animation/src/nonJvmMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.native.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Spacer.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Spacer.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt
 # compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
@@ -810,10 +809,8 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/intl/PlatformLocale.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/Synchronization.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/Synchronization.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillManager.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillTree.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillTree.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentDataType.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/ContentDataType.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Clip.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draw/Clip.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/BeyondBoundsLayout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/BeyondBoundsLayout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusListener.kt
@@ -830,12 +827,10 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InternalCoreApi.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/InternalCoreApi.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MutableVectorWithMutationTracking.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MutableVectorWithMutationTracking.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SortedSet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/SortedSet.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt
@@ -844,7 +839,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/DebugUtils.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/DebugUtils.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/UriHandler.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/UriHandler.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropView.kt  core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropView.kt
@@ -854,8 +848,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/Actuals.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/Actuals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/SystemTheme.kt  core/src/vendor/native/kotlin/androidx/compose/ui/SystemTheme.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/animation/Animation.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/animation/Animation.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentDataType.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentDataType.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/FillableData.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/autofill/FillableData.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.native.kt
@@ -1077,16 +1069,13 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.native.kt
 
 # ──────────────────────────────────────────────────────────────────────────
-# ▼ candidate-medium (175 files)
+# ▼ candidate-medium (166 files)
 # ──────────────────────────────────────────────────────────────────────────
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt  core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt  core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/BoxWithConstraints.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/BoxWithConstraints.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RulerAlignment.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RulerAlignment.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt
 # compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsets.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsets.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ProgressSemantics.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/ProgressSemantics.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/TransferableContent.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/TransferableContent.kt
@@ -1173,7 +1162,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/En.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/En.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Translations.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Translations.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathSvg.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathSvg.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/layer/ChildLayerDependenciesTracker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/layer/ChildLayerDependenciesTracker.kt
@@ -1212,9 +1200,7 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/Autofill.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/Autofill.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/FillableData.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/FillableData.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Blur.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draw/Blur.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusState.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusState.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt
@@ -1225,7 +1211,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RectRulers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RectRulers.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Ruler.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Ruler.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt  core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt
@@ -1236,12 +1221,10 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt  core/src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Popup.kt  core/src/vendor/common/kotlin/androidx/compose/ui/window/Popup.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentType.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentType.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/key/KeyEvent.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/key/KeyEvent.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.native.kt
@@ -1256,7 +1239,7 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt  core/src/vendor/native/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt
 
 # ──────────────────────────────────────────────────────────────────────────
-# ▼ candidate-large (96 files)
+# ▼ candidate-large (91 files)
 # ──────────────────────────────────────────────────────────────────────────
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt  core/src/vendor/common/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt  core/src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
@@ -1302,10 +1285,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/StringHelpers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/v2/Scrollbar.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/v2/Scrollbar.native.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Brush.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt
@@ -1326,7 +1305,6 @@ compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Geomet
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/SkiaParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/PlatformFont.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/PlatformFont.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentType.kt  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/ContentType.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusOrderModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusOrderModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradientConfig.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradientConfig.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt
