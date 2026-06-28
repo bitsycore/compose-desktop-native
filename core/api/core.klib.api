@@ -684,9 +684,6 @@ final class <#A: kotlin/Any?> androidx.compose.animation.core/AnimationResult { 
     final val endValue // androidx.compose.animation.core/AnimationResult.endValue|{}endValue[0]
         final fun <get-endValue>(): #A // androidx.compose.animation.core/AnimationResult.endValue.<get-endValue>|<get-endValue>(){}[0]
 
-    final fun component1(): #A // androidx.compose.animation.core/AnimationResult.component1|component1(){}[0]
-    final fun component2(): androidx.compose.animation.core/AnimationEndReason // androidx.compose.animation.core/AnimationResult.component2|component2(){}[0]
-    final fun copy(#A = ..., androidx.compose.animation.core/AnimationEndReason = ...): androidx.compose.animation.core/AnimationResult<#A> // androidx.compose.animation.core/AnimationResult.copy|copy(1:0;androidx.compose.animation.core.AnimationEndReason){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/AnimationResult.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.animation.core/AnimationResult.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.animation.core/AnimationResult.toString|toString(){}[0]

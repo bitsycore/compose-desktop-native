@@ -77,7 +77,17 @@ class Animatable<T>(
 	}
 }
 
-data class AnimationResult<T>(val endValue: T, val endReason: AnimationEndReason)
+// Reshape note (FIDELITY): upstream's AnimationResult<T, V extends
+// AnimationVector> is a plain class with two type parameters; we drop the
+// vector type (our lerp-lambda design omits the AnimationVector pipeline)
+// and only carry T, but switch from data class to plain class with manual
+// equals/hashCode to drop component*/copy from the public surface.
+class AnimationResult<T>(val endValue: T, val endReason: AnimationEndReason) {
+	override fun equals(other: Any?): Boolean = other is AnimationResult<*> &&
+		other.endValue == endValue && other.endReason == endReason
+	override fun hashCode(): Int = (endValue?.hashCode() ?: 0) * 31 + endReason.hashCode()
+	override fun toString(): String = "AnimationResult(endValue=$endValue, endReason=$endReason)"
+}
 
 // ==================
 // MARK: Composable factories
