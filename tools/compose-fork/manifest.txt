@@ -526,6 +526,12 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContaining
 # Scrollable-container helpers (CheckScrollableContainerConstraints / ClipScrollableContainer).
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/CheckScrollableContainerConstraints.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/ClipScrollableContainer.kt
+
+# Vector path-builder family: PathBuilder + PathNode + FastFloatParser + PathParser.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt                                      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt                               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
