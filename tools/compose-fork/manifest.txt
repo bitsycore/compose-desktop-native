@@ -434,6 +434,21 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/C
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/MediaType.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/content/MediaType.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/MediaType.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/foundation/content/MediaType.native.kt
 
+# foundation.lazy.layout.ObservableScopeInvalidator — pure inline value class.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/layout/ObservableScopeInvalidator.kt          core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/layout/ObservableScopeInvalidator.kt
+
+# ui.window.WindowExceptionHandler — pure fun interface (lives in upstream's
+# skikoMain; vendored into common since we don't have a parallel skikoMain).
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt                                           core/src/vendor/common/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt
+
+# ui.internal.Threading — expect getCurrentThreadId + native actual.
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/internal/Threading.skiko.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/internal/Threading.kt
+compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/internal/Threading.native.kt                                              core/src/vendor/native/kotlin/androidx/compose/ui/internal/Threading.native.kt
+
+# ui.internal.PlatformOptimizedCancellationException — common + native actual.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/PlatformOptimizedCancellationException.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/internal/PlatformOptimizedCancellationException.kt
+compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/internal/PlatformOptimizedCancellationException.nonJvm.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/internal/PlatformOptimizedCancellationException.native.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
