@@ -98,18 +98,28 @@ All of the above already verified working on Windows/SDL3.
 
 ## Done (divergence 913 → 589)
 
-- **Vendored verbatim** (0 divergence): `ui.util`, `ui.geometry`, all `ui.unit`
-  value types (Dp/TextUnit/Constraints/Int*/Velocity/Dp{Offset,Size,Rect}) +
+- **Vendored verbatim** (0 divergence): `ui.util` (now incl. `ListUtils`
+  giving us `fastFold` / `fastJoinToString` / `fastMap` / `fastAny` /
+  `fastForEach` etc.), `ui.geometry`, all `ui.unit` value types
+  (Dp/TextUnit/Constraints/Int*/Velocity/Dp{Offset,Size,Rect}) +
   `LayoutDirection`, `ui.graphics.Color` + the whole `colorspace` subsystem +
   Float16, `TileMode`, `StrokeCap`, `StrokeJoin`, `BlendMode`, `ClipOp`,
   `FilterQuality`, `PaintingStyle`, `PointMode`, `VertexMode`, `PathFillType`,
   `PathOperation`, `Degrees`, `ColorMatrix`, `Shadow`, `LayerOutsets`,
-  `ui.text.TextRange`, `TextAlign`/`TextOverflow`,
+  `Bezier` (+ companion `PathSegment`), `Vertices`, `Interpolatable`,
+  `ui.text.TextRange`, `TextAlign`/`TextOverflow`/`TextDecoration`,
   `ResolvedTextDirection`/`TextDirection`/`TextGeometricTransform`/`TextMotion`/
   `LineBreak`/`Hyphens`/`BaselineShift`, `FontStyle`/`FontWeight`,
   `ui.layout.ScaleFactor`/`ContentScale`/`AlignmentLine`,
-  `foundation.BorderStroke`, `animation.core.AnimationEndReason`. (`Sp` was
-  migrated to the real `TextUnit`.)
+  `foundation.BorderStroke`, `animation.core.AnimationEndReason`/`Easing`/
+  `EasingFunctions`/`Preconditions`. (`Sp` was migrated to the real
+  `TextUnit`.)
+
+  **Note on transitive AndroidX deps**: `androidx.collection:collection:1.5.0`
+  and `androidx.annotation:annotation:1.9.1` come for free via
+  `org.jetbrains.compose.runtime:runtime`, so we can vendor files using
+  `FloatFloatPair`, `MutableScatterSet`, `@RestrictTo`, `@FloatRange`, etc.
+  without any extra Gradle wiring.
 - **Relocated to `com.compose.desktop.native.*`** (no official equivalent):
   the ~22 `Modifier.Element` classes + `GraphicsLayerModifier` → `.element`;
   `LayoutNode` + `NodeApplier` (+ internal node `MeasurePolicy`) → `.node`;

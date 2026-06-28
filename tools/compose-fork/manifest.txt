@@ -13,6 +13,10 @@
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/InlineClassHelper.kt          core/src/vendor/common/kotlin/androidx/compose/ui/util/InlineClassHelper.kt
 compose/ui/ui-util/src/nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHelper.nonJvm.kt    core/src/vendor/native/kotlin/androidx/compose/ui/util/InlineClassHelper.native.kt
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/util/MathHelpers.kt
+# ListUtils uses androidx.collection.MutableScatterSet (transitive dep of
+# compose runtime — `androidx.collection:collection:1.5.0` is on the classpath
+# already, no extra Gradle change needed).
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/ListUtils.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/util/ListUtils.kt
 
 # ── androidx.compose.ui.unit (packed int value types) ─────────────────────
 # Replaces the hand-written IntSize.kt (IntSize + IntOffset data classes).
@@ -70,6 +74,12 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Degree
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ColorMatrix.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ColorMatrix.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Shadow.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Shadow.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt
+# Bezier needs androidx.collection.FloatFloatPair + androidx.annotation.RestrictTo;
+# both transitive already. PathSegment is its companion data class.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Bezier.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Bezier.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathSegment.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathSegment.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Vertices.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Vertices.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Interpolatable.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Interpolatable.kt
 
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
@@ -83,6 +93,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/LineBrea
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/Hyphens.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/style/Hyphens.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/BaselineShift.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/BaselineShift.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDirection.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDirection.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDecoration.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDecoration.kt
 # LineBreak / TextMotion are expect classes; the skikoMain actuals are pure
 # data (no Skia refs), so we vendor them too.
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
@@ -101,6 +112,10 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 
 # ── androidx.compose.animation.core ───────────────────────────────────────
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationEndReason.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationEndReason.kt
+# Easing depends on the cubic helpers in graphics/Bezier.kt + Preconditions.kt.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Easing.kt               core/src/vendor/common/kotlin/androidx/compose/animation/core/Easing.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/EasingFunctions.kt      core/src/vendor/common/kotlin/androidx/compose/animation/core/EasingFunctions.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Preconditions.kt        core/src/vendor/common/kotlin/androidx/compose/animation/core/Preconditions.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
