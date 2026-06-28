@@ -96,7 +96,7 @@ Skia actually compiles + runs. Launch `:demo` and `:apidemo` and check:
 
 All of the above already verified working on Windows/SDL3.
 
-## Done (divergence 913 → 589)
+## Done (divergence 913 → 427; 246 vendor files)
 
 - **Vendored verbatim** (0 divergence): `ui.util` (now incl. `ListUtils`
   giving us `fastFold` / `fastJoinToString` / `fastMap` / `fastAny` /
