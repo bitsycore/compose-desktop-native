@@ -67,6 +67,57 @@ abstract class Placeable {
 		 */
 		open fun Ruler.current(@Suppress("UNUSED_PARAMETER") defaultValue: Float): Float = defaultValue
 
+		/**
+		 * Phase 4f: upstream-shape `place(x, y)` extension on Placeable.
+		 * Mirrors upstream `Placeable.kt` line 245. Our Placeable.placeAt
+		 * is a public 2-arg `(x: Int, y: Int)` instead of upstream's
+		 * protected 3-arg `(position: IntOffset, zIndex: Float, layerBlock)`,
+		 * so this thin wrapper forwards `(x, y)` directly. `zIndex` is
+		 * accepted-and-ignored — our renderer reads z-order from a
+		 * separate ZIndexModifier on the LayoutNode.
+		 */
+		fun Placeable.place(
+			x: Int,
+			y: Int,
+			@Suppress("UNUSED_PARAMETER") zIndex: Float = 0f,
+		) {
+			placeAt(x, y)
+		}
+
+		/** [place(x, y, zIndex)] but takes an [IntOffset] position. */
+		fun Placeable.place(
+			position: androidx.compose.ui.unit.IntOffset,
+			@Suppress("UNUSED_PARAMETER") zIndex: Float = 0f,
+		) {
+			placeAt(position.x, position.y)
+		}
+
+		/**
+		 * RTL-aware placement. If `parentLayoutDirection == Rtl`, mirrors
+		 * the x coordinate around `parentWidth`. With our defaults
+		 * (parentWidth = 0, parentLayoutDirection = Ltr) this is identical
+		 * to [place]. Vendored downstream code (Box / Column / Row) calls
+		 * `placeRelative` in places where Ltr/Rtl handling matters.
+		 */
+		fun Placeable.placeRelative(
+			x: Int,
+			y: Int,
+			@Suppress("UNUSED_PARAMETER") zIndex: Float = 0f,
+		) {
+			val vX =
+				if (parentLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr || parentWidth == 0) x
+				else parentWidth - width - x
+			placeAt(vX, y)
+		}
+
+		/** [placeRelative(x, y, zIndex)] but takes an [IntOffset] position. */
+		fun Placeable.placeRelative(
+			position: androidx.compose.ui.unit.IntOffset,
+			zIndex: Float = 0f,
+		) {
+			placeRelative(position.x, position.y, zIndex)
+		}
+
 		internal companion object Default : PlacementScope()
 	}
 }
