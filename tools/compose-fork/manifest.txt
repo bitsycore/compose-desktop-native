@@ -534,6 +534,9 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt
 # PathSvg — SVG path string → Path; needs PathParser above.
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathSvg.kt                                              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathSvg.kt
+
+# animation.Transition — higher-level Transition compose facing animation-core's.
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                        core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
