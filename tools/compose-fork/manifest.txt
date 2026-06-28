@@ -416,6 +416,24 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # foundation.gestures.snapping — pure interfaces / value classes.
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt
 
+# foundation.platform.Synchronization — common expect class + skiko actual using
+# kotlinx.atomicfu.locks.SynchronizedObject (already on our classpath).
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/platform/Synchronization.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/platform/Synchronization.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/platform/Synchronization.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/platform/Synchronization.native.kt
+
+# ui.text.platform.Synchronization — skipped: upstream marks `synchronized()`
+# as @PublishedApi internal inline accessing internal SynchronizedObject,
+# which our Kotlin compiler treats as an error (LESS_VISIBLE_TYPE_ACCESS_IN_INLINE).
+# Zero importers in our vendored tree, so not needed.
+
+# foundation.ComposeFoundationFlags — pure-flags object + one expect val.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ComposeFoundationFlags.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/ComposeFoundationFlags.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/ComposeFoundationFlags.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/ComposeFoundationFlags.native.kt
+
+# foundation.content.MediaType — expect class + skiko stub actual.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/MediaType.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/content/MediaType.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/MediaType.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/foundation/content/MediaType.native.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
