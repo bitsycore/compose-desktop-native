@@ -518,6 +518,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentType.kt 
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentType.skiko.kt                                              core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentType.native.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentDataType.kt                                               core/src/vendor/common/kotlin/androidx/compose/ui/autofill/ContentDataType.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentDataType.skiko.kt                                          core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentDataType.native.kt
+# UriHandler — pure interface.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/UriHandler.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/UriHandler.kt
+# ShapeContainingUtil — outline + path geometric tests.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt                                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
