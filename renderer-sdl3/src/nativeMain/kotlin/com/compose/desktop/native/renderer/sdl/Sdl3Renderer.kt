@@ -9,10 +9,10 @@ import com.compose.desktop.native.element.ClipModifier
 import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.VerticalScrollModifier
 import androidx.compose.ui.graphics.Color as ComposeColor
-import androidx.compose.ui.graphics.r8
-import androidx.compose.ui.graphics.g8
-import androidx.compose.ui.graphics.b8
-import androidx.compose.ui.graphics.a8
+import com.compose.desktop.native.graphics.r8
+import com.compose.desktop.native.graphics.g8
+import com.compose.desktop.native.graphics.b8
+import com.compose.desktop.native.graphics.a8
 import com.compose.desktop.native.element.GraphicsLayerModifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline

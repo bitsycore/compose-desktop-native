@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
 import androidx.compose.ui.graphics.TileMode as ComposeTileMode
-import androidx.compose.ui.graphics.a8
-import androidx.compose.ui.graphics.b8
-import androidx.compose.ui.graphics.g8
-import androidx.compose.ui.graphics.r8
+import com.compose.desktop.native.graphics.a8
+import com.compose.desktop.native.graphics.b8
+import com.compose.desktop.native.graphics.g8
+import com.compose.desktop.native.graphics.r8
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill

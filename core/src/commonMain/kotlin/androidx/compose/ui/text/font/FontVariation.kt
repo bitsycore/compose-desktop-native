@@ -17,7 +17,12 @@ package androidx.compose.ui.text.font
    FontVariation.Setting. This project keeps a flat data-class shape with
    capitalized factories (read by the FreeType icon path); see CLAUDE.md
    "known-diverging". */
-data class FontVariation(val axisTag: String, val value: Float) {
+class FontVariation(val axisTag: String, val value: Float) {
+
+	override fun equals(other: Any?): Boolean =
+		other is FontVariation && other.axisTag == axisTag && other.value == value
+	override fun hashCode(): Int = axisTag.hashCode() * 31 + value.hashCode()
+	override fun toString(): String = "FontVariation(axisTag=$axisTag, value=$value)"
 
 	companion object {
 		/* Generic registered weight axis (100..900, 400 = regular, 700 = bold). */

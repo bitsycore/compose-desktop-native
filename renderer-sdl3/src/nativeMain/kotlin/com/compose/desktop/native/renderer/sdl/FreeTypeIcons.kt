@@ -6,10 +6,10 @@ import freetype.*
 import kotlinx.cinterop.*
 import sdl3.*
 import androidx.compose.ui.graphics.Color as ComposeColor
-import androidx.compose.ui.graphics.r8
-import androidx.compose.ui.graphics.g8
-import androidx.compose.ui.graphics.b8
-import androidx.compose.ui.graphics.a8
+import com.compose.desktop.native.graphics.r8
+import com.compose.desktop.native.graphics.g8
+import com.compose.desktop.native.graphics.b8
+import com.compose.desktop.native.graphics.a8
 
 // ==================
 // MARK: FreeTypeIcons

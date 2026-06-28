@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.blend
+import com.compose.desktop.native.graphics.blend
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.compose.desktop.native.nativeComposeWindow

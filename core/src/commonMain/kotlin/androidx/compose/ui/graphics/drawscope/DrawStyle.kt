@@ -20,13 +20,18 @@ object Fill : DrawStyle()
 /* Stroked outline with the given line width (in logical points) and end-cap
    style. miter is unused for now — round/butt/square cover the practical
    widget cases. */
-data class Stroke(
+class Stroke(
 	val width: Float,
 	val cap: StrokeCap = StrokeCap.Butt,
 ) : DrawStyle() {
 	companion object {
 		const val HairlineWidth: Float = 0f
 	}
+
+	override fun equals(other: Any?): Boolean =
+		other is Stroke && other.width == width && other.cap == cap
+	override fun hashCode(): Int = width.hashCode() * 31 + cap.hashCode()
+	override fun toString(): String = "Stroke(width=$width, cap=$cap)"
 }
 
 // StrokeCap lives in its own vendored file (androidx.compose.ui.graphics.StrokeCap).
