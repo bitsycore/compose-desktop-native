@@ -149,6 +149,9 @@ compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/text/style/TextMotion.native.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt              core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontWeight.kt
+# FontLoadingStrategy — value class with three companion constants
+# (Blocking / OptionalLocal / Async). No deps on the font engine.
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt    core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt
 
 # ── androidx.compose.ui.layout (pure types only — Layout / Measure /
 # Modifier / Placeable still hand-written) ─────────────────────────────────
@@ -407,8 +410,13 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PageInfo.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PageInfo.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerScope.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerScope.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt
+# TextFieldDecorator — a clean fun interface that exposes the
+# `Decoration(innerTextField)` composable callback. The TextFieldDecorator
+# *consumer* path (upstream BasicTextField wiring) is engine-tied and
+# we don't ship that, but the interface itself is pure and useful for
+# any future TextField wrapper.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt
 # OutputTransformation needs TextFieldBuffer (text-input engine) — skip.
-# TextFieldDecorator likewise embeds the upstream BasicTextField interaction model — skip.
 
 # foundation.internal expect-funs + their skiko/native actuals (isAutofillAvailable, identityHashCode).
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/PlatformUtils.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/internal/PlatformUtils.kt
@@ -575,6 +583,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureBlocks.kt   
 # so vendoring InteropView.macos.kt verbatim produces an orphan actual.
 # Not needed — these support a layout-inspector hook (Studio) we don't have.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
+# PlatformFocusOwner — internal interface (request / clear / move owner
+# focus + embedded view bounds). Upstream FocusManager NOT vendored: our
+# hand-written FocusManager has `focusOnNode(LayoutNode)` (uses our
+# LayoutNode) while upstream's is `clearFocus + moveFocus(direction)`.
+# Replacing it requires a behaviour-changing refactor of the renderer's
+# focus pipeline — left for a separate pass.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/PlatformFocusOwner.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/focus/PlatformFocusOwner.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 # ModifierLocalConsumer + ModifierLocalProvider — pure Modifier.Element
 # based (no node-engine deps), use our existing InspectorInfo helpers.
@@ -746,7 +761,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/gestures/RightClickGestures.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/gestures/RightClickGestures.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/UndoState.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/UndoState.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt
@@ -877,13 +891,9 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusManager.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/PlatformFocusOwner.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/PlatformFocusOwner.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measurable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measurable.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt
@@ -1237,7 +1247,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/String.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
@@ -1274,7 +1283,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureBlocks.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureBlocks.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
@@ -1602,8 +1610,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # ──────────────────────────────────────────────────────────────────────────
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt  core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalConsumer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalConsumer.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalProvider.kt  core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalProvider.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 
