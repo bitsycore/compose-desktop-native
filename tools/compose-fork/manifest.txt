@@ -1187,6 +1187,8 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt    core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TraversableNode.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/TraversableNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifierNode.kt         core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftKeyboardInterceptionModifierNode.kt core/src/vendor/common/kotlin/androidx/compose/ui/input/key/SoftKeyboardInterceptionModifierNode.kt
 # DelegatingNode.kt — requires NodeChain.syncCoordinators() + autoInvalidateInsertedNode +
 # autoInvalidateRemovedNode + the Int.contains(NodeKind<*>) operator, all of which transitively
 # pull LayoutModifierNodeCoordinator + AutoInvalidate machinery. Stay with DelegatingNode.shim.kt
