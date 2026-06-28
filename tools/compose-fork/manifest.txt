@@ -209,6 +209,51 @@ compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animatio
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt    core/src/vendor/common/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt
 compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.native.kt
+# The full AnimationSpec + VectorizedAnimationSpec engine. AnimationSpec.kt
+# defines AnimationConstants + the entire spec hierarchy. Replaces our
+# hand-written AnimationSpec.kt (deleted alongside).
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationSpec.kt           core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedAnimationSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/FloatAnimationSpec.kt      core/src/vendor/common/kotlin/androidx/compose/animation/core/FloatAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedMonoSplineKeyframesSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedMonoSplineKeyframesSpec.kt
+# Animation.kt — the Animation<T,V> interface + MillisToNanos / SecondsToMillis
+# constants used everywhere in the engine.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animation.kt              core/src/vendor/common/kotlin/androidx/compose/animation/core/Animation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationState.kt         core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationState.kt
+# SuspendAnimation pulls in MotionDurationScale + the suspend-driver loop
+# (runAnimation). Animatable + animate*AsState use it.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SuspendAnimation.kt       core/src/vendor/common/kotlin/androidx/compose/animation/core/SuspendAnimation.kt
+# Animatable + animate*AsState (replace hand-written equivalents).
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animatable.kt             core/src/vendor/common/kotlin/androidx/compose/animation/core/Animatable.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimateAsState.kt         core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimateAsState.kt
+# InfiniteTransition (replaces hand-written), plus DecayAnimationSpec set.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InfiniteTransition.kt     core/src/vendor/common/kotlin/androidx/compose/animation/core/InfiniteTransition.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/DecayAnimationSpec.kt     core/src/vendor/common/kotlin/androidx/compose/animation/core/DecayAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/FloatDecayAnimationSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/FloatDecayAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedDecayAnimationSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedDecayAnimationSpec.kt
+# InternalMutatorMutex — Animatable uses it for animateTo cancellation.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt
+# DeferredTargetAnimation — small utility, used by lookahead.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt
+# animation-core expect/actual:
+#  - Expect.kt: AtomicReference + getCurrentThread
+#  - AtomicReference.nonJvm.kt: atomicfu-backed actual for AtomicReference
+#  - Native actual for getCurrentThread is hand-written in core/src/nativeMain
+#    (upstream only ships appleMain's NSThread version; linux/mingw need
+#    their own).
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Expect.kt                core/src/vendor/common/kotlin/androidx/compose/animation/core/Expect.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/AtomicReference.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/animation/core/AtomicReference.native.kt
+# InfiniteAnimationPolicy lives in androidx.compose.ui.platform (where the
+# UI module declares it) — InfiniteTransition's withInfiniteAnimationFrameNanos
+# reads it from the coroutine context.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/MotionDurationScale.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/MotionDurationScale.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt
+# androidx.compose.animation (not -core): the Color overloads + the
+# Color → AnimationVector4D converter. Replace our hand-written
+# AnimateColorAsState / InfiniteTransitionColor.
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt              core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt              core/src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
