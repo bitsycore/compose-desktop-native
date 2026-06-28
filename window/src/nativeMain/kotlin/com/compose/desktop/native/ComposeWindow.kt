@@ -310,7 +310,7 @@ fun nativeComposeWindow(
                                     // the window-coord click position); don't arm the
                                     // primary press / click / drag / focus.
                                     vHit?.findSecondaryClickHandler()?.invoke(vPx, vPy)
-                                } else if (event.event.button == PointerButton.Middle) {
+                                } else if (event.event.button == PointerButton.Tertiary) {
                                     // Middle-click: fire only the middle handler (e.g. close a
                                     // tab); don't arm the primary press / click / drag / focus.
                                     vHit?.findMiddleClickHandler()?.invoke()

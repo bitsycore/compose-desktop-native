@@ -118,28 +118,16 @@ final enum class androidx.compose.ui.input.key/KeyEventType : kotlin/Enum<androi
     final fun values(): kotlin/Array<androidx.compose.ui.input.key/KeyEventType> // androidx.compose.ui.input.key/KeyEventType.values|values#static(){}[0]
 }
 
-final enum class androidx.compose.ui.input.pointer/PointerButton : kotlin/Enum<androidx.compose.ui.input.pointer/PointerButton> { // androidx.compose.ui.input.pointer/PointerButton|null[0]
-    enum entry Middle // androidx.compose.ui.input.pointer/PointerButton.Middle|null[0]
-    enum entry Primary // androidx.compose.ui.input.pointer/PointerButton.Primary|null[0]
-    enum entry Secondary // androidx.compose.ui.input.pointer/PointerButton.Secondary|null[0]
+final enum class androidx.compose.ui.input.pointer/PointerEventPass : kotlin/Enum<androidx.compose.ui.input.pointer/PointerEventPass> { // androidx.compose.ui.input.pointer/PointerEventPass|null[0]
+    enum entry Final // androidx.compose.ui.input.pointer/PointerEventPass.Final|null[0]
+    enum entry Initial // androidx.compose.ui.input.pointer/PointerEventPass.Initial|null[0]
+    enum entry Main // androidx.compose.ui.input.pointer/PointerEventPass.Main|null[0]
 
-    final val entries // androidx.compose.ui.input.pointer/PointerButton.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.input.pointer/PointerButton> // androidx.compose.ui.input.pointer/PointerButton.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val entries // androidx.compose.ui.input.pointer/PointerEventPass.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.input.pointer/PointerEventPass> // androidx.compose.ui.input.pointer/PointerEventPass.entries.<get-entries>|<get-entries>#static(){}[0]
 
-    final fun valueOf(kotlin/String): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.input.pointer/PointerButton> // androidx.compose.ui.input.pointer/PointerButton.values|values#static(){}[0]
-}
-
-final enum class androidx.compose.ui.input.pointer/PointerEventType : kotlin/Enum<androidx.compose.ui.input.pointer/PointerEventType> { // androidx.compose.ui.input.pointer/PointerEventType|null[0]
-    enum entry Move // androidx.compose.ui.input.pointer/PointerEventType.Move|null[0]
-    enum entry Press // androidx.compose.ui.input.pointer/PointerEventType.Press|null[0]
-    enum entry Release // androidx.compose.ui.input.pointer/PointerEventType.Release|null[0]
-
-    final val entries // androidx.compose.ui.input.pointer/PointerEventType.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.input.pointer/PointerEventType> // androidx.compose.ui.input.pointer/PointerEventType.entries.<get-entries>|<get-entries>#static(){}[0]
-
-    final fun valueOf(kotlin/String): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<androidx.compose.ui.input.pointer/PointerEventType> // androidx.compose.ui.input.pointer/PointerEventType.values|values#static(){}[0]
+    final fun valueOf(kotlin/String): androidx.compose.ui.input.pointer/PointerEventPass // androidx.compose.ui.input.pointer/PointerEventPass.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<androidx.compose.ui.input.pointer/PointerEventPass> // androidx.compose.ui.input.pointer/PointerEventPass.values|values#static(){}[0]
 }
 
 final enum class androidx.compose.ui.res/ResourceKind : kotlin/Enum<androidx.compose.ui.res/ResourceKind> { // androidx.compose.ui.res/ResourceKind|null[0]
@@ -687,7 +675,12 @@ abstract interface androidx.compose.ui.graphics/Shape { // androidx.compose.ui.g
 }
 
 abstract interface androidx.compose.ui.input.pointer/AwaitPointerEventScope { // androidx.compose.ui.input.pointer/AwaitPointerEventScope|null[0]
-    abstract suspend fun awaitPointerEvent(): com.compose.desktop.native.input/PointerInputEvent // androidx.compose.ui.input.pointer/AwaitPointerEventScope.awaitPointerEvent|awaitPointerEvent(){}[0]
+    abstract suspend fun awaitPointerEvent(androidx.compose.ui.input.pointer/PointerEventPass = ...): androidx.compose.ui.input.pointer/PointerEvent // androidx.compose.ui.input.pointer/AwaitPointerEventScope.awaitPointerEvent|awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass){}[0]
+}
+
+abstract interface androidx.compose.ui.input.pointer/PointerInputModifier : androidx.compose.ui/Modifier.Element { // androidx.compose.ui.input.pointer/PointerInputModifier|null[0]
+    abstract val pointerInputFilter // androidx.compose.ui.input.pointer/PointerInputModifier.pointerInputFilter|{}pointerInputFilter[0]
+        abstract fun <get-pointerInputFilter>(): androidx.compose.ui.input.pointer/PointerInputFilter // androidx.compose.ui.input.pointer/PointerInputModifier.pointerInputFilter.<get-pointerInputFilter>|<get-pointerInputFilter>(){}[0]
 }
 
 abstract interface androidx.compose.ui.input.pointer/PointerInputScope { // androidx.compose.ui.input.pointer/PointerInputScope|null[0]
@@ -713,6 +706,11 @@ abstract interface androidx.compose.ui.layout/ContentScale { // androidx.compose
         final val None // androidx.compose.ui.layout/ContentScale.Companion.None|{}None[0]
             final fun <get-None>(): androidx.compose.ui.layout/FixedScale // androidx.compose.ui.layout/ContentScale.Companion.None.<get-None>|<get-None>(){}[0]
     }
+}
+
+abstract interface androidx.compose.ui.layout/LayoutCoordinates { // androidx.compose.ui.layout/LayoutCoordinates|null[0]
+    open val size // androidx.compose.ui.layout/LayoutCoordinates.size|{}size[0]
+        open fun <get-size>(): androidx.compose.ui.unit/IntSize // androidx.compose.ui.layout/LayoutCoordinates.size.<get-size>|<get-size>(){}[0]
 }
 
 abstract interface androidx.compose.ui.layout/Measurable { // androidx.compose.ui.layout/Measurable|null[0]
@@ -942,6 +940,20 @@ abstract class androidx.compose.ui.graphics.colorspace/ColorSpace { // androidx.
     open fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics.colorspace/ColorSpace.equals|equals(kotlin.Any?){}[0]
     open fun hashCode(): kotlin/Int // androidx.compose.ui.graphics.colorspace/ColorSpace.hashCode|hashCode(){}[0]
     open fun toString(): kotlin/String // androidx.compose.ui.graphics.colorspace/ColorSpace.toString|toString(){}[0]
+}
+
+abstract class androidx.compose.ui.input.pointer/PointerInputFilter { // androidx.compose.ui.input.pointer/PointerInputFilter|null[0]
+    constructor <init>() // androidx.compose.ui.input.pointer/PointerInputFilter.<init>|<init>(){}[0]
+
+    final val size // androidx.compose.ui.input.pointer/PointerInputFilter.size|{}size[0]
+        final fun <get-size>(): androidx.compose.ui.unit/IntSize // androidx.compose.ui.input.pointer/PointerInputFilter.size.<get-size>|<get-size>(){}[0]
+    open val interceptOutOfBoundsChildEvents // androidx.compose.ui.input.pointer/PointerInputFilter.interceptOutOfBoundsChildEvents|{}interceptOutOfBoundsChildEvents[0]
+        open fun <get-interceptOutOfBoundsChildEvents>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputFilter.interceptOutOfBoundsChildEvents.<get-interceptOutOfBoundsChildEvents>|<get-interceptOutOfBoundsChildEvents>(){}[0]
+    open val shareWithSiblings // androidx.compose.ui.input.pointer/PointerInputFilter.shareWithSiblings|{}shareWithSiblings[0]
+        open fun <get-shareWithSiblings>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputFilter.shareWithSiblings.<get-shareWithSiblings>|<get-shareWithSiblings>(){}[0]
+
+    abstract fun onCancel() // androidx.compose.ui.input.pointer/PointerInputFilter.onCancel|onCancel(){}[0]
+    abstract fun onPointerEvent(androidx.compose.ui.input.pointer/PointerEvent, androidx.compose.ui.input.pointer/PointerEventPass, androidx.compose.ui.unit/IntSize) // androidx.compose.ui.input.pointer/PointerInputFilter.onPointerEvent|onPointerEvent(androidx.compose.ui.input.pointer.PointerEvent;androidx.compose.ui.input.pointer.PointerEventPass;androidx.compose.ui.unit.IntSize){}[0]
 }
 
 abstract class androidx.compose.ui.layout/Placeable { // androidx.compose.ui.layout/Placeable|null[0]
@@ -2177,41 +2189,109 @@ final class androidx.compose.ui.input.key/KeyEvent { // androidx.compose.ui.inpu
     final fun toString(): kotlin/String // androidx.compose.ui.input.key/KeyEvent.toString|toString(){}[0]
 }
 
+final class androidx.compose.ui.input.pointer/ConsumedData { // androidx.compose.ui.input.pointer/ConsumedData|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ...) // androidx.compose.ui.input.pointer/ConsumedData.<init>|<init>(kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final var downChange // androidx.compose.ui.input.pointer/ConsumedData.downChange|{}downChange[0]
+        final fun <get-downChange>(): kotlin/Boolean // androidx.compose.ui.input.pointer/ConsumedData.downChange.<get-downChange>|<get-downChange>(){}[0]
+        final fun <set-downChange>(kotlin/Boolean) // androidx.compose.ui.input.pointer/ConsumedData.downChange.<set-downChange>|<set-downChange>(kotlin.Boolean){}[0]
+    final var positionChange // androidx.compose.ui.input.pointer/ConsumedData.positionChange|{}positionChange[0]
+        final fun <get-positionChange>(): kotlin/Boolean // androidx.compose.ui.input.pointer/ConsumedData.positionChange.<get-positionChange>|<get-positionChange>(){}[0]
+        final fun <set-positionChange>(kotlin/Boolean) // androidx.compose.ui.input.pointer/ConsumedData.positionChange.<set-positionChange>|<set-positionChange>(kotlin.Boolean){}[0]
+}
+
+final class androidx.compose.ui.input.pointer/HistoricalChange { // androidx.compose.ui.input.pointer/HistoricalChange|null[0]
+    constructor <init>(kotlin/Long, androidx.compose.ui.geometry/Offset) // androidx.compose.ui.input.pointer/HistoricalChange.<init>|<init>(kotlin.Long;androidx.compose.ui.geometry.Offset){}[0]
+    constructor <init>(kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.input.pointer/HistoricalChange.<init>|<init>(kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.geometry.Offset){}[0]
+
+    final val panOffset // androidx.compose.ui.input.pointer/HistoricalChange.panOffset|{}panOffset[0]
+        final fun <get-panOffset>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/HistoricalChange.panOffset.<get-panOffset>|<get-panOffset>(){}[0]
+    final val position // androidx.compose.ui.input.pointer/HistoricalChange.position|{}position[0]
+        final fun <get-position>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/HistoricalChange.position.<get-position>|<get-position>(){}[0]
+    final val scaleFactor // androidx.compose.ui.input.pointer/HistoricalChange.scaleFactor|{}scaleFactor[0]
+        final fun <get-scaleFactor>(): kotlin/Float // androidx.compose.ui.input.pointer/HistoricalChange.scaleFactor.<get-scaleFactor>|<get-scaleFactor>(){}[0]
+    final val uptimeMillis // androidx.compose.ui.input.pointer/HistoricalChange.uptimeMillis|{}uptimeMillis[0]
+        final fun <get-uptimeMillis>(): kotlin/Long // androidx.compose.ui.input.pointer/HistoricalChange.uptimeMillis.<get-uptimeMillis>|<get-uptimeMillis>(){}[0]
+
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/HistoricalChange.toString|toString(){}[0]
+}
+
 final class androidx.compose.ui.input.pointer/PointerEvent { // androidx.compose.ui.input.pointer/PointerEvent|null[0]
-    constructor <init>(kotlin/Int, kotlin/Int, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ...) // androidx.compose.ui.input.pointer/PointerEvent.<init>|<init>(kotlin.Int;kotlin.Int;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton){}[0]
+    constructor <init>(kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange>) // androidx.compose.ui.input.pointer/PointerEvent.<init>|<init>(kotlin.collections.List<androidx.compose.ui.input.pointer.PointerInputChange>){}[0]
 
     final val button // androidx.compose.ui.input.pointer/PointerEvent.button|{}button[0]
-        final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerEvent.button.<get-button>|<get-button>(){}[0]
-    final val type // androidx.compose.ui.input.pointer/PointerEvent.type|{}type[0]
-        final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEvent.type.<get-type>|<get-type>(){}[0]
-    final val x // androidx.compose.ui.input.pointer/PointerEvent.x|{}x[0]
-        final fun <get-x>(): kotlin/Int // androidx.compose.ui.input.pointer/PointerEvent.x.<get-x>|<get-x>(){}[0]
-    final val y // androidx.compose.ui.input.pointer/PointerEvent.y|{}y[0]
-        final fun <get-y>(): kotlin/Int // androidx.compose.ui.input.pointer/PointerEvent.y.<get-y>|<get-y>(){}[0]
+        final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton? // androidx.compose.ui.input.pointer/PointerEvent.button.<get-button>|<get-button>(){}[0]
+    final val buttons // androidx.compose.ui.input.pointer/PointerEvent.buttons|{}buttons[0]
+        final fun <get-buttons>(): androidx.compose.ui.input.pointer/PointerButtons // androidx.compose.ui.input.pointer/PointerEvent.buttons.<get-buttons>|<get-buttons>(){}[0]
+    final val changes // androidx.compose.ui.input.pointer/PointerEvent.changes|{}changes[0]
+        final fun <get-changes>(): kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange> // androidx.compose.ui.input.pointer/PointerEvent.changes.<get-changes>|<get-changes>(){}[0]
+    final val keyboardModifiers // androidx.compose.ui.input.pointer/PointerEvent.keyboardModifiers|{}keyboardModifiers[0]
+        final fun <get-keyboardModifiers>(): androidx.compose.ui.input.pointer/PointerKeyboardModifiers // androidx.compose.ui.input.pointer/PointerEvent.keyboardModifiers.<get-keyboardModifiers>|<get-keyboardModifiers>(){}[0]
+    final val nativeEvent // androidx.compose.ui.input.pointer/PointerEvent.nativeEvent|{}nativeEvent[0]
+        final fun <get-nativeEvent>(): kotlin/Any? // androidx.compose.ui.input.pointer/PointerEvent.nativeEvent.<get-nativeEvent>|<get-nativeEvent>(){}[0]
 
+    final var type // androidx.compose.ui.input.pointer/PointerEvent.type|{}type[0]
+        final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEvent.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange> // androidx.compose.ui.input.pointer/PointerEvent.component1|component1(){}[0]
+    final fun component2(): androidx.compose.ui.input.pointer/PointerButtons // androidx.compose.ui.input.pointer/PointerEvent.component2|component2(){}[0]
+    final fun component3(): androidx.compose.ui.input.pointer/PointerKeyboardModifiers // androidx.compose.ui.input.pointer/PointerEvent.component3|component3(){}[0]
+    final fun component5(): kotlin/Any? // androidx.compose.ui.input.pointer/PointerEvent.component5|component5(){}[0]
+    final fun copy(kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange> = ..., androidx.compose.ui.input.pointer/PointerButtons = ..., androidx.compose.ui.input.pointer/PointerKeyboardModifiers = ..., androidx.compose.ui.input.pointer/PointerEventType = ..., kotlin/Any? = ..., androidx.compose.ui.input.pointer/PointerButton? = ...): androidx.compose.ui.input.pointer/PointerEvent // androidx.compose.ui.input.pointer/PointerEvent.copy|copy(kotlin.collections.List<androidx.compose.ui.input.pointer.PointerInputChange>;androidx.compose.ui.input.pointer.PointerButtons;androidx.compose.ui.input.pointer.PointerKeyboardModifiers;androidx.compose.ui.input.pointer.PointerEventType;kotlin.Any?;androidx.compose.ui.input.pointer.PointerButton?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerEvent.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerEvent.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerEvent.toString|toString(){}[0]
+
+    final object Companion // androidx.compose.ui.input.pointer/PointerEvent.Companion|null[0]
 }
 
 final class androidx.compose.ui.input.pointer/PointerInputChange { // androidx.compose.ui.input.pointer/PointerInputChange|null[0]
-    constructor <init>(kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, androidx.compose.ui.geometry/Offset, kotlin/Boolean) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.geometry.Offset;kotlin.Boolean){}[0]
+    constructor <init>(androidx.compose.ui.input.pointer/PointerId, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Float, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Boolean, androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Float;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset){}[0]
+    constructor <init>(androidx.compose.ui.input.pointer/PointerId, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Float, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Boolean, androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Float;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.geometry.Offset){}[0]
+    constructor <init>(androidx.compose.ui.input.pointer/PointerId, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, androidx.compose.ui.input.pointer/ConsumedData, androidx.compose.ui.input.pointer/PointerType = ...) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.ConsumedData;androidx.compose.ui.input.pointer.PointerType){}[0]
+    constructor <init>(androidx.compose.ui.input.pointer/PointerId, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Boolean, androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset){}[0]
+    constructor <init>(androidx.compose.ui.input.pointer/PointerId, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Long, androidx.compose.ui.geometry/Offset, kotlin/Boolean, kotlin/Boolean, androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.input.pointer/PointerInputChange.<init>|<init>(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.geometry.Offset){}[0]
 
+    final val consumed // androidx.compose.ui.input.pointer/PointerInputChange.consumed|{}consumed[0]
+        final fun <get-consumed>(): androidx.compose.ui.input.pointer/ConsumedData // androidx.compose.ui.input.pointer/PointerInputChange.consumed.<get-consumed>|<get-consumed>(){}[0]
+    final val historical // androidx.compose.ui.input.pointer/PointerInputChange.historical|{}historical[0]
+        final fun <get-historical>(): kotlin.collections/List<androidx.compose.ui.input.pointer/HistoricalChange> // androidx.compose.ui.input.pointer/PointerInputChange.historical.<get-historical>|<get-historical>(){}[0]
     final val id // androidx.compose.ui.input.pointer/PointerInputChange.id|{}id[0]
-        final fun <get-id>(): kotlin/Long // androidx.compose.ui.input.pointer/PointerInputChange.id.<get-id>|<get-id>(){}[0]
+        final fun <get-id>(): androidx.compose.ui.input.pointer/PointerId // androidx.compose.ui.input.pointer/PointerInputChange.id.<get-id>|<get-id>(){}[0]
+    final val isConsumed // androidx.compose.ui.input.pointer/PointerInputChange.isConsumed|{}isConsumed[0]
+        final fun <get-isConsumed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputChange.isConsumed.<get-isConsumed>|<get-isConsumed>(){}[0]
+    final val panOffset // androidx.compose.ui.input.pointer/PointerInputChange.panOffset|{}panOffset[0]
+        final fun <get-panOffset>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/PointerInputChange.panOffset.<get-panOffset>|<get-panOffset>(){}[0]
     final val position // androidx.compose.ui.input.pointer/PointerInputChange.position|{}position[0]
         final fun <get-position>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/PointerInputChange.position.<get-position>|<get-position>(){}[0]
     final val pressed // androidx.compose.ui.input.pointer/PointerInputChange.pressed|{}pressed[0]
         final fun <get-pressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputChange.pressed.<get-pressed>|<get-pressed>(){}[0]
+    final val pressure // androidx.compose.ui.input.pointer/PointerInputChange.pressure|{}pressure[0]
+        final fun <get-pressure>(): kotlin/Float // androidx.compose.ui.input.pointer/PointerInputChange.pressure.<get-pressure>|<get-pressure>(){}[0]
     final val previousPosition // androidx.compose.ui.input.pointer/PointerInputChange.previousPosition|{}previousPosition[0]
         final fun <get-previousPosition>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/PointerInputChange.previousPosition.<get-previousPosition>|<get-previousPosition>(){}[0]
     final val previousPressed // androidx.compose.ui.input.pointer/PointerInputChange.previousPressed|{}previousPressed[0]
         final fun <get-previousPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputChange.previousPressed.<get-previousPressed>|<get-previousPressed>(){}[0]
-
-    final var consumed // androidx.compose.ui.input.pointer/PointerInputChange.consumed|{}consumed[0]
-        final fun <get-consumed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerInputChange.consumed.<get-consumed>|<get-consumed>(){}[0]
+    final val previousUptimeMillis // androidx.compose.ui.input.pointer/PointerInputChange.previousUptimeMillis|{}previousUptimeMillis[0]
+        final fun <get-previousUptimeMillis>(): kotlin/Long // androidx.compose.ui.input.pointer/PointerInputChange.previousUptimeMillis.<get-previousUptimeMillis>|<get-previousUptimeMillis>(){}[0]
+    final val scaleFactor // androidx.compose.ui.input.pointer/PointerInputChange.scaleFactor|{}scaleFactor[0]
+        final fun <get-scaleFactor>(): kotlin/Float // androidx.compose.ui.input.pointer/PointerInputChange.scaleFactor.<get-scaleFactor>|<get-scaleFactor>(){}[0]
+    final val scrollDelta // androidx.compose.ui.input.pointer/PointerInputChange.scrollDelta|{}scrollDelta[0]
+        final fun <get-scrollDelta>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/PointerInputChange.scrollDelta.<get-scrollDelta>|<get-scrollDelta>(){}[0]
+    final val type // androidx.compose.ui.input.pointer/PointerInputChange.type|{}type[0]
+        final fun <get-type>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerInputChange.type.<get-type>|<get-type>(){}[0]
+    final val uptimeMillis // androidx.compose.ui.input.pointer/PointerInputChange.uptimeMillis|{}uptimeMillis[0]
+        final fun <get-uptimeMillis>(): kotlin/Long // androidx.compose.ui.input.pointer/PointerInputChange.uptimeMillis.<get-uptimeMillis>|<get-uptimeMillis>(){}[0]
 
     final fun consume() // androidx.compose.ui.input.pointer/PointerInputChange.consume|consume(){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Float;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/PointerType = ..., kotlin.collections/List<androidx.compose.ui.input.pointer/HistoricalChange> = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Float;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;kotlin.collections.List<androidx.compose.ui.input.pointer.HistoricalChange>;androidx.compose.ui.geometry.Offset){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/PointerType = ..., kotlin.collections/List<androidx.compose.ui.input.pointer/HistoricalChange> = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Float = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Float;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;kotlin.collections.List<androidx.compose.ui.input.pointer.HistoricalChange>;androidx.compose.ui.geometry.Offset;kotlin.Float;androidx.compose.ui.geometry.Offset){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/ConsumedData = ..., androidx.compose.ui.input.pointer/PointerType = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.ConsumedData;androidx.compose.ui.input.pointer.PointerType){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/ConsumedData, androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.ConsumedData;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/PointerType = ..., androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;androidx.compose.ui.geometry.Offset){}[0]
+    final fun copy(androidx.compose.ui.input.pointer/PointerId = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., kotlin/Long = ..., androidx.compose.ui.geometry/Offset = ..., kotlin/Boolean = ..., androidx.compose.ui.input.pointer/PointerType = ..., kotlin.collections/List<androidx.compose.ui.input.pointer/HistoricalChange>, androidx.compose.ui.geometry/Offset = ...): androidx.compose.ui.input.pointer/PointerInputChange // androidx.compose.ui.input.pointer/PointerInputChange.copy|copy(androidx.compose.ui.input.pointer.PointerId;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;kotlin.Long;androidx.compose.ui.geometry.Offset;kotlin.Boolean;androidx.compose.ui.input.pointer.PointerType;kotlin.collections.List<androidx.compose.ui.input.pointer.HistoricalChange>;androidx.compose.ui.geometry.Offset){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerInputChange.toString|toString(){}[0]
 }
 
 final class androidx.compose.ui.layout/FixedScale : androidx.compose.ui.layout/ContentScale { // androidx.compose.ui.layout/FixedScale|null[0]
@@ -3112,18 +3192,28 @@ final class com.compose.desktop.native.input/KeyModifiers { // com.compose.deskt
     final fun toString(): kotlin/String // com.compose.desktop.native.input/KeyModifiers.toString|toString(){}[0]
 }
 
+final class com.compose.desktop.native.input/LegacyPointerEvent { // com.compose.desktop.native.input/LegacyPointerEvent|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ...) // com.compose.desktop.native.input/LegacyPointerEvent.<init>|<init>(kotlin.Int;kotlin.Int;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton){}[0]
+
+    final val button // com.compose.desktop.native.input/LegacyPointerEvent.button|{}button[0]
+        final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton // com.compose.desktop.native.input/LegacyPointerEvent.button.<get-button>|<get-button>(){}[0]
+    final val type // com.compose.desktop.native.input/LegacyPointerEvent.type|{}type[0]
+        final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // com.compose.desktop.native.input/LegacyPointerEvent.type.<get-type>|<get-type>(){}[0]
+    final val x // com.compose.desktop.native.input/LegacyPointerEvent.x|{}x[0]
+        final fun <get-x>(): kotlin/Int // com.compose.desktop.native.input/LegacyPointerEvent.x.<get-x>|<get-x>(){}[0]
+    final val y // com.compose.desktop.native.input/LegacyPointerEvent.y|{}y[0]
+        final fun <get-y>(): kotlin/Int // com.compose.desktop.native.input/LegacyPointerEvent.y.<get-y>|<get-y>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.desktop.native.input/LegacyPointerEvent.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.compose.desktop.native.input/LegacyPointerEvent.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.compose.desktop.native.input/LegacyPointerEvent.toString|toString(){}[0]
+}
+
 final class com.compose.desktop.native.input/PointerInputElement : androidx.compose.ui/Modifier.Element { // com.compose.desktop.native.input/PointerInputElement|null[0]
     constructor <init>(com.compose.desktop.native.input/PointerInputScopeImpl) // com.compose.desktop.native.input/PointerInputElement.<init>|<init>(com.compose.desktop.native.input.PointerInputScopeImpl){}[0]
 
     final val scope // com.compose.desktop.native.input/PointerInputElement.scope|{}scope[0]
         final fun <get-scope>(): com.compose.desktop.native.input/PointerInputScopeImpl // com.compose.desktop.native.input/PointerInputElement.scope.<get-scope>|<get-scope>(){}[0]
-}
-
-final class com.compose.desktop.native.input/PointerInputEvent { // com.compose.desktop.native.input/PointerInputEvent|null[0]
-    constructor <init>(kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange>) // com.compose.desktop.native.input/PointerInputEvent.<init>|<init>(kotlin.collections.List<androidx.compose.ui.input.pointer.PointerInputChange>){}[0]
-
-    final val changes // com.compose.desktop.native.input/PointerInputEvent.changes|{}changes[0]
-        final fun <get-changes>(): kotlin.collections/List<androidx.compose.ui.input.pointer/PointerInputChange> // com.compose.desktop.native.input/PointerInputEvent.changes.<get-changes>|<get-changes>(){}[0]
 }
 
 final class com.compose.desktop.native.input/PointerInputScopeImpl : androidx.compose.ui.input.pointer/PointerInputScope { // com.compose.desktop.native.input/PointerInputScopeImpl|null[0]
@@ -3842,6 +3932,111 @@ final value class androidx.compose.ui.graphics/VertexMode { // androidx.compose.
     }
 }
 
+final value class androidx.compose.ui.input.pointer/PointerButton { // androidx.compose.ui.input.pointer/PointerButton|null[0]
+    constructor <init>(kotlin/Int) // androidx.compose.ui.input.pointer/PointerButton.<init>|<init>(kotlin.Int){}[0]
+
+    final val index // androidx.compose.ui.input.pointer/PointerButton.index|{}index[0]
+        final fun <get-index>(): kotlin/Int // androidx.compose.ui.input.pointer/PointerButton.index.<get-index>|<get-index>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerButton.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerButton.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerButton.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.input.pointer/PointerButton.Companion|null[0]
+        final val Back // androidx.compose.ui.input.pointer/PointerButton.Companion.Back|{}Back[0]
+            final fun <get-Back>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.Companion.Back.<get-Back>|<get-Back>(){}[0]
+        final val Forward // androidx.compose.ui.input.pointer/PointerButton.Companion.Forward|{}Forward[0]
+            final fun <get-Forward>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.Companion.Forward.<get-Forward>|<get-Forward>(){}[0]
+        final val Primary // androidx.compose.ui.input.pointer/PointerButton.Companion.Primary|{}Primary[0]
+            final fun <get-Primary>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.Companion.Primary.<get-Primary>|<get-Primary>(){}[0]
+        final val Secondary // androidx.compose.ui.input.pointer/PointerButton.Companion.Secondary|{}Secondary[0]
+            final fun <get-Secondary>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.Companion.Secondary.<get-Secondary>|<get-Secondary>(){}[0]
+        final val Tertiary // androidx.compose.ui.input.pointer/PointerButton.Companion.Tertiary|{}Tertiary[0]
+            final fun <get-Tertiary>(): androidx.compose.ui.input.pointer/PointerButton // androidx.compose.ui.input.pointer/PointerButton.Companion.Tertiary.<get-Tertiary>|<get-Tertiary>(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.input.pointer/PointerButtons { // androidx.compose.ui.input.pointer/PointerButtons|null[0]
+    constructor <init>(kotlin/Int = ...) // androidx.compose.ui.input.pointer/PointerButtons.<init>|<init>(kotlin.Int){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerButtons.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerButtons.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerButtons.toString|toString(){}[0]
+}
+
+final value class androidx.compose.ui.input.pointer/PointerEventType { // androidx.compose.ui.input.pointer/PointerEventType|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerEventType.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerEventType.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerEventType.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.input.pointer/PointerEventType.Companion|null[0]
+        final val Enter // androidx.compose.ui.input.pointer/PointerEventType.Companion.Enter|{}Enter[0]
+            final fun <get-Enter>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Enter.<get-Enter>|<get-Enter>(){}[0]
+        final val Exit // androidx.compose.ui.input.pointer/PointerEventType.Companion.Exit|{}Exit[0]
+            final fun <get-Exit>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Exit.<get-Exit>|<get-Exit>(){}[0]
+        final val Move // androidx.compose.ui.input.pointer/PointerEventType.Companion.Move|{}Move[0]
+            final fun <get-Move>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Move.<get-Move>|<get-Move>(){}[0]
+        final val PanEnd // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanEnd|{}PanEnd[0]
+            final fun <get-PanEnd>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanEnd.<get-PanEnd>|<get-PanEnd>(){}[0]
+        final val PanMove // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanMove|{}PanMove[0]
+            final fun <get-PanMove>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanMove.<get-PanMove>|<get-PanMove>(){}[0]
+        final val PanStart // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanStart|{}PanStart[0]
+            final fun <get-PanStart>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.PanStart.<get-PanStart>|<get-PanStart>(){}[0]
+        final val Press // androidx.compose.ui.input.pointer/PointerEventType.Companion.Press|{}Press[0]
+            final fun <get-Press>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Press.<get-Press>|<get-Press>(){}[0]
+        final val Release // androidx.compose.ui.input.pointer/PointerEventType.Companion.Release|{}Release[0]
+            final fun <get-Release>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Release.<get-Release>|<get-Release>(){}[0]
+        final val ScaleChange // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleChange|{}ScaleChange[0]
+            final fun <get-ScaleChange>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleChange.<get-ScaleChange>|<get-ScaleChange>(){}[0]
+        final val ScaleEnd // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleEnd|{}ScaleEnd[0]
+            final fun <get-ScaleEnd>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleEnd.<get-ScaleEnd>|<get-ScaleEnd>(){}[0]
+        final val ScaleStart // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleStart|{}ScaleStart[0]
+            final fun <get-ScaleStart>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.ScaleStart.<get-ScaleStart>|<get-ScaleStart>(){}[0]
+        final val Scroll // androidx.compose.ui.input.pointer/PointerEventType.Companion.Scroll|{}Scroll[0]
+            final fun <get-Scroll>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Scroll.<get-Scroll>|<get-Scroll>(){}[0]
+        final val Unknown // androidx.compose.ui.input.pointer/PointerEventType.Companion.Unknown|{}Unknown[0]
+            final fun <get-Unknown>(): androidx.compose.ui.input.pointer/PointerEventType // androidx.compose.ui.input.pointer/PointerEventType.Companion.Unknown.<get-Unknown>|<get-Unknown>(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.input.pointer/PointerId { // androidx.compose.ui.input.pointer/PointerId|null[0]
+    constructor <init>(kotlin/Long) // androidx.compose.ui.input.pointer/PointerId.<init>|<init>(kotlin.Long){}[0]
+
+    final val value // androidx.compose.ui.input.pointer/PointerId.value|{}value[0]
+        final fun <get-value>(): kotlin/Long // androidx.compose.ui.input.pointer/PointerId.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerId.toString|toString(){}[0]
+}
+
+final value class androidx.compose.ui.input.pointer/PointerKeyboardModifiers { // androidx.compose.ui.input.pointer/PointerKeyboardModifiers|null[0]
+    constructor <init>(kotlin/Int = ...) // androidx.compose.ui.input.pointer/PointerKeyboardModifiers.<init>|<init>(kotlin.Int){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerKeyboardModifiers.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerKeyboardModifiers.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerKeyboardModifiers.toString|toString(){}[0]
+}
+
+final value class androidx.compose.ui.input.pointer/PointerType { // androidx.compose.ui.input.pointer/PointerType|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.input.pointer/PointerType.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.input.pointer/PointerType.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.input.pointer/PointerType.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.input.pointer/PointerType.Companion|null[0]
+        final val Eraser // androidx.compose.ui.input.pointer/PointerType.Companion.Eraser|{}Eraser[0]
+            final fun <get-Eraser>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerType.Companion.Eraser.<get-Eraser>|<get-Eraser>(){}[0]
+        final val Mouse // androidx.compose.ui.input.pointer/PointerType.Companion.Mouse|{}Mouse[0]
+            final fun <get-Mouse>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerType.Companion.Mouse.<get-Mouse>|<get-Mouse>(){}[0]
+        final val Stylus // androidx.compose.ui.input.pointer/PointerType.Companion.Stylus|{}Stylus[0]
+            final fun <get-Stylus>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerType.Companion.Stylus.<get-Stylus>|<get-Stylus>(){}[0]
+        final val Touch // androidx.compose.ui.input.pointer/PointerType.Companion.Touch|{}Touch[0]
+            final fun <get-Touch>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerType.Companion.Touch.<get-Touch>|<get-Touch>(){}[0]
+        final val Unknown // androidx.compose.ui.input.pointer/PointerType.Companion.Unknown|{}Unknown[0]
+            final fun <get-Unknown>(): androidx.compose.ui.input.pointer/PointerType // androidx.compose.ui.input.pointer/PointerType.Companion.Unknown.<get-Unknown>|<get-Unknown>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.layout/ScaleFactor { // androidx.compose.ui.layout/ScaleFactor|null[0]
     constructor <init>(kotlin/Long) // androidx.compose.ui.layout/ScaleFactor.<init>|<init>(kotlin.Long){}[0]
 
@@ -4533,13 +4728,13 @@ sealed class com.compose.desktop.native/AppEvent { // com.compose.desktop.native
     }
 
     final class Pointer : com.compose.desktop.native/AppEvent { // com.compose.desktop.native/AppEvent.Pointer|null[0]
-        constructor <init>(androidx.compose.ui.input.pointer/PointerEvent) // com.compose.desktop.native/AppEvent.Pointer.<init>|<init>(androidx.compose.ui.input.pointer.PointerEvent){}[0]
+        constructor <init>(com.compose.desktop.native.input/LegacyPointerEvent) // com.compose.desktop.native/AppEvent.Pointer.<init>|<init>(com.compose.desktop.native.input.LegacyPointerEvent){}[0]
 
         final val event // com.compose.desktop.native/AppEvent.Pointer.event|{}event[0]
-            final fun <get-event>(): androidx.compose.ui.input.pointer/PointerEvent // com.compose.desktop.native/AppEvent.Pointer.event.<get-event>|<get-event>(){}[0]
+            final fun <get-event>(): com.compose.desktop.native.input/LegacyPointerEvent // com.compose.desktop.native/AppEvent.Pointer.event.<get-event>|<get-event>(){}[0]
 
-        final fun component1(): androidx.compose.ui.input.pointer/PointerEvent // com.compose.desktop.native/AppEvent.Pointer.component1|component1(){}[0]
-        final fun copy(androidx.compose.ui.input.pointer/PointerEvent = ...): com.compose.desktop.native/AppEvent.Pointer // com.compose.desktop.native/AppEvent.Pointer.copy|copy(androidx.compose.ui.input.pointer.PointerEvent){}[0]
+        final fun component1(): com.compose.desktop.native.input/LegacyPointerEvent // com.compose.desktop.native/AppEvent.Pointer.component1|component1(){}[0]
+        final fun copy(com.compose.desktop.native.input/LegacyPointerEvent = ...): com.compose.desktop.native/AppEvent.Pointer // com.compose.desktop.native/AppEvent.Pointer.copy|copy(com.compose.desktop.native.input.LegacyPointerEvent){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.desktop.native/AppEvent.Pointer.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.compose.desktop.native/AppEvent.Pointer.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.compose.desktop.native/AppEvent.Pointer.toString|toString(){}[0]
@@ -5203,8 +5398,53 @@ final val androidx.compose.ui.graphics/union // androidx.compose.ui.graphics/uni
 final val androidx.compose.ui.graphics/xor // androidx.compose.ui.graphics/xor|@androidx.compose.ui.graphics.PathOperation.Companion{}xor[0]
     final fun (androidx.compose.ui.graphics/PathOperation.Companion).<get-xor>(): androidx.compose.ui.graphics/PathOperation // androidx.compose.ui.graphics/xor.<get-xor>|<get-xor>@androidx.compose.ui.graphics.PathOperation.Companion(){}[0]
 final val androidx.compose.ui.input.key/androidx_compose_ui_input_key_KeyEvent$stableprop // androidx.compose.ui.input.key/androidx_compose_ui_input_key_KeyEvent$stableprop|#static{}androidx_compose_ui_input_key_KeyEvent$stableprop[0]
+final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_ConsumedData$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_ConsumedData$stableprop|#static{}androidx_compose_ui_input_pointer_ConsumedData$stableprop[0]
+final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_HistoricalChange$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_HistoricalChange$stableprop|#static{}androidx_compose_ui_input_pointer_HistoricalChange$stableprop[0]
 final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerEvent$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerEvent$stableprop|#static{}androidx_compose_ui_input_pointer_PointerEvent$stableprop[0]
 final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputChange$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputChange$stableprop|#static{}androidx_compose_ui_input_pointer_PointerInputChange$stableprop[0]
+final val androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputFilter$stableprop // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputFilter$stableprop|#static{}androidx_compose_ui_input_pointer_PointerInputFilter$stableprop[0]
+final val androidx.compose.ui.input.pointer/areAnyPressed // androidx.compose.ui.input.pointer/areAnyPressed|@androidx.compose.ui.input.pointer.PointerButtons{}areAnyPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-areAnyPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/areAnyPressed.<get-areAnyPressed>|<get-areAnyPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final val androidx.compose.ui.input.pointer/isAltGraphPressed // androidx.compose.ui.input.pointer/isAltGraphPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isAltGraphPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isAltGraphPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isAltGraphPressed.<get-isAltGraphPressed>|<get-isAltGraphPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isAltPressed // androidx.compose.ui.input.pointer/isAltPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isAltPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isAltPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isAltPressed.<get-isAltPressed>|<get-isAltPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isBack // androidx.compose.ui.input.pointer/isBack|@androidx.compose.ui.input.pointer.PointerButton?{}isBack[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButton?).<get-isBack>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isBack.<get-isBack>|<get-isBack>@androidx.compose.ui.input.pointer.PointerButton?(){}[0]
+final val androidx.compose.ui.input.pointer/isBackPressed // androidx.compose.ui.input.pointer/isBackPressed|@androidx.compose.ui.input.pointer.PointerButtons{}isBackPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-isBackPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isBackPressed.<get-isBackPressed>|<get-isBackPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final val androidx.compose.ui.input.pointer/isCapsLockOn // androidx.compose.ui.input.pointer/isCapsLockOn|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isCapsLockOn[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isCapsLockOn>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isCapsLockOn.<get-isCapsLockOn>|<get-isCapsLockOn>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isCtrlPressed // androidx.compose.ui.input.pointer/isCtrlPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isCtrlPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isCtrlPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isCtrlPressed.<get-isCtrlPressed>|<get-isCtrlPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isForward // androidx.compose.ui.input.pointer/isForward|@androidx.compose.ui.input.pointer.PointerButton?{}isForward[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButton?).<get-isForward>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isForward.<get-isForward>|<get-isForward>@androidx.compose.ui.input.pointer.PointerButton?(){}[0]
+final val androidx.compose.ui.input.pointer/isForwardPressed // androidx.compose.ui.input.pointer/isForwardPressed|@androidx.compose.ui.input.pointer.PointerButtons{}isForwardPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-isForwardPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isForwardPressed.<get-isForwardPressed>|<get-isForwardPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final val androidx.compose.ui.input.pointer/isFunctionPressed // androidx.compose.ui.input.pointer/isFunctionPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isFunctionPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isFunctionPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isFunctionPressed.<get-isFunctionPressed>|<get-isFunctionPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isMetaPressed // androidx.compose.ui.input.pointer/isMetaPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isMetaPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isMetaPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isMetaPressed.<get-isMetaPressed>|<get-isMetaPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isNumLockOn // androidx.compose.ui.input.pointer/isNumLockOn|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isNumLockOn[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isNumLockOn>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isNumLockOn.<get-isNumLockOn>|<get-isNumLockOn>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isPrimary // androidx.compose.ui.input.pointer/isPrimary|@androidx.compose.ui.input.pointer.PointerButton?{}isPrimary[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButton?).<get-isPrimary>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isPrimary.<get-isPrimary>|<get-isPrimary>@androidx.compose.ui.input.pointer.PointerButton?(){}[0]
+final val androidx.compose.ui.input.pointer/isPrimaryPressed // androidx.compose.ui.input.pointer/isPrimaryPressed|@androidx.compose.ui.input.pointer.PointerButtons{}isPrimaryPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-isPrimaryPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isPrimaryPressed.<get-isPrimaryPressed>|<get-isPrimaryPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final val androidx.compose.ui.input.pointer/isScrollLockOn // androidx.compose.ui.input.pointer/isScrollLockOn|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isScrollLockOn[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isScrollLockOn>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isScrollLockOn.<get-isScrollLockOn>|<get-isScrollLockOn>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isSecondary // androidx.compose.ui.input.pointer/isSecondary|@androidx.compose.ui.input.pointer.PointerButton?{}isSecondary[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButton?).<get-isSecondary>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isSecondary.<get-isSecondary>|<get-isSecondary>@androidx.compose.ui.input.pointer.PointerButton?(){}[0]
+final val androidx.compose.ui.input.pointer/isSecondaryPressed // androidx.compose.ui.input.pointer/isSecondaryPressed|@androidx.compose.ui.input.pointer.PointerButtons{}isSecondaryPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-isSecondaryPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isSecondaryPressed.<get-isSecondaryPressed>|<get-isSecondaryPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final val androidx.compose.ui.input.pointer/isShiftPressed // androidx.compose.ui.input.pointer/isShiftPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isShiftPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isShiftPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isShiftPressed.<get-isShiftPressed>|<get-isShiftPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isSymPressed // androidx.compose.ui.input.pointer/isSymPressed|@androidx.compose.ui.input.pointer.PointerKeyboardModifiers{}isSymPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerKeyboardModifiers).<get-isSymPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isSymPressed.<get-isSymPressed>|<get-isSymPressed>@androidx.compose.ui.input.pointer.PointerKeyboardModifiers(){}[0]
+final val androidx.compose.ui.input.pointer/isTertiary // androidx.compose.ui.input.pointer/isTertiary|@androidx.compose.ui.input.pointer.PointerButton?{}isTertiary[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButton?).<get-isTertiary>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isTertiary.<get-isTertiary>|<get-isTertiary>@androidx.compose.ui.input.pointer.PointerButton?(){}[0]
+final val androidx.compose.ui.input.pointer/isTertiaryPressed // androidx.compose.ui.input.pointer/isTertiaryPressed|@androidx.compose.ui.input.pointer.PointerButtons{}isTertiaryPressed[0]
+    final fun (androidx.compose.ui.input.pointer/PointerButtons).<get-isTertiaryPressed>(): kotlin/Boolean // androidx.compose.ui.input.pointer/isTertiaryPressed.<get-isTertiaryPressed>|<get-isTertiaryPressed>@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
 final val androidx.compose.ui.layout/FirstBaseline // androidx.compose.ui.layout/FirstBaseline|{}FirstBaseline[0]
     final fun <get-FirstBaseline>(): androidx.compose.ui.layout/HorizontalAlignmentLine // androidx.compose.ui.layout/FirstBaseline.<get-FirstBaseline>|<get-FirstBaseline>(){}[0]
 final val androidx.compose.ui.layout/LastBaseline // androidx.compose.ui.layout/LastBaseline|{}LastBaseline[0]
@@ -5366,8 +5606,8 @@ final val com.compose.desktop.native.graphics/r8 // com.compose.desktop.native.g
     final fun (androidx.compose.ui.graphics/Color).<get-r8>(): kotlin/Int // com.compose.desktop.native.graphics/r8.<get-r8>|<get-r8>@androidx.compose.ui.graphics.Color(){}[0]
 final val com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop // com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop|#static{}com_compose_desktop_native_icons_IconFont$stableprop[0]
 final val com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop // com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop|#static{}com_compose_desktop_native_input_KeyModifiers$stableprop[0]
+final val com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop // com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop|#static{}com_compose_desktop_native_input_LegacyPointerEvent$stableprop[0]
 final val com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputElement$stableprop // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputElement$stableprop|#static{}com_compose_desktop_native_input_PointerInputElement$stableprop[0]
-final val com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputEvent$stableprop // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputEvent$stableprop|#static{}com_compose_desktop_native_input_PointerInputEvent$stableprop[0]
 final val com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputScopeImpl$stableprop // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputScopeImpl$stableprop|#static{}com_compose_desktop_native_input_PointerInputScopeImpl$stableprop[0]
 final val com.compose.desktop.native.node/com_compose_desktop_native_node_LayoutNode$stableprop // com.compose.desktop.native.node/com_compose_desktop_native_node_LayoutNode$stableprop|#static{}com_compose_desktop_native_node_LayoutNode$stableprop[0]
 final val com.compose.desktop.native.node/com_compose_desktop_native_node_NodeApplier$stableprop // com.compose.desktop.native.node/com_compose_desktop_native_node_NodeApplier$stableprop|#static{}com_compose_desktop_native_node_NodeApplier$stableprop[0]
@@ -5463,6 +5703,24 @@ final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphi
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/darken(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/darken|darken@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/lighten(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/lighten|lighten@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/TileMode).androidx.compose.ui.graphics/isSupported(): kotlin/Boolean // androidx.compose.ui.graphics/isSupported|isSupported@androidx.compose.ui.graphics.TileMode(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerButtons).androidx.compose.ui.input.pointer/indexOfFirstPressed(): kotlin/Int // androidx.compose.ui.input.pointer/indexOfFirstPressed|indexOfFirstPressed@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerButtons).androidx.compose.ui.input.pointer/indexOfLastPressed(): kotlin/Int // androidx.compose.ui.input.pointer/indexOfLastPressed|indexOfLastPressed@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerButtons).androidx.compose.ui.input.pointer/isPressed(kotlin/Int): kotlin/Boolean // androidx.compose.ui.input.pointer/isPressed|isPressed@androidx.compose.ui.input.pointer.PointerButtons(kotlin.Int){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/anyChangeConsumed(): kotlin/Boolean // androidx.compose.ui.input.pointer/anyChangeConsumed|anyChangeConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/changedToDown(): kotlin/Boolean // androidx.compose.ui.input.pointer/changedToDown|changedToDown@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/changedToDownIgnoreConsumed(): kotlin/Boolean // androidx.compose.ui.input.pointer/changedToDownIgnoreConsumed|changedToDownIgnoreConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/changedToUp(): kotlin/Boolean // androidx.compose.ui.input.pointer/changedToUp|changedToUp@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/changedToUpIgnoreConsumed(): kotlin/Boolean // androidx.compose.ui.input.pointer/changedToUpIgnoreConsumed|changedToUpIgnoreConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/consumeAllChanges() // androidx.compose.ui.input.pointer/consumeAllChanges|consumeAllChanges@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/consumeDownChange() // androidx.compose.ui.input.pointer/consumeDownChange|consumeDownChange@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/consumePositionChange() // androidx.compose.ui.input.pointer/consumePositionChange|consumePositionChange@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/isOutOfBounds(androidx.compose.ui.unit/IntSize): kotlin/Boolean // androidx.compose.ui.input.pointer/isOutOfBounds|isOutOfBounds@androidx.compose.ui.input.pointer.PointerInputChange(androidx.compose.ui.unit.IntSize){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/isOutOfBounds(androidx.compose.ui.unit/IntSize, androidx.compose.ui.geometry/Size): kotlin/Boolean // androidx.compose.ui.input.pointer/isOutOfBounds|isOutOfBounds@androidx.compose.ui.input.pointer.PointerInputChange(androidx.compose.ui.unit.IntSize;androidx.compose.ui.geometry.Size){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/positionChange(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/positionChange|positionChange@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/positionChangeConsumed(): kotlin/Boolean // androidx.compose.ui.input.pointer/positionChangeConsumed|positionChangeConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/positionChangeIgnoreConsumed(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.input.pointer/positionChangeIgnoreConsumed|positionChangeIgnoreConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/positionChanged(): kotlin/Boolean // androidx.compose.ui.input.pointer/positionChanged|positionChanged@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
+final fun (androidx.compose.ui.input.pointer/PointerInputChange).androidx.compose.ui.input.pointer/positionChangedIgnoreConsumed(): kotlin/Boolean // androidx.compose.ui.input.pointer/positionChangedIgnoreConsumed|positionChangedIgnoreConsumed@androidx.compose.ui.input.pointer.PointerInputChange(){}[0]
 final fun (androidx.compose.ui.layout/ScaleFactor).androidx.compose.ui.layout/times(androidx.compose.ui.geometry/Size): androidx.compose.ui.geometry/Size // androidx.compose.ui.layout/times|times@androidx.compose.ui.layout.ScaleFactor(androidx.compose.ui.geometry.Size){}[0]
 final fun (androidx.compose.ui.text/TextRange).androidx.compose.ui.text/coerceIn(kotlin/Int, kotlin/Int): androidx.compose.ui.text/TextRange // androidx.compose.ui.text/coerceIn|coerceIn@androidx.compose.ui.text.TextRange(kotlin.Int;kotlin.Int){}[0]
 final fun (androidx.compose.ui.unit/Constraints).androidx.compose.ui.unit/constrain(androidx.compose.ui.unit/Constraints): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/constrain|constrain@androidx.compose.ui.unit.Constraints(androidx.compose.ui.unit.Constraints){}[0]
@@ -5810,8 +6068,13 @@ final fun androidx.compose.ui.graphics/findFirstRoot(androidx.compose.ui.graphic
 final fun androidx.compose.ui.graphics/lerp(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, kotlin/Float): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/lerp|lerp(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
 final fun androidx.compose.ui.graphics/lerp(androidx.compose.ui.graphics/Shadow, androidx.compose.ui.graphics/Shadow, kotlin/Float): androidx.compose.ui.graphics/Shadow // androidx.compose.ui.graphics/lerp|lerp(androidx.compose.ui.graphics.Shadow;androidx.compose.ui.graphics.Shadow;kotlin.Float){}[0]
 final fun androidx.compose.ui.input.key/androidx_compose_ui_input_key_KeyEvent$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.key/androidx_compose_ui_input_key_KeyEvent$stableprop_getter|androidx_compose_ui_input_key_KeyEvent$stableprop_getter(){}[0]
+final fun androidx.compose.ui.input.pointer/PointerButtons(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): androidx.compose.ui.input.pointer/PointerButtons // androidx.compose.ui.input.pointer/PointerButtons|PointerButtons(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+final fun androidx.compose.ui.input.pointer/PointerKeyboardModifiers(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): androidx.compose.ui.input.pointer/PointerKeyboardModifiers // androidx.compose.ui.input.pointer/PointerKeyboardModifiers|PointerKeyboardModifiers(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_ConsumedData$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_ConsumedData$stableprop_getter|androidx_compose_ui_input_pointer_ConsumedData$stableprop_getter(){}[0]
+final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_HistoricalChange$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_HistoricalChange$stableprop_getter|androidx_compose_ui_input_pointer_HistoricalChange$stableprop_getter(){}[0]
 final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerEvent$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerEvent$stableprop_getter|androidx_compose_ui_input_pointer_PointerEvent$stableprop_getter(){}[0]
 final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputChange$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputChange$stableprop_getter|androidx_compose_ui_input_pointer_PointerInputChange$stableprop_getter(){}[0]
+final fun androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.input.pointer/androidx_compose_ui_input_pointer_PointerInputFilter$stableprop_getter|androidx_compose_ui_input_pointer_PointerInputFilter$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/Layout(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.ui.layout/MeasurePolicy, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.ui.layout/Layout|Layout(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.ui.layout.MeasurePolicy;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$stableprop_getter|androidx_compose_ui_layout_AlignmentLine$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter|androidx_compose_ui_layout_FixedScale$stableprop_getter(){}[0]
@@ -5929,8 +6192,8 @@ final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphic
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter(): kotlin/Int // com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter|com_compose_desktop_native_icons_IconFont$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop_getter|com_compose_desktop_native_input_KeyModifiers$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter|com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputElement$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputElement$stableprop_getter|com_compose_desktop_native_input_PointerInputElement$stableprop_getter(){}[0]
-final fun com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputEvent$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputEvent$stableprop_getter|com_compose_desktop_native_input_PointerInputEvent$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputScopeImpl$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_PointerInputScopeImpl$stableprop_getter|com_compose_desktop_native_input_PointerInputScopeImpl$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.modifier/rememberMutableInteractionSource(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.foundation.interaction/MutableInteractionSource // com.compose.desktop.native.modifier/rememberMutableInteractionSource|rememberMutableInteractionSource(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun com.compose.desktop.native.node/com_compose_desktop_native_node_LayoutNode$stableprop_getter(): kotlin/Int // com.compose.desktop.native.node/com_compose_desktop_native_node_LayoutNode$stableprop_getter|com_compose_desktop_native_node_LayoutNode$stableprop_getter(){}[0]

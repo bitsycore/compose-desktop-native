@@ -1,8 +1,10 @@
 package com.compose.desktop.native
 
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerEventType
 import com.compose.desktop.native.input.KeyModifiers
+import com.compose.desktop.native.input.LegacyPointerEvent
 import kotlinx.cinterop.*
 import sdl3.*
 
@@ -12,7 +14,7 @@ import sdl3.*
 
 sealed class AppEvent {
     data object Quit : AppEvent()
-    data class Pointer(val event: PointerEvent) : AppEvent()
+    data class Pointer(val event: LegacyPointerEvent) : AppEvent()
     data class Key(val event: KeyEvent) : AppEvent()
     data class TextInput(val text: String) : AppEvent()
     data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float) : AppEvent()
@@ -38,7 +40,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
         SDL_EVENT_MOUSE_BUTTON_DOWN -> {
             val mb = e.button
-            AppEvent.Pointer(PointerEvent(
+            AppEvent.Pointer(LegacyPointerEvent(
                 x = mb.x.toInt(), y = mb.y.toInt(),
                 type = PointerEventType.Press,
                 button = mapButton(mb.button)
@@ -47,7 +49,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
         SDL_EVENT_MOUSE_BUTTON_UP -> {
             val mb = e.button
-            AppEvent.Pointer(PointerEvent(
+            AppEvent.Pointer(LegacyPointerEvent(
                 x = mb.x.toInt(), y = mb.y.toInt(),
                 type = PointerEventType.Release,
                 button = mapButton(mb.button)
@@ -56,7 +58,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
         SDL_EVENT_MOUSE_MOTION -> {
             val mm = e.motion
-            AppEvent.Pointer(PointerEvent(
+            AppEvent.Pointer(LegacyPointerEvent(
                 x = mm.x.toInt(), y = mm.y.toInt(),
                 type = PointerEventType.Move
             ))
@@ -105,7 +107,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
 private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
     1 -> PointerButton.Primary
-    2 -> PointerButton.Middle
+    2 -> PointerButton.Tertiary
     3 -> PointerButton.Secondary
     else -> PointerButton.Primary
 }

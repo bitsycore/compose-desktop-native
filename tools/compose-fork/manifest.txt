@@ -263,6 +263,18 @@ compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animatio
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/MotionDurationScale.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/MotionDurationScale.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt
+# PointerEvent — the big one. Brings PointerEventType / PointerButton /
+# PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
+# value classes) + the multi-touch PointerEvent (expect class with skiko
+# actual) + the new-shape PointerInputChange + extension props on all of
+# the above. LayoutCoordinates is stubbed locally (PointerEvent only uses
+# it as a nullable internal field).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerEvent.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/InternalPointerInput.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/InternalPointerInput.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerEvent.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerButton.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerButton.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.native.kt
 # androidx.compose.animation (not -core): the Color overloads + the
 # Color → AnimationVector4D converter. Replace our hand-written
 # AnimateColorAsState / InfiniteTransitionColor.
