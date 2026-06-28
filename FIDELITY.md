@@ -15,6 +15,47 @@ now done (see below).
   API). The official extension that *builds* it stays in `androidx.*`.
 - Match upstream signatures/representation where a type is official-named.
 
+### Why we can't vendor the Skia renderer wholesale
+
+Upstream's Skia code lives under `compose/ui/ui-graphics/src/skikoMain/` as
+`actual` declarations of commonMain `expect` types (`Canvas`, `Paint`, `Path`,
+`Shader`, `ImageBitmap`, `Matrix`, `PathIterator`, `RenderEffect`,
+`ColorFilter`, `GraphicsContext`, …) — i.e. the *engine* glue. Pulling them in
+forces also pulling in the matching commonMain `expect`s and the rest of the
+engine (LayoutNode / DrawScope / Modifier-node tree / focus / pointer pipeline)
+that our renderer specifically doesn't use. Our `SkiaRenderer` paints into a
+raw `org.jetbrains.skia.Canvas` while walking our custom `LayoutNode` tree and
+reading our simplified `PathCommand` list — keeping that bridge thin is the
+whole point. Conclusion: stay with the hand-written renderers; only vendor
+*data* types from the skiko source set (e.g. the `LineBreak` / `TextMotion`
+value-class actuals, which are pure data and contain no Skia refs).
+
+### Why we don't put `expect Canvas/Paint` in commonMain and provide a SDL3 actual alongside the Skia one
+
+Tempting idea: vendor `expect class Canvas` etc. into `:core/commonMain`, then
+have `:renderer-skia` and `:renderer-sdl3` each provide their own `actual`s.
+**It doesn't work**, for three reasons stacked:
+
+1. *Kotlin's actual-resolution rule.* An `actual` must live in a source set of
+   the **same module** as the `expect` (in a target hierarchy that resolves
+   the common-source-set declaration). Putting the expect in `:core` and the
+   actual in `:renderer-skia` (a separate module) violates that — Kotlin
+   rejects it at compile time.
+2. *We already pick one renderer per target at the Gradle level.* `:window`'s
+   `build.gradle.kts` flips its single renderer dependency based on `-Prenderer=`
+   and the target OS. The "which renderer" decision happens **before** the
+   actual would be resolved; there's no symbol-level Kotlin mechanism that says
+   "use this actual when `:renderer-skia` is on the classpath, else that one".
+3. *We don't actually need it.* Our renderer abstraction is `RenderBackend` (a
+   plain interface in `:core/commonMain`) plus a `expect fun
+   makeRenderBackend(...)` in `:window` whose per-target `actual` forwards to
+   whichever renderer module is linked. That's the same "select an actual at
+   build time" trick — just at the factory-function granularity, not the
+   `Canvas`/`Paint` type granularity. App code never holds an
+   `androidx.compose.ui.graphics.Canvas` directly anyway; it draws via the
+   official-shaped `DrawScope`, and the renderer (which IS renderer-specific
+   code) is the one talking to Skia/SDL3 raw.
+
 ## The vendor pipeline — `tools/compose-fork/`
 
 - `compose-ref.txt` — pinned upstream commit of JetBrains/compose-multiplatform-core
@@ -58,10 +99,17 @@ All of the above already verified working on Windows/SDL3.
 ## Done (divergence 913 → 589)
 
 - **Vendored verbatim** (0 divergence): `ui.util`, `ui.geometry`, all `ui.unit`
-  value types (Dp/TextUnit/Constraints/Int*/Velocity/Dp{Offset,Size,Rect}),
-  `ui.graphics.Color` + the whole `colorspace` subsystem + Float16, `TileMode`,
-  `StrokeCap`, `ui.text.TextRange`, `TextAlign`/`TextOverflow`,
-  `FontStyle`/`FontWeight`. (`Sp` was migrated to the real `TextUnit`.)
+  value types (Dp/TextUnit/Constraints/Int*/Velocity/Dp{Offset,Size,Rect}) +
+  `LayoutDirection`, `ui.graphics.Color` + the whole `colorspace` subsystem +
+  Float16, `TileMode`, `StrokeCap`, `StrokeJoin`, `BlendMode`, `ClipOp`,
+  `FilterQuality`, `PaintingStyle`, `PointMode`, `VertexMode`, `PathFillType`,
+  `PathOperation`, `Degrees`, `ColorMatrix`, `Shadow`, `LayerOutsets`,
+  `ui.text.TextRange`, `TextAlign`/`TextOverflow`,
+  `ResolvedTextDirection`/`TextDirection`/`TextGeometricTransform`/`TextMotion`/
+  `LineBreak`/`Hyphens`/`BaselineShift`, `FontStyle`/`FontWeight`,
+  `ui.layout.ScaleFactor`/`ContentScale`/`AlignmentLine`,
+  `foundation.BorderStroke`, `animation.core.AnimationEndReason`. (`Sp` was
+  migrated to the real `TextUnit`.)
 - **Relocated to `com.compose.desktop.native.*`** (no official equivalent):
   the ~22 `Modifier.Element` classes + `GraphicsLayerModifier` → `.element`;
   `LayoutNode` + `NodeApplier` (+ internal node `MeasurePolicy`) → `.node`;

@@ -77,8 +77,6 @@ class Animatable<T>(
 	}
 }
 
-enum class AnimationEndReason { BoundReached, Finished }
-
 data class AnimationResult<T>(val endValue: T, val endReason: AnimationEndReason)
 
 // ==================

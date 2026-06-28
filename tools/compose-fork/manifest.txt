@@ -26,6 +26,7 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt    
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt               core/src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Constraints.kt            core/src/vendor/common/kotlin/androidx/compose/ui/unit/Constraints.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt               core/src/vendor/common/kotlin/androidx/compose/ui/unit/TextUnit.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/LayoutDirection.kt        core/src/vendor/common/kotlin/androidx/compose/ui/unit/LayoutDirection.kt
 
 # ── androidx.compose.ui.graphics.Color (+ colorspace subsystem) ───────────
 # Color is a value class over a packed ULong whose bits encode a ColorSpace, so
@@ -52,16 +53,54 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colors
 # ── androidx.compose.ui.graphics value types ──────────────────────────────
 # TileMode replaces the hand-written enum in Brush.kt; StrokeCap replaces the
 # enum in drawscope/DrawStyle.kt (also fixes its package: graphics, not drawscope).
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMode.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/TileMode.kt
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/StrokeCap.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/StrokeCap.kt
+# The rest below are pure value classes / immutable data with no engine deps —
+# adding them costs zero divergence and lets future code use the official API.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMode.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/TileMode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/StrokeCap.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/StrokeCap.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/StrokeJoin.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/StrokeJoin.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/BlendMode.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/BlendMode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ClipOp.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ClipOp.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/FilterQuality.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/FilterQuality.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathFillType.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathFillType.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathOperation.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathOperation.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PaintingStyle.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PaintingStyle.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PointMode.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PointMode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/VertexMode.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/VertexMode.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Degrees.kt             core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Degrees.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ColorMatrix.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ColorMatrix.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Shadow.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Shadow.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt
 
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextAlign.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt          core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextOverflow.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/ResolvedTextDirection.kt core/src/vendor/common/kotlin/androidx/compose/ui/text/style/ResolvedTextDirection.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextGeometricTransform.kt core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextGeometricTransform.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextMotion.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextMotion.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/LineBreak.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/style/LineBreak.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/Hyphens.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/style/Hyphens.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/BaselineShift.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/BaselineShift.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDirection.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDirection.kt
+# LineBreak / TextMotion are expect classes; the skikoMain actuals are pure
+# data (no Skia refs), so we vendor them too.
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/text/style/TextMotion.native.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt              core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontWeight.kt
+
+# ── androidx.compose.ui.layout (pure types only — Layout / Measure /
+# Modifier / Placeable still hand-written) ─────────────────────────────────
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ScaleFactor.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/ScaleFactor.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ContentScale.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
+
+# ── androidx.compose.foundation (pure data) ───────────────────────────────
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BorderStroke.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/BorderStroke.kt
+
+# ── androidx.compose.animation.core ───────────────────────────────────────
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationEndReason.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationEndReason.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt

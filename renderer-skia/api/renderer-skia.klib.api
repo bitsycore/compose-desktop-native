@@ -1,0 +1,52 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.compose.native:renderer-skia>
+abstract interface com.compose.desktop.native.renderer.skia/SkiaBridge { // com.compose.desktop.native.renderer.skia/SkiaBridge|null[0]
+    abstract val canvas // com.compose.desktop.native.renderer.skia/SkiaBridge.canvas|{}canvas[0]
+        abstract fun <get-canvas>(): org.jetbrains.skia/Canvas // com.compose.desktop.native.renderer.skia/SkiaBridge.canvas.<get-canvas>|<get-canvas>(){}[0]
+
+    abstract fun destroy() // com.compose.desktop.native.renderer.skia/SkiaBridge.destroy|destroy(){}[0]
+    abstract fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.desktop.native.renderer.skia/SkiaBridge.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
+    abstract fun present() // com.compose.desktop.native.renderer.skia/SkiaBridge.present|present(){}[0]
+    abstract fun snapshot(): org.jetbrains.skia/Image? // com.compose.desktop.native.renderer.skia/SkiaBridge.snapshot|snapshot(){}[0]
+    abstract fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.desktop.native.renderer.skia/SkiaBridge.snapshotBgra|snapshotBgra(){}[0]
+}
+
+final class com.compose.desktop.native.renderer.skia/SkiaRenderer { // com.compose.desktop.native.renderer.skia/SkiaRenderer|null[0]
+    final fun draw(com.compose.desktop.native.node/LayoutNode, org.jetbrains.skia/Canvas, kotlin/Int = ...) // com.compose.desktop.native.renderer.skia/SkiaRenderer.draw|draw(com.compose.desktop.native.node.LayoutNode;org.jetbrains.skia.Canvas;kotlin.Int){}[0]
+}
+
+final class com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge : com.compose.desktop.native.renderer.skia/SkiaBridge { // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge|null[0]
+    constructor <init>(com.compose.desktop.native/SDL3Backend) // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.<init>|<init>(com.compose.desktop.native.SDL3Backend){}[0]
+
+    final val canvas // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.canvas|{}canvas[0]
+        final fun <get-canvas>(): org.jetbrains.skia/Canvas // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.canvas.<get-canvas>|<get-canvas>(){}[0]
+    final val height // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.height.<get-height>|<get-height>(){}[0]
+    final val width // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.width.<get-width>|<get-width>(){}[0]
+
+    final fun destroy() // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.destroy|destroy(){}[0]
+    final fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
+    final fun present() // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.present|present(){}[0]
+    final fun snapshot(): org.jetbrains.skia/Image? // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.snapshot|snapshot(){}[0]
+    final fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.desktop.native.renderer.skia/SkiaSurfaceBridge.snapshotBgra|snapshotBgra(){}[0]
+}
+
+final class com.compose.desktop.native.renderer.skia/SkiaTextRenderer { // com.compose.desktop.native.renderer.skia/SkiaTextRenderer|null[0]
+    constructor <init>() // com.compose.desktop.native.renderer.skia/SkiaTextRenderer.<init>|<init>(){}[0]
+
+    final val textMeasurer // com.compose.desktop.native.renderer.skia/SkiaTextRenderer.textMeasurer|{}textMeasurer[0]
+        final fun <get-textMeasurer>(): androidx.compose.ui.text/TextMeasurer // com.compose.desktop.native.renderer.skia/SkiaTextRenderer.textMeasurer.<get-textMeasurer>|<get-textMeasurer>(){}[0]
+
+    final fun destroy() // com.compose.desktop.native.renderer.skia/SkiaTextRenderer.destroy|destroy(){}[0]
+    final fun drawText(org.jetbrains.skia/Canvas, kotlin/String, kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, androidx.compose.ui.graphics/Color, kotlin/Int, androidx.compose.ui.text.style/TextAlign = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>? = ..., kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>>? = ..., androidx.compose.ui.text/WrappedText? = ..., kotlin/Float = ..., kotlin/Float = ...) // com.compose.desktop.native.renderer.skia/SkiaTextRenderer.drawText|drawText(org.jetbrains.skia.Canvas;kotlin.String;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;androidx.compose.ui.graphics.Color;kotlin.Int;androidx.compose.ui.text.style.TextAlign;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;kotlin.collections.List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>?;androidx.compose.ui.text.WrappedText?;kotlin.Float;kotlin.Float){}[0]
+}
+
+final fun com.compose.desktop.native/createRenderBackend(com.compose.desktop.native/SDL3Backend, com.compose.desktop.native/GpuMode): com.compose.desktop.native/RenderBackend? // com.compose.desktop.native/createRenderBackend|createRenderBackend(com.compose.desktop.native.SDL3Backend;com.compose.desktop.native.GpuMode){}[0]
+final fun com.compose.desktop.native/rendererPreferredGpuMode(): com.compose.desktop.native/GpuMode // com.compose.desktop.native/rendererPreferredGpuMode|rendererPreferredGpuMode(){}[0]

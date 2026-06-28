@@ -11,6 +11,10 @@ import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
 import androidx.compose.ui.graphics.TileMode as ComposeTileMode
+import androidx.compose.ui.graphics.a8
+import androidx.compose.ui.graphics.b8
+import androidx.compose.ui.graphics.g8
+import androidx.compose.ui.graphics.r8
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -299,4 +303,5 @@ private fun ComposeTileMode.toSkia(): FilterTileMode = when (this) {
 	ComposeTileMode.Repeated -> FilterTileMode.REPEAT
 	ComposeTileMode.Mirror   -> FilterTileMode.MIRROR
 	ComposeTileMode.Decal    -> FilterTileMode.DECAL
+	else                     -> FilterTileMode.CLAMP
 }
