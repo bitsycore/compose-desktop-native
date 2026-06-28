@@ -32,29 +32,31 @@ value-class actuals, which are pure data and contain no Skia refs).
 
 ### Why we don't put `expect Canvas/Paint` in commonMain and provide a SDL3 actual alongside the Skia one
 
-Tempting idea: vendor `expect class Canvas` etc. into `:core/commonMain`, then
-have `:renderer-skia` and `:renderer-sdl3` each provide their own `actual`s.
-**It doesn't work**, for three reasons stacked:
+Tempting idea: vendor `expect class Canvas` etc. into `:core/commonMain`,
+then have the Skia and SDL3 renderer source sets each provide their own
+`actual`s. Even now that both renderers live in `:core` (so Kotlin's
+"actuals must live in the same module" rule is satisfied), it's still the
+wrong design:
 
-1. *Kotlin's actual-resolution rule.* An `actual` must live in a source set of
-   the **same module** as the `expect` (in a target hierarchy that resolves
-   the common-source-set declaration). Putting the expect in `:core` and the
-   actual in `:renderer-skia` (a separate module) violates that — Kotlin
-   rejects it at compile time.
-2. *We already pick one renderer per target at the Gradle level.* `:window`'s
-   `build.gradle.kts` flips its single renderer dependency based on `-Prenderer=`
-   and the target OS. The "which renderer" decision happens **before** the
-   actual would be resolved; there's no symbol-level Kotlin mechanism that says
-   "use this actual when `:renderer-skia` is on the classpath, else that one".
-3. *We don't actually need it.* Our renderer abstraction is `RenderBackend` (a
-   plain interface in `:core/commonMain`) plus a `expect fun
-   makeRenderBackend(...)` in `:window` whose per-target `actual` forwards to
-   whichever renderer module is linked. That's the same "select an actual at
-   build time" trick — just at the factory-function granularity, not the
-   `Canvas`/`Paint` type granularity. App code never holds an
-   `androidx.compose.ui.graphics.Canvas` directly anyway; it draws via the
-   official-shaped `DrawScope`, and the renderer (which IS renderer-specific
-   code) is the one talking to Skia/SDL3 raw.
+1. *`skikoRendererMain` and `sdlRendererMain` are peers, not alternatives
+   visible from the same compilation.* Only one of them is attached to any
+   given target via `dependsOn` (mingwX64 → sdl, macOS/Linux → either,
+   chosen by `-Prenderer`). There's no "common" source set that sees both
+   at once — so an `expect` in `nativeMain` would need an `actual` in
+   **every** target chain, which means we'd duplicate the declaration in
+   `skikoRendererMain` and `sdlRendererMain` anyway. Picking one renderer
+   per target is a *Gradle source-set wiring* decision, not a Kotlin
+   `expect`/`actual` decision.
+2. *We don't need it.* Our renderer abstraction is `RenderBackend` (a
+   plain interface in `:core/commonMain`) plus a top-level
+   `createRenderBackend(...)` defined identically in each renderer source
+   set. The linker picks the one from the active source set automatically
+   because only one is on the compilation classpath. That's the same
+   "select an actual at build time" trick — just at the factory-function
+   granularity, not the `Canvas`/`Paint` type granularity. App code never
+   holds an `androidx.compose.ui.graphics.Canvas` directly anyway; it draws
+   via the official-shaped `DrawScope`, and the renderer (which IS
+   renderer-specific code) is the one talking to Skia/SDL3 raw.
 
 ## The vendor pipeline — `tools/compose-fork/`
 
@@ -80,9 +82,11 @@ tools/compose-fork/sync.sh
 
 ## ⚠️ Verify on macOS (Skia path was unreachable on Windows)
 
-`renderer-skia` is **not** in the mingwX64 build graph, so every edit below was
-compile-checked only via the identical sdl3 change — macOS is the first place
-Skia actually compiles + runs. Launch `:demo` and `:apidemo` and check:
+`core/src/skikoRendererMain/` is **not** in the mingwX64 build graph (the
+`skikoRenderer*` source sets aren't even created for mingwX64), so every
+edit below was compile-checked only via the identical sdl3 change — macOS
+is the first place Skia actually compiles + runs. Launch `:demo` and
+`:apidemo` and check:
 
 - text renders at the right **size + alignment** (TextUnit + the `TextAlign` `else`
   branches added in `SkiaTextRenderer`)
@@ -90,7 +94,7 @@ Skia actually compiles + runs. Launch `:demo` and `:apidemo` and check:
   are now extensions imported in `SkiaTextRenderer`)
 - **strokes** (canvas screen) — `StrokeCap` value class + `else` in `SkiaDrawScope`
 - **graphicsLayer / alpha / transforms** + general layout (`GraphicsLayerModifier`,
-  `LayoutNode` moved packages; renderer-skia imports updated)
+  `LayoutNode` moved packages; `skikoRendererMain` imports updated)
 - **selection**: open a large JSON response body in apidemo, drag-select, Ctrl/Cmd+C
   (the selection-aware BasicText fix)
 

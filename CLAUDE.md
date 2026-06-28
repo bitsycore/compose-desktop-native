@@ -26,27 +26,23 @@ the `com.compose.desktop.native` Kotlin package; the re-implemented Compose
 APIs keep their upstream `androidx.compose.*` names, in `core/commonMain`.
 
 - `core/` (publishes as `compose-desktop-native-core`) — renderer-agnostic
-  base: the `androidx.compose.foundation` / `.ui` / `.animation` re-impl,
-  `RenderBackend` interface, `GpuMode`, `SDL3Backend`, window / clipboard /
-  event / resource IO, and the bundled default font. Owns the `sdl3`
-  cinterop. **No Material code** — Material widgets live in `:material`.
+  base **plus both renderer pipelines**: the `androidx.compose.foundation` /
+  `.ui` / `.animation` re-impl, `RenderBackend` interface, `GpuMode`,
+  `SDL3Backend`, window / clipboard / event / resource IO, the bundled
+  default font, and the Skia + SDL3 renderer code. Owns all four cinterops
+  (`sdl3`, `sdl3_ttf`, `sdl3_image`, `freetype`). Renderer selection is per-
+  target via Kotlin source-set wiring (see "How renderer selection works"
+  below). **No Material code** — Material widgets live in `:material`.
 - `material/` (publishes as `compose-desktop-native-material`) — Material
   widgets re-implemented on top of `:core` (Button / Text / MaterialTheme /
   Surface / TextField / Slider / Switch / Checkbox / Radio / Chip / Card /
   Dialog / DropdownMenu / SegmentedButton / Snackbar / Tooltip /
   ProgressIndicator). Apps that only want the foundation+ui base without
   Material can skip pulling this in.
-- `renderer-sdl3/` (publishes as `compose-desktop-native-renderer-sdl3`) —
-  pure-SDL3 renderer (+ `sdl3_ttf`, `sdl3_image`, `freetype` cinterops).
-  Exposes `createRenderBackend(...)` / `rendererPreferredGpuMode()`. All
-  four native targets.
-- `renderer-skia/` (publishes as `compose-desktop-native-renderer-skia`) —
-  Skia/Skiko renderer (Metal / OpenGL / CPU bridges). Same two functions.
-  **macOS + Linux only** — Skiko publishes no mingwX64 artifact.
 - `window/` (publishes as `compose-desktop-native`) — what apps depend on.
-  Owns `nativeComposeWindow()` and selects a renderer per target by depending on
-  exactly one renderer module: mingwX64 → sdl3 (always); macOS/Linux →
-  skia, or sdl3 under `-Prenderer=sdl3`. Re-exports `:core` + `:material`
+  Owns `nativeComposeWindow()` and calls `createRenderBackend(...)` /
+  `rendererPreferredGpuMode()` from `:core` directly; per-target renderer
+  selection happens inside `:core`. Re-exports `:core` + `:material`
   via `api`.
 - `material-symbols/{outlined,rounded,sharp}/` (publishes as
   `compose-desktop-material-symbols-{outlined,rounded,sharp}`) — Material
@@ -70,31 +66,75 @@ APIs keep their upstream `androidx.compose.*` names, in `core/commonMain`.
 
 ### How renderer selection works
 
-Both renderer modules expose identically-signed `createRenderBackend` /
-`rendererPreferredGpuMode` in the same package. `:window` has a thin
-per-target `expect`/`actual` (`makeRenderBackend` / `preferredGpuMode`,
-in `RenderBackendFactory.{kt,mingw.kt,macos.kt,linux.kt}`) whose actuals just
-forward to those functions — and since the build links **exactly one** renderer
-module per target, the call resolves unambiguously ("include one" selection).
-No conditional `srcDir`s; each renderer module has its own per-OS source sets
-(`mingwMain` / `macosArm64Main` / `linuxMain`) for `rendererPreferredGpuMode`.
-`SDL3Backend` only exposes `COpaquePointer` (never `sdl3.*` types), so each
-module declares its own `sdl3` cinterop and reinterprets — no cross-module
-cinterop export needed.
+Both renderer pipelines live inside `:core`, each in its own Kotlin source
+set under `core/src/`. The hierarchy:
+
+```
+commonMain
+└── nativeMain                                 (renderer-agnostic project code + vendored .native.kt)
+      ├── skikoRendererMain                    (Skia drawing pipeline; pulls Skiko on the classpath)
+      │     ├── skikoRendererMacosMain         (Skia macOS — Metal bridge actuals)
+      │     └── skikoRendererLinuxMain         (Skia Linux — OpenGL actuals)
+      └── sdlRendererMain                      (SDL3 drawing pipeline + TTF / image / freetype)
+            ├── sdlRendererMacosMain           (macOS-only SDL3 driver hint)
+            ├── sdlRendererLinuxMain           (Linux-only SDL3 driver hint)
+            └── sdlRendererMingwMain           (mingwX64-only SDL3 driver hint)
+```
+
+`createRenderBackend(...)` / `rendererPreferredGpuMode()` live in
+`com.compose.desktop.native` and are declared identically in both
+`skikoRendererMain` and `sdlRendererMain`. `:window` calls them straight
+out of `:core` — no `expect`/`actual`, no factory layer — and the right
+implementation resolves because **only one of the two renderer source sets
+is attached to a given target**:
+
+- `mingwX64Main` always → `sdlRendererMingwMain` → `sdlRendererMain`.
+- macOS / Linux Main → `skikoRendererMacosMain` / `skikoRendererLinuxMain` →
+  `skikoRendererMain` by default. Toggling `-Prenderer=sdl3` swaps them to
+  the SDL3 chain instead. When `-Prenderer=sdl3` is on, the `skikoRenderer*`
+  source sets are **not even created**, so Gradle has nothing to warn about
+  and Skiko is never pulled in.
+
+`SDL3Backend` only exposes `COpaquePointer` (never `sdl3.*` types) so
+nothing across the renderer boundary needs the SDL3 cinterop's typed view.
+
+#### Cinterop sibling-dependency gotcha
+
+`:core` owns four cinterops: `sdl3`, `sdl3_ttf`, `sdl3_image`, `freetype`.
+The `.def` files for `sdl3_ttf` / `sdl3_image` carry `depends = sdl3` so
+their `SDL_Surface` / `SDL_Color` references resolve to the *same* types
+that `sdl3` produces (not duplicates inside `sdl3_image.SDL_Surface`).
+When the cinterops were split across `:core` + `:renderer-sdl3`, Gradle
+got that automatically because `:renderer-sdl3` had a project dependency
+on `:core`. With everything in one module, **Gradle does not automatically
+add a sibling cinterop's klib to a cinterop task's `-library` list** —
+the `depends = sdl3` directive silently fails and you get cryptic
+`expected 'CPointer<sdl3.SDL_Surface>?', actual
+'CPointer<sdl3_image.SDL_Surface>?'` errors.
+
+`core/build.gradle.kts` works around this by passing the sdl3 cinterop
+output klib path explicitly via `extraOpts("-library", vSdl3Klib)` on
+`sdl3_ttf` / `sdl3_image`, plus a task dependency
+(`cinteropSdl3_ttf*Target.dependsOn(cinteropSdl3*Target)`) so the klib
+exists when consumed. If you ever add another `depends = sdl3` cinterop,
+add it to that list too.
 
 ### Key files (start here)
 
 - `window/src/nativeMain/.../ComposeWindow.kt` — main loop, recomposer
-  lifecycle, event dispatch; calls the per-target makeRenderBackend.
+  lifecycle, event dispatch; calls `createRenderBackend(...)` directly from
+  `:core` (the active renderer source set provides it).
 - `core/src/nativeMain/.../ComposeNativeWindow.kt` — per-window handle
   (title / size / fullscreen / rendererName / close), CompositionLocal + scope.
 - `core/src/nativeMain/.../RenderBackend.kt` — the interface.
 - `core/src/nativeMain/.../GpuMode.kt` — the sealed renderer/driver picker.
-- `renderer-skia/.../renderer/skia/SkiaRenderBackend.kt` (+ `RenderBackendFactory.skia.kt`).
-- `renderer-sdl3/.../renderer/sdl/Sdl3RenderBackend.kt` (+ `RenderBackendFactory.sdl.kt`).
-- `renderer-sdl3/.../renderer/sdl/FreeTypeIcons.kt` — variable-font axis
-  rasterisation for the SDL3 path (SDL3_ttf has no axis API; we go to
-  FreeType directly for icon families).
+- `core/src/skikoRendererMain/.../renderer/skia/SkiaRenderBackend.kt` (+
+  `RenderBackendFactory.skia.kt` in the same source set).
+- `core/src/sdlRendererMain/.../renderer/sdl/Sdl3RenderBackend.kt` (+
+  `RenderBackendFactory.sdl.kt` in the same source set).
+- `core/src/sdlRendererMain/.../renderer/sdl/FreeTypeIcons.kt` —
+  variable-font axis rasterisation for the SDL3 path (SDL3_ttf has no axis
+  API; we go to FreeType directly for icon families).
 - `core/src/commonMain/.../ui/node/LayoutNode.kt` — layout tree, hit testing.
 - `core/src/commonMain/.../ui/Modifier.kt` — modifier elements the renderer reads.
 - `demo/src/nativeMain/kotlin/Main.kt` — sidebar demo with --gpu / --screen / --screenshot CLI.
@@ -161,14 +201,14 @@ libs/SDL3_ttf/{include,lib}        # carries our variable-font axis patch
 
 How the build wires that up:
 
-- **Include paths** — each module's `build.gradle.kts` injects a host-side
-  `-I<repo>/libs/SDL3/include` into the cinterop on Windows (`vHostSdlInclude`);
-  the `.def` files themselves only carry the macOS/Linux system paths
-  (`/opt/homebrew`, `/usr/include`) and a `# mingw_x64: static-linked` note.
-  `sdl3.def` is duplicated in every module that touches SDL — `core`,
-  `renderer-sdl3`, `renderer-skia`, `window` (each
-  `src/nativeInterop/cinterop/`); `sdl3_ttf.def` + `sdl3_image.def` +
-  `freetype.def` live only in `renderer-sdl3`.
+- **Include paths** — `:core`'s `build.gradle.kts` injects a host-side
+  `-I<repo>/libs/SDL3/include` into the cinterops on Windows
+  (`vHostSdlInclude`); the `.def` files themselves only carry the
+  macOS/Linux system paths (`/opt/homebrew`, `/usr/include`) and a
+  `# mingw_x64: static-linked` note. All four `.def` files live in
+  `core/src/nativeInterop/cinterop/`; `:window` also declares a thin
+  `sdl3` cinterop for its own SDL3 calls (in
+  `window/src/nativeInterop/cinterop/sdl3.def`).
 - **Linking** — `demo/build.gradle.kts` and `apidemo/build.gradle.kts` add the
   static `linkerOpts` for mingwX64: `-L<repo>/libs/.../lib`, a
   `-Wl,--start-group … --end-group` around the circular static deps
@@ -310,7 +350,7 @@ opt-in to subpixel measurement so layout matches drawn glyphs.
 
 ```kotlin
 sealed class GpuMode {
-    object Auto                 // resolve per-target (preferredGpuMode())
+    object Auto                 // resolve per-target (rendererPreferredGpuMode())
     object None                 // Skia CPU raster
     sealed class Skia {
         object OpenGL           // Skia + SDL3 GL context (Linux default)
@@ -324,9 +364,10 @@ sealed class GpuMode {
 }
 ```
 
-`makeRenderBackend(sdl, mode)` is `expect`/`actual` per source set.
-Each actual rejects unsupported modes with an error so the user gets a
-clear "Skia.Metal isn't available in this build" instead of silent
+`createRenderBackend(sdl, mode)` is defined in whichever renderer source
+set is active for the target (`skikoRendererMain` or `sdlRendererMain`).
+Each implementation rejects unsupported modes with an error so the user
+gets a clear "Skia.Metal isn't available in this build" instead of silent
 fallback.
 
 ### ComposeNativeWindow
@@ -672,9 +713,11 @@ Re-grep the official ABI any time you add/rename a public symbol, e.g.
 `grep -n "compose.ui.unit/Dp" C:/Dev/cmp-ref/compose/ui/ui-unit/api/ui-unit.klib.api`.
 Build with `./gradlew :apidemo:compileKotlinMingwX64 :demo:compileKotlinMingwX64`
 (compile-only on Windows verifies the whole common+native+mingw graph,
-including `:material`/`:window`/`:renderer-sdl3`, without a full static link;
-`:renderer-skia` is not in the mingw graph — grep it manually for any renamed
-symbol).
+including `:core`'s `sdlRendererMingwMain` source set + `:material` +
+`:window`, without a full static link; mingwX64 builds never see
+`skikoRendererMain`, so grep it manually — `core/src/skikoRendererMain/` and
+`core/src/skikoRendererMacosMain/` / `skikoRendererLinuxMain/` — for any
+renamed symbol).
 
 ## Common Pitfalls
 
@@ -693,11 +736,13 @@ symbol).
 - **Row with `Arrangement.spacedBy(...)`** — `RowMeasurePolicy` adds
   inter-child gaps to its reported width; if you change it, make sure
   centering in a parent still works.
-- **`-Prenderer=sdl3` mode** — flips `:window`'s macOS/Linux
-  dependency from `:renderer-skia` to `:renderer-sdl3`; the Skia
-  module just isn't on the dependency graph (not compiled, Skiko not pulled).
-  Don't add a hard dependency on `:renderer-skia` from a shared source set,
-  or mingwX64 (which has no Skia module) won't link.
+- **`-Prenderer=sdl3` mode** — flips `:core`'s macOS/Linux Main source
+  sets from `skikoRenderer*` to `sdlRenderer*`. The `skikoRenderer*`
+  source sets are not created at all under that property, so Skiko isn't
+  pulled, no source files are compiled from the Skia tree, and there's
+  nothing to warn about as "unused source set". Don't put a `Skia*` import
+  in any source set above `skikoRendererMain` (e.g. in `nativeMain`) — it
+  won't compile under `-Prenderer=sdl3` or on mingwX64.
 - **mingwX64 cross-compile from macOS / Linux fails** at the cinterop
   step — it can't find `<repo>/libs/SDL3/include/SDL3/SDL.h` (and the static
   libs under `libs/` are built per-host by `tools/` anyway). That's expected;
