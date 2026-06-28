@@ -113,6 +113,72 @@ our existing `Modifier.Element` data classes (`PaddingModifier`,
 `BorderModifier`, etc.) still work unchanged because the vendored
 Modifier.kt has the same `Element` interface.
 
+### Phase 1 — findings from first attempt (commit `84812fd^..84812fd` history; branch was rolled back)
+
+A first run got 10 shim files written and both upstream files (Modifier.kt
++ DelegatableNode.kt) vendored, then hit ~30 compile errors. Net assessment:
+the shim surface is **larger than the original phase plan estimated**.
+Concrete additions required for the next attempt:
+
+1. **`androidx.compose.ui.node.LayoutNode` typealias to our project LayoutNode**
+   — vendored DelegatableNode imports `LayoutNode` from its own package
+   (same-package resolution); without an `androidx.compose.ui.node.LayoutNode`
+   symbol the whole file fails to resolve. `internal typealias LayoutNode =
+   com.compose.desktop.native.node.LayoutNode` resolves it.
+
+2. **Our LayoutNode must implement `SemanticsInfo`** (which extends `LayoutInfo`,
+   ~11 abstract members). DelegatableNode's `requireSemanticsInfo(): SemanticsInfo
+   = requireLayoutNode()` cast requires our LayoutNode to be a `SemanticsInfo`.
+   Adding `: SemanticsInfo` to our class declaration pulls in `LayoutInfo`'s
+   surface — manageable but requires `override` modifiers on existing `width` /
+   `height` properties and inline `object : LayoutCoordinates` /
+   `object : ViewConfiguration` stubs.
+
+3. **`NodeKind<T>` must have no upper bound** (upstream is `<T>`, not
+   `<T : Modifier.Node>` or `<T : Any>`). My first-attempt shim used
+   `<T : Any>` and broke ~10 call sites in DelegatableNode that pass
+   unbounded `T` from `visitAncestors<T>` / `visitChildren<T>` / etc. Match
+   upstream: `value class NodeKind<T>(val mask: Int)`.
+
+4. **`NodeChain.head` and `.tail` must be non-null `Modifier.Node`** (with a
+   sentinel instance), not `Modifier.Node?`. Vendored DelegatableNode
+   dereferences them at lines 106 + 126 without null-check. Need to subclass
+   `Modifier.Node` with an empty `SentinelNode : Modifier.Node()` and
+   initialise NodeChain to point at it.
+
+5. **`LayoutNode._children` and `LayoutNode.zSortedChildren` must be
+   `androidx.compose.runtime.collection.MutableVector<LayoutNode>`**, not
+   `MutableList`. Vendored DelegatableNode calls `forEachReversed { ... }`
+   on the result, which is a `MutableVector` extension function. Either
+   change our internal children storage to `MutableVector`, or provide
+   `MutableList<T>.forEachReversed` as a hand-written extension.
+
+6. **Two more `*ModifierNode` shims needed** beyond the original 10:
+   - `androidx.compose.ui.node.DrawModifierNode` (imported by upstream Modifier.kt
+     line 24 — referenced from one of Modifier.Node's helper extension functions).
+   - `androidx.compose.ui.node.LayoutModifierNode` (referenced by 4 `is LayoutModifierNode`
+     checks in DelegatableNode's `requireCoordinator` family).
+   Both are interfaces extending `DelegatableNode`; empty bodies are sufficient
+   for Phase 1 since no instances exist.
+
+7. **Two more upstream-internal symbols to shim or vendor**:
+   - `Modifier.Node.includeSelfInTraversal` — used by DelegatableNode line 362.
+     Likely a private extension property on Modifier.Node in upstream — needs to be
+     vendored as part of Modifier.kt or hand-stubbed.
+   - `Modifier.Node.isAttached` — referenced at DelegatableNode line 412. Upstream
+     Modifier.Node has `var isAttached: Boolean` — vendored Modifier.kt should
+     provide it. Verify the property is accessible from DelegatableNode (visibility).
+
+8. **The `is X` checks at DelegatableNode lines 492/508/534/539/597 produce
+   `Check for instance is always 'false'` warnings** when the target type
+   is a sealed interface with no impls. Not blocking errors but noisy. They
+   resolve once `LayoutModifierNode` + `DelegatingNode` shims are present.
+
+**Revised Phase 1 budget**: 12 shim files + ~30 LayoutInfo override lines
+on our LayoutNode + an `inline fun <T> MutableList<T>.forEachReversed`
+helper. Total ~450 lines of shim, not 300. Still single-session sized, but
+now we have the exact shape on day one.
+
 ### Phase 2 — *ModifierNode interface vendors (1 session, ~10 small files)
 
 With `DelegatableNode` available as a vendored type, the small interfaces
