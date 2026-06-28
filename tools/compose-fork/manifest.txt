@@ -94,6 +94,20 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/intern
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Path.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Path.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathIterator.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathIterator.kt
 
+# Canvas/Paint and their interface deps. Vendored as the upstream surface;
+# native actuals in core/src/nativeMain/.../graphics/CanvasPaintActuals.native.kt
+# are stub implementations — nothing in our pipeline actually instantiates
+# Paint, Shader, ColorFilter, PathEffect, ImageBitmap or Canvas today (the
+# renderer goes through Brush / DrawScope directly). Vendoring brings the
+# upstream-matching API surface into the codebase for future consumers.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Paint.kt               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Paint.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Shader.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Shader.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ColorFilter.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ColorFilter.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathEffect.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathEffect.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ImageBitmap.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PixelMap.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PixelMap.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Canvas.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Canvas.kt
+
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
