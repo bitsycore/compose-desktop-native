@@ -359,6 +359,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PinnableContainer
 # SemanticsRegion: internal interface + expect factory; stub actual in
 # CanvasPaintActuals (no semantics pipeline today, returns no-op region).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsRegion.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsRegion.kt
+# More opt-in annotations.
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalLayoutApi.kt     core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalLayoutApi.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalGridApi.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalGridApi.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalFlexBoxApi.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalFlexBoxApi.kt
+# isSystemInDarkTheme — public Composable + internal expect. Native actual
+# returns false (no platform dark-mode signal hooked up yet).
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/DarkTheme.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/DarkTheme.kt
 # PointerEvent — the big one. Brings PointerEventType / PointerButton /
 # PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
 # value classes) + the multi-touch PointerEvent (expect class with skiko
