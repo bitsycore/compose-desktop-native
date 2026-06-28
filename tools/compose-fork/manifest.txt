@@ -338,6 +338,14 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathMe
 # RenderEffect: sealed class + BlurEffect/OffsetEffect expect classes.
 # Stub actuals — no GraphicsLayer pipeline today.
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/RenderEffect.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/RenderEffect.kt
+# Density + FontScaling — replaces our hand-written reduced Density.
+# FontScaling.kt is `expect interface`; native actual lives in
+# core/src/nativeMain/.../androidx/compose/ui/unit/FontScaling.native.kt
+# (linear scaling, same shape as upstream non-Android impl).
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt        core/src/vendor/common/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt
+compose/ui/ui-unit/src/nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Density.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
 # PointerEvent — the big one. Brings PointerEventType / PointerButton /
 # PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
 # value classes) + the multi-touch PointerEvent (expect class with skiko
