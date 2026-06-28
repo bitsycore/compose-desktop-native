@@ -346,6 +346,10 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDe
 compose/ui/ui-unit/src/nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Density.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
+# trace/traceValue — expect funs; native actuals are no-ops in
+# AnnotatedActuals.native.kt. MathUtils — internal Int overflow helpers.
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/Trace.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/util/Trace.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtils.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/MathUtils.kt
 # PointerEvent — the big one. Brings PointerEventType / PointerButton /
 # PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
 # value classes) + the multi-touch PointerEvent (expect class with skiko
