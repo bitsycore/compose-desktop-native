@@ -942,7 +942,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Zu.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Zu.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.native.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
@@ -957,14 +956,12 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
-# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/WeakReference.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/intl/PlatformLocale.native.kt
@@ -979,17 +976,9 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/DebugUtils.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/DebugUtils.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt
@@ -999,7 +988,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.native.kt
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Actuals.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/Actuals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/Actuals.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/Actuals.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/SystemTheme.kt  core/src/vendor/native/kotlin/androidx/compose/ui/SystemTheme.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/animation/Animation.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/animation/Animation.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.native.kt
@@ -1122,11 +1110,9 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/DragGesture.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/DragGesture.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ComposedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/ComposedModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Expect.kt  core/src/vendor/common/kotlin/androidx/compose/ui/Expect.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/FrameRate.kt
+# FrameRate.kt — see deferred entry below.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/KeepScreenOn.kt  core/src/vendor/common/kotlin/androidx/compose/ui/KeepScreenOn.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/MediaQuery.kt  core/src/vendor/common/kotlin/androidx/compose/ui/MediaQuery.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Modifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/Modifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/SensitiveContent.kt  core/src/vendor/common/kotlin/androidx/compose/ui/SensitiveContent.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ZIndexModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/ZIndexModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt
@@ -1152,10 +1138,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/RequestChildFocus.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/RequestChildFocus.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/TwoDimensionalFocusSearch.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/TwoDimensionalFocusSearch.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftKeyboardInterceptionModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/SoftKeyboardInterceptionModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt
@@ -1166,7 +1149,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Layout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Layout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
@@ -1176,8 +1158,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt
@@ -1193,6 +1173,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectP
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt                core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
+# FrameRate.kt — references `NodeCoordinator.layer: OwnedLayer?` which our simplified
+# coordinator (one per LayoutNode, not per-modifier) does not own. Pulling this in would
+# require the LayoutModifierNodeCoordinator + OwnedLayer chain. Deferred.
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRate.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/FrameRate.kt
 # DelegatingNode.kt — requires NodeChain.syncCoordinators() + autoInvalidateInsertedNode +
 # autoInvalidateRemovedNode + the Int.contains(NodeKind<*>) operator, all of which transitively
 # pull LayoutModifierNodeCoordinator + AutoInvalidate machinery. Stay with DelegatingNode.shim.kt
@@ -1204,7 +1188,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModif
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TraversableNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/TraversableNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
@@ -1368,20 +1351,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModif
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Blur.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draw/Blur.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusState.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusState.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/util/PlatformVelocityTracker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/util/PlatformVelocityTracker.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/util/PointerIdArray.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/util/PointerIdArray.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/internal/InlineClassHelper.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RectRulers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/RectRulers.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Ruler.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Ruler.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
@@ -1478,7 +1454,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModif
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatableNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatableNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatingNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatingNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DepthSortedSet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/DepthSortedSet.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/HitTestResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/HitTestResult.kt
@@ -1600,7 +1575,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModif
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/Vector.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/Vector.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DrawModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/DrawModifierNode.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/DragAndDropOwner.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/node/DragAndDropOwner.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
@@ -1708,7 +1682,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModif
 # ──────────────────────────────────────────────────────────────────────────
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt  core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 
 # ──────────────────────────────────────────────────────────────────────────
