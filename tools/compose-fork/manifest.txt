@@ -1184,7 +1184,13 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalManager.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt    core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocalModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TraversableNode.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/TraversableNode.kt
+# DelegatingNode.kt — requires NodeChain.syncCoordinators() + autoInvalidateInsertedNode +
+# autoInvalidateRemovedNode + the Int.contains(NodeKind<*>) operator, all of which transitively
+# pull LayoutModifierNodeCoordinator + AutoInvalidate machinery. Stay with DelegatingNode.shim.kt
+# until the per-modifier coordinator chain is wired up.
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatingNode.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatingNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt
