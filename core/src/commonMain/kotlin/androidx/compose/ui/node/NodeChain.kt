@@ -76,6 +76,7 @@ internal class NodeChain(private val fOwner: LayoutNode) {
 				vNewNodes.add(vReused)
 			} else {
 				val vCreated = vElement.create()
+				vCreated.kindSet = calculateNodeKindSetFromIncludingDelegates(vCreated)
 				fOldElementForNode[vCreated] = vElement
 				vNewNodes.add(vCreated)
 				vCreatedNodes.add(vCreated)
