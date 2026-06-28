@@ -14,20 +14,22 @@ import kotlin.math.sin
 // MARK: ProjectPath — native actual for the vendored Path interface
 // ==================
 
-/* Our concrete Path implementation. Backs the upstream `interface Path`
-   vendored from `compose/ui/ui-graphics/.../Path.kt`. Renderers
-   (SkiaDrawScope / Sdl3DrawScope) cast to ProjectPath to access the
-   `commands` list for direct drawing without going through PathIterator.
-
-   Most upstream Path methods that are unused by our pipeline are no-op
-   stubs (transform / op / getBounds returns Rect.Zero); the ones that
-   ARE used (moveTo / lineTo / quadraticBezierTo / cubicTo / close /
-   reset / addRect / addOval / addRoundRect / addPath) emit PathCommands
-   matching the legacy hand-written impl exactly.
-
-   When the wider Canvas/Paint port lands (separate pass), this can switch
-   to delegating to org.jetbrains.skia.Path for the Skia renderer and
-   keep the PathCommand list as fallback for SDL3. */
+/**
+ * Our concrete [Path] implementation. Backs the upstream `interface Path`
+ * vendored from `compose/ui/ui-graphics/.../Path.kt`. Renderers
+ * (SkiaDrawScope / Sdl3DrawScope) cast to [ProjectPath] to access the
+ * [commands] list for direct drawing without going through [PathIterator].
+ *
+ * Most upstream Path methods that are unused by our pipeline are no-op
+ * stubs (transform / op / getBounds returns Rect.Zero); the ones that
+ * ARE used (moveTo / lineTo / quadraticBezierTo / cubicTo / close /
+ * reset / addRect / addOval / addRoundRect / addPath) emit [PathCommand]s
+ * matching the legacy hand-written impl exactly.
+ *
+ * When the wider Canvas / Paint port lands (separate pass), this can
+ * switch to delegating to `org.jetbrains.skia.Path` for the Skia renderer
+ * and keep the PathCommand list as fallback for SDL3.
+ */
 class ProjectPath : Path {
 
 	private val fCommands = mutableListOf<PathCommand>()

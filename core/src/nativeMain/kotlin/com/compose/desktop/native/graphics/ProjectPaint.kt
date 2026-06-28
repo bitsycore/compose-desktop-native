@@ -15,10 +15,12 @@ import androidx.compose.ui.graphics.StrokeJoin
 // MARK: ProjectPaint
 // ==================
 
-/* Concrete native impl of the upstream `Paint` interface. Stores all
-   configurable fields in plain vars matching the upstream defaults; the
-   renderer does not consume Paint today (Brush/DrawScope path), so this
-   is a passive state holder. */
+/**
+ * Concrete native impl of the upstream [Paint] interface. Stores all
+ * configurable fields in plain vars matching the upstream defaults; the
+ * renderer does not consume Paint today (Brush / DrawScope path), so this
+ * is a passive state holder.
+ */
 class ProjectPaint : Paint {
 	override var alpha: Float = 1f
 	override var isAntiAlias: Boolean = true

@@ -9,11 +9,13 @@ import androidx.compose.ui.graphics.colorspace.ColorSpaces
 // MARK: ProjectImageBitmap
 // ==================
 
-/* Stub concrete impl of the upstream `ImageBitmap` interface. Our image
-   pipeline goes through Painter + per-backend caches (SkiaImageCache /
-   Sdl3ImageCache), not ImageBitmap. This class lets the vendored
-   `ImageBitmap(width, height, ...)` factory return a non-null value so
-   upstream-shaped consumers compile; readPixels/prepareToDraw are no-ops. */
+/**
+ * Stub concrete impl of the upstream [ImageBitmap] interface. Our image
+ * pipeline goes through Painter + per-backend caches (SkiaImageCache /
+ * Sdl3ImageCache), not ImageBitmap. This class lets the vendored
+ * `ImageBitmap(width, height, ...)` factory return a non-null value so
+ * upstream-shaped consumers compile; readPixels / prepareToDraw are no-ops.
+ */
 class ProjectImageBitmap(
 	override val width: Int,
 	override val height: Int,

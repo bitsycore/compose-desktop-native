@@ -10,20 +10,14 @@ package androidx.compose.ui.layout
 interface MeasureScope {
 
 	/* Declare this layout's final size and the placement block to run.
-	   The block receives a PlacementScope where Placeables can be
-	   positioned via placeAt(x, y). */
+	   The block receives a Placeable.PlacementScope where Placeables can
+	   be positioned via placeAt(x, y). */
 	fun layout(
 		inWidth: Int,
 		inHeight: Int,
-		inPlacement: PlacementScope.() -> Unit,
+		inPlacement: Placeable.PlacementScope.() -> Unit,
 	): MeasureResult
 }
-
-/* Receiver scope for a layout() block. Placement happens by calling
-   placeable.placeAt(x, y) directly (Placeable.placeAt is public).
-   This object exists for upstream-API parity and as a hook for future
-   relative-placement / parent-data helpers. */
-object PlacementScope
 
 /* The product of a MeasurePolicy: the layout's resolved size plus the
    deferred placement block. The Layout composable's internal adapter
@@ -40,10 +34,10 @@ internal class MeasureScopeImpl : MeasureScope {
 	override fun layout(
 		inWidth: Int,
 		inHeight: Int,
-		inPlacement: PlacementScope.() -> Unit,
+		inPlacement: Placeable.PlacementScope.() -> Unit,
 	): MeasureResult = object : MeasureResult {
 		override val width: Int = inWidth
 		override val height: Int = inHeight
-		override fun placeChildren() { PlacementScope.inPlacement() }
+		override fun placeChildren() { Placeable.PlacementScope.inPlacement() }
 	}
 }

@@ -6,8 +6,11 @@ import androidx.compose.ui.unit.IntRect
 // MARK: SemanticsRegion native actual
 // ==================
 
-/* Stub actual — no semantics pipeline today. Tracks the last `set` rect so
-   bounds reads work, but intersect / difference are always no-ops. */
+/**
+ * Stub actual — no semantics pipeline today. Tracks the last `set` rect
+ * so [bounds] reads work, but [intersect] / [difference] are always
+ * no-ops.
+ */
 private class StubSemanticsRegion : SemanticsRegion {
 	private var fBounds: IntRect = IntRect.Zero
 	override fun set(rect: IntRect) { fBounds = rect }

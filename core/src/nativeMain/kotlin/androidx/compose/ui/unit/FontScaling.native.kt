@@ -7,9 +7,11 @@ import androidx.compose.runtime.Stable
 // MARK: FontScaling native actual
 // ==================
 
-/* Linear-scaling actual for the vendored `expect interface FontScaling`.
-   Mirrors the non-Android upstream impl: TextUnit.toDp / Dp.toSp scale
-   by `fontScale` directly — no font-scale curve lookup. */
+/**
+ * Linear-scaling actual for the vendored `expect interface FontScaling`.
+ * Mirrors the non-Android upstream impl: `TextUnit.toDp` / `Dp.toSp` scale
+ * by [fontScale] directly — no font-scale curve lookup.
+ */
 @Immutable
 actual interface FontScaling {
 

@@ -988,7 +988,7 @@ abstract interface androidx.compose.ui.layout/MeasureResult { // androidx.compos
 }
 
 abstract interface androidx.compose.ui.layout/MeasureScope { // androidx.compose.ui.layout/MeasureScope|null[0]
-    abstract fun layout(kotlin/Int, kotlin/Int, kotlin/Function1<androidx.compose.ui.layout/PlacementScope, kotlin/Unit>): androidx.compose.ui.layout/MeasureResult // androidx.compose.ui.layout/MeasureScope.layout|layout(kotlin.Int;kotlin.Int;kotlin.Function1<androidx.compose.ui.layout.PlacementScope,kotlin.Unit>){}[0]
+    abstract fun layout(kotlin/Int, kotlin/Int, kotlin/Function1<androidx.compose.ui.layout/Placeable.PlacementScope, kotlin/Unit>): androidx.compose.ui.layout/MeasureResult // androidx.compose.ui.layout/MeasureScope.layout|layout(kotlin.Int;kotlin.Int;kotlin.Function1<androidx.compose.ui.layout.Placeable.PlacementScope,kotlin.Unit>){}[0]
 }
 
 abstract interface androidx.compose.ui.layout/ParentDataModifier : androidx.compose.ui/Modifier.Element { // androidx.compose.ui.layout/ParentDataModifier|null[0]
@@ -1295,6 +1295,12 @@ abstract class androidx.compose.ui.layout/Placeable { // androidx.compose.ui.lay
         abstract fun <get-width>(): kotlin/Int // androidx.compose.ui.layout/Placeable.width.<get-width>|<get-width>(){}[0]
 
     abstract fun placeAt(kotlin/Int, kotlin/Int) // androidx.compose.ui.layout/Placeable.placeAt|placeAt(kotlin.Int;kotlin.Int){}[0]
+
+    abstract class PlacementScope { // androidx.compose.ui.layout/Placeable.PlacementScope|null[0]
+        constructor <init>() // androidx.compose.ui.layout/Placeable.PlacementScope.<init>|<init>(){}[0]
+
+        final object Default : androidx.compose.ui.layout/Placeable.PlacementScope // androidx.compose.ui.layout/Placeable.PlacementScope.Default|null[0]
+    }
 }
 
 abstract class androidx.compose.ui.platform/InspectorValueInfo : androidx.compose.ui.platform/InspectableValue { // androidx.compose.ui.platform/InspectorValueInfo|null[0]
@@ -6371,8 +6377,6 @@ final object androidx.compose.ui.graphics.colorspace/Illuminant { // androidx.co
 
 final object androidx.compose.ui.graphics.drawscope/Fill : androidx.compose.ui.graphics.drawscope/DrawStyle // androidx.compose.ui.graphics.drawscope/Fill|null[0]
 
-final object androidx.compose.ui.layout/PlacementScope // androidx.compose.ui.layout/PlacementScope|null[0]
-
 final object androidx.compose.ui.res/AndroidVectorToSvg { // androidx.compose.ui.res/AndroidVectorToSvg|null[0]
     final fun convert(kotlin/String): kotlin/String // androidx.compose.ui.res/AndroidVectorToSvg.convert|convert(kotlin.String){}[0]
 }
@@ -6872,7 +6876,7 @@ final val androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$st
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop|#static{}androidx_compose_ui_layout_FixedScale$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop|#static{}androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop|#static{}androidx_compose_ui_layout_Placeable$stableprop[0]
-final val androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop|#static{}androidx_compose_ui_layout_PlacementScope$stableprop[0]
+final val androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop|#static{}androidx_compose_ui_layout_Placeable_PlacementScope$stableprop[0]
 final val androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop // androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop|#static{}androidx_compose_ui_layout_VerticalAlignmentLine$stableprop[0]
 final val androidx.compose.ui.layout/isSpecified // androidx.compose.ui.layout/isSpecified|@androidx.compose.ui.layout.ScaleFactor{}isSpecified[0]
     final inline fun (androidx.compose.ui.layout/ScaleFactor).<get-isSpecified>(): kotlin/Boolean // androidx.compose.ui.layout/isSpecified.<get-isSpecified>|<get-isSpecified>@androidx.compose.ui.layout.ScaleFactor(){}[0]
@@ -7564,7 +7568,7 @@ final fun androidx.compose.ui.layout/androidx_compose_ui_layout_AlignmentLine$st
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_FixedScale$stableprop_getter|androidx_compose_ui_layout_FixedScale$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop_getter|androidx_compose_ui_layout_HorizontalAlignmentLine$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stableprop_getter|androidx_compose_ui_layout_Placeable$stableprop_getter(){}[0]
-final fun androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_PlacementScope$stableprop_getter|androidx_compose_ui_layout_PlacementScope$stableprop_getter(){}[0]
+final fun androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter|androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter|androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/lerp(androidx.compose.ui.layout/ScaleFactor, androidx.compose.ui.layout/ScaleFactor, kotlin/Float): androidx.compose.ui.layout/ScaleFactor // androidx.compose.ui.layout/lerp|lerp(androidx.compose.ui.layout.ScaleFactor;androidx.compose.ui.layout.ScaleFactor;kotlin.Float){}[0]
 final fun androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop_getter(): kotlin/Int // androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop_getter|androidx_compose_ui_platform_InspectableModifier$stableprop_getter(){}[0]

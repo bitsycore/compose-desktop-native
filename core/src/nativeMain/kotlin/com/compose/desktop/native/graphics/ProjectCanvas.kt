@@ -18,11 +18,13 @@ import androidx.compose.ui.unit.IntSize
 // MARK: ProjectCanvas
 // ==================
 
-/* Stub concrete impl of the upstream `Canvas` interface. Our renderers
-   (Skia/SDL3) do not route through Canvas today — they draw via DrawScope
-   primitives — so every method here is a no-op. Vendoring the Canvas
-   surface lets upstream-shaped consumers (e.g. drawIntoCanvas patterns)
-   compile without runtime support being wired in. */
+/**
+ * Stub concrete impl of the upstream [Canvas] interface. Our renderers
+ * (Skia / SDL3) do not route through Canvas today — they draw via
+ * DrawScope primitives — so every method here is a no-op. Vendoring the
+ * Canvas surface lets upstream-shaped consumers (e.g. drawIntoCanvas
+ * patterns) compile without runtime support being wired in.
+ */
 class ProjectCanvas : Canvas {
 	override fun save() {}
 	override fun restore() {}

@@ -8,15 +8,17 @@ import androidx.compose.ui.graphics.PathSegment
 // MARK: ProjectPathIterator
 // ==================
 
-/* Walks the PathCommand list of a ProjectPath, emitting PathSegments in
-   the upstream-expected shape. This is the bridge between our custom
-   command-list representation and the vendored PathIterator interface.
-
-   We don't support conic-evaluation (no conic verbs in our PathCommand
-   sealed type) and ignore the tolerance parameter — there are no conics
-   to expand. The `actual fun PathIterator(...)` factory lives in
-   core/src/nativeMain/.../androidx/compose/ui/graphics/PathActuals.native.kt
-   (must stay in the same package as the expect). */
+/**
+ * Walks the [PathCommand] list of a [ProjectPath], emitting [PathSegment]s
+ * in the upstream-expected shape. This is the bridge between our custom
+ * command-list representation and the vendored [PathIterator] interface.
+ *
+ * We don't support conic-evaluation (no conic verbs in our PathCommand
+ * sealed type) and ignore the tolerance parameter — there are no conics
+ * to expand. The `actual fun PathIterator(...)` factory lives in
+ * `core/src/nativeMain/.../androidx/compose/ui/graphics/PathActuals.native.kt`
+ * (must stay in the same package as the expect).
+ */
 class ProjectPathIterator(
 	private val fPath: ProjectPath,
 	private val fConicEvaluation: PathIterator.ConicEvaluation,

@@ -14,13 +14,13 @@ import com.compose.desktop.native.graphics.ProjectPaint
 // MARK: Canvas/Paint native actuals
 // ==================
 
-/* Thin actuals for the vendored Paint / Shader / ColorFilter / PathEffect /
-   ImageBitmap / Canvas factories + opaque platform types. The concrete impls
-   (where any) live in com.compose.desktop.native.graphics per FIDELITY
-   relocate rule; the project pipeline does not currently use these types
-   (renderers go through Brush/DrawScope), so the actuals are stubs that
-   satisfy the expect contracts and let upstream-shaped consumers compile.
-   When a real Paint/Canvas-based code path lands, replace the stubs here. */
+// Thin actuals for the vendored Paint / Shader / ColorFilter / PathEffect /
+// ImageBitmap / Canvas factories + opaque platform types. The concrete impls
+// (where any) live in com.compose.desktop.native.graphics per FIDELITY
+// relocate rule; the project pipeline does not currently use these types
+// (renderers go through Brush / DrawScope), so the actuals are stubs that
+// satisfy the expect contracts and let upstream-shaped consumers compile.
+// When a real Paint / Canvas-based code path lands, replace the stubs here.
 
 // ============
 //  Paint

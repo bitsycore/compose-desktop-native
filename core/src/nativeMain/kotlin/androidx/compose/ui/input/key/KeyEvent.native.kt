@@ -11,13 +11,12 @@ import androidx.compose.ui.input.pointer.isShiftPressed
 // MARK: KeyEvent native actual
 // ==================
 
-/* Mirror of upstream's skikoMain KeyEvent actuals — NativeKeyEvent is just
-   `Any` so we can stash an InternalKeyEvent inside the value-class wrapper,
-   then extension properties read fields back through `internal`.
-
-   The internal modifier carrier is PointerKeyboardModifiers (vendored as
-   part of PointerEvent) — reuses the same packed-Int model used by mouse
-   events. */
+// Mirror of upstream's skikoMain KeyEvent actuals — NativeKeyEvent is just
+// `Any` so we can stash an InternalKeyEvent inside the value-class wrapper,
+// then extension properties read fields back through `internal`.
+// The internal modifier carrier is PointerKeyboardModifiers (vendored as
+// part of PointerEvent) — reuses the same packed-Int model used by mouse
+// events.
 
 actual typealias NativeKeyEvent = Any
 
@@ -45,8 +44,11 @@ actual val KeyEvent.isShiftPressed: Boolean get() = internal.modifiers.isShiftPr
 // MARK: KeyEvent factory
 // ==================
 
-/* Project factory used by SDL3EventMapper — wraps the internal carrier in a
-   KeyEvent value class. Matches the skiko `KeyEvent(...)` factory shape. */
+/**
+ * Project factory used by [com.compose.desktop.native.SDL3EventMapper] —
+ * wraps the internal carrier in a [KeyEvent] value class. Matches the
+ * skiko `KeyEvent(...)` factory shape.
+ */
 fun KeyEvent(
 	key: Key,
 	type: KeyEventType,
