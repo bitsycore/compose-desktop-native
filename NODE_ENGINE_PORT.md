@@ -222,12 +222,44 @@ or `ObserverModifierNode` compiles against our build**. It won't run yet
 because we still haven't ported `NodeCoordinator` or replaced `LayoutNode`,
 but the classpath is right.
 
-### Phase 3b — `LayoutModifierNode` (1 session)
+### Phase 3b — `LayoutModifierNode` (BLOCKED on Phase 4 reshape)
 
-Hand-write minimal shims for the Approach* scope cluster + IntrinsicMinMax
-enums, then vendor `LayoutModifierNode.kt` verbatim. Best done together
-with whatever ApproachLayoutModifierNode infrastructure we eventually
-need for lookahead-based modifiers — likely a small standalone session.
+Attempted in a separate session (worktree `feature/node-engine-phase3b`,
+rolled back without commits). Finding: the dep graph of `LayoutModifierNode`
+(417 lines) cannot be cleanly shimmed without first doing the Phase 4
+`MeasureResult` + `Placeable` reshape. Concretely, vendoring
+`LayoutModifierNode.kt` requires:
+
+1. **`ApproachIntrinsicsMeasureScope`** with a full `layout(width, height,
+   alignmentLines: Map<AlignmentLine, Int>, rulers: (RulerScope.() -> Unit)?,
+   placementBlock: Placeable.PlacementScope.() -> Unit)` override — this is
+   upstream's `MeasureResult` shape with rulers, which our hand-written
+   `MeasureResult` doesn't have.
+2. **`IntrinsicsMeasureScope`** (internal class inside Layout.kt — same
+   `layout(...)` signature with alignmentLines + rulers).
+3. **`RulerScope`** + the `Ruler` sealed class (Ruler.kt, 163 lines).
+4. **Upstream-shape `Placeable.PlacementScope`** (our minimal version
+   doesn't have `lookaheadScopeCoordinates`, `placeWithLayer`, etc.).
+5. **`DefaultIntrinsicMeasurable`** + `IntrinsicMinMax` + `IntrinsicWidthHeight`
+   enums (all internal in Layout.kt).
+6. **`LargeDimension`**, **`fastCoerceAtLeast`**, **`checkMeasuredSize`**.
+
+All of these are Phase 4 prerequisites anyway (we'd have to reshape
+`MeasureResult` to carry alignment lines + rulers when we replace our
+LayoutNode). Shimming them now produces ~300 lines of project shim that
+gets thrown away in Phase 4 — false progress.
+
+**Verdict**: defer to Phase 4. `LayoutModifierNode` becomes a trivial
+drop-in once the Approach* / RulerScope / Placeable infrastructure
+exists for real.
+
+The same logic applies to every other modifier file that uses
+`ModifierNodeElement` (`OnRemeasuredModifier`, `OnGloballyPositionedModifier`,
+`ZIndexModifier`, `NestedScrollModifier`, `RotaryInputModifier`,
+`SoftwareKeyboardInterceptionModifier`, etc.). Vendoring them
+*compiles* cheaply but they wouldn't *run* — our `foldIn`-based
+renderer doesn't drive Modifier.Node lifecycle. They land as part
+of Phase 4's atomic renderer-rewrite commit.
 
 ### Phase 4 — Replace project LayoutNode (multi-session)
 
