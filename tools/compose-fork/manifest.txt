@@ -541,6 +541,9 @@ compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Tra
 
 # Internal helpers — pure kotlin, no compose engine deps.
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt
+# OwnerScope + InternalCoreApi (ui.node) — pure types.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerScope.kt                                                        core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InternalCoreApi.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/node/InternalCoreApi.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
