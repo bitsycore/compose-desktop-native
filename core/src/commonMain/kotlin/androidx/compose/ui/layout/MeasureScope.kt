@@ -19,15 +19,9 @@ interface MeasureScope {
 	): MeasureResult
 }
 
-/* The product of a MeasurePolicy: the layout's resolved size plus the
-   deferred placement block. The Layout composable's internal adapter
-   calls placeChildren() right after measure() returns. */
-interface MeasureResult {
-
-	val width: Int
-	val height: Int
-	fun placeChildren()
-}
+/* MeasureResult is vendored from upstream (MeasureResult.kt) — this
+   block intentionally left blank so the type lives at upstream's
+   canonical path. */
 
 internal class MeasureScopeImpl : MeasureScope {
 
@@ -38,6 +32,7 @@ internal class MeasureScopeImpl : MeasureScope {
 	): MeasureResult = object : MeasureResult {
 		override val width: Int = inWidth
 		override val height: Int = inHeight
+		override val alignmentLines: Map<AlignmentLine, Int> = emptyMap()
 		override fun placeChildren() { Placeable.PlacementScope.inPlacement() }
 	}
 }

@@ -631,6 +631,12 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MutableVectorWithMu
 # fall back to a full measure).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt                                             core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measurable.kt                                                      core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measurable.kt
+# Phase 4a: MeasureResult vendored verbatim. Our hand-written version
+# (in MeasureScope.kt) was reshaped to upstream's exact members
+# (alignmentLines + rulers + isRulerProvided + rulerProvider), so the
+# vendor is a drop-in. Stub `Ruler` + `RulerScope` types live in
+# Ruler.shim.kt — only used as defaulted type references.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
 # IntrinsicMeasureScope (interface extends Density, holds layoutDirection)
 # + MeasureBlocks (deprecated). Pure leaf types depending only on
 # already-vendored Density / IntrinsicMeasurable / Measurable / MeasureScope.
