@@ -756,25 +756,6 @@ final class <#A: kotlin/Any?> androidx.compose.animation.core/TweenSpec : androi
     final fun hashCode(): kotlin/Int // androidx.compose.animation.core/TweenSpec.hashCode|hashCode(){}[0]
 }
 
-final class <#A: kotlin/Any?> androidx.compose.ui.text/Range { // androidx.compose.ui.text/Range|null[0]
-    constructor <init>(#A, kotlin/Int, kotlin/Int) // androidx.compose.ui.text/Range.<init>|<init>(1:0;kotlin.Int;kotlin.Int){}[0]
-
-    final val end // androidx.compose.ui.text/Range.end|{}end[0]
-        final fun <get-end>(): kotlin/Int // androidx.compose.ui.text/Range.end.<get-end>|<get-end>(){}[0]
-    final val item // androidx.compose.ui.text/Range.item|{}item[0]
-        final fun <get-item>(): #A // androidx.compose.ui.text/Range.item.<get-item>|<get-item>(){}[0]
-    final val start // androidx.compose.ui.text/Range.start|{}start[0]
-        final fun <get-start>(): kotlin/Int // androidx.compose.ui.text/Range.start.<get-start>|<get-start>(){}[0]
-
-    final fun component1(): #A // androidx.compose.ui.text/Range.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // androidx.compose.ui.text/Range.component2|component2(){}[0]
-    final fun component3(): kotlin/Int // androidx.compose.ui.text/Range.component3|component3(){}[0]
-    final fun copy(#A = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.text/Range<#A> // androidx.compose.ui.text/Range.copy|copy(1:0;kotlin.Int;kotlin.Int){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/Range.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // androidx.compose.ui.text/Range.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.text/Range.toString|toString(){}[0]
-}
-
 final class androidx.compose.animation.core/CubicBezierEasing : androidx.compose.animation.core/Easing { // androidx.compose.animation.core/CubicBezierEasing|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.animation.core/CubicBezierEasing.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 
@@ -1727,20 +1708,42 @@ final class androidx.compose.ui.text.style/TextMotion { // androidx.compose.ui.t
 }
 
 final class androidx.compose.ui.text/AnnotatedString { // androidx.compose.ui.text/AnnotatedString|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>> = ..., kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/ParagraphStyle>> = ...) // androidx.compose.ui.text/AnnotatedString.<init>|<init>(kotlin.String;kotlin.collections.List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>;kotlin.collections.List<androidx.compose.ui.text.Range<androidx.compose.ui.text.ParagraphStyle>>){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/SpanStyle>> = ..., kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/ParagraphStyle>> = ...) // androidx.compose.ui.text/AnnotatedString.<init>|<init>(kotlin.String;kotlin.collections.List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>;kotlin.collections.List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.ParagraphStyle>>){}[0]
 
     final val length // androidx.compose.ui.text/AnnotatedString.length|{}length[0]
         final fun <get-length>(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.length.<get-length>|<get-length>(){}[0]
     final val paragraphStyles // androidx.compose.ui.text/AnnotatedString.paragraphStyles|{}paragraphStyles[0]
-        final fun <get-paragraphStyles>(): kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/ParagraphStyle>> // androidx.compose.ui.text/AnnotatedString.paragraphStyles.<get-paragraphStyles>|<get-paragraphStyles>(){}[0]
+        final fun <get-paragraphStyles>(): kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/ParagraphStyle>> // androidx.compose.ui.text/AnnotatedString.paragraphStyles.<get-paragraphStyles>|<get-paragraphStyles>(){}[0]
     final val spanStyles // androidx.compose.ui.text/AnnotatedString.spanStyles|{}spanStyles[0]
-        final fun <get-spanStyles>(): kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>> // androidx.compose.ui.text/AnnotatedString.spanStyles.<get-spanStyles>|<get-spanStyles>(){}[0]
+        final fun <get-spanStyles>(): kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/SpanStyle>> // androidx.compose.ui.text/AnnotatedString.spanStyles.<get-spanStyles>|<get-spanStyles>(){}[0]
     final val text // androidx.compose.ui.text/AnnotatedString.text|{}text[0]
         final fun <get-text>(): kotlin/String // androidx.compose.ui.text/AnnotatedString.text.<get-text>|<get-text>(){}[0]
 
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/AnnotatedString.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // androidx.compose.ui.text/AnnotatedString.toString|toString(){}[0]
+
+    final class <#A1: kotlin/Any?> Range { // androidx.compose.ui.text/AnnotatedString.Range|null[0]
+        constructor <init>(#A1, kotlin/Int, kotlin/Int, kotlin/String = ...) // androidx.compose.ui.text/AnnotatedString.Range.<init>|<init>(1:0;kotlin.Int;kotlin.Int;kotlin.String){}[0]
+
+        final val end // androidx.compose.ui.text/AnnotatedString.Range.end|{}end[0]
+            final fun <get-end>(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.Range.end.<get-end>|<get-end>(){}[0]
+        final val item // androidx.compose.ui.text/AnnotatedString.Range.item|{}item[0]
+            final fun <get-item>(): #A1 // androidx.compose.ui.text/AnnotatedString.Range.item.<get-item>|<get-item>(){}[0]
+        final val start // androidx.compose.ui.text/AnnotatedString.Range.start|{}start[0]
+            final fun <get-start>(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.Range.start.<get-start>|<get-start>(){}[0]
+        final val tag // androidx.compose.ui.text/AnnotatedString.Range.tag|{}tag[0]
+            final fun <get-tag>(): kotlin/String // androidx.compose.ui.text/AnnotatedString.Range.tag.<get-tag>|<get-tag>(){}[0]
+
+        final fun component1(): #A1 // androidx.compose.ui.text/AnnotatedString.Range.component1|component1(){}[0]
+        final fun component2(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.Range.component2|component2(){}[0]
+        final fun component3(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.Range.component3|component3(){}[0]
+        final fun component4(): kotlin/String // androidx.compose.ui.text/AnnotatedString.Range.component4|component4(){}[0]
+        final fun copy(#A1 = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/String = ...): androidx.compose.ui.text/AnnotatedString.Range<#A1> // androidx.compose.ui.text/AnnotatedString.Range.copy|copy(1:0;kotlin.Int;kotlin.Int;kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/AnnotatedString.Range.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // androidx.compose.ui.text/AnnotatedString.Range.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // androidx.compose.ui.text/AnnotatedString.Range.toString|toString(){}[0]
+    }
 
     final class Builder { // androidx.compose.ui.text/AnnotatedString.Builder|null[0]
         constructor <init>(kotlin/Int = ...) // androidx.compose.ui.text/AnnotatedString.Builder.<init>|<init>(kotlin.Int){}[0]
@@ -2472,8 +2475,8 @@ final class com.compose.desktop.native.node/LayoutNode { // com.compose.desktop.
     final var textMeasuredHeight // com.compose.desktop.native.node/LayoutNode.textMeasuredHeight|{}textMeasuredHeight[0]
         final fun <get-textMeasuredHeight>(): kotlin/Int // com.compose.desktop.native.node/LayoutNode.textMeasuredHeight.<get-textMeasuredHeight>|<get-textMeasuredHeight>(){}[0]
     final var textSpans // com.compose.desktop.native.node/LayoutNode.textSpans|{}textSpans[0]
-        final fun <get-textSpans>(): kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>>? // com.compose.desktop.native.node/LayoutNode.textSpans.<get-textSpans>|<get-textSpans>(){}[0]
-        final fun <set-textSpans>(kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>>?) // com.compose.desktop.native.node/LayoutNode.textSpans.<set-textSpans>|<set-textSpans>(kotlin.collections.List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>?){}[0]
+        final fun <get-textSpans>(): kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/SpanStyle>>? // com.compose.desktop.native.node/LayoutNode.textSpans.<get-textSpans>|<get-textSpans>(){}[0]
+        final fun <set-textSpans>(kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/SpanStyle>>?) // com.compose.desktop.native.node/LayoutNode.textSpans.<set-textSpans>|<set-textSpans>(kotlin.collections.List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>?){}[0]
     final var width // com.compose.desktop.native.node/LayoutNode.width|{}width[0]
         final fun <get-width>(): kotlin/Int // com.compose.desktop.native.node/LayoutNode.width.<get-width>|<get-width>(){}[0]
     final var x // com.compose.desktop.native.node/LayoutNode.x|{}x[0]
@@ -4322,8 +4325,8 @@ final val androidx.compose.ui.text.style/isSpecified // androidx.compose.ui.text
     final inline fun (androidx.compose.ui.text.style/TextDirection).<get-isSpecified>(): kotlin/Boolean // androidx.compose.ui.text.style/isSpecified.<get-isSpecified>|<get-isSpecified>@androidx.compose.ui.text.style.TextDirection(){}[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop|#static{}androidx_compose_ui_text_AnnotatedString$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop|#static{}androidx_compose_ui_text_AnnotatedString_Builder$stableprop[0]
+final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Range$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Range$stableprop|#static{}androidx_compose_ui_text_AnnotatedString_Range$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop|#static{}androidx_compose_ui_text_ParagraphStyle$stableprop[0]
-final val androidx.compose.ui.text/androidx_compose_ui_text_Range$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_Range$stableprop|#static{}androidx_compose_ui_text_Range$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop|#static{}androidx_compose_ui_text_SpanStyle$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop|#static{}androidx_compose_ui_text_TextStyle$stableprop[0]
 final val androidx.compose.ui.unit/androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop|#static{}androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop[0]
@@ -4795,8 +4798,8 @@ final fun androidx.compose.ui.text/TextRange(kotlin/Int): androidx.compose.ui.te
 final fun androidx.compose.ui.text/TextRange(kotlin/Int, kotlin/Int): androidx.compose.ui.text/TextRange // androidx.compose.ui.text/TextRange|TextRange(kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString$stableprop_getter|androidx_compose_ui_text_AnnotatedString$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Builder$stableprop_getter|androidx_compose_ui_text_AnnotatedString_Builder$stableprop_getter(){}[0]
+final fun androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Range$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Range$stableprop_getter|androidx_compose_ui_text_AnnotatedString_Range$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop_getter|androidx_compose_ui_text_ParagraphStyle$stableprop_getter(){}[0]
-final fun androidx.compose.ui.text/androidx_compose_ui_text_Range$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_Range$stableprop_getter|androidx_compose_ui_text_Range$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop_getter|androidx_compose_ui_text_SpanStyle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter|androidx_compose_ui_text_TextStyle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.unit/Constraints(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints|Constraints(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
@@ -4878,7 +4881,7 @@ final fun com.compose.desktop.native.scroll/com_compose_desktop_native_scroll_Sc
 final fun com.compose.desktop.native.text/com_compose_desktop_native_text_ColorRun$stableprop_getter(): kotlin/Int // com.compose.desktop.native.text/com_compose_desktop_native_text_ColorRun$stableprop_getter|com_compose_desktop_native_text_ColorRun$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.text/com_compose_desktop_native_text_TextRendererCapabilities$stableprop_getter(): kotlin/Int // com.compose.desktop.native.text/com_compose_desktop_native_text_TextRendererCapabilities$stableprop_getter|com_compose_desktop_native_text_TextRendererCapabilities$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.text/com_compose_desktop_native_text_WrappedText$stableprop_getter(): kotlin/Int // com.compose.desktop.native.text/com_compose_desktop_native_text_WrappedText$stableprop_getter|com_compose_desktop_native_text_WrappedText$stableprop_getter(){}[0]
-final fun com.compose.desktop.native.text/lineColorRuns(kotlin/String, kotlin/Int, kotlin.collections/List<androidx.compose.ui.text/Range<androidx.compose.ui.text/SpanStyle>>, androidx.compose.ui.graphics/Color): kotlin.collections/List<com.compose.desktop.native.text/ColorRun> // com.compose.desktop.native.text/lineColorRuns|lineColorRuns(kotlin.String;kotlin.Int;kotlin.collections.List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>;androidx.compose.ui.graphics.Color){}[0]
+final fun com.compose.desktop.native.text/lineColorRuns(kotlin/String, kotlin/Int, kotlin.collections/List<androidx.compose.ui.text/AnnotatedString.Range<androidx.compose.ui.text/SpanStyle>>, androidx.compose.ui.graphics/Color): kotlin.collections/List<com.compose.desktop.native.text/ColorRun> // com.compose.desktop.native.text/lineColorRuns|lineColorRuns(kotlin.String;kotlin.Int;kotlin.collections.List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>;androidx.compose.ui.graphics.Color){}[0]
 final fun com.compose.desktop.native.widgets/HorizontalSplitPane(androidx.compose.ui/Modifier?, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.compose.desktop.native.widgets/HorizontalSplitPane|HorizontalSplitPane(androidx.compose.ui.Modifier?;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun com.compose.desktop.native.widgets/VerticalSplitPane(androidx.compose.ui/Modifier?, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.compose.desktop.native.widgets/VerticalSplitPane|VerticalSplitPane(androidx.compose.ui.Modifier?;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun com.compose.desktop.native.widgets/com_compose_desktop_native_widgets_SplitPaneDefaults$stableprop_getter(): kotlin/Int // com.compose.desktop.native.widgets/com_compose_desktop_native_widgets_SplitPaneDefaults$stableprop_getter|com_compose_desktop_native_widgets_SplitPaneDefaults$stableprop_getter(){}[0]

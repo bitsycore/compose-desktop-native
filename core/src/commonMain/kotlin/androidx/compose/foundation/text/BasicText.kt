@@ -20,7 +20,7 @@ import com.compose.desktop.native.node.LayoutNode
 import com.compose.desktop.native.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Range
+import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 import com.compose.desktop.native.text.WrappedText
 import com.compose.desktop.native.text.currentTextMeasurer

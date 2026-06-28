@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.a8
 import com.compose.desktop.native.text.TextMeasurer
 import com.compose.desktop.native.text.TextRendererCapabilities
 import com.compose.desktop.native.text.WrappedText
-import androidx.compose.ui.text.Range
+import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 import com.compose.desktop.native.text.lineColorRuns
 import androidx.compose.ui.text.style.TextAlign

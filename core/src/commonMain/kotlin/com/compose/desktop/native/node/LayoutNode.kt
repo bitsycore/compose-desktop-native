@@ -52,7 +52,7 @@ class LayoutNode {
        goes: renderers paint each span's range in its colour (gaps fall back to
        textColor), but measurement / wrap use the plain text, so a text field's
        cursor & selection math is unaffected. */
-    var textSpans: List<androidx.compose.ui.text.Range<androidx.compose.ui.text.SpanStyle>>? = null
+    var textSpans: List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>? = null
     /* Pixel font size — Composables that take a TextUnit param resolve it to an
        integer pixel count before storing here so the renderer never sees TextUnit. */
     var fontSize: Int = 16

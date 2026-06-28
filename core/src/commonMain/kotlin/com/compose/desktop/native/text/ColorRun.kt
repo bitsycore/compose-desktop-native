@@ -1,7 +1,7 @@
 package com.compose.desktop.native.text
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.Range
+import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 
 // ==================

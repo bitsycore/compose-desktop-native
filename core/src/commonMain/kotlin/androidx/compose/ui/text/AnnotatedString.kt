@@ -123,14 +123,6 @@ class TextStyle(
 }
 
 // ==================
-// MARK: Range
-// ==================
-
-/* Span [start, end) with an associated style. Used inside AnnotatedString
-   to record where each style applies. */
-data class Range<T>(val item: T, val start: Int, val end: Int)
-
-// ==================
 // MARK: AnnotatedString
 // ==================
 
@@ -144,6 +136,13 @@ class AnnotatedString(
 	val spanStyles: List<Range<SpanStyle>> = emptyList(),
 	val paragraphStyles: List<Range<ParagraphStyle>> = emptyList(),
 ) {
+
+	/* Span [start, end) with an associated style. Nested under
+	   AnnotatedString to match upstream's `AnnotatedString.Range<T>`.
+	   `tag` is an optional disambiguator (default empty) used by upstream
+	   for annotation kinds — we don't read it from the renderers today
+	   but accept it so call sites can target the upstream signature. */
+	data class Range<T>(val item: T, val start: Int, val end: Int, val tag: String = "")
 
 	val length: Int get() = text.length
 
