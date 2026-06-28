@@ -537,6 +537,10 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathSv
 
 # animation.Transition — higher-level Transition compose facing animation-core's.
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                        core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
+# BoundsAnimation needs SharedTransitionScope + BoundsTransform (shared-element transition engine) — skip.
+
+# Internal helpers — pure kotlin, no compose engine deps.
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
