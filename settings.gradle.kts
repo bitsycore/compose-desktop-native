@@ -10,8 +10,6 @@ pluginManagement {
 rootProject.name = "ComposeNativeSDL3"
 include(":core")
 include(":material")
-include(":renderer-sdl3")
-include(":renderer-skia")
 include(":window")
 include(":material-symbols")
 include(":material-symbols:outlined")

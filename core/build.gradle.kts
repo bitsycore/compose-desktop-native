@@ -1,11 +1,26 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.net.URI
 
-// :core — the renderer-agnostic base: the androidx.compose.* re-impl,
-// RenderBackend interface, GpuMode, SDL3Backend + window/event/clipboard/IO,
-// and the default bundled font. Owns the `sdl3` cinterop. Renderer modules
-// and :window depend on this. No renderer code lives here.
-// Publication artifactId (when set up): compose-desktop-native-core.
+// :core — the renderer-agnostic Compose base + both renderer pipelines.
+//
+// Source-set hierarchy:
+//   commonMain
+//     └── nativeMain                 (vendored .native.kt + project SDL3 wrappers)
+//           ├── skikoRendererMain         (Skia drawing pipeline; Skiko on classpath)
+//           │     ├── skikoRendererMacosMain     (macOS-only Skia actuals — Metal bridge)
+//           │     └── skikoRendererLinuxMain     (Linux-only Skia actuals — OpenGL)
+//           │       attached: macosArm64Main / linuxX64Main / linuxArm64Main
+//           │       only when Skia path is active (default on macOS/Linux)
+//           └── sdlRendererMain           (SDL3 drawing pipeline + TTF/IMG/FreeType)
+//                 ├── sdlRendererMacosMain      (macOS-only SDL3 driver hint)
+//                 ├── sdlRendererLinuxMain      (Linux-only SDL3 driver hint)
+//                 └── sdlRendererMingwMain      (mingwX64-only SDL3 driver hint)
+//                   attached: mingwX64Main always; macOS/Linux when -Prenderer=sdl3
+//
+// `-Prenderer=sdl3` flips macOS/Linux targets onto the SDL3 path. The
+// `:renderer-skia` and `:renderer-sdl3` sibling modules are gone — their code
+// lives here. `:window` depends only on `:core`; `createRenderBackend` comes
+// from whichever of the renderer source sets is active for the target.
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -19,23 +34,40 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-// The .def files pin per-target SDL3 include paths to host-specific
-// directories (/opt/homebrew on macOS, /usr/include on Linux,
-// C:/Dev/Libs/... on Windows). When kotlin.mpp.enableCInteropCommonization
-// is on, IntelliJ asks Gradle to cinterop every declared target so the
-// shared nativeMain klib can be commonized — which fails for foreign
-// targets because their paths don't exist on this host.
-// We add the HOST's installed SDL3 include path as an extra -I to every
-// target's cinterop. clang silently ignores -I dirs that don't exist, so
-// foreign-target cinterop indexing finds headers via the host's copy.
-// Actual link-time still picks the per-target linkerOpts from the .def,
-// but linking only runs for the host's target.
+// -Prenderer=sdl3 flips macOS/Linux targets onto sdlRendererMain (Skiko-free build).
+val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
+
+// Per-target host include rationale: cross-target cinterop indexing under
+// kotlin.mpp.enableCInteropCommonization asks Gradle to cinterop every
+// declared target so the shared nativeMain klib can be commonized. The .def
+// files pin per-target SDL3 / FreeType / SDL3_ttf / SDL3_image include paths
+// to the host's installed copies; we re-export the host's include as an
+// extra -I so foreign-target cinterop indexing finds headers via the host.
+// clang silently ignores -I dirs that don't exist, so this is safe.
 val vHostOs = System.getProperty("os.name")
 val vHostSdlInclude: String? = when {
     vHostOs.startsWith("Mac")     -> "/opt/homebrew/include"
     vHostOs == "Linux"            -> "/usr/include"
     vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/SDL3/include"
     else                          -> null
+}
+val vHostFtInclude: String? = when {
+    vHostOs.startsWith("Mac")     -> "/opt/homebrew/include/freetype2"
+    vHostOs == "Linux"            -> "/usr/include/freetype2"
+    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/FreeType/include/freetype2"
+    else                          -> null
+}
+val vHostTtfInclude: String? =
+    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_ttf/include" else null
+val vHostImageInclude: String? =
+    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_image/include" else null
+
+// Renderer assignment per target. mingwX64 is always SDL3; macOS / Linux
+// default to Skia, switch to SDL3 under -Prenderer=sdl3.
+fun isSkiaTarget(targetName: String): Boolean = when (targetName) {
+    "mingwX64" -> false
+    "macosArm64", "linuxX64", "linuxArm64" -> !useSdl3Everywhere
+    else -> false
 }
 
 kotlin {
@@ -47,13 +79,55 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     targets.withType<KotlinNativeTarget>().all {
+        val vTargetName = name
+        // Path to the sdl3 cinterop output klib for this target — used to
+        // wire `depends = sdl3` in sdl3_ttf / sdl3_image / freetype below.
+        // When cinterops are in the same module (instead of split across
+        // :core + :renderer-sdl3), Gradle does NOT auto-add the sdl3 klib to
+        // the dependent cinterop tasks' -library list, so cinterop generates
+        // its own SDL_Surface / SDL_Color inside sdl3_image / sdl3_ttf
+        // instead of reusing the sdl3 ones, breaking type unification.
+        // Passing the path explicitly via extraOpts forces the link.
+        val vSdl3Klib = layout.buildDirectory.dir(
+            "classes/kotlin/$vTargetName/main/cinterop/core-cinterop-sdl3"
+        ).get().asFile.absolutePath
+
         compilations["main"].cinterops {
             val sdl3 by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
                 if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
+            val sdl3_ttf by creating {
+                defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
+                packageName("sdl3_ttf")
+                extraOpts("-library", vSdl3Klib)
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
+            }
+            val sdl3_image by creating {
+                defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
+                packageName("sdl3_image")
+                extraOpts("-library", vSdl3Klib)
+                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                if (vHostImageInclude != null) extraOpts("-compiler-options", "-I$vHostImageInclude")
+            }
+            // FreeType powers variable-font axis rendering (FILL / wght /
+            // GRAD / opsz) on Material Symbols icons in the SDL3 path.
+            val freetype by creating {
+                defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
+                packageName("freetype")
+                if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
+            }
         }
+
+        // Wire the task graph so cinteropSdl3_ttf/_image*Target run AFTER
+        // cinteropSdl3*Target — the -library reference above only points at
+        // the klib path; without a task dependency Gradle might run the
+        // dependent cinterop first and the path wouldn't exist yet.
+        val vT = vTargetName.replaceFirstChar { it.uppercase() }
+        tasks.matching { it.name == "cinteropSdl3_ttf$vT" || it.name == "cinteropSdl3_image$vT" }
+            .configureEach { dependsOn("cinteropSdl3$vT") }
     }
 
     sourceSets {
@@ -65,21 +139,55 @@ kotlin {
             dependencies {
                 api("org.jetbrains.compose.runtime:runtime:1.11.1")
                 implementation(libs.kotlinx.coroutines.core)
-                // Multiplatform file IO for the data.kres reader (ResourceIO.kt).
-                // Replaces raw platform.posix (fseek/ftell/fread), whose long/off_t
-                // bit-widths differ across LLP64 Windows vs LP64 Unix and break the
-                // shared nativeMain metadata compilation used by Maven publishing.
                 implementation(libs.okio)
-                // Explicit atomicfu so vendored animation-core / foundation
-                // AtomicReference / AtomicLong actuals resolve their
-                // kotlinx.atomicfu.atomic call regardless of whether compose
-                // runtime keeps it as a transitive dep in future releases.
                 implementation("org.jetbrains.kotlinx:atomicfu:0.23.1")
             }
         }
-        // Vendored platform `actual`s (e.g. ui.util InlineClassHelper.native.kt).
+        // Vendored platform `actual`s + project SDL3 wrappers / Compose native code.
         nativeMain {
             kotlin.srcDir("src/vendor/native/kotlin")
+        }
+
+        // ============
+        //  Renderer roots. Each is a child of nativeMain; per-platform
+        //  intermediates below attach to one of these. Only the renderer
+        //  source sets that will actually be attached are created, so Gradle
+        //  doesn't warn about unused source sets when the build is asymmetric
+        //  (e.g. -Prenderer=sdl3 wouldn't use any skikoRenderer* sets).
+
+        val sdlRendererMain by creating {
+            dependsOn(nativeMain.get())
+            // SDL3_ttf / SDL3_image / freetype cinterop bindings come from
+            // the per-target cinterop block above; no separate Gradle deps.
+        }
+        // mingwX64 is SDL3 always — its intermediate is always created.
+        val sdlRendererMingwMain by creating { dependsOn(sdlRendererMain) }
+        mingwX64Main.get().dependsOn(sdlRendererMingwMain)
+
+        val macosArm64Main by getting
+        val linuxX64Main by getting
+        val linuxArm64Main by getting
+
+        if (useSdl3Everywhere) {
+            // macOS / Linux flip to SDL3 — create the sdl intermediates.
+            val sdlRendererMacosMain by creating { dependsOn(sdlRendererMain) }
+            val sdlRendererLinuxMain by creating { dependsOn(sdlRendererMain) }
+            macosArm64Main.dependsOn(sdlRendererMacosMain)
+            linuxX64Main.dependsOn(sdlRendererLinuxMain)
+            linuxArm64Main.dependsOn(sdlRendererLinuxMain)
+        } else {
+            // Default: macOS / Linux use Skia. Create the skiko tree.
+            val skikoRendererMain by creating {
+                dependsOn(nativeMain.get())
+                dependencies {
+                    implementation(libs.skiko)
+                }
+            }
+            val skikoRendererMacosMain by creating { dependsOn(skikoRendererMain) }
+            val skikoRendererLinuxMain by creating { dependsOn(skikoRendererMain) }
+            macosArm64Main.dependsOn(skikoRendererMacosMain)
+            linuxX64Main.dependsOn(skikoRendererLinuxMain)
+            linuxArm64Main.dependsOn(skikoRendererLinuxMain)
         }
     }
 
@@ -94,22 +202,11 @@ kotlin {
 // ==================
 // MARK: Default + monospace fonts (Google Noto, downloaded at build time)
 // ==================
-// The default UI font (Noto Sans) and the monospace family (Noto Sans Mono)
-// are fetched from the Noto Fonts project at build time into build/fonts/ and
-// stitched into each app's data.kres by the app's Zip task (see
-// demo/apidemo build.gradle.kts), exactly like the Material Symbols fonts —
-// no Compose resources runtime involved. The renderers load "font/
-// NotoSans-Regular.ttf" as the default; apidemo registers
-// "font/NotoSansMono-Regular.ttf" with IconFont under "noto-mono".
 
 val notoSansFont = layout.buildDirectory.file("fonts/NotoSans.ttf")
 val notoSansMonoFont = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
 
 val downloadNotoFonts = tasks.register("downloadNotoFonts") {
-    // Variable fonts (wdth,wght axes) so the renderers' weight path
-    // (SpanStyle.fontWeight → FontVariation.Weight → Skia makeClone / SDL3
-    // FreeType) actually varies the weight rather than no-op'ing on a static
-    // Regular. Plain local vals so the configuration cache can serialize doLast.
     val vDownloads = listOf(
         "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
             to notoSansFont.get().asFile,
@@ -127,8 +224,3 @@ val downloadNotoFonts = tasks.register("downloadNotoFonts") {
         }
     }
 }
-
-// The app Zip tasks (demo / apidemo) reference these outputs by build-dir
-// layout and depend on `:core:downloadNotoFonts` by task path — no cross-
-// project "extra" handshake, so it doesn't matter whether :core is configured
-// before the app project.

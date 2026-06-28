@@ -46,8 +46,9 @@ fun nativeComposeWindow(
     content: @Composable ComposeWindowScope.() -> Unit
 ) {
     // Resolve Auto at the call site so SDL3Backend / RenderBackend never see
-    // it. preferredGpuMode() is per-target.
-    val gpuMode = if (gpu is GpuMode.Auto) preferredGpuMode() else gpu
+    // it. rendererPreferredGpuMode() comes from whichever renderer source
+    // set in :core is active for this target (skia or sdl3).
+    val gpuMode = if (gpu is GpuMode.Auto) rendererPreferredGpuMode() else gpu
     val backend = SDL3Backend(title, width, height, gpuMode = gpuMode)
     if (!backend.init()) {
         println("Failed to init SDL3 backend")
@@ -58,7 +59,7 @@ fun nativeComposeWindow(
     // Retina back buffers come out half-resolution.
     backend.updateWindowSize()
 
-    val renderBackend = makeRenderBackend(backend, gpuMode)
+    val renderBackend = createRenderBackend(backend, gpuMode)
     if (renderBackend == null || !renderBackend.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
         println("Failed to init render backend for $gpuMode")
         backend.destroy()

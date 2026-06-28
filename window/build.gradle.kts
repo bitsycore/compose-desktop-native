@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :window — the module apps depend on. Owns composeWindow() and selects the
-// renderer per target by depending on exactly one renderer module:
-//   mingwX64        → :renderer-sdl3 (always; Skiko has no Windows build)
-//   macOS / Linux   → :renderer-skia, or :renderer-sdl3 under -Prenderer=sdl3
-// composeWindow's makeRenderBackend/preferredGpuMode expects forward to that
-// module's createRenderBackend / rendererPreferredGpuMode.
+// :window — the module apps depend on. Owns nativeComposeWindow() (main loop,
+// recomposer lifecycle, event dispatch, Snapshot apply notifications).
+// Renderer selection happens entirely inside :core via source-set wiring
+// (skikoRendererMain vs sdlRendererMain) — this module just calls
+// `createRenderBackend(...)` and `rendererPreferredGpuMode()` from :core and
+// the right symbol resolves per target.
 // Publication artifactId (when set up): compose-desktop-native.
 
 plugins {
@@ -19,10 +19,6 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
-
-// -Prenderer=sdl3 swaps macOS/Linux onto the SDL3 renderer (Skiko-free build).
-val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
-val desktopRendererProject = if (useSdl3Everywhere) ":renderer-sdl3" else ":renderer-skia"
 
 // See core/build.gradle.kts for the rationale on the host-side -I.
 val vHostOs = System.getProperty("os.name")
@@ -54,27 +50,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // api so apps depending on :window also get the compose re-impl,
-            // Res/resources, GpuMode, etc. from :core, and the Material
-            // widget set (Button/Text/MaterialTheme/...) from :material.
+            // Res/resources, GpuMode, the renderer pipeline, etc. from :core,
+            // plus Material widgets from :material.
             api(project(":core"))
             api(project(":material"))
             implementation(libs.kotlinx.coroutines.core)
-            // setMain() / resetMain() are the only public APIs to swap the
-            // process-global Dispatchers.Main. Despite the "test" naming,
-            // they're safe at runtime — we install an SDL3-frame-driven
-            // dispatcher at composeWindow startup so app code can
-            // withContext(Dispatchers.Main) { ... } portably.
+            // setMain() / resetMain() — see Sdl3MainDispatcher.kt for usage.
             implementation(libs.kotlinx.coroutines.test)
-        }
-        // Per-target renderer selection (the "include exactly one" mechanism).
-        val mingwMain by getting {
-            dependencies { implementation(project(":renderer-sdl3")) }
-        }
-        val macosMain by getting {
-            dependencies { implementation(project(desktopRendererProject)) }
-        }
-        val linuxMain by getting {
-            dependencies { implementation(project(desktopRendererProject)) }
         }
     }
 
