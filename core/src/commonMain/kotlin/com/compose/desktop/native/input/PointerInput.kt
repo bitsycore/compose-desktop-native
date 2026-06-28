@@ -9,6 +9,9 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 
@@ -38,18 +41,28 @@ class PointerInputElement(val scope: PointerInputScopeImpl) : Modifier.Element
    PointerEvent + PointerInputChange (vendored) — uses the full 13-field
    constructor with pointerInputEvent=null (we don't host upstream's
    internal pipeline). */
-class PointerInputScopeImpl : PointerInputScope {
+class PointerInputScopeImpl :
+	PointerInputScope,
+	Density by Density(1f) {
 
 	// One in-flight awaiter at a time — pointerInput { } blocks are
 	// strictly sequential (matches upstream semantics for a single
 	// awaitPointerEventScope coroutine).
 	private var fAwaiter: CompletableDeferred<PointerEvent>? = null
 	private var fLastChange: PointerInputChange? = null
+	private var fLastEvent: PointerEvent = PointerEvent(emptyList(), null)
+
+	override val viewConfiguration: ViewConfiguration get() = DefaultViewConfiguration
 
 	override suspend fun <R> awaitPointerEventScope(
 		block: suspend AwaitPointerEventScope.() -> R,
 	): R {
-		val vScope = object : AwaitPointerEventScope {
+		val vOuter = this
+		val vScope = object :
+			AwaitPointerEventScope,
+			Density by vOuter {
+			override val viewConfiguration: ViewConfiguration get() = vOuter.viewConfiguration
+			override val currentEvent: PointerEvent get() = fLastEvent
 			override suspend fun awaitPointerEvent(pass: PointerEventPass): PointerEvent {
 				val vDeferred = CompletableDeferred<PointerEvent>()
 				fAwaiter = vDeferred
@@ -84,10 +97,23 @@ class PointerInputScopeImpl : PointerInputScope {
 			type = PointerType.Mouse,
 		)
 		fLastChange = vChange
+		val vEvent = PointerEvent(listOf(vChange), null)
+		fLastEvent = vEvent
 		val vA = fAwaiter
 		fAwaiter = null
 		// PointerEvent ctor takes (changes, pointerInputEvent: InternalPointerEvent?);
 		// we pass null since we don't host upstream's internal pipeline.
-		vA?.complete(PointerEvent(listOf(vChange), null))
+		vA?.complete(vEvent)
 	}
+}
+
+/* Default ViewConfiguration values match upstream's
+   AndroidViewConfiguration defaults — used when no real platform
+   ViewConfiguration is plugged in via CompositionLocal. Gesture detectors
+   (long-press / double-tap timeouts; touch slop) read these directly. */
+private val DefaultViewConfiguration: ViewConfiguration = object : ViewConfiguration {
+	override val longPressTimeoutMillis: Long = 500L
+	override val doubleTapTimeoutMillis: Long = 300L
+	override val doubleTapMinTimeMillis: Long = 40L
+	override val touchSlop: Float = 18f
 }

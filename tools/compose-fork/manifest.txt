@@ -155,6 +155,15 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.native.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformableState.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformableState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt
+# Now unlocked by the PointerEvent reshape — the gesture detector family.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/ForEachGesture.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/ForEachGesture.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.native.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/DragGestureDetector.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/DragGestureDetector.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt
+# ViewConfiguration — touch slop / double-tap timeout / etc., needed by
+# DragGestureDetector. Pure 72-line interface.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
