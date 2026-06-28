@@ -324,11 +324,17 @@ class AlphaNode(var alpha: Float) : Modifier.Node()
 // MARK: GraphicsLayerModifier
 // ==================
 
-/* A "graphics layer" element: alpha + 2D transform (scale / rotation /
-   translation), with an optional cacheKey that opts the subtree into
-   render-to-texture caching across frames. See Modifier.graphicsLayer (in
-   androidx.compose.ui.graphics) for the caching semantics. */
-data class GraphicsLayerModifier(
+/**
+ * A "graphics layer" element: alpha + 2D transform (scale / rotation /
+ * translation), with an optional cacheKey that opts the subtree into
+ * render-to-texture caching across frames. See `Modifier.graphicsLayer`
+ * (in `androidx.compose.ui.graphics`) for the caching semantics.
+ *
+ * The renderer reads this element directly via the `LayoutNode.graphicsLayer`
+ * `foldIn` over the chain; the paired [GraphicsLayerNode] lifecycle stays
+ * dormant until the renderer rewrite drives it.
+ */
+class GraphicsLayerModifier(
     val alpha: Float = 1f,
     val scaleX: Float = 1f,
     val scaleY: Float = 1f,
@@ -337,7 +343,7 @@ data class GraphicsLayerModifier(
     val translationY: Float = 0f,
     val transformOrigin: TransformOrigin = TransformOrigin.Center,
     val cacheKey: Any? = null,
-) : Modifier.Element {
+) : ModifierNodeElement<GraphicsLayerNode>() {
 
     val needsLayer: Boolean
         get() = alpha < 1f || cacheKey != null
@@ -348,4 +354,37 @@ data class GraphicsLayerModifier(
 
     val isIdentity: Boolean
         get() = !needsLayer && !needsTransform
+
+    override fun create() =
+        GraphicsLayerNode(alpha, scaleX, scaleY, rotationZ, translationX, translationY, transformOrigin, cacheKey)
+    override fun update(node: GraphicsLayerNode) {
+        node.alpha = alpha; node.scaleX = scaleX; node.scaleY = scaleY
+        node.rotationZ = rotationZ; node.translationX = translationX; node.translationY = translationY
+        node.transformOrigin = transformOrigin; node.cacheKey = cacheKey
+    }
+    override fun hashCode(): Int {
+        var v = alpha.hashCode()
+        v = 31 * v + scaleX.hashCode(); v = 31 * v + scaleY.hashCode()
+        v = 31 * v + rotationZ.hashCode()
+        v = 31 * v + translationX.hashCode(); v = 31 * v + translationY.hashCode()
+        v = 31 * v + transformOrigin.hashCode(); v = 31 * v + (cacheKey?.hashCode() ?: 0)
+        return v
+    }
+    override fun equals(other: Any?): Boolean =
+        other is GraphicsLayerModifier &&
+            other.alpha == alpha && other.scaleX == scaleX && other.scaleY == scaleY &&
+            other.rotationZ == rotationZ &&
+            other.translationX == translationX && other.translationY == translationY &&
+            other.transformOrigin == transformOrigin && other.cacheKey == cacheKey
 }
+
+class GraphicsLayerNode(
+    var alpha: Float,
+    var scaleX: Float,
+    var scaleY: Float,
+    var rotationZ: Float,
+    var translationX: Float,
+    var translationY: Float,
+    var transformOrigin: TransformOrigin,
+    var cacheKey: Any?,
+) : Modifier.Node()

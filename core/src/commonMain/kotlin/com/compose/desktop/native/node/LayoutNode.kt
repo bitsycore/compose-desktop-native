@@ -245,7 +245,7 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     val zIndex: Float get() {
         var v = 0f
         modifier.foldIn(Unit) { _, e ->
-            if (e is androidx.compose.ui.ZIndexModifier) v += e.zIndex
+            if (e is androidx.compose.ui.ZIndexElement) v += e.zIndex
         }
         return v
     }

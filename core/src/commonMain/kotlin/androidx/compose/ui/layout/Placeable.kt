@@ -74,7 +74,7 @@ abstract class Placeable {
 		 * protected 3-arg `(position: IntOffset, zIndex: Float, layerBlock)`,
 		 * so this thin wrapper forwards `(x, y)` directly. `zIndex` is
 		 * accepted-and-ignored — our renderer reads z-order from a
-		 * separate ZIndexModifier on the LayoutNode.
+		 * separate ZIndexElement on the LayoutNode.
 		 */
 		fun Placeable.place(
 			x: Int,

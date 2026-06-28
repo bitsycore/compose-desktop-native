@@ -9,6 +9,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -19,14 +20,30 @@ import kotlinx.coroutines.CompletableDeferred
 // MARK: PointerInputElement (modifier)
 // ==================
 
-/* Modifier.Element that the host (ComposeWindow) hands every relevant
-   pointer event to. Owns a PointerInputScope whose suspending block is
-   driven by a LaunchedEffect tied to the user-supplied key(s).
+/**
+ * `ModifierNodeElement` factory for the project's pointerInput modifier.
+ *
+ * The host ([com.compose.desktop.native.ComposeWindow]) walks the tree with
+ * `Modifier.foldIn` (this class IS-A `Modifier.Element` via
+ * [ModifierNodeElement]) to find each element, then routes pointer events
+ * into its [scope]. `scope` is public so `:window` can call `deliverChange`
+ * across module boundaries.
+ *
+ * Equality is identity-on-scope: two elements with the same underlying
+ * PointerInputScopeImpl are equivalent (the scope itself is unique per
+ * `Modifier.pointerInput { … }` call site via `remember`).
+ */
+class PointerInputElement(val scope: PointerInputScopeImpl) :
+	ModifierNodeElement<PointerInputNode>() {
+	override fun create() = PointerInputNode(scope)
+	override fun update(node: PointerInputNode) { node.scope = scope }
+	override fun hashCode(): Int = scope.hashCode()
+	override fun equals(other: Any?): Boolean =
+		other is PointerInputElement && other.scope === scope
+}
 
-   .scope is public to give :window the ability to dispatch pointer events
-   into it. App code should not poke at the scope directly — interact with
-   it via the suspending block you pass to Modifier.pointerInput. */
-class PointerInputElement(val scope: PointerInputScopeImpl) : Modifier.Element
+/** Paired `Modifier.Node` for [PointerInputElement]. Lifecycle dormant until the renderer rewrite drives it. */
+class PointerInputNode(var scope: PointerInputScopeImpl) : Modifier.Node()
 
 // ==================
 // MARK: PointerInputScopeImpl
