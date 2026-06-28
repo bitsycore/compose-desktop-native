@@ -9,6 +9,7 @@ import com.compose.desktop.native.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.max
 
 // ==================
@@ -74,7 +75,7 @@ private class BoxMeasurePolicy(
 
         for (child in node.children) {
             val childSize = IntSize(child.width, child.height)
-            val pos = alignment.align(childSize, innerSpace)
+            val pos = alignment.align(childSize, innerSpace, LayoutDirection.Ltr)
             child.place(pos.x + pl, pos.y + pt)
         }
 

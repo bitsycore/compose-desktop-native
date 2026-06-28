@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Path as ComposePath
-import androidx.compose.ui.graphics.PathCommand
+import com.compose.desktop.native.graphics.PathCommand
 import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient

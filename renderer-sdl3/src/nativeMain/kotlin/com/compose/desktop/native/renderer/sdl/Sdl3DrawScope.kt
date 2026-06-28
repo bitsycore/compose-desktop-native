@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.b8
 import androidx.compose.ui.graphics.a8
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Path as ComposePath
-import androidx.compose.ui.graphics.PathCommand
 import androidx.compose.ui.graphics.RadialGradient
+import com.compose.desktop.native.graphics.PathCommand
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
 import androidx.compose.ui.graphics.drawscope.DrawScope

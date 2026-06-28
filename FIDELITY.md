@@ -111,14 +111,18 @@ All of the above already verified working on Windows/SDL3.
   `ResolvedTextDirection`/`TextDirection`/`TextGeometricTransform`/`TextMotion`/
   `LineBreak`/`Hyphens`/`BaselineShift`, `FontStyle`/`FontWeight`,
   `ui.layout.ScaleFactor`/`ContentScale`/`AlignmentLine`,
+  `ui.Alignment` (incl. `BiasAlignment`, `BiasAbsoluteAlignment`,
+  `AbsoluteAlignment`), `ui.UiComposable`, `ui.ComposeUiFlags`,
+  `ui.unit.ComposeUiUnitFlags`, `ui.FrameRateCategory`, `ui.state.ToggleableState`,
+  `ui.draw.{Alpha, Rotate, Scale}` (one-liners over `graphicsLayer`),
   `foundation.BorderStroke`, `foundation.interaction.{Interaction,
   InteractionSource, DragInteraction, HoverInteraction, FocusInteraction}`,
   `foundation.gestures.Orientation`, `foundation.lazy.LazyListItemInfo`,
   `foundation.layout.LayoutScopeMarker`, `animation.core.AnimationEndReason`/
   `Easing`/`EasingFunctions`/`Preconditions`. Plus the experimental/internal
-  opt-in annotations: `ExperimentalGraphicsApi`, `ExperimentalFoundationApi`,
-  `InternalFoundationApi`, `InternalAnimationApi`, `InternalTextApi`,
-  `ExperimentalTransitionApi`, `ExperimentalAnimationSpecApi`,
+  opt-in annotations: `ExperimentalComposeUiApi`, `ExperimentalGraphicsApi`,
+  `ExperimentalFoundationApi`, `InternalFoundationApi`, `InternalAnimationApi`,
+  `InternalTextApi`, `ExperimentalTransitionApi`, `ExperimentalAnimationSpecApi`,
   `ExperimentalDeferredTransitionApi`. (`Sp` was migrated to the real
   `TextUnit`.)
 
@@ -130,8 +134,10 @@ All of the above already verified working on Windows/SDL3.
 - **Relocated to `com.compose.desktop.native.*`** (no official equivalent):
   the ~22 `Modifier.Element` classes + `GraphicsLayerModifier` → `.element`;
   `LayoutNode` + `NodeApplier` (+ internal node `MeasurePolicy`) → `.node`;
-  `ScrollAnimator` → `.scroll`; Popup host infra → `.window`; `ColorRun` +
-  `SelectableText`/`LocalInSelectionContainer` (folded into selection-aware
+  `PathCommand` (render-bridge sealed type, no upstream equivalent) →
+  `.graphics`; `ScrollAnimator` → `.scroll`; Popup host infra → `.window`;
+  `ColorRun` + `SelectableText`/`LocalInSelectionContainer` (folded into
+  selection-aware
   BasicText) → `.text`; `InfiniteTransition.animateDp` → `.animation`.
 - **Reshaped to match official**: `PaddingValues` → interface
   (`calculate*Padding` + `calculateStart/EndPadding`); `ToggleableState`→`ui.state`,

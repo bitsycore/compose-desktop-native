@@ -10,6 +10,7 @@ import com.compose.desktop.native.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.max
 
 // ==================
@@ -116,7 +117,7 @@ private class ColumnMeasurePolicy(
         arrangement.arrange(h - pt - pb, sizes.toList(), positions)
 
         node.children.forEachIndexed { i, child ->
-            val xOff = alignment.align(child.width, innerW)
+            val xOff = alignment.align(child.width, innerW, LayoutDirection.Ltr)
             child.place(xOff + pl, positions[i] + pt)
         }
 

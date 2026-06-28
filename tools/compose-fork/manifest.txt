@@ -17,6 +17,7 @@ compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt
 # compose runtime — `androidx.collection:collection:1.5.0` is on the classpath
 # already, no extra Gradle change needed).
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/ListUtils.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/util/ListUtils.kt
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt         core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt
 
 # ── androidx.compose.ui.unit (packed int value types) ─────────────────────
 # Replaces the hand-written IntSize.kt (IntSize + IntOffset data classes).
@@ -31,6 +32,7 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt   
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Constraints.kt            core/src/vendor/common/kotlin/androidx/compose/ui/unit/Constraints.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt               core/src/vendor/common/kotlin/androidx/compose/ui/unit/TextUnit.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/LayoutDirection.kt        core/src/vendor/common/kotlin/androidx/compose/ui/unit/LayoutDirection.kt
+compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt     core/src/vendor/common/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt
 
 # ── androidx.compose.ui.graphics.Color (+ colorspace subsystem) ───────────
 # Color is a value class over a packed ULong whose bits encode a ColorSpace, so
@@ -108,6 +110,18 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeigh
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ScaleFactor.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/ScaleFactor.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ContentScale.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
+
+# ── androidx.compose.ui (top-level types) ─────────────────────────────────
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Alignment.kt             core/src/vendor/common/kotlin/androidx/compose/ui/Alignment.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/UiComposable.kt          core/src/vendor/common/kotlin/androidx/compose/ui/UiComposable.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ComposeUiFlags.kt        core/src/vendor/common/kotlin/androidx/compose/ui/ComposeUiFlags.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRateCategory.kt     core/src/vendor/common/kotlin/androidx/compose/ui/FrameRateCategory.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/state/ToggleableState.kt core/src/vendor/common/kotlin/androidx/compose/ui/state/ToggleableState.kt
+# Draw modifiers — thin wrappers over Modifier.graphicsLayer (accept-and-ignore
+# the `clip` param for now; renderer-level support is a follow-up).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Alpha.kt            core/src/vendor/common/kotlin/androidx/compose/ui/draw/Alpha.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Rotate.kt           core/src/vendor/common/kotlin/androidx/compose/ui/draw/Rotate.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Scale.kt            core/src/vendor/common/kotlin/androidx/compose/ui/draw/Scale.kt
 
 # ── androidx.compose.foundation (pure data) ───────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BorderStroke.kt                                       core/src/vendor/common/kotlin/androidx/compose/foundation/BorderStroke.kt

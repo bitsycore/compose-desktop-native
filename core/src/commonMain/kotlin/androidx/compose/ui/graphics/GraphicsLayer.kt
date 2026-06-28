@@ -35,6 +35,7 @@ fun Modifier.graphicsLayer(
 	translationY: Float = 0f,
 	transformOrigin: TransformOrigin = TransformOrigin.Center,
 	cacheKey: Any? = null,
+	@Suppress("UNUSED_PARAMETER") clip: Boolean = false,
 ): Modifier {
 	val vMod = GraphicsLayerModifier(
 		alpha = alpha.coerceIn(0f, 1f),
