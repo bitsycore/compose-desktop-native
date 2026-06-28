@@ -13,11 +13,15 @@ import androidx.compose.ui.unit.TextUnit
 // MARK: SpanStyle / ParagraphStyle / TextStyle
 // ==================
 
+// Reshape note (FIDELITY): upstream's SpanStyle / ParagraphStyle / TextStyle
+// are plain classes with manual equals/hashCode — no component*/copy. We
+// mirror that here.
+
 /* Character-level style applied over a range of an AnnotatedString:
    font colour / size / weight / italic / decoration / background tint /
    inter-letter spacing. Unspecified fields fall through to the
    surrounding TextStyle. */
-data class SpanStyle(
+class SpanStyle(
 	val color: Color = Color.Unspecified,
 	val fontSize: TextUnit = TextUnit.Unspecified,
 	val fontWeight: FontWeight? = null,
@@ -26,19 +30,51 @@ data class SpanStyle(
 	val textDecoration: TextDecoration? = null,
 	val background: Color = Color.Unspecified,
 	val letterSpacing: TextUnit = TextUnit.Unspecified,
-)
+) {
+	override fun equals(other: Any?): Boolean = other is SpanStyle &&
+		other.color == color &&
+		other.fontSize == fontSize &&
+		other.fontWeight == fontWeight &&
+		other.fontStyle == fontStyle &&
+		other.fontFamily == fontFamily &&
+		other.textDecoration == textDecoration &&
+		other.background == background &&
+		other.letterSpacing == letterSpacing
+	override fun hashCode(): Int {
+		var h = color.hashCode()
+		h = 31 * h + fontSize.hashCode()
+		h = 31 * h + (fontWeight?.hashCode() ?: 0)
+		h = 31 * h + (fontStyle?.hashCode() ?: 0)
+		h = 31 * h + (fontFamily?.hashCode() ?: 0)
+		h = 31 * h + (textDecoration?.hashCode() ?: 0)
+		h = 31 * h + background.hashCode()
+		h = 31 * h + letterSpacing.hashCode()
+		return h
+	}
+}
 
 /* Paragraph-level style: text alignment, line height, max-width-based
    overflow. */
-data class ParagraphStyle(
+class ParagraphStyle(
 	val textAlign: TextAlign? = null,
 	val lineHeight: TextUnit = TextUnit.Unspecified,
 	val textIndent: Float = 0f,
-)
+) {
+	override fun equals(other: Any?): Boolean = other is ParagraphStyle &&
+		other.textAlign == textAlign &&
+		other.lineHeight == lineHeight &&
+		other.textIndent == textIndent
+	override fun hashCode(): Int {
+		var h = textAlign?.hashCode() ?: 0
+		h = 31 * h + lineHeight.hashCode()
+		h = 31 * h + textIndent.hashCode()
+		return h
+	}
+}
 
 /* Default style for the entire text, combining span- and paragraph-level
    defaults. */
-data class TextStyle(
+class TextStyle(
 	val color: Color = Color.Unspecified,
 	val fontSize: TextUnit = TextUnit.Unspecified,
 	val fontWeight: FontWeight? = null,
@@ -61,6 +97,29 @@ data class TextStyle(
 	fun toParagraphStyle(): ParagraphStyle = ParagraphStyle(
 		textAlign = textAlign, lineHeight = lineHeight,
 	)
+
+	override fun equals(other: Any?): Boolean = other is TextStyle &&
+		other.color == color &&
+		other.fontSize == fontSize &&
+		other.fontWeight == fontWeight &&
+		other.fontStyle == fontStyle &&
+		other.fontFamily == fontFamily &&
+		other.textAlign == textAlign &&
+		other.lineHeight == lineHeight &&
+		other.letterSpacing == letterSpacing &&
+		other.textDecoration == textDecoration
+	override fun hashCode(): Int {
+		var h = color.hashCode()
+		h = 31 * h + fontSize.hashCode()
+		h = 31 * h + (fontWeight?.hashCode() ?: 0)
+		h = 31 * h + (fontStyle?.hashCode() ?: 0)
+		h = 31 * h + (fontFamily?.hashCode() ?: 0)
+		h = 31 * h + (textAlign?.hashCode() ?: 0)
+		h = 31 * h + lineHeight.hashCode()
+		h = 31 * h + letterSpacing.hashCode()
+		h = 31 * h + (textDecoration?.hashCode() ?: 0)
+		return h
+	}
 }
 
 // ==================

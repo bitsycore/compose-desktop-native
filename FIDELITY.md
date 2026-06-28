@@ -109,7 +109,7 @@ All of the above already verified working on Windows/SDL3.
   `Bezier` (+ companion `PathSegment`), `Vertices`, `Interpolatable`,
   `ui.text.TextRange`, `TextAlign`/`TextOverflow`/`TextDecoration`,
   `ResolvedTextDirection`/`TextDirection`/`TextGeometricTransform`/`TextMotion`/
-  `LineBreak`/`Hyphens`/`BaselineShift`, `FontStyle`/`FontWeight`,
+  `LineBreak`/`Hyphens`/`BaselineShift`/`TextIndent`, `FontStyle`/`FontWeight`,
   `ui.layout.ScaleFactor`/`ContentScale`/`AlignmentLine`,
   `ui.graphics.RectangleShape` (after the Outline/Shape reshape),
   `ui.Alignment` (incl. `BiasAlignment`, `BiasAbsoluteAlignment`,
@@ -171,14 +171,13 @@ All of the above already verified working on Windows/SDL3.
 - (`PathCommand`, `TextMeasurer` package, `PointerInputElement` package
   already relocated.)
 
-**Match-upstream reshapes**: `SpanStyle`/`TextStyle`/`ParagraphStyle`
-`data class` → plain class with manual equals/hashCode (drop `component*`/
-`copy`). (`BorderStroke` → wraps a `Brush`: done. `Outline`/`Shape`/`Density`
-reshape: done — `Shape.createOutline(size, layoutDirection, density)`,
-`Outline.Rectangle(rect)`, `Outline.Rounded(roundRect)`, `Outline.Generic(path)`
-now match upstream; `SolidColor.color` renamed to `.value`. Animation specs:
-done — `TweenSpec` / `SnapSpec` / `SpringSpec` / `RepeatableSpec` /
-`InfiniteRepeatableSpec` are now plain classes with manual equals/hashCode.)
+**Match-upstream reshapes (done)**: `BorderStroke` wraps a `Brush`;
+`Outline`/`Shape`/`Density` — `Shape.createOutline(size, layoutDirection,
+density)`, `Outline.Rectangle(rect)`, `Outline.Rounded(roundRect)`,
+`Outline.Generic(path)`; `SolidColor.color` → `.value`; Animation specs
+(`TweenSpec` / `SnapSpec` / `SpringSpec` / `RepeatableSpec` /
+`InfiniteRepeatableSpec`) `data class` → plain class with manual
+equals/hashCode; `SpanStyle` / `ParagraphStyle` / `TextStyle` same.
 
 **Runtime-critical (do last, screenshot-test)**: `KeyEvent` / `PointerEvent` /
 `PointerEventType` / `PointerButton` enum/data-class → official value classes —

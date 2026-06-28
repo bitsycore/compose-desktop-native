@@ -99,6 +99,10 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/Hyphens.
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/BaselineShift.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/BaselineShift.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDirection.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDirection.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDecoration.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDecoration.kt
+# TextIndent needs lerpTextUnitInheritable; we extract that one helper into
+# core/src/commonMain/.../text/TextLerpHelpers.kt (the rest of upstream's
+# SpanStyle.kt is engine-tied so we don't vendor the whole file).
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextIndent.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextIndent.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/InternalTextApi.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/InternalTextApi.kt
 # LineBreak / TextMotion are expect classes; the skikoMain actuals are pure
 # data (no Skia refs), so we vendor them too.
