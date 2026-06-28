@@ -331,6 +331,13 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # Small pure text leaves — annotation + value class.
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ExperimentalTextApi.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/text/ExperimentalTextApi.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextGranularity.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/text/TextGranularity.kt
+# PathMeasure interface + factory expect. Native actual stubs in
+# CanvasPaintActuals.native.kt — nothing in our pipeline measures Paths
+# today, so the actual returns a no-op impl.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathMeasure.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathMeasure.kt
+# RenderEffect: sealed class + BlurEffect/OffsetEffect expect classes.
+# Stub actuals — no GraphicsLayer pipeline today.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/RenderEffect.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/RenderEffect.kt
 # PointerEvent — the big one. Brings PointerEventType / PointerButton /
 # PointerButtons / PointerKeyboardModifiers / PointerId / PointerType (all
 # value classes) + the multi-touch PointerEvent (expect class with skiko

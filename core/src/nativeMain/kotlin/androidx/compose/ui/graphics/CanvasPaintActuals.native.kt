@@ -126,3 +126,35 @@ internal actual fun createImageBitmap(bytes: ByteArray): ImageBitmap =
 actual class NativeCanvas
 
 internal actual fun ActualCanvas(image: ImageBitmap): Canvas = ProjectCanvas()
+
+// ============
+//  PathMeasure
+
+private class StubPathMeasure : PathMeasure {
+	override val length: Float = 0f
+	override fun getSegment(startDistance: Float, stopDistance: Float, destination: Path, startWithMoveTo: Boolean): Boolean = false
+	override fun setPath(path: Path?, forceClosed: Boolean) {}
+	override fun getPosition(distance: Float): Offset = Offset.Unspecified
+	override fun getTangent(distance: Float): Offset = Offset.Unspecified
+}
+
+actual fun PathMeasure(): PathMeasure = StubPathMeasure()
+
+// ============
+//  RenderEffect / BlurEffect / OffsetEffect
+
+actual sealed class RenderEffect actual constructor() {
+	actual open fun isSupported(): Boolean = false
+}
+
+actual class BlurEffect actual constructor(
+	renderEffect: RenderEffect?,
+	radiusX: Float,
+	radiusY: Float,
+	edgeTreatment: TileMode,
+) : RenderEffect()
+
+actual class OffsetEffect actual constructor(
+	renderEffect: RenderEffect?,
+	offset: Offset,
+) : RenderEffect()
