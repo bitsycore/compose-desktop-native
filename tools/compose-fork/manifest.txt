@@ -499,6 +499,13 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathHi
 # PathEasing — easing-along-a-Path AnimationSpec; needs IntervalTree/PathGeometry above.
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/PathEasing.kt                              core/src/vendor/common/kotlin/androidx/compose/animation/core/PathEasing.kt
 
+# More medium leaves with light deps.
+# InlineTextContent — needs AnnotatedString.Builder.pushStringAnnotation (we lack).
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbar.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbar.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/WindowInfo.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/WindowInfo.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
