@@ -398,6 +398,24 @@ compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/internal/JvmDefaultWithC
 #   foundation.layout.internal   — no vendored foundation/layout/ file imports it
 #   ui.text.internal             — vendored ui/text/ types are pure value classes, no import
 
+# More pure-additive leaves — interfaces / fun-interfaces / flags objects /
+# expect funs with cheap native actuals.
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ComposeFoundationLayoutFlags.kt      core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ComposeFoundationLayoutFlags.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PageInfo.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PageInfo.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerScope.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerScope.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt
+# OutputTransformation needs TextFieldBuffer (text-input engine) — skip.
+# TextFieldDecorator likewise embeds the upstream BasicTextField interaction model — skip.
+
+# foundation.internal expect-funs + their skiko/native actuals (isAutofillAvailable, identityHashCode).
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/PlatformUtils.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/internal/PlatformUtils.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/internal/PlatformUtils.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/internal/PlatformUtils.native.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/System.kt                                core/src/vendor/common/kotlin/androidx/compose/foundation/internal/System.kt
+compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/internal/System.native.kt                         core/src/vendor/native/kotlin/androidx/compose/foundation/internal/System.native.kt
+
+# foundation.gestures.snapping — pure interfaces / value classes.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
