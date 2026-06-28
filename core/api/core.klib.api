@@ -50,8 +50,16 @@ open annotation class androidx.compose.foundation.layout/LayoutScopeMarker : kot
     constructor <init>() // androidx.compose.foundation.layout/LayoutScopeMarker.<init>|<init>(){}[0]
 }
 
+open annotation class androidx.compose.foundation.lazy.grid/LazyGridScopeMarker : kotlin/Annotation { // androidx.compose.foundation.lazy.grid/LazyGridScopeMarker|null[0]
+    constructor <init>() // androidx.compose.foundation.lazy.grid/LazyGridScopeMarker.<init>|<init>(){}[0]
+}
+
 open annotation class androidx.compose.foundation.lazy/LazyScopeMarker : kotlin/Annotation { // androidx.compose.foundation.lazy/LazyScopeMarker|null[0]
     constructor <init>() // androidx.compose.foundation.lazy/LazyScopeMarker.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation.style/ExperimentalFoundationStyleApi : kotlin/Annotation { // androidx.compose.foundation.style/ExperimentalFoundationStyleApi|null[0]
+    constructor <init>() // androidx.compose.foundation.style/ExperimentalFoundationStyleApi.<init>|<init>(){}[0]
 }
 
 open annotation class androidx.compose.foundation.text/InternalFoundationTextApi : kotlin/Annotation { // androidx.compose.foundation.text/InternalFoundationTextApi|null[0]
@@ -64,6 +72,10 @@ open annotation class androidx.compose.foundation/ExperimentalFoundationApi : ko
 
 open annotation class androidx.compose.foundation/InternalFoundationApi : kotlin/Annotation { // androidx.compose.foundation/InternalFoundationApi|null[0]
     constructor <init>() // androidx.compose.foundation/InternalFoundationApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui.graphics.drawscope/DrawScopeMarker : kotlin/Annotation { // androidx.compose.ui.graphics.drawscope/DrawScopeMarker|null[0]
+    constructor <init>() // androidx.compose.ui.graphics.drawscope/DrawScopeMarker.<init>|<init>(){}[0]
 }
 
 open annotation class androidx.compose.ui.graphics/ExperimentalGraphicsApi : kotlin/Annotation { // androidx.compose.ui.graphics/ExperimentalGraphicsApi|null[0]
@@ -88,6 +100,14 @@ open annotation class androidx.compose.ui.unit/ExperimentalUnitApi : kotlin/Anno
 
 open annotation class androidx.compose.ui/ExperimentalComposeUiApi : kotlin/Annotation { // androidx.compose.ui/ExperimentalComposeUiApi|null[0]
     constructor <init>() // androidx.compose.ui/ExperimentalComposeUiApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui/ExperimentalIndirectPointerApi : kotlin/Annotation { // androidx.compose.ui/ExperimentalIndirectPointerApi|null[0]
+    constructor <init>() // androidx.compose.ui/ExperimentalIndirectPointerApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui/ExperimentalMediaQueryApi : kotlin/Annotation { // androidx.compose.ui/ExperimentalMediaQueryApi|null[0]
+    constructor <init>() // androidx.compose.ui/ExperimentalMediaQueryApi.<init>|<init>(){}[0]
 }
 
 open annotation class androidx.compose.ui/InternalComposeUiApi : kotlin/Annotation { // androidx.compose.ui/InternalComposeUiApi|null[0]
@@ -155,6 +175,17 @@ final enum class androidx.compose.ui.input.pointer/PointerEventPass : kotlin/Enu
     final fun values(): kotlin/Array<androidx.compose.ui.input.pointer/PointerEventPass> // androidx.compose.ui.input.pointer/PointerEventPass.values|values#static(){}[0]
 }
 
+final enum class androidx.compose.ui.platform/TextToolbarStatus : kotlin/Enum<androidx.compose.ui.platform/TextToolbarStatus> { // androidx.compose.ui.platform/TextToolbarStatus|null[0]
+    enum entry Hidden // androidx.compose.ui.platform/TextToolbarStatus.Hidden|null[0]
+    enum entry Shown // androidx.compose.ui.platform/TextToolbarStatus.Shown|null[0]
+
+    final val entries // androidx.compose.ui.platform/TextToolbarStatus.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.platform/TextToolbarStatus> // androidx.compose.ui.platform/TextToolbarStatus.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): androidx.compose.ui.platform/TextToolbarStatus // androidx.compose.ui.platform/TextToolbarStatus.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<androidx.compose.ui.platform/TextToolbarStatus> // androidx.compose.ui.platform/TextToolbarStatus.values|values#static(){}[0]
+}
+
 final enum class androidx.compose.ui.res/ResourceKind : kotlin/Enum<androidx.compose.ui.res/ResourceKind> { // androidx.compose.ui.res/ResourceKind|null[0]
     enum entry AndroidVector // androidx.compose.ui.res/ResourceKind.AndroidVector|null[0]
     enum entry Raster // androidx.compose.ui.res/ResourceKind.Raster|null[0]
@@ -206,6 +237,10 @@ abstract fun interface androidx.compose.animation.core/Easing { // androidx.comp
     abstract fun transform(kotlin/Float): kotlin/Float // androidx.compose.animation.core/Easing.transform|transform(kotlin.Float){}[0]
 }
 
+abstract fun interface androidx.compose.foundation.text.input/KeyboardActionHandler { // androidx.compose.foundation.text.input/KeyboardActionHandler|null[0]
+    abstract fun onKeyboardAction(kotlin/Function0<kotlin/Unit>) // androidx.compose.foundation.text.input/KeyboardActionHandler.onKeyboardAction|onKeyboardAction(kotlin.Function0<kotlin.Unit>){}[0]
+}
+
 abstract fun interface androidx.compose.ui.graphics/ColorProducer { // androidx.compose.ui.graphics/ColorProducer|null[0]
     abstract fun invoke(): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/ColorProducer.invoke|invoke(){}[0]
 }
@@ -221,6 +256,23 @@ abstract fun interface androidx.compose.ui.text.input/VisualTransformation { // 
         final val None // androidx.compose.ui.text.input/VisualTransformation.Companion.None|{}None[0]
             final fun <get-None>(): androidx.compose.ui.text.input/VisualTransformation // androidx.compose.ui.text.input/VisualTransformation.Companion.None.<get-None>|<get-None>(){}[0]
     }
+}
+
+abstract fun interface androidx.compose.ui.text/TextInclusionStrategy { // androidx.compose.ui.text/TextInclusionStrategy|null[0]
+    abstract fun isIncluded(androidx.compose.ui.geometry/Rect, androidx.compose.ui.geometry/Rect): kotlin/Boolean // androidx.compose.ui.text/TextInclusionStrategy.isIncluded|isIncluded(androidx.compose.ui.geometry.Rect;androidx.compose.ui.geometry.Rect){}[0]
+
+    final object Companion { // androidx.compose.ui.text/TextInclusionStrategy.Companion|null[0]
+        final val AnyOverlap // androidx.compose.ui.text/TextInclusionStrategy.Companion.AnyOverlap|{}AnyOverlap[0]
+            final fun <get-AnyOverlap>(): androidx.compose.ui.text/TextInclusionStrategy // androidx.compose.ui.text/TextInclusionStrategy.Companion.AnyOverlap.<get-AnyOverlap>|<get-AnyOverlap>(){}[0]
+        final val ContainsAll // androidx.compose.ui.text/TextInclusionStrategy.Companion.ContainsAll|{}ContainsAll[0]
+            final fun <get-ContainsAll>(): androidx.compose.ui.text/TextInclusionStrategy // androidx.compose.ui.text/TextInclusionStrategy.Companion.ContainsAll.<get-ContainsAll>|<get-ContainsAll>(){}[0]
+        final val ContainsCenter // androidx.compose.ui.text/TextInclusionStrategy.Companion.ContainsCenter|{}ContainsCenter[0]
+            final fun <get-ContainsCenter>(): androidx.compose.ui.text/TextInclusionStrategy // androidx.compose.ui.text/TextInclusionStrategy.Companion.ContainsCenter.<get-ContainsCenter>|<get-ContainsCenter>(){}[0]
+    }
+}
+
+abstract fun interface androidx.compose.ui.window/WindowExceptionHandler { // androidx.compose.ui.window/WindowExceptionHandler|null[0]
+    abstract fun onException(kotlin/Throwable) // androidx.compose.ui.window/WindowExceptionHandler.onException|onException(kotlin.Throwable){}[0]
 }
 
 abstract fun interface androidx.compose.ui/Alignment { // androidx.compose.ui/Alignment|null[0]
@@ -358,6 +410,25 @@ abstract interface androidx.compose.animation.core/FloatDecayAnimationSpec { // 
     abstract fun getTargetValue(kotlin/Float, kotlin/Float): kotlin/Float // androidx.compose.animation.core/FloatDecayAnimationSpec.getTargetValue|getTargetValue(kotlin.Float;kotlin.Float){}[0]
     abstract fun getValueFromNanos(kotlin/Long, kotlin/Float, kotlin/Float): kotlin/Float // androidx.compose.animation.core/FloatDecayAnimationSpec.getValueFromNanos|getValueFromNanos(kotlin.Long;kotlin.Float;kotlin.Float){}[0]
     abstract fun getVelocityFromNanos(kotlin/Long, kotlin/Float, kotlin/Float): kotlin/Float // androidx.compose.animation.core/FloatDecayAnimationSpec.getVelocityFromNanos|getVelocityFromNanos(kotlin.Long;kotlin.Float;kotlin.Float){}[0]
+}
+
+abstract interface androidx.compose.foundation.gestures.snapping/SnapPosition { // androidx.compose.foundation.gestures.snapping/SnapPosition|null[0]
+    abstract fun position(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.gestures.snapping/SnapPosition.position|position(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+
+    final object Center : androidx.compose.foundation.gestures.snapping/SnapPosition { // androidx.compose.foundation.gestures.snapping/SnapPosition.Center|null[0]
+        final fun position(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.gestures.snapping/SnapPosition.Center.position|position(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun toString(): kotlin/String // androidx.compose.foundation.gestures.snapping/SnapPosition.Center.toString|toString(){}[0]
+    }
+
+    final object End : androidx.compose.foundation.gestures.snapping/SnapPosition { // androidx.compose.foundation.gestures.snapping/SnapPosition.End|null[0]
+        final fun position(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.gestures.snapping/SnapPosition.End.position|position(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun toString(): kotlin/String // androidx.compose.foundation.gestures.snapping/SnapPosition.End.toString|toString(){}[0]
+    }
+
+    final object Start : androidx.compose.foundation.gestures.snapping/SnapPosition { // androidx.compose.foundation.gestures.snapping/SnapPosition.Start|null[0]
+        final fun position(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.gestures.snapping/SnapPosition.Start.position|position(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun toString(): kotlin/String // androidx.compose.foundation.gestures.snapping/SnapPosition.Start.toString|toString(){}[0]
+    }
 }
 
 abstract interface androidx.compose.foundation.gestures/BringIntoViewSpec { // androidx.compose.foundation.gestures/BringIntoViewSpec|null[0]
@@ -597,6 +668,25 @@ abstract interface androidx.compose.foundation.lazy/LazyListLayoutInfo { // andr
 abstract interface androidx.compose.foundation.lazy/LazyListScope { // androidx.compose.foundation.lazy/LazyListScope|null[0]
     abstract fun item(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy/LazyListScope.item|item(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
     abstract fun items(kotlin/Int, kotlin/Function3<kotlin/Int, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy/LazyListScope.items|items(kotlin.Int;kotlin.Function3<kotlin.Int,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
+}
+
+abstract interface androidx.compose.foundation.pager/PageSize { // androidx.compose.foundation.pager/PageSize|null[0]
+    abstract fun (androidx.compose.ui.unit/Density).calculateMainAxisPageSize(kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.pager/PageSize.calculateMainAxisPageSize|calculateMainAxisPageSize@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+
+    final class Fixed : androidx.compose.foundation.pager/PageSize { // androidx.compose.foundation.pager/PageSize.Fixed|null[0]
+        constructor <init>(androidx.compose.ui.unit/Dp) // androidx.compose.foundation.pager/PageSize.Fixed.<init>|<init>(androidx.compose.ui.unit.Dp){}[0]
+
+        final val pageSize // androidx.compose.foundation.pager/PageSize.Fixed.pageSize|{}pageSize[0]
+            final fun <get-pageSize>(): androidx.compose.ui.unit/Dp // androidx.compose.foundation.pager/PageSize.Fixed.pageSize.<get-pageSize>|<get-pageSize>(){}[0]
+
+        final fun (androidx.compose.ui.unit/Density).calculateMainAxisPageSize(kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.pager/PageSize.Fixed.calculateMainAxisPageSize|calculateMainAxisPageSize@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.pager/PageSize.Fixed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // androidx.compose.foundation.pager/PageSize.Fixed.hashCode|hashCode(){}[0]
+    }
+
+    final object Fill : androidx.compose.foundation.pager/PageSize { // androidx.compose.foundation.pager/PageSize.Fill|null[0]
+        final fun (androidx.compose.ui.unit/Density).calculateMainAxisPageSize(kotlin/Int, kotlin/Int): kotlin/Int // androidx.compose.foundation.pager/PageSize.Fill.calculateMainAxisPageSize|calculateMainAxisPageSize@androidx.compose.ui.unit.Density(kotlin.Int;kotlin.Int){}[0]
+    }
 }
 
 abstract interface androidx.compose.foundation.shape/CornerSize { // androidx.compose.foundation.shape/CornerSize|null[0]
@@ -917,6 +1007,10 @@ abstract interface androidx.compose.ui.graphics/Shape { // androidx.compose.ui.g
     abstract fun createOutline(androidx.compose.ui.geometry/Size, androidx.compose.ui.unit/LayoutDirection, androidx.compose.ui.unit/Density): androidx.compose.ui.graphics/Outline // androidx.compose.ui.graphics/Shape.createOutline|createOutline(androidx.compose.ui.geometry.Size;androidx.compose.ui.unit.LayoutDirection;androidx.compose.ui.unit.Density){}[0]
 }
 
+abstract interface androidx.compose.ui.hapticfeedback/HapticFeedback { // androidx.compose.ui.hapticfeedback/HapticFeedback|null[0]
+    abstract fun performHapticFeedback(androidx.compose.ui.hapticfeedback/HapticFeedbackType) // androidx.compose.ui.hapticfeedback/HapticFeedback.performHapticFeedback|performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType){}[0]
+}
+
 abstract interface androidx.compose.ui.input.pointer/AwaitPointerEventScope : androidx.compose.ui.unit/Density { // androidx.compose.ui.input.pointer/AwaitPointerEventScope|null[0]
     abstract val currentEvent // androidx.compose.ui.input.pointer/AwaitPointerEventScope.currentEvent|{}currentEvent[0]
         abstract fun <get-currentEvent>(): androidx.compose.ui.input.pointer/PointerEvent // androidx.compose.ui.input.pointer/AwaitPointerEventScope.currentEvent.<get-currentEvent>|<get-currentEvent>(){}[0]
@@ -1066,6 +1160,11 @@ abstract interface androidx.compose.ui.res/ImageLoader { // androidx.compose.ui.
     abstract fun readBytes(kotlin/String): kotlin/ByteArray? // androidx.compose.ui.res/ImageLoader.readBytes|readBytes(kotlin.String){}[0]
 }
 
+abstract interface androidx.compose.ui.text.font/Typeface { // androidx.compose.ui.text.font/Typeface|null[0]
+    abstract val fontFamily // androidx.compose.ui.text.font/Typeface.fontFamily|{}fontFamily[0]
+        abstract fun <get-fontFamily>(): androidx.compose.ui.text.font/FontFamily? // androidx.compose.ui.text.font/Typeface.fontFamily.<get-fontFamily>|<get-fontFamily>(){}[0]
+}
+
 abstract interface androidx.compose.ui.text.input/OffsetMapping { // androidx.compose.ui.text.input/OffsetMapping|null[0]
     abstract fun originalToTransformed(kotlin/Int): kotlin/Int // androidx.compose.ui.text.input/OffsetMapping.originalToTransformed|originalToTransformed(kotlin.Int){}[0]
     abstract fun transformedToOriginal(kotlin/Int): kotlin/Int // androidx.compose.ui.text.input/OffsetMapping.transformedToOriginal|transformedToOriginal(kotlin.Int){}[0]
@@ -1160,6 +1259,24 @@ abstract interface com.compose.desktop.native/RenderBackend { // com.compose.des
     abstract fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.desktop.native/RenderBackend.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
     abstract fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.desktop.native/RenderBackend.snapshotBgra|snapshotBgra(){}[0]
 }
+
+sealed interface androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope { // androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope|null[0]
+    abstract val maxCurrentLineSpan // androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope.maxCurrentLineSpan|{}maxCurrentLineSpan[0]
+        abstract fun <get-maxCurrentLineSpan>(): kotlin/Int // androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope.maxCurrentLineSpan.<get-maxCurrentLineSpan>|<get-maxCurrentLineSpan>(){}[0]
+    abstract val maxLineSpan // androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope.maxLineSpan|{}maxLineSpan[0]
+        abstract fun <get-maxLineSpan>(): kotlin/Int // androidx.compose.foundation.lazy.grid/LazyGridItemSpanScope.maxLineSpan.<get-maxLineSpan>|<get-maxLineSpan>(){}[0]
+}
+
+sealed interface androidx.compose.foundation.pager/PageInfo { // androidx.compose.foundation.pager/PageInfo|null[0]
+    abstract val index // androidx.compose.foundation.pager/PageInfo.index|{}index[0]
+        abstract fun <get-index>(): kotlin/Int // androidx.compose.foundation.pager/PageInfo.index.<get-index>|<get-index>(){}[0]
+    abstract val key // androidx.compose.foundation.pager/PageInfo.key|{}key[0]
+        abstract fun <get-key>(): kotlin/Any // androidx.compose.foundation.pager/PageInfo.key.<get-key>|<get-key>(){}[0]
+    abstract val offset // androidx.compose.foundation.pager/PageInfo.offset|{}offset[0]
+        abstract fun <get-offset>(): kotlin/Int // androidx.compose.foundation.pager/PageInfo.offset.<get-offset>|<get-offset>(){}[0]
+}
+
+sealed interface androidx.compose.foundation.pager/PagerScope // androidx.compose.foundation.pager/PagerScope|null[0]
 
 sealed interface com.compose.desktop.native.graphics/PathCommand { // com.compose.desktop.native.graphics/PathCommand|null[0]
     final class CubicTo : com.compose.desktop.native.graphics/PathCommand { // com.compose.desktop.native.graphics/PathCommand.CubicTo|null[0]
@@ -1298,8 +1415,6 @@ abstract class androidx.compose.ui.layout/Placeable { // androidx.compose.ui.lay
 
     abstract class PlacementScope { // androidx.compose.ui.layout/Placeable.PlacementScope|null[0]
         constructor <init>() // androidx.compose.ui.layout/Placeable.PlacementScope.<init>|<init>(){}[0]
-
-        final object Default : androidx.compose.ui.layout/Placeable.PlacementScope // androidx.compose.ui.layout/Placeable.PlacementScope.Default|null[0]
     }
 }
 
@@ -1719,6 +1834,14 @@ final class <#A: kotlin/Any?> androidx.compose.animation.core/TweenSpec : androi
     final fun hashCode(): kotlin/Int // androidx.compose.animation.core/TweenSpec.hashCode|hashCode(){}[0]
 }
 
+final class <#A: kotlin/Any?> androidx.compose.ui.node/Ref { // androidx.compose.ui.node/Ref|null[0]
+    constructor <init>() // androidx.compose.ui.node/Ref.<init>|<init>(){}[0]
+
+    final var value // androidx.compose.ui.node/Ref.value|{}value[0]
+        final fun <get-value>(): #A? // androidx.compose.ui.node/Ref.value.<get-value>|<get-value>(){}[0]
+        final fun <set-value>(#A?) // androidx.compose.ui.node/Ref.value.<set-value>|<set-value>(1:0?){}[0]
+}
+
 final class androidx.compose.animation.core/AnimationVector1D : androidx.compose.animation.core/AnimationVector { // androidx.compose.animation.core/AnimationVector1D|null[0]
     constructor <init>(kotlin/Float) // androidx.compose.animation.core/AnimationVector1D.<init>|<init>(kotlin.Float){}[0]
 
@@ -1856,6 +1979,28 @@ final class androidx.compose.animation/SplineBasedFloatDecayAnimationSpec : andr
     final fun getVelocityFromNanos(kotlin/Long, kotlin/Float, kotlin/Float): kotlin/Float // androidx.compose.animation/SplineBasedFloatDecayAnimationSpec.getVelocityFromNanos|getVelocityFromNanos(kotlin.Long;kotlin.Float;kotlin.Float){}[0]
 }
 
+final class androidx.compose.foundation.content/MediaType { // androidx.compose.foundation.content/MediaType|null[0]
+    constructor <init>(kotlin/String) // androidx.compose.foundation.content/MediaType.<init>|<init>(kotlin.String){}[0]
+
+    final val representation // androidx.compose.foundation.content/MediaType.representation|{}representation[0]
+        final fun <get-representation>(): kotlin/String // androidx.compose.foundation.content/MediaType.representation.<get-representation>|<get-representation>(){}[0]
+
+    final fun toString(): kotlin/String // androidx.compose.foundation.content/MediaType.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.foundation.content/MediaType.Companion|null[0]
+        final val All // androidx.compose.foundation.content/MediaType.Companion.All|{}All[0]
+            final fun <get-All>(): androidx.compose.foundation.content/MediaType // androidx.compose.foundation.content/MediaType.Companion.All.<get-All>|<get-All>(){}[0]
+        final val HtmlText // androidx.compose.foundation.content/MediaType.Companion.HtmlText|{}HtmlText[0]
+            final fun <get-HtmlText>(): androidx.compose.foundation.content/MediaType // androidx.compose.foundation.content/MediaType.Companion.HtmlText.<get-HtmlText>|<get-HtmlText>(){}[0]
+        final val Image // androidx.compose.foundation.content/MediaType.Companion.Image|{}Image[0]
+            final fun <get-Image>(): androidx.compose.foundation.content/MediaType // androidx.compose.foundation.content/MediaType.Companion.Image.<get-Image>|<get-Image>(){}[0]
+        final val PlainText // androidx.compose.foundation.content/MediaType.Companion.PlainText|{}PlainText[0]
+            final fun <get-PlainText>(): androidx.compose.foundation.content/MediaType // androidx.compose.foundation.content/MediaType.Companion.PlainText.<get-PlainText>|<get-PlainText>(){}[0]
+        final val Text // androidx.compose.foundation.content/MediaType.Companion.Text|{}Text[0]
+            final fun <get-Text>(): androidx.compose.foundation.content/MediaType // androidx.compose.foundation.content/MediaType.Companion.Text.<get-Text>|<get-Text>(){}[0]
+    }
+}
+
 final class androidx.compose.foundation.gestures/GestureCancellationException : kotlin.coroutines.cancellation/CancellationException { // androidx.compose.foundation.gestures/GestureCancellationException|null[0]
     constructor <init>(kotlin/String? = ...) // androidx.compose.foundation.gestures/GestureCancellationException.<init>|<init>(kotlin.String?){}[0]
 }
@@ -1916,6 +2061,19 @@ final class androidx.compose.foundation.shape/RoundedCornerShape : androidx.comp
     final fun hashCode(): kotlin/Int // androidx.compose.foundation.shape/RoundedCornerShape.hashCode|hashCode(){}[0]
     final fun lerp(kotlin/Any?, kotlin/Float): kotlin/Any? // androidx.compose.foundation.shape/RoundedCornerShape.lerp|lerp(kotlin.Any?;kotlin.Float){}[0]
     final fun toString(): kotlin/String // androidx.compose.foundation.shape/RoundedCornerShape.toString|toString(){}[0]
+}
+
+final class androidx.compose.foundation.text.selection/TextSelectionColors { // androidx.compose.foundation.text.selection/TextSelectionColors|null[0]
+    constructor <init>(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color) // androidx.compose.foundation.text.selection/TextSelectionColors.<init>|<init>(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color){}[0]
+
+    final val backgroundColor // androidx.compose.foundation.text.selection/TextSelectionColors.backgroundColor|{}backgroundColor[0]
+        final fun <get-backgroundColor>(): androidx.compose.ui.graphics/Color // androidx.compose.foundation.text.selection/TextSelectionColors.backgroundColor.<get-backgroundColor>|<get-backgroundColor>(){}[0]
+    final val handleColor // androidx.compose.foundation.text.selection/TextSelectionColors.handleColor|{}handleColor[0]
+        final fun <get-handleColor>(): androidx.compose.ui.graphics/Color // androidx.compose.foundation.text.selection/TextSelectionColors.handleColor.<get-handleColor>|<get-handleColor>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.text.selection/TextSelectionColors.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.foundation.text.selection/TextSelectionColors.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.foundation.text.selection/TextSelectionColors.toString|toString(){}[0]
 }
 
 final class androidx.compose.foundation/BorderStroke { // androidx.compose.foundation/BorderStroke|null[0]
@@ -2463,27 +2621,6 @@ final class androidx.compose.ui.graphics/SweepGradient : androidx.compose.ui.gra
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/SweepGradient.hashCode|hashCode(){}[0]
 }
 
-final class androidx.compose.ui.graphics/TransformOrigin { // androidx.compose.ui.graphics/TransformOrigin|null[0]
-    constructor <init>(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/TransformOrigin.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
-
-    final val pivotFractionX // androidx.compose.ui.graphics/TransformOrigin.pivotFractionX|{}pivotFractionX[0]
-        final fun <get-pivotFractionX>(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.pivotFractionX.<get-pivotFractionX>|<get-pivotFractionX>(){}[0]
-    final val pivotFractionY // androidx.compose.ui.graphics/TransformOrigin.pivotFractionY|{}pivotFractionY[0]
-        final fun <get-pivotFractionY>(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.pivotFractionY.<get-pivotFractionY>|<get-pivotFractionY>(){}[0]
-
-    final fun component1(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.component1|component1(){}[0]
-    final fun component2(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.component2|component2(){}[0]
-    final fun copy(kotlin/Float = ..., kotlin/Float = ...): androidx.compose.ui.graphics/TransformOrigin // androidx.compose.ui.graphics/TransformOrigin.copy|copy(kotlin.Float;kotlin.Float){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/TransformOrigin.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/TransformOrigin.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // androidx.compose.ui.graphics/TransformOrigin.toString|toString(){}[0]
-
-    final object Companion { // androidx.compose.ui.graphics/TransformOrigin.Companion|null[0]
-        final val Center // androidx.compose.ui.graphics/TransformOrigin.Companion.Center|{}Center[0]
-            final fun <get-Center>(): androidx.compose.ui.graphics/TransformOrigin // androidx.compose.ui.graphics/TransformOrigin.Companion.Center.<get-Center>|<get-Center>(){}[0]
-    }
-}
-
 final class androidx.compose.ui.graphics/Vertices { // androidx.compose.ui.graphics/Vertices|null[0]
     constructor <init>(androidx.compose.ui.graphics/VertexMode, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Int>) // androidx.compose.ui.graphics/Vertices.<init>|<init>(androidx.compose.ui.graphics.VertexMode;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Int>){}[0]
 
@@ -2964,6 +3101,22 @@ final class androidx.compose.ui.text/SpanStyle { // androidx.compose.ui.text/Spa
 
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/SpanStyle.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.text/SpanStyle.hashCode|hashCode(){}[0]
+}
+
+final class androidx.compose.ui.text/TextLinkStyles { // androidx.compose.ui.text/TextLinkStyles|null[0]
+    constructor <init>(androidx.compose.ui.text/SpanStyle? = ..., androidx.compose.ui.text/SpanStyle? = ..., androidx.compose.ui.text/SpanStyle? = ..., androidx.compose.ui.text/SpanStyle? = ...) // androidx.compose.ui.text/TextLinkStyles.<init>|<init>(androidx.compose.ui.text.SpanStyle?;androidx.compose.ui.text.SpanStyle?;androidx.compose.ui.text.SpanStyle?;androidx.compose.ui.text.SpanStyle?){}[0]
+
+    final val focusedStyle // androidx.compose.ui.text/TextLinkStyles.focusedStyle|{}focusedStyle[0]
+        final fun <get-focusedStyle>(): androidx.compose.ui.text/SpanStyle? // androidx.compose.ui.text/TextLinkStyles.focusedStyle.<get-focusedStyle>|<get-focusedStyle>(){}[0]
+    final val hoveredStyle // androidx.compose.ui.text/TextLinkStyles.hoveredStyle|{}hoveredStyle[0]
+        final fun <get-hoveredStyle>(): androidx.compose.ui.text/SpanStyle? // androidx.compose.ui.text/TextLinkStyles.hoveredStyle.<get-hoveredStyle>|<get-hoveredStyle>(){}[0]
+    final val pressedStyle // androidx.compose.ui.text/TextLinkStyles.pressedStyle|{}pressedStyle[0]
+        final fun <get-pressedStyle>(): androidx.compose.ui.text/SpanStyle? // androidx.compose.ui.text/TextLinkStyles.pressedStyle.<get-pressedStyle>|<get-pressedStyle>(){}[0]
+    final val style // androidx.compose.ui.text/TextLinkStyles.style|{}style[0]
+        final fun <get-style>(): androidx.compose.ui.text/SpanStyle? // androidx.compose.ui.text/TextLinkStyles.style.<get-style>|<get-style>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.text/TextLinkStyles.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.text/TextLinkStyles.hashCode|hashCode(){}[0]
 }
 
 final class androidx.compose.ui.text/TextStyle { // androidx.compose.ui.text/TextStyle|null[0]
@@ -3996,6 +4149,35 @@ final value class androidx.compose.animation.core/StartOffsetType { // androidx.
     }
 }
 
+final value class androidx.compose.foundation.lazy.grid/GridItemSpan { // androidx.compose.foundation.lazy.grid/GridItemSpan|null[0]
+    final val currentLineSpan // androidx.compose.foundation.lazy.grid/GridItemSpan.currentLineSpan|{}currentLineSpan[0]
+        final fun <get-currentLineSpan>(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridItemSpan.currentLineSpan.<get-currentLineSpan>|<get-currentLineSpan>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.lazy.grid/GridItemSpan.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.foundation.lazy.grid/GridItemSpan.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.foundation.lazy.grid/GridItemSpan.toString|toString(){}[0]
+}
+
+final value class androidx.compose.foundation.text.input/TextObfuscationMode { // androidx.compose.foundation.text.input/TextObfuscationMode|null[0]
+    final val value // androidx.compose.foundation.text.input/TextObfuscationMode.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // androidx.compose.foundation.text.input/TextObfuscationMode.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.foundation.text.input/TextObfuscationMode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.foundation.text.input/TextObfuscationMode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.foundation.text.input/TextObfuscationMode.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.foundation.text.input/TextObfuscationMode.Companion|null[0]
+        final val Hidden // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.Hidden|{}Hidden[0]
+            final fun <get-Hidden>(): androidx.compose.foundation.text.input/TextObfuscationMode // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.Hidden.<get-Hidden>|<get-Hidden>(){}[0]
+        final val RevealLastTyped // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.RevealLastTyped|{}RevealLastTyped[0]
+            final fun <get-RevealLastTyped>(): androidx.compose.foundation.text.input/TextObfuscationMode // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.RevealLastTyped.<get-RevealLastTyped>|<get-RevealLastTyped>(){}[0]
+        final val System // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.System|{}System[0]
+            final fun <get-System>(): androidx.compose.foundation.text.input/TextObfuscationMode // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.System.<get-System>|<get-System>(){}[0]
+        final val Visible // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.Visible|{}Visible[0]
+            final fun <get-Visible>(): androidx.compose.foundation.text.input/TextObfuscationMode // androidx.compose.foundation.text.input/TextObfuscationMode.Companion.Visible.<get-Visible>|<get-Visible>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.geometry/CornerRadius { // androidx.compose.ui.geometry/CornerRadius|null[0]
     constructor <init>(kotlin/Long) // androidx.compose.ui.geometry/CornerRadius.<init>|<init>(kotlin.Long){}[0]
 
@@ -4509,6 +4691,27 @@ final value class androidx.compose.ui.graphics/TileMode { // androidx.compose.ui
     }
 }
 
+final value class androidx.compose.ui.graphics/TransformOrigin { // androidx.compose.ui.graphics/TransformOrigin|null[0]
+    final val packedValue // androidx.compose.ui.graphics/TransformOrigin.packedValue|{}packedValue[0]
+        final fun <get-packedValue>(): kotlin/Long // androidx.compose.ui.graphics/TransformOrigin.packedValue.<get-packedValue>|<get-packedValue>(){}[0]
+    final val pivotFractionX // androidx.compose.ui.graphics/TransformOrigin.pivotFractionX|{}pivotFractionX[0]
+        final fun <get-pivotFractionX>(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.pivotFractionX.<get-pivotFractionX>|<get-pivotFractionX>(){}[0]
+    final val pivotFractionY // androidx.compose.ui.graphics/TransformOrigin.pivotFractionY|{}pivotFractionY[0]
+        final fun <get-pivotFractionY>(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.pivotFractionY.<get-pivotFractionY>|<get-pivotFractionY>(){}[0]
+
+    final fun copy(kotlin/Float = ..., kotlin/Float = ...): androidx.compose.ui.graphics/TransformOrigin // androidx.compose.ui.graphics/TransformOrigin.copy|copy(kotlin.Float;kotlin.Float){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/TransformOrigin.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/TransformOrigin.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/TransformOrigin.toString|toString(){}[0]
+    final inline fun component1(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.component1|component1(){}[0]
+    final inline fun component2(): kotlin/Float // androidx.compose.ui.graphics/TransformOrigin.component2|component2(){}[0]
+
+    final object Companion { // androidx.compose.ui.graphics/TransformOrigin.Companion|null[0]
+        final val Center // androidx.compose.ui.graphics/TransformOrigin.Companion.Center|{}Center[0]
+            final fun <get-Center>(): androidx.compose.ui.graphics/TransformOrigin // androidx.compose.ui.graphics/TransformOrigin.Companion.Center.<get-Center>|<get-Center>(){}[0]
+    }
+}
+
 final value class androidx.compose.ui.graphics/VertexMode { // androidx.compose.ui.graphics/VertexMode|null[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/VertexMode.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/VertexMode.hashCode|hashCode(){}[0]
@@ -4521,6 +4724,45 @@ final value class androidx.compose.ui.graphics/VertexMode { // androidx.compose.
             final fun <get-TriangleStrip>(): androidx.compose.ui.graphics/VertexMode // androidx.compose.ui.graphics/VertexMode.Companion.TriangleStrip.<get-TriangleStrip>|<get-TriangleStrip>(){}[0]
         final val Triangles // androidx.compose.ui.graphics/VertexMode.Companion.Triangles|{}Triangles[0]
             final fun <get-Triangles>(): androidx.compose.ui.graphics/VertexMode // androidx.compose.ui.graphics/VertexMode.Companion.Triangles.<get-Triangles>|<get-Triangles>(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.hapticfeedback/HapticFeedbackType { // androidx.compose.ui.hapticfeedback/HapticFeedbackType|null[0]
+    constructor <init>(kotlin/Int) // androidx.compose.ui.hapticfeedback/HapticFeedbackType.<init>|<init>(kotlin.Int){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.hapticfeedback/HapticFeedbackType.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.hapticfeedback/HapticFeedbackType.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.hapticfeedback/HapticFeedbackType.toString|toString(){}[0]
+
+    final object Companion { // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion|null[0]
+        final val Confirm // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.Confirm|{}Confirm[0]
+            final fun <get-Confirm>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.Confirm.<get-Confirm>|<get-Confirm>(){}[0]
+        final val ContextClick // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ContextClick|{}ContextClick[0]
+            final fun <get-ContextClick>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ContextClick.<get-ContextClick>|<get-ContextClick>(){}[0]
+        final val GestureEnd // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.GestureEnd|{}GestureEnd[0]
+            final fun <get-GestureEnd>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.GestureEnd.<get-GestureEnd>|<get-GestureEnd>(){}[0]
+        final val GestureThresholdActivate // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.GestureThresholdActivate|{}GestureThresholdActivate[0]
+            final fun <get-GestureThresholdActivate>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.GestureThresholdActivate.<get-GestureThresholdActivate>|<get-GestureThresholdActivate>(){}[0]
+        final val KeyboardTap // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.KeyboardTap|{}KeyboardTap[0]
+            final fun <get-KeyboardTap>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.KeyboardTap.<get-KeyboardTap>|<get-KeyboardTap>(){}[0]
+        final val LongPress // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.LongPress|{}LongPress[0]
+            final fun <get-LongPress>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.LongPress.<get-LongPress>|<get-LongPress>(){}[0]
+        final val Reject // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.Reject|{}Reject[0]
+            final fun <get-Reject>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.Reject.<get-Reject>|<get-Reject>(){}[0]
+        final val SegmentFrequentTick // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.SegmentFrequentTick|{}SegmentFrequentTick[0]
+            final fun <get-SegmentFrequentTick>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.SegmentFrequentTick.<get-SegmentFrequentTick>|<get-SegmentFrequentTick>(){}[0]
+        final val SegmentTick // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.SegmentTick|{}SegmentTick[0]
+            final fun <get-SegmentTick>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.SegmentTick.<get-SegmentTick>|<get-SegmentTick>(){}[0]
+        final val TextHandleMove // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.TextHandleMove|{}TextHandleMove[0]
+            final fun <get-TextHandleMove>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.TextHandleMove.<get-TextHandleMove>|<get-TextHandleMove>(){}[0]
+        final val ToggleOff // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ToggleOff|{}ToggleOff[0]
+            final fun <get-ToggleOff>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ToggleOff.<get-ToggleOff>|<get-ToggleOff>(){}[0]
+        final val ToggleOn // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ToggleOn|{}ToggleOn[0]
+            final fun <get-ToggleOn>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.ToggleOn.<get-ToggleOn>|<get-ToggleOn>(){}[0]
+        final val VirtualKey // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.VirtualKey|{}VirtualKey[0]
+            final fun <get-VirtualKey>(): androidx.compose.ui.hapticfeedback/HapticFeedbackType // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.VirtualKey.<get-VirtualKey>|<get-VirtualKey>(){}[0]
+
+        final fun values(): kotlin.collections/List<androidx.compose.ui.hapticfeedback/HapticFeedbackType> // androidx.compose.ui.hapticfeedback/HapticFeedbackType.Companion.values|values(){}[0]
     }
 }
 
@@ -6307,8 +6549,70 @@ final object androidx.compose.foundation.layout/ColumnScope { // androidx.compos
     final fun (androidx.compose.ui/Modifier).weight(kotlin/Float, kotlin/Boolean = ...): androidx.compose.ui/Modifier // androidx.compose.foundation.layout/ColumnScope.weight|weight@androidx.compose.ui.Modifier(kotlin.Float;kotlin.Boolean){}[0]
 }
 
+final object androidx.compose.foundation.layout/ComposeFoundationLayoutFlags // androidx.compose.foundation.layout/ComposeFoundationLayoutFlags|null[0]
+
 final object androidx.compose.foundation.layout/RowScope { // androidx.compose.foundation.layout/RowScope|null[0]
     final fun (androidx.compose.ui/Modifier).weight(kotlin/Float, kotlin/Boolean = ...): androidx.compose.ui/Modifier // androidx.compose.foundation.layout/RowScope.weight|weight@androidx.compose.ui.Modifier(kotlin.Float;kotlin.Boolean){}[0]
+}
+
+final object androidx.compose.foundation/ComposeFoundationFlags { // androidx.compose.foundation/ComposeFoundationFlags|null[0]
+    final var isAnchoredDraggableTargetValueCalculationFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isAnchoredDraggableTargetValueCalculationFixEnabled|{}isAnchoredDraggableTargetValueCalculationFixEnabled[0]
+        final fun <get-isAnchoredDraggableTargetValueCalculationFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isAnchoredDraggableTargetValueCalculationFixEnabled.<get-isAnchoredDraggableTargetValueCalculationFixEnabled>|<get-isAnchoredDraggableTargetValueCalculationFixEnabled>(){}[0]
+        final fun <set-isAnchoredDraggableTargetValueCalculationFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isAnchoredDraggableTargetValueCalculationFixEnabled.<set-isAnchoredDraggableTargetValueCalculationFixEnabled>|<set-isAnchoredDraggableTargetValueCalculationFixEnabled>(kotlin.Boolean){}[0]
+    final var isBasicTextFieldHeightInLinesOptimizationEnabled // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldHeightInLinesOptimizationEnabled|{}isBasicTextFieldHeightInLinesOptimizationEnabled[0]
+        final fun <get-isBasicTextFieldHeightInLinesOptimizationEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldHeightInLinesOptimizationEnabled.<get-isBasicTextFieldHeightInLinesOptimizationEnabled>|<get-isBasicTextFieldHeightInLinesOptimizationEnabled>(){}[0]
+        final fun <set-isBasicTextFieldHeightInLinesOptimizationEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldHeightInLinesOptimizationEnabled.<set-isBasicTextFieldHeightInLinesOptimizationEnabled>|<set-isBasicTextFieldHeightInLinesOptimizationEnabled>(kotlin.Boolean){}[0]
+    final var isBasicTextFieldMinSizeOptimizationEnabled // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldMinSizeOptimizationEnabled|{}isBasicTextFieldMinSizeOptimizationEnabled[0]
+        final fun <get-isBasicTextFieldMinSizeOptimizationEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldMinSizeOptimizationEnabled.<get-isBasicTextFieldMinSizeOptimizationEnabled>|<get-isBasicTextFieldMinSizeOptimizationEnabled>(){}[0]
+        final fun <set-isBasicTextFieldMinSizeOptimizationEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldMinSizeOptimizationEnabled.<set-isBasicTextFieldMinSizeOptimizationEnabled>|<set-isBasicTextFieldMinSizeOptimizationEnabled>(kotlin.Boolean){}[0]
+    final var isBasicTextFieldSizeOptimizationEnabled // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldSizeOptimizationEnabled|{}isBasicTextFieldSizeOptimizationEnabled[0]
+        final fun <get-isBasicTextFieldSizeOptimizationEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldSizeOptimizationEnabled.<get-isBasicTextFieldSizeOptimizationEnabled>|<get-isBasicTextFieldSizeOptimizationEnabled>(){}[0]
+        final fun <set-isBasicTextFieldSizeOptimizationEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldSizeOptimizationEnabled.<set-isBasicTextFieldSizeOptimizationEnabled>|<set-isBasicTextFieldSizeOptimizationEnabled>(kotlin.Boolean){}[0]
+    final var isBasicTextFieldStyledTextEnabled // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldStyledTextEnabled|{}isBasicTextFieldStyledTextEnabled[0]
+        final fun <get-isBasicTextFieldStyledTextEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldStyledTextEnabled.<get-isBasicTextFieldStyledTextEnabled>|<get-isBasicTextFieldStyledTextEnabled>(){}[0]
+        final fun <set-isBasicTextFieldStyledTextEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isBasicTextFieldStyledTextEnabled.<set-isBasicTextFieldStyledTextEnabled>|<set-isBasicTextFieldStyledTextEnabled>(kotlin.Boolean){}[0]
+    final var isCacheWindowForPagerEnabled // androidx.compose.foundation/ComposeFoundationFlags.isCacheWindowForPagerEnabled|{}isCacheWindowForPagerEnabled[0]
+        final fun <get-isCacheWindowForPagerEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isCacheWindowForPagerEnabled.<get-isCacheWindowForPagerEnabled>|<get-isCacheWindowForPagerEnabled>(){}[0]
+        final fun <set-isCacheWindowForPagerEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isCacheWindowForPagerEnabled.<set-isCacheWindowForPagerEnabled>|<set-isCacheWindowForPagerEnabled>(kotlin.Boolean){}[0]
+    final var isClearNestedScrollCoroutineScopeFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isClearNestedScrollCoroutineScopeFixEnabled|{}isClearNestedScrollCoroutineScopeFixEnabled[0]
+        final fun <get-isClearNestedScrollCoroutineScopeFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isClearNestedScrollCoroutineScopeFixEnabled.<get-isClearNestedScrollCoroutineScopeFixEnabled>|<get-isClearNestedScrollCoroutineScopeFixEnabled>(){}[0]
+        final fun <set-isClearNestedScrollCoroutineScopeFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isClearNestedScrollCoroutineScopeFixEnabled.<set-isClearNestedScrollCoroutineScopeFixEnabled>|<set-isClearNestedScrollCoroutineScopeFixEnabled>(kotlin.Boolean){}[0]
+    final var isConcurrentTextFieldSelectionFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isConcurrentTextFieldSelectionFixEnabled|{}isConcurrentTextFieldSelectionFixEnabled[0]
+        final fun <get-isConcurrentTextFieldSelectionFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isConcurrentTextFieldSelectionFixEnabled.<get-isConcurrentTextFieldSelectionFixEnabled>|<get-isConcurrentTextFieldSelectionFixEnabled>(){}[0]
+        final fun <set-isConcurrentTextFieldSelectionFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isConcurrentTextFieldSelectionFixEnabled.<set-isConcurrentTextFieldSelectionFixEnabled>|<set-isConcurrentTextFieldSelectionFixEnabled>(kotlin.Boolean){}[0]
+    final var isDragNodeOffsetDoubleCountingFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isDragNodeOffsetDoubleCountingFixEnabled|{}isDragNodeOffsetDoubleCountingFixEnabled[0]
+        final fun <get-isDragNodeOffsetDoubleCountingFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isDragNodeOffsetDoubleCountingFixEnabled.<get-isDragNodeOffsetDoubleCountingFixEnabled>|<get-isDragNodeOffsetDoubleCountingFixEnabled>(){}[0]
+        final fun <set-isDragNodeOffsetDoubleCountingFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isDragNodeOffsetDoubleCountingFixEnabled.<set-isDragNodeOffsetDoubleCountingFixEnabled>|<set-isDragNodeOffsetDoubleCountingFixEnabled>(kotlin.Boolean){}[0]
+    final var isDraggableVelocityTrackerFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isDraggableVelocityTrackerFixEnabled|{}isDraggableVelocityTrackerFixEnabled[0]
+        final fun <get-isDraggableVelocityTrackerFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isDraggableVelocityTrackerFixEnabled.<get-isDraggableVelocityTrackerFixEnabled>|<get-isDraggableVelocityTrackerFixEnabled>(){}[0]
+        final fun <set-isDraggableVelocityTrackerFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isDraggableVelocityTrackerFixEnabled.<set-isDraggableVelocityTrackerFixEnabled>|<set-isDraggableVelocityTrackerFixEnabled>(kotlin.Boolean){}[0]
+    final var isInheritedTextStyleEnabled // androidx.compose.foundation/ComposeFoundationFlags.isInheritedTextStyleEnabled|{}isInheritedTextStyleEnabled[0]
+        final fun <get-isInheritedTextStyleEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isInheritedTextStyleEnabled.<get-isInheritedTextStyleEnabled>|<get-isInheritedTextStyleEnabled>(){}[0]
+        final fun <set-isInheritedTextStyleEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isInheritedTextStyleEnabled.<set-isInheritedTextStyleEnabled>|<set-isInheritedTextStyleEnabled>(kotlin.Boolean){}[0]
+    final var isInteractionSoundEffectOnClickEnabled // androidx.compose.foundation/ComposeFoundationFlags.isInteractionSoundEffectOnClickEnabled|{}isInteractionSoundEffectOnClickEnabled[0]
+        final fun <get-isInteractionSoundEffectOnClickEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isInteractionSoundEffectOnClickEnabled.<get-isInteractionSoundEffectOnClickEnabled>|<get-isInteractionSoundEffectOnClickEnabled>(){}[0]
+        final fun <set-isInteractionSoundEffectOnClickEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isInteractionSoundEffectOnClickEnabled.<set-isInteractionSoundEffectOnClickEnabled>|<set-isInteractionSoundEffectOnClickEnabled>(kotlin.Boolean){}[0]
+    final var isMouseSelectionBetweenTextEnabled // androidx.compose.foundation/ComposeFoundationFlags.isMouseSelectionBetweenTextEnabled|{}isMouseSelectionBetweenTextEnabled[0]
+        final fun <get-isMouseSelectionBetweenTextEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isMouseSelectionBetweenTextEnabled.<get-isMouseSelectionBetweenTextEnabled>|<get-isMouseSelectionBetweenTextEnabled>(){}[0]
+        final fun <set-isMouseSelectionBetweenTextEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isMouseSelectionBetweenTextEnabled.<set-isMouseSelectionBetweenTextEnabled>|<set-isMouseSelectionBetweenTextEnabled>(kotlin.Boolean){}[0]
+    final var isNewContextMenuEnabled // androidx.compose.foundation/ComposeFoundationFlags.isNewContextMenuEnabled|{}isNewContextMenuEnabled[0]
+        final fun <get-isNewContextMenuEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isNewContextMenuEnabled.<get-isNewContextMenuEnabled>|<get-isNewContextMenuEnabled>(){}[0]
+        final fun <set-isNewContextMenuEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isNewContextMenuEnabled.<set-isNewContextMenuEnabled>|<set-isNewContextMenuEnabled>(kotlin.Boolean){}[0]
+    final var isPausableCompositionInPrefetchEnabled // androidx.compose.foundation/ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled|{}isPausableCompositionInPrefetchEnabled[0]
+        final fun <get-isPausableCompositionInPrefetchEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled.<get-isPausableCompositionInPrefetchEnabled>|<get-isPausableCompositionInPrefetchEnabled>(){}[0]
+        final fun <set-isPausableCompositionInPrefetchEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled.<set-isPausableCompositionInPrefetchEnabled>|<set-isPausableCompositionInPrefetchEnabled>(kotlin.Boolean){}[0]
+    final var isReverseLayoutNestedScrollConnectionInPagerFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isReverseLayoutNestedScrollConnectionInPagerFixEnabled|{}isReverseLayoutNestedScrollConnectionInPagerFixEnabled[0]
+        final fun <get-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isReverseLayoutNestedScrollConnectionInPagerFixEnabled.<get-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>|<get-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>(){}[0]
+        final fun <set-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isReverseLayoutNestedScrollConnectionInPagerFixEnabled.<set-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>|<set-isReverseLayoutNestedScrollConnectionInPagerFixEnabled>(kotlin.Boolean){}[0]
+    final var isSelectionAutoScrollEnabled // androidx.compose.foundation/ComposeFoundationFlags.isSelectionAutoScrollEnabled|{}isSelectionAutoScrollEnabled[0]
+        final fun <get-isSelectionAutoScrollEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isSelectionAutoScrollEnabled.<get-isSelectionAutoScrollEnabled>|<get-isSelectionAutoScrollEnabled>(){}[0]
+        final fun <set-isSelectionAutoScrollEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isSelectionAutoScrollEnabled.<set-isSelectionAutoScrollEnabled>|<set-isSelectionAutoScrollEnabled>(kotlin.Boolean){}[0]
+    final var isSkipItemPlacementAnimationFixEnabled // androidx.compose.foundation/ComposeFoundationFlags.isSkipItemPlacementAnimationFixEnabled|{}isSkipItemPlacementAnimationFixEnabled[0]
+        final fun <get-isSkipItemPlacementAnimationFixEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isSkipItemPlacementAnimationFixEnabled.<get-isSkipItemPlacementAnimationFixEnabled>|<get-isSkipItemPlacementAnimationFixEnabled>(){}[0]
+        final fun <set-isSkipItemPlacementAnimationFixEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isSkipItemPlacementAnimationFixEnabled.<set-isSkipItemPlacementAnimationFixEnabled>|<set-isSkipItemPlacementAnimationFixEnabled>(kotlin.Boolean){}[0]
+    final var isSmartSelectionEnabled // androidx.compose.foundation/ComposeFoundationFlags.isSmartSelectionEnabled|{}isSmartSelectionEnabled[0]
+        final fun <get-isSmartSelectionEnabled>(): kotlin/Boolean // androidx.compose.foundation/ComposeFoundationFlags.isSmartSelectionEnabled.<get-isSmartSelectionEnabled>|<get-isSmartSelectionEnabled>(){}[0]
+        final fun <set-isSmartSelectionEnabled>(kotlin/Boolean) // androidx.compose.foundation/ComposeFoundationFlags.isSmartSelectionEnabled.<set-isSmartSelectionEnabled>|<set-isSmartSelectionEnabled>(kotlin.Boolean){}[0]
 }
 
 final object androidx.compose.ui.graphics.colorspace/ColorSpaces { // androidx.compose.ui.graphics.colorspace/ColorSpaces|null[0]
@@ -6663,9 +6967,13 @@ final val androidx.compose.animation/VectorConverter // androidx.compose.animati
 final val androidx.compose.animation/androidx_compose_animation_AndroidFlingSpline_FlingResult$stableprop // androidx.compose.animation/androidx_compose_animation_AndroidFlingSpline_FlingResult$stableprop|#static{}androidx_compose_animation_AndroidFlingSpline_FlingResult$stableprop[0]
 final val androidx.compose.animation/androidx_compose_animation_FlingCalculator_FlingInfo$stableprop // androidx.compose.animation/androidx_compose_animation_FlingCalculator_FlingInfo$stableprop|#static{}androidx_compose_animation_FlingCalculator_FlingInfo$stableprop[0]
 final val androidx.compose.animation/androidx_compose_animation_SplineBasedFloatDecayAnimationSpec$stableprop // androidx.compose.animation/androidx_compose_animation_SplineBasedFloatDecayAnimationSpec$stableprop|#static{}androidx_compose_animation_SplineBasedFloatDecayAnimationSpec$stableprop[0]
+final val androidx.compose.foundation.content/androidx_compose_foundation_content_MediaType$stableprop // androidx.compose.foundation.content/androidx_compose_foundation_content_MediaType$stableprop|#static{}androidx_compose_foundation_content_MediaType$stableprop[0]
 final val androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop|#static{}androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop[0]
 final val androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop|#static{}androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop[0]
 final val androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop|#static{}androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop[0]
+final val androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop|#static{}androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop[0]
+final val androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop|#static{}androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop[0]
+final val androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop|#static{}androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop[0]
 final val androidx.compose.foundation.gestures/LocalBringIntoViewSpec // androidx.compose.foundation.gestures/LocalBringIntoViewSpec|{}LocalBringIntoViewSpec[0]
     final fun <get-LocalBringIntoViewSpec>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.foundation.gestures/BringIntoViewSpec> // androidx.compose.foundation.gestures/LocalBringIntoViewSpec.<get-LocalBringIntoViewSpec>|<get-LocalBringIntoViewSpec>(){}[0]
 final val androidx.compose.foundation.gestures/androidx_compose_foundation_gestures_GestureCancellationException$stableprop // androidx.compose.foundation.gestures/androidx_compose_foundation_gestures_GestureCancellationException$stableprop|#static{}androidx_compose_foundation_gestures_GestureCancellationException$stableprop[0]
@@ -6686,11 +6994,14 @@ final val androidx.compose.foundation.interaction/androidx_compose_foundation_in
 final val androidx.compose.foundation.interaction/androidx_compose_foundation_interaction_PressInteraction_Release$stableprop // androidx.compose.foundation.interaction/androidx_compose_foundation_interaction_PressInteraction_Release$stableprop|#static{}androidx_compose_foundation_interaction_PressInteraction_Release$stableprop[0]
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop|#static{}androidx_compose_foundation_layout_Arrangement$stableprop[0]
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop|#static{}androidx_compose_foundation_layout_ColumnScope$stableprop[0]
+final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop|#static{}androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop[0]
 final val androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop // androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop|#static{}androidx_compose_foundation_layout_RowScope$stableprop[0]
 final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop[0]
 final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop[0]
 final val androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop|#static{}androidx_compose_foundation_lazy_grid_GridCells_FixedSize$stableprop[0]
 final val androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop // androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop|#static{}androidx_compose_foundation_lazy_LazyListState$stableprop[0]
+final val androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fill$stableprop // androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fill$stableprop|#static{}androidx_compose_foundation_pager_PageSize_Fill$stableprop[0]
+final val androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fixed$stableprop // androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fixed$stableprop|#static{}androidx_compose_foundation_pager_PageSize_Fixed$stableprop[0]
 final val androidx.compose.foundation.shape/CircleShape // androidx.compose.foundation.shape/CircleShape|{}CircleShape[0]
     final fun <get-CircleShape>(): androidx.compose.foundation.shape/RoundedCornerShape // androidx.compose.foundation.shape/CircleShape.<get-CircleShape>|<get-CircleShape>(){}[0]
 final val androidx.compose.foundation.shape/ZeroCornerSize // androidx.compose.foundation.shape/ZeroCornerSize|{}ZeroCornerSize[0]
@@ -6701,9 +7012,17 @@ final val androidx.compose.foundation.shape/androidx_compose_foundation_shape_Co
 final val androidx.compose.foundation.shape/androidx_compose_foundation_shape_CutCornerShape$stableprop // androidx.compose.foundation.shape/androidx_compose_foundation_shape_CutCornerShape$stableprop|#static{}androidx_compose_foundation_shape_CutCornerShape$stableprop[0]
 final val androidx.compose.foundation.shape/androidx_compose_foundation_shape_GenericShape$stableprop // androidx.compose.foundation.shape/androidx_compose_foundation_shape_GenericShape$stableprop|#static{}androidx_compose_foundation_shape_GenericShape$stableprop[0]
 final val androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop // androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop|#static{}androidx_compose_foundation_shape_RoundedCornerShape$stableprop[0]
+final val androidx.compose.foundation.text.selection/LocalTextSelectionColors // androidx.compose.foundation.text.selection/LocalTextSelectionColors|{}LocalTextSelectionColors[0]
+    final fun <get-LocalTextSelectionColors>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.foundation.text.selection/TextSelectionColors> // androidx.compose.foundation.text.selection/LocalTextSelectionColors.<get-LocalTextSelectionColors>|<get-LocalTextSelectionColors>(){}[0]
+final val androidx.compose.foundation.text.selection/androidx_compose_foundation_text_selection_TextSelectionColors$stableprop // androidx.compose.foundation.text.selection/androidx_compose_foundation_text_selection_TextSelectionColors$stableprop|#static{}androidx_compose_foundation_text_selection_TextSelectionColors$stableprop[0]
+final val androidx.compose.foundation.text/LocalAutofillHighlightBrush // androidx.compose.foundation.text/LocalAutofillHighlightBrush|{}LocalAutofillHighlightBrush[0]
+    final fun <get-LocalAutofillHighlightBrush>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui.graphics/Brush> // androidx.compose.foundation.text/LocalAutofillHighlightBrush.<get-LocalAutofillHighlightBrush>|<get-LocalAutofillHighlightBrush>(){}[0]
+final val androidx.compose.foundation.text/LocalAutofillHighlightColor // androidx.compose.foundation.text/LocalAutofillHighlightColor|{}LocalAutofillHighlightColor[0]
+    final fun <get-LocalAutofillHighlightColor>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui.graphics/Color> // androidx.compose.foundation.text/LocalAutofillHighlightColor.<get-LocalAutofillHighlightColor>|<get-LocalAutofillHighlightColor>(){}[0]
 final val androidx.compose.foundation/LocalScrollbarStyle // androidx.compose.foundation/LocalScrollbarStyle|{}LocalScrollbarStyle[0]
     final fun <get-LocalScrollbarStyle>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.foundation/ScrollbarStyle> // androidx.compose.foundation/LocalScrollbarStyle.<get-LocalScrollbarStyle>|<get-LocalScrollbarStyle>(){}[0]
 final val androidx.compose.foundation/androidx_compose_foundation_BorderStroke$stableprop // androidx.compose.foundation/androidx_compose_foundation_BorderStroke$stableprop|#static{}androidx_compose_foundation_BorderStroke$stableprop[0]
+final val androidx.compose.foundation/androidx_compose_foundation_ComposeFoundationFlags$stableprop // androidx.compose.foundation/androidx_compose_foundation_ComposeFoundationFlags$stableprop|#static{}androidx_compose_foundation_ComposeFoundationFlags$stableprop[0]
 final val androidx.compose.foundation/androidx_compose_foundation_MutatorMutex$stableprop // androidx.compose.foundation/androidx_compose_foundation_MutatorMutex$stableprop|#static{}androidx_compose_foundation_MutatorMutex$stableprop[0]
 final val androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop // androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop|#static{}androidx_compose_foundation_ScrollState$stableprop[0]
 final val androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop // androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop|#static{}androidx_compose_foundation_ScrollbarStyle$stableprop[0]
@@ -6788,7 +7107,6 @@ final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stabl
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop|#static{}androidx_compose_ui_graphics_Shadow$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop|#static{}androidx_compose_ui_graphics_SolidColor$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop|#static{}androidx_compose_ui_graphics_SweepGradient$stableprop[0]
-final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_TransformOrigin$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_TransformOrigin$stableprop|#static{}androidx_compose_ui_graphics_TransformOrigin$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Vertices$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Vertices$stableprop|#static{}androidx_compose_ui_graphics_Vertices$stableprop[0]
 final val androidx.compose.ui.graphics/difference // androidx.compose.ui.graphics/difference|@androidx.compose.ui.graphics.PathOperation.Companion{}difference[0]
     final fun (androidx.compose.ui.graphics/PathOperation.Companion).<get-difference>(): androidx.compose.ui.graphics/PathOperation // androidx.compose.ui.graphics/difference.<get-difference>|<get-difference>@androidx.compose.ui.graphics.PathOperation.Companion(){}[0]
@@ -6882,6 +7200,7 @@ final val androidx.compose.ui.layout/isSpecified // androidx.compose.ui.layout/i
     final inline fun (androidx.compose.ui.layout/ScaleFactor).<get-isSpecified>(): kotlin/Boolean // androidx.compose.ui.layout/isSpecified.<get-isSpecified>|<get-isSpecified>@androidx.compose.ui.layout.ScaleFactor(){}[0]
 final val androidx.compose.ui.layout/isUnspecified // androidx.compose.ui.layout/isUnspecified|@androidx.compose.ui.layout.ScaleFactor{}isUnspecified[0]
     final inline fun (androidx.compose.ui.layout/ScaleFactor).<get-isUnspecified>(): kotlin/Boolean // androidx.compose.ui.layout/isUnspecified.<get-isUnspecified>|<get-isUnspecified>@androidx.compose.ui.layout.ScaleFactor(){}[0]
+final val androidx.compose.ui.node/androidx_compose_ui_node_Ref$stableprop // androidx.compose.ui.node/androidx_compose_ui_node_Ref$stableprop|#static{}androidx_compose_ui_node_Ref$stableprop[0]
 final val androidx.compose.ui.platform/LocalClipboardManager // androidx.compose.ui.platform/LocalClipboardManager|{}LocalClipboardManager[0]
     final fun <get-LocalClipboardManager>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui.platform/ClipboardManager> // androidx.compose.ui.platform/LocalClipboardManager.<get-LocalClipboardManager>|<get-LocalClipboardManager>(){}[0]
 final val androidx.compose.ui.platform/LocalInspectionMode // androidx.compose.ui.platform/LocalInspectionMode|{}LocalInspectionMode[0]
@@ -6932,6 +7251,7 @@ final val androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Rang
 final val androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop|#static{}androidx_compose_ui_text_ParagraphStyle$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_Placeholder$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_Placeholder$stableprop|#static{}androidx_compose_ui_text_Placeholder$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop|#static{}androidx_compose_ui_text_SpanStyle$stableprop[0]
+final val androidx.compose.ui.text/androidx_compose_ui_text_TextLinkStyles$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_TextLinkStyles$stableprop|#static{}androidx_compose_ui_text_TextLinkStyles$stableprop[0]
 final val androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop|#static{}androidx_compose_ui_text_TextStyle$stableprop[0]
 final val androidx.compose.ui.unit/androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop|#static{}androidx_compose_ui_unit_ComposeUiUnitFlags$stableprop[0]
 final val androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop // androidx.compose.ui.unit/androidx_compose_ui_unit_DpRect$stableprop|#static{}androidx_compose_ui_unit_DpRect$stableprop[0]
@@ -7369,9 +7689,13 @@ final fun androidx.compose.animation/androidx_compose_animation_SplineBasedFloat
 final fun androidx.compose.animation/animateColorAsState(androidx.compose.ui.graphics/Color, androidx.compose.animation.core/AnimationSpec<androidx.compose.ui.graphics/Color>?, kotlin/Function1<androidx.compose.ui.graphics/Color, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.graphics/Color> // androidx.compose.animation/animateColorAsState|animateColorAsState(androidx.compose.ui.graphics.Color;androidx.compose.animation.core.AnimationSpec<androidx.compose.ui.graphics.Color>?;kotlin.Function1<androidx.compose.ui.graphics.Color,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.animation/animateColorAsState(androidx.compose.ui.graphics/Color, androidx.compose.animation.core/AnimationSpec<androidx.compose.ui.graphics/Color>?, kotlin/String?, kotlin/Function1<androidx.compose.ui.graphics/Color, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.graphics/Color> // androidx.compose.animation/animateColorAsState|animateColorAsState(androidx.compose.ui.graphics.Color;androidx.compose.animation.core.AnimationSpec<androidx.compose.ui.graphics.Color>?;kotlin.String?;kotlin.Function1<androidx.compose.ui.graphics.Color,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.animation/defaultDecayAnimationSpec(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.animation.core/DecayAnimationSpec<kotlin/Float> // androidx.compose.animation/defaultDecayAnimationSpec|defaultDecayAnimationSpec(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun androidx.compose.foundation.content/androidx_compose_foundation_content_MediaType$stableprop_getter(): kotlin/Int // androidx.compose.foundation.content/androidx_compose_foundation_content_MediaType$stableprop_getter|androidx_compose_foundation_content_MediaType$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop_getter(): kotlin/Int // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop_getter|androidx_compose_foundation_contextmenu_ContextMenuState_Status$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop_getter(): kotlin/Int // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop_getter|androidx_compose_foundation_contextmenu_ContextMenuState_Status_Closed$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop_getter(): kotlin/Int // androidx.compose.foundation.contextmenu/androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop_getter|androidx_compose_foundation_contextmenu_ContextMenuState_Status_Open$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop_getter(): kotlin/Int // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop_getter|androidx_compose_foundation_gestures_snapping_SnapPosition_Center$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop_getter(): kotlin/Int // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop_getter|androidx_compose_foundation_gestures_snapping_SnapPosition_End$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop_getter(): kotlin/Int // androidx.compose.foundation.gestures.snapping/androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop_getter|androidx_compose_foundation_gestures_snapping_SnapPosition_Start$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.gestures/Scrollable2DState(kotlin/Function1<androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Offset>): androidx.compose.foundation.gestures/Scrollable2DState // androidx.compose.foundation.gestures/Scrollable2DState|Scrollable2DState(kotlin.Function1<androidx.compose.ui.geometry.Offset,androidx.compose.ui.geometry.Offset>){}[0]
 final fun androidx.compose.foundation.gestures/ScrollableState(kotlin/Function1<kotlin/Float, kotlin/Float>): androidx.compose.foundation.gestures/ScrollableState // androidx.compose.foundation.gestures/ScrollableState|ScrollableState(kotlin.Function1<kotlin.Float,kotlin.Float>){}[0]
 final fun androidx.compose.foundation.gestures/TransformableState(kotlin/Function3<kotlin/Float, androidx.compose.ui.geometry/Offset, kotlin/Float, kotlin/Unit>): androidx.compose.foundation.gestures/TransformableState // androidx.compose.foundation.gestures/TransformableState|TransformableState(kotlin.Function3<kotlin.Float,androidx.compose.ui.geometry.Offset,kotlin.Float,kotlin.Unit>){}[0]
@@ -7404,7 +7728,9 @@ final fun androidx.compose.foundation.layout/Row(androidx.compose.ui/Modifier?, 
 final fun androidx.compose.foundation.layout/Spacer(androidx.compose.ui/Modifier?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.layout/Spacer|Spacer(androidx.compose.ui.Modifier?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_Arrangement$stableprop_getter|androidx_compose_foundation_layout_Arrangement$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ColumnScope$stableprop_getter|androidx_compose_foundation_layout_ColumnScope$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop_getter|androidx_compose_foundation_layout_ComposeFoundationLayoutFlags$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop_getter(): kotlin/Int // androidx.compose.foundation.layout/androidx_compose_foundation_layout_RowScope$stableprop_getter|androidx_compose_foundation_layout_RowScope$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.lazy.grid/GridItemSpan(kotlin/Int): androidx.compose.foundation.lazy.grid/GridItemSpan // androidx.compose.foundation.lazy.grid/GridItemSpan|GridItemSpan(kotlin.Int){}[0]
 final fun androidx.compose.foundation.lazy.grid/LazyVerticalGrid(androidx.compose.foundation.lazy.grid/GridCells, androidx.compose.ui/Modifier?, androidx.compose.foundation.lazy/LazyListState?, androidx.compose.foundation.layout/Arrangement.Vertical?, androidx.compose.foundation.layout/Arrangement.Horizontal?, kotlin/Function1<androidx.compose.foundation.lazy.grid/LazyGridScope, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.lazy.grid/LazyVerticalGrid|LazyVerticalGrid(androidx.compose.foundation.lazy.grid.GridCells;androidx.compose.ui.Modifier?;androidx.compose.foundation.lazy.LazyListState?;androidx.compose.foundation.layout.Arrangement.Vertical?;androidx.compose.foundation.layout.Arrangement.Horizontal?;kotlin.Function1<androidx.compose.foundation.lazy.grid.LazyGridScope,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells_Adaptive$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy.grid/androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter|androidx_compose_foundation_lazy_grid_GridCells_Fixed$stableprop_getter(){}[0]
@@ -7413,6 +7739,8 @@ final fun androidx.compose.foundation.lazy/LazyColumn(androidx.compose.ui/Modifi
 final fun androidx.compose.foundation.lazy/LazyRow(androidx.compose.ui/Modifier?, androidx.compose.foundation.lazy/LazyListState?, androidx.compose.foundation.layout/Arrangement.Horizontal?, androidx.compose.ui/Alignment.Vertical?, kotlin/Function1<androidx.compose.foundation.lazy/LazyListScope, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.lazy/LazyRow|LazyRow(androidx.compose.ui.Modifier?;androidx.compose.foundation.lazy.LazyListState?;androidx.compose.foundation.layout.Arrangement.Horizontal?;androidx.compose.ui.Alignment.Vertical?;kotlin.Function1<androidx.compose.foundation.lazy.LazyListScope,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop_getter(): kotlin/Int // androidx.compose.foundation.lazy/androidx_compose_foundation_lazy_LazyListState$stableprop_getter|androidx_compose_foundation_lazy_LazyListState$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.lazy/rememberLazyListState(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.foundation.lazy/LazyListState // androidx.compose.foundation.lazy/rememberLazyListState|rememberLazyListState(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fill$stableprop_getter(): kotlin/Int // androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fill$stableprop_getter|androidx_compose_foundation_pager_PageSize_Fill$stableprop_getter(){}[0]
+final fun androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fixed$stableprop_getter(): kotlin/Int // androidx.compose.foundation.pager/androidx_compose_foundation_pager_PageSize_Fixed$stableprop_getter|androidx_compose_foundation_pager_PageSize_Fixed$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.shape/AbsoluteCutCornerShape(androidx.compose.foundation.shape/CornerSize): androidx.compose.foundation.shape/AbsoluteCutCornerShape // androidx.compose.foundation.shape/AbsoluteCutCornerShape|AbsoluteCutCornerShape(androidx.compose.foundation.shape.CornerSize){}[0]
 final fun androidx.compose.foundation.shape/AbsoluteCutCornerShape(androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ..., androidx.compose.ui.unit/Dp = ...): androidx.compose.foundation.shape/AbsoluteCutCornerShape // androidx.compose.foundation.shape/AbsoluteCutCornerShape|AbsoluteCutCornerShape(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
 final fun androidx.compose.foundation.shape/AbsoluteCutCornerShape(androidx.compose.ui.unit/Dp): androidx.compose.foundation.shape/AbsoluteCutCornerShape // androidx.compose.foundation.shape/AbsoluteCutCornerShape|AbsoluteCutCornerShape(androidx.compose.ui.unit.Dp){}[0]
@@ -7452,6 +7780,7 @@ final fun androidx.compose.foundation.shape/androidx_compose_foundation_shape_Ge
 final fun androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter(): kotlin/Int // androidx.compose.foundation.shape/androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter|androidx_compose_foundation_shape_RoundedCornerShape$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.text.selection/DisableSelection(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // androidx.compose.foundation.text.selection/DisableSelection|DisableSelection(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text.selection/SelectionContainer(androidx.compose.ui/Modifier?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text.selection/SelectionContainer|SelectionContainer(androidx.compose.ui.Modifier?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun androidx.compose.foundation.text.selection/androidx_compose_foundation_text_selection_TextSelectionColors$stableprop_getter(): kotlin/Int // androidx.compose.foundation.text.selection/androidx_compose_foundation_text_selection_TextSelectionColors$stableprop_getter|androidx_compose_foundation_text_selection_TextSelectionColors$stableprop_getter(){}[0]
 final fun androidx.compose.foundation.text/BasicText(androidx.compose.ui.text/AnnotatedString, androidx.compose.ui/Modifier?, androidx.compose.ui.text/TextStyle?, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(androidx.compose.ui.text.AnnotatedString;androidx.compose.ui.Modifier?;androidx.compose.ui.text.TextStyle?;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicText(kotlin/String, androidx.compose.ui/Modifier?, androidx.compose.ui.text/TextStyle?, kotlin/Boolean, kotlin/String?, kotlin.collections/List<androidx.compose.ui.text.font/FontVariation>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicText|BasicText(kotlin.String;androidx.compose.ui.Modifier?;androidx.compose.ui.text.TextStyle?;kotlin.Boolean;kotlin.String?;kotlin.collections.List<androidx.compose.ui.text.font.FontVariation>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.text/BasicTextField(androidx.compose.ui.text.input/TextFieldValue, kotlin/Function1<androidx.compose.ui.text.input/TextFieldValue, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.ui.text/TextStyle?, androidx.compose.ui.graphics/Brush?, androidx.compose.ui.graphics/Color, kotlin/String?, kotlin/Function1<kotlin/String, androidx.compose.ui.text/AnnotatedString>?, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Function1<kotlin/Boolean, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int, kotlin/Int) // androidx.compose.foundation.text/BasicTextField|BasicTextField(androidx.compose.ui.text.input.TextFieldValue;kotlin.Function1<androidx.compose.ui.text.input.TextFieldValue,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.ui.text.TextStyle?;androidx.compose.ui.graphics.Brush?;androidx.compose.ui.graphics.Color;kotlin.String?;kotlin.Function1<kotlin.String,androidx.compose.ui.text.AnnotatedString>?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Function1<kotlin.Boolean,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
@@ -7462,6 +7791,7 @@ final fun androidx.compose.foundation/HorizontalScrollbar(androidx.compose.found
 final fun androidx.compose.foundation/Image(androidx.compose.ui.graphics.painter/Painter, kotlin/String?, androidx.compose.ui/Modifier?, androidx.compose.ui.layout/ContentScale?, kotlin/Float, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation/Image|Image(androidx.compose.ui.graphics.painter.Painter;kotlin.String?;androidx.compose.ui.Modifier?;androidx.compose.ui.layout.ContentScale?;kotlin.Float;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation/VerticalScrollbar(androidx.compose.foundation/ScrollbarAdapter, androidx.compose.ui/Modifier?, kotlin/Boolean, androidx.compose.foundation/ScrollbarStyle?, androidx.compose.foundation.interaction/MutableInteractionSource?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // androidx.compose.foundation/VerticalScrollbar|VerticalScrollbar(androidx.compose.foundation.ScrollbarAdapter;androidx.compose.ui.Modifier?;kotlin.Boolean;androidx.compose.foundation.ScrollbarStyle?;androidx.compose.foundation.interaction.MutableInteractionSource?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation/androidx_compose_foundation_BorderStroke$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_BorderStroke$stableprop_getter|androidx_compose_foundation_BorderStroke$stableprop_getter(){}[0]
+final fun androidx.compose.foundation/androidx_compose_foundation_ComposeFoundationFlags$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_ComposeFoundationFlags$stableprop_getter|androidx_compose_foundation_ComposeFoundationFlags$stableprop_getter(){}[0]
 final fun androidx.compose.foundation/androidx_compose_foundation_MutatorMutex$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_MutatorMutex$stableprop_getter|androidx_compose_foundation_MutatorMutex$stableprop_getter(){}[0]
 final fun androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_ScrollState$stableprop_getter|androidx_compose_foundation_ScrollState$stableprop_getter(){}[0]
 final fun androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop_getter(): kotlin/Int // androidx.compose.foundation/androidx_compose_foundation_ScrollbarStyle$stableprop_getter|androidx_compose_foundation_ScrollbarStyle$stableprop_getter(){}[0]
@@ -7522,6 +7852,7 @@ final fun androidx.compose.ui.graphics/PathIterator(androidx.compose.ui.graphics
 final fun androidx.compose.ui.graphics/PathMeasure(): androidx.compose.ui.graphics/PathMeasure // androidx.compose.ui.graphics/PathMeasure|PathMeasure(){}[0]
 final fun androidx.compose.ui.graphics/RadialGradientShader(androidx.compose.ui.geometry/Offset, kotlin/Float, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>? = ..., androidx.compose.ui.graphics/TileMode = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/RadialGradientShader|RadialGradientShader(androidx.compose.ui.geometry.Offset;kotlin.Float;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?;androidx.compose.ui.graphics.TileMode){}[0]
 final fun androidx.compose.ui.graphics/SweepGradientShader(androidx.compose.ui.geometry/Offset, kotlin.collections/List<androidx.compose.ui.graphics/Color>, kotlin.collections/List<kotlin/Float>? = ...): androidx.compose.ui.graphics/Shader // androidx.compose.ui.graphics/SweepGradientShader|SweepGradientShader(androidx.compose.ui.geometry.Offset;kotlin.collections.List<androidx.compose.ui.graphics.Color>;kotlin.collections.List<kotlin.Float>?){}[0]
+final fun androidx.compose.ui.graphics/TransformOrigin(kotlin/Float, kotlin/Float): androidx.compose.ui.graphics/TransformOrigin // androidx.compose.ui.graphics/TransformOrigin|TransformOrigin(kotlin.Float;kotlin.Float){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter|androidx_compose_ui_graphics_BlendModeColorFilter$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_BlurEffect$stableprop_getter|androidx_compose_ui_graphics_BlurEffect$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter|androidx_compose_ui_graphics_Brush$stableprop_getter(){}[0]
@@ -7543,7 +7874,6 @@ final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shader$stabl
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter|androidx_compose_ui_graphics_Shadow$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SolidColor$stableprop_getter|androidx_compose_ui_graphics_SolidColor$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_SweepGradient$stableprop_getter|androidx_compose_ui_graphics_SweepGradient$stableprop_getter(){}[0]
-final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_TransformOrigin$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_TransformOrigin$stableprop_getter|androidx_compose_ui_graphics_TransformOrigin$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Vertices$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Vertices$stableprop_getter|androidx_compose_ui_graphics_Vertices$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/computeCubicVerticalBounds(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/FloatArray, kotlin/Int = ...): androidx.collection/FloatFloatPair // androidx.compose.ui.graphics/computeCubicVerticalBounds|computeCubicVerticalBounds(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.FloatArray;kotlin.Int){}[0]
 final fun androidx.compose.ui.graphics/computeHorizontalBounds(androidx.compose.ui.graphics/PathSegment, kotlin/FloatArray, kotlin/Int = ...): androidx.collection/FloatFloatPair // androidx.compose.ui.graphics/computeHorizontalBounds|computeHorizontalBounds(androidx.compose.ui.graphics.PathSegment;kotlin.FloatArray;kotlin.Int){}[0]
@@ -7571,6 +7901,7 @@ final fun androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable$stable
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter|androidx_compose_ui_layout_Placeable_PlacementScope$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter(): kotlin/Int // androidx.compose.ui.layout/androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter|androidx_compose_ui_layout_VerticalAlignmentLine$stableprop_getter(){}[0]
 final fun androidx.compose.ui.layout/lerp(androidx.compose.ui.layout/ScaleFactor, androidx.compose.ui.layout/ScaleFactor, kotlin/Float): androidx.compose.ui.layout/ScaleFactor // androidx.compose.ui.layout/lerp|lerp(androidx.compose.ui.layout.ScaleFactor;androidx.compose.ui.layout.ScaleFactor;kotlin.Float){}[0]
+final fun androidx.compose.ui.node/androidx_compose_ui_node_Ref$stableprop_getter(): kotlin/Int // androidx.compose.ui.node/androidx_compose_ui_node_Ref$stableprop_getter|androidx_compose_ui_node_Ref$stableprop_getter(){}[0]
 final fun androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop_getter(): kotlin/Int // androidx.compose.ui.platform/androidx_compose_ui_platform_InspectableModifier$stableprop_getter|androidx_compose_ui_platform_InspectableModifier$stableprop_getter(){}[0]
 final fun androidx.compose.ui.platform/androidx_compose_ui_platform_InspectorInfo$stableprop_getter(): kotlin/Int // androidx.compose.ui.platform/androidx_compose_ui_platform_InspectorInfo$stableprop_getter|androidx_compose_ui_platform_InspectorInfo$stableprop_getter(){}[0]
 final fun androidx.compose.ui.platform/androidx_compose_ui_platform_InspectorValueInfo$stableprop_getter(): kotlin/Int // androidx.compose.ui.platform/androidx_compose_ui_platform_InspectorValueInfo$stableprop_getter|androidx_compose_ui_platform_InspectorValueInfo$stableprop_getter(){}[0]
@@ -7614,6 +7945,7 @@ final fun androidx.compose.ui.text/androidx_compose_ui_text_AnnotatedString_Rang
 final fun androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_ParagraphStyle$stableprop_getter|androidx_compose_ui_text_ParagraphStyle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_Placeholder$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_Placeholder$stableprop_getter|androidx_compose_ui_text_Placeholder$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_SpanStyle$stableprop_getter|androidx_compose_ui_text_SpanStyle$stableprop_getter(){}[0]
+final fun androidx.compose.ui.text/androidx_compose_ui_text_TextLinkStyles$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_TextLinkStyles$stableprop_getter|androidx_compose_ui_text_TextLinkStyles$stableprop_getter(){}[0]
 final fun androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter(): kotlin/Int // androidx.compose.ui.text/androidx_compose_ui_text_TextStyle$stableprop_getter|androidx_compose_ui_text_TextStyle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.unit/Constraints(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.unit/Constraints // androidx.compose.ui.unit/Constraints|Constraints(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.ui.unit/Density(kotlin/Float, kotlin/Float = ...): androidx.compose.ui.unit/Density // androidx.compose.ui.unit/Density|Density(kotlin.Float;kotlin.Float){}[0]
