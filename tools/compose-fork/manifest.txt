@@ -642,6 +642,16 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt 
 # returning the default). No Ruler instances exist in our pipeline, so
 # the runtime path is dormant.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Ruler.kt                                                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/Ruler.kt
+# Phase 4e: vendor upstream MeasureScope.kt verbatim. Replaces our
+# hand-written MeasureScope interface (moved MeasureScopeImpl to its
+# own file). Brings 3 layout() overloads with default impls + SimplePlacementScope
+# private class. Needs project shims: LookaheadCapablePlaceable
+# (LookaheadCapablePlaceable.shim.kt — `internal abstract class : Placeable(),
+# MeasureScope` with abstract placementScope) and checkMeasuredSize
+# (CheckMeasuredSize.shim.kt — 4-line bit-mask check copied from upstream
+# LookaheadDelegate.kt:554). Upstream MeasureScope.kt also defines
+# `interface RulerScope : Density { … }` which replaces our RulerScope.shim.kt.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt                                                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureScope.kt
 # IntrinsicMeasureScope (interface extends Density, holds layoutDirection)
 # + MeasureBlocks (deprecated). Pure leaf types depending only on
 # already-vendored Density / IntrinsicMeasurable / Measurable / MeasureScope.
