@@ -1182,6 +1182,9 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorCo
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt         core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.native.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt   core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.skiko.kt core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt
