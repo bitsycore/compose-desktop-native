@@ -122,10 +122,9 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
         BasicTextField(
             value = inValue,
             onValueChange = inOnChange,
-            color = c.text,
-            cursorColor = c.accent,
+            textStyle = androidx.compose.ui.text.TextStyle(color = c.text, fontSize = 13.sp),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(c.accent),
             selectionColor = c.accent.copy(alpha = 0.35f),
-            fontSize = 13.sp,
             singleLine = inSingleLine,
             modifier = Modifier.fillMaxWidth(),
         )

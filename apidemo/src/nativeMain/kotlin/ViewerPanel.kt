@@ -468,8 +468,9 @@ internal fun BodyView(
                 BasicTextField(
                     value = inText,
                     onValueChange = inOnChange,
-                    color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
-                    fontSize = 12.sp,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = c.text, fontSize = 12.sp),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(c.accent),
+                    selectionColor = c.accent.copy(alpha = 0.35f),
                     fontFamily = monoFontFamily,
                     visualTransform = vHl,
                     modifier = Modifier.fillMaxSize(),
@@ -872,8 +873,10 @@ internal fun CodeSection(inLabel: String, inText: String) {
         ) {
             BasicTextField(
                 value = inText.ifEmpty { "(empty)" }, onValueChange = {}, readOnly = true,
-                color = c.text, cursorColor = c.accent, selectionColor = c.accent.copy(alpha = 0.35f),
-                fontSize = 12.sp, modifier = Modifier.fillMaxWidth(),
+                textStyle = androidx.compose.ui.text.TextStyle(color = c.text, fontSize = 12.sp),
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(c.accent),
+                selectionColor = c.accent.copy(alpha = 0.35f),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

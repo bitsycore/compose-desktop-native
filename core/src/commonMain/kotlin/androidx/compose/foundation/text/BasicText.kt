@@ -22,6 +22,7 @@ import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import com.compose.desktop.native.text.WrappedText
 import com.compose.desktop.native.text.currentTextMeasurer
 import com.compose.desktop.native.text.currentViewportHeight
@@ -29,24 +30,28 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
 
 // ==================
 // MARK: BasicText
 // ==================
 
+/* style: TextStyle matches upstream's signature; fontFamily / fontVariationSettings
+   are documented non-upstream additions that the renderer needs for icon-font
+   variable-axis support (upstream's FontFamily abstraction routes through
+   FontFamily.Resolver, which we don't host — see CLAUDE.md). */
 @Composable
 fun BasicText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.White,
-    fontSize: TextUnit = 16.sp,
-    textAlign: TextAlign = TextAlign.Start,
+    style: TextStyle = TextStyle.Default,
     softWrap: Boolean = true,
     fontFamily: String? = null,
     fontVariationSettings: List<FontVariation>? = null,
 ) {
-    BasicTextLayer(text, null, modifier, color, fontSize, textAlign, softWrap, fontFamily, fontVariationSettings)
+    val (vColor, vSize, vAlign) = resolveTextStyle(style)
+    BasicTextLayer(text, null, modifier, vColor, vSize, vAlign, softWrap, fontFamily, fontVariationSettings)
 }
 
 /* AnnotatedString overload — draws `text.text` with per-span colours
@@ -59,14 +64,23 @@ fun BasicText(
 fun BasicText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
-    color: Color = Color.White,
-    fontSize: TextUnit = 16.sp,
-    textAlign: TextAlign = TextAlign.Start,
+    style: TextStyle = TextStyle.Default,
     softWrap: Boolean = true,
     fontFamily: String? = null,
     fontVariationSettings: List<FontVariation>? = null,
 ) {
-    BasicTextLayer(text.text, text.spanStyles, modifier, color, fontSize, textAlign, softWrap, fontFamily, fontVariationSettings)
+    val (vColor, vSize, vAlign) = resolveTextStyle(style)
+    BasicTextLayer(text.text, text.spanStyles, modifier, vColor, vSize, vAlign, softWrap, fontFamily, fontVariationSettings)
+}
+
+/* Resolve TextStyle to the (color, fontSize, textAlign) triple our text node
+   accepts. Color.Unspecified → Color.White; TextUnit.Unspecified → 14.sp
+   (matching upstream's defaults); null TextAlign → TextAlign.Start. */
+private fun resolveTextStyle(inStyle: TextStyle): Triple<Color, TextUnit, TextAlign> {
+    val vColor = if (inStyle.color == Color.Unspecified) Color.White else inStyle.color
+    val vSize = if (inStyle.fontSize.isUnspecified) 14.sp else inStyle.fontSize
+    val vAlign = inStyle.textAlign ?: TextAlign.Start
+    return Triple(vColor, vSize, vAlign)
 }
 
 // ==================

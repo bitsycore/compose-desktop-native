@@ -317,8 +317,7 @@ private fun TextFieldImpl(
                 if (label != null) {
                     BasicText(
                         text = label,
-                        color = vLabelColor,
-                        fontSize = TextFieldDefaults.LabelFontSize,
+                        style = androidx.compose.ui.text.TextStyle(color = vLabelColor, fontSize = TextFieldDefaults.LabelFontSize),
                     )
                 }
 
@@ -327,18 +326,16 @@ private fun TextFieldImpl(
                     if (value.text.isEmpty() && !isFocused && placeholder != null) {
                         BasicText(
                             text = placeholder,
-                            color = colors.placeholderColor,
-                            fontSize = fontSize,
+                            style = androidx.compose.ui.text.TextStyle(color = colors.placeholderColor, fontSize = fontSize),
                         )
                     }
                     BasicTextField(
                         value = value,
                         onValueChange = onValueChange,
                         modifier = Modifier.fillMaxWidth(),
-                        color = vTextColor,
-                        cursorColor = vCursorColor,
+                        textStyle = androidx.compose.ui.text.TextStyle(color = vTextColor, fontSize = fontSize),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(vCursorColor),
                         selectionColor = colors.selectionColor,
-                        fontSize = fontSize,
                         enabled = enabled,
                         readOnly = readOnly,
                         singleLine = singleLine,
@@ -351,8 +348,10 @@ private fun TextFieldImpl(
         if (supportingText != null) {
             BasicText(
                 text = supportingText,
-                color = if (isError) colors.errorSupportingTextColor else colors.supportingTextColor,
-                fontSize = TextFieldDefaults.SupportingFontSize,
+                style = androidx.compose.ui.text.TextStyle(
+                    color = if (isError) colors.errorSupportingTextColor else colors.supportingTextColor,
+                    fontSize = TextFieldDefaults.SupportingFontSize,
+                ),
                 modifier = Modifier.padding(start = 12.dp, top = 4.dp),
             )
         }

@@ -39,9 +39,7 @@ fun Text(
     BasicText(
         text = text,
         modifier = modifier,
-        color = color,
-        fontSize = fontSize,
-        textAlign = textAlign,
+        style = androidx.compose.ui.text.TextStyle(color = color, fontSize = fontSize, textAlign = textAlign),
         softWrap = softWrap,
         fontFamily = fontFamily,
         fontVariationSettings = fontVariationSettings,
@@ -92,9 +90,7 @@ fun Text(
         BasicText(
             text = text,
             modifier = modifier,
-            color = color,
-            fontSize = fontSize,
-            textAlign = textAlign,
+            style = androidx.compose.ui.text.TextStyle(color = color, fontSize = fontSize, textAlign = textAlign),
             softWrap = softWrap,
             fontFamily = fontFamily,
             fontVariationSettings = fontVariationSettings,
@@ -111,8 +107,8 @@ fun Text(
                 if (vLine.isEmpty()) {
                     // Empty line still needs to take the line-height — emit a
                     // single-space BasicText so the row doesn't collapse to 0px.
-                    BasicText(text = " ", color = color, fontSize = fontSize, softWrap = false,
-                        fontFamily = fontFamily, fontVariationSettings = fontVariationSettings)
+                    BasicText(text = " ", style = androidx.compose.ui.text.TextStyle(color = color, fontSize = fontSize),
+                        softWrap = false, fontFamily = fontFamily, fontVariationSettings = fontVariationSettings)
                 } else for (vRun in vLine) {
                     val vStyle = vRun.style
                     val vColor = if (vStyle != null && vStyle.color != Color.Unspecified) vStyle.color else color
@@ -147,9 +143,7 @@ fun Text(
                     BasicText(
                         text = vRun.text,
                         modifier = vBgModifier.then(vDecorModifier),
-                        color = vColor,
-                        fontSize = vSize,
-                        textAlign = textAlign,
+                        style = androidx.compose.ui.text.TextStyle(color = vColor, fontSize = vSize, textAlign = textAlign),
                         softWrap = false,
                         fontFamily = vFamily,
                         fontVariationSettings = vStyle?.let { extractFontVariations(it, fontVariationSettings) } ?: fontVariationSettings,

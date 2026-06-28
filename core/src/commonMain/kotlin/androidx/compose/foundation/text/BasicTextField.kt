@@ -43,6 +43,7 @@ import com.compose.desktop.native.text.currentViewportHeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
 import kotlin.time.TimeSource
 import kotlinx.coroutines.delay
@@ -56,15 +57,19 @@ private fun nowMillis(): Long = kClockStart.elapsedNow().inWholeMilliseconds
 // MARK: BasicTextField — Phase 2 (editing mid-text)
 // ==================
 
+/* `textStyle: TextStyle` + `cursorBrush: Brush` match upstream's signature.
+   selectionColor / fontFamily / visualTransform / onFocusChanged are documented
+   non-upstream additions (upstream routes through LocalTextSelectionColors +
+   FontFamily.Resolver + VisualTransformation + a focus-change ModifierNode,
+   none of which we host). */
 @Composable
 fun BasicTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = Color.Black,
-    cursorColor: Color = Color.Black,
+    textStyle: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default,
+    cursorBrush: androidx.compose.ui.graphics.Brush = androidx.compose.ui.graphics.SolidColor(Color.Black),
     selectionColor: Color = Color(0x661E88E5L),
-    fontSize: TextUnit = 16.sp,
     fontFamily: String? = null,
     visualTransform: ((String) -> AnnotatedString)? = null,
     enabled: Boolean = true,
@@ -83,10 +88,9 @@ fun BasicTextField(
             if (it.text != value) onValueChange(it.text)
         },
         modifier = modifier,
-        color = color,
-        cursorColor = cursorColor,
+        textStyle = textStyle,
+        cursorBrush = cursorBrush,
         selectionColor = selectionColor,
-        fontSize = fontSize,
         fontFamily = fontFamily,
         visualTransform = visualTransform,
         enabled = enabled,
@@ -101,10 +105,9 @@ fun BasicTextField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = Color.Black,
-    cursorColor: Color = Color.Black,
+    textStyle: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default,
+    cursorBrush: androidx.compose.ui.graphics.Brush = androidx.compose.ui.graphics.SolidColor(Color.Black),
     selectionColor: Color = Color(0x661E88E5L),
-    fontSize: TextUnit = 16.sp,
     fontFamily: String? = null,
     visualTransform: ((String) -> AnnotatedString)? = null,
     enabled: Boolean = true,
@@ -112,6 +115,9 @@ fun BasicTextField(
     singleLine: Boolean = false,
     onFocusChanged: (Boolean) -> Unit = {},
 ) {
+    val color = if (textStyle.color == Color.Unspecified) Color.Black else textStyle.color
+    val fontSize = if (textStyle.fontSize.isUnspecified) 16.sp else textStyle.fontSize
+    val cursorColor = (cursorBrush as? androidx.compose.ui.graphics.SolidColor)?.value ?: Color.Black
     var isFocused by remember { mutableStateOf(false) }
     var cursorBlinkVisible by remember { mutableStateOf(true) }
     var dragAnchor by remember { mutableStateOf(-1) }
@@ -320,8 +326,7 @@ fun BasicTextField(
         if (vDisplay != null) {
             BasicText(
                 text = vDisplay,
-                color = color,
-                fontSize = fontSize,
+                style = androidx.compose.ui.text.TextStyle(color = color, fontSize = fontSize),
                 fontFamily = fontFamily,
                 softWrap = !singleLine,
                 modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),
@@ -329,8 +334,7 @@ fun BasicTextField(
         } else {
             BasicText(
                 text = value.text,
-                color = color,
-                fontSize = fontSize,
+                style = androidx.compose.ui.text.TextStyle(color = color, fontSize = fontSize),
                 fontFamily = fontFamily,
                 softWrap = !singleLine,
                 modifier = if (singleLine) Modifier.offset(x = (-vScrollX).dp) else Modifier.fillMaxWidth(),

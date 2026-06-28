@@ -102,9 +102,11 @@ internal fun TextFieldScreen() {
                     BasicTextField(
                         value = raw,
                         onValueChange = { raw = it },
-                        color = MaterialTheme.colors.onSurface,
-                        cursorColor = MaterialTheme.colors.primary,
-                        fontSize = 16.sp,
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            color = MaterialTheme.colors.onSurface,
+                            fontSize = 16.sp,
+                        ),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colors.primary),
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }

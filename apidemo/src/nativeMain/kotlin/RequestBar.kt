@@ -141,10 +141,9 @@ internal fun UrlBar(
             BasicTextField(
                 value = inReq.url,
                 onValueChange = inOnUrl,
-                color = c.text,
-                cursorColor = c.accent,
+                textStyle = androidx.compose.ui.text.TextStyle(color = c.text, fontSize = 14.sp),
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(c.accent),
                 selectionColor = c.accent.copy(alpha = 0.35f),
-                fontSize = 14.sp,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
