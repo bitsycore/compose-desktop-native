@@ -505,6 +505,8 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbar.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbar.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/WindowInfo.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/WindowInfo.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt                                                      core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutInfo.kt
+# IntrinsicsPolicy needs upstream-shape LayoutNode with outerCoordinator/childMeasurables — skip.
 
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
