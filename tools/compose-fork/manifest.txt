@@ -546,6 +546,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerScope.kt      
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InternalCoreApi.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/node/InternalCoreApi.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
+# ui.text.platform.Dispatcher — single internal val.
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
 
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
