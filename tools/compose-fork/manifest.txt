@@ -148,6 +148,12 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/InternalFoundationApi.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/InternalFoundationApi.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyListItemInfo.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyListItemInfo.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyListLayoutInfo.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyListLayoutInfo.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/FlingBehavior.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/FlingBehavior.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TargetedFlingBehavior.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TargetedFlingBehavior.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Scrollable2DState.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/ScrollExtensions.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
 # Foundation internal precondition helpers (requirePrecondition etc.)
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/InlineClassHelper.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/internal/InlineClassHelper.kt
 # Suspend-pipeline support (ScrollableState port): expect/actual cancellation
@@ -262,6 +268,9 @@ compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Sin
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                   core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                  core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
+# Crossfade — uses Modifier.graphicsLayer { ... } lambda overload (we now
+# have it; reduced GraphicsLayerScope in core/src/commonMain).
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt         core/src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
 # Upstream's nonAndroid actual for defaultDecayAnimationSpec (it just delegates
 # to rememberSplineBasedDecay).

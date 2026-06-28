@@ -70,6 +70,11 @@ kotlin {
                 // bit-widths differ across LLP64 Windows vs LP64 Unix and break the
                 // shared nativeMain metadata compilation used by Maven publishing.
                 implementation(libs.okio)
+                // Explicit atomicfu so vendored animation-core / foundation
+                // AtomicReference / AtomicLong actuals resolve their
+                // kotlinx.atomicfu.atomic call regardless of whether compose
+                // runtime keeps it as a transitive dep in future releases.
+                implementation("org.jetbrains.kotlinx:atomicfu:0.23.1")
             }
         }
         // Vendored platform `actual`s (e.g. ui.util InlineClassHelper.native.kt).
