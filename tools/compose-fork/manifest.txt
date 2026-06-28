@@ -549,6 +549,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.k
 # ui.text.platform.Dispatcher — single internal val.
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
 
+# WeakReference (ui.text package — different from ui.node version vendored earlier).
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/WeakReference.skiko.kt                                           core/src/vendor/common/kotlin/androidx/compose/ui/text/WeakReference.kt
+compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt                                         core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
+
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
