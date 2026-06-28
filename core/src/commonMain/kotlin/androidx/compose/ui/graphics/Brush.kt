@@ -21,39 +21,78 @@ sealed class Brush {
 
 /* The Brush for a single flat colour — created implicitly when a draw
    call takes a Color. Field name `value` (not `color`) matches upstream
-   `class SolidColor(val value: Color) : Brush()`. */
-data class SolidColor(val value: Color) : Brush()
+   `class SolidColor(val value: Color) : Brush()`. Plain class with manual
+   equals/hashCode — drops auto-generated component1/copy that upstream
+   doesn't expose. */
+class SolidColor(val value: Color) : Brush() {
+	override fun equals(other: Any?): Boolean = other is SolidColor && other.value == value
+	override fun hashCode(): Int = value.hashCode()
+	override fun toString(): String = "SolidColor(value=$value)"
+}
 
 /* Linear gradient. start and end are anchor points in the *shape's* local
    coordinate space (DrawScope's coordinates). When start.x = -1 or end.x
    = Float.POSITIVE_INFINITY etc. the renderer interprets it as "across
    the full bounds" — but most callers will pass concrete points. */
-data class LinearGradient(
+class LinearGradient(
 	val colors: List<Color>,
 	val stops: List<Float>?,
 	val start: Offset,
 	val end: Offset,
 	val tileMode: TileMode = TileMode.Clamp,
-) : Brush()
+) : Brush() {
+	override fun equals(other: Any?): Boolean = other is LinearGradient &&
+		other.colors == colors && other.stops == stops &&
+		other.start == start && other.end == end && other.tileMode == tileMode
+	override fun hashCode(): Int {
+		var h = colors.hashCode()
+		h = 31 * h + (stops?.hashCode() ?: 0)
+		h = 31 * h + start.hashCode()
+		h = 31 * h + end.hashCode()
+		h = 31 * h + tileMode.hashCode()
+		return h
+	}
+}
 
 /* Radial gradient centred at [center] with the given radius. Colours
    sample from centre (stop=0) to edge (stop=1). */
-data class RadialGradient(
+class RadialGradient(
 	val colors: List<Color>,
 	val stops: List<Float>?,
 	val center: Offset,
 	val radius: Float,
 	val tileMode: TileMode = TileMode.Clamp,
-) : Brush()
+) : Brush() {
+	override fun equals(other: Any?): Boolean = other is RadialGradient &&
+		other.colors == colors && other.stops == stops &&
+		other.center == center && other.radius == radius && other.tileMode == tileMode
+	override fun hashCode(): Int {
+		var h = colors.hashCode()
+		h = 31 * h + (stops?.hashCode() ?: 0)
+		h = 31 * h + center.hashCode()
+		h = 31 * h + radius.hashCode()
+		h = 31 * h + tileMode.hashCode()
+		return h
+	}
+}
 
 /* Sweep gradient: colours rotate around [center], 0 degrees pointing
    right (3 o'clock), clockwise. Useful for hue wheels and material 3
    spinner tracks. */
-data class SweepGradient(
+class SweepGradient(
 	val colors: List<Color>,
 	val stops: List<Float>?,
 	val center: Offset,
-) : Brush()
+) : Brush() {
+	override fun equals(other: Any?): Boolean = other is SweepGradient &&
+		other.colors == colors && other.stops == stops && other.center == center
+	override fun hashCode(): Int {
+		var h = colors.hashCode()
+		h = 31 * h + (stops?.hashCode() ?: 0)
+		h = 31 * h + center.hashCode()
+		return h
+	}
+}
 
 // TileMode lives in its own vendored file (androidx.compose.ui.graphics.TileMode).
 
