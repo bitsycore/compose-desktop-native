@@ -16,4 +16,12 @@ package androidx.compose.ui.layout
 interface LayoutCoordinates {
 	val size: androidx.compose.ui.unit.IntSize
 		get() = androidx.compose.ui.unit.IntSize.Zero
+
+	/**
+	 * Phase 1 node-engine bring-up: vendored DelegatableNode reads
+	 * `coordinates.isAttached` at line 412. Default `true` matches the
+	 * "node is attached" state we report from LayoutNode.
+	 */
+	val isAttached: Boolean
+		get() = true
 }

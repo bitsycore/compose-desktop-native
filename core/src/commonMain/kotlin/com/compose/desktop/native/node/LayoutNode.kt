@@ -25,7 +25,7 @@ import kotlin.math.min
 // MARK: LayoutNode
 // ==================
 
-class LayoutNode {
+class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     var parent: LayoutNode? = null
     val children = mutableListOf<LayoutNode>()
 
@@ -33,11 +33,47 @@ class LayoutNode {
     internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
 
     // ============
+    //  Phase 1 node-engine bring-up surface — see NODE_ENGINE_PORT.md.
+    //  Stubs that satisfy vendored DelegatableNode + Modifier.Node member
+    //  access without doing real work. Delete in Phase 4 when our LayoutNode
+    //  is replaced by upstream's.
+    internal val nodes: androidx.compose.ui.node.NodeChain = androidx.compose.ui.node.NodeChain()
+    internal val _children get() = children
+    internal val zSortedChildren get() = children
+    internal var owner: androidx.compose.ui.node.Owner? = null
+
+    // LayoutInfo (via SemanticsInfo) members — all defaulted to stubs
+    // since no engine code reads them in Phase 1.
+    override val coordinates: androidx.compose.ui.layout.LayoutCoordinates =
+        object : androidx.compose.ui.layout.LayoutCoordinates {}
+    override val isPlaced: Boolean = true
+    override val parentInfo: androidx.compose.ui.layout.LayoutInfo?
+        get() = parent
+    override val density: androidx.compose.ui.unit.Density = androidx.compose.ui.unit.Density(1f)
+    override val layoutDirection: androidx.compose.ui.unit.LayoutDirection =
+        androidx.compose.ui.unit.LayoutDirection.Ltr
+    override val viewConfiguration: androidx.compose.ui.platform.ViewConfiguration =
+        object : androidx.compose.ui.platform.ViewConfiguration {
+            override val longPressTimeoutMillis: Long = 500
+            override val doubleTapTimeoutMillis: Long = 300
+            override val doubleTapMinTimeMillis: Long = 40
+            override val touchSlop: Float = 8f
+        }
+    override val isAttached: Boolean = true
+    override val semanticsId: Int = 0
+    override fun getModifierInfo(): List<androidx.compose.ui.layout.ModifierInfo> = emptyList()
+
+    internal fun invalidateSubtree() { /* phase 1 no-op */ }
+    internal fun invalidateMeasurementForSubtree() { /* phase 1 no-op */ }
+    internal fun invalidateDrawForSubtree() { /* phase 1 no-op */ }
+    internal fun requestAutofill() { /* phase 1 no-op */ }
+
+    // ============
     //  Geometry (pixels, post-layout)
     var x = 0; private set
     var y = 0; private set
-    var width = 0; private set
-    var height = 0; private set
+    override var width = 0; private set
+    override var height = 0; private set
     /* Previous (w, h) snapshot for change detection; -1 forces fire on first measure. */
     private var lastWidth = -1
     private var lastHeight = -1
