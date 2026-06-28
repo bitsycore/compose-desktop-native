@@ -6,6 +6,42 @@
 // - Show declarations: true
 
 // Library unique name: <com.bitsycore.compose.native:core>
+open annotation class androidx.compose.animation.core/ExperimentalAnimationSpecApi : kotlin/Annotation { // androidx.compose.animation.core/ExperimentalAnimationSpecApi|null[0]
+    constructor <init>() // androidx.compose.animation.core/ExperimentalAnimationSpecApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.animation.core/ExperimentalDeferredTransitionApi : kotlin/Annotation { // androidx.compose.animation.core/ExperimentalDeferredTransitionApi|null[0]
+    constructor <init>() // androidx.compose.animation.core/ExperimentalDeferredTransitionApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.animation.core/ExperimentalTransitionApi : kotlin/Annotation { // androidx.compose.animation.core/ExperimentalTransitionApi|null[0]
+    constructor <init>() // androidx.compose.animation.core/ExperimentalTransitionApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.animation.core/InternalAnimationApi : kotlin/Annotation { // androidx.compose.animation.core/InternalAnimationApi|null[0]
+    constructor <init>() // androidx.compose.animation.core/InternalAnimationApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation.layout/LayoutScopeMarker : kotlin/Annotation { // androidx.compose.foundation.layout/LayoutScopeMarker|null[0]
+    constructor <init>() // androidx.compose.foundation.layout/LayoutScopeMarker.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation/ExperimentalFoundationApi : kotlin/Annotation { // androidx.compose.foundation/ExperimentalFoundationApi|null[0]
+    constructor <init>() // androidx.compose.foundation/ExperimentalFoundationApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.foundation/InternalFoundationApi : kotlin/Annotation { // androidx.compose.foundation/InternalFoundationApi|null[0]
+    constructor <init>() // androidx.compose.foundation/InternalFoundationApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui.graphics/ExperimentalGraphicsApi : kotlin/Annotation { // androidx.compose.ui.graphics/ExperimentalGraphicsApi|null[0]
+    constructor <init>() // androidx.compose.ui.graphics/ExperimentalGraphicsApi.<init>|<init>(){}[0]
+}
+
+open annotation class androidx.compose.ui.text/InternalTextApi : kotlin/Annotation { // androidx.compose.ui.text/InternalTextApi|null[0]
+    constructor <init>() // androidx.compose.ui.text/InternalTextApi.<init>|<init>(){}[0]
+}
+
 open annotation class androidx.compose.ui.unit/ExperimentalUnitApi : kotlin/Annotation { // androidx.compose.ui.unit/ExperimentalUnitApi|null[0]
     constructor <init>() // androidx.compose.ui.unit/ExperimentalUnitApi.<init>|<init>(){}[0]
 }
@@ -30,6 +66,17 @@ final enum class androidx.compose.animation.core/RepeatMode : kotlin/Enum<androi
 
     final fun valueOf(kotlin/String): androidx.compose.animation.core/RepeatMode // androidx.compose.animation.core/RepeatMode.valueOf|valueOf#static(kotlin.String){}[0]
     final fun values(): kotlin/Array<androidx.compose.animation.core/RepeatMode> // androidx.compose.animation.core/RepeatMode.values|values#static(){}[0]
+}
+
+final enum class androidx.compose.foundation.gestures/Orientation : kotlin/Enum<androidx.compose.foundation.gestures/Orientation> { // androidx.compose.foundation.gestures/Orientation|null[0]
+    enum entry Horizontal // androidx.compose.foundation.gestures/Orientation.Horizontal|null[0]
+    enum entry Vertical // androidx.compose.foundation.gestures/Orientation.Vertical|null[0]
+
+    final val entries // androidx.compose.foundation.gestures/Orientation.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.foundation.gestures/Orientation> // androidx.compose.foundation.gestures/Orientation.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): androidx.compose.foundation.gestures/Orientation // androidx.compose.foundation.gestures/Orientation.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<androidx.compose.foundation.gestures/Orientation> // androidx.compose.foundation.gestures/Orientation.values|values#static(){}[0]
 }
 
 final enum class androidx.compose.ui.input.key/KeyEventType : kotlin/Enum<androidx.compose.ui.input.key/KeyEventType> { // androidx.compose.ui.input.key/KeyEventType|null[0]
@@ -264,6 +311,19 @@ abstract interface androidx.compose.foundation.lazy.grid/LazyGridScope { // andr
     abstract fun <#A1: kotlin/Any?> itemsIndexed(kotlin.collections/List<#A1>, kotlin/Function4<kotlin/Int, #A1, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy.grid/LazyGridScope.itemsIndexed|itemsIndexed(kotlin.collections.List<0:0>;kotlin.Function4<kotlin.Int,0:0,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){0§<kotlin.Any?>}[0]
     abstract fun item(kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy.grid/LazyGridScope.item|item(kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
     abstract fun items(kotlin/Int, kotlin/Function3<kotlin/Int, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // androidx.compose.foundation.lazy.grid/LazyGridScope.items|items(kotlin.Int;kotlin.Function3<kotlin.Int,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
+}
+
+abstract interface androidx.compose.foundation.lazy/LazyListItemInfo { // androidx.compose.foundation.lazy/LazyListItemInfo|null[0]
+    abstract val index // androidx.compose.foundation.lazy/LazyListItemInfo.index|{}index[0]
+        abstract fun <get-index>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListItemInfo.index.<get-index>|<get-index>(){}[0]
+    abstract val key // androidx.compose.foundation.lazy/LazyListItemInfo.key|{}key[0]
+        abstract fun <get-key>(): kotlin/Any // androidx.compose.foundation.lazy/LazyListItemInfo.key.<get-key>|<get-key>(){}[0]
+    abstract val offset // androidx.compose.foundation.lazy/LazyListItemInfo.offset|{}offset[0]
+        abstract fun <get-offset>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListItemInfo.offset.<get-offset>|<get-offset>(){}[0]
+    abstract val size // androidx.compose.foundation.lazy/LazyListItemInfo.size|{}size[0]
+        abstract fun <get-size>(): kotlin/Int // androidx.compose.foundation.lazy/LazyListItemInfo.size.<get-size>|<get-size>(){}[0]
+    open val contentType // androidx.compose.foundation.lazy/LazyListItemInfo.contentType|{}contentType[0]
+        open fun <get-contentType>(): kotlin/Any? // androidx.compose.foundation.lazy/LazyListItemInfo.contentType.<get-contentType>|<get-contentType>(){}[0]
 }
 
 abstract interface androidx.compose.foundation.lazy/LazyListScope { // androidx.compose.foundation.lazy/LazyListScope|null[0]

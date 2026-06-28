@@ -80,6 +80,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Bezier
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathSegment.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathSegment.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Vertices.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Vertices.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Interpolatable.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Interpolatable.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ExperimentalGraphicsApi.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ExperimentalGraphicsApi.kt
 
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
@@ -94,6 +95,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/Hyphens.
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/BaselineShift.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/BaselineShift.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDirection.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDirection.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextDecoration.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDecoration.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/InternalTextApi.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/InternalTextApi.kt
 # LineBreak / TextMotion are expect classes; the skikoMain actuals are pure
 # data (no Skia refs), so we vendor them too.
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
@@ -108,14 +110,32 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt  
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
 
 # ── androidx.compose.foundation (pure data) ───────────────────────────────
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BorderStroke.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/BorderStroke.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BorderStroke.kt                                       core/src/vendor/common/kotlin/androidx/compose/foundation/BorderStroke.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/Interaction.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/Interaction.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/InteractionSource.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/InteractionSource.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/DragInteraction.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/DragInteraction.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/HoverInteraction.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/HoverInteraction.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/FocusInteraction.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/FocusInteraction.kt
+# PressInteraction stays hand-written: upstream's KDoc references
+# androidx.compose.ui.platform.ViewConfiguration which we don't host.
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Orientation.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Orientation.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/InternalFoundationApi.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/InternalFoundationApi.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyListItemInfo.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyListItemInfo.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/LayoutScopeMarker.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/layout/LayoutScopeMarker.kt
 
 # ── androidx.compose.animation.core ───────────────────────────────────────
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationEndReason.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationEndReason.kt
 # Easing depends on the cubic helpers in graphics/Bezier.kt + Preconditions.kt.
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Easing.kt               core/src/vendor/common/kotlin/androidx/compose/animation/core/Easing.kt
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/EasingFunctions.kt      core/src/vendor/common/kotlin/androidx/compose/animation/core/EasingFunctions.kt
-compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Preconditions.kt        core/src/vendor/common/kotlin/androidx/compose/animation/core/Preconditions.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Preconditions.kt           core/src/vendor/common/kotlin/androidx/compose/animation/core/Preconditions.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InternalAnimationApi.kt     core/src/vendor/common/kotlin/androidx/compose/animation/core/InternalAnimationApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt
+# VisibilityThresholds depends on TwoWayConverter/VectorConverter — the
+# AnimationVector pipeline our lerp-lambda design omits. Skipping for now.
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt

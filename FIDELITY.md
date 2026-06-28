@@ -111,8 +111,15 @@ All of the above already verified working on Windows/SDL3.
   `ResolvedTextDirection`/`TextDirection`/`TextGeometricTransform`/`TextMotion`/
   `LineBreak`/`Hyphens`/`BaselineShift`, `FontStyle`/`FontWeight`,
   `ui.layout.ScaleFactor`/`ContentScale`/`AlignmentLine`,
-  `foundation.BorderStroke`, `animation.core.AnimationEndReason`/`Easing`/
-  `EasingFunctions`/`Preconditions`. (`Sp` was migrated to the real
+  `foundation.BorderStroke`, `foundation.interaction.{Interaction,
+  InteractionSource, DragInteraction, HoverInteraction, FocusInteraction}`,
+  `foundation.gestures.Orientation`, `foundation.lazy.LazyListItemInfo`,
+  `foundation.layout.LayoutScopeMarker`, `animation.core.AnimationEndReason`/
+  `Easing`/`EasingFunctions`/`Preconditions`. Plus the experimental/internal
+  opt-in annotations: `ExperimentalGraphicsApi`, `ExperimentalFoundationApi`,
+  `InternalFoundationApi`, `InternalAnimationApi`, `InternalTextApi`,
+  `ExperimentalTransitionApi`, `ExperimentalAnimationSpecApi`,
+  `ExperimentalDeferredTransitionApi`. (`Sp` was migrated to the real
   `TextUnit`.)
 
   **Note on transitive AndroidX deps**: `androidx.collection:collection:1.5.0`
