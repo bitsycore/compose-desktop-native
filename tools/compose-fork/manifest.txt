@@ -510,6 +510,11 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt    
 
 # AutofillManager — pure abstract class with two abstract methods.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillManager.kt                                               core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillManager.kt
+# FillableData / FocusDirection / ModifierLocal — pure types.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/FillableData.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/autofill/FillableData.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/FillableData.skiko.kt                                             core/src/vendor/native/kotlin/androidx/compose/ui/autofill/FillableData.native.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusDirection.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusDirection.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt                                                 core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
 
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
