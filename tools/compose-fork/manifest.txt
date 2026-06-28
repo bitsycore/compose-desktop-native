@@ -85,6 +85,14 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Interp
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ExperimentalGraphicsApi.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ExperimentalGraphicsApi.kt
 # RectangleShape now compatible with our reshaped Shape/Outline.
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/RectangleShape.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/RectangleShape.kt
+# Matrix — pure math value class over a FloatArray (680 lines). No engine deps.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Matrix.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Matrix.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/internal/JvmDefaultWithCompatibility.kt core/src/vendor/common/kotlin/androidx/compose/ui/graphics/internal/JvmDefaultWithCompatibility.kt
+# Path infrastructure: interface + factory expect. Our concrete impl lives
+# in nativeMain (renames our existing hand-written Path to ProjectPath
+# behind the interface).
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Path.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Path.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathIterator.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PathIterator.kt
 
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt

@@ -82,11 +82,11 @@ internal fun PathScreen() {
 				Canvas(modifier = Modifier.size(80.dp)) { drawPath(vTriangle, vPrimary) }
 				Canvas(modifier = Modifier.size(80.dp)) { drawPath(vStar, vSecondary) }
 				Canvas(modifier = Modifier.size(80.dp)) {
-					val vP = Path().apply { addOval(Offset(8f, 16f), Size(64f, 48f)) }
+					val vP = Path().apply { addOval(androidx.compose.ui.geometry.Rect(Offset(8f, 16f), Size(64f, 48f))) }
 					drawPath(vP, vPrimary)
 				}
 				Canvas(modifier = Modifier.size(80.dp)) {
-					val vP = Path().apply { addRect(Offset(16f, 16f), Size(48f, 48f)) }
+					val vP = Path().apply { addRect(androidx.compose.ui.geometry.Rect(Offset(16f, 16f), Size(48f, 48f))) }
 					drawPath(vP, vSecondary)
 				}
 			}

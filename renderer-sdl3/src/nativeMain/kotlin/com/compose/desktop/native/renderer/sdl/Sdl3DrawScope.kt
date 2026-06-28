@@ -334,7 +334,11 @@ internal class Sdl3DrawScope(
 		val vSubs = mutableListOf<MutableList<Pair<Float, Float>>>()
 		var vCurrent: MutableList<Pair<Float, Float>>? = null
 		var vCx = 0f; var vCy = 0f
-		for (vCmd in inPath.commands) when (vCmd) {
+		// Path is now an interface; our concrete impl is ProjectPath in
+		// commonMain. Cast to read the PathCommand list directly — falls
+		// back to an empty path if a foreign Path implementation slips in.
+		val vCommands = (inPath as? com.compose.desktop.native.graphics.ProjectPath)?.commands ?: emptyList()
+		for (vCmd in vCommands) when (vCmd) {
 			is PathCommand.MoveTo -> {
 				vCx = fOriginX + vCmd.x; vCy = fOriginY + vCmd.y
 				vCurrent = mutableListOf(vCx to vCy)

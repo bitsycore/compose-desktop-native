@@ -174,7 +174,11 @@ internal class SkiaDrawScope(
 
 	private fun toSkiaPath(inPath: ComposePath): SkiaPath {
 		val vB = PathBuilder()
-		for (vCmd in inPath.commands) when (vCmd) {
+		// Path is now an interface (vendored); our concrete impl is ProjectPath
+		// in commonMain. Cast to read the PathCommand list directly — falls
+		// back to an empty path if a foreign Path implementation slips in.
+		val vCommands = (inPath as? com.compose.desktop.native.graphics.ProjectPath)?.commands ?: emptyList()
+		for (vCmd in vCommands) when (vCmd) {
 			is PathCommand.MoveTo  -> vB.moveTo(fOriginX + vCmd.x, fOriginY + vCmd.y)
 			is PathCommand.LineTo  -> vB.lineTo(fOriginX + vCmd.x, fOriginY + vCmd.y)
 			is PathCommand.QuadTo  -> vB.quadTo(

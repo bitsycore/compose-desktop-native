@@ -703,6 +703,93 @@ abstract interface androidx.compose.ui.graphics/Interpolatable { // androidx.com
     }
 }
 
+abstract interface androidx.compose.ui.graphics/Path { // androidx.compose.ui.graphics/Path|null[0]
+    abstract val isConvex // androidx.compose.ui.graphics/Path.isConvex|{}isConvex[0]
+        abstract fun <get-isConvex>(): kotlin/Boolean // androidx.compose.ui.graphics/Path.isConvex.<get-isConvex>|<get-isConvex>(){}[0]
+    abstract val isEmpty // androidx.compose.ui.graphics/Path.isEmpty|{}isEmpty[0]
+        abstract fun <get-isEmpty>(): kotlin/Boolean // androidx.compose.ui.graphics/Path.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+
+    abstract var fillType // androidx.compose.ui.graphics/Path.fillType|{}fillType[0]
+        abstract fun <get-fillType>(): androidx.compose.ui.graphics/PathFillType // androidx.compose.ui.graphics/Path.fillType.<get-fillType>|<get-fillType>(){}[0]
+        abstract fun <set-fillType>(androidx.compose.ui.graphics/PathFillType) // androidx.compose.ui.graphics/Path.fillType.<set-fillType>|<set-fillType>(androidx.compose.ui.graphics.PathFillType){}[0]
+
+    abstract fun addArc(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.addArc|addArc(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float){}[0]
+    abstract fun addArcRad(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.addArcRad|addArcRad(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float){}[0]
+    abstract fun addOval(androidx.compose.ui.geometry/Rect) // androidx.compose.ui.graphics/Path.addOval|addOval(androidx.compose.ui.geometry.Rect){}[0]
+    abstract fun addOval(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Path.Direction = ...) // androidx.compose.ui.graphics/Path.addOval|addOval(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    abstract fun addPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.geometry/Offset = ...) // androidx.compose.ui.graphics/Path.addPath|addPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.geometry.Offset){}[0]
+    abstract fun addRect(androidx.compose.ui.geometry/Rect) // androidx.compose.ui.graphics/Path.addRect|addRect(androidx.compose.ui.geometry.Rect){}[0]
+    abstract fun addRect(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Path.Direction = ...) // androidx.compose.ui.graphics/Path.addRect|addRect(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    abstract fun addRoundRect(androidx.compose.ui.geometry/RoundRect) // androidx.compose.ui.graphics/Path.addRoundRect|addRoundRect(androidx.compose.ui.geometry.RoundRect){}[0]
+    abstract fun addRoundRect(androidx.compose.ui.geometry/RoundRect, androidx.compose.ui.graphics/Path.Direction = ...) // androidx.compose.ui.graphics/Path.addRoundRect|addRoundRect(androidx.compose.ui.geometry.RoundRect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    abstract fun arcTo(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean) // androidx.compose.ui.graphics/Path.arcTo|arcTo(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    abstract fun close() // androidx.compose.ui.graphics/Path.close|close(){}[0]
+    abstract fun cubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.cubicTo|cubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    abstract fun getBounds(): androidx.compose.ui.geometry/Rect // androidx.compose.ui.graphics/Path.getBounds|getBounds(){}[0]
+    abstract fun lineTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.lineTo|lineTo(kotlin.Float;kotlin.Float){}[0]
+    abstract fun moveTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.moveTo|moveTo(kotlin.Float;kotlin.Float){}[0]
+    abstract fun op(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/PathOperation): kotlin/Boolean // androidx.compose.ui.graphics/Path.op|op(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.PathOperation){}[0]
+    abstract fun quadraticBezierTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.quadraticBezierTo|quadraticBezierTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    abstract fun relativeCubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.relativeCubicTo|relativeCubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    abstract fun relativeLineTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.relativeLineTo|relativeLineTo(kotlin.Float;kotlin.Float){}[0]
+    abstract fun relativeMoveTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.relativeMoveTo|relativeMoveTo(kotlin.Float;kotlin.Float){}[0]
+    abstract fun relativeQuadraticBezierTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.relativeQuadraticBezierTo|relativeQuadraticBezierTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    abstract fun reset() // androidx.compose.ui.graphics/Path.reset|reset(){}[0]
+    abstract fun translate(androidx.compose.ui.geometry/Offset) // androidx.compose.ui.graphics/Path.translate|translate(androidx.compose.ui.geometry.Offset){}[0]
+    open fun and(androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.and|and(androidx.compose.ui.graphics.Path){}[0]
+    open fun arcToRad(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean) // androidx.compose.ui.graphics/Path.arcToRad|arcToRad(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    open fun iterator(): androidx.compose.ui.graphics/PathIterator // androidx.compose.ui.graphics/Path.iterator|iterator(){}[0]
+    open fun iterator(androidx.compose.ui.graphics/PathIterator.ConicEvaluation, kotlin/Float = ...): androidx.compose.ui.graphics/PathIterator // androidx.compose.ui.graphics/Path.iterator|iterator(androidx.compose.ui.graphics.PathIterator.ConicEvaluation;kotlin.Float){}[0]
+    open fun minus(androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.minus|minus(androidx.compose.ui.graphics.Path){}[0]
+    open fun or(androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.or|or(androidx.compose.ui.graphics.Path){}[0]
+    open fun plus(androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.plus|plus(androidx.compose.ui.graphics.Path){}[0]
+    open fun quadraticTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.quadraticTo|quadraticTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    open fun relativeQuadraticTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.relativeQuadraticTo|relativeQuadraticTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    open fun rewind() // androidx.compose.ui.graphics/Path.rewind|rewind(){}[0]
+    open fun transform(androidx.compose.ui.graphics/Matrix) // androidx.compose.ui.graphics/Path.transform|transform(androidx.compose.ui.graphics.Matrix){}[0]
+    open fun xor(androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.xor|xor(androidx.compose.ui.graphics.Path){}[0]
+
+    final enum class Direction : kotlin/Enum<androidx.compose.ui.graphics/Path.Direction> { // androidx.compose.ui.graphics/Path.Direction|null[0]
+        enum entry Clockwise // androidx.compose.ui.graphics/Path.Direction.Clockwise|null[0]
+        enum entry CounterClockwise // androidx.compose.ui.graphics/Path.Direction.CounterClockwise|null[0]
+
+        final val entries // androidx.compose.ui.graphics/Path.Direction.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.graphics/Path.Direction> // androidx.compose.ui.graphics/Path.Direction.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): androidx.compose.ui.graphics/Path.Direction // androidx.compose.ui.graphics/Path.Direction.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<androidx.compose.ui.graphics/Path.Direction> // androidx.compose.ui.graphics/Path.Direction.values|values#static(){}[0]
+    }
+
+    final object Companion { // androidx.compose.ui.graphics/Path.Companion|null[0]
+        final fun combine(androidx.compose.ui.graphics/PathOperation, androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Path): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path.Companion.combine|combine(androidx.compose.ui.graphics.PathOperation;androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Path){}[0]
+    }
+}
+
+abstract interface androidx.compose.ui.graphics/PathIterator : kotlin.collections/Iterator<androidx.compose.ui.graphics/PathSegment> { // androidx.compose.ui.graphics/PathIterator|null[0]
+    abstract val conicEvaluation // androidx.compose.ui.graphics/PathIterator.conicEvaluation|{}conicEvaluation[0]
+        abstract fun <get-conicEvaluation>(): androidx.compose.ui.graphics/PathIterator.ConicEvaluation // androidx.compose.ui.graphics/PathIterator.conicEvaluation.<get-conicEvaluation>|<get-conicEvaluation>(){}[0]
+    abstract val path // androidx.compose.ui.graphics/PathIterator.path|{}path[0]
+        abstract fun <get-path>(): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/PathIterator.path.<get-path>|<get-path>(){}[0]
+    abstract val tolerance // androidx.compose.ui.graphics/PathIterator.tolerance|{}tolerance[0]
+        abstract fun <get-tolerance>(): kotlin/Float // androidx.compose.ui.graphics/PathIterator.tolerance.<get-tolerance>|<get-tolerance>(){}[0]
+
+    abstract fun calculateSize(kotlin/Boolean = ...): kotlin/Int // androidx.compose.ui.graphics/PathIterator.calculateSize|calculateSize(kotlin.Boolean){}[0]
+    abstract fun hasNext(): kotlin/Boolean // androidx.compose.ui.graphics/PathIterator.hasNext|hasNext(){}[0]
+    abstract fun next(): androidx.compose.ui.graphics/PathSegment // androidx.compose.ui.graphics/PathIterator.next|next(){}[0]
+    abstract fun next(kotlin/FloatArray, kotlin/Int = ...): androidx.compose.ui.graphics/PathSegment.Type // androidx.compose.ui.graphics/PathIterator.next|next(kotlin.FloatArray;kotlin.Int){}[0]
+
+    final enum class ConicEvaluation : kotlin/Enum<androidx.compose.ui.graphics/PathIterator.ConicEvaluation> { // androidx.compose.ui.graphics/PathIterator.ConicEvaluation|null[0]
+        enum entry AsConic // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.AsConic|null[0]
+        enum entry AsQuadratics // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.AsQuadratics|null[0]
+
+        final val entries // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<androidx.compose.ui.graphics/PathIterator.ConicEvaluation> // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): androidx.compose.ui.graphics/PathIterator.ConicEvaluation // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<androidx.compose.ui.graphics/PathIterator.ConicEvaluation> // androidx.compose.ui.graphics/PathIterator.ConicEvaluation.values|values#static(){}[0]
+    }
+}
+
 abstract interface androidx.compose.ui.graphics/Shape { // androidx.compose.ui.graphics/Shape|null[0]
     abstract fun createOutline(androidx.compose.ui.geometry/Size, androidx.compose.ui.unit/LayoutDirection, androidx.compose.ui.unit/Density): androidx.compose.ui.graphics/Outline // androidx.compose.ui.graphics/Shape.createOutline|createOutline(androidx.compose.ui.geometry.Size;androidx.compose.ui.unit.LayoutDirection;androidx.compose.ui.unit.Density){}[0]
 }
@@ -2099,22 +2186,6 @@ final class androidx.compose.ui.graphics/LinearGradient : androidx.compose.ui.gr
     final fun toString(): kotlin/String // androidx.compose.ui.graphics/LinearGradient.toString|toString(){}[0]
 }
 
-final class androidx.compose.ui.graphics/Path { // androidx.compose.ui.graphics/Path|null[0]
-    constructor <init>() // androidx.compose.ui.graphics/Path.<init>|<init>(){}[0]
-
-    final val commands // androidx.compose.ui.graphics/Path.commands|{}commands[0]
-        final fun <get-commands>(): kotlin.collections/List<com.compose.desktop.native.graphics/PathCommand> // androidx.compose.ui.graphics/Path.commands.<get-commands>|<get-commands>(){}[0]
-
-    final fun addOval(androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Size) // androidx.compose.ui.graphics/Path.addOval|addOval(androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size){}[0]
-    final fun addRect(androidx.compose.ui.geometry/Offset, androidx.compose.ui.geometry/Size) // androidx.compose.ui.graphics/Path.addRect|addRect(androidx.compose.ui.geometry.Offset;androidx.compose.ui.geometry.Size){}[0]
-    final fun close() // androidx.compose.ui.graphics/Path.close|close(){}[0]
-    final fun cubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.cubicTo|cubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-    final fun lineTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.lineTo|lineTo(kotlin.Float;kotlin.Float){}[0]
-    final fun moveTo(kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.moveTo|moveTo(kotlin.Float;kotlin.Float){}[0]
-    final fun quadraticBezierTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/Path.quadraticBezierTo|quadraticBezierTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-    final fun reset() // androidx.compose.ui.graphics/Path.reset|reset(){}[0]
-}
-
 final class androidx.compose.ui.graphics/PathSegment { // androidx.compose.ui.graphics/PathSegment|null[0]
     final val points // androidx.compose.ui.graphics/PathSegment.points|{}points[0]
         final fun <get-points>(): kotlin/FloatArray // androidx.compose.ui.graphics/PathSegment.points.<get-points>|<get-points>(){}[0]
@@ -3300,6 +3371,62 @@ final class com.compose.desktop.native.element/VerticalScrollModifier : androidx
         final fun <get-state>(): androidx.compose.foundation/ScrollState // com.compose.desktop.native.element/VerticalScrollModifier.state.<get-state>|<get-state>(){}[0]
 }
 
+final class com.compose.desktop.native.graphics/ProjectPath : androidx.compose.ui.graphics/Path { // com.compose.desktop.native.graphics/ProjectPath|null[0]
+    constructor <init>() // com.compose.desktop.native.graphics/ProjectPath.<init>|<init>(){}[0]
+
+    final val commands // com.compose.desktop.native.graphics/ProjectPath.commands|{}commands[0]
+        final fun <get-commands>(): kotlin.collections/List<com.compose.desktop.native.graphics/PathCommand> // com.compose.desktop.native.graphics/ProjectPath.commands.<get-commands>|<get-commands>(){}[0]
+    final val isConvex // com.compose.desktop.native.graphics/ProjectPath.isConvex|{}isConvex[0]
+        final fun <get-isConvex>(): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectPath.isConvex.<get-isConvex>|<get-isConvex>(){}[0]
+    final val isEmpty // com.compose.desktop.native.graphics/ProjectPath.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectPath.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+
+    final var fillType // com.compose.desktop.native.graphics/ProjectPath.fillType|{}fillType[0]
+        final fun <get-fillType>(): androidx.compose.ui.graphics/PathFillType // com.compose.desktop.native.graphics/ProjectPath.fillType.<get-fillType>|<get-fillType>(){}[0]
+        final fun <set-fillType>(androidx.compose.ui.graphics/PathFillType) // com.compose.desktop.native.graphics/ProjectPath.fillType.<set-fillType>|<set-fillType>(androidx.compose.ui.graphics.PathFillType){}[0]
+
+    final fun addArc(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.addArc|addArc(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float){}[0]
+    final fun addArcRad(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.addArcRad|addArcRad(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float){}[0]
+    final fun addOval(androidx.compose.ui.geometry/Rect) // com.compose.desktop.native.graphics/ProjectPath.addOval|addOval(androidx.compose.ui.geometry.Rect){}[0]
+    final fun addOval(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Path.Direction) // com.compose.desktop.native.graphics/ProjectPath.addOval|addOval(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    final fun addPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.geometry/Offset) // com.compose.desktop.native.graphics/ProjectPath.addPath|addPath(androidx.compose.ui.graphics.Path;androidx.compose.ui.geometry.Offset){}[0]
+    final fun addRect(androidx.compose.ui.geometry/Rect) // com.compose.desktop.native.graphics/ProjectPath.addRect|addRect(androidx.compose.ui.geometry.Rect){}[0]
+    final fun addRect(androidx.compose.ui.geometry/Rect, androidx.compose.ui.graphics/Path.Direction) // com.compose.desktop.native.graphics/ProjectPath.addRect|addRect(androidx.compose.ui.geometry.Rect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    final fun addRoundRect(androidx.compose.ui.geometry/RoundRect) // com.compose.desktop.native.graphics/ProjectPath.addRoundRect|addRoundRect(androidx.compose.ui.geometry.RoundRect){}[0]
+    final fun addRoundRect(androidx.compose.ui.geometry/RoundRect, androidx.compose.ui.graphics/Path.Direction) // com.compose.desktop.native.graphics/ProjectPath.addRoundRect|addRoundRect(androidx.compose.ui.geometry.RoundRect;androidx.compose.ui.graphics.Path.Direction){}[0]
+    final fun arcTo(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean) // com.compose.desktop.native.graphics/ProjectPath.arcTo|arcTo(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    final fun arcToRad(androidx.compose.ui.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Boolean) // com.compose.desktop.native.graphics/ProjectPath.arcToRad|arcToRad(androidx.compose.ui.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    final fun close() // com.compose.desktop.native.graphics/ProjectPath.close|close(){}[0]
+    final fun cubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.cubicTo|cubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun getBounds(): androidx.compose.ui.geometry/Rect // com.compose.desktop.native.graphics/ProjectPath.getBounds|getBounds(){}[0]
+    final fun lineTo(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.lineTo|lineTo(kotlin.Float;kotlin.Float){}[0]
+    final fun moveTo(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.moveTo|moveTo(kotlin.Float;kotlin.Float){}[0]
+    final fun op(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/PathOperation): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectPath.op|op(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.PathOperation){}[0]
+    final fun quadraticBezierTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.quadraticBezierTo|quadraticBezierTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun relativeCubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.relativeCubicTo|relativeCubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun relativeLineTo(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.relativeLineTo|relativeLineTo(kotlin.Float;kotlin.Float){}[0]
+    final fun relativeMoveTo(kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.relativeMoveTo|relativeMoveTo(kotlin.Float;kotlin.Float){}[0]
+    final fun relativeQuadraticBezierTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.desktop.native.graphics/ProjectPath.relativeQuadraticBezierTo|relativeQuadraticBezierTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun reset() // com.compose.desktop.native.graphics/ProjectPath.reset|reset(){}[0]
+    final fun translate(androidx.compose.ui.geometry/Offset) // com.compose.desktop.native.graphics/ProjectPath.translate|translate(androidx.compose.ui.geometry.Offset){}[0]
+}
+
+final class com.compose.desktop.native.graphics/ProjectPathIterator : androidx.compose.ui.graphics/PathIterator { // com.compose.desktop.native.graphics/ProjectPathIterator|null[0]
+    constructor <init>(com.compose.desktop.native.graphics/ProjectPath, androidx.compose.ui.graphics/PathIterator.ConicEvaluation) // com.compose.desktop.native.graphics/ProjectPathIterator.<init>|<init>(com.compose.desktop.native.graphics.ProjectPath;androidx.compose.ui.graphics.PathIterator.ConicEvaluation){}[0]
+
+    final val conicEvaluation // com.compose.desktop.native.graphics/ProjectPathIterator.conicEvaluation|{}conicEvaluation[0]
+        final fun <get-conicEvaluation>(): androidx.compose.ui.graphics/PathIterator.ConicEvaluation // com.compose.desktop.native.graphics/ProjectPathIterator.conicEvaluation.<get-conicEvaluation>|<get-conicEvaluation>(){}[0]
+    final val path // com.compose.desktop.native.graphics/ProjectPathIterator.path|{}path[0]
+        final fun <get-path>(): androidx.compose.ui.graphics/Path // com.compose.desktop.native.graphics/ProjectPathIterator.path.<get-path>|<get-path>(){}[0]
+    final val tolerance // com.compose.desktop.native.graphics/ProjectPathIterator.tolerance|{}tolerance[0]
+        final fun <get-tolerance>(): kotlin/Float // com.compose.desktop.native.graphics/ProjectPathIterator.tolerance.<get-tolerance>|<get-tolerance>(){}[0]
+
+    final fun calculateSize(kotlin/Boolean): kotlin/Int // com.compose.desktop.native.graphics/ProjectPathIterator.calculateSize|calculateSize(kotlin.Boolean){}[0]
+    final fun hasNext(): kotlin/Boolean // com.compose.desktop.native.graphics/ProjectPathIterator.hasNext|hasNext(){}[0]
+    final fun next(): androidx.compose.ui.graphics/PathSegment // com.compose.desktop.native.graphics/ProjectPathIterator.next|next(){}[0]
+    final fun next(kotlin/FloatArray, kotlin/Int): androidx.compose.ui.graphics/PathSegment.Type // com.compose.desktop.native.graphics/ProjectPathIterator.next|next(kotlin.FloatArray;kotlin.Int){}[0]
+}
+
 final class com.compose.desktop.native.input/KeyModifiers { // com.compose.desktop.native.input/KeyModifiers|null[0]
     constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.compose.desktop.native.input/KeyModifiers.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
 
@@ -3963,6 +4090,57 @@ final value class androidx.compose.ui.graphics/FilterQuality { // androidx.compo
             final fun <get-Medium>(): androidx.compose.ui.graphics/FilterQuality // androidx.compose.ui.graphics/FilterQuality.Companion.Medium.<get-Medium>|<get-Medium>(){}[0]
         final val None // androidx.compose.ui.graphics/FilterQuality.Companion.None|{}None[0]
             final fun <get-None>(): androidx.compose.ui.graphics/FilterQuality // androidx.compose.ui.graphics/FilterQuality.Companion.None.<get-None>|<get-None>(){}[0]
+    }
+}
+
+final value class androidx.compose.ui.graphics/Matrix { // androidx.compose.ui.graphics/Matrix|null[0]
+    constructor <init>(kotlin/FloatArray = ...) // androidx.compose.ui.graphics/Matrix.<init>|<init>(kotlin.FloatArray){}[0]
+
+    final val values // androidx.compose.ui.graphics/Matrix.values|{}values[0]
+        final fun <get-values>(): kotlin/FloatArray // androidx.compose.ui.graphics/Matrix.values.<get-values>|<get-values>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.ui.graphics/Matrix.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.ui.graphics/Matrix.hashCode|hashCode(){}[0]
+    final fun invert() // androidx.compose.ui.graphics/Matrix.invert|invert(){}[0]
+    final fun map(androidx.compose.ui.geometry/MutableRect) // androidx.compose.ui.graphics/Matrix.map|map(androidx.compose.ui.geometry.MutableRect){}[0]
+    final fun map(androidx.compose.ui.geometry/Offset): androidx.compose.ui.geometry/Offset // androidx.compose.ui.graphics/Matrix.map|map(androidx.compose.ui.geometry.Offset){}[0]
+    final fun map(androidx.compose.ui.geometry/Rect): androidx.compose.ui.geometry/Rect // androidx.compose.ui.graphics/Matrix.map|map(androidx.compose.ui.geometry.Rect){}[0]
+    final fun reset() // androidx.compose.ui.graphics/Matrix.reset|reset(){}[0]
+    final fun resetToPivotedTransform(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/Matrix.resetToPivotedTransform|resetToPivotedTransform(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun rotateX(kotlin/Float) // androidx.compose.ui.graphics/Matrix.rotateX|rotateX(kotlin.Float){}[0]
+    final fun rotateY(kotlin/Float) // androidx.compose.ui.graphics/Matrix.rotateY|rotateY(kotlin.Float){}[0]
+    final fun rotateZ(kotlin/Float) // androidx.compose.ui.graphics/Matrix.rotateZ|rotateZ(kotlin.Float){}[0]
+    final fun scale(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/Matrix.scale|scale(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun setFrom(androidx.compose.ui.graphics/Matrix) // androidx.compose.ui.graphics/Matrix.setFrom|setFrom(androidx.compose.ui.graphics.Matrix){}[0]
+    final fun timesAssign(androidx.compose.ui.graphics/Matrix) // androidx.compose.ui.graphics/Matrix.timesAssign|timesAssign(androidx.compose.ui.graphics.Matrix){}[0]
+    final fun toString(): kotlin/String // androidx.compose.ui.graphics/Matrix.toString|toString(){}[0]
+    final fun translate(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // androidx.compose.ui.graphics/Matrix.translate|translate(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final inline fun get(kotlin/Int, kotlin/Int): kotlin/Float // androidx.compose.ui.graphics/Matrix.get|get(kotlin.Int;kotlin.Int){}[0]
+    final inline fun set(kotlin/Int, kotlin/Int, kotlin/Float) // androidx.compose.ui.graphics/Matrix.set|set(kotlin.Int;kotlin.Int;kotlin.Float){}[0]
+
+    final object Companion { // androidx.compose.ui.graphics/Matrix.Companion|null[0]
+        final const val Perspective0 // androidx.compose.ui.graphics/Matrix.Companion.Perspective0|{}Perspective0[0]
+            final fun <get-Perspective0>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.Perspective0.<get-Perspective0>|<get-Perspective0>(){}[0]
+        final const val Perspective1 // androidx.compose.ui.graphics/Matrix.Companion.Perspective1|{}Perspective1[0]
+            final fun <get-Perspective1>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.Perspective1.<get-Perspective1>|<get-Perspective1>(){}[0]
+        final const val Perspective2 // androidx.compose.ui.graphics/Matrix.Companion.Perspective2|{}Perspective2[0]
+            final fun <get-Perspective2>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.Perspective2.<get-Perspective2>|<get-Perspective2>(){}[0]
+        final const val ScaleX // androidx.compose.ui.graphics/Matrix.Companion.ScaleX|{}ScaleX[0]
+            final fun <get-ScaleX>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.ScaleX.<get-ScaleX>|<get-ScaleX>(){}[0]
+        final const val ScaleY // androidx.compose.ui.graphics/Matrix.Companion.ScaleY|{}ScaleY[0]
+            final fun <get-ScaleY>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.ScaleY.<get-ScaleY>|<get-ScaleY>(){}[0]
+        final const val ScaleZ // androidx.compose.ui.graphics/Matrix.Companion.ScaleZ|{}ScaleZ[0]
+            final fun <get-ScaleZ>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.ScaleZ.<get-ScaleZ>|<get-ScaleZ>(){}[0]
+        final const val SkewX // androidx.compose.ui.graphics/Matrix.Companion.SkewX|{}SkewX[0]
+            final fun <get-SkewX>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.SkewX.<get-SkewX>|<get-SkewX>(){}[0]
+        final const val SkewY // androidx.compose.ui.graphics/Matrix.Companion.SkewY|{}SkewY[0]
+            final fun <get-SkewY>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.SkewY.<get-SkewY>|<get-SkewY>(){}[0]
+        final const val TranslateX // androidx.compose.ui.graphics/Matrix.Companion.TranslateX|{}TranslateX[0]
+            final fun <get-TranslateX>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.TranslateX.<get-TranslateX>|<get-TranslateX>(){}[0]
+        final const val TranslateY // androidx.compose.ui.graphics/Matrix.Companion.TranslateY|{}TranslateY[0]
+            final fun <get-TranslateY>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.TranslateY.<get-TranslateY>|<get-TranslateY>(){}[0]
+        final const val TranslateZ // androidx.compose.ui.graphics/Matrix.Companion.TranslateZ|{}TranslateZ[0]
+            final fun <get-TranslateZ>(): kotlin/Int // androidx.compose.ui.graphics/Matrix.Companion.TranslateZ.<get-TranslateZ>|<get-TranslateZ>(){}[0]
     }
 }
 
@@ -5671,7 +5849,6 @@ final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stab
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop|#static{}androidx_compose_ui_graphics_Outline_Generic$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop|#static{}androidx_compose_ui_graphics_Outline_Rectangle$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop|#static{}androidx_compose_ui_graphics_Outline_Rounded$stableprop[0]
-final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Path$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Path$stableprop|#static{}androidx_compose_ui_graphics_Path$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop|#static{}androidx_compose_ui_graphics_PathSegment$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop|#static{}androidx_compose_ui_graphics_RadialGradient$stableprop[0]
 final val androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop|#static{}androidx_compose_ui_graphics_Shadow$stableprop[0]
@@ -5901,6 +6078,8 @@ final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphic
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop[0]
 final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop|#static{}com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop[0]
+final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop|#static{}com_compose_desktop_native_graphics_ProjectPath$stableprop[0]
+final val com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop|#static{}com_compose_desktop_native_graphics_ProjectPathIterator$stableprop[0]
 final val com.compose.desktop.native.graphics/g8 // com.compose.desktop.native.graphics/g8|@androidx.compose.ui.graphics.Color{}g8[0]
     final fun (androidx.compose.ui.graphics/Color).<get-g8>(): kotlin/Int // com.compose.desktop.native.graphics/g8.<get-g8>|<get-g8>@androidx.compose.ui.graphics.Color(){}[0]
 final val com.compose.desktop.native.graphics/r8 // com.compose.desktop.native.graphics/r8|@androidx.compose.ui.graphics.Color{}r8[0]
@@ -6003,6 +6182,8 @@ final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/toAr
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/blend(androidx.compose.ui.graphics/Color, kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/blend|blend@androidx.compose.ui.graphics.Color(androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/darken(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/darken|darken@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/Color).com.compose.desktop.native.graphics/lighten(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.desktop.native.graphics/lighten|lighten@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
+final fun (androidx.compose.ui.graphics/Matrix).androidx.compose.ui.graphics/isIdentity(): kotlin/Boolean // androidx.compose.ui.graphics/isIdentity|isIdentity@androidx.compose.ui.graphics.Matrix(){}[0]
+final fun (androidx.compose.ui.graphics/Path).androidx.compose.ui.graphics/copy(): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/copy|copy@androidx.compose.ui.graphics.Path(){}[0]
 final fun (androidx.compose.ui.graphics/TileMode).androidx.compose.ui.graphics/isSupported(): kotlin/Boolean // androidx.compose.ui.graphics/isSupported|isSupported@androidx.compose.ui.graphics.TileMode(){}[0]
 final fun (androidx.compose.ui.input.pointer/PointerButtons).androidx.compose.ui.input.pointer/indexOfFirstPressed(): kotlin/Int // androidx.compose.ui.input.pointer/indexOfFirstPressed|indexOfFirstPressed@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
 final fun (androidx.compose.ui.input.pointer/PointerButtons).androidx.compose.ui.input.pointer/indexOfLastPressed(): kotlin/Int // androidx.compose.ui.input.pointer/indexOfLastPressed|indexOfLastPressed@androidx.compose.ui.input.pointer.PointerButtons(){}[0]
@@ -6353,6 +6534,8 @@ final fun androidx.compose.ui.graphics/Color(kotlin/Int, kotlin/Int, kotlin/Int,
 final fun androidx.compose.ui.graphics/Color(kotlin/Long): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/Color|Color(kotlin.Long){}[0]
 final fun androidx.compose.ui.graphics/LayerOutsets(androidx.compose.ui.unit/Dp): androidx.compose.ui.graphics/LayerOutsets // androidx.compose.ui.graphics/LayerOutsets|LayerOutsets(androidx.compose.ui.unit.Dp){}[0]
 final fun androidx.compose.ui.graphics/LayerOutsets(androidx.compose.ui.unit/Dp, androidx.compose.ui.unit/Dp): androidx.compose.ui.graphics/LayerOutsets // androidx.compose.ui.graphics/LayerOutsets|LayerOutsets(androidx.compose.ui.unit.Dp;androidx.compose.ui.unit.Dp){}[0]
+final fun androidx.compose.ui.graphics/Path(): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics/Path|Path(){}[0]
+final fun androidx.compose.ui.graphics/PathIterator(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/PathIterator.ConicEvaluation = ..., kotlin/Float = ...): androidx.compose.ui.graphics/PathIterator // androidx.compose.ui.graphics/PathIterator|PathIterator(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.PathIterator.ConicEvaluation;kotlin.Float){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Brush$stableprop_getter|androidx_compose_ui_graphics_Brush$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LayerOutsets$stableprop_getter|androidx_compose_ui_graphics_LayerOutsets$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_LinearGradient$stableprop_getter|androidx_compose_ui_graphics_LinearGradient$stableprop_getter(){}[0]
@@ -6360,7 +6543,6 @@ final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline$stab
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Generic$stableprop_getter|androidx_compose_ui_graphics_Outline_Generic$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter|androidx_compose_ui_graphics_Outline_Rectangle$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter|androidx_compose_ui_graphics_Outline_Rounded$stableprop_getter(){}[0]
-final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Path$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Path$stableprop_getter|androidx_compose_ui_graphics_Path$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_PathSegment$stableprop_getter|androidx_compose_ui_graphics_PathSegment$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_RadialGradient$stableprop_getter|androidx_compose_ui_graphics_RadialGradient$stableprop_getter(){}[0]
 final fun androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter(): kotlin/Int // androidx.compose.ui.graphics/androidx_compose_ui_graphics_Shadow$stableprop_getter|androidx_compose_ui_graphics_Shadow$stableprop_getter(){}[0]
@@ -6505,6 +6687,8 @@ final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphic
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_LineTo$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_MoveTo$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter|com_compose_desktop_native_graphics_PathCommand_QuadTo$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPath$stableprop_getter|com_compose_desktop_native_graphics_ProjectPath$stableprop_getter(){}[0]
+final fun com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter(): kotlin/Int // com.compose.desktop.native.graphics/com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter|com_compose_desktop_native_graphics_ProjectPathIterator$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter(): kotlin/Int // com.compose.desktop.native.icons/com_compose_desktop_native_icons_IconFont$stableprop_getter|com_compose_desktop_native_icons_IconFont$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_KeyModifiers$stableprop_getter|com_compose_desktop_native_input_KeyModifiers$stableprop_getter(){}[0]
 final fun com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter(): kotlin/Int // com.compose.desktop.native.input/com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter|com_compose_desktop_native_input_LegacyPointerEvent$stableprop_getter(){}[0]
