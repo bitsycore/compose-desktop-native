@@ -108,6 +108,14 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ImageB
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PixelMap.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PixelMap.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Canvas.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Canvas.kt
 
+# Shape interface — already byte-for-byte compatible with our hand-written
+# version. Vendoring drops the duplicate; our Outline (still hand-rolled,
+# moves to Outline.kt) feeds the same renderers unchanged. Outline.kt is
+# NOT vendored yet because upstream's drawOutline extensions need our
+# DrawScope to grow `cornerRadius: CornerRadius` / `colorFilter` /
+# `blendMode` params — separate pass.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Shape.kt               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Shape.kt
+
 # ── androidx.compose.ui.text value types ──────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
