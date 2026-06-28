@@ -339,12 +339,13 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PathMe
 # Stub actuals — no GraphicsLayer pipeline today.
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/RenderEffect.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/RenderEffect.kt
 # Density + FontScaling — replaces our hand-written reduced Density.
-# FontScaling.kt is `expect interface`; native actual lives in
-# core/src/nativeMain/.../androidx/compose/ui/unit/FontScaling.native.kt
-# (linear scaling, same shape as upstream non-Android impl).
+# FontScaling.kt is `expect interface`; the nonAndroid actual is a
+# `typealias FontScaling = FontScalingLinear` (FontScalingLinear is
+# defined inside FontScaling.kt commonMain). We mirror upstream verbatim.
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt        core/src/vendor/common/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt
 compose/ui/ui-unit/src/nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
+compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/unit/FontScaling.native.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Density.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
 # trace/traceValue — expect funs in common + no-op actuals in
 # Trace.native.kt (vendored from upstream's macosMain — identical to our
