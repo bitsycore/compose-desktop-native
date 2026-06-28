@@ -48,14 +48,4 @@ internal class LazyListScopeImplInternal : LazyListScope {
 			composables.add { itemContent(vIdx) }
 		}
 	}
-	override fun <T> items(items: List<T>, itemContent: @Composable (T) -> Unit) {
-		for (vIt in items) composables.add { itemContent(vIt) }
-	}
-	override fun <T> itemsIndexed(items: List<T>, itemContent: @Composable (Int, T) -> Unit) {
-		for ((vI, vV) in items.withIndex()) {
-			val vIdx = vI
-			val vVal = vV
-			composables.add { itemContent(vIdx, vVal) }
-		}
-	}
 }

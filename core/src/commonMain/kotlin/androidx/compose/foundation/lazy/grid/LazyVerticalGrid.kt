@@ -94,8 +94,6 @@ private fun calculateCellsCrossAxisSizeImpl(
 interface LazyGridScope {
 	fun item(content: @Composable () -> Unit)
 	fun items(count: Int, itemContent: @Composable (Int) -> Unit)
-	fun <T> items(items: List<T>, itemContent: @Composable (T) -> Unit)
-	fun <T> itemsIndexed(items: List<T>, itemContent: @Composable (Int, T) -> Unit)
 }
 
 private class LazyGridScopeImpl : LazyGridScope {
@@ -110,16 +108,22 @@ private class LazyGridScopeImpl : LazyGridScope {
 			composables.add { itemContent(vIdx) }
 		}
 	}
-	override fun <T> items(items: List<T>, itemContent: @Composable (T) -> Unit) {
-		for (vIt in items) composables.add { itemContent(vIt) }
-	}
-	override fun <T> itemsIndexed(items: List<T>, itemContent: @Composable (Int, T) -> Unit) {
-		for ((vI, vV) in items.withIndex()) {
-			val vIdx = vI
-			val vVal = vV
-			composables.add { itemContent(vIdx, vVal) }
-		}
-	}
+}
+
+// ==================
+// MARK: items / itemsIndexed extensions
+// ==================
+
+/* Top-level inline extensions matching upstream placement — LazyGridScope
+   has only `item` / `items(count)` as interface members; List<T> overloads
+   are extensions. */
+
+inline fun <T> LazyGridScope.items(items: List<T>, crossinline itemContent: @Composable (T) -> Unit) {
+	items(count = items.size) { i -> itemContent(items[i]) }
+}
+
+inline fun <T> LazyGridScope.itemsIndexed(items: List<T>, crossinline itemContent: @Composable (Int, T) -> Unit) {
+	items(count = items.size) { i -> itemContent(i, items[i]) }
 }
 
 // ==================

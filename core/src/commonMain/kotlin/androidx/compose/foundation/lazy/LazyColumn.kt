@@ -48,12 +48,6 @@ interface LazyListScope {
 
     /* Insert `count` items, calling content(index) for each. */
     fun items(count: Int, itemContent: @Composable (Int) -> Unit)
-
-    /* Insert one item per element in the list. */
-    fun <T> items(items: List<T>, itemContent: @Composable (T) -> Unit)
-
-    /* Insert one item per element, exposing the index alongside the value. */
-    fun <T> itemsIndexed(items: List<T>, itemContent: @Composable (Int, T) -> Unit)
 }
 
 private class LazyListScopeImpl : LazyListScope {
@@ -69,20 +63,23 @@ private class LazyListScopeImpl : LazyListScope {
             composables.add { itemContent(idx) }
         }
     }
+}
 
-    override fun <T> items(items: List<T>, itemContent: @Composable (T) -> Unit) {
-        for (item in items) {
-            composables.add { itemContent(item) }
-        }
-    }
+// ==================
+// MARK: items / itemsIndexed extensions
+// ==================
 
-    override fun <T> itemsIndexed(items: List<T>, itemContent: @Composable (Int, T) -> Unit) {
-        for ((i, item) in items.withIndex()) {
-            val idx = i
-            val v = item
-            composables.add { itemContent(idx, v) }
-        }
-    }
+/* Top-level inline extensions matching upstream placement (LazyListScope
+   has only `item` / `items(count)` as interface members; List<T> /
+   Array<T> overloads are extensions that fold to `items(count) { i ->
+   content(items[i]) }`). */
+
+inline fun <T> LazyListScope.items(items: List<T>, crossinline itemContent: @Composable (T) -> Unit) {
+    items(count = items.size) { i -> itemContent(items[i]) }
+}
+
+inline fun <T> LazyListScope.itemsIndexed(items: List<T>, crossinline itemContent: @Composable (Int, T) -> Unit) {
+    items(count = items.size) { i -> itemContent(i, items[i]) }
 }
 
 // ==================
