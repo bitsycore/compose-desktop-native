@@ -21,17 +21,17 @@ import com.compose.desktop.native.node.LayoutNode
  * traversals always have a non-null starting point; the real nodes live
  * between `head.child` and `tail`.
  *
- * Phase 4i: this chain is **dormant on the render path** — the
- * renderer still walks `LayoutNode.modifier.foldIn { is XxxModifier }`
- * directly. The chain exists so vendored DelegatableNode traversals
- * (`visitAncestors` / `visitSelfAndChildren` / etc.) can light up with
- * real instances when the renderer rewrite hooks in. Lifecycle hooks
- * (`onAttach` / `onDetach`) are NOT driven yet — Modifier.Node's
- * `isAttached` stays false until a NodeCoordinator-style owner attaches
- * them, which is a future step.
+ * Phase 4j: this chain now drives the **Modifier.Node lifecycle** —
+ * newly `create()`d nodes get their coordinator assigned, then
+ * `markAsAttached()` + `runAttachLifecycle()` (which fires `onAttach()`);
+ * removed nodes get `runDetachLifecycle()` + `markAsDetached()`. The
+ * render path still walks `Modifier.foldIn { is XxxModifier }` directly,
+ * so today's Modifier.Node `onAttach`/`onDetach` overrides see a real
+ * lifecycle but no draw / measure dispatch yet — that comes when the
+ * renderer rewrite uses `DelegatableNode.visit*` traversal instead of
+ * foldIn.
  */
-@Suppress("UNUSED_PARAMETER")
-internal class NodeChain(owner: LayoutNode) {
+internal class NodeChain(private val fOwner: LayoutNode) {
 
 	private val sentinel: Modifier.Node = SentinelHead()
 
@@ -61,6 +61,8 @@ internal class NodeChain(owner: LayoutNode) {
 
 		val vOldNodes = mutableListOf<Modifier.Node>().also { collectRealNodes(it) }
 		val vNewNodes = ArrayList<Modifier.Node>(vNewElements.size)
+		val vCreatedNodes = ArrayList<Modifier.Node>(vNewElements.size)
+		val vReplacedOld = ArrayList<Modifier.Node>(vOldNodes.size)
 
 		for ((i, vElement) in vNewElements.withIndex()) {
 			val vReused = vOldNodes.getOrNull(i)
@@ -76,12 +78,26 @@ internal class NodeChain(owner: LayoutNode) {
 				val vCreated = vElement.create()
 				fOldElementForNode[vCreated] = vElement
 				vNewNodes.add(vCreated)
+				vCreatedNodes.add(vCreated)
+				if (vReused != null) vReplacedOld.add(vReused)
 			}
 		}
 
-		// Drop surplus old nodes (no-op while lifecycle is dormant).
+		// Tail-end old nodes that have no slot in the new chain are leaving.
 		for (i in vNewNodes.size until vOldNodes.size) {
-			fOldElementForNode.remove(vOldNodes[i])
+			vReplacedOld.add(vOldNodes[i])
+		}
+
+		// Detach lifecycle for removed nodes (in reverse to mirror upstream's tailToHead pass).
+		for (i in vReplacedOld.indices.reversed()) {
+			val vN = vReplacedOld[i]
+			if (vN.isAttached) {
+				vN.runDetachLifecycle()
+				vN.markAsDetached()
+			}
+			fOldElementForNode.remove(vN)
+			vN.parent = null
+			vN.child = null
 		}
 
 		// Re-link parent / child + reset sentinel.
@@ -94,6 +110,20 @@ internal class NodeChain(owner: LayoutNode) {
 		}
 		tail = vNewNodes.lastOrNull() ?: sentinel
 		size = vNewNodes.size
+
+		// Attach lifecycle for newly created nodes — coordinator first
+		// (markAsAttached() requires a non-null coordinator), then
+		// markAsAttached, then runAttachLifecycle (which fires onAttach).
+		// Two passes head-to-tail mirror upstream's "mark all, then run
+		// lifecycles" so onAttach bodies see a fully-attached chain.
+		val vCoordinator = fOwner.coordinator
+		for (vN in vCreatedNodes) {
+			vN.updateCoordinator(vCoordinator)
+			vN.markAsAttached()
+		}
+		for (vN in vCreatedNodes) {
+			vN.runAttachLifecycle()
+		}
 	}
 
 	/**
