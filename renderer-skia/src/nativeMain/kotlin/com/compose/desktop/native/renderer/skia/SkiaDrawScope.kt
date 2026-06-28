@@ -7,6 +7,13 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Path as ComposePath
 import com.compose.desktop.native.graphics.PathCommand
+import com.compose.desktop.native.graphics.gradientCenter
+import com.compose.desktop.native.graphics.gradientColors
+import com.compose.desktop.native.graphics.gradientEnd
+import com.compose.desktop.native.graphics.gradientRadius
+import com.compose.desktop.native.graphics.gradientStart
+import com.compose.desktop.native.graphics.gradientStops
+import com.compose.desktop.native.graphics.gradientTileMode
 import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
@@ -244,34 +251,34 @@ internal class SkiaDrawScope(
 	//  the caller's anchor coordinates means "extend to the shape's bounds".
 
 	private fun makeLinearShader(inB: LinearGradient, inSize: Size): Shader {
-		val vStartX = fOriginX + resolveX(inB.start.x, inSize.width)
-		val vStartY = fOriginY + resolveY(inB.start.y, inSize.height)
-		val vEndX = fOriginX + resolveX(inB.end.x, inSize.width)
-		val vEndY = fOriginY + resolveY(inB.end.y, inSize.height)
+		val vStartX = fOriginX + resolveX(inB.gradientStart.x, inSize.width)
+		val vStartY = fOriginY + resolveY(inB.gradientStart.y, inSize.height)
+		val vEndX = fOriginX + resolveX(inB.gradientEnd.x, inSize.width)
+		val vEndY = fOriginY + resolveY(inB.gradientEnd.y, inSize.height)
 		return Shader.makeLinearGradient(
 			p0 = Point(vStartX, vStartY),
 			p1 = Point(vEndX, vEndY),
-			gradient = Gradient(skiaColorsFor(inB.colors, inB.stops, inB.tileMode.toSkia())),
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, inB.gradientTileMode.toSkia())),
 		)
 	}
 
 	private fun makeRadialShader(inB: RadialGradient, inSize: Size): Shader {
-		val vCx = fOriginX + resolveX(inB.center.x, inSize.width)
-		val vCy = fOriginY + resolveY(inB.center.y, inSize.height)
-		val vR = if (inB.radius.isFinite()) inB.radius else (inSize.minDimension / 2f)
+		val vCx = fOriginX + resolveX(inB.gradientCenter.x, inSize.width)
+		val vCy = fOriginY + resolveY(inB.gradientCenter.y, inSize.height)
+		val vR = if (inB.gradientRadius.isFinite()) inB.gradientRadius else (inSize.minDimension / 2f)
 		return Shader.makeRadialGradient(
 			center = Point(vCx, vCy),
 			radius = vR,
-			gradient = Gradient(skiaColorsFor(inB.colors, inB.stops, inB.tileMode.toSkia())),
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, inB.gradientTileMode.toSkia())),
 		)
 	}
 
 	private fun makeSweepShader(inB: SweepGradient, inSize: Size): Shader {
-		val vCx = fOriginX + resolveX(inB.center.x, inSize.width)
-		val vCy = fOriginY + resolveY(inB.center.y, inSize.height)
+		val vCx = fOriginX + resolveX(inB.gradientCenter.x, inSize.width)
+		val vCy = fOriginY + resolveY(inB.gradientCenter.y, inSize.height)
 		return Shader.makeSweepGradient(
 			center = Point(vCx, vCy),
-			gradient = Gradient(skiaColorsFor(inB.colors, inB.stops, FilterTileMode.CLAMP)),
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, FilterTileMode.CLAMP)),
 		)
 	}
 

@@ -12,6 +12,13 @@ import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.RadialGradient
 import com.compose.desktop.native.graphics.PathCommand
+import com.compose.desktop.native.graphics.gradientCenter
+import com.compose.desktop.native.graphics.gradientColors
+import com.compose.desktop.native.graphics.gradientEnd
+import com.compose.desktop.native.graphics.gradientRadius
+import com.compose.desktop.native.graphics.gradientStart
+import com.compose.desktop.native.graphics.gradientStops
+import com.compose.desktop.native.graphics.gradientTileMode
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.SweepGradient
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -538,15 +545,15 @@ private fun Sdl3DrawScope.samplerFor(
 
 @OptIn(ExperimentalForeignApi::class)
 private fun Sdl3DrawScope.linearSampler(inB: LinearGradient, inSize: Size, inAlpha: Float): Sampler {
-	val vSx = originX + resolveX(inB.start.x, inSize.width)
-	val vSy = originY + resolveY(inB.start.y, inSize.height)
-	val vEx = originX + resolveX(inB.end.x, inSize.width)
-	val vEy = originY + resolveY(inB.end.y, inSize.height)
+	val vSx = originX + resolveX(inB.gradientStart.x, inSize.width)
+	val vSy = originY + resolveY(inB.gradientStart.y, inSize.height)
+	val vEx = originX + resolveX(inB.gradientEnd.x, inSize.width)
+	val vEy = originY + resolveY(inB.gradientEnd.y, inSize.height)
 	val vDx = vEx - vSx
 	val vDy = vEy - vSy
 	val vLen2 = vDx * vDx + vDy * vDy
-	val vColors = inB.colors
-	val vStops = inB.stops
+	val vColors = inB.gradientColors
+	val vStops = inB.gradientStops
 	return { x, y ->
 		val vT = if (vLen2 < 1e-6f) 0f
 		         else (((x - vSx) * vDx + (y - vSy) * vDy) / vLen2).coerceIn(0f, 1f)
@@ -556,11 +563,11 @@ private fun Sdl3DrawScope.linearSampler(inB: LinearGradient, inSize: Size, inAlp
 
 @OptIn(ExperimentalForeignApi::class)
 private fun Sdl3DrawScope.radialSampler(inB: RadialGradient, inSize: Size, inAlpha: Float): Sampler {
-	val vCx = originX + resolveX(inB.center.x, inSize.width)
-	val vCy = originY + resolveY(inB.center.y, inSize.height)
-	val vR = if (inB.radius.isFinite()) inB.radius else (inSize.minDimension / 2f)
-	val vColors = inB.colors
-	val vStops = inB.stops
+	val vCx = originX + resolveX(inB.gradientCenter.x, inSize.width)
+	val vCy = originY + resolveY(inB.gradientCenter.y, inSize.height)
+	val vR = if (inB.gradientRadius.isFinite()) inB.gradientRadius else (inSize.minDimension / 2f)
+	val vColors = inB.gradientColors
+	val vStops = inB.gradientStops
 	return { x, y ->
 		val vDx = x - vCx; val vDy = y - vCy
 		val vT = if (vR < 1e-6f) 0f
@@ -571,10 +578,10 @@ private fun Sdl3DrawScope.radialSampler(inB: RadialGradient, inSize: Size, inAlp
 
 @OptIn(ExperimentalForeignApi::class)
 private fun Sdl3DrawScope.sweepSampler(inB: SweepGradient, inSize: Size, inAlpha: Float): Sampler {
-	val vCx = originX + resolveX(inB.center.x, inSize.width)
-	val vCy = originY + resolveY(inB.center.y, inSize.height)
-	val vColors = inB.colors
-	val vStops = inB.stops
+	val vCx = originX + resolveX(inB.gradientCenter.x, inSize.width)
+	val vCy = originY + resolveY(inB.gradientCenter.y, inSize.height)
+	val vColors = inB.gradientColors
+	val vStops = inB.gradientStops
 	return { x, y ->
 		// atan2 returns radians in [-π, π]. Map to [0, 1] going clockwise from
 		// 3 o'clock to match Skia's sweep gradient convention.

@@ -82,13 +82,18 @@ class SolidColor(val value: Color) : Brush() {
 /* Linear gradient. start and end are anchor points in the *shape's* local
    coordinate space (DrawScope's coordinates). When start.x = -1 or end.x
    = Float.POSITIVE_INFINITY etc. the renderer interprets it as "across
-   the full bounds" — but most callers will pass concrete points. */
-class LinearGradient(
-	val colors: List<Color>,
-	val stops: List<Float>?,
-	val start: Offset,
-	val end: Offset,
-	val tileMode: TileMode = TileMode.Clamp,
+   the full bounds" — but most callers will pass concrete points.
+
+   Fields are `internal` matching upstream's visibility — renderers reach
+   them through the `gradientColors` / `gradientStops` / `gradientStart` /
+   `gradientEnd` / `gradientTileMode` extension properties in
+   com.compose.desktop.native.graphics.GradientBridge. */
+class LinearGradient internal constructor(
+	internal val colors: List<Color>,
+	internal val stops: List<Float>?,
+	internal val start: Offset,
+	internal val end: Offset,
+	internal val tileMode: TileMode = TileMode.Clamp,
 ) : Brush() {
 	override fun equals(other: Any?): Boolean = other is LinearGradient &&
 		other.colors == colors && other.stops == stops &&
@@ -104,13 +109,14 @@ class LinearGradient(
 }
 
 /* Radial gradient centred at [center] with the given radius. Colours
-   sample from centre (stop=0) to edge (stop=1). */
-class RadialGradient(
-	val colors: List<Color>,
-	val stops: List<Float>?,
-	val center: Offset,
-	val radius: Float,
-	val tileMode: TileMode = TileMode.Clamp,
+   sample from centre (stop=0) to edge (stop=1). Fields `internal`; see
+   GradientBridge for renderer accessors. */
+class RadialGradient internal constructor(
+	internal val colors: List<Color>,
+	internal val stops: List<Float>?,
+	internal val center: Offset,
+	internal val radius: Float,
+	internal val tileMode: TileMode = TileMode.Clamp,
 ) : Brush() {
 	override fun equals(other: Any?): Boolean = other is RadialGradient &&
 		other.colors == colors && other.stops == stops &&
@@ -127,11 +133,12 @@ class RadialGradient(
 
 /* Sweep gradient: colours rotate around [center], 0 degrees pointing
    right (3 o'clock), clockwise. Useful for hue wheels and material 3
-   spinner tracks. */
-class SweepGradient(
-	val colors: List<Color>,
-	val stops: List<Float>?,
-	val center: Offset,
+   spinner tracks. Fields `internal`; see GradientBridge for renderer
+   accessors. */
+class SweepGradient internal constructor(
+	internal val colors: List<Color>,
+	internal val stops: List<Float>?,
+	internal val center: Offset,
 ) : Brush() {
 	override fun equals(other: Any?): Boolean = other is SweepGradient &&
 		other.colors == colors && other.stops == stops && other.center == center
