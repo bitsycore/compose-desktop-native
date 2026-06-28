@@ -353,6 +353,21 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtil
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.native.kt
 # More opt-in annotations.
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt
+compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ExperimentalFoundationStyleApi.kt   core/src/vendor/common/kotlin/androidx/compose/foundation/style/ExperimentalFoundationStyleApi.kt
+
+# Pure DSL markers.
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt            core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridScopeMarker.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridScopeMarker.kt
+
+# Small pure types — no engine deps.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/Ref.kt                                               core/src/vendor/common/kotlin/androidx/compose/ui/node/Ref.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedback.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedback.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedbackType.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedbackType.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedbackType.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedbackType.native.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Typeface.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Typeface.kt
 # Small layout leaves with no engine deps — pure interfaces / DSL marker.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
