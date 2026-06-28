@@ -262,15 +262,13 @@ class OnDragNode(
     var onEnd: () -> Unit,
 ) : Modifier.Node()
 
-class OnSizeChangedModifier(
-    val onChange: (androidx.compose.ui.unit.IntSize) -> Unit,
-) : ModifierNodeElement<OnSizeChangedNode>() {
-    override fun create() = OnSizeChangedNode(onChange)
-    override fun update(node: OnSizeChangedNode) { node.onChange = onChange }
-    override fun hashCode(): Int = onChange.hashCode()
-    override fun equals(other: Any?): Boolean = other is OnSizeChangedModifier && other.onChange === onChange
-}
-class OnSizeChangedNode(var onChange: (androidx.compose.ui.unit.IntSize) -> Unit) : Modifier.Node()
+// `OnSizeChangedModifier` + `OnSizeChangedNode` were retired when
+// `androidx.compose.ui.layout.OnRemeasuredModifier.kt` got vendored —
+// the vendored file ships the official-shape pair (a `private
+// OnSizeChangedModifier` element + `internal OnSizeChangedNode :
+// Modifier.Node, MeasuredSizeAwareModifierNode`). The renderer reads
+// the new node via `nodes` chain in `LayoutNode.measure()`.
+
 
 // ==================
 // MARK: Scroll

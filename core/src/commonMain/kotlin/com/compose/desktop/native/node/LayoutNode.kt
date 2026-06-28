@@ -9,7 +9,6 @@ import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.HoverableModifier
 import com.compose.desktop.native.element.OnDragModifier
 import com.compose.desktop.native.element.OnKeyEventModifier
-import com.compose.desktop.native.element.OnSizeChangedModifier
 import com.compose.desktop.native.element.OnTextInputModifier
 import com.compose.desktop.native.element.PressableModifier
 import com.compose.desktop.native.element.VerticalScrollModifier
@@ -354,15 +353,20 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         width = vCapWidth
         height = vCapHeight
 
-        // Fire OnSizeChangedModifier listeners when size actually changes.
-        // State writes inside the callback land in the global snapshot and
-        // recompose on the next frame, so this is safe to call from measure.
+        // Fire MeasuredSizeAwareModifierNode.onRemeasured() on every node in
+        // the chain when size actually changes — that's the upstream-shape
+        // entry point that the vendored `Modifier.onSizeChanged { … }`
+        // (in androidx.compose.ui.layout.OnRemeasuredModifier.kt) wires its
+        // callback through. State writes inside land in the global snapshot
+        // and recompose on the next frame, so this is safe to call from measure.
         if (width != lastWidth || height != lastHeight) {
             lastWidth = width
             lastHeight = height
             val vSize = IntSize(width, height)
-            modifier.foldIn(Unit) { _, e ->
-                if (e is OnSizeChangedModifier) e.onChange(vSize)
+            var vN: androidx.compose.ui.Modifier.Node? = nodes.head.child
+            while (vN != null) {
+                if (vN is androidx.compose.ui.node.MeasuredSizeAwareModifierNode) vN.onRemeasured(vSize)
+                vN = vN.child
             }
         }
 

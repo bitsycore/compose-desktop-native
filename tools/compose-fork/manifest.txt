@@ -1192,12 +1192,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftKeyboardIn
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt    core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerEvent.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt core/src/vendor/common/kotlin/androidx/compose/ui/input/indirect/IndirectPointerInputModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt                core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
-# OnRemeasuredModifier.kt — its `Modifier.onSizeChanged((IntSize) -> Unit)` extension collides
-# with the hand-written project version at core/.../layout/LayoutCallbacks.kt (same signature).
-# To take upstream, the project version must be removed AND LayoutNode.measure rewritten to
-# discover OnRemeasuredElement (currently `private`, so it'd need an internal reader or to
-# drive the Modifier.Node lifecycle path). Deferred.
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
 # DelegatingNode.kt — requires NodeChain.syncCoordinators() + autoInvalidateInsertedNode +
 # autoInvalidateRemovedNode + the Int.contains(NodeKind<*>) operator, all of which transitively
 # pull LayoutModifierNodeCoordinator + AutoInvalidate machinery. Stay with DelegatingNode.shim.kt
