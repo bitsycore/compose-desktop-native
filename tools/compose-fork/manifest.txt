@@ -184,6 +184,27 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/GlobalPositionAware
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt      core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
+# Phase 3 (NODE_ENGINE_PORT.md): ModifierNodeElement (the *factory*
+# contract upstream uses to create + update Modifier.Node instances) +
+# its expect/actual helper graph (Expect.kt declares 6 expects;
+# Actuals.{native,nonJvm,skiko}.kt cover the actuals between them).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Expect.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/Expect.kt
+# Only Actuals.native.kt (areObjectsOfSameType + currentTimeMillis) is
+# vendored — Actuals.nonJvm.kt and Actuals.skiko.kt both end up in our
+# nativeMain (we don't have separate skiko / nonJvm source sets) and
+# their actuals (PostDelayedDispatcher expect/actual + postDelayed +
+# removePost + classKeyForObject + tryPopulateReflectively) conflict
+# when merged. The 4 remaining actuals are hand-written in
+# core/src/nativeMain/.../ui/ExpectActuals.native.kt — see file for
+# rationale.
+compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/Actuals.native.kt                                  core/src/vendor/native/kotlin/androidx/compose/ui/Actuals.native.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt
+# ObserverModifierNode — deferred from Phase 2. Defines its own
+# ObserverNodeOwnerScope class (replacing our empty shim) +
+# `observeReads` extension that reaches into Owner.snapshotObserver.
+# Project shim OwnerSnapshotObserver.shim.kt provides the bare 3-arg
+# observeReads(target, onChanged, block) entry point.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Alignment.kt             core/src/vendor/common/kotlin/androidx/compose/ui/Alignment.kt
 # Supporting types for the foundation.shape vendor: InspectableValue is the
 # marker interface CornerSize/CornerBasedShape implement (debug/tooling

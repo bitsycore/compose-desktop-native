@@ -32,4 +32,7 @@ interface Owner {
 
 	/** Used by `DelegatableNode.dispatchOnScrollChanged()`. */
 	fun dispatchOnScrollChanged(inDelta: Offset)
+
+	/** Used by `ObserverModifierNode.observeReads()` (Phase 3). */
+	val snapshotObserver: OwnerSnapshotObserver
 }

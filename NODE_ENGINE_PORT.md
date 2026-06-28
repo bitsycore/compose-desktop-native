@@ -195,17 +195,39 @@ that extend it become cheap drop-ins:
 
 Each is a pure interface extending `DelegatableNode`. No behavior change.
 
-### Phase 3 — `ModifierNodeElement` + LayoutModifierNode (1 session)
+### Phase 3 — `ModifierNodeElement` + ObserverModifierNode (DONE) — `LayoutModifierNode` (deferred to 3b)
 
-Vendor `node/ModifierNodeElement.kt` (105) and `node/LayoutModifierNode.kt`
-(the big one — let me put it last in the phase as a stretch). These
-are the *factory* and *layout-modifying* contracts that downstream
-Compose code uses to declare modifiers.
+**Landed**: `ModifierNodeElement.kt` (105 lines) + `Expect.kt` + native
+actuals + a hand-written `ExpectActuals.native.kt` (4 of 6 Expect actuals
+that can't be vendored verbatim because upstream splits them across
+nonJvmMain + skikoMain — both end up in our single nativeMain and
+collide). `ObserverModifierNode.kt` (deferred from Phase 2) also landed
+along with an `OwnerSnapshotObserver.shim.kt` (157 → 22 line shim that
+exposes the single `observeReads(target, onChanged, block)` overload
+upstream code calls).
+
+**Deferred** to a Phase 3b session: `LayoutModifierNode.kt` (417 lines).
+Its dep graph is substantially heavier than the other *ModifierNode
+files: imports `ApproachIntrinsicMeasureScope` /
+`ApproachIntrinsicsMeasureScope` / `ApproachMeasureScope` (all defined
+in `ApproachMeasureScope.kt` — 116 lines, which itself pulls
+`LayoutModifierNodeCoordinator` + `NodeCoordinator.checkMeasuredSize` +
+`LookaheadLayoutCoordinates` + a heavy `Placeable.PlacementScope`),
+`IntrinsicsMeasureScope` (internal class inside the 419-line `Layout.kt`),
+`LargeDimension` (constant also in Layout.kt), and the `IntrinsicMinMax`
++ `IntrinsicWidthHeight` enums + `DefaultIntrinsicMeasurable` class.
 
 After this phase, **upstream Compose code that uses `ModifierNodeElement`
-will compile against our build**. It won't run yet because we still
-haven't ported `NodeCoordinator` or replaced `LayoutNode`, but the
-classpath is right.
+or `ObserverModifierNode` compiles against our build**. It won't run yet
+because we still haven't ported `NodeCoordinator` or replaced `LayoutNode`,
+but the classpath is right.
+
+### Phase 3b — `LayoutModifierNode` (1 session)
+
+Hand-write minimal shims for the Approach* scope cluster + IntrinsicMinMax
+enums, then vendor `LayoutModifierNode.kt` verbatim. Best done together
+with whatever ApproachLayoutModifierNode infrastructure we eventually
+need for lookahead-based modifiers — likely a small standalone session.
 
 ### Phase 4 — Replace project LayoutNode (multi-session)
 
