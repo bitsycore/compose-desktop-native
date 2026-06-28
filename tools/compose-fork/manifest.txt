@@ -189,8 +189,26 @@ compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animatio
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt
-# VisibilityThresholds depends on TwoWayConverter/VectorConverter — the
-# AnimationVector pipeline our lerp-lambda design omits. Skipping for now.
+# AnimationVector pipeline — foundation for the rest of animation-core.
+# AnimationVectors is pure data (0 imports); VectorConverters provides
+# TwoWayConverter for the standard types (Float/IntOffset/Dp/Offset/...).
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationVectors.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/AnimationVectors.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorConverters.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/VectorConverters.kt
+# VisibilityThresholds — unblocked by VectorConverters.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VisibilityThresholds.kt core/src/vendor/common/kotlin/androidx/compose/animation/core/VisibilityThresholds.kt
+# Animation physics helpers — pure math.
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SpringSimulation.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/SpringSimulation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SpringEstimation.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/SpringEstimation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/MonoSpline.kt         core/src/vendor/common/kotlin/androidx/compose/animation/core/MonoSpline.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ArcSpline.kt          core/src/vendor/common/kotlin/androidx/compose/animation/core/ArcSpline.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/ArcSpline.nonJvm.kt   core/src/vendor/native/kotlin/androidx/compose/animation/core/ArcSpline.native.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/Arrays.kt    core/src/vendor/common/kotlin/androidx/compose/animation/core/internal/Arrays.kt
+# JvmDefaultWithCompatibility (animation-core's own copy) + the animation
+# core-specific PlatformOptimizedCancellationException (used by
+# InternalMutatorMutex; the foundation one is a separate package).
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt   core/src/vendor/common/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt    core/src/vendor/common/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.native.kt
 
 # ── androidx.compose.ui.geometry ──────────────────────────────────────────
 compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt   core/src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt

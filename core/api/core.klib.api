@@ -240,6 +240,13 @@ abstract fun interface androidx.compose.ui/Alignment { // androidx.compose.ui/Al
     }
 }
 
+abstract interface <#A: kotlin/Any?, #B: androidx.compose.animation.core/AnimationVector> androidx.compose.animation.core/TwoWayConverter { // androidx.compose.animation.core/TwoWayConverter|null[0]
+    abstract val convertFromVector // androidx.compose.animation.core/TwoWayConverter.convertFromVector|{}convertFromVector[0]
+        abstract fun <get-convertFromVector>(): kotlin/Function1<#B, #A> // androidx.compose.animation.core/TwoWayConverter.convertFromVector.<get-convertFromVector>|<get-convertFromVector>(){}[0]
+    abstract val convertToVector // androidx.compose.animation.core/TwoWayConverter.convertToVector|{}convertToVector[0]
+        abstract fun <get-convertToVector>(): kotlin/Function1<#A, #B> // androidx.compose.animation.core/TwoWayConverter.convertToVector.<get-convertToVector>|<get-convertToVector>(){}[0]
+}
+
 abstract interface androidx.compose.foundation.gestures/ScrollScope { // androidx.compose.foundation.gestures/ScrollScope|null[0]
     abstract fun scrollBy(kotlin/Float): kotlin/Float // androidx.compose.foundation.gestures/ScrollScope.scrollBy|scrollBy(kotlin.Float){}[0]
 }
@@ -823,6 +830,62 @@ final class <#A: kotlin/Any?> androidx.compose.animation.core/TweenSpec : androi
 
     final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/TweenSpec.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // androidx.compose.animation.core/TweenSpec.hashCode|hashCode(){}[0]
+}
+
+final class androidx.compose.animation.core/AnimationVector1D : androidx.compose.animation.core/AnimationVector { // androidx.compose.animation.core/AnimationVector1D|null[0]
+    constructor <init>(kotlin/Float) // androidx.compose.animation.core/AnimationVector1D.<init>|<init>(kotlin.Float){}[0]
+
+    final var value // androidx.compose.animation.core/AnimationVector1D.value|{}value[0]
+        final fun <get-value>(): kotlin/Float // androidx.compose.animation.core/AnimationVector1D.value.<get-value>|<get-value>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/AnimationVector1D.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.animation.core/AnimationVector1D.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.animation.core/AnimationVector1D.toString|toString(){}[0]
+}
+
+final class androidx.compose.animation.core/AnimationVector2D : androidx.compose.animation.core/AnimationVector { // androidx.compose.animation.core/AnimationVector2D|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float) // androidx.compose.animation.core/AnimationVector2D.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+    final var v1 // androidx.compose.animation.core/AnimationVector2D.v1|{}v1[0]
+        final fun <get-v1>(): kotlin/Float // androidx.compose.animation.core/AnimationVector2D.v1.<get-v1>|<get-v1>(){}[0]
+    final var v2 // androidx.compose.animation.core/AnimationVector2D.v2|{}v2[0]
+        final fun <get-v2>(): kotlin/Float // androidx.compose.animation.core/AnimationVector2D.v2.<get-v2>|<get-v2>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/AnimationVector2D.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.animation.core/AnimationVector2D.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.animation.core/AnimationVector2D.toString|toString(){}[0]
+}
+
+final class androidx.compose.animation.core/AnimationVector3D : androidx.compose.animation.core/AnimationVector { // androidx.compose.animation.core/AnimationVector3D|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.animation.core/AnimationVector3D.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final var v1 // androidx.compose.animation.core/AnimationVector3D.v1|{}v1[0]
+        final fun <get-v1>(): kotlin/Float // androidx.compose.animation.core/AnimationVector3D.v1.<get-v1>|<get-v1>(){}[0]
+    final var v2 // androidx.compose.animation.core/AnimationVector3D.v2|{}v2[0]
+        final fun <get-v2>(): kotlin/Float // androidx.compose.animation.core/AnimationVector3D.v2.<get-v2>|<get-v2>(){}[0]
+    final var v3 // androidx.compose.animation.core/AnimationVector3D.v3|{}v3[0]
+        final fun <get-v3>(): kotlin/Float // androidx.compose.animation.core/AnimationVector3D.v3.<get-v3>|<get-v3>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/AnimationVector3D.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.animation.core/AnimationVector3D.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.animation.core/AnimationVector3D.toString|toString(){}[0]
+}
+
+final class androidx.compose.animation.core/AnimationVector4D : androidx.compose.animation.core/AnimationVector { // androidx.compose.animation.core/AnimationVector4D|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.animation.core/AnimationVector4D.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final var v1 // androidx.compose.animation.core/AnimationVector4D.v1|{}v1[0]
+        final fun <get-v1>(): kotlin/Float // androidx.compose.animation.core/AnimationVector4D.v1.<get-v1>|<get-v1>(){}[0]
+    final var v2 // androidx.compose.animation.core/AnimationVector4D.v2|{}v2[0]
+        final fun <get-v2>(): kotlin/Float // androidx.compose.animation.core/AnimationVector4D.v2.<get-v2>|<get-v2>(){}[0]
+    final var v3 // androidx.compose.animation.core/AnimationVector4D.v3|{}v3[0]
+        final fun <get-v3>(): kotlin/Float // androidx.compose.animation.core/AnimationVector4D.v3.<get-v3>|<get-v3>(){}[0]
+    final var v4 // androidx.compose.animation.core/AnimationVector4D.v4|{}v4[0]
+        final fun <get-v4>(): kotlin/Float // androidx.compose.animation.core/AnimationVector4D.v4.<get-v4>|<get-v4>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // androidx.compose.animation.core/AnimationVector4D.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // androidx.compose.animation.core/AnimationVector4D.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // androidx.compose.animation.core/AnimationVector4D.toString|toString(){}[0]
 }
 
 final class androidx.compose.animation.core/CubicBezierEasing : androidx.compose.animation.core/Easing { // androidx.compose.animation.core/CubicBezierEasing|null[0]
@@ -3616,6 +3679,8 @@ open class androidx.compose.ui.graphics.colorspace/Connector { // androidx.compo
     open fun transform(kotlin/FloatArray): kotlin/FloatArray // androidx.compose.ui.graphics.colorspace/Connector.transform|transform(kotlin.FloatArray){}[0]
 }
 
+sealed class androidx.compose.animation.core/AnimationVector // androidx.compose.animation.core/AnimationVector|null[0]
+
 sealed class androidx.compose.ui.graphics.drawscope/DrawStyle // androidx.compose.ui.graphics.drawscope/DrawStyle|null[0]
 
 sealed class androidx.compose.ui.graphics/Brush { // androidx.compose.ui.graphics/Brush|null[0]
@@ -4174,8 +4239,48 @@ final val androidx.compose.animation.core/LinearEasing // androidx.compose.anima
     final fun <get-LinearEasing>(): androidx.compose.animation.core/Easing // androidx.compose.animation.core/LinearEasing.<get-LinearEasing>|<get-LinearEasing>(){}[0]
 final val androidx.compose.animation.core/LinearOutSlowInEasing // androidx.compose.animation.core/LinearOutSlowInEasing|{}LinearOutSlowInEasing[0]
     final fun <get-LinearOutSlowInEasing>(): androidx.compose.animation.core/Easing // androidx.compose.animation.core/LinearOutSlowInEasing.<get-LinearOutSlowInEasing>|<get-LinearOutSlowInEasing>(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.geometry.Offset.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.geometry/Offset.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.geometry/Offset, androidx.compose.animation.core/AnimationVector2D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.geometry.Offset.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.geometry.Rect.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.geometry/Rect.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.geometry/Rect, androidx.compose.animation.core/AnimationVector4D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.geometry.Rect.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.geometry.Size.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.geometry/Size.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.geometry/Size, androidx.compose.animation.core/AnimationVector2D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.geometry.Size.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.unit.Dp.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.unit/Dp.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.unit/Dp, androidx.compose.animation.core/AnimationVector1D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.unit.Dp.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.unit.DpOffset.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.unit/DpOffset.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.unit/DpOffset, androidx.compose.animation.core/AnimationVector2D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.unit.DpOffset.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.unit.IntOffset.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.unit/IntOffset.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.unit/IntOffset, androidx.compose.animation.core/AnimationVector2D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.unit.IntOffset.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@androidx.compose.ui.unit.IntSize.Companion{}VectorConverter[0]
+    final fun (androidx.compose.ui.unit/IntSize.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<androidx.compose.ui.unit/IntSize, androidx.compose.animation.core/AnimationVector2D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@androidx.compose.ui.unit.IntSize.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@kotlin.Float.Companion{}VectorConverter[0]
+    final fun (kotlin/Float.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<kotlin/Float, androidx.compose.animation.core/AnimationVector1D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@kotlin.Float.Companion(){}[0]
+final val androidx.compose.animation.core/VectorConverter // androidx.compose.animation.core/VectorConverter|@kotlin.Int.Companion{}VectorConverter[0]
+    final fun (kotlin/Int.Companion).<get-VectorConverter>(): androidx.compose.animation.core/TwoWayConverter<kotlin/Int, androidx.compose.animation.core/AnimationVector1D> // androidx.compose.animation.core/VectorConverter.<get-VectorConverter>|<get-VectorConverter>@kotlin.Int.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.geometry.Offset.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.geometry/Offset.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.geometry/Offset // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.geometry.Offset.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.geometry.Rect.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.geometry/Rect.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.geometry/Rect // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.geometry.Rect.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.geometry.Size.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.geometry/Size.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.geometry/Size // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.geometry.Size.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.unit.Dp.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.unit/Dp.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.unit/Dp // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.unit.Dp.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.unit.DpOffset.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.unit/DpOffset.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.unit/DpOffset // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.unit.DpOffset.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.unit.IntOffset.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.unit/IntOffset.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.unit/IntOffset // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.unit.IntOffset.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@androidx.compose.ui.unit.IntSize.Companion{}VisibilityThreshold[0]
+    final fun (androidx.compose.ui.unit/IntSize.Companion).<get-VisibilityThreshold>(): androidx.compose.ui.unit/IntSize // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@androidx.compose.ui.unit.IntSize.Companion(){}[0]
+final val androidx.compose.animation.core/VisibilityThreshold // androidx.compose.animation.core/VisibilityThreshold|@kotlin.Int.Companion{}VisibilityThreshold[0]
+    final fun (kotlin/Int.Companion).<get-VisibilityThreshold>(): kotlin/Int // androidx.compose.animation.core/VisibilityThreshold.<get-VisibilityThreshold>|<get-VisibilityThreshold>@kotlin.Int.Companion(){}[0]
 final val androidx.compose.animation.core/androidx_compose_animation_core_Animatable$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_Animatable$stableprop|#static{}androidx_compose_animation_core_Animatable$stableprop[0]
 final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationResult$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationResult$stableprop|#static{}androidx_compose_animation_core_AnimationResult$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector$stableprop|#static{}androidx_compose_animation_core_AnimationVector$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector1D$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector1D$stableprop|#static{}androidx_compose_animation_core_AnimationVector1D$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector2D$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector2D$stableprop|#static{}androidx_compose_animation_core_AnimationVector2D$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector3D$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector3D$stableprop|#static{}androidx_compose_animation_core_AnimationVector3D$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector4D$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector4D$stableprop|#static{}androidx_compose_animation_core_AnimationVector4D$stableprop[0]
+final val androidx.compose.animation.core/androidx_compose_animation_core_ArcSpline_Arc$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_ArcSpline_Arc$stableprop|#static{}androidx_compose_animation_core_ArcSpline_Arc$stableprop[0]
 final val androidx.compose.animation.core/androidx_compose_animation_core_CubicBezierEasing$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_CubicBezierEasing$stableprop|#static{}androidx_compose_animation_core_CubicBezierEasing$stableprop[0]
 final val androidx.compose.animation.core/androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop|#static{}androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop[0]
 final val androidx.compose.animation.core/androidx_compose_animation_core_InfiniteTransition$stableprop // androidx.compose.animation.core/androidx_compose_animation_core_InfiniteTransition$stableprop|#static{}androidx_compose_animation_core_InfiniteTransition$stableprop[0]
@@ -4630,6 +4735,7 @@ final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/onT
 final fun (androidx.compose.ui/Modifier).com.compose.desktop.native.modifier/pressable(kotlin/Function1<kotlin/Boolean, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.desktop.native.modifier/pressable|pressable@androidx.compose.ui.Modifier(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
 final fun (kotlin/CharSequence).androidx.compose.ui.text/substring(androidx.compose.ui.text/TextRange): kotlin/String // androidx.compose.ui.text/substring|substring@kotlin.CharSequence(androidx.compose.ui.text.TextRange){}[0]
 final fun <#A: kotlin/Any> (kotlin.collections/List<#A?>).androidx.compose.ui.util/fastFilterNotNull(): kotlin.collections/List<#A> // androidx.compose.ui.util/fastFilterNotNull|fastFilterNotNull@kotlin.collections.List<0:0?>(){0§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any?, #B: androidx.compose.animation.core/AnimationVector> androidx.compose.animation.core/TwoWayConverter(kotlin/Function1<#A, #B>, kotlin/Function1<#B, #A>): androidx.compose.animation.core/TwoWayConverter<#A, #B> // androidx.compose.animation.core/TwoWayConverter|TwoWayConverter(kotlin.Function1<0:0,0:1>;kotlin.Function1<0:1,0:0>){0§<kotlin.Any?>;1§<androidx.compose.animation.core.AnimationVector>}[0]
 final fun <#A: kotlin/Any?> (kotlin.collections/List<#A>).androidx.compose.ui.util/fastJoinToString(kotlin/CharSequence = ..., kotlin/CharSequence = ..., kotlin/CharSequence = ..., kotlin/Int = ..., kotlin/CharSequence = ..., kotlin/Function1<#A, kotlin/CharSequence>? = ...): kotlin/String // androidx.compose.ui.util/fastJoinToString|fastJoinToString@kotlin.collections.List<0:0>(kotlin.CharSequence;kotlin.CharSequence;kotlin.CharSequence;kotlin.Int;kotlin.CharSequence;kotlin.Function1<0:0,kotlin.CharSequence>?){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/infiniteRepeatable(androidx.compose.animation.core/TweenSpec<#A>, androidx.compose.animation.core/RepeatMode = ...): androidx.compose.animation.core/InfiniteRepeatableSpec<#A> // androidx.compose.animation.core/infiniteRepeatable|infiniteRepeatable(androidx.compose.animation.core.TweenSpec<0:0>;androidx.compose.animation.core.RepeatMode){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/repeatable(kotlin/Int, androidx.compose.animation.core/TweenSpec<#A>, androidx.compose.animation.core/RepeatMode = ...): androidx.compose.animation.core/RepeatableSpec<#A> // androidx.compose.animation.core/repeatable|repeatable(kotlin.Int;androidx.compose.animation.core.TweenSpec<0:0>;androidx.compose.animation.core.RepeatMode){0§<kotlin.Any?>}[0]
@@ -4637,8 +4743,18 @@ final fun <#A: kotlin/Any?> androidx.compose.animation.core/snap(kotlin/Int = ..
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/spring(kotlin/Float = ..., kotlin/Float = ..., #A? = ...): androidx.compose.animation.core/SpringSpec<#A> // androidx.compose.animation.core/spring|spring(kotlin.Float;kotlin.Float;0:0?){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> androidx.compose.animation.core/tween(kotlin/Int = ..., kotlin/Int = ..., androidx.compose.animation.core/Easing = ...): androidx.compose.animation.core/TweenSpec<#A> // androidx.compose.animation.core/tween|tween(kotlin.Int;kotlin.Int;androidx.compose.animation.core.Easing){0§<kotlin.Any?>}[0]
 final fun androidx.compose.animation.core/Animatable(kotlin/Float, androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.animation.core/Animatable<kotlin/Float> // androidx.compose.animation.core/Animatable|Animatable(kotlin.Float;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun androidx.compose.animation.core/AnimationVector(kotlin/Float): androidx.compose.animation.core/AnimationVector1D // androidx.compose.animation.core/AnimationVector|AnimationVector(kotlin.Float){}[0]
+final fun androidx.compose.animation.core/AnimationVector(kotlin/Float, kotlin/Float): androidx.compose.animation.core/AnimationVector2D // androidx.compose.animation.core/AnimationVector|AnimationVector(kotlin.Float;kotlin.Float){}[0]
+final fun androidx.compose.animation.core/AnimationVector(kotlin/Float, kotlin/Float, kotlin/Float): androidx.compose.animation.core/AnimationVector3D // androidx.compose.animation.core/AnimationVector|AnimationVector(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+final fun androidx.compose.animation.core/AnimationVector(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): androidx.compose.animation.core/AnimationVector4D // androidx.compose.animation.core/AnimationVector|AnimationVector(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 final fun androidx.compose.animation.core/androidx_compose_animation_core_Animatable$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_Animatable$stableprop_getter|androidx_compose_animation_core_Animatable$stableprop_getter(){}[0]
 final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationResult$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationResult$stableprop_getter|androidx_compose_animation_core_AnimationResult$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector$stableprop_getter|androidx_compose_animation_core_AnimationVector$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector1D$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector1D$stableprop_getter|androidx_compose_animation_core_AnimationVector1D$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector2D$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector2D$stableprop_getter|androidx_compose_animation_core_AnimationVector2D$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector3D$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector3D$stableprop_getter|androidx_compose_animation_core_AnimationVector3D$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector4D$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_AnimationVector4D$stableprop_getter|androidx_compose_animation_core_AnimationVector4D$stableprop_getter(){}[0]
+final fun androidx.compose.animation.core/androidx_compose_animation_core_ArcSpline_Arc$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_ArcSpline_Arc$stableprop_getter|androidx_compose_animation_core_ArcSpline_Arc$stableprop_getter(){}[0]
 final fun androidx.compose.animation.core/androidx_compose_animation_core_CubicBezierEasing$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_CubicBezierEasing$stableprop_getter|androidx_compose_animation_core_CubicBezierEasing$stableprop_getter(){}[0]
 final fun androidx.compose.animation.core/androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop_getter|androidx_compose_animation_core_InfiniteRepeatableSpec$stableprop_getter(){}[0]
 final fun androidx.compose.animation.core/androidx_compose_animation_core_InfiniteTransition$stableprop_getter(): kotlin/Int // androidx.compose.animation.core/androidx_compose_animation_core_InfiniteTransition$stableprop_getter|androidx_compose_animation_core_InfiniteTransition$stableprop_getter(){}[0]
@@ -4650,6 +4766,9 @@ final fun androidx.compose.animation.core/androidx_compose_animation_core_TweenS
 final fun androidx.compose.animation.core/animateDpAsState(androidx.compose.ui.unit/Dp, androidx.compose.animation.core/AnimationSpec<androidx.compose.ui.unit/Dp>?, kotlin/String?, kotlin/Function1<androidx.compose.ui.unit/Dp, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.unit/Dp> // androidx.compose.animation.core/animateDpAsState|animateDpAsState(androidx.compose.ui.unit.Dp;androidx.compose.animation.core.AnimationSpec<androidx.compose.ui.unit.Dp>?;kotlin.String?;kotlin.Function1<androidx.compose.ui.unit.Dp,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.animation.core/animateFloatAsState(kotlin/Float, androidx.compose.animation.core/AnimationSpec<kotlin/Float>?, kotlin/Float, kotlin/String?, kotlin/Function1<kotlin/Float, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<kotlin/Float> // androidx.compose.animation.core/animateFloatAsState|animateFloatAsState(kotlin.Float;androidx.compose.animation.core.AnimationSpec<kotlin.Float>?;kotlin.Float;kotlin.String?;kotlin.Function1<kotlin.Float,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.animation.core/animateIntAsState(kotlin/Int, androidx.compose.animation.core/AnimationSpec<kotlin/Int>?, kotlin/String?, kotlin/Function1<kotlin/Int, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<kotlin/Int> // androidx.compose.animation.core/animateIntAsState|animateIntAsState(kotlin.Int;androidx.compose.animation.core.AnimationSpec<kotlin.Int>?;kotlin.String?;kotlin.Function1<kotlin.Int,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun androidx.compose.animation.core/estimateAnimationDurationMillis(kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Double): kotlin/Long // androidx.compose.animation.core/estimateAnimationDurationMillis|estimateAnimationDurationMillis(kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Double){}[0]
+final fun androidx.compose.animation.core/estimateAnimationDurationMillis(kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Double): kotlin/Long // androidx.compose.animation.core/estimateAnimationDurationMillis|estimateAnimationDurationMillis(kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Double){}[0]
+final fun androidx.compose.animation.core/estimateAnimationDurationMillis(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Long // androidx.compose.animation.core/estimateAnimationDurationMillis|estimateAnimationDurationMillis(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 final fun androidx.compose.animation.core/rememberInfiniteTransition(kotlin/String?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.animation.core/InfiniteTransition // androidx.compose.animation.core/rememberInfiniteTransition|rememberInfiniteTransition(kotlin.String?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.animation/animateColorAsState(androidx.compose.ui.graphics/Color, androidx.compose.animation.core/AnimationSpec<androidx.compose.ui.graphics/Color>?, kotlin/String?, kotlin/Function1<androidx.compose.ui.graphics/Color, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<androidx.compose.ui.graphics/Color> // androidx.compose.animation/animateColorAsState|animateColorAsState(androidx.compose.ui.graphics.Color;androidx.compose.animation.core.AnimationSpec<androidx.compose.ui.graphics.Color>?;kotlin.String?;kotlin.Function1<androidx.compose.ui.graphics.Color,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun androidx.compose.foundation.gestures/ScrollableState(kotlin/Function1<kotlin/Float, kotlin/Float>): androidx.compose.foundation.gestures/ScrollableState // androidx.compose.foundation.gestures/ScrollableState|ScrollableState(kotlin.Function1<kotlin.Float,kotlin.Float>){}[0]
