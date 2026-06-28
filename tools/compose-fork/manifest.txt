@@ -346,9 +346,11 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDe
 compose/ui/ui-unit/src/nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt core/src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Density.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
-# trace/traceValue — expect funs; native actuals are no-ops in
-# AnnotatedActuals.native.kt. MathUtils — internal Int overflow helpers.
+# trace/traceValue — expect funs in common + no-op actuals in
+# Trace.native.kt (vendored from upstream's macosMain — identical to our
+# hand-written stub, replacing it). MathUtils — internal Int overflow helpers.
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/Trace.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/util/Trace.kt
+compose/ui/ui-util/src/macosMain/kotlin/androidx/compose/ui/util/Trace.macos.kt                                  core/src/vendor/native/kotlin/androidx/compose/ui/util/Trace.native.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtils.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/MathUtils.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.native.kt
 # More opt-in annotations.
@@ -639,6 +641,12 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTil
 # colorMatrixFromFilter) for the Skia path. The SDL3-path stubs live in
 # core/src/sdlRendererMain/.../graphics/ColorFilter.sdl.kt.
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt
+# SystemTheme.kt is consumed by DarkTheme.skiko.kt's `_isSystemInDarkTheme`
+# actual. Both go into skikoRendererMain together. The SDL3 stub
+# (`_isSystemInDarkTheme() = false`) lives in
+# core/src/sdlRendererMain/.../foundation/DarkTheme.sdl.kt.
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/SystemTheme.kt                            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/SystemTheme.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt core/src/vendor/skikoRenderer/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt
 
 # ==============================================================================
 # ==============================================================================
@@ -714,7 +722,6 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaCol
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/selection/Toggleable.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/selection/Toggleable.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/text/StringHelpers.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/BasicTooltip.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/BasicTooltip.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/DarkTheme.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/TransferableContent.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/TransferableContent.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.native.kt
