@@ -58,49 +58,11 @@ class BorderNode(var width: Int, var color: Color, var shape: Shape) : Modifier.
     override fun ContentDrawScope.draw() { drawContent() /* dormant */ }
 }
 
-class SizeModifier(
-    val width: Int = -1,
-    val height: Int = -1,
-    val minWidth: Int = -1,
-    val minHeight: Int = -1,
-    val maxWidth: Int = -1,
-    val maxHeight: Int = -1,
-    val fillMaxWidth: Boolean = false,
-    val fillMaxHeight: Boolean = false,
-    /* defaultMinSize semantics: only raise the constraint's min if the
-       incoming min is still 0 (i.e. nothing upstream pinned a size). When
-       false, min* fields apply as a hard lower bound (widthIn/heightIn). */
-    val isDefaultMin: Boolean = false,
-) : ModifierNodeElement<SizeNode>() {
-    override fun create() = SizeNode(width, height, minWidth, minHeight, maxWidth, maxHeight, fillMaxWidth, fillMaxHeight, isDefaultMin)
-    override fun update(node: SizeNode) {
-        node.width = width; node.height = height
-        node.minWidth = minWidth; node.minHeight = minHeight
-        node.maxWidth = maxWidth; node.maxHeight = maxHeight
-        node.fillMaxWidth = fillMaxWidth; node.fillMaxHeight = fillMaxHeight
-        node.isDefaultMin = isDefaultMin
-    }
-    override fun hashCode(): Int {
-        var h = width; h = h * 31 + height; h = h * 31 + minWidth; h = h * 31 + minHeight
-        h = h * 31 + maxWidth; h = h * 31 + maxHeight
-        h = h * 31 + fillMaxWidth.hashCode(); h = h * 31 + fillMaxHeight.hashCode()
-        h = h * 31 + isDefaultMin.hashCode(); return h
-    }
-    override fun equals(other: Any?): Boolean =
-        other is SizeModifier && other.width == width && other.height == height &&
-            other.minWidth == minWidth && other.minHeight == minHeight &&
-            other.maxWidth == maxWidth && other.maxHeight == maxHeight &&
-            other.fillMaxWidth == fillMaxWidth && other.fillMaxHeight == fillMaxHeight &&
-            other.isDefaultMin == isDefaultMin
-}
-
-class SizeNode(
-    var width: Int, var height: Int,
-    var minWidth: Int, var minHeight: Int,
-    var maxWidth: Int, var maxHeight: Int,
-    var fillMaxWidth: Boolean, var fillMaxHeight: Boolean,
-    var isDefaultMin: Boolean,
-) : Modifier.Node()
+// SizeModifier / SizeNode retired — all size / fill / wrapContent / widthIn /
+// heightIn / sizeIn / required* / defaultMinSize behaviour comes from upstream
+// vendored `androidx.compose.foundation.layout.Size.kt`, whose private
+// SizeNode / FillNode / WrapContentNode / UnspecifiedConstraintsNode classes
+// participate in the LayoutModifierNode chain.
 
 class ClickableModifier(val onClick: () -> Unit) : ModifierNodeElement<ClickableNode>() {
     override fun create() = ClickableNode(onClick)

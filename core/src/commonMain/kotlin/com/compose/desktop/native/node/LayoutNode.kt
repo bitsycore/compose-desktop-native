@@ -70,8 +70,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     private var cachedZIndex: Float = 0f
     private var cachedNodeAlpha: Float = 1f
     private var cachedGraphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? = null
-    /** Stacked size modifiers in foldIn order — `.height(48.dp).width(100.dp)` creates TWO; each constrains in turn. */
-    private var cachedSizes: List<SizeModifier> = emptyList()
+    // cachedSizes retired — `Modifier.size / width / height / fillMax* /
+    // wrapContent* / widthIn / heightIn / sizeIn / requiredSize /
+    // defaultMinSize` flow through the LayoutModifierNode chain (vendored
+    // upstream `Size.kt`).
     private var cachedLayoutModifier: androidx.compose.ui.layout.LayoutModifierElement? = null
     private var cachedHorizontalScrollState: androidx.compose.foundation.ScrollState? = null
     private var cachedVerticalScrollState: androidx.compose.foundation.ScrollState? = null
@@ -159,7 +161,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var zIdx = 0f
         var alpha = 1f
         var gl: com.compose.desktop.native.element.GraphicsLayerModifier? = null
-        var sizes: MutableList<SizeModifier>? = null
         var layoutMod: androidx.compose.ui.layout.LayoutModifierElement? = null
         var hScroll: androidx.compose.foundation.ScrollState? = null
         var vScroll: androidx.compose.foundation.ScrollState? = null
@@ -187,7 +188,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is androidx.compose.ui.ZIndexElement                                -> zIdx += e.zIndex
                 is AlphaModifier                                                    -> alpha *= e.alpha
                 is com.compose.desktop.native.element.GraphicsLayerModifier         -> { alpha *= e.alpha; gl = e }
-                is SizeModifier                                                     -> { (sizes ?: mutableListOf<SizeModifier>().also { sizes = it }).add(e) }
                 is androidx.compose.ui.layout.LayoutModifierElement                 -> layoutMod = e
                 is HorizontalScrollModifier                                         -> { if (hScroll == null) hScroll = e.state; hasScrollClip = true }
                 is VerticalScrollModifier                                           -> { if (vScroll == null) vScroll = e.state; hasScrollClip = true }
@@ -214,7 +214,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         cachedZIndex = zIdx
         cachedNodeAlpha = alpha
         cachedGraphicsLayer = gl
-        cachedSizes = sizes ?: emptyList()
         cachedLayoutModifier = layoutMod
         cachedHorizontalScrollState = hScroll
         cachedVerticalScrollState = vScroll
@@ -607,29 +606,28 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 return IntSize(width, height)
             }
         }
-        val adjusted = applyModifierConstraints(constraints)
-
-        // Scroll modifiers: children measured with unbounded length in the
-        // scroll axis, own bounds clamp to incoming maxLength.
+        // Constraints reach us already constrained by the LayoutModifierNode
+        // chain (vendored Padding / Size / Offset run via the chain pipeline
+        // ahead of measure). What's left here is the scroll intercept.
         val vScrollV = cachedVerticalScrollState
         val vScrollH = cachedHorizontalScrollState
         val childConstraints = Constraints(
-            minWidth = adjusted.minWidth,
-            maxWidth = if (vScrollH != null) Constraints.Infinity else adjusted.maxWidth,
-            minHeight = adjusted.minHeight,
-            maxHeight = if (vScrollV != null) Constraints.Infinity else adjusted.maxHeight,
+            minWidth = constraints.minWidth,
+            maxWidth = if (vScrollH != null) Constraints.Infinity else constraints.maxWidth,
+            minHeight = constraints.minHeight,
+            maxHeight = if (vScrollV != null) Constraints.Infinity else constraints.maxHeight,
         )
 
         val result = measurePolicy.measure(this, childConstraints)
 
-        val vCapHeight = if (vScrollV != null && adjusted.maxHeight != Constraints.Infinity) {
-            vScrollV.setMaxInternal((result.height - adjusted.maxHeight).coerceAtLeast(0), adjusted.maxHeight)
-            adjusted.maxHeight
+        val vCapHeight = if (vScrollV != null && constraints.maxHeight != Constraints.Infinity) {
+            vScrollV.setMaxInternal((result.height - constraints.maxHeight).coerceAtLeast(0), constraints.maxHeight)
+            constraints.maxHeight
         } else result.height
 
-        val vCapWidth = if (vScrollH != null && adjusted.maxWidth != Constraints.Infinity) {
-            vScrollH.setMaxInternal((result.width - adjusted.maxWidth).coerceAtLeast(0), adjusted.maxWidth)
-            adjusted.maxWidth
+        val vCapWidth = if (vScrollH != null && constraints.maxWidth != Constraints.Infinity) {
+            vScrollH.setMaxInternal((result.width - constraints.maxWidth).coerceAtLeast(0), constraints.maxWidth)
+            constraints.maxWidth
         } else result.width
 
         width = vCapWidth
@@ -698,40 +696,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         for (child in children) child.dispatchGloballyPositioned()
     }
 
-    private fun applyModifierConstraints(incoming: Constraints): Constraints {
-        if (cachedSizes.isEmpty()) return incoming
-        var c = incoming
-        for (size in cachedSizes) {
-            var minW = c.minWidth; var maxW = c.maxWidth
-            var minH = c.minHeight; var maxH = c.maxHeight
-
-            if (size.width >= 0) { minW = size.width; maxW = size.width }
-            if (size.height >= 0) { minH = size.height; maxH = size.height }
-            // fillMax* is a no-op when the incoming max on that axis is
-            // unbounded (e.g. inside a scroll measured at Infinity) — matches
-            // official Compose. Without the guard the node would size to
-            // Int.MAX_VALUE, overflowing downstream math.
-            if (size.fillMaxWidth && incoming.maxWidth != Constraints.Infinity) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
-            if (size.fillMaxHeight && incoming.maxHeight != Constraints.Infinity) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
-            if (size.minWidth >= 0) {
-                // defaultMinSize: only apply if nothing upstream pinned the min.
-                if (!size.isDefaultMin || minW == 0) minW = max(minW, size.minWidth)
-            }
-            if (size.minHeight >= 0) {
-                if (!size.isDefaultMin || minH == 0) minH = max(minH, size.minHeight)
-            }
-            if (size.maxWidth >= 0) maxW = min(maxW, size.maxWidth)
-            if (size.maxHeight >= 0) maxH = min(maxH, size.maxHeight)
-
-            c = Constraints(
-                minWidth = minW.coerceAtMost(maxW),
-                maxWidth = maxW.coerceAtLeast(minW),
-                minHeight = minH.coerceAtMost(maxH),
-                maxHeight = maxH.coerceAtLeast(minH),
-            )
-        }
-        return c
-    }
+    // applyModifierConstraints retired — all size / fill / wrapContent /
+    // widthIn / heightIn / sizeIn / required* / defaultMinSize constraint
+    // adjustment now happens in the LayoutModifierNode chain pipeline
+    // ahead of the natural measure path.
 
     // ============
     //  Padding helpers

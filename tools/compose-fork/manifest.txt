@@ -1032,7 +1032,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Offset.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Offset.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Padding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Padding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Visible.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Visible.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
