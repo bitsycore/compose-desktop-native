@@ -946,7 +946,11 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/shadow/Blur.native.kt
+# CharHelpers.kt — common file is mostly `expect` decls (Char.isSurrogate
+# variants, CodePoint extensions). The nonJvm actual references CodePoint /
+# StrongDirectionType which we don't have. Vendor when CodePoint.kt lands.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/CharHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/CharHelpers.kt
+# LinkInteractionListener.kt — onClick(LinkAnnotation), so needs LinkAnnotation first.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/StringAnnotation.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/StringAnnotation.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TtsAnnotation.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TtsAnnotation.kt
@@ -1141,7 +1145,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Layout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Layout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
@@ -1311,8 +1315,8 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/En.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/En.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Translations.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Translations.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/layer/ChildLayerDependenciesTracker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/layer/ChildLayerDependenciesTracker.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/Matrices.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.native.kt
@@ -1323,12 +1327,16 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaShader.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Bullet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Bullet.kt
+# LinkAnnotation.kt — extends `AnnotatedString.Annotation` (nested
+# upstream sealed interface). Vendor when AnnotatedString.Annotation lands.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/LinkAnnotation.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/String.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
+# FontSynthesis.kt — references upstream Font class (different shape from
+# project's font abstraction). Vendor when Font.kt lands.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
