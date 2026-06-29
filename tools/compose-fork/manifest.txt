@@ -836,6 +836,9 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerSemantics.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerSemantics.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/selection/SelectableGroup.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/selection/SelectableGroup.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt
+# ContextMenuIcons + ContextMenuStrings — the `.skiko` actuals pull
+# `androidx.compose.foundation.l10n` and `ui.text.intl.Locale` (locale
+# machinery not vendored). Vendor when l10n / intl land.
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt
@@ -1563,6 +1566,11 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Canvas.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Canvas.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Image.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Image.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.native.kt
+# Outline.kt — upstream adds `DrawScope.drawOutline(...)` extensions
+# requiring DrawScope to expose `cornerRadius: CornerRadius` + `colorFilter`
+# + `blendMode` parameters + `DefaultBlendMode`. The Outline sealed class
+# itself is already mirrored byte-for-byte in the project hand-written
+# version. Vendor when DrawScope grows its full upstream param set.
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Outline.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Outline.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/layer/GraphicsLayer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/layer/GraphicsLayer.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt
