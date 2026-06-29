@@ -39,7 +39,121 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
             if (field === value) return
             field = value
             nodes.update(value)
+            recomputeChainCaches()
         }
+
+    // ============
+    //  Phase 7 — per-modifier-assignment caches
+    //
+    //  Every property here is materialised once in [recomputeChainCaches]
+    //  when `modifier =` runs, instead of foldIn'ing per-frame. The
+    //  per-frame layout + render hot paths used to walk the modifier
+    //  chain for padding / offset / alpha / zIndex / graphicsLayer /
+    //  size / scroll-state / click+drag+hover+focus handlers / key+text
+    //  dispatch / layout-modifier — every one of those reads is now a
+    //  plain field load.
+    //
+    //  What's NOT cached: anything that reads `state.value` inside a
+    //  modifier (e.g. `HorizontalScrollModifier.state.value` —
+    //  ScrollState.value mutates inside the same modifier instance).
+    //  For those we cache the state reference itself, and call sites
+    //  read `cachedHorizontalScrollState?.value` live.
+
+    // Layout-side caches (read during measure/place).
+    private var cachedPaddingLeft: Int = 0
+    private var cachedPaddingTop: Int = 0
+    private var cachedPaddingRight: Int = 0
+    private var cachedPaddingBottom: Int = 0
+    private var cachedOffsetX: Int = 0
+    private var cachedOffsetY: Int = 0
+    private var cachedZIndex: Float = 0f
+    private var cachedNodeAlpha: Float = 1f
+    private var cachedGraphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? = null
+    /** Stacked size modifiers in foldIn order — `.height(48.dp).width(100.dp)` creates TWO; each constrains in turn. */
+    private var cachedSizes: List<SizeModifier> = emptyList()
+    private var cachedLayoutModifier: androidx.compose.ui.layout.LayoutModifierElement? = null
+    private var cachedHorizontalScrollState: androidx.compose.foundation.ScrollState? = null
+    private var cachedVerticalScrollState: androidx.compose.foundation.ScrollState? = null
+
+    // Event-side caches (read during ComposeWindow's pointer / key / text dispatch).
+    private var cachedClickable: ClickableModifier? = null
+    private var cachedSecondaryClickable: SecondaryClickModifier? = null
+    private var cachedMiddleClickable: MiddleClickModifier? = null
+    private var cachedHoverables: List<HoverableModifier> = emptyList()
+    private var cachedPressable: PressableModifier? = null
+    private var cachedDraggable: OnDragModifier? = null
+    private var cachedFocusable: FocusableModifier? = null
+    /** Multiple OnKeyEvent handlers per node are valid — dispatch tries each in chain order. */
+    private var cachedKeyEventHandlers: List<(androidx.compose.ui.input.key.KeyEvent) -> Boolean> = emptyList()
+    private var cachedTextInputHandler: ((String) -> Unit)? = null
+    /** Multiple onGloballyPositioned callbacks are valid — all fire in chain order. */
+    private var cachedGloballyPositionedList: List<GloballyPositionedModifier> = emptyList()
+
+    private fun recomputeChainCaches() {
+        var padL = 0; var padT = 0; var padR = 0; var padB = 0
+        var offX = 0; var offY = 0
+        var zIdx = 0f
+        var alpha = 1f
+        var gl: com.compose.desktop.native.element.GraphicsLayerModifier? = null
+        var sizes: MutableList<SizeModifier>? = null
+        var layoutMod: androidx.compose.ui.layout.LayoutModifierElement? = null
+        var hScroll: androidx.compose.foundation.ScrollState? = null
+        var vScroll: androidx.compose.foundation.ScrollState? = null
+        var click: ClickableModifier? = null
+        var click2: SecondaryClickModifier? = null
+        var click3: MiddleClickModifier? = null
+        var hovers: MutableList<HoverableModifier>? = null
+        var press: PressableModifier? = null
+        var drag: OnDragModifier? = null
+        var focus: FocusableModifier? = null
+        var keys: MutableList<(androidx.compose.ui.input.key.KeyEvent) -> Boolean>? = null
+        var text: ((String) -> Unit)? = null
+        var positions: MutableList<GloballyPositionedModifier>? = null
+        modifier.foldIn(Unit) { _, e ->
+            when (e) {
+                is PaddingModifier                                                  -> { padL += e.start; padT += e.top; padR += e.end; padB += e.bottom }
+                is OffsetModifier                                                   -> { offX += e.x; offY += e.y }
+                is androidx.compose.ui.ZIndexElement                                -> zIdx += e.zIndex
+                is AlphaModifier                                                    -> alpha *= e.alpha
+                is com.compose.desktop.native.element.GraphicsLayerModifier         -> { alpha *= e.alpha; gl = e }
+                is SizeModifier                                                     -> { (sizes ?: mutableListOf<SizeModifier>().also { sizes = it }).add(e) }
+                is androidx.compose.ui.layout.LayoutModifierElement                 -> layoutMod = e
+                is HorizontalScrollModifier                                         -> { if (hScroll == null) hScroll = e.state }
+                is VerticalScrollModifier                                           -> { if (vScroll == null) vScroll = e.state }
+                is ClickableModifier                                                -> click = e
+                is SecondaryClickModifier                                           -> click2 = e
+                is MiddleClickModifier                                              -> click3 = e
+                is HoverableModifier                                                -> { (hovers ?: mutableListOf<HoverableModifier>().also { hovers = it }).add(e) }
+                is PressableModifier                                                -> { if (press == null) press = e }
+                is OnDragModifier                                                   -> { if (drag == null) drag = e }
+                is FocusableModifier                                                -> { if (focus == null) focus = e }
+                is OnKeyEventModifier                                               -> { (keys ?: mutableListOf<(androidx.compose.ui.input.key.KeyEvent) -> Boolean>().also { keys = it }).add(e.handler) }
+                is OnTextInputModifier                                              -> { if (text == null) text = e.handler }
+                is GloballyPositionedModifier                                       -> { (positions ?: mutableListOf<GloballyPositionedModifier>().also { positions = it }).add(e) }
+            }
+        }
+        cachedPaddingLeft = padL; cachedPaddingTop = padT
+        cachedPaddingRight = padR; cachedPaddingBottom = padB
+        cachedOffsetX = offX; cachedOffsetY = offY
+        cachedZIndex = zIdx
+        cachedNodeAlpha = alpha
+        cachedGraphicsLayer = gl
+        cachedSizes = sizes ?: emptyList()
+        cachedLayoutModifier = layoutMod
+        cachedHorizontalScrollState = hScroll
+        cachedVerticalScrollState = vScroll
+        cachedClickable = click
+        cachedSecondaryClickable = click2
+        cachedMiddleClickable = click3
+        cachedHoverables = hovers ?: emptyList()
+        cachedPressable = press
+        cachedDraggable = drag
+        cachedFocusable = focus
+        cachedKeyEventHandlers = keys ?: emptyList()
+        cachedTextInputHandler = text
+        cachedGloballyPositionedList = positions ?: emptyList()
+    }
+
     internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
 
     // ============
@@ -212,51 +326,17 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
 
     // ============
     //  Computed absolute position (incl. visual offset modifiers + parent scroll)
-    val offsetX: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is OffsetModifier) acc + e.x else acc
-    }
-    val offsetY: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is OffsetModifier) acc + e.y else acc
-    }
-    val scrollOffsetX: Int get() {
-        var v = 0
-        modifier.foldIn(Unit) { _, e -> if (e is HorizontalScrollModifier) v += e.state.value }
-        return v
-    }
-    val scrollOffsetY: Int get() {
-        var v = 0
-        modifier.foldIn(Unit) { _, e -> if (e is VerticalScrollModifier) v += e.state.value }
-        return v
-    }
-    /* Node-wide opacity from Modifier.alpha and Modifier.graphicsLayer
-       (product of all alpha contributions); 1f = fully opaque. The
-       renderer composites the subtree at this alpha. */
-    val nodeAlpha: Float get() = modifier.foldIn(1f) { acc, e ->
-        when (e) {
-            is AlphaModifier                                                -> acc * e.alpha
-            is com.compose.desktop.native.element.GraphicsLayerModifier           -> acc * e.alpha
-            else                                                            -> acc
-        }
-    }
-    /* Sum of all Modifier.zIndex(...) values applied to this node. Used
-       by the renderer to order siblings within their parent — higher z
-       draws on top. Defaults to 0 when no zIndex modifier is present. */
-    val zIndex: Float get() {
-        var v = 0f
-        modifier.foldIn(Unit) { _, e ->
-            if (e is androidx.compose.ui.ZIndexElement) v += e.zIndex
-        }
-        return v
-    }
-    /* The (last) GraphicsLayerModifier in this node's chain, or null if
-       none. Used by renderers to apply transforms and per-node caching. */
-    val graphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? get() {
-        var v: com.compose.desktop.native.element.GraphicsLayerModifier? = null
-        modifier.foldIn(Unit) { _, e ->
-            if (e is com.compose.desktop.native.element.GraphicsLayerModifier) v = e
-        }
-        return v
-    }
+    val offsetX: Int get() = cachedOffsetX
+    val offsetY: Int get() = cachedOffsetY
+    /** ScrollState.value mutates inside the same modifier instance, so the value read goes live every frame; only the state reference is cached. */
+    val scrollOffsetX: Int get() = cachedHorizontalScrollState?.value ?: 0
+    val scrollOffsetY: Int get() = cachedVerticalScrollState?.value ?: 0
+    /** Node-wide opacity (product of `Modifier.alpha` + every `graphicsLayer`'s alpha). */
+    val nodeAlpha: Float get() = cachedNodeAlpha
+    /** Sum of all `Modifier.zIndex(...)` values on this node; renderer sorts siblings by it. */
+    val zIndex: Float get() = cachedZIndex
+    /** Last `GraphicsLayerModifier` in the chain, or null. Renderer applies its transform + caching. */
+    val graphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? get() = cachedGraphicsLayer
     /* Parent's scroll offset shifts this node's visual position; the node's
        own scroll offset applies to its children but not to itself. */
     val absoluteX: Int get() {
@@ -302,7 +382,7 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         // body calls measurable.measure(c) which re-enters measure() with
         // fSkipLayoutModifier=true to take the natural path.
         if (!fSkipLayoutModifier) {
-            val vLayoutMod = findLayoutModifier()
+            val vLayoutMod = cachedLayoutModifier
             if (vLayoutMod != null) {
                 val vMeasurable = object : androidx.compose.ui.layout.Measurable {
                     override val parentData: Any? = null
@@ -329,8 +409,8 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
 
         // Scroll modifiers: children measured with unbounded length in the
         // scroll axis, own bounds clamp to incoming maxLength.
-        val vScrollV = findVerticalScroll()
-        val vScrollH = findHorizontalScroll()
+        val vScrollV = cachedVerticalScrollState
+        val vScrollH = cachedHorizontalScrollState
         val childConstraints = Constraints(
             minWidth = adjusted.minWidth,
             maxWidth = if (vScrollH != null) Constraints.Infinity else adjusted.maxWidth,
@@ -373,17 +453,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         return IntSize(width, height)
     }
 
-    private fun findVerticalScroll(): androidx.compose.foundation.ScrollState? {
-        var s: androidx.compose.foundation.ScrollState? = null
-        modifier.foldIn(Unit) { _, e -> if (e is VerticalScrollModifier && s == null) s = e.state }
-        return s
-    }
-
-    private fun findHorizontalScroll(): androidx.compose.foundation.ScrollState? {
-        var s: androidx.compose.foundation.ScrollState? = null
-        modifier.foldIn(Unit) { _, e -> if (e is HorizontalScrollModifier && s == null) s = e.state }
-        return s
-    }
 
     fun place(x: Int, y: Int) {
         this.x = x
@@ -415,49 +484,42 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 }
                 vN = vN.child
             }
-            modifier.foldIn(Unit) { _, e ->
-                if (e is GloballyPositionedModifier) {
-                    e.onChange(IntOffset(vAx, vAy))
-                }
-            }
+            for (g in cachedGloballyPositionedList) g.onChange(IntOffset(vAx, vAy))
         }
-        for (vChild in children) vChild.dispatchGloballyPositioned()
+        for (child in children) child.dispatchGloballyPositioned()
     }
 
     private fun applyModifierConstraints(incoming: Constraints): Constraints {
+        if (cachedSizes.isEmpty()) return incoming
         var c = incoming
-        modifier.foldIn(Unit) { _, element ->
-            if (element is SizeModifier) {
-                var minW = c.minWidth; var maxW = c.maxWidth
-                var minH = c.minHeight; var maxH = c.maxHeight
+        for (size in cachedSizes) {
+            var minW = c.minWidth; var maxW = c.maxWidth
+            var minH = c.minHeight; var maxH = c.maxHeight
 
-                if (element.width >= 0) { minW = element.width; maxW = element.width }
-                if (element.height >= 0) { minH = element.height; maxH = element.height }
-                // fillMax* is a no-op when the incoming max on that axis is
-                // unbounded (e.g. inside a scroll measured at Infinity) — matches
-                // official Compose. Without the guard the node would size to
-                // Int.MAX_VALUE, overflowing downstream math (e.g. the renderer's
-                // off-screen cull `x + width`), which blanked a no-wrap body
-                // inside a horizontalScroll.
-                if (element.fillMaxWidth && incoming.maxWidth != Constraints.Infinity) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
-                if (element.fillMaxHeight && incoming.maxHeight != Constraints.Infinity) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
-                if (element.minWidth >= 0) {
-                    // defaultMinSize: only apply if nothing upstream pinned the min.
-                    if (!element.isDefaultMin || minW == 0) minW = max(minW, element.minWidth)
-                }
-                if (element.minHeight >= 0) {
-                    if (!element.isDefaultMin || minH == 0) minH = max(minH, element.minHeight)
-                }
-                if (element.maxWidth >= 0) maxW = min(maxW, element.maxWidth)
-                if (element.maxHeight >= 0) maxH = min(maxH, element.maxHeight)
-
-                c = Constraints(
-                    minWidth = minW.coerceAtMost(maxW),
-                    maxWidth = maxW.coerceAtLeast(minW),
-                    minHeight = minH.coerceAtMost(maxH),
-                    maxHeight = maxH.coerceAtLeast(minH)
-                )
+            if (size.width >= 0) { minW = size.width; maxW = size.width }
+            if (size.height >= 0) { minH = size.height; maxH = size.height }
+            // fillMax* is a no-op when the incoming max on that axis is
+            // unbounded (e.g. inside a scroll measured at Infinity) — matches
+            // official Compose. Without the guard the node would size to
+            // Int.MAX_VALUE, overflowing downstream math.
+            if (size.fillMaxWidth && incoming.maxWidth != Constraints.Infinity) { minW = incoming.maxWidth; maxW = incoming.maxWidth }
+            if (size.fillMaxHeight && incoming.maxHeight != Constraints.Infinity) { minH = incoming.maxHeight; maxH = incoming.maxHeight }
+            if (size.minWidth >= 0) {
+                // defaultMinSize: only apply if nothing upstream pinned the min.
+                if (!size.isDefaultMin || minW == 0) minW = max(minW, size.minWidth)
             }
+            if (size.minHeight >= 0) {
+                if (!size.isDefaultMin || minH == 0) minH = max(minH, size.minHeight)
+            }
+            if (size.maxWidth >= 0) maxW = min(maxW, size.maxWidth)
+            if (size.maxHeight >= 0) maxH = min(maxH, size.maxHeight)
+
+            c = Constraints(
+                minWidth = minW.coerceAtMost(maxW),
+                maxWidth = maxW.coerceAtLeast(minW),
+                minHeight = minH.coerceAtMost(maxH),
+                maxHeight = maxH.coerceAtLeast(minH),
+            )
         }
         return c
     }
@@ -465,18 +527,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     // ============
     //  Padding helpers
 
-    val paddingLeft: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is PaddingModifier) acc + e.start else acc
-    }
-    val paddingTop: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is PaddingModifier) acc + e.top else acc
-    }
-    val paddingRight: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is PaddingModifier) acc + e.end else acc
-    }
-    val paddingBottom: Int get() = modifier.foldIn(0) { acc, e ->
-        if (e is PaddingModifier) acc + e.bottom else acc
-    }
+    val paddingLeft: Int get() = cachedPaddingLeft
+    val paddingTop: Int get() = cachedPaddingTop
+    val paddingRight: Int get() = cachedPaddingRight
+    val paddingBottom: Int get() = cachedPaddingBottom
 
     // ============
     //  Hit testing
@@ -491,181 +545,113 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         return this
     }
 
-    fun findClickHandler(): (() -> Unit)? {
-        var handler: (() -> Unit)? = null
-        modifier.foldIn(Unit) { _, element ->
-            if (element is ClickableModifier) handler = element.onClick
-        }
-        if (handler != null) return handler
-        return parent?.findClickHandler()
-    }
+    fun findClickHandler(): (() -> Unit)? = cachedClickable?.onClick ?: parent?.findClickHandler()
+    fun findSecondaryClickHandler(): ((Int, Int) -> Unit)? = cachedSecondaryClickable?.onClick ?: parent?.findSecondaryClickHandler()
+    fun findMiddleClickHandler(): (() -> Unit)? = cachedMiddleClickable?.onClick ?: parent?.findMiddleClickHandler()
 
-    fun findSecondaryClickHandler(): ((Int, Int) -> Unit)? {
-        var handler: ((Int, Int) -> Unit)? = null
-        modifier.foldIn(Unit) { _, element ->
-            if (element is SecondaryClickModifier) handler = element.onClick
-        }
-        if (handler != null) return handler
-        return parent?.findSecondaryClickHandler()
-    }
-
-    fun findMiddleClickHandler(): (() -> Unit)? {
-        var handler: (() -> Unit)? = null
-        modifier.foldIn(Unit) { _, element ->
-            if (element is MiddleClickModifier) handler = element.onClick
-        }
-        if (handler != null) return handler
-        return parent?.findMiddleClickHandler()
-    }
-
-    /* Walks self → root and collects nodes that carry a HoverableModifier.
-       The matching modifier is returned alongside the node so the dispatcher
-       can compute the enter/exit diff and fire callbacks. */
+    /** Self → root walk collecting every HoverableModifier with its owning node. */
     fun collectHoverableChain(): List<Pair<LayoutNode, HoverableModifier>> {
         val acc = mutableListOf<Pair<LayoutNode, HoverableModifier>>()
         var n: LayoutNode? = this
         while (n != null) {
-            val current = n
-            current.modifier.foldIn(Unit) { _, e ->
-                if (e is HoverableModifier) acc.add(current to e)
-            }
-            n = current.parent
+            for (h in n.cachedHoverables) acc.add(n!! to h)
+            n = n.parent
         }
         return acc
     }
 
-    /* First PressableModifier on the self → root walk. */
+    /** First PressableModifier on the self → root walk. */
     fun findPressable(): Pair<LayoutNode, PressableModifier>? {
         var n: LayoutNode? = this
         while (n != null) {
-            var hit: PressableModifier? = null
-            val current = n
-            current.modifier.foldIn(Unit) { _, e ->
-                if (e is PressableModifier && hit == null) hit = e
-            }
-            val found = hit
-            if (found != null) return current to found
-            n = current.parent
+            val p = n.cachedPressable
+            if (p != null) return n to p
+            n = n.parent
         }
         return null
     }
 
-    /* First clickable node on the self → root walk — used by ComposeWindow to
-       verify that release lands inside the same clickable that received the
-       press (Compose's drag-off-cancels-click semantics). */
+    /** First clickable node on the self → root walk — release-inside-press check (Compose's drag-off-cancels-click). */
     fun findClickableNode(): LayoutNode? {
         var n: LayoutNode? = this
         while (n != null) {
-            var has = false
-            n.modifier.foldIn(Unit) { _, e -> if (e is ClickableModifier) has = true }
-            if (has) return n
+            if (n.cachedClickable != null) return n
             n = n.parent
         }
         return null
     }
 
-    /* First scroll modifier on the self → root walk, with its node. Used by
-       ComposeWindow's wheel dispatch to find what to scroll. */
-    /* Looks for a Modifier.layout(...) on this node only — the modifier
-       wraps THIS node's measure, it doesn't propagate to ancestors. */
-    private fun findLayoutModifier(): androidx.compose.ui.layout.LayoutModifierElement? {
-        var v: androidx.compose.ui.layout.LayoutModifierElement? = null
-        modifier.foldIn(Unit) { _, e ->
-            if (e is androidx.compose.ui.layout.LayoutModifierElement) v = e
-        }
-        return v
-    }
-
-    fun findVerticalScrollAncestor(): androidx.compose.foundation.ScrollState? {
-        var n: LayoutNode? = this
-        while (n != null) {
-            val v = n.findVerticalScroll()
-            if (v != null) return v
-            n = n.parent
-        }
-        return null
-    }
-
-    fun findHorizontalScrollAncestor(): androidx.compose.foundation.ScrollState? {
-        var n: LayoutNode? = this
-        while (n != null) {
-            val v = n.findHorizontalScroll()
-            if (v != null) return v
-            n = n.parent
-        }
-        return null
-    }
-
-    /* First node on the self → root walk that carries an OnDragModifier.
-       Used by ComposeWindow to capture drag gestures. */
+    /** First node on the self → root walk that carries an OnDragModifier. */
     fun findDraggable(): Pair<LayoutNode, OnDragModifier>? {
         var n: LayoutNode? = this
         while (n != null) {
-            val current = n
-            var hit: OnDragModifier? = null
-            current.modifier.foldIn(Unit) { _, e ->
-                if (e is OnDragModifier && hit == null) hit = e
-            }
-            val found = hit
-            if (found != null) return current to found
-            n = current.parent
+            val d = n.cachedDraggable
+            if (d != null) return n to d
+            n = n.parent
         }
         return null
     }
 
-    /* First node on the self → root walk that carries a FocusableModifier. */
+    /** First node on the self → root walk that carries a FocusableModifier. */
     fun findFocusableNode(): Pair<LayoutNode, FocusableModifier>? {
         var n: LayoutNode? = this
         while (n != null) {
-            val current = n
-            var hit: FocusableModifier? = null
-            current.modifier.foldIn(Unit) { _, e ->
-                if (e is FocusableModifier && hit == null) hit = e
-            }
-            val found = hit
-            if (found != null) return current to found
-            n = current.parent
+            val f = n.cachedFocusable
+            if (f != null) return n to f
+            n = n.parent
         }
         return null
     }
 
-    /* Dispatch a key event up the chain (this node + its ancestors). The
-       first OnKeyEventModifier that returns true consumes; otherwise the
-       event keeps bubbling. */
-    fun dispatchKeyEvent(inKeyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
+    /** First vertical-scroll ancestor (or self). */
+    fun findVerticalScrollAncestor(): androidx.compose.foundation.ScrollState? {
         var n: LayoutNode? = this
         while (n != null) {
-            val current = n
-            var consumed = false
-            current.modifier.foldIn(Unit) { _, e ->
-                if (!consumed && e is OnKeyEventModifier) {
-                    if (e.handler(inKeyEvent)) consumed = true
-                }
-            }
-            if (consumed) return true
-            n = current.parent
+            val s = n.cachedVerticalScrollState
+            if (s != null) return s
+            n = n.parent
+        }
+        return null
+    }
+
+    /** First horizontal-scroll ancestor (or self). */
+    fun findHorizontalScrollAncestor(): androidx.compose.foundation.ScrollState? {
+        var n: LayoutNode? = this
+        while (n != null) {
+            val s = n.cachedHorizontalScrollState
+            if (s != null) return s
+            n = n.parent
+        }
+        return null
+    }
+
+    /**
+     * Dispatch a key event up the chain. The first OnKeyEventModifier that
+     * returns true consumes; otherwise the event keeps bubbling. Multiple
+     * handlers per node are tried in chain order before falling through to
+     * the parent.
+     */
+    fun dispatchKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
+        var n: LayoutNode? = this
+        while (n != null) {
+            for (h in n.cachedKeyEventHandlers) if (h(keyEvent)) return true
+            n = n.parent
         }
         return false
     }
 
-    /* Dispatch IME-committed text up the chain. The first OnTextInputModifier
-       receives it; later handlers don't. (Unlike key events, text input
-       doesn't have a "return false to bubble" — once a focused field has
-       claimed it, ancestors shouldn't double-insert.) */
-    fun dispatchTextInput(inText: String) {
+    /**
+     * Dispatch IME-committed text up the chain. The first OnTextInputModifier
+     * receives it; later handlers don't. (Unlike key events, text input
+     * doesn't have a "return false to bubble" — once a focused field has
+     * claimed it, ancestors shouldn't double-insert.)
+     */
+    fun dispatchTextInput(text: String) {
         var n: LayoutNode? = this
         while (n != null) {
-            val current = n
-            var handler: ((String) -> Unit)? = null
-            current.modifier.foldIn(Unit) { _, e ->
-                if (handler == null && e is OnTextInputModifier) handler = e.handler
-            }
-            val found = handler
-            if (found != null) {
-                found(inText)
-                return
-            }
-            n = current.parent
+            val h = n.cachedTextInputHandler
+            if (h != null) { h(text); return }
+            n = n.parent
         }
     }
 }
