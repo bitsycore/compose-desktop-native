@@ -1432,7 +1432,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawsc
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/KeyMapping.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyMapping.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/StringHelpers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/v2/Scrollbar.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/v2/Scrollbar.native.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Brush.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Brush.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt

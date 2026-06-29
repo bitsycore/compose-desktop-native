@@ -241,6 +241,15 @@ internal class SkiaDrawScope(
 				vPaint.color = Color.makeARGB(((inAlpha) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
 				vPaint.shader = makeSweepShader(inBrush, inShapeSize)
 			}
+			is androidx.compose.ui.graphics.ShaderBrush -> {
+				// Generic ShaderBrush — vendored upstream Brush adds this as the
+				// extension point for custom shaders. The renderer doesn't have
+				// a Skia-Shader bridge for arbitrary `ShaderBrush` subclasses
+				// yet (those wrap a `Shader` we don't construct here), so we
+				// fall back to a neutral white-alpha fill. The four concrete
+				// gradient classes above bypass this branch already.
+				vPaint.color = Color.makeARGB(((inAlpha) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
+			}
 		}
 		return vPaint
 	}
