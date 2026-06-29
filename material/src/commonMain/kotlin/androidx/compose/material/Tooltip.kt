@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import com.compose.desktop.native.layout.intOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +56,7 @@ fun TooltipBox(
     Box(
         modifier = modifier
             .hoverable { vHover = it }
-            .onGloballyPositioned { vPos = it }
+            .onGloballyPositioned { vPos = it.intOffset }
             .onSizeChanged { vHeight = it.height }
     ) {
         content()

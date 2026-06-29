@@ -88,19 +88,13 @@ class MiddleClickModifier(val onClick: () -> Unit) : ModifierNodeElement<MiddleC
 }
 class MiddleClickNode(var onClick: () -> Unit) : Modifier.Node()
 
-/* Fires after the place() pass with the node's absolute window-coordinate
-   position. Different from OnSizeChangedModifier in that the callback runs
-   even when only the position (not size) changes — useful for popups that
-   need to anchor to a moving target. Identity by callback reference. */
-class GloballyPositionedModifier(
-    val onChange: (androidx.compose.ui.unit.IntOffset) -> Unit,
-) : ModifierNodeElement<GloballyPositionedNode>() {
-    override fun create() = GloballyPositionedNode(onChange)
-    override fun update(node: GloballyPositionedNode) { node.onChange = onChange }
-    override fun hashCode(): Int = onChange.hashCode()
-    override fun equals(other: Any?): Boolean = other is GloballyPositionedModifier && other.onChange === onChange
-}
-class GloballyPositionedNode(var onChange: (androidx.compose.ui.unit.IntOffset) -> Unit) : Modifier.Node()
+// GloballyPositionedModifier / GloballyPositionedNode retired —
+// `Modifier.onGloballyPositioned { … }` is now provided by vendored
+// upstream `androidx.compose.ui.layout.OnGloballyPositionedModifier.kt`
+// whose private `OnGloballyPositionedNode` implements
+// `GlobalPositionAwareModifierNode`. The dispatch loop in
+// `LayoutNode.dispatchGloballyPositioned()` walks the chain and calls
+// `onGloballyPositioned(coordinates)` directly.
 
 /* Paints user-supplied content under the node's children via a DrawScope
    lambda. The renderer invokes onDraw after background / border and before

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import com.compose.desktop.native.layout.intOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -170,5 +171,5 @@ fun rememberMenuAnchor(): MenuAnchorState = remember { MenuAnchorState() }
    [inAnchor]. Apply to the widget that opens the menu (Button, TextField,
    etc.) — the menu will land just below its bottom-left. */
 fun Modifier.menuAnchor(inAnchor: MenuAnchorState): Modifier = this
-    .onGloballyPositioned { inAnchor.position = it }
+    .onGloballyPositioned { inAnchor.position = it.intOffset }
     .onSizeChanged { inAnchor.size = it }

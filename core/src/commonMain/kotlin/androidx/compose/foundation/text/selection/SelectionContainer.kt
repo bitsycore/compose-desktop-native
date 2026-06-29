@@ -20,6 +20,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.currentClipboard
+import com.compose.desktop.native.layout.x
+import com.compose.desktop.native.layout.y
 import com.compose.desktop.native.modifier.onDrag
 
 // ==================

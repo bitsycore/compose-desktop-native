@@ -3,7 +3,6 @@ package com.compose.desktop.native.node
 import androidx.compose.ui.*
 import com.compose.desktop.native.element.*
 import com.compose.desktop.native.element.FocusableModifier
-import com.compose.desktop.native.element.GloballyPositionedModifier
 import androidx.compose.ui.unit.IntOffset
 import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.HoverableModifier
@@ -90,8 +89,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     // Key dispatch is now sourced from upstream `KeyInputModifierNode` nodes — see
     // `dispatchKeyEvent` below; it walks the Modifier.Node chain instead of a cached list.
     private var cachedTextInputHandler: ((String) -> Unit)? = null
-    /** Multiple onGloballyPositioned callbacks are valid — all fire in chain order. */
-    private var cachedGloballyPositionedList: List<GloballyPositionedModifier> = emptyList()
+    // cachedGloballyPositionedList retired — `Modifier.onGloballyPositioned` is
+    // now provided by vendored upstream `OnGloballyPositionedModifier.kt`
+    // and dispatched by walking the Modifier.Node chain for
+    // `GlobalPositionAwareModifierNode` instances in `dispatchGloballyPositioned`.
 
     // Render-side caches (read by SkiaRenderer + Sdl3Renderer's per-frame draw loops).
     /** Every BackgroundModifier in chain order — renderer paints each on the node's bounds. */
@@ -170,7 +171,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var drag: OnDragModifier? = null
         var focus: FocusableModifier? = null
         var text: ((String) -> Unit)? = null
-        var positions: MutableList<GloballyPositionedModifier>? = null
         var backgrounds: MutableList<BackgroundModifier>? = null
         var borders: MutableList<BorderModifier>? = null
         var drawBehinds: MutableList<com.compose.desktop.native.element.DrawBehindModifier>? = null
@@ -196,7 +196,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is OnDragModifier                                                   -> { if (drag == null) drag = e }
                 is FocusableModifier                                                -> { if (focus == null) focus = e }
                 is OnTextInputModifier                                              -> { if (text == null) text = e.handler }
-                is GloballyPositionedModifier                                       -> { (positions ?: mutableListOf<GloballyPositionedModifier>().also { positions = it }).add(e) }
                 is BackgroundModifier                                               -> { (backgrounds ?: mutableListOf<BackgroundModifier>().also { backgrounds = it }).add(e) }
                 is BorderModifier                                                   -> { (borders ?: mutableListOf<BorderModifier>().also { borders = it }).add(e) }
                 is com.compose.desktop.native.element.DrawBehindModifier            -> { (drawBehinds ?: mutableListOf<com.compose.desktop.native.element.DrawBehindModifier>().also { drawBehinds = it }).add(e) }
@@ -221,7 +220,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         cachedDraggable = drag
         cachedFocusable = focus
         cachedTextInputHandler = text
-        cachedGloballyPositionedList = positions ?: emptyList()
         cachedBackgrounds = backgrounds ?: emptyList()
         cachedBorders = borders ?: emptyList()
         cachedDrawBehinds = drawBehinds ?: emptyList()
@@ -261,8 +259,20 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
 
     // LayoutInfo (via SemanticsInfo) members — all defaulted to stubs
     // since no engine code reads them in Phase 1.
+    /**
+     * LayoutCoordinates for this node. Returns the node's absolute window
+     * position (logical points) from `positionInWindow()` so vendored
+     * `GlobalPositionAwareModifierNode.onGloballyPositioned(coordinates)`
+     * + `Modifier.onGloballyPositioned { … }` receivers can read it.
+     */
     override val coordinates: androidx.compose.ui.layout.LayoutCoordinates =
-        object : androidx.compose.ui.layout.LayoutCoordinates {}
+        object : androidx.compose.ui.layout.LayoutCoordinates {
+            override val size: androidx.compose.ui.unit.IntSize
+                get() = androidx.compose.ui.unit.IntSize(width, height)
+            override val isAttached: Boolean get() = true
+            override fun positionInWindow(): androidx.compose.ui.geometry.Offset =
+                androidx.compose.ui.geometry.Offset(absoluteX.toFloat(), absoluteY.toFloat())
+        }
     override val isPlaced: Boolean = true
     override val parentInfo: androidx.compose.ui.layout.LayoutInfo?
         get() = parent
@@ -672,9 +682,11 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
        is computed via absoluteX/Y, so this MUST run after all places resolve
        — call it from ComposeWindow's loop, not from inside place itself.
 
-       Also dispatches `LayoutAwareModifierNode.onPlaced(coordinates)` on
-       every node in the Modifier.Node chain — that's the upstream-shape
-       entry point `Modifier.onPlaced { … }` wires its callback through. */
+       Also dispatches `LayoutAwareModifierNode.onPlaced(coordinates)` and
+       `GlobalPositionAwareModifierNode.onGloballyPositioned(coordinates)`
+       on every node in the Modifier.Node chain — those are the upstream-
+       shape entry points `Modifier.onPlaced { … }` and
+       `Modifier.onGloballyPositioned { … }` wire their callbacks through. */
     fun dispatchGloballyPositioned() {
         val vAx = absoluteX
         val vAy = absoluteY
@@ -684,11 +696,13 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
             var vN: androidx.compose.ui.Modifier.Node? = nodes.head.child
             while (vN != null) {
                 if (vN is androidx.compose.ui.node.LayoutAwareModifierNode) {
-                    vN.onPlaced(coordinator.coordinates)
+                    vN.onPlaced(coordinates)
+                }
+                if (vN is androidx.compose.ui.node.GlobalPositionAwareModifierNode) {
+                    vN.onGloballyPositioned(coordinates)
                 }
                 vN = vN.child
             }
-            for (g in cachedGloballyPositionedList) g.onChange(IntOffset(vAx, vAy))
         }
         for (child in children) child.dispatchGloballyPositioned()
     }

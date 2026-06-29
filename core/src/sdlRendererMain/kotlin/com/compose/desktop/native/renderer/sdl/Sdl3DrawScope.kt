@@ -541,6 +541,15 @@ private fun Sdl3DrawScope.samplerFor(
 	is LinearGradient -> linearSampler(inBrush, inShapeSize, inAlpha)
 	is RadialGradient -> radialSampler(inBrush, inShapeSize, inAlpha)
 	is SweepGradient -> sweepSampler(inBrush, inShapeSize, inAlpha)
+	is androidx.compose.ui.graphics.ShaderBrush -> {
+		// Vendored upstream Brush.kt adds a generic `ShaderBrush` abstract
+		// base. No SDL3-side bridge for arbitrary shaders; degrade to a
+		// neutral white-alpha fill so the call surface compiles. The four
+		// concrete brushes above bypass this branch already.
+		val vC = androidx.compose.ui.graphics.Color.White.withAlphaScaled(inAlpha)
+		val vS: Sampler = { _, _ -> vC }
+		vS
+	}
 }
 
 @OptIn(ExperimentalForeignApi::class)

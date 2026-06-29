@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import com.compose.desktop.native.layout.x
+import com.compose.desktop.native.layout.y
 import com.compose.desktop.native.node.LayoutNode
 import com.compose.desktop.native.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier

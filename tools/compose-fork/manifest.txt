@@ -1155,7 +1155,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt

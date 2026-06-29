@@ -32,6 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import com.compose.desktop.native.layout.x
+import com.compose.desktop.native.layout.y
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp

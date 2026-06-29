@@ -36,4 +36,17 @@ interface LayoutCoordinates {
 		inSourceCoordinates: LayoutCoordinates,
 		inRelativeToSource: androidx.compose.ui.geometry.Offset,
 	): androidx.compose.ui.geometry.Offset = inRelativeToSource
+
+	/**
+	 * Position of this layout in the window's logical coordinate space.
+	 * Upstream returns `Offset` (float pixels); we report
+	 * `(absoluteX, absoluteY)` from the owning LayoutNode in logical
+	 * points. Default `Offset.Zero` for the stub `coordinates` instance
+	 * — every real LayoutNode overrides via [NodeLayoutCoordinates].
+	 */
+	fun positionInWindow(): androidx.compose.ui.geometry.Offset =
+		androidx.compose.ui.geometry.Offset.Zero
+
+	/** Same as [positionInWindow] for our flat single-window model. */
+	fun positionInRoot(): androidx.compose.ui.geometry.Offset = positionInWindow()
 }
