@@ -1171,6 +1171,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatingNode.kt  
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/KeepScreenOn.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/KeepScreenOn.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/SensitiveContent.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/SensitiveContent.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt             core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt         core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/input/rotary/RotaryScrollEvent.native.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt   core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifierNode.kt

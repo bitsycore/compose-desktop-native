@@ -219,15 +219,14 @@ class FocusableModifier(val onFocusChanged: (Boolean) -> Unit) : ModifierNodeEle
 }
 class FocusableNode(var onFocusChanged: (Boolean) -> Unit) : Modifier.Node()
 
-class OnKeyEventModifier(
-    val handler: (androidx.compose.ui.input.key.KeyEvent) -> Boolean,
-) : ModifierNodeElement<OnKeyEventNode>() {
-    override fun create() = OnKeyEventNode(handler)
-    override fun update(node: OnKeyEventNode) { node.handler = handler }
-    override fun hashCode(): Int = handler.hashCode()
-    override fun equals(other: Any?): Boolean = other is OnKeyEventModifier && other.handler === handler
-}
-class OnKeyEventNode(var handler: (androidx.compose.ui.input.key.KeyEvent) -> Boolean) : Modifier.Node()
+// `OnKeyEventModifier` + `OnKeyEventNode` were retired when
+// `androidx.compose.ui.input.key.KeyInputModifier.kt` got vendored —
+// the vendored file ships the official-shape `Modifier.onKeyEvent {}`
+// and `Modifier.onPreviewKeyEvent {}` extensions + a `private
+// KeyInputElement` element + `internal KeyInputNode : KeyInputModifierNode`.
+// `LayoutNode.dispatchKeyEvent` walks the Modifier.Node chain for
+// every `KeyInputModifierNode` and calls its `onKeyEvent` method.
+
 
 class OnTextInputModifier(val handler: (String) -> Unit) : ModifierNodeElement<OnTextInputNode>() {
     override fun create() = OnTextInputNode(handler)

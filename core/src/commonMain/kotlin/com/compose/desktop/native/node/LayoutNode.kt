@@ -8,7 +8,6 @@ import androidx.compose.ui.unit.IntOffset
 import com.compose.desktop.native.element.HorizontalScrollModifier
 import com.compose.desktop.native.element.HoverableModifier
 import com.compose.desktop.native.element.OnDragModifier
-import com.compose.desktop.native.element.OnKeyEventModifier
 import com.compose.desktop.native.element.OnTextInputModifier
 import com.compose.desktop.native.element.OnPressedModifier
 import com.compose.desktop.native.element.PressableModifier
@@ -87,8 +86,8 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     /** First FocusableModifier on the chain — `:window`'s focusManager reads it to invoke onFocusChanged. */
     var cachedFocusable: FocusableModifier? = null
         private set
-    /** Multiple OnKeyEvent handlers per node are valid — dispatch tries each in chain order. */
-    private var cachedKeyEventHandlers: List<(androidx.compose.ui.input.key.KeyEvent) -> Boolean> = emptyList()
+    // Key dispatch is now sourced from upstream `KeyInputModifierNode` nodes — see
+    // `dispatchKeyEvent` below; it walks the Modifier.Node chain instead of a cached list.
     private var cachedTextInputHandler: ((String) -> Unit)? = null
     /** Multiple onGloballyPositioned callbacks are valid — all fire in chain order. */
     private var cachedGloballyPositionedList: List<GloballyPositionedModifier> = emptyList()
@@ -141,7 +140,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var press: PressableModifier? = null
         var drag: OnDragModifier? = null
         var focus: FocusableModifier? = null
-        var keys: MutableList<(androidx.compose.ui.input.key.KeyEvent) -> Boolean>? = null
         var text: ((String) -> Unit)? = null
         var positions: MutableList<GloballyPositionedModifier>? = null
         var backgrounds: MutableList<BackgroundModifier>? = null
@@ -171,7 +169,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is PressableModifier                                                -> { if (press == null) press = e }
                 is OnDragModifier                                                   -> { if (drag == null) drag = e }
                 is FocusableModifier                                                -> { if (focus == null) focus = e }
-                is OnKeyEventModifier                                               -> { (keys ?: mutableListOf<(androidx.compose.ui.input.key.KeyEvent) -> Boolean>().also { keys = it }).add(e.handler) }
                 is OnTextInputModifier                                              -> { if (text == null) text = e.handler }
                 is GloballyPositionedModifier                                       -> { (positions ?: mutableListOf<GloballyPositionedModifier>().also { positions = it }).add(e) }
                 is BackgroundModifier                                               -> { (backgrounds ?: mutableListOf<BackgroundModifier>().also { backgrounds = it }).add(e) }
@@ -201,7 +198,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         cachedPressable = press
         cachedDraggable = drag
         cachedFocusable = focus
-        cachedKeyEventHandlers = keys ?: emptyList()
         cachedTextInputHandler = text
         cachedGloballyPositionedList = positions ?: emptyList()
         cachedBackgrounds = backgrounds ?: emptyList()
@@ -688,15 +684,20 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     }
 
     /**
-     * Dispatch a key event up the chain. The first OnKeyEventModifier that
-     * returns true consumes; otherwise the event keeps bubbling. Multiple
-     * handlers per node are tried in chain order before falling through to
-     * the parent.
+     * Dispatch a key event up the chain. Walks each ancestor's Modifier.Node
+     * chain and calls `KeyInputModifierNode.onKeyEvent` on every match in
+     * chain order; the first to return true consumes. Routes through the
+     * upstream-shape API that `Modifier.onKeyEvent { }` wires its callback
+     * through.
      */
     fun dispatchKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
         var n: LayoutNode? = this
         while (n != null) {
-            for (h in n.cachedKeyEventHandlers) if (h(keyEvent)) return true
+            var node: androidx.compose.ui.Modifier.Node? = n.nodes.head.child
+            while (node != null) {
+                if (node is androidx.compose.ui.input.key.KeyInputModifierNode && node.onKeyEvent(keyEvent)) return true
+                node = node.child
+            }
             n = n.parent
         }
         return false
