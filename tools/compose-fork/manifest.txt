@@ -1174,6 +1174,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/SensitiveContent.kt     
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt             core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/AspectRatio.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/AspectRatio.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Intrinsic.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Intrinsic.kt
 # Padding.kt — vendors a `Modifier.padding(...)` + `PaddingElement`/`PaddingNode` pair
 # that conflict with the project's hand-written `Modifier.padding` extensions in
 # `core/.../layout/LayoutModifiers.kt`. To take upstream, the project version must be
