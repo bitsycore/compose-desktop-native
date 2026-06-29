@@ -1022,7 +1022,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt  core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt  core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt  core/src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/AlignmentLine.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/AlignmentLine.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/AlignmentLine.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/AlignmentLine.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/AspectRatio.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/AspectRatio.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Box.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Box.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlexBox.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlexBox.kt

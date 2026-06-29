@@ -26,6 +26,16 @@ abstract class Placeable {
 	abstract fun placeAt(inX: Int, inY: Int)
 
 	/**
+	 * Returns the position of the given [AlignmentLine] in this Placeable,
+	 * or [AlignmentLine.Unspecified] if not provided. This renderer does
+	 * not currently propagate alignment-line values up the tree, so the
+	 * default is always Unspecified — callers fall back to a 0 line
+	 * position and paddingFrom degenerates to padding-with-coerce.
+	 */
+	open operator fun get(inAlignmentLine: androidx.compose.ui.layout.AlignmentLine): Int =
+		androidx.compose.ui.layout.AlignmentLine.Unspecified
+
+	/**
 	 * Receiver scope for a `MeasureScope.layout { }` placement block.
 	 * Placement happens by calling `placeable.placeAt(x, y)` directly
 	 * (Placeable.placeAt is public). Nested inside Placeable for
