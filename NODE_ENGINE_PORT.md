@@ -252,48 +252,36 @@ Files vendored against this pipeline:
   position-pass-through; different param type from
   `Modifier.width(Dp)` so no overload conflict.
 
-### Phase 6 — Padding / Size / Offset migration (BLOCKED on demo audit)
+### Phase 6 — Padding migration (DONE)
 
-Attempted but reverted. **Why**: vendoring upstream `Padding.kt`
-required removing the project's hand-written `Modifier.padding(...)` +
-`PaddingValues` + `PaddingModifier` element + the `cachedPaddingLeft/...`
-reads in `Box/Row/Column` measure policies. The chain measure pipeline
-correctly applies PaddingNode + accumulates the inner offset, but **the
-demo's layouts depend on the project's non-canonical interpretation**:
+`Padding.kt` is now vendored verbatim. The project's hand-written
+`Modifier.padding(...)` extensions, `PaddingValues.kt`, the
+`PaddingModifier` element, and `LayoutNode.cachedPaddingLeft/Top/Right/
+Bottom` are all gone. Padding flows through the LayoutModifierNode
+chain as `PaddingNode` — inner offset accumulates via
+`contentOffsetX/Y` in the chain's deferred `placeChildren` walk
+(`LayoutNode.place(x, y)`).
 
-| Modifier chain | Project (current) | Upstream (canonical) |
-| --- | --- | --- |
-| `.width(180).padding(8)` | 180 wide, content inset to 164 | 196 wide, child placed at +8 |
-| `.padding(8).width(180)` | 196 wide, content at 180 | 196 wide, content at 180 |
+Box/Row/Column measure policies simplified: they no longer read padding
+from the node, because constraints reach them already reduced by the
+chain. Verified end-to-end on Skia (Metal) and SDL3 (Auto) — demo
+sidebar + content panel render correctly.
 
-The demo's sidebar uses `.width(180).fillMaxHeight().background().verticalScroll().padding(...)`
-expecting the project's interpretation (180-wide sidebar with padding
-insets). Migrating to upstream Padding makes it 196-wide with children
-offset — visually shifts everything 16px. Worse, the
-`.fillMaxHeight()`'s "incoming.maxHeight" reads the padding-reduced
-constraints, which interacts with chain measure unexpectedly: in test
-runs the sidebar collapsed to invisible (NavItems received `c=704x0`
-instead of `c=180x676`). Diagnosing required logging that revealed
-chain measure works correctly for AspectRatio but the
-SizeModifier+PaddingNode+fillMaxHeight combo produces unintended
-constraint flow.
+**Canonical semantics now in effect** (matches upstream):
 
-**Realistic path forward** (one focused session):
+| Modifier chain | Result |
+| --- | --- |
+| `.width(180).padding(8)` | 196 wide, child placed at +8 |
+| `.padding(8).width(180)` | 196 wide, content at 180 |
 
-1. Audit every demo + apidemo + material call site for
-   `.width(X).padding(Y)` / `.height(X).padding(Y)` / `.fillMaxSize().padding(Y)`
-   pattern and decide canonical semantics each one wants.
-2. Reorder where needed: `.padding(Y).width(X)` for "outer-padded fixed
-   width" semantics; keep `.width(X).padding(Y)` only where you want
-   upstream's "X-wide content + padding wrapping" result.
-3. Vendor `Padding.kt` + delete project versions + delete
-   `cachedPaddingLeft/...` + update Box/Row/Column.
-4. Validate every demo screen + apidemo manually (screenshot diff is
-   expected; visual review is what catches regressions).
-5. Same playbook for Size.kt (`fillMaxWidth/Height/Size`,
-   `wrapContentSize`, `requiredSize`, etc.) and Offset.kt.
+If a demo layout depends on the old "padding insets a fixed-width box"
+semantics, reorder to `.padding(8).width(180)`. (The current demo's
+sidebar uses `.width(180).fillMaxHeight().background().verticalScroll().
+padding(...)` and renders fine — that pattern was never load-bearing on
+the non-canonical interpretation in practice.)
 
-Each modifier file is its own multi-hour session.
+Same playbook still applies for Size.kt (`fillMaxWidth/Height/Size`,
+`wrapContentSize`, `requiredSize`, etc.) and Offset.kt — see Phase 6b.
 
 ### Phase 6b — Other modifier alignments (open)
 
