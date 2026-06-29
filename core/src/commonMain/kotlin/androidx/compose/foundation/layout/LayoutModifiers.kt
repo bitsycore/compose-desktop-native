@@ -10,45 +10,11 @@ import androidx.compose.ui.unit.dp
 // MARK: Layout Modifier Extensions
 // ==================
 
-// Padding
-fun Modifier.padding(all: Dp): Modifier =
-    then(PaddingModifier(all.value.toInt(), all.value.toInt(), all.value.toInt(), all.value.toInt()))
-fun Modifier.padding(horizontal: Dp = 0.dp, vertical: Dp = 0.dp): Modifier =
-    then(PaddingModifier(horizontal.value.toInt(), vertical.value.toInt(), horizontal.value.toInt(), vertical.value.toInt()))
-fun Modifier.padding(start: Dp = 0.dp, top: Dp = 0.dp, end: Dp = 0.dp, bottom: Dp = 0.dp): Modifier =
-    then(PaddingModifier(start.value.toInt(), top.value.toInt(), end.value.toInt(), bottom.value.toInt()))
+// Padding extensions retired — provided verbatim by upstream
+// `androidx.compose.foundation.layout.Padding.kt` (vendored).
 
-/**
- * Apply [paddingValues] around the modified node. Public surface matches
- * upstream Padding.kt. PaddingValues.calculate{Left/Right}Padding receive
- * LayoutDirection.Ltr — RTL isn't honored in our pipeline today, so
- * start/end map to left/right directly.
- */
-fun Modifier.padding(paddingValues: PaddingValues): Modifier {
-    val vDir = LayoutDirection.Ltr
-    return then(
-        PaddingModifier(
-            paddingValues.calculateLeftPadding(vDir).value.toInt(),
-            paddingValues.calculateTopPadding().value.toInt(),
-            paddingValues.calculateRightPadding(vDir).value.toInt(),
-            paddingValues.calculateBottomPadding().value.toInt(),
-        )
-    )
-}
-
-/**
- * Apply explicit left/top/right/bottom padding regardless of layout
- * direction (no RTL mirroring). Equivalent to `padding(start, top, end,
- * bottom)` in our Ltr-only build; matches upstream Padding.kt's
- * absolutePadding.
- */
-fun Modifier.absolutePadding(
-    left: Dp = 0.dp,
-    top: Dp = 0.dp,
-    right: Dp = 0.dp,
-    bottom: Dp = 0.dp,
-): Modifier =
-    then(PaddingModifier(left.value.toInt(), top.value.toInt(), right.value.toInt(), bottom.value.toInt()))
+// `Modifier.padding(PaddingValues)` + `Modifier.absolutePadding(...)` are
+// provided by vendored upstream `Padding.kt`. Project versions retired.
 
 // Size
 fun Modifier.size(size: Dp) = then(SizeModifier(width = size.value.toInt(), height = size.value.toInt()))

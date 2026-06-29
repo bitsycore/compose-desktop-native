@@ -43,13 +43,11 @@ private class ColumnMeasurePolicy(
     private val alignment: Alignment.Horizontal
 ) : MeasurePolicy {
     override fun measure(node: LayoutNode, constraints: Constraints): IntSize {
-        val pl = node.paddingLeft; val pt = node.paddingTop
-        val pr = node.paddingRight; val pb = node.paddingBottom
-
-        val availW = if (constraints.maxWidth == Constraints.Infinity) Constraints.Infinity
-                     else (constraints.maxWidth - pl - pr).coerceAtLeast(0)
-        val availH = if (constraints.maxHeight == Constraints.Infinity) Constraints.Infinity
-                     else (constraints.maxHeight - pt - pb).coerceAtLeast(0)
+        // Padding flows through the LayoutModifierNode chain (vendored
+        // upstream `Padding.kt`) ahead of Column's measure; constraints
+        // here are already reduced.
+        val availW = constraints.maxWidth
+        val availH = constraints.maxHeight
 
         val gap = arrangement.spacing
         val n = node.children.size
@@ -109,16 +107,15 @@ private class ColumnMeasurePolicy(
         }
 
         val totalChildH = sizes.sum()
-        val w = (maxW + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (totalChildH + gapTotal + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
-        val innerW = w - pl - pr
+        val w = maxW.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val h = (totalChildH + gapTotal).coerceIn(constraints.minHeight, constraints.maxHeight)
 
         val positions = IntArray(n)
-        arrangement.arrange(h - pt - pb, sizes.toList(), positions)
+        arrangement.arrange(h, sizes.toList(), positions)
 
         node.children.forEachIndexed { i, child ->
-            val xOff = alignment.align(child.width, innerW, LayoutDirection.Ltr)
-            child.place(xOff + pl, positions[i] + pt)
+            val xOff = alignment.align(child.width, w, LayoutDirection.Ltr)
+            child.place(xOff, positions[i])
         }
 
         return IntSize(w, h)

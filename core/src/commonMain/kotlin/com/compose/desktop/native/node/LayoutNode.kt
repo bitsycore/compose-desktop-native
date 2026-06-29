@@ -61,10 +61,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     //  read `cachedHorizontalScrollState?.value` live.
 
     // Layout-side caches (read during measure/place).
-    private var cachedPaddingLeft: Int = 0
-    private var cachedPaddingTop: Int = 0
-    private var cachedPaddingRight: Int = 0
-    private var cachedPaddingBottom: Int = 0
+    // Padding caches retired — `Modifier.padding` flows through vendored
+    // upstream `Padding.kt` + the LayoutModifierNode chain pipeline
+    // (contentOffsetX/Y set by `ChainLeafPlaceable.placeAt` during the
+    // chain's deferred `placeChildren` walk inside `place(x, y)`).
     private var cachedOffsetX: Int = 0
     private var cachedOffsetY: Int = 0
     private var cachedZIndex: Float = 0f
@@ -155,7 +155,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         private set
 
     private fun recomputeChainCaches() {
-        var padL = 0; var padT = 0; var padR = 0; var padB = 0
         var offX = 0; var offY = 0
         var zIdx = 0f
         var alpha = 1f
@@ -184,7 +183,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var onPressedHandlers: MutableList<(Int, Int) -> Unit>? = null
         modifier.foldIn(Unit) { _, e ->
             when (e) {
-                is PaddingModifier                                                  -> { padL += e.start; padT += e.top; padR += e.end; padB += e.bottom }
                 is OffsetModifier                                                   -> { offX += e.x; offY += e.y }
                 is androidx.compose.ui.ZIndexElement                                -> zIdx += e.zIndex
                 is AlphaModifier                                                    -> alpha *= e.alpha
@@ -212,8 +210,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is OnPressedModifier                                                -> { (onPressedHandlers ?: mutableListOf<(Int, Int) -> Unit>().also { onPressedHandlers = it }).add(e.handler) }
             }
         }
-        cachedPaddingLeft = padL; cachedPaddingTop = padT
-        cachedPaddingRight = padR; cachedPaddingBottom = padB
         cachedOffsetX = offX; cachedOffsetY = offY
         cachedZIndex = zIdx
         cachedNodeAlpha = alpha
@@ -740,10 +736,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     // ============
     //  Padding helpers
 
-    val paddingLeft: Int get() = cachedPaddingLeft
-    val paddingTop: Int get() = cachedPaddingTop
-    val paddingRight: Int get() = cachedPaddingRight
-    val paddingBottom: Int get() = cachedPaddingBottom
+    // paddingLeft/Top/Right/Bottom retired — Box/Row/Column no longer read them.
+    // Padding's effect flows through `contentOffsetX/Y` via the chain measure
+    // pipeline (set by ChainLeafPlaceable.placeAt during the chain's deferred
+    // placeChildren walk in `place(x, y)`).
 
     // ============
     //  Hit testing

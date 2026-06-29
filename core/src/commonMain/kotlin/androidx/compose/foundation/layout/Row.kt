@@ -47,13 +47,11 @@ private class RowMeasurePolicy(
     private val alignment: Alignment.Vertical
 ) : MeasurePolicy {
     override fun measure(node: LayoutNode, constraints: Constraints): IntSize {
-        val pl = node.paddingLeft; val pt = node.paddingTop
-        val pr = node.paddingRight; val pb = node.paddingBottom
-
-        val availW = if (constraints.maxWidth == Constraints.Infinity) Constraints.Infinity
-                     else (constraints.maxWidth - pl - pr).coerceAtLeast(0)
-        val availH = if (constraints.maxHeight == Constraints.Infinity) Constraints.Infinity
-                     else (constraints.maxHeight - pt - pb).coerceAtLeast(0)
+        // Padding flows through the LayoutModifierNode chain (vendored
+        // upstream `Padding.kt`) ahead of Row's measure; constraints here
+        // are already reduced.
+        val availW = constraints.maxWidth
+        val availH = constraints.maxHeight
 
         val gap = arrangement.spacing
         val n = node.children.size
@@ -119,16 +117,15 @@ private class RowMeasurePolicy(
         }
 
         val totalChildW = sizes.sum()
-        val w = (totalChildW + gapTotal + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (maxH + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
-        val innerH = h - pt - pb
+        val w = (totalChildW + gapTotal).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val h = maxH.coerceIn(constraints.minHeight, constraints.maxHeight)
 
         val positions = IntArray(n)
-        arrangement.arrange(w - pl - pr, sizes.toList(), positions)
+        arrangement.arrange(w, sizes.toList(), positions)
 
         node.children.forEachIndexed { i, child ->
-            val yOff = alignment.align(child.height, innerH)
-            child.place(positions[i] + pl, yOff + pt)
+            val yOff = alignment.align(child.height, h)
+            child.place(positions[i], yOff)
         }
 
         return IntSize(w, h)

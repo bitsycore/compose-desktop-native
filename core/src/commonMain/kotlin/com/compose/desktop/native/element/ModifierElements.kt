@@ -20,29 +20,12 @@ import androidx.compose.ui.node.ModifierNodeElement
 // Node lifecycle stays dormant until the renderer rewrite drives it via
 // NodeCoordinator. Equality is hand-written to match data-class semantics.
 
-class PaddingModifier(
-    val start: Int = 0,
-    val top: Int = 0,
-    val end: Int = 0,
-    val bottom: Int = 0,
-) : ModifierNodeElement<PaddingNode>() {
-    override fun create() = PaddingNode(start, top, end, bottom)
-    override fun update(node: PaddingNode) {
-        node.start = start; node.top = top; node.end = end; node.bottom = bottom
-    }
-    override fun hashCode(): Int =
-        start * 31 * 31 * 31 + top * 31 * 31 + end * 31 + bottom
-    override fun equals(other: Any?): Boolean =
-        other is PaddingModifier && other.start == start && other.top == top &&
-            other.end == end && other.bottom == bottom
-}
+// `PaddingModifier` + `PaddingNode` retired — replaced by vendored
+// upstream `androidx.compose.foundation.layout.Padding.kt`. The chain
+// measure pipeline runs PaddingNode.measure() outermost-first;
+// `placeable.place(start, top)` inside its layout block accumulates
+// into `LayoutNode.contentOffsetX/Y` via `ChainLeafPlaceable.placeAt`.
 
-class PaddingNode(
-    var start: Int,
-    var top: Int,
-    var end: Int,
-    var bottom: Int,
-) : Modifier.Node()
 
 class BackgroundModifier(
     val color: Color,

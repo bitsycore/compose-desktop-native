@@ -40,26 +40,16 @@ private class BoxMeasurePolicy(
     private val propagateMinConstraints: Boolean,
 ) : MeasurePolicy {
     override fun measure(node: LayoutNode, constraints: Constraints): IntSize {
-        val pl = node.paddingLeft; val pt = node.paddingTop
-        val pr = node.paddingRight; val pb = node.paddingBottom
-
-        // Compose's Box measures children with the incoming MIN constraints
-        // loosened to 0 (unless propagateMinConstraints is set), then aligns
-        // each child within the resolved box size. Propagating the min would
-        // force a child to fill the box and defeat contentAlignment — e.g. a
-        // single text line couldn't be vertically centred inside a min-height
-        // container. The box itself still honours its own incoming min via the
-        // coerceIn on w/h below.
-        val childMinW = if (propagateMinConstraints) (constraints.minWidth - pl - pr).coerceAtLeast(0) else 0
-        val childMinH = if (propagateMinConstraints) (constraints.minHeight - pt - pb).coerceAtLeast(0) else 0
-
+        // Padding flows through the LayoutModifierNode chain (vendored
+        // upstream `Padding.kt`) ahead of Box's measure — the constraints
+        // we receive here are already reduced by any surrounding padding.
+        val childMinW = if (propagateMinConstraints) constraints.minWidth else 0
+        val childMinH = if (propagateMinConstraints) constraints.minHeight else 0
         val innerConstraints = Constraints(
             minWidth = childMinW,
-            maxWidth = if (constraints.maxWidth == Constraints.Infinity) Constraints.Infinity
-                       else (constraints.maxWidth - pl - pr).coerceAtLeast(0),
+            maxWidth = constraints.maxWidth,
             minHeight = childMinH,
-            maxHeight = if (constraints.maxHeight == Constraints.Infinity) Constraints.Infinity
-                        else (constraints.maxHeight - pt - pb).coerceAtLeast(0),
+            maxHeight = constraints.maxHeight,
         )
 
         var maxW = 0; var maxH = 0
@@ -69,14 +59,14 @@ private class BoxMeasurePolicy(
             maxH = max(maxH, s.height)
         }
 
-        val w = (maxW + pl + pr).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (maxH + pt + pb).coerceIn(constraints.minHeight, constraints.maxHeight)
-        val innerSpace = IntSize(w - pl - pr, h - pt - pb)
+        val w = maxW.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val h = maxH.coerceIn(constraints.minHeight, constraints.maxHeight)
+        val innerSpace = IntSize(w, h)
 
         for (child in node.children) {
             val childSize = IntSize(child.width, child.height)
             val pos = alignment.align(childSize, innerSpace, LayoutDirection.Ltr)
-            child.place(pos.x + pl, pos.y + pt)
+            child.place(pos.x, pos.y)
         }
 
         return IntSize(w, h)
