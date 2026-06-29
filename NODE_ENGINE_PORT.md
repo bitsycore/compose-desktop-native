@@ -280,8 +280,24 @@ sidebar uses `.width(180).fillMaxHeight().background().verticalScroll().
 padding(...)` and renders fine — that pattern was never load-bearing on
 the non-canonical interpretation in practice.)
 
-Same playbook still applies for Size.kt (`fillMaxWidth/Height/Size`,
-`wrapContentSize`, `requiredSize`, etc.) and Offset.kt — see Phase 6b.
+### Phase 6a — Size + Offset migration (DONE)
+
+`Size.kt` and `Offset.kt` are now vendored verbatim alongside `Padding.kt`.
+The project's hand-written `Modifier.size / width / height / fillMaxWidth /
+fillMaxHeight / fillMaxSize / widthIn / heightIn / sizeIn / requiredWidth /
+requiredHeight / defaultMinSize / offset` extensions are gone, as are the
+bespoke `SizeModifier` / `SizeNode` / `OffsetModifier` / `OffsetNode` pairs
+and `LayoutNode.cachedSizes` + `cachedOffsetX/Y` + `applyModifierConstraints`.
+All sizing & offsetting flows through the chain measure pipeline.
+
+Side-effects: `wrapContentWidth / wrapContentHeight / wrapContentSize` and
+`absoluteOffset` (+ the `Density.()->IntOffset` lambda variants of offset)
+are now available — never had them before. `LayoutModifiers.kt` is now an
+empty placeholder file.
+
+Surface bump: `Placeable.PlacementScope` gained `placeWithLayer` /
+`placeRelativeWithLayer` (forward to `placeAt`, layer block ignored) so
+vendored Offset.kt compiles.
 
 ### Phase 6b — Other modifier alignments (open)
 
