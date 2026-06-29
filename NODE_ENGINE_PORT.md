@@ -533,11 +533,35 @@ md5 /tmp/x.png   # expect c6bc8f7… (Skia) or 1844ac4… (SDL3)
 
 ## Counts
 
-| Marker | Start of session N-3 | End of session N-2 | End of session N-1 | End of session N |
-| --- | ---: | ---: | ---: | ---: |
-| Vendor files | 365 | 396 | 404 | 411 |
-| Shim files | 22 | 11 | 11 | 10 |
-| Modifier.Node lifecycle | none | dormant | driven + kindSet | + chain measure pipeline (Phase 5) |
-| Renderer foldIn sites | 27+ | 27+ | 0 (all cached) | 0 + 3 chain-walk dispatch sites |
-| LayoutModifierNode chain measure | — | — | — | with per-modifier inner-offset (commit `0eed731`) |
-| Vendored Modifier files using chain | — | — | — | AspectRatio, Intrinsic (position-pass-through only) |
+| Marker | Start of session N-3 | End of session N-2 | End of session N-1 | End of session N | End of session N+1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Vendor files | 365 | 396 | 404 | 411 | 425 |
+| Shim files | 22 | 11 | 11 | 10 | 10 |
+| Modifier.Node lifecycle | none | dormant | driven + kindSet | + chain measure pipeline (Phase 5) | (no change) |
+| Renderer foldIn sites | 27+ | 27+ | 0 (all cached) | 0 + 3 chain-walk dispatch sites | (no change) |
+| LayoutModifierNode chain measure | — | — | — | with per-modifier inner-offset (commit `0eed731`) | + Padding / Size / Offset migrated |
+| Vendored Modifier files using chain | — | — | — | AspectRatio, Intrinsic (position-pass-through only) | + Padding, Size, Offset, AlignmentLine |
+
+Session N+1 vendor additions (14 files): Padding.kt, Size.kt, Offset.kt,
+Spacer.kt, AlignmentLine.kt, DrawTransform.kt, EmptyCanvas.kt,
+LayoutId.kt, Brush.kt (replacement), InlineDensity.kt, ModifierUtils.kt,
+DeadKeyCombiner.kt + native, KeyEventHelpers.kt + native, SimpleLayout.kt,
+RequestFocusOnClick.kt + hand-written native.
+
+Project hand-written files retired by these vendors: `LayoutModifiers.kt`
+(now empty placeholder), `Brush.kt`, `Spacer.kt`, `PaddingValues.kt`,
+`SizeModifier` / `SizeNode` / `OffsetModifier` / `OffsetNode` /
+`PaddingModifier` / `PaddingNode` element pairs, plus
+`LayoutNode.cachedSizes` / `cachedPadding*` / `cachedOffsetX/Y` /
+`applyModifierConstraints` / `paddingLeft/Top/Right/Bottom` /
+`offsetX/Y` getters.
+
+Surface bumps in core (additive, non-breaking):
+- `Placeable.PlacementScope` gained `placeWithLayer` /
+  `placeRelativeWithLayer` (for vendored Offset.kt).
+- `Placeable` gained `open operator fun get(AlignmentLine): Int =
+  AlignmentLine.Unspecified` (for vendored AlignmentLine.kt).
+- `Layout(modifier, measurePolicy)` no-content overload (for vendored
+  Spacer.kt).
+- `SkiaDrawScope` learned `is ShaderBrush` fallback (for vendored
+  full Brush.kt with the new `ShaderBrush` abstract base).
