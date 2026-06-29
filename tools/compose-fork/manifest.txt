@@ -820,7 +820,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Spacer.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Spacer.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt
 # compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/RequestFocusOnClick.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/DifferentialVelocityTracker.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/DifferentialVelocityTracker.kt
@@ -838,8 +838,10 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyEventHelpers.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyEventHelpers.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.native.kt
+compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TouchMode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TouchMode.kt
@@ -847,9 +849,9 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/UndoState.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/UndoState.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/Clickable.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/Clickable.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/selection/Selectable.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/selection/Selectable.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/selection/Toggleable.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/selection/Toggleable.native.kt
