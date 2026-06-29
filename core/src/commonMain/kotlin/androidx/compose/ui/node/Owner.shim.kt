@@ -35,4 +35,12 @@ interface Owner {
 
 	/** Used by `ObserverModifierNode.observeReads()` (Phase 3). */
 	val snapshotObserver: OwnerSnapshotObserver
+
+	/** Used by `Modifier.keepScreenOn()`'s Node lifecycle; no-op default. */
+	fun incrementKeepScreenOnCount() { /* no-op — we don't track screen-on requests */ }
+	fun decrementKeepScreenOnCount() { /* no-op */ }
+
+	/** Used by `Modifier.sensitiveContent()`'s Node lifecycle; no-op default. */
+	fun incrementSensitiveComponentCount() { /* no-op — screen-share masking not wired */ }
+	fun decrementSensitiveComponentCount() { /* no-op */ }
 }
