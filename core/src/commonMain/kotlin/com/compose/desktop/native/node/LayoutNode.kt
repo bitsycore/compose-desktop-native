@@ -123,6 +123,26 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
      */
     private var cachedLayoutModifierNodes: List<androidx.compose.ui.node.LayoutModifierNode> = emptyList()
 
+    /**
+     * Accumulated placement offset from the LayoutModifierNode chain — when
+     * `Modifier.padding(8.dp)` wraps a node, the chain's placeAt call lands
+     * (8, 8) here and the renderer / absolute-position math adds it to
+     * every child's coordinate. Set inside the chain's `placeChildren`
+     * walk triggered by `place(x, y)`.
+     *
+     * Mirrors what upstream's per-modifier `NodeCoordinator` graph does
+     * implicitly via separate coordinator positions; we collapse that
+     * into a single `(contentOffsetX, contentOffsetY)` on the single
+     * LayoutNode.
+     */
+    var contentOffsetX: Int = 0
+        private set
+    var contentOffsetY: Int = 0
+        private set
+
+    /** Outermost MeasureResult from the chain measure pipeline — its `placeChildren()` runs at `place(x, y)` time to propagate offsets inward. */
+    private var pendingChainResult: androidx.compose.ui.layout.MeasureResult? = null
+
     // Window-side caches (read by :window's ComposeWindow event loop).
     /** Every FocusRequesterModifier on the node — `bindFocusRequesters` pops each onto its host. */
     var cachedFocusRequesters: List<androidx.compose.ui.focus.FocusRequesterModifier> = emptyList()
@@ -422,11 +442,11 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
        own scroll offset applies to its children but not to itself. */
     val absoluteX: Int get() {
         val p = parent ?: return x + offsetX
-        return x + offsetX + p.absoluteX - p.scrollOffsetX
+        return x + offsetX + p.absoluteX + p.contentOffsetX - p.scrollOffsetX
     }
     val absoluteY: Int get() {
         val p = parent ?: return y + offsetY
-        return y + offsetY + p.absoluteY - p.scrollOffsetY
+        return y + offsetY + p.absoluteY + p.contentOffsetY - p.scrollOffsetY
     }
 
     // ============
@@ -472,17 +492,19 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
      */
     private fun measureViaLayoutModifierChain(constraints: Constraints): androidx.compose.ui.layout.Placeable {
         val scope = androidx.compose.ui.layout.MeasureScopeImpl()
+        val outerNode = this
 
-        // Innermost — re-enters `measure(c)` with the layout-modifier-chain
-        // guard set, so the natural path runs (applyModifierConstraints +
-        // measurePolicy on children).
+        // Innermost wrapper — re-enters `measure(c)` with the layout-modifier
+        // chain guard set so the natural path runs (applyModifierConstraints +
+        // measurePolicy on children). The returned [ChainLeafPlaceable]'s
+        // placeAt(x, y) accumulates (x, y) into LayoutNode.contentOffset.
         val leaf = object : androidx.compose.ui.layout.Measurable {
             override val parentData: Any? = null
-            override fun measure(constraints: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
+            override fun measure(c: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
                 val saved = fSkipLayoutModifier
                 fSkipLayoutModifier = true
-                try { this@LayoutNode.measure(constraints) } finally { fSkipLayoutModifier = saved }
-                return androidx.compose.ui.layout.LayoutNodePlaceable(this@LayoutNode)
+                try { this@LayoutNode.measure(c) } finally { fSkipLayoutModifier = saved }
+                return ChainLeafPlaceable(this@LayoutNode)
             }
             override fun minIntrinsicWidth(height: Int): Int = 0
             override fun maxIntrinsicWidth(height: Int): Int = 0
@@ -494,13 +516,13 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         // Iterate reverse so the outermost (chain head) ends up at the top.
         var current: androidx.compose.ui.layout.Measurable = leaf
         for (i in cachedLayoutModifierNodes.indices.reversed()) {
-            val node = cachedLayoutModifierNodes[i]
+            val lmn = cachedLayoutModifierNodes[i]
             val inner = current
             current = object : androidx.compose.ui.layout.Measurable {
                 override val parentData: Any? = null
                 override fun measure(c: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
-                    val result = with(node) { scope.measure(inner, c) }
-                    return MeasureResultPlaceable(result)
+                    val result = with(lmn) { scope.measure(inner, c) }
+                    return ChainStepPlaceable(result, outerNode)
                 }
                 override fun minIntrinsicWidth(height: Int): Int = 0
                 override fun maxIntrinsicWidth(height: Int): Int = 0
@@ -509,18 +531,45 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
             }
         }
 
-        val finalPlaceable = current.measure(constraints)
-        if (finalPlaceable is MeasureResultPlaceable) finalPlaceable.result.placeChildren()
-        return finalPlaceable
+        val outerPlaceable = current.measure(constraints)
+        // Defer the outermost result's placeChildren until `place(x, y)` runs
+        // — at that point contentOffset is reset and the chain walk lands
+        // the per-step offsets back on this LayoutNode.
+        pendingChainResult = if (outerPlaceable is ChainStepPlaceable) outerPlaceable.result else null
+        return outerPlaceable
     }
 
-    /** Thin Placeable that reports a MeasureResult's size; placement runs via [placeChildren]. */
-    private class MeasureResultPlaceable(
+    /**
+     * Wrap-step Placeable: every LayoutModifierNode in the chain produces
+     * one (size from the node's MeasureResult). `placeAt(x, y)` adds
+     * (x, y) to the LayoutNode's contentOffset and triggers the wrapped
+     * result's [placeChildren], which propagates to the next inner step.
+     */
+    private class ChainStepPlaceable(
         val result: androidx.compose.ui.layout.MeasureResult,
+        val node: LayoutNode,
     ) : androidx.compose.ui.layout.Placeable() {
         override val width: Int = result.width
         override val height: Int = result.height
-        override fun placeAt(inX: Int, inY: Int) { /* upstream applies offsets via the wrapped result's placeChildren */ }
+        override fun placeAt(inX: Int, inY: Int) {
+            node.contentOffsetX += inX
+            node.contentOffsetY += inY
+            result.placeChildren()
+        }
+    }
+
+    /**
+     * Leaf Placeable for the chain — wraps the LayoutNode's natural measure.
+     * `placeAt(x, y)` accumulates into contentOffset (the natural measure
+     * has already set width/height on the LayoutNode).
+     */
+    private class ChainLeafPlaceable(val node: LayoutNode) : androidx.compose.ui.layout.Placeable() {
+        override val width: Int get() = node.width
+        override val height: Int get() = node.height
+        override fun placeAt(inX: Int, inY: Int) {
+            node.contentOffsetX += inX
+            node.contentOffsetY += inY
+        }
     }
 
     fun measure(constraints: Constraints): IntSize {
@@ -614,6 +663,13 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     fun place(x: Int, y: Int) {
         this.x = x
         this.y = y
+        // Reset and replay the LayoutModifierNode chain's placement so each
+        // wrapping layout block's `placeable.place(dx, dy)` accumulates into
+        // contentOffsetX/Y. Children then render at (parent.contentOffsetX +
+        // child.x, ...) via absoluteX/Y.
+        contentOffsetX = 0
+        contentOffsetY = 0
+        pendingChainResult?.placeChildren()
     }
 
     /* Previous absolute position; -1 = first dispatch, force a fire. */
