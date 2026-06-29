@@ -118,6 +118,38 @@ abstract class Placeable {
 			placeRelative(position.x, position.y, zIndex)
 		}
 
+		/**
+		 * Like [place] but accepts a `layerBlock` for graphics-layer effects
+		 * (alpha, scale, rotation, etc.). This renderer doesn't apply the
+		 * layer block during placement — graphicsLayer is read from a
+		 * separate `GraphicsLayerModifier` on the LayoutNode — so the block
+		 * is accepted-and-ignored. Vendored modifiers (Offset, etc.) call
+		 * this expecting upstream's shape.
+		 */
+		fun Placeable.placeWithLayer(
+			x: Int,
+			y: Int,
+			@Suppress("UNUSED_PARAMETER") zIndex: Float = 0f,
+			@Suppress("UNUSED_PARAMETER")
+			layerBlock: (androidx.compose.ui.graphics.GraphicsLayerScope.() -> Unit)? = null,
+		) {
+			placeAt(x, y)
+		}
+
+		/** RTL-aware variant of [placeWithLayer]. */
+		fun Placeable.placeRelativeWithLayer(
+			x: Int,
+			y: Int,
+			@Suppress("UNUSED_PARAMETER") zIndex: Float = 0f,
+			@Suppress("UNUSED_PARAMETER")
+			layerBlock: (androidx.compose.ui.graphics.GraphicsLayerScope.() -> Unit)? = null,
+		) {
+			val vX =
+				if (parentLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr || parentWidth == 0) x
+				else parentWidth - width - x
+			placeAt(vX, y)
+		}
+
 		internal companion object Default : PlacementScope()
 	}
 }

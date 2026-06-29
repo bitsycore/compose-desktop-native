@@ -1,27 +1,7 @@
+// This file is intentionally left almost empty. All foundation-layout
+// Modifier extensions (Padding / Size / Fill / wrapContent / Offset /
+// absoluteOffset / widthIn / heightIn / sizeIn / required* /
+// defaultMinSize) come from the vendored upstream files in
+// `core/src/vendor/common/kotlin/androidx/compose/foundation/layout/`
+// (`Padding.kt`, `Size.kt`, `Offset.kt`).
 package androidx.compose.foundation.layout
-
-import androidx.compose.ui.*
-import com.compose.desktop.native.element.*
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-
-// ==================
-// MARK: Layout Modifier Extensions
-// ==================
-
-// Padding extensions retired — provided verbatim by upstream
-// `androidx.compose.foundation.layout.Padding.kt` (vendored).
-
-// `Modifier.padding(PaddingValues)` + `Modifier.absolutePadding(...)` are
-// provided by vendored upstream `Padding.kt`. Project versions retired.
-
-// Size / Fill / widthIn / heightIn / sizeIn / requiredWidth / requiredHeight /
-// requiredSize / defaultMinSize / fillMaxWidth / fillMaxHeight / fillMaxSize /
-// wrapContentWidth / wrapContentHeight / wrapContentSize all retired here —
-// provided verbatim by upstream
-// `androidx.compose.foundation.layout.Size.kt` (vendored).
-
-// Offset (post-layout visual nudge; doesn't change measured size)
-fun Modifier.offset(x: Dp = 0.dp, y: Dp = 0.dp) =
-    then(OffsetModifier(x.value.toInt(), y.value.toInt()))

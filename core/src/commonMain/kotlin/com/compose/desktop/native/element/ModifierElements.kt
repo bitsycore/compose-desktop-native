@@ -140,16 +140,10 @@ class PressableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<P
 }
 class PressableNode(var onChange: (Boolean) -> Unit) : Modifier.Node()
 
-/* Visual offset applied after layout. The node's measured size and the
-   parent's placement are unchanged; only the absolute draw position shifts.
-   Multiple OffsetModifiers stack additively. */
-class OffsetModifier(val x: Int, val y: Int) : ModifierNodeElement<OffsetNode>() {
-    override fun create() = OffsetNode(x, y)
-    override fun update(node: OffsetNode) { node.x = x; node.y = y }
-    override fun hashCode(): Int = x * 31 + y
-    override fun equals(other: Any?): Boolean = other is OffsetModifier && other.x == x && other.y == y
-}
-class OffsetNode(var x: Int, var y: Int) : Modifier.Node()
+// OffsetModifier / OffsetNode retired — `Modifier.offset(...)` and
+// `Modifier.absoluteOffset(...)` come from upstream vendored
+// `androidx.compose.foundation.layout.Offset.kt`, whose private OffsetNode /
+// OffsetPxNode classes participate in the LayoutModifierNode chain.
 
 // ==================
 // MARK: Focus + keyboard input

@@ -1029,7 +1029,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayout.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayout.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Grid.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Grid.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Intrinsic.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Intrinsic.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Offset.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Offset.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Offset.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Offset.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Padding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Padding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt

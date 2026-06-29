@@ -61,12 +61,11 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     //  read `cachedHorizontalScrollState?.value` live.
 
     // Layout-side caches (read during measure/place).
-    // Padding caches retired — `Modifier.padding` flows through vendored
-    // upstream `Padding.kt` + the LayoutModifierNode chain pipeline
+    // Padding / Offset caches retired — `Modifier.padding`, `Modifier.offset`,
+    // `Modifier.absoluteOffset` all flow through vendored upstream
+    // `Padding.kt` / `Offset.kt` + the LayoutModifierNode chain pipeline
     // (contentOffsetX/Y set by `ChainLeafPlaceable.placeAt` during the
     // chain's deferred `placeChildren` walk inside `place(x, y)`).
-    private var cachedOffsetX: Int = 0
-    private var cachedOffsetY: Int = 0
     private var cachedZIndex: Float = 0f
     private var cachedNodeAlpha: Float = 1f
     private var cachedGraphicsLayer: com.compose.desktop.native.element.GraphicsLayerModifier? = null
@@ -157,7 +156,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         private set
 
     private fun recomputeChainCaches() {
-        var offX = 0; var offY = 0
         var zIdx = 0f
         var alpha = 1f
         var gl: com.compose.desktop.native.element.GraphicsLayerModifier? = null
@@ -184,7 +182,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var onPressedHandlers: MutableList<(Int, Int) -> Unit>? = null
         modifier.foldIn(Unit) { _, e ->
             when (e) {
-                is OffsetModifier                                                   -> { offX += e.x; offY += e.y }
                 is androidx.compose.ui.ZIndexElement                                -> zIdx += e.zIndex
                 is AlphaModifier                                                    -> alpha *= e.alpha
                 is com.compose.desktop.native.element.GraphicsLayerModifier         -> { alpha *= e.alpha; gl = e }
@@ -210,7 +207,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is OnPressedModifier                                                -> { (onPressedHandlers ?: mutableListOf<(Int, Int) -> Unit>().also { onPressedHandlers = it }).add(e.handler) }
             }
         }
-        cachedOffsetX = offX; cachedOffsetY = offY
         cachedZIndex = zIdx
         cachedNodeAlpha = alpha
         cachedGraphicsLayer = gl
@@ -421,9 +417,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     var drawer: (androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit)? = null
 
     // ============
-    //  Computed absolute position (incl. visual offset modifiers + parent scroll)
-    val offsetX: Int get() = cachedOffsetX
-    val offsetY: Int get() = cachedOffsetY
+    //  Computed absolute position (incl. parent scroll + chain content offset)
+    // offsetX/Y retired — `Modifier.offset` is now a LayoutModifierNode whose
+    // place(x, y) effect flows through the chain into the parent's
+    // contentOffsetX/Y (we sit at (x, y) inside our parent's content space).
     /** ScrollState.value mutates inside the same modifier instance, so the value read goes live every frame; only the state reference is cached. */
     val scrollOffsetX: Int get() = cachedHorizontalScrollState?.value ?: 0
     val scrollOffsetY: Int get() = cachedVerticalScrollState?.value ?: 0
@@ -436,12 +433,12 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     /* Parent's scroll offset shifts this node's visual position; the node's
        own scroll offset applies to its children but not to itself. */
     val absoluteX: Int get() {
-        val p = parent ?: return x + offsetX
-        return x + offsetX + p.absoluteX + p.contentOffsetX - p.scrollOffsetX
+        val p = parent ?: return x
+        return x + p.absoluteX + p.contentOffsetX - p.scrollOffsetX
     }
     val absoluteY: Int get() {
-        val p = parent ?: return y + offsetY
-        return y + offsetY + p.absoluteY + p.contentOffsetY - p.scrollOffsetY
+        val p = parent ?: return y
+        return y + p.absoluteY + p.contentOffsetY - p.scrollOffsetY
     }
 
     // ============
