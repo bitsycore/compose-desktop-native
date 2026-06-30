@@ -188,43 +188,100 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 479. Shim count: 11.**
+**Vendor count: 480. Shim count: 12.**
 
-### Phase 9 — incremental groundwork started
+### Phase 9 — incremental groundwork (in progress)
 
 Per-file vendoring inside `androidx.compose.ui.node.*` has resumed. Each
-file landed adds a tiny no-op surface bump to the project LayoutNode
+file landed adds tiny no-op surface bumps to the project LayoutNode
 (in `com.compose.desktop.native.node.LayoutNode`) and gets the upstream
 file into the vendor tree; nothing actively uses these vendored types
 yet — they exist so the eventual project-LayoutNode → upstream-LayoutNode
 swap has less surface area to migrate.
 
+Vendored this round:
 - `node/OnPositionedDispatcher.kt` (102 lines) — needed
-  `LayoutNode.globallyPositionedObservers / needsOnGloballyPositionedDispatch / depth / forEachChild / dispatchOnPositionedCallbacks`.
-  Not instantiated anywhere yet; existing `dispatchGloballyPositioned()`
-  path remains.
+  `LayoutNode.globallyPositionedObservers / needsOnGloballyPositionedDispatch
+  / depth / forEachChild / dispatchOnPositionedCallbacks`. Not instantiated
+  anywhere yet; existing `dispatchGloballyPositioned()` path remains.
+- `node/DepthSortedSet.kt` (264 lines) — depth-sorted node queue +
+  `DepthSortedSetsForDifferentPasses` (lookahead-aware wrapper). Needed
+  `Invalidation` enum (extracted to `Invalidation.shim.kt`) +
+  `LayoutNode.lookaheadRoot` (= null) + `LayoutState` nested enum on the
+  project LayoutNode + `foldedChildren` / `childMeasurables` /
+  `childLookaheadMeasurables`. None of these dispatchers are constructed
+  yet.
 
-Files audited and skipped this round (left for later) — each fails on
-the bracketed blocker, all are Phase-9-bundle territory:
+### THE typealias blocker
 
-- `DepthSortedSet.kt` — needs `Invalidation` enum (lives inside
-  unvendored `MeasureAndLayoutDelegate.kt`) + `LayoutNode.lookaheadRoot`.
-- `IntrinsicsPolicy.kt` — needs `LayoutNode.outerCoordinator` exposing
-  intrinsic methods + `LayoutNode.childMeasurables` /
-  `childLookaheadMeasurables`.
-- `ComposeUiNode.kt` — needs `LayoutNode.Constructor` companion +
-  `LayoutNode(isVirtual = true)` + switching the project's internal
-  `MeasurePolicy` to upstream's `androidx.compose.ui.layout.MeasurePolicy`
-  (which would force every project measure policy to be rewritten with
-  `(measurables: List<Measurable>, constraints: Constraints) -> MeasureResult`).
-- `MeasureScopeWithLayoutNode.kt` — needs upstream `LayoutNode.LayoutState`
-  enum + `foldedChildren` / `childMeasurables` / `childLookaheadMeasurables`
-  / `isInLookaheadPass()`.
-- `LayoutTreeConsistencyChecker.kt` — needs upstream `LayoutState`,
-  `placeOrder`, `measurePending`, `lookaheadMeasurePending`,
-  `lookaheadLayoutPending`, `lookaheadRoot`, `measuredByParent`,
-  `isDeactivated`, `isPlacedInLookahead`, `NotPlacedPlaceOrder`,
-  `DepthSortedSetsForDifferentPasses`, `MeasureAndLayoutDelegate.PostponedRequest`.
+The biggest single obstacle to vendoring more node-engine files is the
+existing shim:
+
+```kotlin
+// core/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.shim.kt
+internal typealias LayoutNode = com.compose.desktop.native.node.LayoutNode
+```
+
+Kotlin's nested-type resolution does **not** go through an `internal
+typealias` even in K2. So upstream files that import
+`androidx.compose.ui.node.LayoutNode.LayoutState` directly (e.g.
+`MeasureScopeWithLayoutNode.kt`, `LayoutTreeConsistencyChecker.kt`,
+plus most of the layout delegates) **fail at vendor time** — the
+nested `LayoutState` enum on the project class isn't visible through
+the alias.
+
+Workaround tried and abandoned: declare LayoutState as a top-level
+type in `androidx.compose.ui.node` so the import works. Doesn't help —
+upstream files write `node.layoutState == LayoutNode.LayoutState.Measuring`
+which only type-checks if LayoutNode is a real class (not a typealias)
+exposing the enum as a nested member.
+
+Real unblock: retire the typealias. That means putting a *real*
+`class LayoutNode` in `androidx.compose.ui.node` package — which is
+the full Phase 9 swap. Half-swap (e.g. dual LayoutNodes, one upstream
++ one project) breaks because every vendored helper (Background, etc.)
+calls `requireOwner()` / `requireGraphicsContext()` / `requestRelayout()`
+on the LayoutNode — those need real bodies.
+
+### Phase 9 swap — actual sizing
+
+Following an Explore-agent audit of the unvendored cluster (LayoutNode
++ NodeCoordinator + NodeChain + the layout / measure / lookahead
+delegates + Owner + OwnerSnapshotObserver):
+
+| File | Lines |
+| --- | ---: |
+| `node/LayoutNode.kt` | 1,608 |
+| `node/NodeCoordinator.kt` | 1,796 |
+| `node/NodeChain.kt` (upstream) | 809 |
+| `node/LayoutNodeLayoutDelegate.kt` | 497 |
+| `node/MeasureAndLayoutDelegate.kt` | 892 |
+| `node/MeasurePassDelegate.kt` | 941 |
+| `node/LookaheadPassDelegate.kt` | 890 |
+| `node/LookaheadDelegate.kt` | 872 |
+| `node/InnerNodeCoordinator.kt` | 259 |
+| `node/LayoutModifierNodeCoordinator.kt` | 321 |
+| `node/Owner.kt` | 412 |
+| `node/OwnerSnapshotObserver.kt` | 157 |
+| (total vendor) | **9,454** |
+
+Plus all upstream `Owner` cross-cuts (autofill / drag-and-drop /
+focus / graphics-layer / haptic / input mode / pointer-icon /
+modifier-local / accessibility / clipboard / platform text input /
+soft keyboard / text toolbar / view configuration / window info /
+semantics owner / rect manager / font / locale / interop view —
+mostly heavy unvendored), the **GraphicsLayer engine**
+(`androidx.compose.ui.graphics.layer.GraphicsLayer` + skiko actuals +
+`ReusableGraphicsLayerScope` + `PlatformShadowContext`), and migration
+of every project reader of `com.compose.desktop.native.node.LayoutNode`
+(both renderers, `:window`'s ComposeWindow, every modifier-element
+data class, the NodeApplier).
+
+**Conclusion**: the swap is a feature-branch sprint, not a single
+session. Until then, vendor groundwork stays sub-typealias:
+files that read project LayoutNode through `androidx.compose.ui.node.LayoutNode`
+(unqualified) work; files that read `LayoutNode.LayoutState` (nested)
+or `LayoutNode.Constructor` (companion) do not.
 
 ### Shims still in place (with concrete unblock requirements)
 
