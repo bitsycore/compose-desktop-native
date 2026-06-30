@@ -5,11 +5,15 @@ import androidx.compose.runtime.ComposeNode
 import androidx.compose.ui.Alignment
 import com.compose.desktop.native.element.LayoutWeightModifier
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.layout.adaptToInternal
 import androidx.compose.ui.node.LayoutNode
-import androidx.compose.ui.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.max
 
@@ -29,7 +33,9 @@ fun Column(
         update = {
             set(modifier) { this.modifier = it }
             set(Unit) {
-                this.measurePolicy = ColumnMeasurePolicy(verticalArrangement, horizontalAlignment)
+                this.measurePolicy = adaptToInternal(
+                    ColumnMeasurePolicy(verticalArrangement, horizontalAlignment),
+                )
             }
         },
         content = { ColumnScope.content() }
@@ -40,37 +46,42 @@ fun Column(
    Column is the same with the main axis being vertical. */
 private class ColumnMeasurePolicy(
     private val arrangement: Arrangement.Vertical,
-    private val alignment: Alignment.Horizontal
+    private val alignment: Alignment.Horizontal,
 ) : MeasurePolicy {
-    override fun measure(node: LayoutNode, constraints: Constraints): IntSize {
-        // Padding flows through the LayoutModifierNode chain (vendored
-        // upstream `Padding.kt`) ahead of Column's measure; constraints
-        // here are already reduced.
-        val availW = constraints.maxWidth
-        val availH = constraints.maxHeight
+    override fun MeasureScope.measure(
+        inMeasurables: List<Measurable>,
+        inConstraints: Constraints,
+    ): MeasureResult {
+        val availW = inConstraints.maxWidth
+        val availH = inConstraints.maxHeight
 
         val gap = arrangement.spacing
-        val n = node.children.size
+        val n = inMeasurables.size
         val gapTotal = if (n > 1) gap * (n - 1) else 0
 
-        val sizes = IntArray(n)
         val weights = FloatArray(n)
         val fills = BooleanArray(n)
-        for (i in 0 until n) weights[i] = weightOf(node.children[i]).also { fills[i] = fillOf(node.children[i]) }
+        for (i in 0 until n) {
+            val w = inMeasurables[i].parentData as? LayoutWeightModifier
+            weights[i] = w?.weight ?: 0f
+            fills[i] = w?.fill ?: true
+        }
         val totalWeight = weights.sum()
         val hasWeights = totalWeight > 0f && availH != Constraints.Infinity
 
         var maxW = 0
         var consumedH = 0
+        val placeables = arrayOfNulls<Placeable>(n)
+
         for (i in 0 until n) {
             if (weights[i] > 0f && hasWeights) continue
             val remaining = if (availH == Constraints.Infinity) Constraints.Infinity
                             else (availH - consumedH - gapTotal).coerceAtLeast(0)
             val cc = Constraints(minWidth = 0, maxWidth = availW, minHeight = 0, maxHeight = remaining)
-            val s = node.children[i].measure(cc)
-            sizes[i] = s.height
-            consumedH += s.height
-            maxW = max(maxW, s.width)
+            val p = inMeasurables[i].measure(cc)
+            placeables[i] = p
+            consumedH += p.height
+            maxW = max(maxW, p.width)
         }
         if (hasWeights) {
             val leftover = (availH - consumedH - gapTotal).coerceAtLeast(0)
@@ -100,27 +111,26 @@ private class ColumnMeasurePolicy(
                     minWidth = 0, maxWidth = availW,
                     minHeight = 0, maxHeight = slice[i],
                 )
-                val s = node.children[i].measure(cc)
-                sizes[i] = s.height
-                maxW = max(maxW, s.width)
+                val p = inMeasurables[i].measure(cc)
+                placeables[i] = p
+                maxW = max(maxW, p.width)
             }
         }
 
+        val sizes = IntArray(n) { placeables[it]!!.height }
         val totalChildH = sizes.sum()
-        val w = maxW.coerceIn(constraints.minWidth, constraints.maxWidth)
-        val h = (totalChildH + gapTotal).coerceIn(constraints.minHeight, constraints.maxHeight)
+        val w = maxW.coerceIn(inConstraints.minWidth, inConstraints.maxWidth)
+        val h = (totalChildH + gapTotal).coerceIn(inConstraints.minHeight, inConstraints.maxHeight)
 
         val positions = IntArray(n)
         arrangement.arrange(h, sizes.toList(), positions)
 
-        node.children.forEachIndexed { i, child ->
-            val xOff = alignment.align(child.width, w, LayoutDirection.Ltr)
-            child.place(xOff, positions[i])
+        return layout(w, h) {
+            for (i in 0 until n) {
+                val placeable = placeables[i]!!
+                val xOff = alignment.align(placeable.width, w, LayoutDirection.Ltr)
+                placeable.placeAt(xOff, positions[i])
+            }
         }
-
-        return IntSize(w, h)
     }
-
-    private fun weightOf(inNode: LayoutNode): Float = inNode.cachedLayoutWeight?.weight ?: 0f
-    private fun fillOf(inNode: LayoutNode): Boolean = inNode.cachedLayoutWeight?.fill ?: true
 }

@@ -14,9 +14,12 @@ import androidx.compose.ui.node.LayoutNode
    Measurable: our LayoutNode doesn't track intrinsic measurements yet, so
    the min/maxIntrinsic* methods fall back to a full measure(Constraints).
    parentData stays null until we port ParentDataModifierNode. */
-internal class LayoutNodeMeasurable(private val fNode: LayoutNode) : Measurable {
+internal class LayoutNodeMeasurable(val fNode: LayoutNode) : Measurable {
 
-	override val parentData: Any? = null
+	/** Project-shape parent data — Row/Column read this to discover
+	 *  `LayoutWeightModifier`. Upstream uses ParentDataModifierNode
+	 *  dispatch; we forward the project's cached weight modifier directly. */
+	override val parentData: Any? get() = fNode.cachedLayoutWeight
 
 	override fun measure(inConstraints: Constraints): Placeable {
 		fNode.measure(inConstraints)
