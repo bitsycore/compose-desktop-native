@@ -64,6 +64,29 @@ class LayoutNode(
      *  the parent measured this node; we always return `NotUsed`. */
     enum class UsageByParent { InMeasureBlock, InLayoutBlock, NotUsed }
 
+    /** Upstream-shape error-defaults base class for `MeasurePolicy`
+     *  implementations that don't define intrinsics. Vendored
+     *  `RootMeasurePolicy` extends this. */
+    internal abstract class NoIntrinsicsMeasurePolicy(private val error: String)
+        : androidx.compose.ui.layout.MeasurePolicy {
+        override fun androidx.compose.ui.layout.IntrinsicMeasureScope.minIntrinsicWidth(
+            measurables: List<androidx.compose.ui.layout.IntrinsicMeasurable>,
+            height: Int,
+        ): Int = error(error)
+        override fun androidx.compose.ui.layout.IntrinsicMeasureScope.minIntrinsicHeight(
+            measurables: List<androidx.compose.ui.layout.IntrinsicMeasurable>,
+            width: Int,
+        ): Int = error(error)
+        override fun androidx.compose.ui.layout.IntrinsicMeasureScope.maxIntrinsicWidth(
+            measurables: List<androidx.compose.ui.layout.IntrinsicMeasurable>,
+            height: Int,
+        ): Int = error(error)
+        override fun androidx.compose.ui.layout.IntrinsicMeasureScope.maxIntrinsicHeight(
+            measurables: List<androidx.compose.ui.layout.IntrinsicMeasurable>,
+            width: Int,
+        ): Int = error(error)
+    }
+
     // ============
     //  Phase 9 — upstream LayoutNode surface bumps
     //

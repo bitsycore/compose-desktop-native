@@ -1814,3 +1814,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt   
 # DefaultIntrinsicMeasurable + IntrinsicMinMax / IntrinsicWidthHeight from
 # our LayoutIntrinsicsHelpers.kt (already same package, internal scope).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
+# RootMeasurePolicy — extends `LayoutNode.NoIntrinsicsMeasurePolicy`
+# (added to LayoutNode this round). Used by upstream window
+# infrastructure as the root LayoutNode's measure policy; not actively
+# constructed by the project's window engine yet.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt
