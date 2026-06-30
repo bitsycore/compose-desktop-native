@@ -10,47 +10,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.node.MeasurePolicy as InternalMeasurePolicy
 
 // ==================
-// MARK: MeasurePolicy (public)
-// ==================
-
-/* User-facing measure policy. The body wraps each child as a Measurable,
-   measures them, and calls layout(w, h) { ... } to declare the final
-   size and where to place each Placeable.
-
-   Intrinsic-measure defaults mirror upstream MeasurePolicy.kt — they
-   throw an `IllegalStateException` by default. Vendored downstream files
-   (`MultiContentMeasurePolicy.kt`) override them. */
-fun interface MeasurePolicy {
-
-	fun MeasureScope.measure(
-		inMeasurables: List<Measurable>,
-		inConstraints: Constraints,
-	): MeasureResult
-
-	fun IntrinsicMeasureScope.minIntrinsicWidth(
-		@Suppress("UNUSED_PARAMETER") measurables: List<IntrinsicMeasurable>,
-		@Suppress("UNUSED_PARAMETER") height: Int,
-	): Int = error("Undefined minIntrinsicWidth")
-
-	fun IntrinsicMeasureScope.minIntrinsicHeight(
-		@Suppress("UNUSED_PARAMETER") measurables: List<IntrinsicMeasurable>,
-		@Suppress("UNUSED_PARAMETER") width: Int,
-	): Int = error("Undefined minIntrinsicHeight")
-
-	fun IntrinsicMeasureScope.maxIntrinsicWidth(
-		@Suppress("UNUSED_PARAMETER") measurables: List<IntrinsicMeasurable>,
-		@Suppress("UNUSED_PARAMETER") height: Int,
-	): Int = error("Undefined maxIntrinsicWidth")
-
-	fun IntrinsicMeasureScope.maxIntrinsicHeight(
-		@Suppress("UNUSED_PARAMETER") measurables: List<IntrinsicMeasurable>,
-		@Suppress("UNUSED_PARAMETER") width: Int,
-	): Int = error("Undefined maxIntrinsicHeight")
-}
-
-// ==================
 // MARK: Layout composable
 // ==================
+//
+// MeasurePolicy lives in the vendored `MeasurePolicy.kt` next to this file.
 
 /* Build a custom layout from a content lambda + a MeasurePolicy. Lands
    on the same LayoutNode pipeline used by Row / Column / Box, so anything

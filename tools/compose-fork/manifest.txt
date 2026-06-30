@@ -1809,3 +1809,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasu
 # var density / layoutDirection / modifier / viewConfiguration /
 # compositionLocalMap / compositeKeyHash).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                                                     core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
+# MeasurePolicy upstream — replaces the hand-written `fun interface MeasurePolicy`
+# previously in Layout.kt. Intrinsic defaults use IntrinsicsMeasureScope +
+# DefaultIntrinsicMeasurable + IntrinsicMinMax / IntrinsicWidthHeight from
+# our LayoutIntrinsicsHelpers.kt (already same package, internal scope).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt                                                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
