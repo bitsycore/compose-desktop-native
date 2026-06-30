@@ -1845,6 +1845,11 @@ compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foun
 # with `spacing: Dp` (was project Int). Row + Column hand-written get
 # migrated to the new signatures in the same commit.
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Arrangement.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Arrangement.kt
+# Small leaf helpers — no imports beyond Kotlin stdlib.
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/CharHelpers.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/CharHelpers.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
+# FocusListener — needs FocusTargetModifierNode (focus engine, unvendored).
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusListener.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusListener.kt
 # Row / Column / RowColumnMeasurePolicy / RowColumnImpl — Arrangement vendor
 # unblocks part of this, BUT RowColumnImpl pulls `FlowLayoutData` (from
 # unvendored FlowLayout) + `Measured.parentData` extension + `fillCrossAxisFraction`
