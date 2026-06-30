@@ -1824,6 +1824,11 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RootMeasurePolicy
 # implements `IntrinsicMeasureScope` to be a valid receiver for the
 # `MeasurePolicy.minIntrinsicWidth/Height` etc. extension funs.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt
+# WindowInsetsRulers — pure value classes / Ruler definitions for window
+# insets (status bars, navigation bars, IME, etc). Self-contained — only
+# androidx.annotation deps. Not actively used by our desktop renderer but
+# adds API fidelity for downstream consumers.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt                                              core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
 # Box.kt — `inline fun Box` body calls `BoxScopeInstance.content()` inside
 # the `Layout(content = { … })` lambda. Without `crossinline` on `content`,
 # K2 rejects "Cannot inline … it might contain non-local returns." Upstream
