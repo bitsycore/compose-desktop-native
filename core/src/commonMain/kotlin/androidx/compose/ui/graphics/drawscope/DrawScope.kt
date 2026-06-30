@@ -24,10 +24,24 @@ import androidx.compose.ui.graphics.StrokeCap
    triangles and submits via SDL_RenderGeometry. Brush is converted to the
    backend-native equivalent (Skia Shader / SDL per-vertex colour
    gradient). */
-interface DrawScope {
+interface DrawScope : androidx.compose.ui.unit.Density {
 
 	/* Logical-point bounds of the node this scope is drawing into. */
 	val size: Size
+
+	/**
+	 * Current layout direction. Project default is Ltr; renderers can
+	 * override this when RTL lands (the chain-walk wrap forwards the
+	 * value from the renderer's base scope).
+	 */
+	val layoutDirection: androidx.compose.ui.unit.LayoutDirection
+		get() = androidx.compose.ui.unit.LayoutDirection.Ltr
+
+	// `Density` defaults: project doesn't bind per-scope density yet
+	// (HiDPI scaling lives in the renderer). Override in a concrete
+	// scope when needed.
+	override val density: Float get() = 1f
+	override val fontScale: Float get() = 1f
 
 	/* Centre point of [size]. */
 	val center: Offset get() = Offset(size.width / 2f, size.height / 2f)

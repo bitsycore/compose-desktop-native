@@ -1052,11 +1052,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
 # compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.native.kt
-# Background.kt — needs upstream Outline.kt (Outline.Rectangle/Rounded with
-# new param shapes), `Shape.createOutline(size, layoutDirection, density)`,
-# `DrawModifierNode.isImportantForBounds`, and `ContentDrawScope.layoutDirection`.
-# All blocked on Phase 8 draw-pipeline rewrite.
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Background.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Background.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Background.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Background.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicMarquee.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/BasicMarquee.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Border.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Border.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Clickable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Clickable.kt

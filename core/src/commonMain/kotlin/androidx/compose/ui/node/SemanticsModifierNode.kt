@@ -23,6 +23,13 @@ interface SemanticsModifierNode : DelegatableNode {
 
 	val shouldMergeDescendantSemantics: Boolean get() = false
 	val shouldClearDescendantSemantics: Boolean get() = false
+
+	/**
+	 * Used by accessibility focus to choose ancestor bounds. Defaults to
+	 * `true` (upstream behaviour for most semantics nodes); vendored
+	 * Background.kt overrides to `false`.
+	 */
+	val isImportantForBounds: Boolean get() = true
 }
 
 /** Project shim — fires `applySemantics` against a throw-away receiver. */

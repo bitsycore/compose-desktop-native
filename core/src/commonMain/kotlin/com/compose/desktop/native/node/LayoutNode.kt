@@ -257,7 +257,11 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     internal val coordinator: androidx.compose.ui.node.NodeCoordinator = androidx.compose.ui.node.NodeCoordinator(this)
     internal val _children get() = children
     internal val zSortedChildren get() = children
-    internal var owner: androidx.compose.ui.node.Owner? = null
+    /** Default to a stub Owner so vendored DelegatableNode helpers
+     *  (e.g. `requireOwner().snapshotObserver.observeReads { … }` from
+     *  vendored Background.kt / Border.kt) don't crash on a null owner.
+     *  Replaced when upstream LayoutNode + real Owner land (Phase 9). */
+    internal var owner: androidx.compose.ui.node.Owner? = androidx.compose.ui.node.StubOwner
 
     // LayoutInfo (via SemanticsInfo) members — all defaulted to stubs
     // since no engine code reads them in Phase 1.
