@@ -848,7 +848,7 @@ private fun App() {
                                             inOnRenameRequest = { vRs -> selectPack(vRoot); vRenameTarget = vRs; vRenameText = vRs.req.name },
                                             inOnDuplicateRequest = { vRs -> selectPack(vRoot); duplicate(vRs) },
                                             inOnCopyCurl = { vRs ->
-                                                currentClipboard.setText(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vRoot), params = effectiveParams(vRs.req, vRoot)), effectiveReqVars(vRs.req, vRoot))))
+                                                currentClipboard.setText(AnnotatedString(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vRoot), params = effectiveParams(vRs.req, vRoot)), effectiveReqVars(vRs.req, vRoot)))))
                                                 vReqMsg = "Copied cURL."
                                             },
                                             inOnDeleteRequest = { vRs -> selectPack(vRoot); vDeleteTarget = vRs },
@@ -868,7 +868,7 @@ private fun App() {
                                             onRenameReq = { vQ, vRs -> selectPack(vQ); vRenameTarget = vRs; vRenameText = vRs.req.name },
                                             onDupReq = { vQ, vRs -> selectPack(vQ); duplicate(vRs) },
                                             onCopyCurl = { vQ, vRs ->
-                                                currentClipboard.setText(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vQ), params = effectiveParams(vRs.req, vQ)), effectiveReqVars(vRs.req, vQ))))
+                                                currentClipboard.setText(AnnotatedString(toCurl(resolveVars(vRs.req.copy(headers = effectiveHeaders(vRs.req, vQ), params = effectiveParams(vRs.req, vQ)), effectiveReqVars(vRs.req, vQ)))))
                                                 vReqMsg = "Copied cURL."
                                             },
                                             onDelReq = { vQ, vRs -> selectPack(vQ); vDeleteTarget = vRs },

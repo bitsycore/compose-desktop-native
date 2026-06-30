@@ -582,18 +582,18 @@ private fun handleKey(
                 return true
             }
             'c' -> if (!inValue.selection.collapsed) {
-                currentClipboard.setText(inValue.text.substring(inValue.selection.min, inValue.selection.max))
+                currentClipboard.setText(androidx.compose.ui.text.AnnotatedString(inValue.text.substring(inValue.selection.min, inValue.selection.max)))
                 return true
             }
             'x' -> if (!inValue.selection.collapsed && !inReadOnly) {
-                currentClipboard.setText(inValue.text.substring(inValue.selection.min, inValue.selection.max))
+                currentClipboard.setText(androidx.compose.ui.text.AnnotatedString(inValue.text.substring(inValue.selection.min, inValue.selection.max)))
                 val vNewText = inValue.text.substring(0, inValue.selection.min) +
                                inValue.text.substring(inValue.selection.max)
                 inStructuralEdit(TextFieldValue(vNewText, TextRange(inValue.selection.min)))
                 return true
             }
             'v' -> if (!inReadOnly) {
-                val vPaste = currentClipboard.getText() ?: return true
+                val vPaste = currentClipboard.getText()?.text ?: return true
                 inStructuralEdit(insertAtCursor(inValue, vPaste))
                 return true
             }

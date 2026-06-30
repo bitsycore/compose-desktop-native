@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -154,7 +155,7 @@ internal fun CopyButton(inText: String, inLabel: String? = null) {
             .clip(RoundedCornerShape(7.dp))
             .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(7.dp))
             .hoverable { vHover = it }
-            .clickable { currentClipboard.setText(inText); vCopied = true }
+            .clickable { currentClipboard.setText(AnnotatedString(inText)); vCopied = true }
             .padding(horizontal = if (inLabel != null) 10.dp else 5.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp),

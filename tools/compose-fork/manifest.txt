@@ -1389,12 +1389,12 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/util/Point
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
-# ClipboardManager.kt — upstream's commonMain declares ClipEntry,
-# ClipMetadata, NativeClipboard expects. Vendoring requires implementing
-# all three. Project's hand-written ClipboardManager.kt provides just the
-# minimal `setText` / `getText` surface that wires through SDL3Clipboard.
-# Vendor when Clipboard.kt (the suspend successor) is migrated.
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
+# PlatformClipboard.skiko.kt — adds two expect factory functions on top
+# of commonMain. With our single-target native source set, simpler to
+# hand-write the actuals + ClipMetadata directly in nativeMain.
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt  core/src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt

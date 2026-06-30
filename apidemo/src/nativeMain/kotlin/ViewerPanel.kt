@@ -733,18 +733,18 @@ internal fun ViewerOverflowMenu(
     }
     DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, anchor = vAnchor, offsetY = (-4).dp) {
         DropdownMenuItem(onClick = {
-            currentClipboard.setText(copyAll())
+            currentClipboard.setText(AnnotatedString(copyAll()))
             inOnMessage("Copied all.")
             vOpen = false
         }) { Text("Copy all") }
         DropdownMenuItem(onClick = {
-            currentClipboard.setText(vHeadersText)
+            currentClipboard.setText(AnnotatedString(vHeadersText))
             inOnMessage("Copied headers.")
             vOpen = false
         }) { Text("Copy headers") }
         if (vCanCopyBody) {
             DropdownMenuItem(onClick = {
-                currentClipboard.setText(vBodyText)
+                currentClipboard.setText(AnnotatedString(vBodyText))
                 inOnMessage("Copied body.")
                 vOpen = false
             }) { Text("Copy body") }

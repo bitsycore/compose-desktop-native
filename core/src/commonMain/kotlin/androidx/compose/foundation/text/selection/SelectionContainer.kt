@@ -71,7 +71,7 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 					val vChar = vK.utf16CodePoint.let { if (it in 0x20..0x7E) it.toChar() else null }
 					when (vChar?.lowercaseChar()) {
 						'a' -> { vReg.selectAll(); true }
-						'c' -> if (vReg.hasSelection) { vClipboard.setText(vReg.selectedText()); true } else false
+						'c' -> if (vReg.hasSelection) { vClipboard.setText(androidx.compose.ui.text.AnnotatedString(vReg.selectedText())); true } else false
 						else -> false
 					}
 				}

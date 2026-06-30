@@ -18,7 +18,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import com.compose.desktop.native.input.PointerInputElement
 import com.compose.desktop.native.node.LayoutNode
 import com.compose.desktop.native.node.NodeApplier
-import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.res.currentImageLoader
 import com.compose.desktop.native.text.currentTextMeasurer
 import androidx.compose.ui.unit.Constraints
@@ -75,8 +74,10 @@ fun nativeComposeWindow(
     // backend's decode cache, and Res.readBytes reads bundled files.
     currentImageLoader = renderBackend.imageLoader
 
-    // Wire SDL3 clipboard so TextField Cmd+C / Cmd+V work in commonMain.
-    currentClipboard = SDL3Clipboard()
+    // SDL3 clipboard is wired automatically via the vendored
+    // `androidx.compose.ui.platform.Clipboard` / `ClipboardManager` —
+    // the native actual installs `SDL3ClipboardManager` as the default.
+    // No setup needed here.
 
     val rootNode = LayoutNode()
     val frameClock = SDL3FrameClock()
