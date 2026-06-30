@@ -1062,7 +1062,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Clickable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Clickable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Focusable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Focusable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/FocusedBounds.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/FocusedBounds.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/GestureNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/GestureNode.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/GestureNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/GestureNode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Hoverable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Hoverable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Indication.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Indication.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Overscroll.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Overscroll.kt
@@ -1252,7 +1252,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RulerAlignment.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RulerAlignment.kt
 # compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsets.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsets.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ProgressSemantics.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/ProgressSemantics.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ProgressSemantics.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/ProgressSemantics.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/TransferableContent.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/TransferableContent.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt
