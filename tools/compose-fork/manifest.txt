@@ -964,7 +964,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/UrlAnnotation.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
@@ -1340,13 +1340,18 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawsc
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaShader.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Bullet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Bullet.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Bullet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Bullet.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/LinkAnnotation.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/String.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
+# TextStyle.skiko.kt — full upstream pulls FontRasterizationSettings.skiko
+# which uses org.jetbrains.skia.{FontEdging, FontHinting} (Skia-only — fails
+# SDL3 build). Hand-written native actual lives in core/src/nativeMain.
+# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/String.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 # FontSynthesis.kt — references upstream Font class (different shape from
 # project's font abstraction). Vendor when Font.kt lands.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
@@ -1354,9 +1359,13 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/Locale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/Locale.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/LocaleList.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/LocaleList.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/AnnotatedString.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/CharHelpers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
+# FontRasterizationSettings.skiko.kt — has Skia-only `toSkFontEdging` /
+# `toSkFontHinting` extensions and a `currentPlatform()` lookup that pulls
+# PlatformFont.skiko. Hand-written native actual lives in core/src/nativeMain
+# (just the public enums + class, no Skia bridge).
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/FontRasterizationSettings.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ParagraphIntrisics.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/ParagraphIntrisics.native.kt
@@ -1452,11 +1461,11 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/util/Point
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Brush.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/SpanStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/SpanStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/SpanStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/SpanStyle.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Font.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Font.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamily.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamily.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt
@@ -1465,7 +1474,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/ActualParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/SkiaParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt
@@ -1660,8 +1669,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansio
 # then, project's hand-written AnnotatedString.kt provides the minimum
 # surface (text + spanStyles + paragraphStyles + Builder + Annotation
 # marker).
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/AnnotatedString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/AnnotatedString.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Savers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Savers.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/AnnotatedString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/AnnotatedString.kt
+compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/AnnotatedString.native.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Savers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Savers.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
