@@ -52,7 +52,7 @@ private class ColumnMeasurePolicy(
         val availW = inConstraints.maxWidth
         val availH = inConstraints.maxHeight
 
-        val gap = arrangement.spacing
+        val gap = arrangement.spacing.roundToPx()
         val n = inMeasurables.size
         val gapTotal = if (n > 1) gap * (n - 1) else 0
 
@@ -120,7 +120,7 @@ private class ColumnMeasurePolicy(
         val h = (totalChildH + gapTotal).coerceIn(inConstraints.minHeight, inConstraints.maxHeight)
 
         val positions = IntArray(n)
-        arrangement.arrange(h, sizes.toList(), positions)
+        with(arrangement) { arrange(h, sizes, positions) }
 
         return layout(w, h) {
             for (i in 0 until n) {

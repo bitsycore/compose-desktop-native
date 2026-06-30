@@ -1835,6 +1835,16 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRuler
 # → Layout → ComposeNode lets the content lambda be passed through
 # without `crossinline`.
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Box.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Box.kt
+# foundation.layout.internal.JvmDefaultWithCompatibility — optional
+# annotation expect (no-op in non-JVM).
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt
+compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.native.kt
+# Arrangement.kt — replaces the hand-written 109L project Arrangement.
+# Upstream Horizontal/Vertical interfaces use Density-receiver
+# `arrange(totalSize, sizes: IntArray, [layoutDirection,] outPositions)`
+# with `spacing: Dp` (was project Int). Row + Column hand-written get
+# migrated to the new signatures in the same commit.
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Arrangement.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Arrangement.kt
 # Row.kt / Column.kt / RowColumnMeasurePolicy.kt — need the full
 # upstream Arrangement.kt (732 lines, project has 109) for the
 # Density-receiver `arrange(IntArray, ...)` signature; need

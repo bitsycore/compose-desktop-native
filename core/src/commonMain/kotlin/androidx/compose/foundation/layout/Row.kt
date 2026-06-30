@@ -13,6 +13,7 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.node.LayoutNode
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.max
 
 // ==================
@@ -56,7 +57,7 @@ private class RowMeasurePolicy(
         val availW = inConstraints.maxWidth
         val availH = inConstraints.maxHeight
 
-        val gap = arrangement.spacing
+        val gap = arrangement.spacing.roundToPx()
         val n = inMeasurables.size
         val gapTotal = if (n > 1) gap * (n - 1) else 0
 
@@ -129,7 +130,7 @@ private class RowMeasurePolicy(
         val h = maxH.coerceIn(inConstraints.minHeight, inConstraints.maxHeight)
 
         val positions = IntArray(n)
-        arrangement.arrange(w, sizes.toList(), positions)
+        with(arrangement) { arrange(w, sizes, LayoutDirection.Ltr, positions) }
 
         return layout(w, h) {
             for (i in 0 until n) {
