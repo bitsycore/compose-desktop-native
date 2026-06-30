@@ -70,7 +70,12 @@ internal class GraphicsLayerScopeImpl : GraphicsLayerScope {
 
 /* Apply a graphics layer to this node and its subtree. See
    GraphicsLayerModifier for caching semantics. Returns `this` unchanged
-   when the requested layer is a no-op. */
+   when the requested layer is a no-op.
+
+   `shape` + `clip` are honoured by lowering to a `ClipModifier` (the
+   project's clip element) when `clip == true` — that lets vendored
+   upstream `androidx.compose.ui.draw.Clip.kt` resolve to the same code
+   path as the project's `Modifier.clip(shape)` did before. */
 fun Modifier.graphicsLayer(
 	alpha: Float = 1f,
 	scaleX: Float = 1f,
@@ -79,8 +84,9 @@ fun Modifier.graphicsLayer(
 	translationX: Float = 0f,
 	translationY: Float = 0f,
 	transformOrigin: TransformOrigin = TransformOrigin.Center,
+	shape: Shape = RectangleShape,
+	clip: Boolean = false,
 	cacheKey: Any? = null,
-	@Suppress("UNUSED_PARAMETER") clip: Boolean = false,
 ): Modifier {
 	val vMod = GraphicsLayerModifier(
 		alpha = alpha.coerceIn(0f, 1f),
@@ -92,7 +98,8 @@ fun Modifier.graphicsLayer(
 		transformOrigin = transformOrigin,
 		cacheKey = cacheKey,
 	)
-	return if (vMod.isIdentity) this else then(vMod)
+	val vBase = if (vMod.isIdentity) this else then(vMod)
+	return if (clip) vBase.then(com.compose.desktop.native.element.ClipModifier(shape)) else vBase
 }
 
 /* Block-form Modifier.graphicsLayer. Builds a GraphicsLayerScope, runs the
