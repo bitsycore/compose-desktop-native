@@ -464,6 +464,59 @@ After this phase:
 hunt down. Plan: feature branch, commit per renderer subsystem,
 golden screenshot suite across all 30+ demo screens.
 
+#### Pre-Phase-9 inventory — what's already vendored and what still blocks
+
+Files in `androidx.compose.ui.node.*` that vendor clean *today* (with
+the project's stub LayoutNode) — these can stay in the verbatim tree as
+the Phase 9 bundle lands around them, no migration needed:
+
+- `DelegatableNode.kt` (vendored Phase 1)
+- `DelegatingNode.kt` (vendored Phase 1+)
+- `LayoutAwareModifierNode.kt`, `GlobalPositionAwareModifierNode.kt`,
+  `OnPlacedModifier.kt`, `OnRemeasuredModifier.kt`,
+  `OnPositionedModifier.kt`, `ObserverModifierNode.kt`,
+  `ParentDataModifier.kt`, `TraversableNode.kt`,
+  `RotaryInputModifierNode.kt`, `KeyInputModifierNode.kt`,
+  `SoftKeyboardInterceptionModifierNode.kt`,
+  `IndirectPointerInputModifierNode.kt`, `DrawModifierNode.kt`,
+  `ModifierNodeElement.kt`, `LayoutModifierNode.kt` (project version),
+  `MeasureScopeWithLayoutNode.kt` references blocked
+- `TouchBoundsExpansion.kt`, `HitTestResult.kt`, `MyersDiff.kt`
+  (pure data / algorithm — no LayoutNode coupling)
+- `InteroperableComposeUiNode.kt` (sealed interface)
+
+Files that REQUIRE upstream LayoutNode (must vendor in the Phase 9
+bundle, not standalone):
+
+- `LayoutNode.kt` itself (~2000+ lines, 125 LayoutNode self-refs)
+- `MeasureAndLayoutDelegate.kt` (59), `MeasurePassDelegate.kt` (52),
+  `LookaheadPassDelegate.kt` (43) — pass managers
+- `LayoutNodeLayoutDelegate.kt` (33), `LayoutNodeAlignmentLines.kt` (44)
+- `NodeChain.kt` upstream (809 lines, replaces project shim)
+- `NodeCoordinator.kt` + `InnerNodeCoordinator.kt` +
+  `LayoutModifierNodeCoordinator.kt` (the per-modifier chain)
+- `LookaheadDelegate.kt` (29), `LookaheadCapablePlaceable` (real one)
+- `BackwardsCompatNode.kt` (19), `OwnerSnapshotObserver.kt` (24),
+  `LayoutTreeConsistencyChecker.kt` (16), `OnPositionedDispatcher.kt` (9)
+- `DepthSortedSet.kt` (uses LayoutNode.depth / .lookaheadRoot /
+  nested Invalidation enum)
+- `IntrinsicsPolicy.kt` (1 ref, but the ref is to
+  `LayoutNode.outerCoordinator` / `childMeasurables`)
+- `LayoutModifierNode.kt` upstream (417 lines, full Approach surface +
+  extension fns that call `requireLayoutNode().forceRemeasure()` etc.)
+- `OwnedLayer.kt` (1 ref, but needs `GraphicsLayer` engine)
+- `LayoutNodeDrawScope.kt` (10)
+
+Files outside `node/` that the Phase 9 bundle must include:
+
+- `layout/Placeable.kt` + `layout/PlacementScope.kt` (replaces our
+  project Placeable + PlacementScope — see Phase 9 imports rationale
+  above)
+- `graphics/layer/GraphicsLayer.kt` + skiko actuals (separate
+  ~600-line layer engine)
+- `platform/DefaultUiApplier` (vendored or hand-rolled — replaces
+  project `NodeApplier`)
+
 ### Phase 10 — Vendor `Layout` + `Box` / `Column` / `Row`
 
 Once Phase 9 lands, upstream `Layout` (419 lines) becomes vendorable.
@@ -534,7 +587,7 @@ md5 /tmp/x.png   # expect c6bc8f7… (Skia) or 1844ac4… (SDL3)
 
 | Marker | Start of session N-3 | End of session N-2 | End of session N-1 | End of session N | End of session N+1 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Vendor files | 365 | 396 | 404 | 411 | 426 |
+| Vendor files | 365 | 396 | 404 | 411 | 432 |
 | Shim files | 22 | 11 | 11 | 10 | 10 |
 | Modifier.Node lifecycle | none | dormant | driven + kindSet | + chain measure pipeline (Phase 5) | (no change) |
 | Renderer foldIn sites | 27+ | 27+ | 0 (all cached) | 0 + 3 chain-walk dispatch sites | (no change) |
