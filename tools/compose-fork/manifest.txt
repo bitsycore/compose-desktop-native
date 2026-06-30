@@ -620,6 +620,14 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InternalCoreApi.kt 
 # common expect + a pure-Kotlin min-heap actual in nonJvm.
 # MutableVectorWithMutationTracking is a small wrapper around
 # runtime.collection.MutableVector with no node-engine deps.
+# Phase 9 — first node-engine dispatcher off the unvendored list. Uses
+# LayoutNode.globallyPositionedObservers / needsOnGloballyPositionedDispatch
+# / depth / forEachChild / dispatchOnPositionedCallbacks — five no-op
+# surface bumps on the project LayoutNode let this vendor verbatim.
+# Nothing in the project actually creates an OnPositionedDispatcher yet
+# (the existing dispatchGloballyPositioned path stays); this gets the
+# upstream surface in place for the Phase 9 LayoutNode swap.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt                                            core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SortedSet.kt                                                         core/src/vendor/common/kotlin/androidx/compose/ui/node/SortedSet.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                                                  core/src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt

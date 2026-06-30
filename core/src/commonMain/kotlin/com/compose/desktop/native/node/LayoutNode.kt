@@ -28,6 +28,48 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     var parent: LayoutNode? = null
     val children = mutableListOf<LayoutNode>()
 
+    // ============
+    //  Phase 9 — upstream LayoutNode surface bumps
+    //
+    //  No-op fields/methods the upstream node-engine files read. Each entry
+    //  here is a step toward the eventual project-LayoutNode → upstream
+    //  LayoutNode swap; vendored files inside `androidx.compose.ui.node.*`
+    //  see this class via the `LayoutNode` typealias and resolve these
+    //  members against it. Bodies are no-ops because the dispatch logic
+    //  the project actually runs lives elsewhere (`dispatchGloballyPositioned`,
+    //  per-cache renderer loops); these exist so the upstream entry points
+    //  type-check.
+
+    /** Count of GlobalPositionAwareModifierNode / Modifier.onGloballyPositioned
+     *  observers in this node's subtree. Read by vendored
+     *  `OnPositionedDispatcher` to skip nodes with no observers. */
+    internal var globallyPositionedObservers: Int = 0
+
+    /** Flag flipped by `OnPositionedDispatcher.onNodePositioned` and cleared
+     *  by its dispatch pass. */
+    internal var needsOnGloballyPositionedDispatch: Boolean = false
+
+    /** Depth of this node in the tree (root = 0). Sorted on by
+     *  `OnPositionedDispatcher.DepthComparator`. */
+    internal var depth: Int = 0
+
+    /** Iterate children in insertion order. */
+    internal inline fun forEachChild(block: (LayoutNode) -> Unit) {
+        for (i in children.indices) block(children[i])
+    }
+
+    /** Upstream entry point called by `OnPositionedDispatcher.dispatchHierarchy`.
+     *  Bridges to the project's existing dispatch path. */
+    internal fun dispatchOnPositionedCallbacks() {
+        var n: androidx.compose.ui.Modifier.Node? = nodes.head.child
+        while (n != null) {
+            if (n is androidx.compose.ui.node.GlobalPositionAwareModifierNode) {
+                n.onGloballyPositioned(coordinates)
+            }
+            n = n.child
+        }
+    }
+
     /**
      * Modifier chain attached to this layout. The setter rebuilds
      * [nodes] (the Modifier.Node chain) on every assignment so that
@@ -464,6 +506,7 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
 
     fun insertAt(index: Int, child: LayoutNode) {
         child.parent = this
+        child.depth = depth + 1
         children.add(index, child)
     }
 
