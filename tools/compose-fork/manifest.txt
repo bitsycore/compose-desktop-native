@@ -1468,14 +1468,17 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Brush.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
+# DepthSortedSet.kt — uses LayoutNode.depth + .lookaheadRoot + nested
+# Invalidation enum, all of which only exist on upstream LayoutNode. Vendor
+# alongside LayoutNode in Phase 9.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DepthSortedSet.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/DepthSortedSet.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/HitTestResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/HitTestResult.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/HitTestResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/HitTestResult.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MyersDiff.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MyersDiff.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MyersDiff.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MyersDiff.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeChain.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeChain.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsConfiguration.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsConfiguration.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/util/PointerVelocityTracker1D.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/util/PointerVelocityTracker1D.kt
