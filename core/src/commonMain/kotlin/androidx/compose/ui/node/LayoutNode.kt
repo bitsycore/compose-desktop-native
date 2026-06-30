@@ -1,4 +1,4 @@
-package com.compose.desktop.native.node
+package androidx.compose.ui.node
 
 import androidx.compose.ui.*
 import com.compose.desktop.native.element.*

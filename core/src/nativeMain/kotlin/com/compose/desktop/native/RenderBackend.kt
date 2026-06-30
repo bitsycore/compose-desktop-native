@@ -1,6 +1,6 @@
 package com.compose.desktop.native
 
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.res.ImageLoader
 import com.compose.desktop.native.text.TextMeasurer
 

@@ -1,7 +1,7 @@
 package androidx.compose.ui.layout
 
 import androidx.compose.ui.unit.Constraints
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 
 // ==================
 // MARK: LayoutNodeMeasurable

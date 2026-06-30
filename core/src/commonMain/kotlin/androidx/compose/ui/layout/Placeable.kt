@@ -1,6 +1,6 @@
 package androidx.compose.ui.layout
 
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 
 // ==================
 // MARK: Placeable

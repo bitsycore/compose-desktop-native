@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ComposeNode
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.compose.desktop.native.node.LayoutNode
-import com.compose.desktop.native.node.MeasurePolicy
+import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize

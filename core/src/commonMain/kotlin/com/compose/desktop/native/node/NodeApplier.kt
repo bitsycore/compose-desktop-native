@@ -1,6 +1,7 @@
 package com.compose.desktop.native.node
 
 import androidx.compose.runtime.AbstractApplier
+import androidx.compose.ui.node.LayoutNode
 
 // ==================
 // MARK: NodeApplier

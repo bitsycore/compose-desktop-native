@@ -12,7 +12,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 // ==================
 
 /**
- * A no-op [Owner] singleton attached to every [com.compose.desktop.native.node.LayoutNode]
+ * A no-op [Owner] singleton attached to every [androidx.compose.ui.node.LayoutNode]
  * so vendored DelegatableNode helpers (`requireOwner()`, `observeReads { … }`,
  * `requireGraphicsContext()`, `requireDensity()`, …) don't crash on an empty
  * owner.

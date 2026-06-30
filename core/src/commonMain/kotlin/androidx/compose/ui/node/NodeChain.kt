@@ -1,7 +1,7 @@
 package androidx.compose.ui.node
 
 import androidx.compose.ui.Modifier
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 
 // ==================
 // MARK: NodeChain

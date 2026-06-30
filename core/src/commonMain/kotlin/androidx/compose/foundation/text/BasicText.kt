@@ -18,8 +18,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import com.compose.desktop.native.layout.x
 import com.compose.desktop.native.layout.y
-import com.compose.desktop.native.node.LayoutNode
-import com.compose.desktop.native.node.MeasurePolicy
+import androidx.compose.ui.node.LayoutNode
+import androidx.compose.ui.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.AnnotatedString.Range

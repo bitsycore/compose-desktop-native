@@ -1,6 +1,6 @@
 package com.compose.desktop.native.renderer.sdl
 
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer

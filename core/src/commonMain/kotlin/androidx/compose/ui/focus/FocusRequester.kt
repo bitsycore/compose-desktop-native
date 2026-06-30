@@ -3,7 +3,7 @@ package androidx.compose.ui.focus
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.ModifierNodeElement
-import com.compose.desktop.native.node.LayoutNode
+import androidx.compose.ui.node.LayoutNode
 
 // ==================
 // MARK: FocusRequester

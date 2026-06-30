@@ -633,12 +633,11 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatc
 # which isn't vendored yet) + LayoutNode.lookaheadRoot / .isAttached / .depth
 # / .hashCode — all present.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DepthSortedSet.kt                                                    core/src/vendor/common/kotlin/androidx/compose/ui/node/DepthSortedSet.kt
-# MeasureScopeWithLayoutNode — blocked. Vendor imports `LayoutNode.LayoutState`
-# directly; the project's `androidx.compose.ui.node.LayoutNode` is an
-# `internal typealias` to `com.compose.desktop.native.node.LayoutNode`, and
-# Kotlin's nested-type resolution doesn't go through the typealias even in
-# K2. Unblocks when the typealias retires (real upstream LayoutNode lands).
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt                                        core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt
+# MeasureScopeWithLayoutNode — needs LayoutNode.LayoutState (nested enum;
+# the typealias shim used to block this — project LayoutNode is now a real
+# class in `androidx.compose.ui.node`) + foldedChildren / childMeasurables /
+# childLookaheadMeasurables (all on project LayoutNode).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt                                        core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt                                                core/src/vendor/common/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SortedSet.kt                                                         core/src/vendor/common/kotlin/androidx/compose/ui/node/SortedSet.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                                                  core/src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt
