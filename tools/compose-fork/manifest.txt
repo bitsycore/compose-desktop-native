@@ -1145,13 +1145,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ZIndexModifier.kt  core/
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/TwoDimensionalFocusSearch.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/TwoDimensionalFocusSearch.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/KeyInputModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/key/SoftwareKeyboardInterceptionModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEventProcessor.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerInputEventProcessor.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/input/rotary/RotaryInputModifier.kt
 # ApproachLayoutModifierNode.kt — needs ApproachMeasureScope +
 # ApproachIntrinsicMeasureScope + LookaheadDelegate + ApproachMeasureBlock.
 # Vendor in Phase 9 alongside the lookahead engine.
@@ -1161,6 +1161,9 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ZIndexModifier.kt  core/
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
+# LookaheadScope.kt — full Lookahead engine (ApproachMeasureScope,
+# LookaheadLayoutCoordinates, isVirtualLookaheadRoot, innerCoordinator
+# on LayoutNode). Phase 9 bundle.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
@@ -1217,6 +1220,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsSort.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsSort.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectList.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectList.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectManager.kt
+# RelativeLayoutBounds.kt — uses `unpackX`/`unpackY` from RectList.kt
+# (1092 lines of internal spatial engine — vendor as a bundle).
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/Actuals.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/Actuals.native.kt
@@ -1350,6 +1355,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextSt
 # SDL3 build). Hand-written native actual lives in core/src/nativeMain.
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/String.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
+# FontMatcher.kt — pattern-matches on `FontListFontFamily`, only available
+# once upstream FontFamily.kt is vendored (blocked on FontVariation.Settings).
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 # FontSynthesis.kt — references upstream Font class (different shape from
@@ -1466,6 +1473,13 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/SpanStyle.kt  
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
+# Font.kt + FontFamily.kt — pull upstream's `FontVariation.Settings`
+# (nested in `object FontVariation`). Project's `class FontVariation`
+# has a different shape — same name, different package. Vendor in a
+# dedicated session that migrates FontVariation alongside (every Material
+# Text / Icon / material-symbols call site uses the project's
+# capitalized factories `FontVariation.Weight(n)` returning
+# `FontVariation`, upstream's `Setting` instead).
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Font.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Font.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamily.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamily.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt
