@@ -982,7 +982,8 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusManager.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/focus/FocusModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/focus/FocusModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/internal/IdentityHashCode.kt
+compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/internal/System.native.kt  core/src/vendor/native/kotlin/androidx/compose/ui/internal/System.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
