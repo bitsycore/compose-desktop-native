@@ -1048,7 +1048,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Padding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Padding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Visible.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Visible.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Visible.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Visible.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
 # compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.native.kt
@@ -1162,6 +1162,11 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/rotary/RotaryInput
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Layout.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/Layout.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
+# LayoutModifier.kt — vendored version doesn't include the project's
+# `LayoutModifierElement` (read by LayoutNode + Placeable.measuredSize),
+# plus its `MeasuringIntrinsics.EmptyPlaceable` uses upstream Placeable's
+# protected `placeAt(IntOffset, Float, layerBlock)` signature.
+# Phase 9 bundle.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
 # LookaheadScope.kt — full Lookahead engine (ApproachMeasureScope,
 # LookaheadLayoutCoordinates, isVirtualLookaheadRoot, innerCoordinator
@@ -1758,6 +1763,10 @@ compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt
 # ──────────────────────────────────────────────────────────────────────────
 # ▼ needs-pointer-engine (2 files)
 # ──────────────────────────────────────────────────────────────────────────
+# PointerInputModifierNode.kt — imports SuspendingPointerInputModifierNode /
+# SuspendingPointerInputModifierNodeImpl from SuspendingPointerInputFilter.kt
+# (not vendored — needs requireLayoutNode().forceRemeasure() etc.) +
+# returns NodeCoordinator (upstream) from `findRootCoordinates()`. Phase 9.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.native.kt
 
