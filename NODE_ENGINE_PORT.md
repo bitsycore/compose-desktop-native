@@ -542,6 +542,49 @@ node-engine and can run in parallel.
 
 Out of scope for the node-engine port; tracked in `FIDELITY.md`.
 
+## Foundation completion status
+
+22 → 21 → … hand-written foundation files in `core/src/commonMain/.../
+foundation`. Each remaining file is blocked on **exactly one** engine
+phase below. Once each engine lands, the file becomes a one-line
+manifest uncomment (the upstream files are byte-compatible with the
+public API surface our call sites already write to).
+
+| File | Lines | Blocking phase | Notes |
+| --- | ---: | --- | --- |
+| `Background.kt` | 33 | **Phase 8 (draw)** | Needs upstream `Outline.Rectangle/Rounded` shapes, `Shape.createOutline(size, ld, density)`, `ContentDrawScope.layoutDirection`, `DrawModifierNode.isImportantForBounds`. |
+| `Border.kt` | 38 | **Phase 8 (draw)** | Needs `CacheDrawModifierNode` / `CacheDrawScope` / `DrawResult` (cached-draw pipeline). |
+| `Image.kt` | 59 | **Phase 8 (draw)** | Needs upstream `Painter` (draw primitive, not the project's resource pointer) + `BitmapPainter` + `ColorPainter` + `ImageBitmap` (full surface). |
+| `Scroll.kt` | 149 | **Phase 8 (draw)** | Needs `clipScrollableContainer` + `scrollable` (gesture) + `BringIntoViewModifierNode`. |
+| `Scrollbar.kt` | 229 | (project-specific) | No upstream equivalent in commonMain — desktop-only utility. Keep. |
+| `Focusable.kt` | 13 | **Phase 11 (widgets)** | Needs the full focus engine — `FocusTargetNode`, `Focusability`, `FocusRequesterModifierNode`. |
+| `Clickable.kt` | 16 | **Phase 11 (widgets)** | Needs `Indication` + `InteractionSource` + `MutableInteractionSource` + gesture detector hierarchy + focus + haptics. |
+| `BasicText.kt` | 298 | **Phase 11 (widgets)** | Needs upstream `Paragraph` + `MultiParagraph` + `TextLayoutResult` + `TextMeasurer` (current is a stub). |
+| `BasicTextField.kt` | 706 | **Phase 11 (widgets)** | Same as BasicText + IME + `TextFieldState`. |
+| `TextSelectionHelpers.kt` | 75 | **Phase 11 (widgets)** | Tied to BasicTextField selection. |
+| `text/selection/SelectionContainer.kt` | 111 | **Phase 11 (widgets)** | Same. |
+| `text/selection/Selection.kt` | 154 | **Phase 11 (widgets)** | Same. |
+| `text/selection/SelectionRect.kt` | 28 | **Phase 11 (widgets)** | Same. |
+| `layout/Box.kt` | 74 | **Phase 9 (LayoutNode)** | Uses project `MeasurePolicy` (LayoutNode-based, not upstream's `List<Measurable>`-based). |
+| `layout/Column.kt` | 126 | **Phase 9 (LayoutNode)** | Same. |
+| `layout/Row.kt` | 136 | **Phase 9 (LayoutNode)** | Same. |
+| `layout/Arrangement.kt` | 109 | **Phase 9 (LayoutNode)** | Project uses non-`Density`-receiver shape; upstream uses `Density.arrange(...)`. |
+| `layout/RowColumnScope.kt` | 37 | **Phase 9 (LayoutNode)** | Project uses `object` scopes; upstream uses `interface` with default impl. |
+| `lazy/LazyColumn.kt` | 114 | **Phase 9 (LayoutNode)** | Simplified — upstream pulls SubcomposeLayout. |
+| `lazy/LazyRow.kt` | 51 | **Phase 9 (LayoutNode)** | Same. |
+| `lazy/grid/LazyVerticalGrid.kt` | 191 | **Phase 9 (LayoutNode)** | Same. |
+
+**Summary**: 5 files unblock when Phase 8 (DrawModifierNode-driven draw)
+lands. 9 files unblock when Phase 11 (widget / interaction / focus
+engine) lands. 8 files unblock when Phase 9 (upstream LayoutNode +
+NodeCoordinator) lands. Scrollbar.kt is a permanent project extension.
+
+The semantics shim (`androidx.compose.ui.semantics.SemanticsShim.kt` +
+`node/SemanticsModifierNode.kt`) accepts and discards the API surface
+that vendored foundation files mention — sufficient for compile, no
+accessibility runtime yet (vendor full `SemanticsProperties.kt`
+1739-line file when an accessibility backend lands).
+
 ## What's explicitly out of scope
 
 - **Semantics engine** — vendoring `SemanticsConfiguration` +
@@ -587,7 +630,7 @@ md5 /tmp/x.png   # expect c6bc8f7… (Skia) or 1844ac4… (SDL3)
 
 | Marker | Start of session N-3 | End of session N-2 | End of session N-1 | End of session N | End of session N+1 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Vendor files | 365 | 396 | 404 | 411 | 432 |
+| Vendor files | 365 | 396 | 404 | 411 | 472 |
 | Shim files | 22 | 11 | 11 | 10 | 10 |
 | Modifier.Node lifecycle | none | dormant | driven + kindSet | + chain measure pipeline (Phase 5) | (no change) |
 | Renderer foldIn sites | 27+ | 27+ | 0 (all cached) | 0 + 3 chain-walk dispatch sites | (no change) |
