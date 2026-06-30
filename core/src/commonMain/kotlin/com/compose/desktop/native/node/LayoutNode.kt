@@ -94,16 +94,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     // and dispatched by walking the Modifier.Node chain for
     // `GlobalPositionAwareModifierNode` instances in `dispatchGloballyPositioned`.
 
-    // Render-side caches (read by SkiaRenderer + Sdl3Renderer's per-frame draw loops).
-    /** Every BackgroundModifier in chain order — renderer paints each on the node's bounds. */
-    var cachedBackgrounds: List<BackgroundModifier> = emptyList()
-        private set
-    /** Every BorderModifier in chain order. */
-    var cachedBorders: List<BorderModifier> = emptyList()
-        private set
-    /** Every DrawBehindModifier in chain order. */
-    var cachedDrawBehinds: List<com.compose.desktop.native.element.DrawBehindModifier> = emptyList()
-        private set
+    // cachedBackgrounds / cachedBorders / cachedDrawBehinds retired —
+    // their `Modifier.Node` (BackgroundNode / BorderNode / DrawBehindNode)
+    // implementations are picked up via `cachedDrawModifierNodes` and
+    // driven by the renderer's chain-walk in `drawNodeContent`. Phase 8.
     /** True if the node clips its children (ClipModifier OR a scroll modifier). */
     var clipsChildren: Boolean = false
         private set
@@ -181,9 +175,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         var drag: OnDragModifier? = null
         var focus: FocusableModifier? = null
         var text: ((String) -> Unit)? = null
-        var backgrounds: MutableList<BackgroundModifier>? = null
-        var borders: MutableList<BorderModifier>? = null
-        var drawBehinds: MutableList<com.compose.desktop.native.element.DrawBehindModifier>? = null
         var clipShape: androidx.compose.ui.graphics.Shape? = null
         var hasScrollClip = false
         var weight: LayoutWeightModifier? = null
@@ -206,9 +197,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
                 is OnDragModifier                                                   -> { if (drag == null) drag = e }
                 is FocusableModifier                                                -> { if (focus == null) focus = e }
                 is OnTextInputModifier                                              -> { if (text == null) text = e.handler }
-                is BackgroundModifier                                               -> { (backgrounds ?: mutableListOf<BackgroundModifier>().also { backgrounds = it }).add(e) }
-                is BorderModifier                                                   -> { (borders ?: mutableListOf<BorderModifier>().also { borders = it }).add(e) }
-                is com.compose.desktop.native.element.DrawBehindModifier            -> { (drawBehinds ?: mutableListOf<com.compose.desktop.native.element.DrawBehindModifier>().also { drawBehinds = it }).add(e) }
                 is ClipModifier                                                     -> clipShape = e.shape
                 is LayoutWeightModifier                                             -> weight = e
                 is androidx.compose.ui.focus.FocusRequesterModifier                 -> { (focusRequesters ?: mutableListOf<androidx.compose.ui.focus.FocusRequesterModifier>().also { focusRequesters = it }).add(e) }
@@ -230,9 +218,6 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         cachedDraggable = drag
         cachedFocusable = focus
         cachedTextInputHandler = text
-        cachedBackgrounds = backgrounds ?: emptyList()
-        cachedBorders = borders ?: emptyList()
-        cachedDrawBehinds = drawBehinds ?: emptyList()
         clipsChildren = clipShape != null || hasScrollClip
         // Renderer rule: ClipModifier.shape wins; else if any scroll, use RectangleShape; else null.
         childClipShape = clipShape ?: if (hasScrollClip) androidx.compose.ui.graphics.RectangleShape else null
