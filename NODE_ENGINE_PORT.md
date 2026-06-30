@@ -188,7 +188,43 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 404. Shim count: 11.**
+**Vendor count: 479. Shim count: 11.**
+
+### Phase 9 — incremental groundwork started
+
+Per-file vendoring inside `androidx.compose.ui.node.*` has resumed. Each
+file landed adds a tiny no-op surface bump to the project LayoutNode
+(in `com.compose.desktop.native.node.LayoutNode`) and gets the upstream
+file into the vendor tree; nothing actively uses these vendored types
+yet — they exist so the eventual project-LayoutNode → upstream-LayoutNode
+swap has less surface area to migrate.
+
+- `node/OnPositionedDispatcher.kt` (102 lines) — needed
+  `LayoutNode.globallyPositionedObservers / needsOnGloballyPositionedDispatch / depth / forEachChild / dispatchOnPositionedCallbacks`.
+  Not instantiated anywhere yet; existing `dispatchGloballyPositioned()`
+  path remains.
+
+Files audited and skipped this round (left for later) — each fails on
+the bracketed blocker, all are Phase-9-bundle territory:
+
+- `DepthSortedSet.kt` — needs `Invalidation` enum (lives inside
+  unvendored `MeasureAndLayoutDelegate.kt`) + `LayoutNode.lookaheadRoot`.
+- `IntrinsicsPolicy.kt` — needs `LayoutNode.outerCoordinator` exposing
+  intrinsic methods + `LayoutNode.childMeasurables` /
+  `childLookaheadMeasurables`.
+- `ComposeUiNode.kt` — needs `LayoutNode.Constructor` companion +
+  `LayoutNode(isVirtual = true)` + switching the project's internal
+  `MeasurePolicy` to upstream's `androidx.compose.ui.layout.MeasurePolicy`
+  (which would force every project measure policy to be rewritten with
+  `(measurables: List<Measurable>, constraints: Constraints) -> MeasureResult`).
+- `MeasureScopeWithLayoutNode.kt` — needs upstream `LayoutNode.LayoutState`
+  enum + `foldedChildren` / `childMeasurables` / `childLookaheadMeasurables`
+  / `isInLookaheadPass()`.
+- `LayoutTreeConsistencyChecker.kt` — needs upstream `LayoutState`,
+  `placeOrder`, `measurePending`, `lookaheadMeasurePending`,
+  `lookaheadLayoutPending`, `lookaheadRoot`, `measuredByParent`,
+  `isDeactivated`, `isPlacedInLookahead`, `NotPlacedPlaceOrder`,
+  `DepthSortedSetsForDifferentPasses`, `MeasureAndLayoutDelegate.PostponedRequest`.
 
 ### Shims still in place (with concrete unblock requirements)
 
