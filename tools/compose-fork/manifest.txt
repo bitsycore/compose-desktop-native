@@ -987,7 +987,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InteroperableCompos
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
+# Synchronization.skiko.kt — upstream actual adds `@PublishedApi` on the
+# `synchronized` inline fn but not on `SynchronizedObject` itself, which
+# triggers a visibility mismatch under our K2 settings. Hand-written native
+# actual lives in core/src/nativeMain (mirrors the existing
+# `foundation/platform/Synchronization.native.kt` without @PublishedApi).
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/Synchronization.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropView.kt  core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropView.kt
@@ -1113,7 +1119,7 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.native.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ComposedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/ComposedModifier.kt
 # FrameRate.kt — see deferred entry below.
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/MediaQuery.kt  core/src/vendor/common/kotlin/androidx/compose/ui/MediaQuery.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/MediaQuery.kt  core/src/vendor/common/kotlin/androidx/compose/ui/MediaQuery.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/ZIndexModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/ZIndexModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt
@@ -1199,7 +1205,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TestTag.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/TestTag.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsModifier.kt
