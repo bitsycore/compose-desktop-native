@@ -126,6 +126,16 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     private var cachedLayoutModifierNodes: List<androidx.compose.ui.node.LayoutModifierNode> = emptyList()
 
     /**
+     * DrawModifierNodes in the chain, head→tail order. The renderer walks
+     * this list to drive `DrawModifierNode.draw(ContentDrawScope)`. Each
+     * node's `draw()` body calls `drawContent()` to render the next inner
+     * thing (further inner DrawModifierNodes, then the node's own body —
+     * `drawer` field + children).
+     */
+    var cachedDrawModifierNodes: List<androidx.compose.ui.node.DrawModifierNode> = emptyList()
+        private set
+
+    /**
      * Accumulated placement offset from the LayoutModifierNode chain — when
      * `Modifier.padding(8.dp)` wraps a node, the chain's placeAt call lands
      * (8, 8) here and the renderer / absolute-position math adds it to
@@ -231,17 +241,24 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         cachedPointerInputs = pointerInputs ?: emptyList()
         cachedOnPressedHandlers = onPressedHandlers ?: emptyList()
 
-        // Collect LayoutModifierNodes from the chain in head→tail order so the
-        // measure pipeline can apply them outermost-first.
+        // Collect LayoutModifierNodes + DrawModifierNodes from the chain in
+        // head→tail order so the measure pipeline applies LayoutModifiers
+        // outermost-first, and the renderer walks DrawModifierNodes for
+        // Phase-8-style chain-driven draw.
         var lmnList: MutableList<androidx.compose.ui.node.LayoutModifierNode>? = null
+        var dmnList: MutableList<androidx.compose.ui.node.DrawModifierNode>? = null
         var n: androidx.compose.ui.Modifier.Node? = nodes.head.child
         while (n != null) {
             if (n is androidx.compose.ui.node.LayoutModifierNode) {
                 (lmnList ?: mutableListOf<androidx.compose.ui.node.LayoutModifierNode>().also { lmnList = it }).add(n)
             }
+            if (n is androidx.compose.ui.node.DrawModifierNode) {
+                (dmnList ?: mutableListOf<androidx.compose.ui.node.DrawModifierNode>().also { dmnList = it }).add(n)
+            }
             n = n.child
         }
         cachedLayoutModifierNodes = lmnList ?: emptyList()
+        cachedDrawModifierNodes = dmnList ?: emptyList()
     }
 
     internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
