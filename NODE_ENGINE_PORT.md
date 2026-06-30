@@ -188,7 +188,31 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 488. Shim count: 11.**
+**Vendor count: 494. Shim count: 11.**
+
+### foundation-layout swap (this round)
+
+- **`Box.kt`** vendored verbatim. Project's 75L hand-written Box gone.
+  Key unblock: project `Layout()` is now `inline fun` so the
+  Box → Layout → ComposeNode inline chain works without `crossinline`.
+  Material `Button` / `Surface` rewrap `Box(content = content)` →
+  `Box { content() }` since upstream content is `BoxScope.() -> Unit`.
+- **`Arrangement.kt`** vendored verbatim (732L vs project's 109L).
+  Project's `interface Horizontal { val spacing: Int; fun arrange(Int,
+  List<Int>, IntArray) }` swapped for upstream's
+  `interface Horizontal : JvmDefaultWithCompatibility { val spacing: Dp;
+  fun Density.arrange(Int, IntArray, LayoutDirection, IntArray) }`.
+  Project Row + Column call sites migrated:
+  `with(arrangement) { arrange(w, sizes, [layoutDir], positions) }`,
+  `arrangement.spacing.roundToPx()`.
+- **`WindowInsetsRulers.kt`** + native no-op actuals (360L) — desktop
+  has no platform window-insets; the actuals return empty / no-anim.
+- **`InspectableValue.kt`** (already vendored long ago) — manifest entry
+  cleanup only.
+- **`IntrinsicsPolicy.kt`** + `NodeCoordinator : IntrinsicMeasureScope`
+  + `LayoutNode.outerCoordinator` getter.
+
+### MeasurePolicy ABI swap + ComposeUiNode (earlier this session)
 
 ### MeasurePolicy ABI swap + ComposeUiNode (this round)
 
