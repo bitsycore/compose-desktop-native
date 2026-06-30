@@ -35,7 +35,7 @@ fun Column(
                 this.measurePolicy = ColumnMeasurePolicy(verticalArrangement, horizontalAlignment)
             }
         },
-        content = { ColumnScope.content() }
+        content = { ColumnScopeInstance.content() }
     )
 }
 

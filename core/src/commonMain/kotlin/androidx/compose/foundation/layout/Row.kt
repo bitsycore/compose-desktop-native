@@ -34,7 +34,7 @@ fun Row(
                 this.measurePolicy = RowMeasurePolicy(horizontalArrangement, verticalAlignment)
             }
         },
-        content = { RowScope.content() }
+        content = { RowScopeInstance.content() }
     )
 }
 
