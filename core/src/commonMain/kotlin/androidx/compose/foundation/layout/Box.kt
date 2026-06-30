@@ -8,7 +8,6 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
-import androidx.compose.ui.layout.adaptToInternal
 import androidx.compose.ui.node.LayoutNode
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
@@ -32,7 +31,7 @@ fun Box(
         update = {
             set(modifier) { this.modifier = it }
             set(contentAlignment to propagateMinConstraints) {
-                this.measurePolicy = adaptToInternal(BoxMeasurePolicy(it.first, it.second))
+                this.measurePolicy = BoxMeasurePolicy(it.first, it.second)
             }
         },
         content = content

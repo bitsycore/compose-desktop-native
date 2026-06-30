@@ -211,7 +211,7 @@ private fun TextLeaf(
             set(fontVariationSettings) { this.fontVariationSettings = it }
             set(modifier) { this.modifier = it }
             set(Unit) {
-                this.measurePolicy = TextMeasurePolicy
+                this.internalMeasurePolicy = TextMeasurePolicy
             }
         }
     )

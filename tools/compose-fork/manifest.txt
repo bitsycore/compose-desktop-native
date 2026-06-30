@@ -1803,3 +1803,9 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 # MultiContentMeasurePolicy — uses `getChildrenOfVirtualChildren` from
 # the just-vendored MeasureScopeWithLayoutNode.kt.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
+# ComposeUiNode — internal interface implemented by LayoutNode. Used by
+# upstream Layout.kt's ReusableComposeNode factory. Needs the project
+# LayoutNode to implement it (var measurePolicy: MeasurePolicy upstream,
+# var density / layoutDirection / modifier / viewConfiguration /
+# compositionLocalMap / compositeKeyHash).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                                                     core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt

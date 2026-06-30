@@ -36,7 +36,7 @@ fun Image(
 			set(contentScale) { this.contentScale = it }
 			set(alpha) { this.imageAlpha = it }
 			set(modifier) { this.modifier = it }
-			set(Unit) { this.measurePolicy = ImageMeasurePolicy }
+			set(Unit) { this.internalMeasurePolicy = ImageMeasurePolicy }
 		}
 	)
 }

@@ -77,7 +77,7 @@ fun Layout(
 		update = {
 			set(modifier) { this.modifier = it }
 			set(measurePolicy) {
-				this.measurePolicy = adaptToInternal(it)
+				this.measurePolicy = it
 			}
 		},
 		content = content,
@@ -97,7 +97,7 @@ fun Layout(
 		update = {
 			set(modifier) { this.modifier = it }
 			set(measurePolicy) {
-				this.measurePolicy = adaptToInternal(it)
+				this.measurePolicy = it
 			}
 		},
 	)

@@ -10,7 +10,6 @@ import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.Placeable
-import androidx.compose.ui.layout.adaptToInternal
 import androidx.compose.ui.node.LayoutNode
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.Constraints
@@ -32,9 +31,7 @@ fun Row(
         update = {
             set(modifier) { this.modifier = it }
             set(Unit) {
-                this.measurePolicy = adaptToInternal(
-                    RowMeasurePolicy(horizontalArrangement, verticalAlignment),
-                )
+                this.measurePolicy = RowMeasurePolicy(horizontalArrangement, verticalAlignment)
             }
         },
         content = { RowScope.content() }

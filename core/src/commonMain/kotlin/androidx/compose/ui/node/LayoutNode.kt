@@ -31,7 +31,7 @@ class LayoutNode(
      *  Composition. Our pipeline doesn't have virtual children yet, so
      *  this is accept-and-ignore. */
     @Suppress("UNUSED_PARAMETER") isVirtual: Boolean = false,
-) : androidx.compose.ui.semantics.SemanticsInfo {
+) : androidx.compose.ui.semantics.SemanticsInfo, androidx.compose.ui.node.ComposeUiNode {
 
     /** Companion mirroring `LayoutNode.Constructor` upstream — used by
      *  vendored `ComposeUiNode.Constructor` to allocate root LayoutNodes
@@ -140,7 +140,7 @@ class LayoutNode(
      * vendored DelegatableNode traversals see live nodes. The renderer
      * still walks `modifier.foldIn` directly — Phase 4i scaffolding.
      */
-    var modifier: Modifier = Modifier
+    override var modifier: Modifier = Modifier
         set(value) {
             if (field === value) return
             field = value
@@ -352,7 +352,26 @@ class LayoutNode(
         cachedDrawModifierNodes = dmnList ?: emptyList()
     }
 
-    internal var measurePolicy: MeasurePolicy = DefaultMeasurePolicy
+    /** Project-internal measure policy — `(LayoutNode, Constraints) -> IntSize`.
+     *  The public-shape [measurePolicy] (below, upstream type) feeds this
+     *  via [androidx.compose.ui.layout.adaptToInternal] on assign. The
+     *  renderer's measure pipeline (see `measure(c)` further down) reads
+     *  this directly. */
+    internal var internalMeasurePolicy: MeasurePolicy = DefaultMeasurePolicy
+
+    /** Upstream-shape measure policy from `ComposeUiNode` — the one
+     *  `Layout(…)` / `Box` / `Row` / `Column` build. Setter pipes through
+     *  [adaptToInternal] so the project's existing measure pipeline keeps
+     *  running unchanged. */
+    override var measurePolicy: androidx.compose.ui.layout.MeasurePolicy = ErrorUpstreamMeasurePolicy
+        set(value) {
+            field = value
+            internalMeasurePolicy = androidx.compose.ui.layout.adaptToInternal(value)
+        }
+
+    /** ComposeUiNode requirement — composition key hash. Currently unused
+     *  (the project's recomposer doesn't propagate it for diagnostics). */
+    override var compositeKeyHash: Int = 0
 
     // ============
     //  Phase 4 node-engine bring-up — see NODE_ENGINE_PORT.md.
@@ -388,10 +407,10 @@ class LayoutNode(
     override val isPlaced: Boolean = true
     override val parentInfo: androidx.compose.ui.layout.LayoutInfo?
         get() = parent
-    override val density: androidx.compose.ui.unit.Density = androidx.compose.ui.unit.Density(1f)
-    override val layoutDirection: androidx.compose.ui.unit.LayoutDirection =
+    override var density: androidx.compose.ui.unit.Density = androidx.compose.ui.unit.Density(1f)
+    override var layoutDirection: androidx.compose.ui.unit.LayoutDirection =
         androidx.compose.ui.unit.LayoutDirection.Ltr
-    override val viewConfiguration: androidx.compose.ui.platform.ViewConfiguration =
+    override var viewConfiguration: androidx.compose.ui.platform.ViewConfiguration =
         object : androidx.compose.ui.platform.ViewConfiguration {
             override val longPressTimeoutMillis: Long = 500
             override val doubleTapTimeoutMillis: Long = 300
@@ -411,7 +430,7 @@ class LayoutNode(
     /** Phase 2 surface: read by CompositionLocalConsumerModifierNode.currentValueOf.
         Now `var` (was `val`) so vendored `CompositionLocalMapInjectionNode`
         in ComposedModifier.kt can write to it during onAttach + map updates. */
-    internal var compositionLocalMap: androidx.compose.runtime.CompositionLocalMap =
+    override var compositionLocalMap: androidx.compose.runtime.CompositionLocalMap =
         androidx.compose.runtime.CompositionLocalMap.Empty
 
     // ============
@@ -740,7 +759,7 @@ class LayoutNode(
             maxHeight = if (vScrollV != null) Constraints.Infinity else constraints.maxHeight,
         )
 
-        val result = measurePolicy.measure(this, childConstraints)
+        val result = internalMeasurePolicy.measure(this, childConstraints)
 
         val vCapHeight = if (vScrollV != null && constraints.maxHeight != Constraints.Infinity) {
             vScrollV.setMaxInternal((result.height - constraints.maxHeight).coerceAtLeast(0), constraints.maxHeight)
@@ -985,3 +1004,13 @@ internal val DefaultMeasurePolicy = MeasurePolicy { node, constraints ->
     }
     constraints.constrain(IntSize(maxW, maxH))
 }
+
+/** Upstream-shape error policy — assigned to `LayoutNode.measurePolicy` at
+ *  construction. The setter pipes through `adaptToInternal` immediately
+ *  before any layout pass runs (Box/Row/Column/Layout/Image/BasicText all
+ *  assign their own policy in the ComposeNode update block), so this
+ *  ErrorPolicy is never actually invoked. */
+internal val ErrorUpstreamMeasurePolicy: androidx.compose.ui.layout.MeasurePolicy =
+    androidx.compose.ui.layout.MeasurePolicy { _, _ ->
+        error("LayoutNode.measurePolicy not set")
+    }
