@@ -188,7 +188,22 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 480. Shim count: 12.**
+**Vendor count: 482. Shim count: 11.**
+
+### Phase 9 — package move + per-file vendoring
+
+Major architectural milestone landed: **the project `LayoutNode` class
+moved from `com.compose.desktop.native.node` to `androidx.compose.ui.node`,
+retiring the `LayoutNode.shim.kt` typealias** (commit `985c0b4`).
+Kotlin's nested-type resolution doesn't go through `internal typealias`
+even in K2; the alias was the structural blocker for vendoring any
+upstream file that uses `LayoutNode.LayoutState` /
+`LayoutNode.Constructor` / `LayoutNode.UsageByParent` directly. Now
+that LayoutNode is a real class in the canonical package, those nested
+references resolve natively.
+
+`com.compose.desktop.native.node` still holds `NodeApplier` — project
+glue with no upstream counterpart yet.
 
 ### Phase 9 — incremental groundwork (in progress)
 
@@ -211,6 +226,25 @@ Vendored this round:
   project LayoutNode + `foldedChildren` / `childMeasurables` /
   `childLookaheadMeasurables`. None of these dispatchers are constructed
   yet.
+- `node/MeasureScopeWithLayoutNode.kt` (48 lines) — would have failed
+  before the package move (imports `LayoutNode.LayoutState`).
+- `node/LayoutTreeConsistencyChecker.kt` (154 lines) — debug tree
+  validator; needed `LayoutNode.placeOrder / measurePending / layoutPending
+  / lookaheadMeasurePending / lookaheadLayoutPending / measuredByParent
+  / isPlacedInLookahead / NotPlacedPlaceOrder` + `LayoutNode.UsageByParent`
+  nested enum + `MeasureAndLayoutDelegate.PostponedRequest` extracted into
+  `MeasureAndLayoutDelegate.shim.kt`. Nothing constructs it yet.
+
+LayoutNode surface bumps added for upstream parity (all no-op accessors):
+- `Constructor` companion + `NotPlacedPlaceOrder` const.
+- `isVirtual: Boolean = false` primary ctor flag.
+- `isDeactivated`, `placeOrder`, `measurePending`, `layoutPending`,
+  `lookaheadMeasurePending`, `lookaheadLayoutPending`, `measuredByParent`,
+  `isPlacedInLookahead`, `lookaheadRoot`, `LayoutState`, `UsageByParent`,
+  `globallyPositionedObservers`, `needsOnGloballyPositionedDispatch`,
+  `depth`, `foldedChildren`, `childMeasurables`,
+  `childLookaheadMeasurables`, `forEachChild`,
+  `dispatchOnPositionedCallbacks()`.
 
 ### THE typealias blocker
 
