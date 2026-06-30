@@ -135,7 +135,14 @@ class AnnotatedString(
 	val text: String,
 	val spanStyles: List<Range<SpanStyle>> = emptyList(),
 	val paragraphStyles: List<Range<ParagraphStyle>> = emptyList(),
-) {
+) : CharSequence {
+
+	// CharSequence delegates to the backing text — matches upstream
+	// `class AnnotatedString : CharSequence`.
+	override val length: Int get() = text.length
+	override operator fun get(index: Int): Char = text[index]
+	override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+		AnnotatedString(text.substring(startIndex, endIndex))
 
 	/* Span [start, end) with an associated style. Nested under
 	   AnnotatedString to match upstream's `AnnotatedString.Range<T>`.
@@ -154,8 +161,6 @@ class AnnotatedString(
 	 * the interface is dormant; presence-only.
 	 */
 	interface Annotation
-
-	val length: Int get() = text.length
 
 	override fun toString(): String = text
 
