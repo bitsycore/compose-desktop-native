@@ -188,7 +188,7 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 482. Shim count: 11.**
+**Vendor count: 485. Shim count: 11.**
 
 ### Phase 9 — package move + per-file vendoring
 
@@ -245,6 +245,21 @@ LayoutNode surface bumps added for upstream parity (all no-op accessors):
   `depth`, `foldedChildren`, `childMeasurables`,
   `childLookaheadMeasurables`, `forEachChild`,
   `dispatchOnPositionedCallbacks()`.
+
+Public `MeasurePolicy` (in `Layout.kt`) gained the 4 intrinsic-measure
+methods as `error("…")` defaults to mirror upstream — required for
+vendored `MultiContentMeasurePolicyImpl.kt`.
+
+Three additional small layout/foundation files vendored this round:
+- `ui/layout/RectRulers.kt` (110L) — pure value classes,
+  `HorizontalRectRulers` / `VerticalRectRulers` backed by `Ruler`.
+- `foundation/layout/RulerAlignment.kt` (118L) — `Modifier.layout {}`-
+  driven alignment helpers that pin children to RectRulers
+  edges / centers / baselines.
+- `ui/layout/MultiContentMeasurePolicy.kt` (239L) — used by
+  `SubcomposeLayout` to dispatch one MeasurePolicy across multiple
+  content slots; calls `getChildrenOfVirtualChildren` from the
+  just-vendored `MeasureScopeWithLayoutNode.kt`.
 
 ### THE typealias blocker
 
