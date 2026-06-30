@@ -296,8 +296,10 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
     internal fun invalidateParentData() { /* phase 2 no-op */ }
     internal fun requestAutofill() { /* phase 1 no-op */ }
 
-    /** Phase 2 surface: read by CompositionLocalConsumerModifierNode.currentValueOf. */
-    internal val compositionLocalMap: androidx.compose.runtime.CompositionLocalMap =
+    /** Phase 2 surface: read by CompositionLocalConsumerModifierNode.currentValueOf.
+        Now `var` (was `val`) so vendored `CompositionLocalMapInjectionNode`
+        in ComposedModifier.kt can write to it during onAttach + map updates. */
+    internal var compositionLocalMap: androidx.compose.runtime.CompositionLocalMap =
         androidx.compose.runtime.CompositionLocalMap.Empty
 
     // ============

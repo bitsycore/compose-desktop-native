@@ -144,6 +144,17 @@ class AnnotatedString(
 	   but accept it so call sites can target the upstream signature. */
 	data class Range<T>(val item: T, val start: Int, val end: Int, val tag: String = "")
 
+	/**
+	 * Marker interface for typed annotation payloads (TTS / URL / Link /
+	 * String / etc.). Mirrors upstream's nested
+	 * `AnnotatedString.Annotation` sealed interface — kept as plain
+	 * `interface` here so vendored subclasses (`TtsAnnotation`,
+	 * `LinkAnnotation`, `StringAnnotation`, `UrlAnnotation`) can extend
+	 * it freely. This renderer doesn't read annotation payloads yet, so
+	 * the interface is dormant; presence-only.
+	 */
+	interface Annotation
+
 	val length: Int get() = text.length
 
 	override fun toString(): String = text
