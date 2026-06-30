@@ -963,7 +963,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/UrlAnnotation.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
@@ -1352,8 +1352,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/Locale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/Locale.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/LocaleList.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/LocaleList.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/Locale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/Locale.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/LocaleList.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/LocaleList.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/AnnotatedString.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/CharHelpers.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
@@ -1648,6 +1648,18 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansio
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionContainer.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionContainer.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrarImpl.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrarImpl.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt
+# AnnotatedString.kt (1621 lines) — vendors clean over the runtime-saveable
+# dep (now in core/build.gradle.kts) and the Locale infrastructure
+# vendored alongside this file, BUT cascades into SpanStyle (928) +
+# ParagraphStyle (534) + TextStyle (1626) + TextDecoration + TextDirection
+# + TextIndent + PlatformParagraphStyle. The four style classes upstream are
+# tightly coupled — TextStyle wraps SpanStyle + ParagraphStyle internally —
+# and they have non-trivial dependencies on the full text engine
+# (LineHeightStyle, TextForegroundStyle, Brush gradient stops, etc.).
+# Plan a separate session for the text style port (multi-day) — until
+# then, project's hand-written AnnotatedString.kt provides the minimum
+# surface (text + spanStyles + paragraphStyles + Builder + Annotation
+# marker).
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/AnnotatedString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/AnnotatedString.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Savers.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/Savers.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
