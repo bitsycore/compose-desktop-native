@@ -58,6 +58,34 @@ class LayoutNode : androidx.compose.ui.semantics.SemanticsInfo {
         for (i in children.indices) block(children[i])
     }
 
+    /** Nearest lookahead-scope ancestor. Always null — lookahead pass is not
+     *  implemented; vendored `DepthSortedSet` / `DepthSortedSetsForDifferentPasses`
+     *  read this to decide which queue a node belongs to. */
+    internal val lookaheadRoot: LayoutNode? get() = null
+
+    /** Companion-style `LayoutNode.LayoutState` enum that upstream files
+     *  reference as `LayoutNode.LayoutState.Measuring` etc. We're always in
+     *  the `Idle` state — no real pass machine exists; the renderer drives
+     *  measure / place itself. */
+    enum class LayoutState { Measuring, LookaheadMeasuring, LayingOut, LookaheadLayingOut, Idle }
+
+    /** Always `Idle` until a real layout state machine lands. */
+    internal val layoutState: LayoutState get() = LayoutState.Idle
+
+    /** Children before virtual-node folding. Our model has no virtual nodes
+     *  (no SubcomposeLayout) so this is the same list as [children]. */
+    internal val foldedChildren: List<LayoutNode> get() = children
+
+    /** Children as upstream [androidx.compose.ui.layout.Measurable] instances —
+     *  vendored `MeasureScopeWithLayoutNode.getChildrenOfVirtualChildren`
+     *  flattens these. Each child wraps itself in a `LayoutNodeMeasurable`. */
+    internal val childMeasurables: List<androidx.compose.ui.layout.Measurable>
+        get() = children.map { androidx.compose.ui.layout.LayoutNodeMeasurable(it) }
+
+    /** Same as [childMeasurables] — no lookahead pass. */
+    internal val childLookaheadMeasurables: List<androidx.compose.ui.layout.Measurable>
+        get() = childMeasurables
+
     /** Upstream entry point called by `OnPositionedDispatcher.dispatchHierarchy`.
      *  Bridges to the project's existing dispatch path. */
     internal fun dispatchOnPositionedCallbacks() {
