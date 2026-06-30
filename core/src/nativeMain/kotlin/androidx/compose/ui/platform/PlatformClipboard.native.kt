@@ -52,6 +52,10 @@ actual class ClipEntry internal constructor() {
 
 	internal var plainText: String? = null
 
+	/** Project access for `ClipEntry.getPlainText()` (matches upstream's
+	 *  macOS / iOS / wasm actuals which expose the same accessor). */
+	fun getPlainText(): String? = plainText
+
 	companion object {
 		fun withPlainText(text: String): ClipEntry = ClipEntry().apply { plainText = text }
 	}

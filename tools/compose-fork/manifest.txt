@@ -824,7 +824,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/DifferentialVelocityTracker.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/DifferentialVelocityTracker.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/ClipboardUtils.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/internal/ClipboardUtils.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/internal/ClipboardUtils.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/internal/ClipboardUtils.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/LazyListSemantics.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/LazyListSemantics.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridBeyondBoundsModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridBeyondBoundsModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScope.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScope.kt
@@ -1057,7 +1057,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Border.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Border.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Clickable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Clickable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Focusable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Focusable.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/FocusedBounds.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/FocusedBounds.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/FocusedBounds.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/FocusedBounds.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/GestureNode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/GestureNode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Hoverable.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/Hoverable.kt
 # Indication.kt — needs `androidx.compose.ui.draw.DrawModifier` (project
