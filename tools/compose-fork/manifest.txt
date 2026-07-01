@@ -1852,6 +1852,12 @@ compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Arrangement.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Arrangement.kt
 # Small leaf helpers — no imports beyond Kotlin stdlib.
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/CharHelpers.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/CharHelpers.kt
+# ImeOptions — pure value-class + companions, needs only LocaleList (vendored).
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt                                             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
+# DelegatingFontLoaderForDeprecatedUsage — needs FontFamily.Resolver / ResourceLoader (unvendored).
+# InputEventCallback — needs EditCommand (unvendored — text input engine).
+# TextFieldValue — redeclares vs project TextFieldValue; needs AnnotatedString.annotatedString extension.
+# All three deferred to text-input engine vendor.
 # TestModifierUpdater — used by tests to inject modifier updates on a
 # specific LayoutNode. Small; uses ComposeUiNode setters we already have.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt                                             core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
@@ -1868,3 +1874,6 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Column.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Column.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnMeasurePolicy.kt           core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RowColumnMeasurePolicy.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt
+# FlowLayoutBuildingBlocks — needs `FlowLayoutOverflowState` from unvendored
+# FlowLayoutOverflow.kt. Phase 11+.
+# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt
