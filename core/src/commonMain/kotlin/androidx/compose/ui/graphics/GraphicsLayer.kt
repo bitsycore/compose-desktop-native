@@ -44,6 +44,62 @@ interface GraphicsLayerScope {
 		get() = androidx.compose.ui.geometry.Size.Zero
 }
 
+/**
+ * Upstream ships `CompositingStrategy` as a value class in TWO places:
+ * `androidx.compose.ui.graphics.CompositingStrategy` (inside
+ * GraphicsLayerModifier.kt) and `androidx.compose.ui.graphics.layer
+ * .CompositingStrategy`. Ours here is the graphics-package one — the
+ * `GraphicsLayerScope.compositingStrategy` uses it (Int in the project
+ * reduced impl becomes a value class here). Same underlying values
+ * (0/1/2 = Auto/Offscreen/ModulateAlpha).
+ */
+@kotlin.jvm.JvmInline
+value class CompositingStrategy internal constructor(private val value: Int) {
+	companion object {
+		val Auto: CompositingStrategy = CompositingStrategy(0)
+		val Offscreen: CompositingStrategy = CompositingStrategy(1)
+		val ModulateAlpha: CompositingStrategy = CompositingStrategy(2)
+	}
+}
+
+/**
+ * Upstream `ReusableGraphicsLayerScope` — an internal mutable implementation
+ * used by NodeCoordinator to compose a GraphicsLayerScope per-layer. Vendored
+ * `NodeCoordinator.kt` construct one; we ship the same interface impl.
+ */
+internal class ReusableGraphicsLayerScope : GraphicsLayerScope {
+	override var scaleX: Float = 1f
+	override var scaleY: Float = 1f
+	override var alpha: Float = 1f
+	override var translationX: Float = 0f
+	override var translationY: Float = 0f
+	override var shadowElevation: Float = 0f
+	override var ambientShadowColor: Color = Color.Black
+	override var spotShadowColor: Color = Color.Black
+	override var rotationX: Float = 0f
+	override var rotationY: Float = 0f
+	override var rotationZ: Float = 0f
+	override var cameraDistance: Float = 8f
+	override var transformOrigin: TransformOrigin = TransformOrigin.Center
+	override var shape: Shape = RectangleShape
+	override var clip: Boolean = false
+	override var compositingStrategy: Int = 0
+
+	/** Reset to defaults for reuse across nodes. */
+	fun reset() {
+		scaleX = 1f; scaleY = 1f; alpha = 1f
+		translationX = 0f; translationY = 0f
+		shadowElevation = 0f
+		ambientShadowColor = Color.Black; spotShadowColor = Color.Black
+		rotationX = 0f; rotationY = 0f; rotationZ = 0f
+		cameraDistance = 8f
+		transformOrigin = TransformOrigin.Center
+		shape = RectangleShape
+		clip = false
+		compositingStrategy = 0
+	}
+}
+
 /* Builder receiver passed to the `Modifier.graphicsLayer { ... }` lambda. */
 internal class GraphicsLayerScopeImpl : GraphicsLayerScope {
 	override var scaleX: Float = 1f
