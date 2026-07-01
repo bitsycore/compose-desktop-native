@@ -50,7 +50,7 @@ self-consistent batch.
   byte from `$CMP_REF` (default `../cmp-ref`) into
   `core/src/vendor/{common,native,skikoRenderer}/kotlin/`.
 - `find core/src/vendor -name "*.kt" | wc -l` — vendored file count
-  (currently **509**).
+  (currently **517**).
 - `find core/src -name '*.shim.kt' | wc -l` — shim file count
   (currently **13**).
 - **The vendored tree is no longer committed** — `core/src/vendor/` is
@@ -195,7 +195,34 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 509. Shim count: 13.**
+**Vendor count: 517. Shim count: 13.**
+
+### New-type batch sweep (509→517)
+
+Automated "new-type" sweep: for every commented common/native candidate,
+checked whether it declares any top-level name already present in the compiled
+tree (project + vendor). Files declaring **only names absent everywhere** are
+"new leaves" — adding them can't break existing project code (nothing
+references them), and any unmet dependency prunes cleanly. 90 such candidates
+found; a batch uncomment + sync + compile-and-re-comment-failures loop
+converged green with **8 kept**:
+
+- `foundation/lazy/layout/LazyLayoutAnimateItemModifier.kt`,
+  `LazyLayoutScrollDeltaBetweenPasses.kt`, `LazySaveableStateHolder.kt`
+- `foundation/text/selection/PlatformSelectionBehaviors.kt` + its
+  `.native.kt` actual
+- native actuals completing already-vendored expects:
+  `ui/animation/Animation.native.kt`,
+  `ui/platform/PlatformScreenReader.native.kt`,
+  `ui/platform/PlatformPrefetchScheduler.native.kt`
+
+The other 82 pruned on unmet deps (their referenced types are the entangled,
+engine-gated ones). **Confirmed dead end for leaf vendoring**: an earlier
+attempt to batch the `ui/graphics/` area went red because vendored graphics
+files *replace* project stubs the renderer/`Background.kt` depend on — those
+land only with Phase 8 (draw) / the graphics-layer engine, not as leaves.
+Net: the safely-vendorable leaves are essentially swept; further progress is
+gated on the engine phases below.
 
 ### Vendored tree untracked + leaf-vendor round (507→509)
 
