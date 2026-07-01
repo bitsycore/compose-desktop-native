@@ -980,13 +980,13 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/UrlAnnotation.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
-# compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt
+compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.native.kt
