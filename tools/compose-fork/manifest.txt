@@ -833,8 +833,8 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # ──────────────────────────────────────────────────────────────────────────
 # ▼ candidate-small (228 files)
 # ──────────────────────────────────────────────────────────────────────────
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt
-# compose/animation/animation/src/nonJvmMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.native.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt
+compose/animation/animation/src/nonJvmMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.native.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Spacer.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Spacer.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.kt
 # compose/foundation/foundation-layout/src/nonJvmMain/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/layout/internal/JvmDefaultWithCompatibility.native.kt
@@ -865,7 +865,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TouchMode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TouchMode.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TouchMode.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TouchMode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/gestures/RightClickGestures.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/gestures/RightClickGestures.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt
