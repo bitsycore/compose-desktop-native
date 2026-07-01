@@ -1,5 +1,8 @@
-package androidx.compose.foundation
+package com.compose.desktop.native.scrollbar
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.hoverable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.MutableInteractionSource

@@ -10,6 +10,7 @@ import androidx.compose.ui.draw.clip
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import com.compose.desktop.native.scrollbar.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
