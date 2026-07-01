@@ -90,7 +90,11 @@ internal object StubOwner : Owner {
 			containsControls: Boolean,
 		): Long = originalTimeoutMillis
 	}
-	override val graphicsContext: GraphicsContext = object : GraphicsContext {}
+	override val graphicsContext: GraphicsContext = object : GraphicsContext {
+		override fun createGraphicsLayer(): GraphicsLayer =
+			throw NotImplementedError("createGraphicsLayer not wired on StubOwner")
+		override fun releaseGraphicsLayer(layer: GraphicsLayer) = Unit
+	}
 	override val textToolbar: TextToolbar = object : TextToolbar {
 		override val status: androidx.compose.ui.platform.TextToolbarStatus
 			get() = androidx.compose.ui.platform.TextToolbarStatus.Hidden

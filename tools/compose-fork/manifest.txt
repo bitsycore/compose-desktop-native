@@ -1676,7 +1676,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasuredItem.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasuredItem.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/layout/LazyLayoutItemAnimation.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/layout/LazyLayoutItemAnimation.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGridMeasure.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGridMeasure.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt
