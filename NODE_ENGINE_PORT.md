@@ -188,7 +188,7 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 494. Shim count: 11.**
+**Vendor count: 497. Shim count: 11.**
 
 ### foundation-layout swap (this round)
 
