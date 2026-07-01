@@ -1854,6 +1854,11 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/CharHelpers.kt                                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/CharHelpers.kt
 # ImeOptions — pure value-class + companions, needs only LocaleList (vendored).
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt                                             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
+# PlatformTextInputMethodRequest — bare marker interface, no imports.
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
+# MeshGradientRenderer — needs `MeshGradientConfig` (unvendored, part of
+# the mesh-gradient graphics subsystem).
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt
 # DelegatingFontLoaderForDeprecatedUsage — needs FontFamily.Resolver / ResourceLoader (unvendored).
 # InputEventCallback — needs EditCommand (unvendored — text input engine).
 # TextFieldValue — redeclares vs project TextFieldValue; needs AnnotatedString.annotatedString extension.
