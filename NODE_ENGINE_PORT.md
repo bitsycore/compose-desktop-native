@@ -195,8 +195,8 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 521. Shim count: 27.** Step A of the Phase 9 plan below is
-**done and merged on `main`**.
+**Vendor count: 532. Shim count: 27.** Steps A + A2 of the Phase 9 plan
+below are **done and merged on `main`**.
 
 ### Step A landed (Owner + subsystem stubs)
 
@@ -228,6 +228,35 @@ All 5 build paths green; demo Buttons hash unchanged
 `expect class` (437L, 40+ members) + skiko actual (513L, uses Skia
 directly) + hand-written SDL3-path native no-op actual. Blocks all
 downstream NodeCoordinator vendoring.
+
+### Step A2 landed (GraphicsLayer engine)
+
+- Upstream `ui-graphics/layer/GraphicsLayer.kt` (437L `expect class` with
+  40+ members) + `CompositingStrategy.kt` (64L) +
+  `ChildLayerDependenciesTracker.kt` (113L) vendored verbatim.
+- Native actual (~90L) — plain field bag with no rendering behavior.
+  Nothing in the project's renderer path constructs a GraphicsLayer yet;
+  setters store values, `record` / `draw` are no-ops, `toImageBitmap`
+  throws.
+- Supporting bumps: `DrawScope.drawContext: DrawContext` interface
+  member; `DrawContext.canvas` (throws) + `graphicsLayer: GraphicsLayer?`
+  (null); `DrawContext.shim.kt` provides `drawIntoCanvas` inline no-op
+  extension; `Outline.Rounded.roundRectPath: Path?` always null;
+  `DrawScope.Companion.DefaultBlendMode = SrcOver`.
+- On top: vendored `ui-graphics/shadow/Shadow.kt` (Immutable data class),
+  `foundation/text/TouchMode.kt` + native `isInTouchMode = false`,
+  `ContextMenuIcons` / `ContextMenuStrings` + native actuals,
+  `TextPointerIcon` + native default actual, `CodepointHelpers` /
+  `ToCharArray` + native pure-Kotlin actuals, `animation/internal/
+  JvmDefaultWithCompatibility`.
+
+**What's next (Step B):** vendor upstream `NodeCoordinator.kt` (1796L).
+Requires `ReusableGraphicsLayerScope` (inside upstream
+`GraphicsLayerScope.kt` — 511L, retires our hand-written GraphicsLayerScope
++ Modifier.graphicsLayer chain), `LookaheadLayoutCoordinates` (needs
+`LookaheadDelegate` — 872L), plus the coordinator itself is welded to
+every renderer/window/applier reader in the project. **This is the
+atomic red-branch swap.**
 
 ### Phase 9 is a big-bang — confirmed no incremental green path
 
