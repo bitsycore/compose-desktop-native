@@ -209,6 +209,6 @@ internal class LayoutNodePlaceable(private val fNode: LayoutNode) : Placeable() 
 
 	override val width: Int get() = fNode.width
 	override val height: Int get() = fNode.height
-	override val parentData: Any? get() = fNode.cachedLayoutWeight
+	override val parentData: Any? get() = fNode.cachedParentData
 	override fun placeAt(inX: Int, inY: Int) { fNode.place(inX, inY) }
 }

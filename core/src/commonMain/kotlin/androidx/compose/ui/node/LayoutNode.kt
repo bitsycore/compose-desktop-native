@@ -243,6 +243,19 @@ class LayoutNode(
         private set
 
     /**
+     * Parent data this node exposes to its parent's MeasurePolicy, computed by
+     * folding every `ParentDataModifierNode` in the Modifier.Node chain via
+     * `Density.modifyParentData(parentData)` — exactly upstream's contract
+     * (`Modifier.foldOut`, innermost→outermost). This is what upstream Row /
+     * Column / Box read as `measurable.parentData` to pick up `weight` / `fill`
+     * (`RowColumnParentData`), Box `align` / `matchParentSize` (`BoxChildDataNode`),
+     * and `Modifier.layoutId` (`LayoutIdParentData`). Recomputed in
+     * [recomputeChainCaches]; `null` when the chain has no ParentDataModifierNode.
+     */
+    var cachedParentData: Any? = null
+        private set
+
+    /**
      * Every [androidx.compose.ui.node.LayoutModifierNode] in the chain,
      * head→tail order. The layout pass invokes each one's `measure(...)`
      * outermost-first, wrapping the next inner modifier (and finally the
@@ -278,6 +291,27 @@ class LayoutNode(
     var contentOffsetX: Int = 0
         private set
     var contentOffsetY: Int = 0
+        private set
+
+    /**
+     * Translation applied to *this node itself* (its own background / border /
+     * text / painter) as well as its children — as opposed to [contentOffsetX]
+     * which shifts children only. This is the difference between
+     * `Modifier.offset` (translates the whole node; the box the parent reserved
+     * stays put but the visual moves) and `Modifier.padding` (insets children,
+     * the node's own background still fills the padded box from its origin).
+     *
+     * A chain layout-modifier is classified as offset-style (→ selfOffset) vs
+     * inset-style (→ contentOffset) by whether it grew the box: an offset
+     * reports the same size as its child and places it at a delta, padding
+     * reports a larger size. [absoluteX]/[absoluteY] add selfOffset to the
+     * node's own position (children inherit it via `parent.absoluteX`), so it
+     * moves everything the node draws — fixing `Modifier.offset` on a leaf that
+     * paints (text cursor, selection highlight, a background-carrying dropdown).
+     */
+    var selfOffsetX: Int = 0
+        private set
+    var selfOffsetY: Int = 0
         private set
 
     /** Outermost MeasureResult from the chain measure pipeline — its `placeChildren()` runs at `place(x, y)` time to propagate offsets inward. */
@@ -366,6 +400,7 @@ class LayoutNode(
         // Phase-8-style chain-driven draw.
         var lmnList: MutableList<androidx.compose.ui.node.LayoutModifierNode>? = null
         var dmnList: MutableList<androidx.compose.ui.node.DrawModifierNode>? = null
+        var pdnList: MutableList<androidx.compose.ui.node.ParentDataModifierNode>? = null
         var n: androidx.compose.ui.Modifier.Node? = nodes.head.child
         while (n != null) {
             if (n is androidx.compose.ui.node.LayoutModifierNode) {
@@ -374,9 +409,28 @@ class LayoutNode(
             if (n is androidx.compose.ui.node.DrawModifierNode) {
                 (dmnList ?: mutableListOf<androidx.compose.ui.node.DrawModifierNode>().also { dmnList = it }).add(n)
             }
+            if (n is androidx.compose.ui.node.ParentDataModifierNode) {
+                (pdnList ?: mutableListOf<androidx.compose.ui.node.ParentDataModifierNode>().also { pdnList = it }).add(n)
+            }
             n = n.child
         }
         cachedLayoutModifierNodes = lmnList ?: emptyList()
+
+        // Fold ParentDataModifierNodes into the parent data this node exposes.
+        // Upstream applies `Modifier.foldOut` (innermost→outermost), so the
+        // node closest to the content computes first and outer nodes wrap its
+        // result. Our chain is head(outer)→tail(inner) via `.child`, so fold
+        // the collected list in reverse (tail→head). density is the Density
+        // receiver `Density.modifyParentData` requires.
+        var pd: Any? = null
+        val vDensity = density
+        pdnList?.asReversed()?.forEach { pdn ->
+            // modifyParentData is a member-extension `fun Density.modifyParentData`
+            // on the node: node is the dispatch receiver (via `with`), density the
+            // extension receiver (left of the dot).
+            with(pdn) { pd = vDensity.modifyParentData(pd) }
+        }
+        cachedParentData = pd
         cachedDrawModifierNodes = dmnList ?: emptyList()
     }
 
@@ -608,12 +662,12 @@ class LayoutNode(
     /* Parent's scroll offset shifts this node's visual position; the node's
        own scroll offset applies to its children but not to itself. */
     val absoluteX: Int get() {
-        val p = parent ?: return x
-        return x + p.absoluteX + p.contentOffsetX - p.scrollOffsetX
+        val p = parent ?: return x + selfOffsetX
+        return x + selfOffsetX + p.absoluteX + p.contentOffsetX - p.scrollOffsetX
     }
     val absoluteY: Int get() {
-        val p = parent ?: return y
-        return y + p.absoluteY + p.contentOffsetY - p.scrollOffsetY
+        val p = parent ?: return y + selfOffsetY
+        return y + selfOffsetY + p.absoluteY + p.contentOffsetY - p.scrollOffsetY
     }
 
     // ============
@@ -689,7 +743,30 @@ class LayoutNode(
             current = object : androidx.compose.ui.layout.Measurable {
                 override val parentData: Any? = null
                 override fun measure(c: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
-                    val result = with(lmn) { scope.measure(inner, c) }
+                    // Wrap `inner` so we capture the placeable lmn measures. After
+                    // measuring, tag it: if lmn reported the same size as its child
+                    // it's a translate (Modifier.offset) → its deferred placeAt
+                    // routes to selfOffset; if it grew the box it's an inset
+                    // (Modifier.padding) → contentOffset.
+                    var innerPlaceable: androidx.compose.ui.layout.Placeable? = null
+                    val recording = object : androidx.compose.ui.layout.Measurable {
+                        override val parentData: Any? = null
+                        override fun measure(rc: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable =
+                            inner.measure(rc).also { innerPlaceable = it }
+                        override fun minIntrinsicWidth(height: Int): Int = inner.minIntrinsicWidth(height)
+                        override fun maxIntrinsicWidth(height: Int): Int = inner.maxIntrinsicWidth(height)
+                        override fun minIntrinsicHeight(width: Int): Int = inner.minIntrinsicHeight(width)
+                        override fun maxIntrinsicHeight(width: Int): Int = inner.maxIntrinsicHeight(width)
+                    }
+                    val result = with(lmn) { scope.measure(recording, c) }
+                    val ip = innerPlaceable
+                    if (ip != null) {
+                        val vTranslateLike = result.width == ip.width && result.height == ip.height
+                        when (ip) {
+                            is ChainStepPlaceable -> ip.placerTranslateLike = vTranslateLike
+                            is ChainLeafPlaceable -> ip.placerTranslateLike = vTranslateLike
+                        }
+                    }
                     return ChainStepPlaceable(result, outerNode)
                 }
                 override fun minIntrinsicWidth(height: Int): Int = 0
@@ -717,26 +794,44 @@ class LayoutNode(
         val result: androidx.compose.ui.layout.MeasureResult,
         val node: LayoutNode,
     ) : androidx.compose.ui.layout.Placeable() {
+        /** Set by the placing modifier's wrapper: true when that modifier
+         *  translated without growing the box (offset-style) → route to
+         *  selfOffset; false (default) for inset-style (padding) → contentOffset. */
+        var placerTranslateLike: Boolean = false
         override val width: Int = result.width
         override val height: Int = result.height
         override fun placeAt(inX: Int, inY: Int) {
-            node.contentOffsetX += inX
-            node.contentOffsetY += inY
+            node.addChainOffset(inX, inY, placerTranslateLike)
             result.placeChildren()
         }
     }
 
     /**
      * Leaf Placeable for the chain — wraps the LayoutNode's natural measure.
-     * `placeAt(x, y)` accumulates into contentOffset (the natural measure
-     * has already set width/height on the LayoutNode).
+     * `placeAt(x, y)` accumulates into selfOffset (offset-style placer) or
+     * contentOffset (inset-style); the natural measure has already set
+     * width/height on the LayoutNode.
      */
     private class ChainLeafPlaceable(val node: LayoutNode) : androidx.compose.ui.layout.Placeable() {
+        var placerTranslateLike: Boolean = false
         override val width: Int get() = node.width
         override val height: Int get() = node.height
         override fun placeAt(inX: Int, inY: Int) {
-            node.contentOffsetX += inX
-            node.contentOffsetY += inY
+            node.addChainOffset(inX, inY, placerTranslateLike)
+        }
+    }
+
+    /** Accumulate a chain placement delta into the right bucket:
+     *  [selfOffsetX]/[selfOffsetY] when the placer is offset-style (moves the
+     *  node itself + children), else [contentOffsetX]/[contentOffsetY]
+     *  (children only). */
+    private fun addChainOffset(inX: Int, inY: Int, inTranslateLike: Boolean) {
+        if (inTranslateLike) {
+            selfOffsetX += inX
+            selfOffsetY += inY
+        } else {
+            contentOffsetX += inX
+            contentOffsetY += inY
         }
     }
 
@@ -831,11 +926,15 @@ class LayoutNode(
         this.x = x
         this.y = y
         // Reset and replay the LayoutModifierNode chain's placement so each
-        // wrapping layout block's `placeable.place(dx, dy)` accumulates into
-        // contentOffsetX/Y. Children then render at (parent.contentOffsetX +
-        // child.x, ...) via absoluteX/Y.
+        // wrapping layout block's `placeable.place(dx, dy)` re-accumulates into
+        // contentOffsetX/Y (inset modifiers → children shift) or selfOffsetX/Y
+        // (offset modifiers → the node itself + children shift), via
+        // addChainOffset. Children render at (parent.contentOffsetX + child.x
+        // + child.selfOffsetX, ...) through absoluteX/Y.
         contentOffsetX = 0
         contentOffsetY = 0
+        selfOffsetX = 0
+        selfOffsetY = 0
         pendingChainResult?.placeChildren()
     }
 

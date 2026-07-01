@@ -197,6 +197,35 @@ dispatch; the rest still use foldIn.
 
 **Vendor count: 517. Shim count: 13.**
 
+### Flattened-model layout fixes (interim, obsoleted by Phase 9)
+
+Two regressions surfaced after the foundation-layout vendoring (Row/Column/Box +
+Offset), both rooted in the flattened single-`LayoutNode` model collapsing
+upstream's per-modifier `NodeCoordinator` graph. Fixed in the project
+`androidx.compose.ui.node.LayoutNode` faithfully to Compose *semantics*; both
+patches disappear once upstream `LayoutNode` + `NodeCoordinator` land (Phase 9).
+
+- **`parentData` fold** — vendored `RowColumnMeasurePolicy`/`Box` read
+  `measurable.parentData as? RowColumnParentData` (weight/fill) /
+  `BoxChildDataNode` (align) / `LayoutIdParentData`, but the project hardcoded a
+  dead `cachedLayoutWeight`. Now `LayoutNode.cachedParentData` folds the chain's
+  `ParentDataModifierNode`s via `Density.modifyParentData` (upstream's
+  `Modifier.foldOut` order), and both `LayoutNodeMeasurable`/`LayoutNodePlaceable`
+  expose it. Fixes `Modifier.weight` (button-pushed-to-row-end, weighted fields)
+  and Box `align`/`matchParentSize`/`layoutId`.
+- **`selfOffset` vs `contentOffset`** — the chain routed *every* layout-modifier
+  placement into `contentOffsetX/Y`, which shifts a node's **children only**.
+  Correct for `padding` (node's own background still fills the padded box) but
+  wrong for `offset`, which must translate the node **itself** (its own
+  background/text/painter). A leaf that paints (text cursor, selection
+  highlight, a background-carrying dropdown) therefore never moved. Now a chain
+  step is classified offset-style (placed child without growing the box) →
+  `selfOffsetX/Y` (added to the node's own `absoluteX/Y`, inherited by children)
+  vs inset-style (grew the box) → `contentOffsetX/Y` (children only). Fixes
+  caret-stuck-at-start, selection-rect-stuck-on-line-0, and popup/dropdown
+  drawn at the window's top-left. Upstream gives each layout modifier its own
+  coordinator, so Phase 9 removes the need for this classification.
+
 ### New-type batch sweep (509→517)
 
 Automated "new-type" sweep: for every commented common/native candidate,

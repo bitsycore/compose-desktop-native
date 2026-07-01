@@ -16,10 +16,11 @@ import androidx.compose.ui.node.LayoutNode
    parentData stays null until we port ParentDataModifierNode. */
 internal class LayoutNodeMeasurable(val fNode: LayoutNode) : Measurable {
 
-	/** Project-shape parent data — Row/Column read this to discover
-	 *  `LayoutWeightModifier`. Upstream uses ParentDataModifierNode
-	 *  dispatch; we forward the project's cached weight modifier directly. */
-	override val parentData: Any? get() = fNode.cachedLayoutWeight
+	/** Parent data exposed to the parent's MeasurePolicy — the value folded
+	 *  from the chain's `ParentDataModifierNode`s (upstream contract). This is
+	 *  what vendored Row/Column/Box read as `measurable.parentData` for
+	 *  `weight`/`fill`, `align`/`matchParentSize`, and `layoutId`. */
+	override val parentData: Any? get() = fNode.cachedParentData
 
 	override fun measure(inConstraints: Constraints): Placeable {
 		fNode.measure(inConstraints)
