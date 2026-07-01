@@ -195,7 +195,70 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 517. Shim count: 13.**
+**Vendor count: 517. Shim count: 13.** Branch `phase9-node-engine` opened for
+the big-bang (below); `main` stays green + runnable.
+
+### Phase 9 is a big-bang — confirmed no incremental green path
+
+Established empirically from five independent angles that no more layout/node
+files can be vendored while keeping the build green:
+
+1. `ui/graphics/` batch → vendored graphics files *replace* project stubs the
+   renderer + `Background.kt` depend on → cascades into project code.
+2. `ui/node/` survey → all 20 unvendored files gated on the real
+   `NodeCoordinator` / `GraphicsLayer` engine / `Owner` / semantics / focus.
+3. `foundation/layout`+`ui/layout` batch-prune → deleted load-bearing committed
+   files (even `Modifier`) when a conflict made them error. **Batch-prune is
+   banned for conflict-heavy areas.**
+4. FlowRow/FlowColumn cluster → needs `ContextualFlowLayout` → `SubcomposeLayout`
+   (itself gated) + a redeclaration conflict.
+5. Safe per-file loop over `ui/node` → only 2 marginal native actuals compiled
+   (`FrameRateVoteCollector` — explicitly out-of-scope — and
+   `TraversableNodeInDrawOrder`); everything else conflicts or is gated.
+
+The remaining layout engine only lands as **one atomic swap** with **no green
+checkpoint until the migration is largely complete** (the doc's long-standing
+Phase 9 warning). The `selfOffset` + `parentData`-fold patches (on `main`) are
+the correct interim; the big-bang obsoletes them.
+
+### Phase 9 execution plan (staged — for the `phase9-node-engine` branch)
+
+Do it in this order; expect a red tree from step B until step E lands.
+
+- **A. Prereq engines (each its own sub-bundle, vendor + shim to compile):**
+  the `androidx.compose.ui.graphics.layer.GraphicsLayer` engine (+ skiko/native
+  actuals) and a *real* `Owner` (retire `Owner.shim.kt`) — or a fuller Owner
+  shim exposing `requestRelayout`/`requestRemeasure`/`requestLookaheadRemeasure`
+  /`invalidateSemantics`/`requireGraphicsContext`/`snapshotObserver`.
+- **B. Coordinator core (atomic):** `NodeCoordinator.kt` (1796) +
+  `InnerNodeCoordinator.kt` (259) + `LayoutModifierNodeCoordinator.kt` (321) +
+  `LookaheadCapablePlaceable.kt` (retire the shim) — replaces the project
+  `NodeCoordinator`.
+- **C. Layout delegates (atomic):** `LayoutNodeLayoutDelegate.kt` +
+  `MeasurePassDelegate.kt` + `LookaheadPassDelegate.kt` + `LookaheadDelegate.kt`
+  + `LayoutNodeAlignmentLines.kt` + `MeasureAndLayoutDelegate.kt` +
+  `OwnerSnapshotObserver.kt` (retire shim) + `DepthSortedSet` (already vendored).
+- **D. Upstream `LayoutNode.kt` (1608) + `NodeChain.kt` (809, upstream) +
+  `Placeable.kt`/`PlacementScope.kt` (585):** delete the project
+  `androidx.compose.ui.node.LayoutNode` + project `Placeable`; retire
+  `LayoutNode.shim`-era helpers, `ListForEachReversed.shim`, `NodeKind.shim`
+  (→ upstream `NodeKind.kt`, needs `BackwardsCompatNode` + focus/semantics node
+  kinds).
+- **E. Migrate every reader** off project internals onto upstream API:
+  - `:window` `ComposeWindow.kt` — `ComposeNode<LayoutNode, NodeApplier>` →
+    upstream `DefaultUiApplier`; drive `MeasureAndLayoutDelegate` per frame
+    instead of `rootNode.measure(...).place(...)`.
+  - Both renderers (`Sdl3Renderer`, `SkiaRenderer`) — currently read
+    `node.absoluteX/absoluteY/width/height/children/drawer/scrollOffset`;
+    switch to walking `NodeCoordinator` + `LayoutNodeDrawScope`.
+  - `com.compose.desktop.native.node.NodeApplier` — delete / replace.
+  - Every `Modifier.Element` reader that touches project `LayoutNode` fields.
+- **Verification gate (per merge):** all five build paths + Skia & SDL3
+  `--screenshot` byte-identical to baseline across the 30+ demo screens
+  **and** an apidemo smoke pass (caret / selection / dropdown / weight).
+
+**Reality:** steps A–E are multi-session and produce a red branch mid-flight.
+This turn set up the branch + plan; execution proceeds in dedicated passes.
 
 ### Flattened-model layout fixes (interim, obsoleted by Phase 9)
 
