@@ -11,7 +11,12 @@ package androidx.compose.ui.text.input
 @Deprecated("Use PlatformTextInputModifierNode instead")
 open class TextInputService(
 	@Suppress("UNUSED_PARAMETER") platformTextInputService: PlatformTextInputService,
-)
+) {
+	@Deprecated("Not supported on desktop")
+	fun showSoftwareKeyboard() = Unit
+	@Deprecated("Not supported on desktop")
+	fun hideSoftwareKeyboard() = Unit
+}
 
 /** Marker for upstream `PlatformTextInputService`. */
 @Deprecated("Use PlatformTextInputModifierNode instead")

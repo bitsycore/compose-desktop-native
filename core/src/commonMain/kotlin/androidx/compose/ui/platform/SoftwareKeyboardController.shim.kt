@@ -4,14 +4,7 @@ package androidx.compose.ui.platform
 // MARK: SoftwareKeyboardController shim
 // ==================
 
-/**
- * Marker for upstream `SoftwareKeyboardController`. Desktop has no
- * on-screen soft keyboard.
- */
-interface SoftwareKeyboardController {
-	fun show() {}
-	fun hide() {}
-}
+// SoftwareKeyboardController comes from vendored upstream now.
 
 /** Marker for upstream `PlatformTextInputSessionScope`. */
 interface PlatformTextInputSessionScope

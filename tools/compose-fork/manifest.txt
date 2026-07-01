@@ -1433,7 +1433,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt  c
 # of commonMain. With our single-target native source set, simpler to
 # hand-write the actuals + ClipMetadata directly in nativeMain.
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt  core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt  core/src/vendor/common/kotlin/androidx/compose/ui/semantics/SemanticsInfo.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt  core/src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Popup.kt  core/src/vendor/common/kotlin/androidx/compose/ui/window/Popup.kt

@@ -111,7 +111,10 @@ internal object StubOwner : Owner {
 	override val textInputService: TextInputService =
 		TextInputService(object : PlatformTextInputService {})
 	override val softwareKeyboardController: SoftwareKeyboardController =
-		object : SoftwareKeyboardController {}
+		object : SoftwareKeyboardController {
+			override fun show() = Unit
+			override fun hide() = Unit
+		}
 	override val pointerIconService: PointerIconService = object : PointerIconService {}
 	override val semanticsOwner: SemanticsOwner = SemanticsOwner()
 	override val focusOwner: FocusOwner = object : FocusOwner {}
