@@ -195,8 +195,9 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 532. Shim count: 27.** Steps A + A2 of the Phase 9 plan
-below are **done and merged on `main`**.
+**Vendor count: 533. Shim count: 28.** Steps A + A2 done, plus Step B
+prereqs (GraphicsContext vendored, ReusableGraphicsLayerScope +
+CompositingStrategy + ShadowContext + LocalGraphicsContext shims added).
 
 ### Step A landed (Owner + subsystem stubs)
 
@@ -257,6 +258,50 @@ Requires `ReusableGraphicsLayerScope` (inside upstream
 `LookaheadDelegate` — 872L), plus the coordinator itself is welded to
 every renderer/window/applier reader in the project. **This is the
 atomic red-branch swap.**
+
+### Step B prereqs partly landed
+
+Since the last doc bump, extra prereq groundwork toward Step B has
+merged to main:
+
+- **`GraphicsContext.kt` upstream vendored** (48L) — retires the 13L
+  `GraphicsContext.shim.kt`. Real interface has abstract
+  `createGraphicsLayer()` + `releaseGraphicsLayer()` + default
+  `shadowContext`.
+- **`shadow/ShadowContext.shim.kt`** (7L) — `ShadowContext` +
+  `PlatformShadowContext` marker interfaces so vendored GraphicsContext
+  compiles.
+- **`LocalGraphicsContext.shim.kt`** (23L) — `staticCompositionLocalOf
+  <GraphicsContext>` default. Vendored consumers (upstream
+  GraphicsLayerScope, PainterCache, etc.) read it via `.current`.
+- **`ReusableGraphicsLayerScope`** + `CompositingStrategy` value class
+  added to the hand-written `GraphicsLayer.kt` in `androidx.compose.ui
+  .graphics`. Upstream ships CompositingStrategy in TWO places (the
+  `layer/` file — already vendored — and the `graphics/` file next to
+  GraphicsLayerScope); ours matches shape but shares no code with the
+  layer/ version. `ReusableGraphicsLayerScope` is mutable-reset scope
+  NodeCoordinator uses per-layer.
+- Retired shim: `Owner.shim.kt`, `GraphicsContext.shim.kt`,
+  `GraphicsLayer.shim.kt`, `SoftwareKeyboardController.shim.kt` chunk.
+
+Remaining Step B blockers:
+1. **Upstream `GraphicsLayerScope.kt`** (511L) — retires our hand-
+   written interface. Every vendored consumer (Crossfade, Alpha, Clip,
+   Rotate, Scale) uses our `Modifier.graphicsLayer` chain today; the
+   swap breaks that chain because upstream expects `GraphicsLayerScope`
+   to extend `Density` + carry a full property set including `outline`,
+   `renderEffect`, `blendMode`, etc.
+2. **Upstream `LookaheadDelegate.kt`** (872L) + `LookaheadLayoutCoordinates
+   .kt` — circular deps with NodeCoordinator; LookaheadCapablePlaceable
+   is the base for both.
+3. **Upstream `NodeCoordinator.kt`** (1796L) + `InnerNodeCoordinator` +
+   `LayoutModifierNodeCoordinator` — the atomic bundle. Retires project
+   NodeCoordinator (128L).
+4. Every renderer/window/applier reader migrated off project LayoutNode
+   fields.
+
+Steps B–E remain the atomic multi-session red-branch swap; single-turn
+attempts break at (1)'s cascade.
 
 ### Phase 9 is a big-bang — confirmed no incremental green path
 
