@@ -188,7 +188,49 @@ dispatch; the rest still use foldIn.
 
 ## Where we are now
 
-**Vendor count: 497. Shim count: 11.**
+**Vendor count: 502. Shim count: 13.**
+
+### Big foundation-layout swap (this round)
+
+`Row.kt` (410L), `Column.kt` (392L), `RowColumnMeasurePolicy.kt` (279L),
+`RowColumnImpl.kt` (658L), and `Layout.kt` (419L) all vendored
+**verbatim** — the entire core `foundation.layout` composable set is
+upstream now. Combined with previously landed `Box.kt` + `Arrangement.kt`
++ `Spacer.kt` + `Padding.kt` + `Size.kt` + `Offset.kt` + `AspectRatio.kt`
++ `Intrinsic.kt`, only `Scrollbar.kt` (project-specific, no upstream
+equivalent) remains hand-written in that package.
+
+Retired hand-written files this round:
+- `foundation/layout/Row.kt`, `Column.kt`, `RowColumnScope.kt`
+- `ui/layout/Layout.kt` (project version), `LayoutIntrinsicsHelpers.kt`
+  (its 6 types now come from vendored Layout.kt itself)
+
+Placeable surface bumps:
+- Now `: Measured` — gains `measuredWidth`, `measuredHeight`, `parentData`
+  (default null), `get(AlignmentLine)`.
+- `LayoutNodePlaceable.parentData` forwards `LayoutNode.cachedLayoutWeight`
+  so vendored Row/Column pick up weight via either Measurable or
+  Placeable parent-data reads.
+- `protected var measuredSize: IntSize` — upstream `FixedSizeIntrinsicsPlaceable`
+  init sets it; default width/height derive from measuredSize.
+- `open fun placeAt(x, y)` (was abstract) + new `open fun placeAt(position:
+  IntOffset, zIndex: Float, layerBlock: (GraphicsLayerScope.() -> Unit)?)`.
+  Existing project subclasses continue overriding the 2-arg form; vendored
+  types override the 3-arg form. Defaults route between them.
+
+LayoutNode surface bumps:
+- `canMultiMeasure: Boolean` — upstream flag for SubcomposeLayout
+  multi-measure; unused.
+
+New shims (2):
+- `foundation/layout/FlowLayoutData.shim.kt` (5L) — `data class
+  FlowLayoutData(var fillCrossAxisFraction: Float)`. Extracted from
+  unvendored 1584L FlowLayout.kt; the vendored RowColumnParentData
+  reads it via null-optional field.
+- `ui/layout/ApproachMeasureScope.shim.kt` (17L) — marker interfaces
+  `ApproachIntrinsicMeasureScope` / `ApproachMeasureScope`. Vendored
+  Layout.kt declares an `ApproachIntrinsicsMeasureScope` that needs
+  them as types only; not constructed.
 
 ### foundation-layout swap (this round)
 
