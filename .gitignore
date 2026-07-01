@@ -50,3 +50,9 @@ bin/
 ### Project ###
 /libs/
 /temp.txt
+
+### Vendored Compose sources ###
+# Byte-for-byte verbatim copies from JetBrains/compose-multiplatform-core,
+# regenerated on demand by tools/compose-fork/sync.sh. Not committed — only the
+# sync tooling (script + manifest + pinned ref + README) is tracked.
+/core/src/vendor/
