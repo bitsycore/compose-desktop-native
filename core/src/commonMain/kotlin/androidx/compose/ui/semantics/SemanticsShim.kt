@@ -83,6 +83,12 @@ var SemanticsPropertyReceiver.progressBarRangeInfo: ProgressBarRangeInfo
 	get() = ProgressBarRangeInfo.Indeterminate
 	set(value) = Unit
 
+/** Upstream `SemanticsPropertyReceiver.contentType` — set by
+ *  `Modifier.contentType(ContentType.X)` to tag a field for autofill. */
+var SemanticsPropertyReceiver.contentType: androidx.compose.ui.autofill.ContentType
+	get() = androidx.compose.ui.autofill.ContentType.Username
+	set(value) = Unit
+
 // ============
 //  Role — upstream is `value class Role(val value: Int)` with companion
 //  constants. Project doesn't read role at runtime; keep a tiny enum-ish

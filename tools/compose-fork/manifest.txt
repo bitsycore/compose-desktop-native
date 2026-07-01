@@ -1862,6 +1862,9 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsListe
 # TestTag — Modifier.testTag(tag) semantics helper. Uses SemanticsPropertyReceiver.testTag
 # (in our SemanticsShim) + ModifierNodeElement/InspectorInfo (vendored).
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TestTag.kt                                                       core/src/vendor/common/kotlin/androidx/compose/ui/platform/TestTag.kt
+# AutofillModifier — `Modifier.contentType(ContentType)` semantics helper.
+# Needs SemanticsPropertyReceiver.contentType (added to SemanticsShim).
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt                                              core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt
 # MeshGradientRenderer — needs `MeshGradientConfig` (unvendored, part of
 # the mesh-gradient graphics subsystem).
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt                                          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt
