@@ -1868,6 +1868,49 @@ files vendored** (LayoutModifier, ComposeUiNode, DrawModifier, Border,
 Outline, Painter, PainterModifier, Image, ColorPainter, BrushPainter,
 LayoutCoordinates, LookaheadLayoutCoordinates, Indication, Overscroll).
 
+## ✅ SHIM RETIREMENT SPRINT (2026-07-02)
+
+Fourth push. Focused on retiring project shims and adding native actuals
+for what would otherwise be expect-only files.
+
+Vendored:
+- `ui.autofill.Autofill.kt` + `AutofillTree.kt` (154L) — retires
+  AutofillLegacy.shim.
+- `ui.draganddrop.DragAndDrop.kt` (98L expect classes) + `DragAndDropManager.kt`
+  (56L interface) + native actual for the expect classes — retires
+  DragAndDropManager.shim. Added DragAndDropNode.shim marker.
+  **TODO**: SDL_EVENT_DROP_* wire-up for real cross-platform DnD.
+- `ui.modifier.ModifierLocalManager.kt` (137L) — retires
+  ModifierLocalManager.shim.
+- `ui.relocation.BringIntoViewModifierNode.kt` (74L) — retires
+  BringIntoViewStubs.shim.
+- `ui.input.pointer.PointerIcon.kt` (421L) + `LocalPointerIconService` +
+  native actual — retires PointerIconService.shim. Added SDL3 cursor
+  hooks (SdlCursor placeholder objects, TODO: SDL_SetCursor wire-up).
+- `foundation.content.TransferableContent.kt` (+ native).
+- `foundation.PointerMatcher.skiko.kt` (126L).
+- `foundation.BasicMarquee.kt` (545L).
+- `foundation.Indication.kt` + native (already listed in prior sprint).
+- `animation.SplineBasedDecayAnimationSpec.nonAndroid.kt` — retires project
+  AnimationActuals.native.kt.
+- `ui.graphics.MeshGradient.kt` + `MeshGradientConfig.kt` + `MeshGradientRenderer.kt`
+  + no-op native actual (real skiko renderer is 700+L, deferred).
+
+ComposeOwner + StubOwner impls expanded: real DragAndDropManager members
+(modifier / isRequestDragAndDropTransferRequired / requestDragAndDropTransfer /
+registerTargetInterest / isInterestedTarget) and PointerIconService members
+(getIcon / setIcon / getStylusHoverIcon / setStylusHoverIcon).
+
+**Current state (2026-07-02, post shim-retirement):**
+- `commonMain`: 86 → **83 files** (-3 shims + 4 new small files).
+- `commonMain shims`: 29 → **26**.
+- `vendor/`: 606 → **621 files** (+15 upstream files).
+- `nativeMain`: 50 files (+2 new native actuals).
+- Buttons hash preserved (`ce15decb…`) through every commit.
+
+Total on `phase9` since branch: **34 commits**, **~4500L project code removed**,
+**24 upstream files vendored** verbatim.
+
 **Still on the "commonMain empty af" runway:**
 1. Clickable / Focusable / Hoverable — need InteractionSource migration
    across material/apidemo/demo call sites (each uses the project's
