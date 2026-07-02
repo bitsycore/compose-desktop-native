@@ -255,6 +255,11 @@ internal fun PlacementScope(
 	@Suppress("UNUSED_PARAMETER") owner: androidx.compose.ui.node.Owner,
 ): Placeable.PlacementScope = Placeable.PlacementScope.Default
 
+// Phase 9: LookaheadDelegate constructs a PlacementScope from itself.
+internal fun PlacementScope(
+	@Suppress("UNUSED_PARAMETER") scope: androidx.compose.ui.node.LookaheadCapablePlaceable,
+): Placeable.PlacementScope = Placeable.PlacementScope.Default
+
 internal class LayoutNodePlaceable(private val fNode: ProjectLayoutNode) : Placeable() {
 
 	override val width: Int get() = fNode.width

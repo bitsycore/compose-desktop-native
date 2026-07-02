@@ -61,8 +61,13 @@ internal object StubOwner : Owner {
 	override val root: LayoutNode get() = throw IllegalStateException("StubOwner has no root")
 	override val layoutNodes: IntObjectMap<LayoutNode> = mutableIntObjectMapOf()
 	override val sharedDrawScope: LayoutNodeDrawScope = LayoutNodeDrawScope()
+	@Suppress("DEPRECATION")
 	override val rootForTest: RootForTest = object : RootForTest {
 		override val density: Density = Density(1f, 1f)
+		override val semanticsOwner = androidx.compose.ui.semantics.SemanticsOwner()
+		override val textInputService = androidx.compose.ui.text.input.TextInputService(
+			object : androidx.compose.ui.text.input.PlatformTextInputService {})
+		override fun sendKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean = false
 	}
 	override val hapticFeedBack: HapticFeedback = object : HapticFeedback {
 		override fun performHapticFeedback(hapticFeedbackType: androidx.compose.ui.hapticfeedback.HapticFeedbackType) = Unit
@@ -156,7 +161,24 @@ internal object StubOwner : Owner {
 		drawBlock: (canvas: Canvas, parentLayer: GraphicsLayer?) -> Unit,
 		invalidateParentLayer: () -> Unit,
 		explicitLayer: GraphicsLayer?,
-	): OwnedLayer = object : OwnedLayer {}
+	): OwnedLayer = object : OwnedLayer {
+		override fun updateLayerProperties(scope: androidx.compose.ui.graphics.ReusableGraphicsLayerScope) {}
+		override fun isInLayer(position: androidx.compose.ui.geometry.Offset): Boolean = true
+		override fun move(position: androidx.compose.ui.unit.IntOffset) {}
+		override fun resize(size: androidx.compose.ui.unit.IntSize) {}
+		override fun drawLayer(canvas: androidx.compose.ui.graphics.Canvas, parentLayer: androidx.compose.ui.graphics.layer.GraphicsLayer?) {}
+		override fun updateDisplayList() {}
+		override fun invalidate() {}
+		override fun destroy() {}
+		override fun mapOffset(point: androidx.compose.ui.geometry.Offset, inverse: Boolean): androidx.compose.ui.geometry.Offset = point
+		override fun mapBounds(rect: androidx.compose.ui.geometry.MutableRect, inverse: Boolean) {}
+		override fun reuseLayer(drawBlock: (canvas: androidx.compose.ui.graphics.Canvas, parentLayer: androidx.compose.ui.graphics.layer.GraphicsLayer?) -> Unit, invalidateParentLayer: () -> Unit) {}
+		override fun transform(matrix: androidx.compose.ui.graphics.Matrix) {}
+		override val underlyingMatrix: androidx.compose.ui.graphics.Matrix = androidx.compose.ui.graphics.Matrix()
+		override fun inverseTransform(matrix: androidx.compose.ui.graphics.Matrix) {}
+		override var frameRate: Float = 0f
+		override var isFrameRateFromParent: Boolean = false
+	}
 	override fun onSemanticsChange() = Unit
 	override fun onLayoutChange(layoutNode: LayoutNode) = Unit
 	override fun onLayoutNodeDeactivated(layoutNode: LayoutNode) = Unit

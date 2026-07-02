@@ -460,12 +460,7 @@ class ProjectLayoutNode(
     //  NodeChain + NodeCoordinator are real (not shims) but the renderer
     //  doesn't drive Modifier.Node lifecycle yet. Delete in a future phase
     //  when our ProjectLayoutNode is replaced by upstream's (Phase 5+).
-    internal val nodes: androidx.compose.ui.node.NodeChain = androidx.compose.ui.node.NodeChain(this)
-    internal val coordinator: androidx.compose.ui.node.NodeCoordinator = androidx.compose.ui.node.NodeCoordinator(this)
-    /** Upstream collapses this to the single coordinator we have — it's the
-     *  outermost link in the per-modifier coordinator chain. Read by vendored
-     *  `IntrinsicsPolicy.kt`. */
-    internal val outerCoordinator: androidx.compose.ui.node.NodeCoordinator get() = coordinator
+    internal val nodes: androidx.compose.ui.node.ProjectNodeChain = androidx.compose.ui.node.ProjectNodeChain(this)
     internal val _children get() = children
     internal val zSortedChildren get() = children
     /** Default to a stub Owner so vendored DelegatableNode helpers

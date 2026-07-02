@@ -1,13 +1,18 @@
 package androidx.compose.ui.platform
 
 import androidx.compose.runtime.AbstractApplier
-import com.compose.desktop.native.node.ProjectLayoutNode
-import com.compose.desktop.native.node.NodeApplier
+import androidx.compose.ui.node.LayoutNode
 
-// Native actual for vendored commonMain Subcomposition.kt. Upstream's
-// skiko actual returns a `DefaultUiApplier(container)`; ours returns
-// the project's `NodeApplier` which is the same shape — an
-// `AbstractApplier<ProjectLayoutNode>` driving a ProjectLayoutNode tree. Retires when
-// upstream ProjectLayoutNode + DefaultUiApplier are vendored (Phase 9).
-internal fun createApplier(container: ProjectLayoutNode): AbstractApplier<ProjectLayoutNode> =
-    NodeApplier(container)
+// Native actual for vendored commonMain Subcomposition.kt (upstream's SubcomposeLayout
+// composition factory, keyed on the upstream LayoutNode). The project drives its own
+// composition through com.compose.desktop.native.node.NodeApplier over ProjectLayoutNode,
+// so this upstream path is unused at runtime — a no-op AbstractApplier<LayoutNode>
+// satisfies the expect. Retires when SubcomposeLayout is genuinely wired (Phase 9+).
+internal actual fun createApplier(container: LayoutNode): AbstractApplier<LayoutNode> =
+	object : AbstractApplier<LayoutNode>(container) {
+		override fun onClear() {}
+		override fun insertTopDown(index: Int, instance: LayoutNode) {}
+		override fun insertBottomUp(index: Int, instance: LayoutNode) {}
+		override fun remove(index: Int, count: Int) {}
+		override fun move(from: Int, to: Int, count: Int) {}
+	}
