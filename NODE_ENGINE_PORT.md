@@ -1681,3 +1681,31 @@ User: "break stuff if you must."
 4. **Delete the parallel world:** ProjectLayoutNode, project Placeable/measure/modifier-element, shims,
    ProjectNodeChain — vendor their upstream equivalents; keep only platform actuals.
 5. **Skia actual:** `SkiaCanvas : Canvas` wrapping org.jetbrains.skia (mirror Sdl3Canvas) for macOS/Linux.
+
+## 🎉🎉 B4 PIVOT SUCCESS (2026-07-02) — real composition renders through the upstream engine
+
+`demo --screen=Layout` rendered a full Material composition (3 Surface cards, primary/secondary
+coloured boxes in rows/columns, 1000x700, NO crash) entirely through the vendored upstream engine:
+`MaterialTheme`/`Surface`/`Row`/`Column`/`Box`/`Spacer` → upstream `LayoutNode` (composition builds
+them via vendored `Layout`→`ComposeUiNode.Constructor`) → `ComposeOwner` → `MeasureAndLayoutDelegate`
+(measure+place) → `LayoutNode.draw`→`NodeCoordinator.draw` walk → `BackgroundNode`/`BorderNode`.draw
+→ `CanvasDrawScope` → `Sdl3Canvas` → `SDL_RenderGeometry`. Verified colours: bg 0x121212, surface
+0x1E1E1E, primary 0xBB86FC, secondary 0x03DAC6.
+
+Landed: `ComposeUiNode.Constructor→LayoutNode`, `NodeApplier<LayoutNode>`, BasicText/Image →
+upstream `Layout` stubs, `ComposeRootHost` facade (root gets `RootMeasurePolicy`), `RenderBackend.
+drawRoot(host)` + Sdl3 impl, ComposeWindow driving the upstream engine. Input/hit-test/focus GUTTED
+(B6); text/image invisible (B5). The two-worlds runtime crashes are gone for good.
+
+### Remaining to "commonMain empty af"
+- **B5 leaves:** real text/image draw — a `DrawModifierNode` (or measure+draw node) wired into the
+  renderer; re-vendor upstream `BasicText`/`Image`/text stack; delete project builds + `TextMeasurePolicy`.
+- **B6 input:** pointer/key/text/wheel + focus via `NodeCoordinator.hitTest` + `PointerInputModifierNode`
+  + upstream `FocusOwner`; delete the ProjectLayoutNode event layer.
+- **Delete the parallel world:** ProjectLayoutNode, project Placeable/measure (LayoutNodeMeasurable/
+  LayoutPolicyAdapter), `element.*`, ProjectNodeChain, shims, the old Sdl3Renderer/SkiaRenderer
+  tree-walk + `RenderBackend.draw(ProjectLayoutNode)`.
+- **Skia actual:** `SkiaCanvas : Canvas` wrapping org.jetbrains.skia (mirror Sdl3Canvas).
+- **Shared-renderer note (user):** put renderer code common to SDL+Skia in `nativeMain` with the
+  platform-specific bits delegating from `sdlRendererMain`/`skikoRendererMain` (e.g. the drawRoot
+  orchestration, Paint→backend mapping) so both renderers share it.
