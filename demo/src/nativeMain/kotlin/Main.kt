@@ -22,6 +22,16 @@ import utils.writeFile
 // ==================
 
 fun main(args: Array<String>) {
+    // Phase 9 B4 probe: render a hand-built upstream LayoutNode tree through
+    // ComposeOwner + Sdl3Canvas and screenshot it — proves the upstream pipeline
+    // end-to-end without the full ComposeWindow pivot. `--pipetest=<path.bmp>`.
+    val vPipe = args.firstOrNull { it.startsWith("--pipetest") }
+    if (vPipe != null) {
+        val vPath = if ("=" in vPipe) vPipe.substringAfter("=") else "pipetest.bmp"
+        com.compose.desktop.native.renderer.sdl.runUpstreamPipelineProbe(vPath)
+        return
+    }
+
     val vCli = parseArgs(args)
     val vTitle = buildString {
         append("ComposeDesktopNative Showcase")
