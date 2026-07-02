@@ -922,9 +922,9 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painte
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt
 
 # ── androidx.compose.ui.graphics.shadow ─────────────────────────────────────
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/Shadow.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/Shadow.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/ShadowRenderer.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/ShadowRenderer.kt
+# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/Blur.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/DropShadowPainter.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/DropShadowPainter.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/InnerShadowPainter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/InnerShadowPainter.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/ShadowContext.kt
@@ -1387,7 +1387,7 @@ compose/ui/ui-util/src/macosMain/kotlin/androidx/compose/ui/util/Trace.macos.kt 
 
 # ── androidx.compose.ui.viewinterop ─────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropView.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropView.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt       core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt         core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropContainer.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropContainer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropView.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropView.native.kt
