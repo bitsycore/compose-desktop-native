@@ -1750,3 +1750,19 @@ The demo now renders EVERYTHING visible (surfaces/borders/shapes/clip/alpha + te
 through the fully vendored upstream engine. Remaining for a working app: **B6 input** (pointer/key/
 focus via NodeCoordinator.hitTest + PointerInputModifierNode) → then delete the parallel world +
 Skia Canvas actual. Known cosmetic gaps until B6: no scroll (content taller than viewport overlaps).
+
+## ✅ B6a SUCCESS (2026-07-02) — input works on the upstream tree (verified)
+
+`demo --inputtest` PASSES: a press+release simulated via `ComposeRootHost.onPointer` on a
+clickable+pressable box fires both callbacks. B6a hit-tests the upstream tree
+(`node.coordinates.positionInRoot()` + `zSortedChildren`, children-first) and dispatches to the
+project input Modifier.Nodes (Clickable/Secondary/Middle/Hoverable/Pressable/OnPressed/OnDrag/
+PointerInputNode/Vertical+HorizontalScroll) via `node.nodes.headToTail` chain walk — all in
+`ComposeRootHost.onPointer/onWheel`, wired from `ComposeWindow`'s AppEvent.Pointer/MouseWheel.
+Ported faithfully from the old ProjectLayoutNode event logic. Demo is interactive again
+(click/hover/press/gestures/scroll).
+
+Remaining: **B6b** focus + key + IME text input (text fields) — focus is ProjectLayoutNode-coupled
+(FocusManager/FocusRequester), needs rework onto upstream FocusOwner. Then delete the parallel world
+(ProjectLayoutNode + project Placeable/measure + element.* + ProjectNodeChain + old tree-walk
+renderers + RenderBackend.draw(ProjectLayoutNode)) → commonMain empties; + Skia Canvas actual.
