@@ -119,6 +119,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/Actual.nonJvm.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/Actual.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/ComposeFoundationFlags.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/ComposeFoundationFlags.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Indication.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/Indication.native.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/PointerMatcher.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/PointerMatcher.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt                         core/src/vendor/skikoRenderer/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicMarquee.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/BasicMarquee.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicTooltip.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/BasicTooltip.kt
@@ -131,7 +132,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/BasicTooltip.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/BasicTooltip.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/Clickable.nonJvm.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/Clickable.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/OnClick.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/foundation/OnClick.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/PointerMatcher.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/PointerMatcher.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Scrollbar.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/foundation/Scrollbar.native.kt
 
 # ── androidx.compose.foundation.border ──────────────────────────────────────
