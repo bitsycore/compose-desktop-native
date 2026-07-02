@@ -294,6 +294,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # ── androidx.compose.foundation.lazy.grid ───────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemInfo.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScope.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScope.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScopeImpl.kt           core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScopeImpl.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridLayoutInfo.kt              core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridLayoutInfo.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridScopeMarker.kt             core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridScopeMarker.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridSpan.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridSpan.kt
@@ -303,7 +304,6 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridDsl.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridDsl.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridIntervalContent.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridIntervalContent.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemProvider.kt          core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemProvider.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScopeImpl.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridItemScopeImpl.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasure.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasure.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasureResult.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasureResult.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasuredItem.kt          core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/grid/LazyGridMeasuredItem.kt
