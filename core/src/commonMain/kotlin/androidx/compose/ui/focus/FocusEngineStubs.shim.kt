@@ -5,11 +5,6 @@ import androidx.compose.ui.node.DelegatableNode
 
 // Phase 9 stubs — the real focus engine is unvendored. NodeKind / BackwardsCompatNode
 // reference these for kind-set computation, `is` checks, and legacy-modifier bridging.
-interface FocusState {
-	val isFocused: Boolean
-	val hasFocus: Boolean
-	val isCaptured: Boolean
-}
 interface FocusProperties { var canFocus: Boolean }
 class FocusOrder(@Suppress("unused") val focusProperties: FocusProperties? = null)
 

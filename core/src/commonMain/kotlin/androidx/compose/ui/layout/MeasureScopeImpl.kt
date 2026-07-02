@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.LayoutDirection
  * fine for our purposes (we don't have a custom NodeCoordinator-based
  * layout pipeline yet).
  */
-internal class MeasureScopeImpl : MeasureScope {
+internal open class MeasureScopeImpl : MeasureScope {
 	override val density: Float = 1f
 	override val fontScale: Float = 1f
 	override val layoutDirection: LayoutDirection = LayoutDirection.Ltr

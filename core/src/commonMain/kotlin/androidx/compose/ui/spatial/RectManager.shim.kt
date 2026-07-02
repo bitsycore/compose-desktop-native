@@ -7,6 +7,6 @@ import androidx.compose.ui.node.LayoutNode
 const val NotFound: Int = -1
 
 class RectManager {
-	fun recalculateRectIfDirty(node: LayoutNode) {}
-	fun getOffsetFromRectListFor(index: Int): Long = 0L
+	internal fun recalculateRectIfDirty(node: LayoutNode) {}
+	internal fun getOffsetFromRectListFor(index: Int): Long = 0L
 }
