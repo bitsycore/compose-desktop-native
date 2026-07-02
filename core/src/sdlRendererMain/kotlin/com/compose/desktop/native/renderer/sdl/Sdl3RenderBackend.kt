@@ -52,8 +52,15 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         // Clear the frame to Material's dark background (0x121212). Without this
         // the SDL back buffer holds whatever was previously in GPU memory —
         // uncovered regions of the composition (e.g. apidemo's transparent
-        // panels) show garbage / pink. Was previously done by the legacy
-        // Sdl3Renderer.draw entry which we retired.
+        // panels) show garbage / pink on macOS Metal. Was previously done by
+        // the legacy Sdl3Renderer.draw entry which we retired.
+        //
+        // Order matters: clear at physical pixel scale (scale=1) so the clear
+        // covers the FULL back buffer, THEN apply DPR scale for subsequent draws.
+        // Otherwise on retina we clear only 1/DPR of the target and the rest
+        // shows garbage. Also reset any stray clip left by the previous frame.
+        SDL_SetRenderScale(r, 1f, 1f)
+        SDL_SetRenderClipRect(r, null)
         SDL_SetRenderDrawColor(r, 0x12u, 0x12u, 0x12u, 0xFFu)
         SDL_RenderClear(r)
         // SDL_SetRenderScale stretches every render coord by (dpr, dpr) so
