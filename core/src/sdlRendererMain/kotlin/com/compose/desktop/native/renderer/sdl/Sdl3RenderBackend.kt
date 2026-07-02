@@ -1,6 +1,5 @@
 package com.compose.desktop.native.renderer.sdl
 
-import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
@@ -19,20 +18,18 @@ import sdl3.*
 
    Per-frame flow:
      beginFrame  → SDL_SetRenderScale to apply the DPR
-     draw        → Sdl3Renderer walks the layout tree
+     drawRoot    → drive the upstream LayoutNode tree through Sdl3Canvas
      endFrame    → SDL_RenderPresent
 */
 internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBackend {
 
     private val fTextRenderer = Sdl3TextRenderer(backend)
     private val fImageCache = Sdl3ImageCache(backend)
-    private val fRenderer: Sdl3Renderer
 
     init {
         if (!fTextRenderer.init()) {
             error("Sdl3RenderBackend: SDL3_ttf failed to init")
         }
-        fRenderer = Sdl3Renderer(backend, fTextRenderer, fImageCache)
     }
 
     override val textMeasurer: TextMeasurer
@@ -61,11 +58,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         fTextRenderer.setDpr(inDpr)
     }
 
-    override fun draw(inRoot: ProjectLayoutNode) {
-        fRenderer.draw(inRoot)
-    }
-
-    // Phase 9 B4: paint the upstream LayoutNode tree through the vendored pipeline.
+    // Paint the upstream LayoutNode tree through the vendored pipeline.
     // inHost.rootNode.draw → NodeCoordinator.draw → DrawModifierNode → CanvasDrawScope
     // → Sdl3Canvas → SDL_RenderGeometry.
     override fun drawRoot(inHost: com.compose.desktop.native.node.ComposeRootHost) {
@@ -121,7 +114,6 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     }
 
     override fun destroy() {
-        fRenderer.destroy()
         fImageCache.destroy()
         fTextRenderer.destroy()
     }

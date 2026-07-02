@@ -1,6 +1,5 @@
 package com.compose.desktop.native.renderer.skia
 
-import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
@@ -13,12 +12,16 @@ import org.jetbrains.skia.Canvas
 // ==================
 
 /* RenderBackend that paints through Skia. Picks the concrete SkiaBridge
-   (CPU raster, OpenGL, or Metal) from gpuMode and re-uses the existing
-   SkiaRenderer / SkiaTextRenderer pair. Canvas is scaled by the per-frame
-   DPR so the layout (in logical points) maps to physical pixels.
+   (CPU raster, OpenGL, or Metal) from gpuMode. Canvas is scaled by the
+   per-frame DPR so the layout (in logical points) maps to physical pixels.
 
    AUTO is resolved at the call site (ComposeWindow); this class only
-   sees concrete modes. */
+   sees concrete modes.
+
+   NOTE: Phase 9 pivoted rendering to the upstream engine via drawRoot(host).
+   A real SkiaCanvas : androidx.compose.ui.graphics.Canvas actual is TODO —
+   until then the Skia path compiles but paints nothing (drawRoot inherits
+   the RenderBackend default no-op). */
 internal class SkiaRenderBackend(
     private val sdl: SDL3Backend,
     private val gpuMode: GpuMode,
@@ -27,7 +30,6 @@ internal class SkiaRenderBackend(
     private val fBridge: SkiaBridge = buildBridge()
     private val fSkiaTextRenderer = SkiaTextRenderer()
     private val fSkiaImageCache = SkiaImageCache()
-    private val fSkiaRenderer = SkiaRenderer(fSkiaTextRenderer, fSkiaImageCache)
     private var fCurrentCanvas: Canvas? = null
 
     override val textMeasurer: TextMeasurer
@@ -56,13 +58,6 @@ internal class SkiaRenderBackend(
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
         fCurrentCanvas = canvas
-    }
-
-    override fun draw(inRoot: ProjectLayoutNode) {
-        val canvas = fCurrentCanvas ?: return
-        // Pass the logical window height so the renderer can cull off-screen
-        // text lines (canvas is DPR-scaled, so layout/logical coords).
-        fSkiaRenderer.draw(inRoot, canvas, sdl.windowHeight)
     }
 
     override fun endFrame() {
