@@ -1586,3 +1586,31 @@ the *project* DrawScope's abstract draw*) stop conforming and must be replaced b
 
 Reverted (manifest re-commented, project files restored, vendored files removed) — full mingw
 graph BUILD SUCCESSFUL. Vendor count returns to 567.
+
+## B1 DONE (2026-07-02, committed 7191d9a — full mingw graph compile-green)
+
+Vendored the shared draw engine (`DrawScope`/`DrawContext`/`CanvasDrawScope`/`LayoutNodeDrawScope`,
+591 files) and **conformed** `Sdl3DrawScope` + `SkiaDrawScope` to the real upstream `DrawScope`
+instead of replacing them. Key resolution of the "B1+B2 coupling": rather than a full Canvas port,
+each renderer keeps its tessellation as **private `*Core` helpers** and exposes upstream-signature
+public overrides that delegate to them (+ a minimal `drawContext` whose canvas stays `EmptyCanvas`).
+So the renderers remain working `DrawScope` backends AND satisfy the vendored engine.
+
+Gotchas hit + fixed: `drawRoundRect(color,…)` uniquely orders `style` before `alpha` (upstream
+quirk); `DrawScope.layoutDirection` is abstract here (must override); `CornerRadius` not `Float` in
+`drawRoundRect`; `Stroke` param order changed (project `(width,cap)` → upstream `(width,miter,cap,…)`).
+`SkiaDrawScope` conformed **blind** (skikoRendererMain never compiles on Windows) — it mirrors the
+mingw-verified `Sdl3DrawScope` transformation exactly; **verify on a Skia host.**
+
+### Revised remaining order (Canvas backend moved to B4-time)
+- **B2 → folded into B4.** The real per-platform `Canvas` (`Sdl3Canvas`/`SkiaCanvas` over the vendored
+  `androidx.compose.ui.graphics.Canvas`, porting the `*Core` tessellation to consume `Paint`+`Shader`)
+  is only *exercised* once the vendored `LayoutNodeDrawScope`→`CanvasDrawScope` drives drawing — i.e.
+  at the composition pivot. Until then the conformed `Sdl3DrawScope` serves the current tree-walk.
+- **B3 — Real Owner (NEXT).** Upgrade `StubOwner`→`ComposeOwner`: root `LayoutNode`, drive
+  `MeasureAndLayoutDelegate.measureAndLayout()`, `sharedDrawScope = LayoutNodeDrawScope()`, real
+  `createLayer`, snapshot observer. Removes the `ProjectNodeChain` dummy-coordinator hack + requireOwner crash.
+- **B4 — Composition pivot + real Canvas backend** (see roadmap above): `NodeApplier<LayoutNode>`,
+  `ComposeUiNode.Constructor→LayoutNode`, `ComposeWindow` drives `owner.measureAndLayout()` +
+  `owner.root.draw(sdl3Canvas)`; implement `Sdl3Canvas`/`SkiaCanvas` here.
+- **B5 leaf content · B6 input/hit-test · B7 retire ProjectLayoutNode + regression** (unchanged).
