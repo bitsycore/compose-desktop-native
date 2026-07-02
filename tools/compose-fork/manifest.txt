@@ -737,8 +737,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/SystemTheme.kt           
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/animation/Animation.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/animation/Animation.native.kt
 
 # ── androidx.compose.ui.autofill ────────────────────────────────────────────
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/Autofill.kt              core/src/vendor/common/kotlin/androidx/compose/ui/autofill/Autofill.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillManager.kt       core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillManager.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt      core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillTree.kt          core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillTree.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillType.kt          core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillType.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentDataType.kt       core/src/vendor/common/kotlin/androidx/compose/ui/autofill/ContentDataType.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/ContentType.kt           core/src/vendor/common/kotlin/androidx/compose/ui/autofill/ContentType.kt
@@ -746,8 +748,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/FillableData.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentDataType.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentDataType.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/ContentType.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/autofill/ContentType.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/FillableData.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/autofill/FillableData.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/Autofill.kt            core/src/vendor/common/kotlin/androidx/compose/ui/autofill/Autofill.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/autofill/AutofillTree.kt        core/src/vendor/common/kotlin/androidx/compose/ui/autofill/AutofillTree.kt
 
 # ── androidx.compose.ui.backhandler ─────────────────────────────────────────
 # compose/ui/ui-backhandler/src/commonMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt  core/src/vendor/common/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt
