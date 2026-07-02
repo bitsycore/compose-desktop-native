@@ -254,7 +254,7 @@ internal class ComposeOwner(
 	override fun requestAutofill(node: LayoutNode) = Unit
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
-	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(Unit)
+	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
 	override val coroutineContext: CoroutineContext = EmptyCoroutineContext
 	override fun registerOnEndApplyChangesListener(listener: () -> Unit) = Unit
 	override fun onEndApplyChanges() = Unit

@@ -186,7 +186,7 @@ internal object StubOwner : Owner {
 	override val measureIteration: Long = 0L
 	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
 	override val snapshotObserver: OwnerSnapshotObserver = OwnerSnapshotObserver { it() }
-	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(Unit)
+	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
 	override val coroutineContext: CoroutineContext = EmptyCoroutineContext
 	override fun registerOnEndApplyChangesListener(listener: () -> Unit) = Unit
 	override fun onEndApplyChanges() = Unit
