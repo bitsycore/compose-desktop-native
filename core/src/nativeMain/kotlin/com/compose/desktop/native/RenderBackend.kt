@@ -1,6 +1,6 @@
 package com.compose.desktop.native
 
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.res.ImageLoader
 import com.compose.desktop.native.text.TextMeasurer
 
@@ -32,8 +32,8 @@ interface RenderBackend {
        so it maps 1:1 onto the pixel back buffer. */
     fun beginFrame(inDpr: Float)
 
-    /* Walk the LayoutNode tree and draw each node. */
-    fun draw(inRoot: LayoutNode)
+    /* Walk the ProjectLayoutNode tree and draw each node. */
+    fun draw(inRoot: ProjectLayoutNode)
 
     /* Flush + present whatever was just drawn. */
     fun endFrame()

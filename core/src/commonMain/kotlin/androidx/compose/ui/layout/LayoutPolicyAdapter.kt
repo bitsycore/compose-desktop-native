@@ -10,13 +10,13 @@ import androidx.compose.ui.node.MeasurePolicy as InternalMeasurePolicy
 /**
  * Bridge the public upstream `MeasurePolicy` onto the project's internal
  * measure policy (`androidx.compose.ui.node.MeasurePolicy` — a simpler
- * `(LayoutNode, Constraints) -> IntSize` shape the renderer's measure
+ * `(ProjectLayoutNode, Constraints) -> IntSize` shape the renderer's measure
  * pipeline reads).
  *
- * Wraps each of the LayoutNode's children as a [LayoutNodeMeasurable],
+ * Wraps each of the ProjectLayoutNode's children as a [LayoutNodeMeasurable],
  * builds a [MeasureScopeImpl], runs the user's measure body, invokes
  * `placeChildren()` on the returned [MeasureResult], and returns the
- * resolved [IntSize]. Called by `LayoutNode.measurePolicy` setter.
+ * resolved [IntSize]. Called by `ProjectLayoutNode.measurePolicy` setter.
  */
 internal fun adaptToInternal(inPolicy: MeasurePolicy): InternalMeasurePolicy =
 	InternalMeasurePolicy { vNode, vConstraints ->

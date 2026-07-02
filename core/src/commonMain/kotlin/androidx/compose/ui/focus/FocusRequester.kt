@@ -3,7 +3,7 @@ package androidx.compose.ui.focus
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: FocusRequester
@@ -24,7 +24,7 @@ class FocusRequester {
 	 * cross-module visibility (Kotlin's `internal` is per-module). App code
 	 * should not poke at these directly — use [requestFocus].
 	 */
-	var attachedNode: LayoutNode? = null
+	var attachedNode: ProjectLayoutNode? = null
 	var focusManager: FocusManager? = null
 
 	/** Move focus to the bound node. No-op if no node is bound or no FocusManager is installed. */
@@ -50,7 +50,7 @@ class FocusRequester {
  */
 interface FocusManager {
 
-	fun focusOnNode(node: LayoutNode)
+	fun focusOnNode(node: ProjectLayoutNode)
 	fun clearFocus()
 }
 

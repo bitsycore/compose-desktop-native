@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
  * forwards every drawing call to it via Kotlin's `by` delegation; the
  * only new method is [drawContent], which invokes [inOnDrawContent] —
  * "draw the next inner thing in the chain" (typically the next inner
- * `DrawModifierNode.draw()` wrap, finally the LayoutNode's leaf body
+ * `DrawModifierNode.draw()` wrap, finally the ProjectLayoutNode's leaf body
  * + children).
  *
  * Build the chain outermost-to-innermost in the renderer:

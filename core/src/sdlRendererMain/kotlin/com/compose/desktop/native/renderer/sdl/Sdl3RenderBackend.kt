@@ -1,6 +1,6 @@
 package com.compose.desktop.native.renderer.sdl
 
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
@@ -61,7 +61,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         fTextRenderer.setDpr(inDpr)
     }
 
-    override fun draw(inRoot: LayoutNode) {
+    override fun draw(inRoot: ProjectLayoutNode) {
         fRenderer.draw(inRoot)
     }
 

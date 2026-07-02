@@ -36,7 +36,7 @@ fun resourceKindForPath(path: String): ResourceKind {
 /* Shared bridge the commonMain layout pass uses to size images and read raw
    bytes. The active RenderBackend installs an implementation at startup
    (parallel to currentTextMeasurer). Actual drawing is done by the renderer
-   directly off the LayoutNode painter leaf, reusing the backend's decode
+   directly off the ProjectLayoutNode painter leaf, reusing the backend's decode
    cache — so a decoded texture is created once and shared by measure + draw. */
 interface ImageLoader {
 	/* Intrinsic pixel size of the decoded resource, treated as logical points

@@ -1,6 +1,6 @@
 package androidx.compose.ui.layout
 
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: Placeable
@@ -8,7 +8,7 @@ import androidx.compose.ui.node.LayoutNode
 
 /**
  * The measured result of asking a Measurable to measure. Carries width
- * and height, plus a [placeAt] that positions the underlying LayoutNode
+ * and height, plus a [placeAt] that positions the underlying ProjectLayoutNode
  * inside its parent. Placement is deferred — measure() returns the
  * Placeable, then the MeasurePolicy's `layout { }` block calls placeAt(x, y)
  * inside its placement closure.
@@ -125,7 +125,7 @@ abstract class Placeable : Measured {
 		 * protected 3-arg `(position: IntOffset, zIndex: Float, layerBlock)`,
 		 * so this thin wrapper forwards `(x, y)` directly. `zIndex` is
 		 * accepted-and-ignored — our renderer reads z-order from a
-		 * separate ZIndexElement on the LayoutNode.
+		 * separate ZIndexElement on the ProjectLayoutNode.
 		 */
 		fun Placeable.place(
 			x: Int,
@@ -173,7 +173,7 @@ abstract class Placeable : Measured {
 		 * Like [place] but accepts a `layerBlock` for graphics-layer effects
 		 * (alpha, scale, rotation, etc.). This renderer doesn't apply the
 		 * layer block during placement — graphicsLayer is read from a
-		 * separate `GraphicsLayerModifier` on the LayoutNode — so the block
+		 * separate `GraphicsLayerModifier` on the ProjectLayoutNode — so the block
 		 * is accepted-and-ignored. Vendored modifiers (Offset, etc.) call
 		 * this expecting upstream's shape.
 		 */
@@ -219,7 +219,7 @@ internal fun PlacementScope(
 	@Suppress("UNUSED_PARAMETER") owner: androidx.compose.ui.node.Owner,
 ): Placeable.PlacementScope = Placeable.PlacementScope.Default
 
-internal class LayoutNodePlaceable(private val fNode: LayoutNode) : Placeable() {
+internal class LayoutNodePlaceable(private val fNode: ProjectLayoutNode) : Placeable() {
 
 	override val width: Int get() = fNode.width
 	override val height: Int get() = fNode.height

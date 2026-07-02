@@ -16,7 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import com.compose.desktop.native.input.PointerInputElement
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.res.currentImageLoader
 import com.compose.desktop.native.text.currentTextMeasurer
@@ -79,7 +79,7 @@ fun nativeComposeWindow(
     // the native actual installs `SDL3ClipboardManager` as the default.
     // No setup needed here.
 
-    val rootNode = LayoutNode()
+    val rootNode = ProjectLayoutNode()
     val frameClock = SDL3FrameClock()
 
     // Install our SDL3-driven Dispatchers.Main. Kotlin/Native ships no Main
@@ -115,7 +115,7 @@ fun nativeComposeWindow(
         // Lazy FocusManager — body filled in once setFocus is in scope below.
         var focusManagerImpl: androidx.compose.ui.focus.FocusManager? = null
         val focusManagerProxy = object : androidx.compose.ui.focus.FocusManager {
-            override fun focusOnNode(node: LayoutNode) { focusManagerImpl?.focusOnNode(node) }
+            override fun focusOnNode(node: ProjectLayoutNode) { focusManagerImpl?.focusOnNode(node) }
             override fun clearFocus() { focusManagerImpl?.clearFocus() }
         }
         composition.setContent {
@@ -147,25 +147,25 @@ fun nativeComposeWindow(
 
         // ============
         //  Interaction state (hover / press / click target) — keyed by
-        //  LayoutNode so it survives recomposition (modifier identity does
+        //  ProjectLayoutNode so it survives recomposition (modifier identity does
         //  not).
-        val activeHoverNodes = mutableMapOf<LayoutNode, (Boolean) -> Unit>()
-        var activePressNode: LayoutNode? = null
+        val activeHoverNodes = mutableMapOf<ProjectLayoutNode, (Boolean) -> Unit>()
+        var activePressNode: ProjectLayoutNode? = null
         var activePressCallback: ((Boolean) -> Unit)? = null
-        var armedClickNode: LayoutNode? = null
+        var armedClickNode: ProjectLayoutNode? = null
 
         // One focused node per window. onFocusChanged fires false on the old,
         // true on the new. Click outside any focusable clears focus.
-        var focusedNode: LayoutNode? = null
+        var focusedNode: ProjectLayoutNode? = null
         var focusedCallback: ((Boolean) -> Unit)? = null
 
         // Drag capture: on Press inside a draggable, hold the (node, modifier)
         // until Release so Move events route here regardless of where the
         // cursor wanders (matches gesture-detector semantics).
-        var dragNode: LayoutNode? = null
+        var dragNode: ProjectLayoutNode? = null
         var dragModifier: OnDragModifier? = null
 
-        fun setFocus(inNode: LayoutNode?, inCallback: ((Boolean) -> Unit)?) {
+        fun setFocus(inNode: ProjectLayoutNode?, inCallback: ((Boolean) -> Unit)?) {
             if (inNode === focusedNode) return
             focusedCallback?.invoke(false)
             focusedNode = inNode
@@ -178,7 +178,7 @@ fun nativeComposeWindow(
            callback fires; falls back to focusing-without-callback if
            the node has no focusable. */
         focusManagerImpl = object : androidx.compose.ui.focus.FocusManager {
-            override fun focusOnNode(node: LayoutNode) {
+            override fun focusOnNode(node: ProjectLayoutNode) {
                 setFocus(node, node.cachedFocusable?.onFocusChanged)
             }
             override fun clearFocus() = setFocus(null, null)
@@ -188,8 +188,8 @@ fun nativeComposeWindow(
            node so requestFocus() can resolve the node back. Fast and
            good enough for a tree of a few hundred nodes; we could keep
            a registry instead if it ever shows up on a profile. */
-        fun bindFocusRequesters(inRoot: LayoutNode) {
-            fun walk(inN: LayoutNode) {
+        fun bindFocusRequesters(inRoot: ProjectLayoutNode) {
+            fun walk(inN: ProjectLayoutNode) {
                 for (vEl in inN.cachedFocusRequesters) {
                     vEl.focusRequester.attachedNode = inN
                     vEl.focusRequester.focusManager = focusManagerImpl
@@ -225,9 +225,9 @@ fun nativeComposeWindow(
            PointerInputElement modifier, deliver the change in local
            coords. Each scope's awaitPointerEvent resumes synchronously
            because the coroutine is on the same Dispatchers.Main as us. */
-        fun dispatchPointerInput(inRoot: LayoutNode, inX: Int, inY: Int, inPressed: Boolean) {
+        fun dispatchPointerInput(inRoot: ProjectLayoutNode, inX: Int, inY: Int, inPressed: Boolean) {
             val vHit = inRoot.hitTest(inX, inY) ?: return
-            var vNode: LayoutNode? = vHit
+            var vNode: ProjectLayoutNode? = vHit
             while (vNode != null) {
                 val vN = vNode
                 val vLocalX = (inX - vN.absoluteX).toFloat()
@@ -239,7 +239,7 @@ fun nativeComposeWindow(
             }
         }
 
-        fun cursorInsideNode(inHit: LayoutNode?, inNode: LayoutNode): Boolean =
+        fun cursorInsideNode(inHit: ProjectLayoutNode?, inNode: ProjectLayoutNode): Boolean =
             generateSequence(inHit) { it.parent }.any { it === inNode }
 
         while (running) {
@@ -323,7 +323,7 @@ fun nativeComposeWindow(
                                     // Positional press dispatch (TextField cursor placement).
                                     // Walk from the hit-test target up, firing each cached
                                     // OnPressedModifier handler with node-relative coordinates.
-                                    var pn: LayoutNode? = vHit
+                                    var pn: ProjectLayoutNode? = vHit
                                     while (pn != null) {
                                         val node = pn
                                         val relX = vPx - node.absoluteX

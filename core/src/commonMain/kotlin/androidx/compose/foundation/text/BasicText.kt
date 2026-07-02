@@ -18,7 +18,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import com.compose.desktop.native.layout.x
 import com.compose.desktop.native.layout.y
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.text.AnnotatedString
@@ -198,8 +198,8 @@ private fun TextLeaf(
     fontFamily: String?,
     fontVariationSettings: List<FontVariation>?,
 ) {
-    ComposeNode<LayoutNode, NodeApplier>(
-        factory = { LayoutNode() },
+    ComposeNode<ProjectLayoutNode, NodeApplier>(
+        factory = { ProjectLayoutNode() },
         update = {
             set(text) { this.text = it }
             set(spans) { this.textSpans = it }

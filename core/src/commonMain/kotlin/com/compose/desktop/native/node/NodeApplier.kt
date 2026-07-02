@@ -1,19 +1,19 @@
 package com.compose.desktop.native.node
 
 import androidx.compose.runtime.AbstractApplier
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: NodeApplier
 // ==================
 
-class NodeApplier(root: LayoutNode) : AbstractApplier<LayoutNode>(root) {
+class NodeApplier(root: ProjectLayoutNode) : AbstractApplier<ProjectLayoutNode>(root) {
 
-    override fun insertTopDown(index: Int, instance: LayoutNode) {
+    override fun insertTopDown(index: Int, instance: ProjectLayoutNode) {
         current.insertAt(index, instance)
     }
 
-    override fun insertBottomUp(index: Int, instance: LayoutNode) {
+    override fun insertBottomUp(index: Int, instance: ProjectLayoutNode) {
         // Top-down insertion only
     }
 

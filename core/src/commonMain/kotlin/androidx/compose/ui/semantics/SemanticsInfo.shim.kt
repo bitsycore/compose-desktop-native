@@ -12,7 +12,7 @@ import androidx.compose.ui.layout.LayoutInfo
  *     internal fun DelegatableNode.requireSemanticsInfo(): SemanticsInfo
  *         = requireLayoutNode()
  *
- * Upstream LayoutNode implements SemanticsInfo. Our project LayoutNode
+ * Upstream ProjectLayoutNode implements SemanticsInfo. Our project ProjectLayoutNode
  * marks itself with this shim so the cast type-checks; no member access
  * happens in Phase 1.
  *

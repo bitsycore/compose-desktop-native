@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import kotlinx.cinterop.*
 import sdl3.*
 import kotlin.math.PI
@@ -31,7 +31,7 @@ import kotlin.math.sin
 // MARK: Sdl3Renderer
 // ==================
 
-/* Walks the LayoutNode tree and renders backgrounds, borders, text, and
+/* Walks the ProjectLayoutNode tree and renders backgrounds, borders, text, and
    clipped children using only SDL3 primitives. Used by Sdl3RenderBackend
    on every target — primary renderer on mingwX64, comparison renderer
    on Skia targets.
@@ -78,10 +78,10 @@ internal class Sdl3Renderer(
         val texW: Int,
         val texH: Int,
     )
-    private val fCache = mutableMapOf<LayoutNode, CachedLayer>()
-    private val fSeenThisFrame = mutableSetOf<LayoutNode>()
+    private val fCache = mutableMapOf<ProjectLayoutNode, CachedLayer>()
+    private val fSeenThisFrame = mutableSetOf<ProjectLayoutNode>()
 
-    fun draw(inRoot: LayoutNode) {
+    fun draw(inRoot: ProjectLayoutNode) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         SDL_SetRenderDrawColor(vRenderer, kClearR, kClearG, kClearB, 0xFFu)
         SDL_RenderClear(vRenderer)
@@ -100,7 +100,7 @@ internal class Sdl3Renderer(
         }
     }
 
-    private fun drawNode(inNode: LayoutNode) {
+    private fun drawNode(inNode: ProjectLayoutNode) {
         val vAlpha = inNode.nodeAlpha
         val vLayer = inNode.graphicsLayer
 
@@ -134,13 +134,13 @@ internal class Sdl3Renderer(
         }
     }
 
-    /** True if the node clips its children — read from the cache on LayoutNode. */
-    private fun clipsChildren(inNode: LayoutNode): Boolean = inNode.clipsChildren
+    /** True if the node clips its children — read from the cache on ProjectLayoutNode. */
+    private fun clipsChildren(inNode: ProjectLayoutNode): Boolean = inNode.clipsChildren
 
     /* Renders the node's subtree into an offscreen texture, then composites it
        back at inAlpha so overlapping content fades as a single layer (no
        double-blend). Falls back to opaque drawing if the target can't be made. */
-    private fun drawNodeLayered(inNode: LayoutNode, inAlpha: Float) {
+    private fun drawNodeLayered(inNode: ProjectLayoutNode, inAlpha: Float) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         val vLayer = acquireLayer(vRenderer) ?: run { drawNodeContent(inNode); return }
         val vDpr = backend.pixelDensity
@@ -204,7 +204,7 @@ internal class Sdl3Renderer(
     //  blit just the node's region with SDL_RenderTextureRotated to apply
     //  scale / rotation / translation / alpha.
 
-    private fun drawNodeTransformed(inNode: LayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
+    private fun drawNodeTransformed(inNode: ProjectLayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         val vTex = acquireLayer(vRenderer) ?: run { drawNodeContent(inNode); return }
         renderSubtreeToTarget(vRenderer, vTex, inNode)
@@ -217,7 +217,7 @@ internal class Sdl3Renderer(
     //  Cache: persistent per-node texture, rebuilt when cacheKey changes
     //  or the window resizes. Reused as-is on subsequent frames.
 
-    private fun drawNodeCached(inNode: LayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
+    private fun drawNodeCached(inNode: ProjectLayoutNode, inLayer: GraphicsLayerModifier, inAlpha: Float) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         fSeenThisFrame.add(inNode)
         val vKey = inLayer.cacheKey!!
@@ -251,7 +251,7 @@ internal class Sdl3Renderer(
     private fun renderSubtreeToTarget(
         inRenderer: CPointer<cnames.structs.SDL_Renderer>,
         inTarget: COpaquePointer,
-        inNode: LayoutNode,
+        inNode: ProjectLayoutNode,
     ) {
         val vDpr = backend.pixelDensity
         val vPrev = SDL_GetRenderTarget(inRenderer)
@@ -277,7 +277,7 @@ internal class Sdl3Renderer(
     private fun blitTransformed(
         inRenderer: CPointer<cnames.structs.SDL_Renderer>,
         inSource: COpaquePointer,
-        inNode: LayoutNode,
+        inNode: ProjectLayoutNode,
         inLayer: GraphicsLayerModifier,
         inAlpha: Float,
         inCachedSrc: CachedLayer?,
@@ -350,7 +350,7 @@ internal class Sdl3Renderer(
         return vTex
     }
 
-    private fun drawNodeContent(inNode: LayoutNode) {
+    private fun drawNodeContent(inNode: ProjectLayoutNode) {
         val vRenderer = backend.renderer?.reinterpret<cnames.structs.SDL_Renderer>() ?: return
         val vAx = inNode.absoluteX.toFloat()
         val vAy = inNode.absoluteY.toFloat()
@@ -393,7 +393,7 @@ internal class Sdl3Renderer(
      * here: Canvas {} `drawer`, text, image, children.
      */
     private fun drawNodeLeafAndChildren(
-        inNode: LayoutNode,
+        inNode: ProjectLayoutNode,
         vRenderer: kotlinx.cinterop.CPointer<cnames.structs.SDL_Renderer>,
         vAx: Float,
         vAy: Float,
@@ -422,7 +422,7 @@ internal class Sdl3Renderer(
         if (!vText.isNullOrEmpty()) {
             // Reuse the exact wrap the measure pass cached on the node (don't
             // re-wrap here at a different width — that thrashed the cache and
-            // re-wrapped a huge body every frame; see LayoutNode.cachedWrap).
+            // re-wrapped a huge body every frame; see ProjectLayoutNode.cachedWrap).
             val vWrapped = inNode.cachedWrap()
             val vLines = vWrapped.lines
             val vLineHeight = textRenderer.textMeasurer.lineHeight(inNode.fontSize, inNode.fontFamily).toInt()
@@ -527,7 +527,7 @@ internal class Sdl3Renderer(
 
     /* Sort children by Modifier.zIndex when present; default to tree
        order so the common case has zero overhead. */
-    private fun zOrderedChildren(inNode: LayoutNode): List<LayoutNode> =
+    private fun zOrderedChildren(inNode: ProjectLayoutNode): List<ProjectLayoutNode> =
         if (inNode.children.any { it.zIndex != 0f })
             inNode.children.sortedBy { it.zIndex } else inNode.children
 

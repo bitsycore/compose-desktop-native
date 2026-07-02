@@ -1,4 +1,4 @@
-package androidx.compose.ui.node
+package com.compose.desktop.native.node
 
 import androidx.compose.ui.*
 import com.compose.desktop.native.element.*
@@ -21,10 +21,10 @@ import kotlin.math.max
 import kotlin.math.min
 
 // ==================
-// MARK: LayoutNode
+// MARK: ProjectLayoutNode
 // ==================
 
-class LayoutNode(
+class ProjectLayoutNode(
     /** Mirrors upstream's `isVirtual` flag. Virtual nodes don't render or
      *  measure themselves — they exist so `Layout` composables can host
      *  children whose parent in the tree differs from their parent in the
@@ -33,17 +33,17 @@ class LayoutNode(
     @Suppress("UNUSED_PARAMETER") isVirtual: Boolean = false,
 ) : androidx.compose.ui.semantics.SemanticsInfo, androidx.compose.ui.node.ComposeUiNode {
 
-    /** Companion mirroring `LayoutNode.Constructor` upstream — used by
+    /** Companion mirroring `ProjectLayoutNode.Constructor` upstream — used by
      *  vendored `ComposeUiNode.Constructor` to allocate root LayoutNodes
      *  without going through the data-class ctor path. */
     companion object {
-        val Constructor: () -> LayoutNode = { LayoutNode() }
+        val Constructor: () -> ProjectLayoutNode = { ProjectLayoutNode() }
         /** Sentinel `placeOrder` for a never-placed node (upstream value). */
         const val NotPlacedPlaceOrder: Int = Int.MAX_VALUE
     }
 
-    var parent: LayoutNode? = null
-    val children = mutableListOf<LayoutNode>()
+    var parent: ProjectLayoutNode? = null
+    val children = mutableListOf<ProjectLayoutNode>()
 
     /** Lifecycle flag — `true` between deactivate / reactivate. Vendored
      *  `ComposeUiNode.ApplyOnDeactivatedNodeAssertion` reads it. */
@@ -60,7 +60,7 @@ class LayoutNode(
     internal val measuredByParent: UsageByParent get() = UsageByParent.NotUsed
     internal val isPlacedInLookahead: Boolean? get() = null
 
-    /** Upstream's `UsageByParent` lives nested on LayoutNode. Tracks how
+    /** Upstream's `UsageByParent` lives nested on ProjectLayoutNode. Tracks how
      *  the parent measured this node; we always return `NotUsed`. */
     enum class UsageByParent { InMeasureBlock, InLayoutBlock, NotUsed }
 
@@ -88,12 +88,12 @@ class LayoutNode(
     }
 
     // ============
-    //  Phase 9 — upstream LayoutNode surface bumps
+    //  Phase 9 — upstream ProjectLayoutNode surface bumps
     //
     //  No-op fields/methods the upstream node-engine files read. Each entry
-    //  here is a step toward the eventual project-LayoutNode → upstream
-    //  LayoutNode swap; vendored files inside `androidx.compose.ui.node.*`
-    //  see this class via the `LayoutNode` typealias and resolve these
+    //  here is a step toward the eventual project-ProjectLayoutNode → upstream
+    //  ProjectLayoutNode swap; vendored files inside `androidx.compose.ui.node.*`
+    //  see this class via the `ProjectLayoutNode` typealias and resolve these
     //  members against it. Bodies are no-ops because the dispatch logic
     //  the project actually runs lives elsewhere (`dispatchGloballyPositioned`,
     //  per-cache renderer loops); these exist so the upstream entry points
@@ -113,17 +113,17 @@ class LayoutNode(
     internal var depth: Int = 0
 
     /** Iterate children in insertion order. */
-    internal inline fun forEachChild(block: (LayoutNode) -> Unit) {
+    internal inline fun forEachChild(block: (ProjectLayoutNode) -> Unit) {
         for (i in children.indices) block(children[i])
     }
 
     /** Nearest lookahead-scope ancestor. Always null — lookahead pass is not
      *  implemented; vendored `DepthSortedSet` / `DepthSortedSetsForDifferentPasses`
      *  read this to decide which queue a node belongs to. */
-    internal val lookaheadRoot: LayoutNode? get() = null
+    internal val lookaheadRoot: ProjectLayoutNode? get() = null
 
-    /** Companion-style `LayoutNode.LayoutState` enum that upstream files
-     *  reference as `LayoutNode.LayoutState.Measuring` etc. We're always in
+    /** Companion-style `ProjectLayoutNode.LayoutState` enum that upstream files
+     *  reference as `ProjectLayoutNode.LayoutState.Measuring` etc. We're always in
      *  the `Idle` state — no real pass machine exists; the renderer drives
      *  measure / place itself. */
     enum class LayoutState { Measuring, LookaheadMeasuring, LayingOut, LookaheadLayingOut, Idle }
@@ -131,14 +131,14 @@ class LayoutNode(
     /** Always `Idle` until a real layout state machine lands. */
     internal val layoutState: LayoutState get() = LayoutState.Idle
 
-    /** Upstream flag — allows a LayoutNode to be measured more than once
+    /** Upstream flag — allows a ProjectLayoutNode to be measured more than once
      *  per pass (used by SubcomposeLayout). No subcomposition here; keep
      *  disabled. Read by vendored `Layout.kt`'s multi-content variants. */
     internal var canMultiMeasure: Boolean = false
 
     /** Children before virtual-node folding. Our model has no virtual nodes
      *  (no SubcomposeLayout) so this is the same list as [children]. */
-    internal val foldedChildren: List<LayoutNode> get() = children
+    internal val foldedChildren: List<ProjectLayoutNode> get() = children
 
     /** Children as upstream [androidx.compose.ui.layout.Measurable] instances —
      *  vendored `MeasureScopeWithLayoutNode.getChildrenOfVirtualChildren`
@@ -286,7 +286,7 @@ class LayoutNode(
      * Mirrors what upstream's per-modifier `NodeCoordinator` graph does
      * implicitly via separate coordinator positions; we collapse that
      * into a single `(contentOffsetX, contentOffsetY)` on the single
-     * LayoutNode.
+     * ProjectLayoutNode.
      */
     var contentOffsetX: Int = 0
         private set
@@ -434,7 +434,7 @@ class LayoutNode(
         cachedDrawModifierNodes = dmnList ?: emptyList()
     }
 
-    /** Project-internal measure policy — `(LayoutNode, Constraints) -> IntSize`.
+    /** Project-internal measure policy — `(ProjectLayoutNode, Constraints) -> IntSize`.
      *  The public-shape [measurePolicy] (below, upstream type) feeds this
      *  via [androidx.compose.ui.layout.adaptToInternal] on assign. The
      *  renderer's measure pipeline (see `measure(c)` further down) reads
@@ -459,7 +459,7 @@ class LayoutNode(
     //  Phase 4 node-engine bring-up — see NODE_ENGINE_PORT.md.
     //  NodeChain + NodeCoordinator are real (not shims) but the renderer
     //  doesn't drive Modifier.Node lifecycle yet. Delete in a future phase
-    //  when our LayoutNode is replaced by upstream's (Phase 5+).
+    //  when our ProjectLayoutNode is replaced by upstream's (Phase 5+).
     internal val nodes: androidx.compose.ui.node.NodeChain = androidx.compose.ui.node.NodeChain(this)
     internal val coordinator: androidx.compose.ui.node.NodeCoordinator = androidx.compose.ui.node.NodeCoordinator(this)
     /** Upstream collapses this to the single coordinator we have — it's the
@@ -471,7 +471,7 @@ class LayoutNode(
     /** Default to a stub Owner so vendored DelegatableNode helpers
      *  (e.g. `requireOwner().snapshotObserver.observeReads { … }` from
      *  vendored Background.kt / Border.kt) don't crash on a null owner.
-     *  Replaced when upstream LayoutNode + real Owner land (Phase 9). */
+     *  Replaced when upstream ProjectLayoutNode + real Owner land (Phase 9). */
     internal var owner: androidx.compose.ui.node.Owner? = androidx.compose.ui.node.StubOwner
 
     // LayoutInfo (via SemanticsInfo) members — all defaulted to stubs
@@ -673,7 +673,7 @@ class LayoutNode(
     // ============
     //  Tree manipulation
 
-    fun insertAt(index: Int, child: LayoutNode) {
+    fun insertAt(index: Int, child: ProjectLayoutNode) {
         child.parent = this
         child.depth = depth + 1
         children.add(index, child)
@@ -719,14 +719,14 @@ class LayoutNode(
         // Innermost wrapper — re-enters `measure(c)` with the layout-modifier
         // chain guard set so the natural path runs (applyModifierConstraints +
         // measurePolicy on children). The returned [ChainLeafPlaceable]'s
-        // placeAt(x, y) accumulates (x, y) into LayoutNode.contentOffset.
+        // placeAt(x, y) accumulates (x, y) into ProjectLayoutNode.contentOffset.
         val leaf = object : androidx.compose.ui.layout.Measurable {
             override val parentData: Any? = null
             override fun measure(c: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
                 val saved = fSkipLayoutModifier
                 fSkipLayoutModifier = true
-                try { this@LayoutNode.measure(c) } finally { fSkipLayoutModifier = saved }
-                return ChainLeafPlaceable(this@LayoutNode)
+                try { this@ProjectLayoutNode.measure(c) } finally { fSkipLayoutModifier = saved }
+                return ChainLeafPlaceable(this@ProjectLayoutNode)
             }
             override fun minIntrinsicWidth(height: Int): Int = 0
             override fun maxIntrinsicWidth(height: Int): Int = 0
@@ -779,7 +779,7 @@ class LayoutNode(
         val outerPlaceable = current.measure(constraints)
         // Defer the outermost result's placeChildren until `place(x, y)` runs
         // — at that point contentOffset is reset and the chain walk lands
-        // the per-step offsets back on this LayoutNode.
+        // the per-step offsets back on this ProjectLayoutNode.
         pendingChainResult = if (outerPlaceable is ChainStepPlaceable) outerPlaceable.result else null
         return outerPlaceable
     }
@@ -787,12 +787,12 @@ class LayoutNode(
     /**
      * Wrap-step Placeable: every LayoutModifierNode in the chain produces
      * one (size from the node's MeasureResult). `placeAt(x, y)` adds
-     * (x, y) to the LayoutNode's contentOffset and triggers the wrapped
+     * (x, y) to the ProjectLayoutNode's contentOffset and triggers the wrapped
      * result's [placeChildren], which propagates to the next inner step.
      */
     private class ChainStepPlaceable(
         val result: androidx.compose.ui.layout.MeasureResult,
-        val node: LayoutNode,
+        val node: ProjectLayoutNode,
     ) : androidx.compose.ui.layout.Placeable() {
         /** Set by the placing modifier's wrapper: true when that modifier
          *  translated without growing the box (offset-style) → route to
@@ -807,12 +807,12 @@ class LayoutNode(
     }
 
     /**
-     * Leaf Placeable for the chain — wraps the LayoutNode's natural measure.
+     * Leaf Placeable for the chain — wraps the ProjectLayoutNode's natural measure.
      * `placeAt(x, y)` accumulates into selfOffset (offset-style placer) or
      * contentOffset (inset-style); the natural measure has already set
-     * width/height on the LayoutNode.
+     * width/height on the ProjectLayoutNode.
      */
-    private class ChainLeafPlaceable(val node: LayoutNode) : androidx.compose.ui.layout.Placeable() {
+    private class ChainLeafPlaceable(val node: ProjectLayoutNode) : androidx.compose.ui.layout.Placeable() {
         var placerTranslateLike: Boolean = false
         override val width: Int get() = node.width
         override val height: Int get() = node.height
@@ -857,9 +857,9 @@ class LayoutNode(
                     override val parentData: Any? = null
                     override fun measure(constraints: androidx.compose.ui.unit.Constraints): androidx.compose.ui.layout.Placeable {
                         fSkipLayoutModifier = true
-                        try { this@LayoutNode.measure(constraints) }
+                        try { this@ProjectLayoutNode.measure(constraints) }
                         finally { fSkipLayoutModifier = false }
-                        return androidx.compose.ui.layout.LayoutNodePlaceable(this@LayoutNode)
+                        return androidx.compose.ui.layout.LayoutNodePlaceable(this@ProjectLayoutNode)
                     }
                     override fun minIntrinsicWidth(height: Int): Int = 0
                     override fun maxIntrinsicWidth(height: Int): Int = 0
@@ -988,7 +988,7 @@ class LayoutNode(
     // ============
     //  Hit testing
 
-    fun hitTest(px: Int, py: Int): LayoutNode? {
+    fun hitTest(px: Int, py: Int): ProjectLayoutNode? {
         val ax = absoluteX; val ay = absoluteY
         if (px < ax || py < ay || px >= ax + width || py >= ay + height) return null
         for (i in children.indices.reversed()) {
@@ -1003,9 +1003,9 @@ class LayoutNode(
     fun findMiddleClickHandler(): (() -> Unit)? = cachedMiddleClickable?.onClick ?: parent?.findMiddleClickHandler()
 
     /** Self → root walk collecting every HoverableModifier with its owning node. */
-    fun collectHoverableChain(): List<Pair<LayoutNode, HoverableModifier>> {
-        val acc = mutableListOf<Pair<LayoutNode, HoverableModifier>>()
-        var n: LayoutNode? = this
+    fun collectHoverableChain(): List<Pair<ProjectLayoutNode, HoverableModifier>> {
+        val acc = mutableListOf<Pair<ProjectLayoutNode, HoverableModifier>>()
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             for (h in n.cachedHoverables) acc.add(n!! to h)
             n = n.parent
@@ -1014,8 +1014,8 @@ class LayoutNode(
     }
 
     /** First PressableModifier on the self → root walk. */
-    fun findPressable(): Pair<LayoutNode, PressableModifier>? {
-        var n: LayoutNode? = this
+    fun findPressable(): Pair<ProjectLayoutNode, PressableModifier>? {
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val p = n.cachedPressable
             if (p != null) return n to p
@@ -1025,8 +1025,8 @@ class LayoutNode(
     }
 
     /** First clickable node on the self → root walk — release-inside-press check (Compose's drag-off-cancels-click). */
-    fun findClickableNode(): LayoutNode? {
-        var n: LayoutNode? = this
+    fun findClickableNode(): ProjectLayoutNode? {
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             if (n.cachedClickable != null) return n
             n = n.parent
@@ -1035,8 +1035,8 @@ class LayoutNode(
     }
 
     /** First node on the self → root walk that carries an OnDragModifier. */
-    fun findDraggable(): Pair<LayoutNode, OnDragModifier>? {
-        var n: LayoutNode? = this
+    fun findDraggable(): Pair<ProjectLayoutNode, OnDragModifier>? {
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val d = n.cachedDraggable
             if (d != null) return n to d
@@ -1046,8 +1046,8 @@ class LayoutNode(
     }
 
     /** First node on the self → root walk that carries a FocusableModifier. */
-    fun findFocusableNode(): Pair<LayoutNode, FocusableModifier>? {
-        var n: LayoutNode? = this
+    fun findFocusableNode(): Pair<ProjectLayoutNode, FocusableModifier>? {
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val f = n.cachedFocusable
             if (f != null) return n to f
@@ -1058,7 +1058,7 @@ class LayoutNode(
 
     /** First vertical-scroll ancestor (or self). */
     fun findVerticalScrollAncestor(): androidx.compose.foundation.ScrollState? {
-        var n: LayoutNode? = this
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val s = n.cachedVerticalScrollState
             if (s != null) return s
@@ -1069,7 +1069,7 @@ class LayoutNode(
 
     /** First horizontal-scroll ancestor (or self). */
     fun findHorizontalScrollAncestor(): androidx.compose.foundation.ScrollState? {
-        var n: LayoutNode? = this
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val s = n.cachedHorizontalScrollState
             if (s != null) return s
@@ -1086,7 +1086,7 @@ class LayoutNode(
      * through.
      */
     fun dispatchKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
-        var n: LayoutNode? = this
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             var node: androidx.compose.ui.Modifier.Node? = n.nodes.head.child
             while (node != null) {
@@ -1105,7 +1105,7 @@ class LayoutNode(
      * claimed it, ancestors shouldn't double-insert.)
      */
     fun dispatchTextInput(text: String) {
-        var n: LayoutNode? = this
+        var n: ProjectLayoutNode? = this
         while (n != null) {
             val h = n.cachedTextInputHandler
             if (h != null) { h(text); return }
@@ -1121,7 +1121,7 @@ class LayoutNode(
 // Internal node-level measure policy — distinct from (and kept off the public
 // ABI to avoid colliding with) the official androidx.compose.ui.layout.MeasurePolicy.
 internal fun interface MeasurePolicy {
-    fun measure(node: LayoutNode, constraints: Constraints): IntSize
+    fun measure(node: ProjectLayoutNode, constraints: Constraints): IntSize
 }
 
 // Default: wrap children stacked at (0,0)
@@ -1136,12 +1136,12 @@ internal val DefaultMeasurePolicy = MeasurePolicy { node, constraints ->
     constraints.constrain(IntSize(maxW, maxH))
 }
 
-/** Upstream-shape error policy — assigned to `LayoutNode.measurePolicy` at
+/** Upstream-shape error policy — assigned to `ProjectLayoutNode.measurePolicy` at
  *  construction. The setter pipes through `adaptToInternal` immediately
  *  before any layout pass runs (Box/Row/Column/Layout/Image/BasicText all
  *  assign their own policy in the ComposeNode update block), so this
  *  ErrorPolicy is never actually invoked. */
 internal val ErrorUpstreamMeasurePolicy: androidx.compose.ui.layout.MeasurePolicy =
     androidx.compose.ui.layout.MeasurePolicy { _, _ ->
-        error("LayoutNode.measurePolicy not set")
+        error("ProjectLayoutNode.measurePolicy not set")
     }

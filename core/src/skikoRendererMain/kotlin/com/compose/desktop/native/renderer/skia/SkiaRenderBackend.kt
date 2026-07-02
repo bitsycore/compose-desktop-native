@@ -1,6 +1,6 @@
 package com.compose.desktop.native.renderer.skia
 
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
@@ -58,7 +58,7 @@ internal class SkiaRenderBackend(
         fCurrentCanvas = canvas
     }
 
-    override fun draw(inRoot: LayoutNode) {
+    override fun draw(inRoot: ProjectLayoutNode) {
         val canvas = fCurrentCanvas ?: return
         // Pass the logical window height so the renderer can cull off-screen
         // text lines (canvas is DPR-scaled, so layout/logical coords).

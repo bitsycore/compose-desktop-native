@@ -1,20 +1,20 @@
 package androidx.compose.ui.layout
 
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: LayoutNodeMeasurable
 // ==================
 
-/* Default Measurable implementation: forwards to LayoutNode.measure() and
+/* Default Measurable implementation: forwards to ProjectLayoutNode.measure() and
    produces a Placeable that places that same node when asked.
 
    Implements the IntrinsicMeasurable members from upstream's vendored
-   Measurable: our LayoutNode doesn't track intrinsic measurements yet, so
+   Measurable: our ProjectLayoutNode doesn't track intrinsic measurements yet, so
    the min/maxIntrinsic* methods fall back to a full measure(Constraints).
    parentData stays null until we port ParentDataModifierNode. */
-internal class LayoutNodeMeasurable(val fNode: LayoutNode) : Measurable {
+internal class LayoutNodeMeasurable(val fNode: ProjectLayoutNode) : Measurable {
 
 	/** Parent data exposed to the parent's MeasurePolicy — the value folded
 	 *  from the chain's `ParentDataModifierNode`s (upstream contract). This is

@@ -14,7 +14,7 @@ package com.compose.desktop.native.icons
    abstraction — upstream Compose Multiplatform uses Font(R.font.x) /
    FontFamily for the same purpose, but that machinery is too heavy for this
    subset (it pulls in real ImageVector + resource codegen). The renderer-
-   level fontFamily on LayoutNode is just a String, and this registry tells
+   level fontFamily on ProjectLayoutNode is just a String, and this registry tells
    the renderer where to find the bytes. */
 object IconFont {
 

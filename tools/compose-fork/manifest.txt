@@ -1064,6 +1064,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalPr
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/navigationevent/BackNavigationEventInput.kt  core/src/vendor/native/kotlin/androidx/compose/ui/navigationevent/BackNavigationEventInput.kt
 
 # ── androidx.compose.ui.node ────────────────────────────────────────────────
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatableNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatableNode.kt
@@ -1072,24 +1073,43 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DepthSortedSet.kt  
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DrawModifierNode.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/node/DrawModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt       core/src/vendor/common/kotlin/androidx/compose/ui/node/GlobalPositionAwareModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/HitTestResult.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/HitTestResult.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InnerNodeCoordinator.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/InnerNodeCoordinator.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InternalCoreApi.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/InternalCoreApi.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/InteroperableComposeUiNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/node/IntrinsicsPolicy.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt               core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutAwareModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt         core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt          core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureBlocks.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureBlocks.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureScopeWithLayoutNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt         core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasuredSizeAwareModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/ModifierNodeElement.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MutableVectorWithMutationTracking.kt     core/src/vendor/common/kotlin/androidx/compose/ui/node/MutableVectorWithMutationTracking.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MyersDiff.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/node/MyersDiff.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeChain.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeChain.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeCoordinator.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeCoordinator.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeKind.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeKind.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/ObserverModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt                core/src/vendor/common/kotlin/androidx/compose/ui/node/OnPositionedDispatcher.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/node/OutOfFrameExecutor.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnedLayer.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnedLayer.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/Owner.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/node/Owner.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerScope.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt                core/src/vendor/common/kotlin/androidx/compose/ui/node/ParentDataModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/Ref.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/node/Ref.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/RootForTest.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/node/RootForTest.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SemanticsModifierNode.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/SemanticsModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SortedSet.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/node/SortedSet.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/TouchBoundsExpansion.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TraversableNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/TraversableNode.kt
@@ -1097,26 +1117,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifi
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/WeakReference.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/WeakReference.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt
 compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.native.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/node/WeakReference.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/InnerNodeCoordinator.kt                core/src/vendor/common/kotlin/androidx/compose/ui/node/InnerNodeCoordinator.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt       core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt               core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadPassDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasureAndLayoutDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/node/MeasurePassDelegate.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeChain.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeChain.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeCoordinator.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeCoordinator.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/NodeKind.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/node/NodeKind.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnedLayer.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnedLayer.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt               core/src/vendor/common/kotlin/androidx/compose/ui/node/OwnerSnapshotObserver.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt            core/src/vendor/common/kotlin/androidx/compose/ui/node/PointerInputModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/RootForTest.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/RootForTest.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/SemanticsModifierNode.kt               core/src/vendor/common/kotlin/androidx/compose/ui/node/SemanticsModifierNode.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/DragAndDropOwner.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/node/DragAndDropOwner.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.native.kt

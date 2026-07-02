@@ -5,7 +5,7 @@ import androidx.compose.runtime.ComposeNode
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import androidx.compose.ui.node.MeasurePolicy
 import com.compose.desktop.native.node.NodeApplier
 import androidx.compose.ui.unit.IntSize
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.IntSize
 // ==================
 
 /* Draws a bundled image resource. The painter (from painterResource / a
-   generated Res.drawable.* accessor) is stored on the LayoutNode as a leaf;
+   generated Res.drawable.* accessor) is stored on the ProjectLayoutNode as a leaf;
    the active renderer decodes + caches + paints it during draw, applying
    contentScale and alpha.
 
@@ -29,8 +29,8 @@ fun Image(
 	contentScale: ContentScale = ContentScale.Fit,
 	alpha: Float = 1f,
 ) {
-	ComposeNode<LayoutNode, NodeApplier>(
-		factory = { LayoutNode() },
+	ComposeNode<ProjectLayoutNode, NodeApplier>(
+		factory = { ProjectLayoutNode() },
 		update = {
 			set(painter) { this.painter = it }
 			set(contentScale) { this.contentScale = it }

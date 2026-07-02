@@ -1,19 +1,19 @@
 package androidx.compose.ui.node
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: NodeChain
 // ==================
 
 /**
- * Per-LayoutNode chain of [Modifier.Node] instances built from the
+ * Per-ProjectLayoutNode chain of [Modifier.Node] instances built from the
  * `ModifierNodeElement` entries in the layout's modifier chain.
  *
  * Upstream's NodeChain is doubly-linked and serves as both the storage
  * and the dispatch path for Modifier.Node lifecycle. Ours is a single-
- * pass builder: when [LayoutNode.modifier] is reassigned, [update]
+ * pass builder: when [ProjectLayoutNode.modifier] is reassigned, [update]
  * walks the chain with `foldIn`, finds every [ModifierNodeElement],
  * calls its `create()` (or `update(node)` on an existing matched node),
  * and links the results via `parent` / `child`. `head` stays pinned to
@@ -31,7 +31,7 @@ import androidx.compose.ui.node.LayoutNode
  * renderer rewrite uses `DelegatableNode.visit*` traversal instead of
  * foldIn.
  */
-internal class NodeChain(private val fOwner: LayoutNode) {
+internal class NodeChain(private val fOwner: ProjectLayoutNode) {
 
 	private val sentinel: Modifier.Node = SentinelHead()
 
@@ -144,14 +144,14 @@ internal class NodeChain(private val fOwner: LayoutNode) {
 
 	/**
 	 * Upstream NodeChain.kt:248 — per-modifier `LayoutModifierNodeCoordinator`
-	 * threading. Our project keeps a single NodeCoordinator per LayoutNode
+	 * threading. Our project keeps a single NodeCoordinator per ProjectLayoutNode
 	 * (no per-modifier chain), so this is a no-op. Vendored DelegatingNode
 	 * calls it after `delegate(...)` adds a layout-modifier delegate; the
 	 * draw / measure path is then re-driven by the renderer, which currently
 	 * still reads via foldIn — not via the coordinator chain.
 	 *
 	 * Becomes real when the renderer rewrite uses the upstream
-	 * `LayoutModifierNodeCoordinator` chain instead of [LayoutNode.measure]
+	 * `LayoutModifierNodeCoordinator` chain instead of [ProjectLayoutNode.measure]
 	 * with the flat foldIn pass.
 	 */
 	fun syncCoordinators() { /* no-op */ }

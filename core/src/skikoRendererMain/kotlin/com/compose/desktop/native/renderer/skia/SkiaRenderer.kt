@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.node.LayoutNode
+import com.compose.desktop.native.node.ProjectLayoutNode
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.Paint
@@ -25,7 +25,7 @@ import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
 
 // ==================
-// MARK: SkiaRenderer — draws the LayoutNode tree onto a Skia Canvas.
+// MARK: SkiaRenderer — draws the ProjectLayoutNode tree onto a Skia Canvas.
 // ==================
 
 class SkiaRenderer internal constructor(
@@ -39,17 +39,17 @@ class SkiaRenderer internal constructor(
     private val kShapeDensity = Density(1f)
 
     // Per-node cached subtree image, keyed by the GraphicsLayer's cacheKey.
-    // Held by LayoutNode identity. Subject to a coarse cleanup pass each
+    // Held by ProjectLayoutNode identity. Subject to a coarse cleanup pass each
     // frame (entries for nodes we didn't visit get evicted).
     private class CachedLayer(val key: Any, val w: Int, val h: Int, val image: Image)
-    private val fCache = mutableMapOf<LayoutNode, CachedLayer>()
-    private val fSeenThisFrame = mutableSetOf<LayoutNode>()
+    private val fCache = mutableMapOf<ProjectLayoutNode, CachedLayer>()
+    private val fSeenThisFrame = mutableSetOf<ProjectLayoutNode>()
 
     // Logical window height for the current frame — used to cull off-screen
     // text lines. Set by draw(); Int.MAX_VALUE means "no culling".
     private var fViewportHeight = Int.MAX_VALUE
 
-    fun draw(inRoot: LayoutNode, inCanvas: Canvas, inViewportHeight: Int = Int.MAX_VALUE) {
+    fun draw(inRoot: ProjectLayoutNode, inCanvas: Canvas, inViewportHeight: Int = Int.MAX_VALUE) {
         fViewportHeight = inViewportHeight
         inCanvas.clear(kClearColor)
         fSeenThisFrame.clear()
@@ -69,7 +69,7 @@ class SkiaRenderer internal constructor(
 
     /* Apply alpha + transform + cache from Modifier.graphicsLayer (and
        legacy AlphaModifier) around the draw of inNode's content. */
-    private fun drawNode(inNode: LayoutNode, inCanvas: Canvas) {
+    private fun drawNode(inNode: ProjectLayoutNode, inCanvas: Canvas) {
         val vAlpha = inNode.nodeAlpha
         val vLayer = inNode.graphicsLayer
 
@@ -115,12 +115,12 @@ class SkiaRenderer internal constructor(
         if (vWantsTransform) inCanvas.restore()
     }
 
-    /** True if the node clips its children — read from the cache on LayoutNode. */
-    private fun clipsChildren(inNode: LayoutNode): Boolean = inNode.clipsChildren
+    /** True if the node clips its children — read from the cache on ProjectLayoutNode. */
+    private fun clipsChildren(inNode: ProjectLayoutNode): Boolean = inNode.clipsChildren
 
     /* Pivot-aware scale / rotation / translation. Pivot is the node's
        absolute position offset by the requested fraction of its bounds. */
-    private fun applyTransform(inNode: LayoutNode, inLayer: GraphicsLayerModifier, inCanvas: Canvas) {
+    private fun applyTransform(inNode: ProjectLayoutNode, inLayer: GraphicsLayerModifier, inCanvas: Canvas) {
         val vPivotX = inNode.absoluteX + inNode.width * inLayer.transformOrigin.pivotFractionX
         val vPivotY = inNode.absoluteY + inNode.height * inLayer.transformOrigin.pivotFractionY
         inCanvas.translate(vPivotX + inLayer.translationX, vPivotY + inLayer.translationY)
@@ -134,7 +134,7 @@ class SkiaRenderer internal constructor(
        node-local coords (origin at 0,0), so we translate by absX/absY
        to land it back at the node's position. Alpha applies to the blit. */
     private fun drawCachedSubtree(
-        inNode: LayoutNode,
+        inNode: ProjectLayoutNode,
         inLayer: GraphicsLayerModifier,
         inAlpha: Float,
         inCanvas: Canvas,
@@ -168,7 +168,7 @@ class SkiaRenderer internal constructor(
 
     /* Draws the subtree into a fresh raster surface at node-local coords
        and snapshots an Image. Returns null on allocation failure. */
-    private fun renderToImage(inNode: LayoutNode, inW: Int, inH: Int): Image? {
+    private fun renderToImage(inNode: ProjectLayoutNode, inW: Int, inH: Int): Image? {
         val vSurface = try { Surface.makeRasterN32Premul(inW, inH) } catch (t: Throwable) { return null }
         // The cached content is rendered at the node's natural absolute
         // position; we then snapshot and re-draw it offset, so we need to
@@ -183,7 +183,7 @@ class SkiaRenderer internal constructor(
         return vImage
     }
 
-    private fun drawNodeContent(inNode: LayoutNode, inCanvas: Canvas) {
+    private fun drawNodeContent(inNode: ProjectLayoutNode, inCanvas: Canvas) {
         val vAx = inNode.absoluteX.toFloat()
         val vAy = inNode.absoluteY.toFloat()
         val vW = inNode.width.toFloat()
@@ -227,7 +227,7 @@ class SkiaRenderer internal constructor(
      * Painters here: the Canvas {} `drawer` field, text, image, then children.
      */
     private fun drawNodeLeafAndChildren(
-        inNode: LayoutNode,
+        inNode: ProjectLayoutNode,
         inCanvas: Canvas,
         vAx: Float,
         vAy: Float,
@@ -254,7 +254,7 @@ class SkiaRenderer internal constructor(
         if (!vText.isNullOrEmpty()) {
             // Reuse the exact wrap the measure pass cached on the node (don't
             // re-wrap at a different width — that thrashed the cache and
-            // re-wrapped a huge body every frame; see LayoutNode.cachedWrap).
+            // re-wrapped a huge body every frame; see ProjectLayoutNode.cachedWrap).
             val vWrapped = inNode.cachedWrap()
             textRenderer.drawText(
                 inCanvas, vText,

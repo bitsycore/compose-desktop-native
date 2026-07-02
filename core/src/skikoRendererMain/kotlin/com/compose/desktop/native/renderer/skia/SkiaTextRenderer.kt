@@ -121,7 +121,7 @@ class SkiaTextRenderer {
         inFontFamily: String? = null,
         inFontVariations: List<ComposeFontVariation>? = null,
         inSpans: List<Range<SpanStyle>>? = null,
-        // Pre-computed wrap (cached on the LayoutNode by the measure pass) so a
+        // Pre-computed wrap (cached on the ProjectLayoutNode by the measure pass) so a
         // huge body isn't re-wrapped here every frame. Null = wrap inline.
         inWrapped: WrappedText? = null,
         // Visible vertical band in canvas coords; lines outside it are skipped.
