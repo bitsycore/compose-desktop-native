@@ -6,6 +6,7 @@ import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
 import com.compose.desktop.native.*
 import org.jetbrains.skia.Canvas
+import org.jetbrains.skia.Color as SkColor
 
 // ==================
 // MARK: SkiaRenderBackend
@@ -55,9 +56,23 @@ internal class SkiaRenderBackend(
 
     override fun beginFrame(inDpr: Float) {
         val canvas = fBridge.canvas
+        // Clear the surface to Material dark. Without this the Metal back
+        // buffer shows uninitialized GPU memory (pink) since Sdl3Renderer.draw
+        // no longer runs and drawRoot is a no-op inherited default until
+        // SkiaCanvas lands. Clearing before scale so it covers the whole
+        // physical target.
+        canvas.clear(SkColor.makeARGB(0xFF, 0x12, 0x12, 0x12))
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
         fCurrentCanvas = canvas
+    }
+
+    override fun drawRoot(inHost: com.compose.desktop.native.node.ComposeRootHost) {
+        val canvas = fCurrentCanvas ?: return
+        val vSize = androidx.compose.ui.geometry.Size(sdl.windowWidth.toFloat(), sdl.windowHeight.toFloat())
+        val vCanvas = SkiaCanvas(canvas, vSize, fSkiaTextRenderer, fSkiaImageCache)
+        inHost.rootNode.draw(vCanvas, null)
+        vCanvas.finish()
     }
 
     override fun endFrame() {
