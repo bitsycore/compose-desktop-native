@@ -828,6 +828,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Interp
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/IntervalTree.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/IntervalTree.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/LayerOutsets.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Matrix.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Matrix.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Outline.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Outline.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Paint.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Paint.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/PaintingStyle.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/PaintingStyle.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Path.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Path.kt
@@ -863,7 +864,6 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVer
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradient.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradient.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradientConfig.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradientConfig.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Outline.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Outline.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
