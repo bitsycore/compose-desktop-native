@@ -1065,7 +1065,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalPr
 
 # ── androidx.compose.ui.node ────────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatableNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatableNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatingNode.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatingNode.kt

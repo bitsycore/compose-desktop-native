@@ -117,7 +117,7 @@ internal class ProjectNodeChain(private val fOwner: ProjectLayoutNode) {
 		// markAsAttached, then runAttachLifecycle (which fires onAttach).
 		// Two passes head-to-tail mirror upstream's "mark all, then run
 		// lifecycles" so onAttach bodies see a fully-attached chain.
-		val vCoordinator: androidx.compose.ui.node.NodeCoordinator? = null  // Phase 9: per-modifier coordinator not modeled
+		val vCoordinator: NodeCoordinator = phase9DummyCoordinator
 		for (vN in vCreatedNodes) {
 			vN.updateCoordinator(vCoordinator)
 			vN.markAsAttached()
@@ -163,3 +163,10 @@ internal class ProjectNodeChain(private val fOwner: ProjectLayoutNode) {
 	 */
 	private class SentinelHead : Modifier.Node()
 }
+
+// Phase 9 bridge: the vendored Modifier.Node lifecycle (markAsAttached) requires a
+// non-null NodeCoordinator, but our Modifier.Node chain lives on ProjectLayoutNode, not
+// the upstream LayoutNode the coordinators are welded to. markAsAttached only *checks*
+// coordinator != null (it doesn't use it) and kindSet is set separately, so a single
+// shared throwaway coordinator satisfies the contract for the project's render path.
+private val phase9DummyCoordinator: NodeCoordinator = InnerNodeCoordinator(LayoutNode())
