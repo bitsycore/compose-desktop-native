@@ -1,6 +1,7 @@
 package com.compose.desktop.native.layout
 
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.IntOffset
 
 // ==================
