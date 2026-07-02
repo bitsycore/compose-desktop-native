@@ -1737,3 +1737,16 @@ needs a **from-scratch `Paragraph` actual over SDL3_ttf/FreeType** (a full shapi
 engine). Until that lands, keep the reduced project `BasicText`/`BasicTextField` (now on upstream
 LayoutNode via `TextDrawNode` + `currentTextMeasurer`). This is the largest remaining holdout for
 "commonMain empty af", alongside input/focus.
+
+## 🎉 B5 COMPLETE (2026-07-02) — text + images both render through the upstream engine
+
+`demo --screen=Images` renders the full pipeline: PNG/JPG/SVG/Android-vector-XML decoded + painted,
+`ContentScale` Fit/Crop/FillBounds (with rect clip via Sdl3Canvas.clipRect), per-image alpha, all
+text/layout. Images are a twin of the text bridge: `Image` → `Layout` (sized to painter intrinsic) +
+`PainterDrawElement` → `PainterDrawNode.draw` → `drawIntoCanvas` → `(canvas as NativePainterCanvas)
+.drawNativePainter` → `Sdl3Canvas` (flush batch, then `Sdl3ImageCache.draw` at absolute origin).
+
+The demo now renders EVERYTHING visible (surfaces/borders/shapes/clip/alpha + text + icons + images)
+through the fully vendored upstream engine. Remaining for a working app: **B6 input** (pointer/key/
+focus via NodeCoordinator.hitTest + PointerInputModifierNode) → then delete the parallel world +
+Skia Canvas actual. Known cosmetic gaps until B6: no scroll (content taller than viewport overlaps).
