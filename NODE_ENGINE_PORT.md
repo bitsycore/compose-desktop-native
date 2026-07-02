@@ -389,7 +389,50 @@ Realistic estimate: several more sessions of focused work to green the
 branch, then screenshot regression pass across 30+ demo screens before
 merging to main.
 
-### Branch progress log (`phase9`, fresh redo off main@569) — 1266 → 177 errors
+### Branch progress log (`phase9`, fresh redo off main@569) — 1266 → 0 (COMPILE-GREEN)
+
+**The full graph (`:core` + `:material` + `:window` + `:demo` + `:apidemo`)
+compiles on mingwX64 with the upstream node engine vendored.** The prior
+`phase9-real-swap` attempt stalled at 82; this one reached 0 compile errors.
+
+Error count over the WIP commits: 1266 (rename + vendor engine) → 337 (remove
+project dupes) → 253 (focus/approach/draw/semantics node stubs) → 241
+(Placeable.measurementConstraints) → 220 (LayoutCoordinates surface) → 187
+(**MeasurePolicy typealias** — cleared reader migration) → 177 (spatial/subcompose)
+→ 167 (semantics stubs) → 153 (focus + draw-cache) → 136 (LayoutCoordinates
+transforms + Placeable.placeAt) → 69 (**full ApproachLayoutModifierNode +
+ApproachMeasureScopeImpl** — cleared the approach pass) → 44 (re-shim
+LayoutNodeDrawScope) → 34 (DefaultViewConfiguration) → 25 (visibility/open/opt-in)
+→ 11 (semantics/pointer/positionInRoot/outline) → 7 (RectManager.remove +
+collapsePeer) → 2 (**recover project NodeChain → ProjectNodeChain**, drop dead
+`ProjectLayoutNode.coordinator`, StubOwner Owner impl) → 0 (ProjectNodeChain
+null-coordinator + PlacementScope(LookaheadCapablePlaceable) + createApplier
+actual → AbstractApplier<LayoutNode>).
+
+Structural shape now on the branch:
+- Project `LayoutNode` → `com.compose.desktop.native.node.ProjectLayoutNode`
+  (the renderer/reader class); keeps its own `ProjectNodeChain` (recovered
+  project NodeChain) for the Modifier.Node chain. Dead `coordinator`/
+  `outerCoordinator` removed.
+- Upstream `androidx.compose.ui.node.LayoutNode` + `NodeCoordinator` + `NodeChain`
+  + all delegates + coordinators + `NodeKind` + `BackwardsCompatNode` vendored and
+  own the canonical package.
+- ~15 new `*.shim.kt` fill the engine's edges (focus/approach/semantics/draw-cache
+  node types, `ViewConfiguration`, `RectManager`, `LookaheadLayoutCoordinates`,
+  `SemanticsNode`, interop/subcompose holders); `StubOwner` implements the full
+  upstream `Owner` (60+ members) + `OwnedLayer`/`RootForTest`.
+
+> **⚠️ COMPILE-green, not RUNTIME-verified.** Many edges are no-op stubs
+> (StubOwner, `ProjectNodeChain` passes a null coordinator to `markAsAttached`,
+> approach/semantics/draw-cache no-ops, `LayoutNodeDrawScope` re-shimmed). The
+> renderers still draw the `ProjectLayoutNode` tree directly (they never migrated
+> to `NodeCoordinator`/`LayoutNodeDrawScope`). **Step E (wire the real Owner +
+> coordinator draw + drive `MeasureAndLayoutDelegate` per frame, then the
+> byte-identical screenshot pass across 30+ screens) remains** before this can
+> merge to `main`. Runtime may crash/misrender until then — treat the branch as a
+> compile-green checkpoint.
+
+### Branch progress log (`phase9`, superseded intermediate) — 1266 → 177 errors
 
 The `phase9-real-swap` branch (below) was unrecoverable, so this is a clean redo
 off current `main` (569 vendored). `main` stays green — all work is on `phase9`.
