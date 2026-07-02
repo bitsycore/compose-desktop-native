@@ -33,9 +33,22 @@ byte-identical. `sync.sh` runs it automatically before copying; run it yourself
 after hand-editing:
 
 ```bash
-python3 tools/compose-fork/format-manifest.py          # rewrite in place
-python3 tools/compose-fork/format-manifest.py --check   # exit 1 if not canonical
+python3 tools/compose-fork/format-manifest.py                 # rewrite in place
+python3 tools/compose-fork/format-manifest.py --check          # exit 1 if not canonical
+python3 tools/compose-fork/format-manifest.py --discover PATH  # + surface new upstream files
 ```
+
+### Discovering new upstream files
+
+`--discover <clone>` (or `$CMP_REF`) scans the tracked modules
+(`compose/{ui,foundation,animation}`) in the upstream clone across the mirrored
+source sets (`commonMain`, `nonJvmMain`, `nativeMain`, `nonAndroidMain`,
+`skikoMain`) and adds any `.kt` **not already listed** as a commented candidate
+under its package section, with a best-guess dest (refine when you vendor it;
+only the upstream path is deduped, so curated entries keep their dests).
+`sync.sh` runs `--discover $CMP_REF` automatically after cloning, so a
+`compose-ref.txt` bump surfaces newly-added upstream files as candidates.
+JVM / Android / JS / test source sets are intentionally skipped.
 
 Because the copies are verbatim, provenance lives entirely in `manifest.txt` +
 `compose-ref.txt`. **Never hand-edit a file under `core/src/vendor/`** — change
