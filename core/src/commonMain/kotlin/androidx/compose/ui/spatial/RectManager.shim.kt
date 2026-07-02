@@ -1,13 +1,12 @@
 package androidx.compose.ui.spatial
 
-// ==================
-// MARK: RectManager shim
-// ==================
+import androidx.compose.ui.node.LayoutNode
 
-/**
- * Marker for upstream `androidx.compose.ui.spatial.RectManager` — a queryable
- * spatial index of node bounding rects. Real class exposes rects/
- * registerOnGlobalLayoutCallback/etc.; we ship a bare class so
- * `Owner.rectManager` resolves.
- */
-class RectManager
+// Phase 9 stub — upstream RectManager is a spatial index of node bounding rects.
+// No-op so vendored LayoutNode / Owner.rectManager resolve.
+const val NotFound: Int = -1
+
+class RectManager {
+	fun recalculateRectIfDirty(node: LayoutNode) {}
+	fun getOffsetFromRectListFor(index: Int): Long = 0L
+}
