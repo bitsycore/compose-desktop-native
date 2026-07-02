@@ -1,14 +1,9 @@
 package androidx.compose.ui.semantics
 
-// ==================
-// MARK: SemanticsOwner shim
-// ==================
+import androidx.compose.ui.node.LayoutNode
 
-/**
- * Marker for upstream `androidx.compose.ui.semantics.SemanticsOwner`.
- * Real class exposes root/`unmergedRootSemanticsNode`/`getAllSemanticsNodes`
- * / `getLayoutRectForNode` / semantics listener registration. The desktop
- * a11y layer isn't wired, so a marker is enough for vendored `Owner.kt`
- * to declare `val semanticsOwner: SemanticsOwner`.
- */
-class SemanticsOwner
+// Phase 9 stub — upstream SemanticsOwner. Marker + a no-op change notification
+// (desktop a11y layer isn't wired). Vendored Owner declares `val semanticsOwner`.
+class SemanticsOwner {
+	fun notifySemanticsChange(node: LayoutNode, previousConfig: SemanticsConfiguration?) {}
+}

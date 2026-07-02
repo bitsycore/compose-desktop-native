@@ -2,21 +2,17 @@ package androidx.compose.ui.semantics
 
 import androidx.compose.ui.layout.LayoutInfo
 
-// ==================
-// MARK: SemanticsInfo shim
-// ==================
+// Phase 9 stub — upstream SemanticsInfo (semantics tree view onto a LayoutNode).
+// Vendored LayoutNode implements it + overrides these; defaults keep it compiling
+// without the semantics/a11y runtime.
+internal interface SemanticsInfo : LayoutInfo {
+	val semanticsConfiguration: SemanticsConfiguration?
+		get() = null
+	fun isTransparent(): Boolean = false
+	val childrenInfo: List<SemanticsInfo>
+		get() = emptyList()
+}
 
-/**
- * Project shim. Vendored DelegatableNode only uses it as a cast target in
- *
- *     internal fun DelegatableNode.requireSemanticsInfo(): SemanticsInfo
- *         = requireLayoutNode()
- *
- * Upstream ProjectLayoutNode implements SemanticsInfo. Our project ProjectLayoutNode
- * marks itself with this shim so the cast type-checks; no member access
- * happens in Phase 1.
- *
- * Delete when the real SemanticsInfo + SemanticsConfiguration chain is
- * vendored (its own multi-session sprint — paragraph engine + autofill).
- */
-internal interface SemanticsInfo : LayoutInfo
+// Monotonic semantics-id generator (upstream is atomic; single-threaded here).
+private var vSemanticsIdCounter: Int = 0
+fun generateSemanticsId(): Int = ++vSemanticsIdCounter
