@@ -83,10 +83,18 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalForeignApi::class)
 internal class Sdl3DrawScope(
 	private val fRenderer: COpaquePointer,
-	private val fOriginX: Float,
-	private val fOriginY: Float,
+	inInitialOriginX: Float,
+	inInitialOriginY: Float,
 	override val size: Size,
 ) : DrawScope {
+
+	// Draw origin in the SDL renderer's absolute pixel space. Mutable so an
+	// Sdl3Canvas can retarget one scope's origin per draw call (Canvas.translate
+	// accumulation) instead of allocating a scope per node. The current
+	// tree-walk renderer sets it once via the ctor and never moves it.
+	private var fOriginX: Float = inInitialOriginX
+	private var fOriginY: Float = inInitialOriginY
+	internal fun setOrigin(inX: Float, inY: Float) { fOriginX = inX; fOriginY = inY }
 
 	// Exposed for the sampler extension functions — they map gradient
 	// anchor points (in node-local coords) into the SDL renderer's
@@ -215,7 +223,7 @@ internal class Sdl3DrawScope(
 	override fun drawPoints(points: List<Offset>, pointMode: PointMode, color: ComposeColor, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) {}
 	override fun drawPoints(points: List<Offset>, pointMode: PointMode, brush: Brush, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) {}
 
-	private fun rectCore(
+	internal fun rectCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -244,7 +252,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	private fun circleCore(
+	internal fun circleCore(
 		brush: Brush,
 		radius: Float,
 		center: Offset,
@@ -263,7 +271,7 @@ internal class Sdl3DrawScope(
 		)
 	}
 
-	private fun arcCore(
+	internal fun arcCore(
 		brush: Brush,
 		startAngle: Float,
 		sweepAngle: Float,
@@ -295,7 +303,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	private fun pathCore(
+	internal fun pathCore(
 		path: ComposePath,
 		brush: Brush,
 		alpha: Float,
@@ -311,7 +319,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	private fun ovalCore(
+	internal fun ovalCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -334,7 +342,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	private fun roundRectCore(
+	internal fun roundRectCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -381,7 +389,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	private fun lineCore(
+	internal fun lineCore(
 		brush: Brush,
 		start: Offset,
 		end: Offset,

@@ -367,8 +367,8 @@ internal class Sdl3Renderer(
         } else {
             val vBaseScope = Sdl3DrawScope(
                 fRenderer = vRenderer,
-                fOriginX = vAx,
-                fOriginY = vAy,
+                inInitialOriginX = vAx,
+                inInitialOriginY = vAy,
                 size = androidx.compose.ui.geometry.Size(vW, vH),
             )
             var vInnerCb: () -> Unit = {
@@ -408,8 +408,8 @@ internal class Sdl3Renderer(
         if (vDrawer != null) {
             val vScope = Sdl3DrawScope(
                 fRenderer = vRenderer,
-                fOriginX = vAx,
-                fOriginY = vAy,
+                inInitialOriginX = vAx,
+                inInitialOriginY = vAy,
                 size = androidx.compose.ui.geometry.Size(vW, vH),
             )
             vDrawer(vScope)
