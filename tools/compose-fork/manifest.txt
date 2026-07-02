@@ -7,36 +7,36 @@
 # Never hand-edit vendored files — change the manifest / ref and re-run sync.sh.
 
 # ── androidx.compose.animation ──────────────────────────────────────────────
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                                       core/src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt                     core/src/vendor/common/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt    core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt                 core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                                 core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt      core/src/vendor/common/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt             core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                                core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt              core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                      core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
-compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt        core/src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/EnterExitTransition.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/EnterExitTransition.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt           core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt          core/src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt                                 core/src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElementEntry.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/SharedElementEntry.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt                  core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
-# compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.native.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                                     core/src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt                     core/src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt                   core/src/vendor/common/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt  core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt               core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt    core/src/vendor/common/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt           core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                              core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt            core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                    core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
+compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt      core/src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
+compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.native.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/EnterExitTransition.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/EnterExitTransition.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt         core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt        core/src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElementEntry.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/SharedElementEntry.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt                core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt
+# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt                     core/src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
 
 # ── androidx.compose.animation.core ─────────────────────────────────────────
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animatable.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/core/Animatable.kt
