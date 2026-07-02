@@ -16,7 +16,7 @@ import com.compose.desktop.native.graphics.drawBorderShape
 // ==================
 // Each modifier is a `ModifierNodeElement<XxxNode>` paired with a
 // `XxxNode : Modifier.Node, DrawModifierNode` (or other *ModifierNode
-// interface). ProjectLayoutNode and the renderers read these via Modifier.foldIn
+// interface). the upstream LayoutNode and the renderers read these via Modifier.foldIn
 // (ModifierNodeElement IS-A Modifier.Element), so the migration to the
 // upstream factory pattern is transparent to the renderer today — the
 // Node lifecycle stays dormant until the renderer rewrite drives it via
@@ -26,7 +26,7 @@ import com.compose.desktop.native.graphics.drawBorderShape
 // upstream `androidx.compose.foundation.layout.Padding.kt`. The chain
 // measure pipeline runs PaddingNode.measure() outermost-first;
 // `placeable.place(start, top)` inside its layout block accumulates
-// into `ProjectLayoutNode.contentOffsetX/Y` via `ChainLeafPlaceable.placeAt`.
+// into `the upstream LayoutNode.contentOffsetX/Y` via `ChainLeafPlaceable.placeAt`.
 
 
 class BackgroundModifier(
@@ -101,7 +101,7 @@ class MiddleClickNode(var onClick: () -> Unit) : Modifier.Node()
 // upstream `androidx.compose.ui.layout.OnGloballyPositionedModifier.kt`
 // whose private `OnGloballyPositionedNode` implements
 // `GlobalPositionAwareModifierNode`. The dispatch loop in
-// `ProjectLayoutNode.dispatchGloballyPositioned()` walks the chain and calls
+// `the upstream LayoutNode.dispatchGloballyPositioned()` walks the chain and calls
 // `onGloballyPositioned(coordinates)` directly.
 
 /* Paints user-supplied content under the node's children via a DrawScope
@@ -127,7 +127,7 @@ class DrawBehindNode(
 }
 
 /* Identity is by callback reference — not great across recomposition. The
-   dispatch code in ComposeWindow keys hover/press state by ProjectLayoutNode
+   dispatch code in ComposeWindow keys hover/press state by the upstream LayoutNode
    identity (which is stable) rather than by the modifier itself. */
 class HoverableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<HoverableNode>() {
     override fun create() = HoverableNode(onChange)
@@ -168,7 +168,7 @@ class FocusableNode(var onFocusChanged: (Boolean) -> Unit) : Modifier.Node()
 // the vendored file ships the official-shape `Modifier.onKeyEvent {}`
 // and `Modifier.onPreviewKeyEvent {}` extensions + a `private
 // KeyInputElement` element + `internal KeyInputNode : KeyInputModifierNode`.
-// `ProjectLayoutNode.dispatchKeyEvent` walks the Modifier.Node chain for
+// `the upstream LayoutNode.dispatchKeyEvent` walks the Modifier.Node chain for
 // every `KeyInputModifierNode` and calls its `onKeyEvent` method.
 
 
@@ -210,7 +210,7 @@ class OnDragNode(
 // the vendored file ships the official-shape pair (a `private
 // OnSizeChangedModifier` element + `internal OnSizeChangedNode :
 // Modifier.Node, MeasuredSizeAwareModifierNode`). The renderer reads
-// the new node via `nodes` chain in `ProjectLayoutNode.measure()`.
+// the new node via `nodes` chain in `the upstream LayoutNode.measure()`.
 
 
 // ==================
@@ -271,7 +271,7 @@ class AlphaNode(var alpha: Float) : Modifier.Node()
  * render-to-texture caching across frames. See `Modifier.graphicsLayer`
  * (in `androidx.compose.ui.graphics`) for the caching semantics.
  *
- * The renderer reads this element directly via the `ProjectLayoutNode.graphicsLayer`
+ * The renderer reads this element directly via the `the upstream LayoutNode.graphicsLayer`
  * `foldIn` over the chain; the paired [GraphicsLayerNode] lifecycle stays
  * dormant until the renderer rewrite drives it.
  */

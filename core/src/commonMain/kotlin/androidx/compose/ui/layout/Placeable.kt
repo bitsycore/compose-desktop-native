@@ -1,6 +1,5 @@
 package androidx.compose.ui.layout
 
-import com.compose.desktop.native.node.ProjectLayoutNode
 
 // ==================
 // MARK: Placeable
@@ -259,11 +258,3 @@ internal fun PlacementScope(
 internal fun PlacementScope(
 	@Suppress("UNUSED_PARAMETER") scope: androidx.compose.ui.node.LookaheadCapablePlaceable,
 ): Placeable.PlacementScope = Placeable.PlacementScope.Default
-
-internal class LayoutNodePlaceable(private val fNode: ProjectLayoutNode) : Placeable() {
-
-	override val width: Int get() = fNode.width
-	override val height: Int get() = fNode.height
-	override val parentData: Any? get() = fNode.cachedParentData
-	override fun placeAt(inX: Int, inY: Int) { fNode.place(inX, inY) }
-}
