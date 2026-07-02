@@ -1614,3 +1614,32 @@ mingw-verified `Sdl3DrawScope` transformation exactly; **verify on a Skia host.*
   `ComposeUiNode.Constructor→LayoutNode`, `ComposeWindow` drives `owner.measureAndLayout()` +
   `owner.root.draw(sdl3Canvas)`; implement `Sdl3Canvas`/`SkiaCanvas` here.
 - **B5 leaf content · B6 input/hit-test · B7 retire ProjectLayoutNode + regression** (unchanged).
+
+## B3 DONE (2026-07-02, committed 5f51fd1 — mingw compile-green, additive)
+
+`androidx.compose.ui.node.ComposeOwner(root: LayoutNode)` — a real `Owner` that drives the vendored
+`MeasureAndLayoutDelegate`: `onRequestMeasure`/`onRequestRelayout`/`measureAndLayout`/
+`forceMeasureTheSubtree`/`onDetach` forward to the delegate; `attach()` + `setRootConstraints()`
+helpers for the frame loop; `sharedDrawScope = LayoutNodeDrawScope()` (vendored); `createLayer` runs
+the draw block (real transform/alpha/clip layer deferred to B6). Focus/semantics/input/clipboard stay
+no-op (mirrors StubOwner). Additive + unused until B4; compile-verified against the whole Owner ABI.
+
+### B4 is the big-bang pivot (NEXT — needs its own runway; goes RED before green)
+Unlike B1/B3 (additive, clean green commits), B4 flips the composition to upstream `LayoutNode` and
+CANNOT be a small green commit — it cascades through the renderer + leaves + input at once:
+- `com.compose.desktop.native.node.NodeApplier` → `AbstractApplier<LayoutNode>` (upstream child API).
+- `ComposeUiNode.kt` → `Constructor = LayoutNode.Constructor` (re-vendor / project impl).
+- `ComposeWindow.kt`: `rootNode = LayoutNode()`, `ComposeOwner(root).attach()`, per frame
+  `owner.setRootConstraints(Constraints.fixed(w,h))` + `owner.measureAndLayout()` +
+  `owner.root.draw(sdl3Canvas)`. Every `rootNode.*` reader here breaks: `hitTest`,
+  `dispatchPointerInput`, `bindFocusRequesters`, `dispatchGloballyPositioned` (ProjectLayoutNode API).
+- **Real `Sdl3Canvas : androidx.compose.ui.graphics.Canvas`** (+ flesh out `Paint`/gradient `Shader`
+  actuals): port the `*Core` tessellation from `Sdl3DrawScope` to consume `Paint`. This is where the
+  conformed draw backend finally gets driven by `CanvasDrawScope`. Simplify `Sdl3Renderer` from the
+  field-reading tree-walk to `owner.root.draw(canvas)`.
+- Expect NO text/images until **B5** (leaf content → DrawModifierNodes) and NO pointer/focus until
+  **B6** (hit-test via `NodeCoordinator.hitTest`). First B4 render target: coloured boxes / borders
+  (already DrawModifierNodes) to prove the pipeline end-to-end, then B5/B6 restore the rest.
+
+Plan B4 as: pivot + Sdl3Canvas + stub the broken input readers → drive red→green → link →
+`demo.exe --screen=Layout --screenshot` to confirm boxes paint through the upstream pipeline.
