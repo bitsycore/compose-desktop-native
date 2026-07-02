@@ -97,6 +97,7 @@ compose/animation/animation/src/nonJvmMain/kotlin/androidx/compose/animation/int
 
 # ── androidx.compose.foundation ─────────────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Background.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/Background.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicMarquee.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/BasicMarquee.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Border.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/Border.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BorderStroke.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/BorderStroke.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Canvas.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/Canvas.kt
@@ -121,7 +122,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/C
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Indication.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/Indication.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/PointerMatcher.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/PointerMatcher.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt                         core/src/vendor/skikoRenderer/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicMarquee.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/BasicMarquee.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicTooltip.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/BasicTooltip.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Clickable.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/Clickable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Focusable.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/Focusable.kt
