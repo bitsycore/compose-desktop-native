@@ -1709,3 +1709,17 @@ drawRoot(host)` + Sdl3 impl, ComposeWindow driving the upstream engine. Input/hi
 - **Shared-renderer note (user):** put renderer code common to SDL+Skia in `nativeMain` with the
   platform-specific bits delegating from `sdlRendererMain`/`skikoRendererMain` (e.g. the drawRoot
   orchestration, Paint→backend mapping) so both renderers share it.
+
+## 🎉 B5-TEXT SUCCESS (2026-07-02) — text renders through the upstream engine
+
+`demo --screen=Buttons` renders a full readable Material UI (title, descriptions, filled/outlined/
+text buttons with labels + correct colours/borders/shapes) entirely through the upstream engine +
+the new text bridge. Text is a real upstream `DrawModifierNode`: `BasicText` → `Layout` (sized by
+`currentTextMeasurer`) + `TextDrawElement` → `TextDrawNode.draw(ContentDrawScope)` → `drawIntoCanvas`
+→ `(canvas as NativeTextCanvas).drawNativeText` → `Sdl3Canvas` (flush batch for z-order) →
+`Sdl3TextRenderer.drawText` at the node's absolute origin. Material Symbols icon-fonts route through
+the same text path (fontFamily → FreeType), so icon glyphs render too.
+
+Still missing: **images** (`painterResource` / `Image` — `Sdl3Canvas.drawImage` is a no-op; needs a
+`NativePainterCanvas` bridge like text) and **input** (B6). Next: images, then B6 input, then delete
+the parallel world.
