@@ -1226,73 +1226,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsRegio
 # ── androidx.compose.ui.state ───────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/state/ToggleableState.kt  core/src/vendor/common/kotlin/androidx/compose/ui/state/ToggleableState.kt
 
-# ── androidx.compose.ui.test ────────────────────────────────────────────────
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/AbstractMainTestClock.kt              core/src/vendor/common/kotlin/androidx/compose/ui/test/AbstractMainTestClock.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Actions.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/test/Actions.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/ApplyingContinuationInterceptor.kt    core/src/vendor/common/kotlin/androidx/compose/ui/test/ApplyingContinuationInterceptor.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Assertions.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/test/Assertions.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/BoundsAssertions.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/test/BoundsAssertions.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/ComposeUiTest.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/test/ComposeUiTest.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/ComposeUiTestFlags.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/test/ComposeUiTestFlags.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/DensityForcedSize.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/test/DensityForcedSize.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/DeviceConfigurationOverride.kt        core/src/vendor/common/kotlin/androidx/compose/ui/test/DeviceConfigurationOverride.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/ErrorMessages.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/test/ErrorMessages.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Expect.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/test/Expect.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/ExperimentalTestApi.kt                core/src/vendor/common/kotlin/androidx/compose/ui/test/ExperimentalTestApi.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Filters.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/test/Filters.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Finders.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/test/Finders.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/GestureScope.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/test/GestureScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/GlobalAssertions.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/test/GlobalAssertions.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/IdlingResource.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/test/IdlingResource.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/IdlingResourceOwner.kt                core/src/vendor/common/kotlin/androidx/compose/ui/test/IdlingResourceOwner.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/IndirectPointerInjectionScope.kt      core/src/vendor/common/kotlin/androidx/compose/ui/test/IndirectPointerInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/InjectionScope.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/test/InjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/InputDispatcher.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/test/InputDispatcher.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/KeyInjectionScope.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/test/KeyInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/KeyInputHelpers.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/test/KeyInputHelpers.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/MainTestClock.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/test/MainTestClock.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Mouse.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/test/Mouse.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/MouseInjectionScope.kt                core/src/vendor/common/kotlin/androidx/compose/ui/test/MouseInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/MultiModalInjectionScope.kt           core/src/vendor/common/kotlin/androidx/compose/ui/test/MultiModalInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Output.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/test/Output.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/PlatformTextInputMethodOverride.kt    core/src/vendor/common/kotlin/androidx/compose/ui/test/PlatformTextInputMethodOverride.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/RotaryInjectionScope.kt               core/src/vendor/common/kotlin/androidx/compose/ui/test/RotaryInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Selectors.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/test/Selectors.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/SemanticsMatcher.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/test/SemanticsMatcher.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction.kt           core/src/vendor/common/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionsProvider.kt  core/src/vendor/common/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionsProvider.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/SemanticsSelector.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/test/SemanticsSelector.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/StateRestorationTester.kt             core/src/vendor/common/kotlin/androidx/compose/ui/test/StateRestorationTester.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/TestContext.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/test/TestContext.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/TestOwner.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/test/TestOwner.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/TextActions.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/test/TextActions.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/TouchInjectionScope.kt                core/src/vendor/common/kotlin/androidx/compose/ui/test/TouchInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Trackpad.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/test/Trackpad.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/TrackpadInjectionScope.kt             core/src/vendor/common/kotlin/androidx/compose/ui/test/TrackpadInjectionScope.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/UncaughtExceptionHandler.kt           core/src/vendor/common/kotlin/androidx/compose/ui/test/UncaughtExceptionHandler.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/Utils.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/test/Utils.kt
-# compose/ui/ui-test/src/commonMain/kotlin/androidx/compose/ui/test/VelocityPathFinder.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/test/VelocityPathFinder.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Actions.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/test/Actions.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Actions.skikoMain.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/test/Actions.skikoMain.native.kt
-# compose/ui/ui-test/src/nativeMain/kotlin/androidx/compose/ui/test/Actuals.nativeMain.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/test/Actuals.nativeMain.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Assertions.skikoMain.kt                core/src/vendor/native/kotlin/androidx/compose/ui/test/Assertions.skikoMain.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/ComposeRootRegistry.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/test/ComposeRootRegistry.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/ComposeUiTest.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/test/ComposeUiTest.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/DensityForcedSize.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/test/DensityForcedSize.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/DeviceConfigurationOverride.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/ui/test/DeviceConfigurationOverride.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Finders.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/test/Finders.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/InputDispatcher.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/test/InputDispatcher.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/MainTestClockImpl.skikoMain.kt         core/src/vendor/native/kotlin/androidx/compose/ui/test/MainTestClockImpl.skikoMain.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Mouse.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/test/Mouse.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/SkikoImageHelpers.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/test/SkikoImageHelpers.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/SkikoOutput.skikoMain.kt               core/src/vendor/native/kotlin/androidx/compose/ui/test/SkikoOutput.skikoMain.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/StateRestorationTester.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/test/StateRestorationTester.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Synchronization.skikoMain.kt           core/src/vendor/native/kotlin/androidx/compose/ui/test/Synchronization.skikoMain.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/TestContext.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/test/TestContext.native.kt
-# compose/ui/ui-test/src/nonJvmMain/kotlin/androidx/compose/ui/test/TextActions.nonJvm.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/test/TextActions.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/Trackpad.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/test/Trackpad.native.kt
-# compose/ui/ui-test/src/skikoMain/kotlin/androidx/compose/ui/test/VelocityPathFinder.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/test/VelocityPathFinder.native.kt
-
 # ── androidx.compose.ui.text ────────────────────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/AnnotatedString.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/AnnotatedString.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/AtomicReference.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/AtomicReference.kt
@@ -1421,23 +1354,6 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextMoti
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/style/TextOverflow.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/text/style/TextMotion.native.kt
-
-# ── androidx.compose.ui.tooling.preview ─────────────────────────────────────
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/AndroidUiMode.kt     core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/AndroidUiMode.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/Device.kt            core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Device.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/MultiPreviews.kt     core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/MultiPreviews.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/Preview.kt           core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Preview.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/PreviewParameter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/PreviewParameter.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/PreviewWrapper.kt    core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/PreviewWrapper.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/Wallpaper.kt         core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Wallpaper.kt
-
-# ── androidx.compose.ui.tooling.preview.datasource ──────────────────────────
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/datasource/CollectionPreviewParameterProvider.kt  core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/datasource/CollectionPreviewParameterProvider.kt
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/datasource/LoremIpsum.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/datasource/LoremIpsum.kt
-
-# ── androidx.compose.ui.tooling.preview.internal ────────────────────────────
-# compose/ui/ui-tooling-preview/src/commonMain/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.kt         core/src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.kt
-# compose/ui/ui-tooling-preview/src/nonJvmMain/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.native.kt
 
 # ── androidx.compose.ui.unit ────────────────────────────────────────────────
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt           core/src/vendor/common/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt

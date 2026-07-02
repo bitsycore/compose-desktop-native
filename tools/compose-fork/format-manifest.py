@@ -45,6 +45,17 @@ def package_of(dest):
     return m.group(1).replace('/', '.') if m else '(root)'
 
 
+# Non-runtime packages we never mirror (test framework, preview tooling).
+# Commented candidates under these are dropped on canonicalize; discover skips
+# them. An *active* (vendored) entry under one is kept + warned (unexpected).
+EXCLUDE_PKGS = ('androidx.compose.ui.test', 'androidx.compose.ui.tooling')
+
+
+def is_excluded(dest):
+    p = package_of(dest)
+    return any(p == e or p.startswith(e + '.') for e in EXCLUDE_PKGS)
+
+
 def section_header(pkg):
     pre = '# ── %s ' % pkg
     return pre + '─' * max(3, 78 - len(pre))
@@ -103,7 +114,7 @@ def discover(existing_ups, cmp_ref):
                 if up in existing_ups:
                     continue
                 dest = upstream_to_dest(up)
-                if dest:
+                if dest and not is_excluded(dest):
                     found.append((up, dest))
     return sorted(set(found))
 
@@ -116,12 +127,16 @@ def canonical(text):
         if not m:
             continue
         up, dest, active = m.group(2), m.group(3), m.group(1) is None
+        if is_excluded(dest) and not active:
+            continue  # drop non-runtime (test/tooling) candidates
         e = entries.get(dest)
         if e is None:
             entries[dest] = {'up': up, 'active': active}
         elif active:
             e['up'] = up
             e['active'] = True
+        if active and is_excluded(dest):
+            sys.stderr.write('warn: active entry under excluded package: %s\n' % dest)
 
     groups = {}
     for dest, e in entries.items():
