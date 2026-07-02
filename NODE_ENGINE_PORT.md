@@ -1793,19 +1793,55 @@ adapter that fed it. Nothing outside its own adapter cluster referenced these ty
   still TODO). The demo has a probe-function coupling in `Main.kt` that makes the macOS-skia
   demo path red pre-existing this work.
 
+## ✅ FOUNDATION VENDOR SPRINT (2026-07-02) — Border + DrawModifier + Outline
+
+Continued the vendor push toward upstream foundation. Screenshot hash unchanged
+across every commit (`ce15decb83c3bb7ba44660cd9002408c`).
+
+Vendored:
+- `androidx.compose.ui.draw.DrawModifier.kt` (474L) — brings upstream's real
+  `interface DrawModifier` / `DrawCacheModifier` / `BuildDrawCacheParams`
+  (were shims), `Modifier.drawBehind` / `drawWithCache` / `drawWithContent`,
+  and the `CacheDrawScope` / `DrawResult` / `CacheDrawModifierNode` pipeline
+  that upstream Border.kt uses. Added `DropShadowPainter` / `InnerShadowPainter`
+  marker stubs in `ShadowContext.shim` for its KDoc-only imports.
+- `androidx.compose.foundation.Border.kt` (479L) — the real Border, driving
+  through `CacheDrawModifierNode` and `drawContent`; handles every brush type
+  (not just SolidColor). Same public surface — `border(width, color, shape)` /
+  `border(width, brush, shape)` / `border(BorderStroke, shape)`. Project
+  `BorderModifier` stays alive for the renderer draw path until DrawModifierNode
+  drives rendering directly.
+- `androidx.compose.ui.graphics.Outline.kt` (290L) — same sealed hierarchy as
+  project (Rectangle/Rounded/Generic), plus upstream's own DrawScope/Canvas
+  `drawOutline(...)` extensions (retires project `DrawOutlineExt.kt`, 76L).
+
+Attempted-and-reverted:
+- `Image.kt` — needs `Painter.intrinsicSize: Size` (Float) but ours is `IntSize`
+  (Int). Painter fidelity fix must land first.
+- `PainterModifier.kt` — depends on `Painter.intrinsicSize: Size`. Same block.
+
+Foundation files still project-side (each needs its own prereq):
+- `Clickable.kt`, `Focusable.kt`, `Hoverable.kt` — need `Indication` +
+  `InteractionSource.emit` engine + upstream focus. Public surface differs
+  (project takes `(Boolean) -> Unit` callbacks; upstream takes
+  `MutableInteractionSource`); migration is a call-site sweep across
+  material/apidemo/demo.
+- `Scroll.kt` — needs `foundation.gestures.scrollable` (also unvendored).
+- `Image.kt` — needs Painter shape fix + BitmapPainter/ColorPainter/ImageVector.
+
+**Current state (2026-07-02, post-sprint):**
+- `commonMain`: **88 files** (was 91).
+- Total lines removed this sprint: ~730L (~2600L + 730L = ~3300L since start).
+- 3 more upstream vendor files: `DrawModifier.kt`, `Border.kt`, `Outline.kt`.
+
 **Remaining path to "commonMain empty af":**
-1. **B6b input (focus + key + IME)** — the last active ProjectLayoutNode reader was
-   `FocusManager.focusOnNode(ProjectLayoutNode)`; now decoupled but focus itself is dormant.
-   Rebuild on upstream `FocusOwner` + `FocusTargetNode` + `KeyInputModifierNode` chain-walk
-   dispatch (same pattern as B6a for pointer events).
-2. **SkiaCanvas actual** — `androidx.compose.ui.graphics.Canvas` impl wrapping
-   `org.jetbrains.skia.Canvas` (mirror `Sdl3Canvas`). Restores rendering on macOS/Linux Skia
-   targets. Blocks byte-identical screenshot verification across all 5 build paths.
-3. **Migrate project modifiers to upstream** — `element/ModifierElements.kt` still hosts
-   `BackgroundModifier` / `BorderModifier` / `ClickableModifier` / etc as project types. Called
-   from foundation `.background(color)` / `.border(...)` / `.clickable(...)` extensions and used
-   by material/apidemo/demo. Requires vendoring upstream `foundation.background` /
-   `foundation.Border` / `foundation.Clickable` — those pull `Indication`/`InteractionSource`
-   which need the focus engine to be full-fidelity.
-4. **Vendor more upstream files** — leaf files that could go verbatim (Font/FontVariation/
-   TextFieldValue/etc all diverge from upstream and need adaptation before vendoring).
+1. **Painter shape fix** — align `Painter.intrinsicSize` to `Size` (Float),
+   unblocks upstream `Image.kt` + `PainterModifier.kt` (~275+363L).
+2. **B6b input (focus + key + IME)** — rebuild focus on upstream `FocusOwner`
+   + `FocusTargetNode` + `KeyInputModifierNode`.
+3. **Interaction/gesture engine** — vendor `Indication` + gesture pipeline to
+   unblock Clickable/Hoverable/Focusable (~2600+ lines total).
+4. **SkiaCanvas actual** — `androidx.compose.ui.graphics.Canvas` over
+   `org.jetbrains.skia.Canvas`.
+5. **Migrate project modifier system** — retire `element/ModifierElements.kt`
+   once upstream foundation lands.
