@@ -66,6 +66,20 @@ interface LayoutCoordinates {
 	fun localToScreen(relativeToLocal: androidx.compose.ui.geometry.Offset): androidx.compose.ui.geometry.Offset = relativeToLocal
 	fun screenToLocal(relativeToScreen: androidx.compose.ui.geometry.Offset): androidx.compose.ui.geometry.Offset = relativeToScreen
 	fun windowToLocal(relativeToWindow: androidx.compose.ui.geometry.Offset): androidx.compose.ui.geometry.Offset = relativeToWindow
+
+	fun localPositionOf(
+		sourceCoordinates: LayoutCoordinates,
+		relativeToSource: androidx.compose.ui.geometry.Offset,
+		includeMotionFrameOfReference: Boolean,
+	): androidx.compose.ui.geometry.Offset = localPositionOf(sourceCoordinates, relativeToSource)
+
+	fun localBoundingBoxOf(
+		sourceCoordinates: LayoutCoordinates,
+		clipBounds: Boolean = true,
+	): androidx.compose.ui.geometry.Rect = androidx.compose.ui.geometry.Rect(0f, 0f, 0f, 0f)
+
+	fun transformFrom(sourceCoordinates: LayoutCoordinates, matrix: androidx.compose.ui.graphics.Matrix) {}
+	fun transformToScreen(matrix: androidx.compose.ui.graphics.Matrix) {}
 }
 
 // Phase 9 extension stand-ins — upstream declares these top-level in LayoutCoordinates.kt.

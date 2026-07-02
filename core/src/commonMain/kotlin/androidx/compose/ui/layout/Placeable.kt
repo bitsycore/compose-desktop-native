@@ -33,6 +33,19 @@ abstract class Placeable : Measured {
 	open var measurementConstraints: androidx.compose.ui.unit.Constraints =
 		androidx.compose.ui.unit.Constraints()
 
+	/** Phase 9: NodeCoordinator reads this in its placeAt path. */
+	open val apparentToRealOffset: androidx.compose.ui.unit.IntOffset
+		get() = androidx.compose.ui.unit.IntOffset.Zero
+
+	/** Phase 9: upstream placeAt overload taking a concrete GraphicsLayer. */
+	open fun placeAt(
+		position: androidx.compose.ui.unit.IntOffset,
+		@Suppress("UNUSED_PARAMETER") zIndex: Float,
+		@Suppress("UNUSED_PARAMETER") layer: androidx.compose.ui.graphics.layer.GraphicsLayer,
+	) {
+		placeAt(position.x, position.y)
+	}
+
 	/** Upstream Measured.measuredWidth — before constraint coercion. Our
 	 *  project doesn't distinguish measured vs coerced size; both are width. */
 	override val measuredWidth: Int get() = width
