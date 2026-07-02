@@ -230,7 +230,13 @@ internal class ComposeOwner(
 			override fun show() = Unit
 			override fun hide() = Unit
 		}
-	override val pointerIconService: PointerIconService = object : PointerIconService {}
+	override val pointerIconService: PointerIconService = object : PointerIconService {
+		override fun getIcon(): androidx.compose.ui.input.pointer.PointerIcon =
+			androidx.compose.ui.input.pointer.PointerIcon.Default
+		override fun setIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {}
+		override fun getStylusHoverIcon(): androidx.compose.ui.input.pointer.PointerIcon? = null
+		override fun setStylusHoverIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {}
+	}
 	override val semanticsOwner: SemanticsOwner = SemanticsOwner()
 	override val focusOwner: FocusOwner = object : FocusOwner {}
 	override val windowInfo: WindowInfo = object : WindowInfo {

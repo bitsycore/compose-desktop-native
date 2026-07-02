@@ -970,13 +970,13 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/nestedscroll/Neste
 # ── androidx.compose.ui.input.pointer ───────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/InternalPointerInput.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/InternalPointerInput.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerEvent.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerInputTestUtil.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerInputTestUtil.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerButton.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerButton.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerEvent.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/HitPathTracker.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/HitPathTracker.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerIcon.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEventProcessor.kt           core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/PointerInputEventProcessor.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.kt         core/src/vendor/common/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.kt
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.native.kt
