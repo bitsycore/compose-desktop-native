@@ -31,6 +31,10 @@ fun main(args: Array<String>) {
         com.compose.desktop.native.renderer.sdl.runUpstreamPipelineProbe(vPath)
         return
     }
+    if (args.any { it == "--inputtest" }) {
+        com.compose.desktop.native.renderer.sdl.runInputProbe()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {

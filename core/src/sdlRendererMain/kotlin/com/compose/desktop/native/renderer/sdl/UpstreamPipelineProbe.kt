@@ -1,7 +1,9 @@
 package com.compose.desktop.native.renderer.sdl
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
+import com.compose.desktop.native.modifier.pressable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.MeasurePolicy
@@ -97,6 +99,37 @@ fun runUpstreamPipelineProbe(inScreenshotPath: String) {
 
 	vRb.destroy()
 	vBackend.destroy()
+}
+
+// ==================
+// MARK: Input probe (B6a)
+// ==================
+
+/*
+ Headless verification of B6a click dispatch: builds a ComposeRootHost with a clickable
+ 100x50 box, simulates a press+release at its centre via ComposeRootHost.onPointer, and
+ reports whether the click callback fired — proving hit-test + chain dispatch on the
+ upstream tree. Invoked via `--inputtest`.
+*/
+@OptIn(ExperimentalForeignApi::class)
+fun runInputProbe() {
+	val vHost = com.compose.desktop.native.node.ComposeRootHost(1f)
+	vHost.attach()
+	var vClicked = false
+	var vPressed = false
+	val vBox = LayoutNode().apply {
+		measurePolicy = MeasurePolicy { _, _ -> layout(100, 50) {} }
+		modifier = Modifier.pressable { p -> vPressed = p }.clickable { vClicked = true }
+	}
+	vHost.rootNode.insertAt(0, vBox)
+	vHost.setConstraints(800, 600)
+	vHost.measureAndLayout()
+
+	vHost.onPointer(50f, 25f, 1, 0) // press at box centre
+	println("inputtest: pressable fired on press = $vPressed")
+	vHost.onPointer(50f, 25f, 2, 0) // release at box centre
+	println("inputtest: clickable fired on release = $vClicked")
+	println(if (vClicked) "inputtest: PASS" else "inputtest: FAIL")
 }
 
 // Minimal 32-bit BGRA BMP writer (top-down via negative height).
