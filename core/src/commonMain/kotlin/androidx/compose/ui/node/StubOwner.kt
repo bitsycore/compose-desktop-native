@@ -162,12 +162,7 @@ internal object StubOwner : Owner {
 	override fun onLayoutNodeDeactivated(layoutNode: LayoutNode) = Unit
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val measureIteration: Long = 0L
-	override val viewConfiguration: ViewConfiguration = object : ViewConfiguration {
-		override val longPressTimeoutMillis: Long = 500
-		override val doubleTapTimeoutMillis: Long = 300
-		override val doubleTapMinTimeMillis: Long = 40
-		override val touchSlop: Float = 8f
-	}
+	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
 	override val snapshotObserver: OwnerSnapshotObserver = OwnerSnapshotObserver()
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(Unit)
 	override val coroutineContext: CoroutineContext = EmptyCoroutineContext
