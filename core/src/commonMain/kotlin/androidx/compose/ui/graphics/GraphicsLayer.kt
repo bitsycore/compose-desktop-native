@@ -102,6 +102,7 @@ internal class ReusableGraphicsLayerScope : GraphicsLayerScope {
 	// Phase 9: NodeCoordinator configures these before recording the layer.
 	var graphicsDensity: androidx.compose.ui.unit.Density = androidx.compose.ui.unit.Density(1f)
 	var layoutDirection: androidx.compose.ui.unit.LayoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr
+	var outline: androidx.compose.ui.graphics.Outline? = null
 	fun updateOutline() {}
 }
 

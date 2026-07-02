@@ -47,8 +47,6 @@ interface LayoutCoordinates {
 	fun positionInWindow(): androidx.compose.ui.geometry.Offset =
 		androidx.compose.ui.geometry.Offset.Zero
 
-	/** Same as [positionInWindow] for our flat single-window model. */
-	fun positionInRoot(): androidx.compose.ui.geometry.Offset = positionInWindow()
 
 	// ── Phase 9 surface expansion — upstream NodeCoordinator overrides these.
 	//    Defaults keep existing project impls compiling.
@@ -92,3 +90,6 @@ fun LayoutCoordinates.findRootCoordinates(): LayoutCoordinates {
 
 fun LayoutCoordinates.positionOnScreen(): androidx.compose.ui.geometry.Offset =
 	localToScreen(androidx.compose.ui.geometry.Offset.Zero)
+
+// Same as positionInWindow for our flat single-window model (upstream: top-level ext).
+fun LayoutCoordinates.positionInRoot(): androidx.compose.ui.geometry.Offset = positionInWindow()
