@@ -18,6 +18,8 @@ import com.compose.desktop.native.node.ProjectLayoutNode
  * active [FocusManager].
  */
 class FocusRequester {
+	// Phase 9: BackwardsCompatNode registers itself here (+=/-=).
+	val focusRequesterNodes = mutableListOf<FocusRequesterModifierNode>()
 
 	/**
 	 * Bound to the host node by the renderer (window module). Public for
