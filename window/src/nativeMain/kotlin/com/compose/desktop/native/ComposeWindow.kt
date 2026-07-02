@@ -30,15 +30,17 @@ import sdl3.SDL_SetWindowTitle
 // ==================
 
 /*
- Phase 9 B4 — the main loop now drives the vendored upstream layout engine through
- [ComposeRootHost]: composition builds an upstream `LayoutNode` tree (via
+ Phase 9 B4/B5/B6a — the main loop drives the vendored upstream layout engine
+ through [ComposeRootHost]: composition builds an upstream `LayoutNode` tree (via
  `ComposeUiNode.Constructor` → LayoutNode), `ComposeOwner` measures/places it via
  `MeasureAndLayoutDelegate`, and the backend paints it with `drawRoot` (→ Sdl3Canvas).
 
- Input / hit-test / focus are TEMPORARILY DISABLED — the old event layer was built
- on `ProjectLayoutNode` and is being rebuilt on upstream `NodeCoordinator.hitTest` +
- `PointerInputModifierNode` (B6). Text/image leaves are invisible until B5. So this
- renders backgrounds / borders / surfaces / layout, but is not yet interactive.
+ Pointer/hover/wheel input flows through `host.onPointer` / `host.onWheel` — hit-test
+ walks the upstream tree via `node.coordinates.positionInRoot()` and dispatches to
+ the project input Modifier.Nodes (Clickable/Hoverable/…).
+
+ Key events / IME text input / focus (B6b) still route through the LocalFocusManager
+ stub — no-op until the upstream FocusOwner engine lands.
 */
 fun nativeComposeWindow(
     title: String = "ComposeNativeSDL3",

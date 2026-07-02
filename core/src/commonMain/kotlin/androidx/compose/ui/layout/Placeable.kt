@@ -7,7 +7,7 @@ package androidx.compose.ui.layout
 
 /**
  * The measured result of asking a Measurable to measure. Carries width
- * and height, plus a [placeAt] that positions the underlying ProjectLayoutNode
+ * and height, plus a [placeAt] that positions the underlying LayoutNode
  * inside its parent. Placement is deferred — measure() returns the
  * Placeable, then the MeasurePolicy's `layout { }` block calls placeAt(x, y)
  * inside its placement closure.
@@ -142,7 +142,7 @@ abstract class Placeable : Measured {
 		 * protected 3-arg `(position: IntOffset, zIndex: Float, layerBlock)`,
 		 * so this thin wrapper forwards `(x, y)` directly. `zIndex` is
 		 * accepted-and-ignored — our renderer reads z-order from a
-		 * separate ZIndexElement on the ProjectLayoutNode.
+		 * separate ZIndexElement on the LayoutNode.
 		 */
 		fun Placeable.place(
 			x: Int,
@@ -190,7 +190,7 @@ abstract class Placeable : Measured {
 		 * Like [place] but accepts a `layerBlock` for graphics-layer effects
 		 * (alpha, scale, rotation, etc.). This renderer doesn't apply the
 		 * layer block during placement — graphicsLayer is read from a
-		 * separate `GraphicsLayerModifier` on the ProjectLayoutNode — so the block
+		 * separate `GraphicsLayerModifier` on the LayoutNode — so the block
 		 * is accepted-and-ignored. Vendored modifiers (Offset, etc.) call
 		 * this expecting upstream's shape.
 		 */

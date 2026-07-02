@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.IntSize
    decoding so commonMain stays free of any SDL / Skia dependency.
 
    Construct via painterResource(...). The renderer reads resourcePath / kind
-   off the ProjectLayoutNode painter leaf to resolve the decoded texture. */
+   off the LayoutNode painter leaf to resolve the decoded texture. */
 class Painter internal constructor(
 	val resourcePath: String,    // relative to composeResources/, e.g. "drawable/logo.png"
 	val kind: ResourceKind,

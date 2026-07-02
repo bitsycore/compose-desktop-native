@@ -10,7 +10,7 @@ import androidx.compose.ui.layout.ContentScale
 // ==================
 
 /* Draws a bundled image resource. The painter (from painterResource / a
-   generated Res.drawable.* accessor) is stored on the ProjectLayoutNode as a leaf;
+   generated Res.drawable.* accessor) is stored on the LayoutNode as a leaf;
    the active renderer decodes + caches + paints it during draw, applying
    contentScale and alpha.
 

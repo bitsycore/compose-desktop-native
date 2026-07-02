@@ -20,7 +20,7 @@ interface LayoutCoordinates {
 	/**
 	 * Phase 1 node-engine bring-up: vendored DelegatableNode reads
 	 * `coordinates.isAttached` at line 412. Default `true` matches the
-	 * "node is attached" state we report from ProjectLayoutNode.
+	 * "node is attached" state we report from LayoutNode.
 	 */
 	val isAttached: Boolean
 		get() = true
@@ -40,9 +40,9 @@ interface LayoutCoordinates {
 	/**
 	 * Position of this layout in the window's logical coordinate space.
 	 * Upstream returns `Offset` (float pixels); we report
-	 * `(absoluteX, absoluteY)` from the owning ProjectLayoutNode in logical
+	 * `(absoluteX, absoluteY)` from the owning LayoutNode in logical
 	 * points. Default `Offset.Zero` for the stub `coordinates` instance
-	 * — every real ProjectLayoutNode overrides via [NodeLayoutCoordinates].
+	 * — every real LayoutNode overrides via [NodeLayoutCoordinates].
 	 */
 	fun positionInWindow(): androidx.compose.ui.geometry.Offset =
 		androidx.compose.ui.geometry.Offset.Zero

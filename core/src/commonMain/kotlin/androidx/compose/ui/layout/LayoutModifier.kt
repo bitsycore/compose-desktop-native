@@ -34,7 +34,7 @@ interface LayoutModifier : Modifier.Element
  * Column that hosts this node sees the size declared by the modifier
  * rather than the child's natural size.
  *
- * The project's `ProjectLayoutNode.measure` pipeline reads this element directly
+ * The project's `LayoutNode.measure` pipeline reads this element directly
  * via `findLayoutModifier()` (a `foldIn` over the chain) and invokes
  * [onMeasure] — the Modifier.Node draw/measure lifecycle stays dormant
  * until the renderer rewrite drives it.
