@@ -1,7 +1,8 @@
 package androidx.compose.ui.res
 
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.painter.ResourcePainter
 
 // ==================
 // MARK: ResourceKind
@@ -39,17 +40,17 @@ fun resourceKindForPath(path: String): ResourceKind {
    directly off the LayoutNode painter leaf, reusing the backend's decode
    cache — so a decoded texture is created once and shared by measure + draw. */
 interface ImageLoader {
-	/* Intrinsic pixel size of the decoded resource, treated as logical points
-	   by the layout pass. IntSize(-1, -1) when the resource is missing or can't
-	   be decoded. */
-	fun intrinsicSize(path: String, kind: ResourceKind): IntSize
+	/* Intrinsic size of the decoded resource in logical points (matches upstream
+	   Painter.intrinsicSize). Size.Unspecified when the resource is missing or
+	   can't be decoded. */
+	fun intrinsicSize(path: String, kind: ResourceKind): Size
 
 	/* Raw bytes of a bundled resource of any kind, or null if missing. */
 	fun readBytes(path: String): ByteArray?
 }
 
 private val kFallbackImageLoader = object : ImageLoader {
-	override fun intrinsicSize(path: String, kind: ResourceKind) = IntSize(-1, -1)
+	override fun intrinsicSize(path: String, kind: ResourceKind) = Size.Unspecified
 	override fun readBytes(path: String): ByteArray? = null
 }
 
@@ -65,8 +66,8 @@ var currentImageLoader: ImageLoader = kFallbackImageLoader
    accessors call this; it's also fine to call directly. Kind is inferred from
    the extension. */
 fun painterResource(resourcePath: String): Painter =
-	Painter(resourcePath, resourceKindForPath(resourcePath))
+	ResourcePainter(resourcePath, resourceKindForPath(resourcePath))
 
 /* NON-OFFICIAL overload: explicit kind when the extension is ambiguous. */
 fun painterResource(resourcePath: String, kind: ResourceKind): Painter =
-	Painter(resourcePath, kind)
+	ResourcePainter(resourcePath, kind)

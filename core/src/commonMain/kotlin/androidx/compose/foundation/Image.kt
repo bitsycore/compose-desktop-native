@@ -2,6 +2,7 @@ package androidx.compose.foundation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 
@@ -33,8 +34,8 @@ fun Image(
 		),
 	) { _, constraints ->
 		val vIntrinsic = painter.intrinsicSize
-		val vW = vIntrinsic.width.coerceAtLeast(0)
-		val vH = vIntrinsic.height.coerceAtLeast(0)
+		val vW = if (vIntrinsic.isSpecified) vIntrinsic.width.toInt().coerceAtLeast(0) else 0
+		val vH = if (vIntrinsic.isSpecified) vIntrinsic.height.toInt().coerceAtLeast(0) else 0
 		layout(
 			vW.coerceIn(constraints.minWidth, constraints.maxWidth),
 			vH.coerceIn(constraints.minHeight, constraints.maxHeight),

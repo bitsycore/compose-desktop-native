@@ -4,6 +4,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.painter.ResourcePainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
@@ -55,9 +56,10 @@ internal class PainterDrawNode(
 
 	override fun ContentDrawScope.draw() {
 		drawContent()
+		val vRes = painter as? ResourcePainter ?: return
 		drawIntoCanvas { vCanvas ->
 			(vCanvas as? NativePainterCanvas)?.drawNativePainter(
-				painter.resourcePath, painter.kind, 0f, 0f, size.width, size.height, contentScale, alpha,
+				vRes.resourcePath, vRes.kind, 0f, 0f, size.width, size.height, contentScale, alpha,
 			)
 		}
 	}

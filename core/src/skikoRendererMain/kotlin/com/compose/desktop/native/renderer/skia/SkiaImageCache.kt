@@ -36,9 +36,9 @@ internal class SkiaImageCache {
 	// Value is null when a decode failed — cached to avoid retrying each frame.
 	private val fCache = HashMap<String, Image?>()
 
-	fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize {
-		val vImg = get(inPath, inKind) ?: return IntSize(-1, -1)
-		return IntSize(vImg.width, vImg.height)
+	fun intrinsicSize(inPath: String, inKind: ResourceKind): androidx.compose.ui.geometry.Size {
+		val vImg = get(inPath, inKind) ?: return androidx.compose.ui.geometry.Size.Unspecified
+		return androidx.compose.ui.geometry.Size(vImg.width.toFloat(), vImg.height.toFloat())
 	}
 
 	private fun get(inPath: String, inKind: ResourceKind): Image? {

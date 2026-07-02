@@ -32,9 +32,9 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 	// Value is null when a decode failed — cached so we don't retry every frame.
 	private val fCache = HashMap<String, Cached?>()
 
-	fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize {
-		val vCached = get(inPath, inKind) ?: return IntSize(-1, -1)
-		return IntSize(vCached.w, vCached.h)
+	fun intrinsicSize(inPath: String, inKind: ResourceKind): androidx.compose.ui.geometry.Size {
+		val vCached = get(inPath, inKind) ?: return androidx.compose.ui.geometry.Size.Unspecified
+		return androidx.compose.ui.geometry.Size(vCached.w.toFloat(), vCached.h.toFloat())
 	}
 
 	private fun get(inPath: String, inKind: ResourceKind): Cached? {

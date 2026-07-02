@@ -1,9 +1,9 @@
 package com.compose.desktop.native.renderer.sdl
 
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.ImageLoader
 import androidx.compose.ui.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
-import androidx.compose.ui.unit.IntSize
 import com.compose.desktop.native.*
 import kotlinx.cinterop.*
 import sdl3.*
@@ -36,7 +36,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         get() = fTextRenderer.textMeasurer
 
     override val imageLoader: ImageLoader = object : ImageLoader {
-        override fun intrinsicSize(inPath: String, inKind: ResourceKind): IntSize =
+        override fun intrinsicSize(inPath: String, inKind: ResourceKind): Size =
             fImageCache.intrinsicSize(inPath, inKind)
         override fun readBytes(inPath: String): ByteArray? =
             loadComposeResourceBytes(inPath)

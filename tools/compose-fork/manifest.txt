@@ -916,10 +916,10 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/layer/
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.native.kt
 
 # ── androidx.compose.ui.graphics.painter ────────────────────────────────────
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/Painter.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/Painter.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/BitmapPainter.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/BrushPainter.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/BrushPainter.kt
 # compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/ColorPainter.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/ColorPainter.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/painter/Painter.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/painter/Painter.kt
 
 # ── androidx.compose.ui.graphics.shadow ─────────────────────────────────────
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow/Shadow.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/shadow/Shadow.kt
