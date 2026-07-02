@@ -6,21 +6,19 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.DrawScope
 
 // ==================
-// MARK: BitmapPainter / ColorPainter stubs
+// MARK: BitmapPainter stub
 // ==================
 
 /*
- Phase 9 stubs — upstream BitmapPainter needs `ImageBitmap` (expect class with
- native actual) and ColorPainter is a tiny concrete Painter subclass. Vendored
- upstream `Image.kt` and `PainterModifier.kt` reference these types by name;
- keep minimal declarations so those files compile without pulling the whole
- ImageBitmap engine.
+ Phase 9 stub — upstream BitmapPainter needs `ImageBitmap` (expect class with
+ native actual) which isn't vendored yet. Vendored upstream Image.kt references
+ `BitmapPainter` in its `Image(bitmap: ImageBitmap, ...)` overload; keep this
+ minimal declaration so Image.kt compiles.
 
- - `BitmapPainter` — accepts an `Any` (upstream's ImageBitmap); onDraw is a
-   no-op. Runtime code paths that reach Image(bitmap) will paint nothing until
-   a real ImageBitmap engine + BitmapPainter land.
- - `ColorPainter` — real concrete Painter subclass (only 63 upstream lines);
-   paints a solid Color. `drawRect(color)` in our DrawScope works today.
+ Runtime code paths reaching Image(bitmap) will paint nothing until a real
+ ImageBitmap engine + BitmapPainter land.
+
+ ColorPainter is vendored verbatim from upstream (63L, self-contained).
 */
 class BitmapPainter(
 	@Suppress("unused") val image: Any,
@@ -33,25 +31,4 @@ class BitmapPainter(
 ) : Painter() {
 	override val intrinsicSize: Size get() = Size.Unspecified
 	override fun DrawScope.onDraw() { /* no-op — needs real ImageBitmap engine */ }
-}
-
-class ColorPainter(val color: Color) : Painter() {
-
-	private var alpha: Float = 1f
-	private var colorFilter: ColorFilter? = null
-
-	override val intrinsicSize: Size get() = Size.Unspecified
-
-	override fun DrawScope.onDraw() {
-		drawRect(color = color, alpha = alpha, colorFilter = colorFilter)
-	}
-
-	override fun applyAlpha(alpha: Float): Boolean { this.alpha = alpha; return true }
-	override fun applyColorFilter(colorFilter: ColorFilter?): Boolean {
-		this.colorFilter = colorFilter; return true
-	}
-
-	override fun equals(other: Any?): Boolean = other is ColorPainter && other.color == color
-	override fun hashCode(): Int = color.hashCode()
-	override fun toString(): String = "ColorPainter(color=$color)"
 }
