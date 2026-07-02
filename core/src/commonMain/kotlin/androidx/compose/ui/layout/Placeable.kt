@@ -28,6 +28,11 @@ abstract class Placeable : Measured {
 	protected var measuredSize: androidx.compose.ui.unit.IntSize =
 		androidx.compose.ui.unit.IntSize.Zero
 
+	/** Phase 9: the constraints this Placeable was measured against. Upstream
+	 *  NodeCoordinator reads/writes this; project subclasses ignore it. */
+	open var measurementConstraints: androidx.compose.ui.unit.Constraints =
+		androidx.compose.ui.unit.Constraints()
+
 	/** Upstream Measured.measuredWidth — before constraint coercion. Our
 	 *  project doesn't distinguish measured vs coerced size; both are width. */
 	override val measuredWidth: Int get() = width
