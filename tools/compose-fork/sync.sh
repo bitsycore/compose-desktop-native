@@ -22,6 +22,16 @@ kSrc="${CMP_REF:-$kRoot/../cmp-ref}"
 
 if [ -z "$kRef" ]; then echo "no ref in compose-ref.txt" >&2; exit 1; fi
 
+# 0. Canonicalize the manifest layout (group by package, vendored-then-commented,
+#    dedup, drop stray comments). In-place + idempotent; leaves the active
+#    upstream->dest set unchanged so the copy below is identical. Non-fatal:
+#    skipped if python is unavailable.
+if kPy="$(command -v python3 || command -v python)"; then
+	"$kPy" "$kHere/format-manifest.py" || echo "warn: format-manifest.py failed — continuing with manifest as-is" >&2
+else
+	echo "warn: python not found — skipping manifest canonicalization" >&2
+fi
+
 # 1. Ensure a sparse clone at the pinned ref
 if [ ! -d "$kSrc/.git" ]; then
 	echo "cloning $kRepo -> $kSrc (sparse: ui/foundation/animation)"

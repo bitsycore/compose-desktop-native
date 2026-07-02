@@ -14,10 +14,28 @@ Only the tooling in this directory is tracked:
 
 | File | Purpose |
 | --- | --- |
-| `sync.sh` | Idempotent script that copies each manifest entry verbatim from the pinned upstream ref. |
-| `manifest.txt` | One line per vendored file (`<upstream-path> <repo-dest>`), plus the "unvendored coverage map" at the bottom grouped by skip reason. |
+| `sync.sh` | Idempotent script that canonicalizes the manifest then copies each active entry verbatim from the pinned upstream ref. |
+| `manifest.txt` | One line per file (`<upstream-path>  <repo-dest>`), grouped by androidx package. Uncommented = vendored; commented = a not-yet-vendored candidate. |
+| `format-manifest.py` | Canonicalizes `manifest.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone. |
 | `compose-ref.txt` | The pinned upstream commit the vendored files are synced from. |
 | `README.md` | This file. |
+
+## Manifest layout
+
+`manifest.txt` is grouped by androidx package in hierarchy (alphabetical)
+order under `# ── androidx.compose.<pkg> ──` headers. Within each package the
+**vendored** (uncommented) entries come first, then the **not-yet-vendored**
+(commented) candidates below. `format-manifest.py` regenerates exactly this
+layout — deduping by dest (last active line wins, matching `sync.sh`'s copy
+order) and dropping stray comments. It is idempotent and a pure re-layout: the
+set of active `upstream → dest` pairs is preserved, so the vendored tree is
+byte-identical. `sync.sh` runs it automatically before copying; run it yourself
+after hand-editing:
+
+```bash
+python3 tools/compose-fork/format-manifest.py          # rewrite in place
+python3 tools/compose-fork/format-manifest.py --check   # exit 1 if not canonical
+```
 
 Because the copies are verbatim, provenance lives entirely in `manifest.txt` +
 `compose-ref.txt`. **Never hand-edit a file under `core/src/vendor/`** — change
@@ -42,13 +60,15 @@ The script is idempotent.
 
 ## Adding a file to the vendor set
 
-1. Find the upstream path (in the `$CMP_REF` clone, or the coverage map at the
-   bottom of `manifest.txt` where it may already be listed, commented out).
-2. Add / uncomment its `<upstream-path>  <repo-dest>` line in `manifest.txt`.
-   Destinations map source sets: `commonMain` → `core/src/vendor/common/`,
+1. Find the upstream path (in the `$CMP_REF` clone, or its package section in
+   `manifest.txt` where it may already be listed, commented out).
+2. Add / uncomment its `<upstream-path>  <repo-dest>` line under the matching
+   `# ── androidx.compose.<pkg> ──` section. Destinations map source sets:
+   `commonMain` → `core/src/vendor/common/`,
    `nonJvmMain`/`nativeMain`/`skikoMain` → `core/src/vendor/native/`, Skia
-   renderer sources → `core/src/vendor/skikoRenderer/`.
-3. Run `sync.sh`.
+   renderer sources → `core/src/vendor/skikoRenderer/`. Exact placement /
+   ordering doesn't matter — `sync.sh` re-canonicalizes it.
+3. Run `sync.sh` (canonicalizes the manifest, then copies).
 4. Build all five paths and add any hand-written glue the new file needs
    (shims / actuals) outside the vendor tree.
 
