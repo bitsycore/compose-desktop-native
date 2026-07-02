@@ -1186,7 +1186,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenRe
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Wrapper.skiko.kt                                core/src/vendor/native/kotlin/androidx/compose/ui/platform/Wrapper.native.kt
 
 # ── androidx.compose.ui.relocation ──────────────────────────────────────────
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt
 
 # ── androidx.compose.ui.scene ───────────────────────────────────────────────
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/BaseComposeScene.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/scene/BaseComposeScene.native.kt
