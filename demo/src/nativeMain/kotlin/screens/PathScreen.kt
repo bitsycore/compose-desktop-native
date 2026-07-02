@@ -1,5 +1,6 @@
 package screens
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -118,10 +119,10 @@ internal fun PathScreen() {
 					drawOval(vSecondary, Offset(4f, 16f), Size(72f, 48f), style = Stroke(width = 4f))
 				}
 				Canvas(modifier = Modifier.size(80.dp)) {
-					drawRoundRect(vPrimary, Offset(4f, 4f), Size(72f, 72f), cornerRadius = 18f)
+					drawRoundRect(vPrimary, Offset(4f, 4f), Size(72f, 72f), cornerRadius = CornerRadius(18f))
 				}
 				Canvas(modifier = Modifier.size(80.dp)) {
-					drawRoundRect(vSecondary, Offset(4f, 4f), Size(72f, 72f), cornerRadius = 18f, style = Stroke(width = 4f))
+					drawRoundRect(vSecondary, Offset(4f, 4f), Size(72f, 72f), cornerRadius = CornerRadius(18f), style = Stroke(width = 4f))
 				}
 			}
 		}

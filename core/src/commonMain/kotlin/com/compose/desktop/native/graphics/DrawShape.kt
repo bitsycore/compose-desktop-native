@@ -1,5 +1,6 @@
 package com.compose.desktop.native.graphics
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -37,7 +38,7 @@ fun DrawScope.drawBackgroundShape(inColor: Color, inShape: Shape) {
 				color = inColor,
 				topLeft = Offset(vR.left, vR.top),
 				size = Size(vR.width, vR.height),
-				cornerRadius = vR.topLeftCornerRadius.x,
+				cornerRadius = vR.topLeftCornerRadius,
 			)
 		}
 		is Outline.Generic ->
@@ -69,7 +70,7 @@ fun DrawScope.drawBorderShape(inWidth: Int, inColor: Color, inShape: Shape) {
 				color = inColor,
 				topLeft = Offset(vR.left + vInset, vR.top + vInset),
 				size = Size(vR.width - vW, vR.height - vW),
-				cornerRadius = (vR.topLeftCornerRadius.x - vInset).coerceAtLeast(0f),
+				cornerRadius = CornerRadius((vR.topLeftCornerRadius.x - vInset).coerceAtLeast(0f)),
 				style = vStroke,
 			)
 		}

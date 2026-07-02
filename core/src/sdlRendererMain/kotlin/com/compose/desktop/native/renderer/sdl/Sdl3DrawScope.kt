@@ -26,6 +26,19 @@ import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.drawscope.DrawContext
+import androidx.compose.ui.graphics.drawscope.DrawTransform
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
 import sdl3.*
 import kotlin.math.PI
@@ -131,7 +144,78 @@ internal class Sdl3DrawScope(
 	//  interpolation handles gradients on the GPU. SolidColor's sampler
 	//  is constant, so flat-coloured calls cost no per-vertex work.
 
-	override fun drawRect(
+	// ============
+	//  DrawScope contract (upstream shape). Shapes tessellate via the private
+	//  *Core helpers below; the color overloads wrap the colour in SolidColor.
+	//  colorFilter / blendMode / pathEffect are accept-and-ignore (the SDL
+	//  triangle pipeline has no equivalent). drawImage / drawPoints are no-ops
+	//  here — images paint through the renderer's painter leaf, not DrawScope.
+	//  drawContext.canvas stays EmptyCanvas (unused: primitives paint direct).
+
+	override val density: Float get() = 1f
+	override val fontScale: Float get() = 1f
+	override val layoutDirection: androidx.compose.ui.unit.LayoutDirection
+		get() = androidx.compose.ui.unit.LayoutDirection.Ltr
+
+	override val drawContext: DrawContext = object : DrawContext {
+		override var size: Size = this@Sdl3DrawScope.size
+		override val transform: DrawTransform = object : DrawTransform {
+			override val size: Size get() = this@Sdl3DrawScope.size
+			override val center: Offset get() = Offset(size.width / 2f, size.height / 2f)
+			override fun inset(left: Float, top: Float, right: Float, bottom: Float) {}
+			override fun clipRect(left: Float, top: Float, right: Float, bottom: Float, clipOp: ClipOp) {}
+			override fun clipPath(path: ComposePath, clipOp: ClipOp) {}
+			override fun translate(left: Float, top: Float) {}
+			override fun rotate(degrees: Float, pivot: Offset) {}
+			override fun scale(scaleX: Float, scaleY: Float, pivot: Offset) {}
+			override fun transform(matrix: Matrix) {}
+		}
+	}
+
+	override fun drawRect(brush: Brush, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		rectCore(brush, topLeft, size, alpha, style)
+	override fun drawRect(color: ComposeColor, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		rectCore(SolidColor(color), topLeft, size, alpha, style)
+
+	override fun drawCircle(brush: Brush, radius: Float, center: Offset, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		circleCore(brush, radius, center, alpha, style)
+	override fun drawCircle(color: ComposeColor, radius: Float, center: Offset, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		circleCore(SolidColor(color), radius, center, alpha, style)
+
+	override fun drawArc(brush: Brush, startAngle: Float, sweepAngle: Float, useCenter: Boolean, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		arcCore(brush, startAngle, sweepAngle, useCenter, topLeft, size, alpha, style)
+	override fun drawArc(color: ComposeColor, startAngle: Float, sweepAngle: Float, useCenter: Boolean, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		arcCore(SolidColor(color), startAngle, sweepAngle, useCenter, topLeft, size, alpha, style)
+
+	override fun drawOval(brush: Brush, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		ovalCore(brush, topLeft, size, alpha, style)
+	override fun drawOval(color: ComposeColor, topLeft: Offset, size: Size, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		ovalCore(SolidColor(color), topLeft, size, alpha, style)
+
+	override fun drawRoundRect(brush: Brush, topLeft: Offset, size: Size, cornerRadius: CornerRadius, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		roundRectCore(brush, topLeft, size, cornerRadius.x, alpha, style)
+	override fun drawRoundRect(color: ComposeColor, topLeft: Offset, size: Size, cornerRadius: CornerRadius, style: DrawStyle, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		roundRectCore(SolidColor(color), topLeft, size, cornerRadius.x, alpha, style)
+
+	override fun drawPath(path: ComposePath, brush: Brush, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		pathCore(path, brush, alpha, style)
+	override fun drawPath(path: ComposePath, color: ComposeColor, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		pathCore(path, SolidColor(color), alpha, style)
+
+	override fun drawLine(brush: Brush, start: Offset, end: Offset, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		lineCore(brush, start, end, strokeWidth, cap, alpha)
+	override fun drawLine(color: ComposeColor, start: Offset, end: Offset, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) =
+		lineCore(SolidColor(color), start, end, strokeWidth, cap, alpha)
+
+	override fun drawImage(image: ImageBitmap, topLeft: Offset, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) {}
+	@Deprecated("Use the overload that takes a FilterQuality", level = DeprecationLevel.HIDDEN)
+	override fun drawImage(image: ImageBitmap, srcOffset: IntOffset, srcSize: IntSize, dstOffset: IntOffset, dstSize: IntSize, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) {}
+	override fun drawImage(image: ImageBitmap, srcOffset: IntOffset, srcSize: IntSize, dstOffset: IntOffset, dstSize: IntSize, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode, filterQuality: FilterQuality) {}
+
+	override fun drawPoints(points: List<Offset>, pointMode: PointMode, color: ComposeColor, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) {}
+	override fun drawPoints(points: List<Offset>, pointMode: PointMode, brush: Brush, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) {}
+
+	private fun rectCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -160,14 +244,14 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	override fun drawCircle(
+	private fun circleCore(
 		brush: Brush,
 		radius: Float,
 		center: Offset,
 		alpha: Float,
 		style: DrawStyle,
 	) {
-		drawArc(
+		arcCore(
 			brush = brush,
 			startAngle = 0f,
 			sweepAngle = 360f,
@@ -179,7 +263,7 @@ internal class Sdl3DrawScope(
 		)
 	}
 
-	override fun drawArc(
+	private fun arcCore(
 		brush: Brush,
 		startAngle: Float,
 		sweepAngle: Float,
@@ -211,7 +295,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	override fun drawPath(
+	private fun pathCore(
 		path: ComposePath,
 		brush: Brush,
 		alpha: Float,
@@ -227,7 +311,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	override fun drawOval(
+	private fun ovalCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -250,7 +334,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	override fun drawRoundRect(
+	private fun roundRectCore(
 		brush: Brush,
 		topLeft: Offset,
 		size: Size,
@@ -286,10 +370,10 @@ internal class Sdl3DrawScope(
 		} else if (style is Stroke) {
 			// Stroked rounded rect: 4 straight edges + 4 quarter arcs.
 			val vSw = style.width
-			drawLine(brush, Offset(topLeft.x + cornerRadius, topLeft.y), Offset(topLeft.x + vW - cornerRadius, topLeft.y), vSw, StrokeCap.Butt, alpha)
-			drawLine(brush, Offset(topLeft.x + vW, topLeft.y + cornerRadius), Offset(topLeft.x + vW, topLeft.y + vH - cornerRadius), vSw, StrokeCap.Butt, alpha)
-			drawLine(brush, Offset(topLeft.x + vW - cornerRadius, topLeft.y + vH), Offset(topLeft.x + cornerRadius, topLeft.y + vH), vSw, StrokeCap.Butt, alpha)
-			drawLine(brush, Offset(topLeft.x, topLeft.y + vH - cornerRadius), Offset(topLeft.x, topLeft.y + cornerRadius), vSw, StrokeCap.Butt, alpha)
+			lineCore(brush, Offset(topLeft.x + cornerRadius, topLeft.y), Offset(topLeft.x + vW - cornerRadius, topLeft.y), vSw, StrokeCap.Butt, alpha)
+			lineCore(brush, Offset(topLeft.x + vW, topLeft.y + cornerRadius), Offset(topLeft.x + vW, topLeft.y + vH - cornerRadius), vSw, StrokeCap.Butt, alpha)
+			lineCore(brush, Offset(topLeft.x + vW - cornerRadius, topLeft.y + vH), Offset(topLeft.x + cornerRadius, topLeft.y + vH), vSw, StrokeCap.Butt, alpha)
+			lineCore(brush, Offset(topLeft.x, topLeft.y + vH - cornerRadius), Offset(topLeft.x, topLeft.y + cornerRadius), vSw, StrokeCap.Butt, alpha)
 			emitStrokedArc(vX + vR,      vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 180f, 90f, 16, vSampler)
 			emitStrokedArc(vX + vW - vR, vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 270f, 90f, 16, vSampler)
 			emitStrokedArc(vX + vW - vR, vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,   0f, 90f, 16, vSampler)
@@ -297,7 +381,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	override fun drawLine(
+	private fun lineCore(
 		brush: Brush,
 		start: Offset,
 		end: Offset,

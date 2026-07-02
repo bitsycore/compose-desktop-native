@@ -38,7 +38,7 @@ fun DrawScope.drawOutline(
 				color = color,
 				topLeft = Offset(r.left, r.top),
 				size = Size(r.width, r.height),
-				cornerRadius = r.topLeftCornerRadius.x,
+				cornerRadius = r.topLeftCornerRadius,
 				style = style,
 			)
 		}
@@ -65,7 +65,7 @@ fun DrawScope.drawOutline(
 				brush = brush,
 				topLeft = Offset(r.left, r.top),
 				size = Size(r.width, r.height),
-				cornerRadius = r.topLeftCornerRadius.x,
+				cornerRadius = r.topLeftCornerRadius,
 				alpha = alpha,
 				style = style,
 			)

@@ -897,13 +897,13 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colors
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/colorspace/Xyz.kt
 
 # ── androidx.compose.ui.graphics.drawscope ──────────────────────────────────
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt
-compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt
-# compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/CanvasDrawScope.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/ContentDrawScope.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawContext.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScope.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt   core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawScopeMarker.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt     core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/DrawTransform.kt
+compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/drawscope/EmptyCanvas.kt
 
 # ── androidx.compose.ui.graphics.internal ───────────────────────────────────
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/internal/JvmDefaultWithCompatibility.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/internal/JvmDefaultWithCompatibility.kt
@@ -1065,7 +1065,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocalPr
 
 # ── androidx.compose.ui.node ────────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/BackwardsCompatNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/node/CompositionLocalConsumerModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatableNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatableNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/DelegatingNode.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/node/DelegatingNode.kt
@@ -1082,7 +1081,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNode.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt         core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutModifierNodeCoordinator.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNode.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeAlignmentLines.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeDrawScope.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt              core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutNodeLayoutDelegate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt          core/src/vendor/common/kotlin/androidx/compose/ui/node/LayoutTreeConsistencyChecker.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/node/LookaheadDelegate.kt
@@ -1117,6 +1116,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifi
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/WeakReference.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/WeakReference.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt
 compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.native.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/node/WeakReference.native.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/ComposeUiNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/ComposeUiNode.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/DragAndDropOwner.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/node/DragAndDropOwner.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.native.kt
