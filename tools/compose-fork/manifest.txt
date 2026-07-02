@@ -761,10 +761,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/FillableData.ski
 # ── androidx.compose.ui.draw ────────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Alpha.kt              core/src/vendor/common/kotlin/androidx/compose/ui/draw/Alpha.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Clip.kt               core/src/vendor/common/kotlin/androidx/compose/ui/draw/Clip.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/DrawModifier.kt       core/src/vendor/common/kotlin/androidx/compose/ui/draw/DrawModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Rotate.kt             core/src/vendor/common/kotlin/androidx/compose/ui/draw/Rotate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Scale.kt              core/src/vendor/common/kotlin/androidx/compose/ui/draw/Scale.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Blur.kt             core/src/vendor/common/kotlin/androidx/compose/ui/draw/Blur.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/DrawModifier.kt     core/src/vendor/common/kotlin/androidx/compose/ui/draw/DrawModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/PainterModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draw/PainterModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Shadow.kt           core/src/vendor/common/kotlin/androidx/compose/ui/draw/Shadow.kt
 
