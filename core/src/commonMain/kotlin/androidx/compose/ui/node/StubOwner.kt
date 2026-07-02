@@ -49,7 +49,7 @@ import androidx.collection.mutableIntObjectMapOf
 // ==================
 
 /**
- * No-op [Owner] singleton attached to every ProjectLayoutNode so vendored
+ * No-op [Owner] singleton attached to every LayoutNode so vendored
  * DelegatableNode helpers (`requireOwner()`, `observeReads { … }`, etc.)
  * don't crash on a null owner.
  *
@@ -58,8 +58,8 @@ import androidx.collection.mutableIntObjectMapOf
  * state machine + renderer wire-through lands (Phase 9 step E).
  */
 internal object StubOwner : Owner {
-	override val root: ProjectLayoutNode get() = throw IllegalStateException("StubOwner has no root")
-	override val layoutNodes: IntObjectMap<ProjectLayoutNode> = mutableIntObjectMapOf()
+	override val root: LayoutNode get() = throw IllegalStateException("StubOwner has no root")
+	override val layoutNodes: IntObjectMap<LayoutNode> = mutableIntObjectMapOf()
 	override val sharedDrawScope: LayoutNodeDrawScope = LayoutNodeDrawScope()
 	override val rootForTest: RootForTest = object : RootForTest {
 		override val density: Density = Density(1f, 1f)
@@ -138,28 +138,28 @@ internal object StubOwner : Owner {
 	override val localeList: LocaleList = LocaleList()
 	override var showLayoutBounds: Boolean = false
 
-	override fun onRequestMeasure(layoutNode: ProjectLayoutNode, affectsLookahead: Boolean, forceRequest: Boolean, scheduleMeasureAndLayout: Boolean) = Unit
-	override fun onRequestRelayout(layoutNode: ProjectLayoutNode, affectsLookahead: Boolean, forceRequest: Boolean) = Unit
-	override fun requestOnPositionedCallback(layoutNode: ProjectLayoutNode) = Unit
-	override fun onPreAttach(node: ProjectLayoutNode) = Unit
-	override fun onPostAttach(node: ProjectLayoutNode) = Unit
-	override fun onDetach(node: ProjectLayoutNode) = Unit
+	override fun onRequestMeasure(layoutNode: LayoutNode, affectsLookahead: Boolean, forceRequest: Boolean, scheduleMeasureAndLayout: Boolean) = Unit
+	override fun onRequestRelayout(layoutNode: LayoutNode, affectsLookahead: Boolean, forceRequest: Boolean) = Unit
+	override fun requestOnPositionedCallback(layoutNode: LayoutNode) = Unit
+	override fun onPreAttach(node: LayoutNode) = Unit
+	override fun onPostAttach(node: LayoutNode) = Unit
+	override fun onDetach(node: LayoutNode) = Unit
 	override fun calculatePositionInWindow(localPosition: Offset): Offset = localPosition
 	override fun calculateLocalPosition(positionInWindow: Offset): Offset = positionInWindow
 	override fun screenToLocal(positionOnScreen: Offset): Offset = positionOnScreen
 	override fun localToScreen(localPosition: Offset): Offset = localPosition
-	override fun requestAutofill(node: ProjectLayoutNode) = Unit
+	override fun requestAutofill(node: LayoutNode) = Unit
 	override fun measureAndLayout(sendPointerUpdate: Boolean) = Unit
-	override fun measureAndLayout(layoutNode: ProjectLayoutNode, constraints: Constraints) = Unit
-	override fun forceMeasureTheSubtree(layoutNode: ProjectLayoutNode, affectsLookahead: Boolean) = Unit
+	override fun measureAndLayout(layoutNode: LayoutNode, constraints: Constraints) = Unit
+	override fun forceMeasureTheSubtree(layoutNode: LayoutNode, affectsLookahead: Boolean) = Unit
 	override fun createLayer(
 		drawBlock: (canvas: Canvas, parentLayer: GraphicsLayer?) -> Unit,
 		invalidateParentLayer: () -> Unit,
 		explicitLayer: GraphicsLayer?,
 	): OwnedLayer = object : OwnedLayer {}
 	override fun onSemanticsChange() = Unit
-	override fun onLayoutChange(layoutNode: ProjectLayoutNode) = Unit
-	override fun onLayoutNodeDeactivated(layoutNode: ProjectLayoutNode) = Unit
+	override fun onLayoutChange(layoutNode: LayoutNode) = Unit
+	override fun onLayoutNodeDeactivated(layoutNode: LayoutNode) = Unit
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val measureIteration: Long = 0L
 	override val viewConfiguration: ViewConfiguration = object : ViewConfiguration {
