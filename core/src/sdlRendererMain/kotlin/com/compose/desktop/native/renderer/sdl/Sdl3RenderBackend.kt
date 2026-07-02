@@ -73,6 +73,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         val vCanvas = Sdl3Canvas(
             vRenderer,
             androidx.compose.ui.geometry.Size(backend.windowWidth.toFloat(), backend.windowHeight.toFloat()),
+            fTextRenderer,
         )
         inHost.rootNode.draw(vCanvas, null)
         vCanvas.finish()

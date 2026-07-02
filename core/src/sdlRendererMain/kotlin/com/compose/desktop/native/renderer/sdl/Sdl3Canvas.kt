@@ -50,7 +50,8 @@ import kotlin.math.min
 internal class Sdl3Canvas(
 	private val fRenderer: COpaquePointer,
 	private val fSize: Size,
-) : Canvas {
+	private val fTextRenderer: Sdl3TextRenderer? = null,
+) : Canvas, com.compose.desktop.native.text.NativeTextCanvas {
 
 	// The tessellating scope whose origin we retarget per draw call. Origin 0,0
 	// initially; each draw sets it to the current translate (fTx, fTy).
@@ -198,6 +199,42 @@ internal class Sdl3Canvas(
 
 	override fun drawPath(path: ComposePath, paint: Paint) {
 		prep().pathCore(path, brushFor(paint), paint.alpha, styleFor(paint))
+	}
+
+	// ============
+	//  Native text (B5) — bridge from a text DrawModifierNode. Flush pending
+	//  tessellated geometry first so the text texture layers in the right z-order,
+	//  then draw at the node's absolute origin (current translate + local offset).
+
+	override fun drawNativeText(
+		inText: String,
+		inSpans: List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>?,
+		inX: Float,
+		inY: Float,
+		inBoxWidth: Float,
+		inBoxHeight: Float,
+		inColor: androidx.compose.ui.graphics.Color,
+		inFontSizePx: Int,
+		inTextAlign: androidx.compose.ui.text.style.TextAlign,
+		inSoftWrap: Boolean,
+		inFontFamily: String?,
+		inFontVariations: List<androidx.compose.ui.text.font.FontVariation>?,
+	) {
+		fScope.flush()
+		fTextRenderer?.drawText(
+			inText = inText,
+			inX = (fTx + inX).toInt(),
+			inY = (fTy + inY).toInt(),
+			inBoxWidth = inBoxWidth.toInt(),
+			inBoxHeight = inBoxHeight.toInt(),
+			inColor = inColor,
+			inFontSize = inFontSizePx,
+			inAlign = inTextAlign,
+			inFontFamily = inFontFamily,
+			inFontVariations = inFontVariations,
+			inSpans = inSpans,
+			inTextStart = 0,
+		)
 	}
 
 	// ============

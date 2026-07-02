@@ -198,17 +198,34 @@ private fun TextLeaf(
     fontFamily: String?,
     fontVariationSettings: List<FontVariation>?,
 ) {
-    // Phase 9 B4: build an upstream LayoutNode via the vendored Layout. Sized to a
-    // rough text extent so surrounding layouts don't collapse; drawing is deferred
-    // to B5 (text becomes a DrawModifierNode wired into the renderer), so the text
-    // is invisible for now.
-    androidx.compose.ui.layout.Layout(modifier = modifier) { _, constraints ->
-        val vH = fontSize.value.toInt().coerceAtLeast(12)
-        val vW = (text.length.toFloat() * fontSize.value * 0.55f).toInt().coerceAtLeast(0)
-        layout(
-            vW.coerceIn(constraints.minWidth, constraints.maxWidth),
-            vH.coerceIn(constraints.minHeight, constraints.maxHeight),
-        ) {}
+    // Phase 9 B5: build an upstream LayoutNode via the vendored Layout — sized by the
+    // installed TextMeasurer, drawn by a TextDrawNode (DrawModifierNode) that bridges
+    // to the renderer's native text drawing. Text is a real draw node in the chain.
+    val vFontPx = fontSize.value.toInt()
+    androidx.compose.ui.layout.Layout(
+        modifier = modifier.then(
+            com.compose.desktop.native.text.TextDrawElement(
+                text = text,
+                spans = spans,
+                color = color,
+                fontSizePx = vFontPx,
+                textAlign = textAlign,
+                softWrap = softWrap,
+                fontFamily = fontFamily,
+                fontVariations = fontVariationSettings,
+            )
+        ),
+    ) { _, constraints ->
+        val vWrapWidth =
+            if (softWrap && constraints.maxWidth != androidx.compose.ui.unit.Constraints.Infinity) constraints.maxWidth
+            else Int.MAX_VALUE
+        val vSize = com.compose.desktop.native.text.currentTextMeasurer.measure(
+            text, vFontPx, vWrapWidth, fontFamily, fontVariationSettings,
+        )
+        val w = if (constraints.minWidth >= constraints.maxWidth) constraints.maxWidth
+                else vSize.width.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val h = vSize.height.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(w, h) {}
     }
 }
 
