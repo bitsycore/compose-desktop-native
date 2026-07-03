@@ -6,6 +6,36 @@ Buttons runtime hash `ce15decb83c3bb7ba44660cd9002408c` preserved throughout).
 Full history / rationale lives in [`NODE_ENGINE_PORT.md`](NODE_ENGINE_PORT.md).
 This file is the shorter “here’s what a fresh session should read + do first”.
 
+## Latest sprint — interaction + selection fully vendored & runtime-verified
+
+- **Full interaction engine is upstream**: vendored `foundation/Clickable.kt`,
+  `Focusable.kt`, hoverable, the whole pointer-input engine (`HitPathTracker` +
+  `PointerInputEventProcessor` + `SuspendingPointerInputFilter`) and the ~25-file
+  focus engine (`FocusOwnerImpl`/`FocusTargetNode`/…). Project `Clickable`/`Focusable`/
+  `FontVariation`/pointer shims **deleted**. `clickable`/`hoverable`/`focusable` are now
+  upstream `Modifier.Node`s driven by the processor.
+- **foundation/selection vendored**: `Toggleable` + `Selectable` + `SelectableGroup`.
+  Material `Switch`/`Checkbox`/`TriStateCheckbox`/`RadioButton` migrated off ad-hoc
+  `.clickable{}` onto `toggleable`/`triStateToggleable`/`selectable` (proper a11y roles).
+- **Runtime-verified end-to-end** (not just compile): the demo has three injection
+  probes that push synthetic SDL mouse events through the *real* pipeline via
+  `injectMouseEvent` (`SDL_PushEvent`) → `pollEvents` → `host.onPointerRaw` → processor:
+  - `demo.exe --clicktest` → upstream `clickable` fires (**PASS**)
+  - `demo.exe --toggletest` → Material `Switch` toggles via `toggleable` (**PASS**)
+  - `demo.exe --inputtest` → project `pressable` + processor no-crash
+
+### Two runtime gotchas that cost real debugging (keep in mind)
+
+1. **`Dispatchers.setMain` must run BEFORE `ComposeOwner` is constructed.** The owner
+   captures `Dispatchers.Main` *eagerly* (`override val coroutineContext = Dispatchers.Main`)
+   for its per-node gesture coroutine scopes. Install the `Sdl3MainDispatcher` first, or
+   every gesture launch dies with `MissingMainDispatcher`. (Fixed in `ComposeWindow.kt`.)
+2. **Synthesized `PointerInputEvent`s must carry `buttons`.** Upstream `isChangedToDown`
+   (`TapGestureDetector`, `firstDownRefersToPrimaryMouseButtonOnly()==true` on native)
+   rejects a mouse down unless `buttons.isPrimaryPressed`. `PointerEventBridge.native.kt`
+   tracks held primary/secondary/tertiary across events so drags keep the button set on
+   Move too. `onPointerRaw`/`feedPointerToProcessor` take `inButton`.
+
 ## Where we are
 
 - Upstream `androidx.compose.ui.node.LayoutNode` engine is fully in charge.
@@ -29,10 +59,10 @@ This file is the shorter “here’s what a fresh session should read + do first
 
 | Metric | Start of Phase 9 | Now |
 | --- | ---: | ---: |
-| `core/src/commonMain/**/*.kt` | 100 | **82** |
-| `core/src/commonMain/**/*.shim.kt` | 30 | **25** |
-| `core/src/vendor/**/*.kt` | 591 | **626** |
-| `core/src/nativeMain/**/*.kt` | 48 | **53** |
+| `core/src/commonMain/**/*.kt` | 100 | **70** |
+| `core/src/commonMain/**/*.shim.kt` | 30 | **20** |
+| `core/src/vendor/**/*.kt` | 591 | **665** |
+| `core/src/nativeMain/**/*.kt` | 48 | **59** |
 
 Full mingwX64 (SDL) + macOS-Skia + macOS-sdl3 graph is compile-green.
 
@@ -67,13 +97,9 @@ Full mingwX64 (SDL) + macOS-Skia + macOS-sdl3 graph is compile-green.
 | `ViewConfigurationStub.shim.kt` | Not really a shim — the real `ViewConfiguration` interface is vendored; this provides `DefaultViewConfiguration + LocalViewConfiguration`. Rename to non-`.shim` when convenient. |
 | `LocalGraphicsContext.shim.kt` | Similar — small `staticCompositionLocalOf`. Rename. |
 | `SoftwareKeyboardController.shim.kt` (10L) | Just `PlatformTextInputSessionScope` marker — full text-input session engine unvendored. |
-| `SemanticsNode.shim.kt`, `SemanticsOwner.shim.kt`, `SemanticsModifierStub.shim.kt`, `SemanticsInfo.shim.kt` | Semantics engine (out of scope for now). |
-| `FocusEngineStubs.shim.kt`, `FocusOwner.shim.kt` | Full focus engine (FocusTargetNode, FocusOwnerImpl, etc — ~30 files, heavy). |
+| `SemanticsNode.shim.kt`, `SemanticsOwner.shim.kt`, `SemanticsModifierStub.shim.kt`, `SemanticsInfo.shim.kt` | Semantics engine (out of scope for now). `SemanticsShim.kt` (non-`.shim`) is the accept-and-discard property surface — grows as vendored files reference new props (latest: selection/toggle props for Toggleable/Selectable). |
 | `RectManager.shim.kt` | Real RectManager (spatial rect tracker, ~600L). |
-| `DefaultCameraDistance.shim.kt` (4L) | Retires with upstream `GraphicsLayerScope.kt` (511L) — blocked by our project GraphicsLayerScope. |
 | `RetainedValuesStore.shim.kt` (13L) | Compose runtime version 1.11.1 doesn't include the `retain` package; retires when we bump runtime or vendor upstream. |
-| `PositionCalculator.shim.kt` (22L) | Upstream declares these inside `PointerInputEventProcessor.kt` (unvendored, needs HitPathTracker). |
-| `SuspendingPointerInputStubs.shim.kt` (7L) | SuspendingPointerInputFilter (917L) vendor + our pointer processor. |
 | `TextInputService.shim.kt` (23L) | Real text-input session engine. |
 | `PainterStubs.shim.kt` (34L) | Just holds BitmapPainter stub — retires when ImageBitmap engine vendors. |
 | `ShadowContext.shim.kt` (23L) | Retires with upstream `shadow/ShadowContext.kt` (58L) — needs Shape-based DropShadowPainter/InnerShadowPainter ctor (both currently no-arg stubs). |
@@ -83,17 +109,23 @@ Full mingwX64 (SDL) + macOS-Skia + macOS-sdl3 graph is compile-green.
 
 Groups roughly by blocker:
 
-- **Foundation composables not yet vendored** — need one of {gesture engine,
-  focus engine, InteractionSource migration, text engine, SubcomposeLayout}:
-  - `Clickable.kt`, `Focusable.kt`, `Scroll.kt`
+- **DONE this sprint** — `Clickable.kt`, `Focusable.kt`, hoverable, the pointer +
+  focus engines, and `foundation/selection/{Toggleable,Selectable,SelectableGroup}`
+  are all vendored. `ClickableModifier`/`ClickableNode` retired from the project.
+- **Foundation composables not yet vendored** — need one of {scrollable/draggable
+  engine, text engine, SubcomposeLayout}:
+  - `Scroll.kt` — project `ScrollState` already implements the vendored
+    `gestures.ScrollableState`; blocked on `Scrollable.kt`+`Draggable.kt`+overscroll+
+    nested-scroll (~2000L). Still driven by the B6a wheel dispatch + `ScrollAnimator`.
   - `text/BasicText.kt`, `text/BasicTextField.kt`, `text/TextSelectionHelpers.kt`
   - `text/selection/{Selection.kt, SelectionContainer.kt, SelectionRect.kt}`
   - `lazy/{LazyColumn.kt, LazyRow.kt}`, `lazy/grid/LazyVerticalGrid.kt`
 - **Project modifier system** — `com/…/element/ModifierElements.kt` hosts
-  BackgroundModifier / BorderModifier / ClickableModifier / HoverableModifier
-  / PressableModifier / OnDragModifier / …. Actively used from
-  material/apidemo/demo. Retires as upstream foundation vendoring picks up
-  each replacement.
+  BackgroundModifier / BorderModifier / PressableModifier / OnDragModifier /
+  OnPressedModifier / Secondary+MiddleClick / Vertical+HorizontalScroll — the
+  still-project modifiers B6a (`ComposeRootHost.onPointer`) routes. `clickable`/
+  `hoverable` are gone from here (upstream now). Retires further as scroll/gesture
+  vendoring lands.
 - **Renderer/host glue** (per-platform actuals in `nativeMain` when possible):
   - `com/…/node/ComposeRootHost.kt` (the public facade `:window` drives),
     `NodeApplier.kt`.
