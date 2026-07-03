@@ -272,3 +272,23 @@ Vendor tree was stale on this machine (gitignored) — re-synced to 630 files. T
 Counts: `#2 Shape.createOutline` was already done (Shape vendored). commonMain **82 → 78 .kt**,
 shims **25 → 24**, vendor **626 → 630**. Full mingw graph green; Buttons/Icons render; `main` untouched.
 Rejected: enabling FontVariation/Popup as plain vendors without the migration/actual (needed real work).
+
+## Interaction / pointer-engine scope (measured 2026-07-03)
+
+`Clickable`/`Focusable`/`Hoverable` can't be vendored yet — they're `PointerInputModifierNode`s driven
+by synthesized Enter/Exit/press `PointerEvent`s. The interaction *source* types
+(`InteractionSource`/`MutableInteractionSource`/`Press`/`Hover`/`FocusInteraction`) + `PointerInputModifierNode`
++ `PointerEvent`/`PointerInputChange` ARE vendored, but the DRIVER is not:
+- Missing: `PointerInputEventProcessor`, `HitPathTracker`, `SuspendingPointerInputFilter`.
+- **Measured**: enabling those 3 (+ the `.native` actual) → **126-error cascade** — `SuspendingPointerInputFilter`
+  needs `InternalPointerEvent`/`PointerInputEventData` + coroutine plumbing (`Continuation`/`coroutineScope`)
+  + `PointerEventTimeoutCancellationException` expect + Owner integration. Reverted.
+- Additionally `Clickable`/`Focusable` need the **focus engine** (`FocusRequesterModifierNode`/`Focusability`/
+  `requestFocus`) + `IndirectPointerInputModifierNode`.
+So interaction = a dedicated sprint: vendor the pointer-input engine (3 big files + InternalPointerEvent
+family + nonJvm actuals) → wire `PointerInputEventProcessor` into ComposeWindow's event loop + `ComposeOwner`
+(replacing the B6a hit-test bridge) → then vendor Hoverable, then the focus engine → Clickable/Focusable.
+Call sites are few (hoverable 1, clickable 8, focusable 4), so the widget migration is small once the engine lands.
+
+The clean leaf-vendors are exhausted — every remaining project commonMain `androidx.compose.*` file is either
+engine-blocked (pointer/focus/text-layout/measure) or intentional-custom project glue.
