@@ -1009,6 +1009,8 @@ compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/internal/Threading.nativ
 
 # ── androidx.compose.ui.layout ──────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt     core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ContentScale.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt
@@ -1019,6 +1021,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt      
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutInfo.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt     core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measurable.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measurable.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
@@ -1041,10 +1044,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt         core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt               core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
