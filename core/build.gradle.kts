@@ -204,6 +204,10 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xcollection-literals",
+            // Silence the expect/actual-classes Beta warning that vendored files
+            // (e.g. ImageBitmap / Paint / Canvas / Path / ClipEntry) tripped. See
+            // https://youtrack.jetbrains.com/issue/KT-61573.
+            "-Xexpect-actual-classes",
             "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
             // Vendored code is upstream foundation/ui, which their build compiles with these
             // module-level opt-ins (e.g. lazy-layout prefetch uses ExperimentalFoundationApi).

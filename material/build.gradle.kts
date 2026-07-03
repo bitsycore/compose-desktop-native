@@ -37,6 +37,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xcollection-literals",
+            "-Xexpect-actual-classes",
             "-opt-in=kotlinx.cinterop.ExperimentalForeignApi"
         )
     }
