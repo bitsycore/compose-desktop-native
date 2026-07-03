@@ -1,4 +1,6 @@
 package apidemo
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import com.compose.desktop.native.modifier.onDrag
 import com.compose.desktop.native.modifier.onMiddleClick
@@ -156,7 +158,8 @@ internal fun SessionMenu(
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vOpen by remember { mutableStateOf(false) }
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     val vSaved = inPath != null
     val vName = inPath?.let { fileLeaf(it) } ?: "Untitled session"
     val vDisabled = c.dim.copy(alpha = 0.5f)
@@ -165,7 +168,7 @@ internal fun SessionMenu(
         Row(
             modifier = Modifier.fillMaxWidth().menuAnchor(vAnchor).clip(RoundedCornerShape(6.dp))
                 .background(if (vHover || vOpen) c.accent.copy(alpha = 0.16f) else Color.Transparent, RoundedCornerShape(6.dp))
-                .hoverable { vHover = it }
+                .hoverable(vHoverSrc)
                 .clickable { vOpen = true }.padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -200,7 +203,8 @@ internal fun SessionMenu(
                 }
                 inRecent.forEach { vPath ->
                     key(vPath) {
-                        var vRevealHover by remember { mutableStateOf(false) }
+                        val vRevealHoverSrc = remember { MutableInteractionSource() }
+                        val vRevealHover by vRevealHoverSrc.collectIsHoveredAsState()
                         DropdownMenuItem(onClick = { vOpen = false; inOnOpenRecent(vPath) }) {
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 MaterialSymbolsOutlined(MaterialSymbols.InsertDriveFile, tint = c.dim, size = 16.dp)
@@ -214,7 +218,7 @@ internal fun SessionMenu(
                                     Box(
                                         modifier = Modifier.clip(RoundedCornerShape(6.dp))
                                             .background(if (vRevealHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
-                                            .hoverable { vRevealHover = it }
+                                            .hoverable(vRevealHoverSrc)
                                             .clickable { vOpen = false; revealInFileManager(vPath) }
                                             .padding(5.dp),
                                     ) {
@@ -349,7 +353,8 @@ internal fun PackSection(
     val c = LocalAppColors.current
     val vAnchor = rememberMenuAnchor()
     var vMenu by remember { mutableStateOf(false) }
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     var vAtCursor by remember { mutableStateOf(false) }
     var vMenuX by remember { mutableStateOf(0) }
     var vMenuY by remember { mutableStateOf(0) }
@@ -378,7 +383,7 @@ internal fun PackSection(
             )
         if (vIntoHi) vHeadMod = vHeadMod.border(1.dp, c.accent, RoundedCornerShape(6.dp))
         vHeadMod = vHeadMod
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .onSecondaryClick { x, y -> vMenuX = x; vMenuY = y; vAtCursor = true; vMenu = true }
             .onDrag(
                 onStart = { _, vRelY -> inDrag.clear(); inDrag.dragPack = inPack; inDrag.pressRel = vRelY; inDrag.dy = 0f },
@@ -528,7 +533,8 @@ internal fun RequestRow(
     val vReq = inRs.req
     val vAnchor = rememberMenuAnchor()
     var vMenu by remember { mutableStateOf(false) }
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     // Right-click opens the menu at the cursor; the ⋮ button anchors it to itself.
     var vAtCursor by remember { mutableStateOf(false) }
     var vMenuX by remember { mutableStateOf(0) }
@@ -543,7 +549,7 @@ internal fun RequestRow(
                 },
                 RoundedCornerShape(6.dp),
             )
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { inOnOpen() }
             .onSecondaryClick { x, y -> vMenuX = x; vMenuY = y; vAtCursor = true; vMenu = true }
             .padding(start = 8.dp, top = 1.dp, bottom = 1.dp, end = 2.dp),

@@ -3,6 +3,8 @@ package androidx.compose.material
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -31,7 +33,8 @@ fun IconButton(
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    var vHovered by remember { mutableStateOf(false) }
+    val vHoveredSrc = remember { MutableInteractionSource() }
+    val vHovered by vHoveredSrc.collectIsHoveredAsState()
 
     val vBg: Color = when {
         !enabled -> Color.Transparent
@@ -43,7 +46,7 @@ fun IconButton(
         modifier = modifier
             .size(IconButtonDefaults.Size)
             .background(vBg, CircleShape)
-            .hoverable { vHovered = it }
+            .hoverable(vHoveredSrc)
             .clickable { if (enabled) onClick() },
         contentAlignment = Alignment.Center,
     ) {

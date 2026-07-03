@@ -1,3 +1,5 @@
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -189,7 +191,8 @@ fun App() {
 
 @Composable
 private fun NavItem(label: String, selected: Boolean, onClick: () -> Unit) {
-    var hovered by remember { mutableStateOf(false) }
+    val hoveredSrc = remember { MutableInteractionSource() }
+    val hovered by hoveredSrc.collectIsHoveredAsState()
     val vBg = when {
         selected -> MaterialTheme.colors.primary.copy(alpha = 0.20f)
         hovered  -> MaterialTheme.colors.onSurface.copy(alpha = 0.06f)
@@ -203,7 +206,7 @@ private fun NavItem(label: String, selected: Boolean, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(40.dp)
             .background(vBg, RoundedCornerShape(8.dp))
-            .hoverable { hovered = it }
+            .hoverable(hoveredSrc)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp),
         contentAlignment = Alignment.CenterStart,

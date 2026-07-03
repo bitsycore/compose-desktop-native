@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -39,7 +41,8 @@ fun Chip(
     contentColor: Color = MaterialTheme.colors.onSurface,
     content: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     val vBg = when {
         !enabled -> Color.Transparent
         vHover   -> contentColor.copy(alpha = 0.08f)
@@ -51,7 +54,7 @@ fun Chip(
         .background(vBg, ChipDefaults.Shape)
     if (border != null) m = m.border(border, ChipDefaults.Shape)
     m = m
-        .hoverable { vHover = it }
+        .hoverable(vHoverSrc)
         .clickable { if (enabled) onClick() }
         .padding(horizontal = 12.dp, vertical = 6.dp)
 
@@ -74,7 +77,8 @@ fun FilterChip(
     enabled: Boolean = true,
     label: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
 
     val vBg = when {
         !enabled -> Color.Transparent
@@ -89,7 +93,7 @@ fun FilterChip(
         .defaultMinSize(minHeight = ChipDefaults.MinHeight)
         .background(vBg, ChipDefaults.Shape)
         .border(vBorder, ChipDefaults.Shape)
-        .hoverable { vHover = it }
+        .hoverable(vHoverSrc)
         .clickable { if (enabled) onClick() }
         .padding(horizontal = 12.dp, vertical = 6.dp)
 

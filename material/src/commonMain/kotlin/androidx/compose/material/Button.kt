@@ -11,6 +11,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -43,7 +45,8 @@ fun Button(
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable () -> Unit
 ) {
-    var isHovered by remember { mutableStateOf(false) }
+    val isHoveredSrc = remember { MutableInteractionSource() }
+    val isHovered by isHoveredSrc.collectIsHoveredAsState()
     var isPressed by remember { mutableStateOf(false) }
 
     val bgColor = when {
@@ -59,7 +62,7 @@ fun Button(
         .clip(shape)
     if (border != null) m = m.border(border, shape)
     m = m
-        .hoverable { isHovered = it }
+        .hoverable(isHoveredSrc)
         .pressable { isPressed = it }
         .padding(
             start = contentPadding.calculateStartPadding(LayoutDirection.Ltr),

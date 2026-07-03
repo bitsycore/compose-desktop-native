@@ -109,6 +109,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt              core/src/vendor/common/kotlin/androidx/compose/foundation/ExperimentalFoundationApi.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/FocusedBounds.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/FocusedBounds.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/GestureNode.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/GestureNode.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Hoverable.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/Hoverable.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Image.kt                                  core/src/vendor/common/kotlin/androidx/compose/foundation/Image.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Indication.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/Indication.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/InternalFoundationApi.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/InternalFoundationApi.kt
@@ -125,7 +126,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/BasicTooltip.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/BasicTooltip.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Clickable.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/Clickable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Focusable.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/Focusable.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Hoverable.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/Hoverable.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Scroll.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/Scroll.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/ScrollableArea.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/ScrollableArea.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/BasicContextMenuRepresentation.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/BasicContextMenuRepresentation.native.kt

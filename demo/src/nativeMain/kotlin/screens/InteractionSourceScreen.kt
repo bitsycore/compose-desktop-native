@@ -1,5 +1,6 @@
 package screens
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -69,9 +70,7 @@ internal fun InteractionSourceScreen() {
 					modifier = Modifier
 						.size(120.dp, 48.dp)
 						.background(vBg, RoundedCornerShape(8.dp))
-						.hoverable { vIn ->
-							vInter.tryEmit(if (vIn) vHoverKey else HoverInteraction.Exit(vHoverKey))
-						}
+						.hoverable(vInter)
 						.pressable { vIn ->
 							vInter.tryEmit(if (vIn) vPressKey else PressInteraction.Release(vPressKey))
 						}
@@ -105,9 +104,7 @@ internal fun InteractionSourceScreen() {
 						modifier = Modifier
 							.size(80.dp, 40.dp)
 							.background(if (vHover) vPrimary else vSurface, RoundedCornerShape(6.dp))
-							.hoverable { vIn ->
-								vInter.tryEmit(if (vIn) vKey else HoverInteraction.Exit(vKey))
-							},
+							.hoverable(vInter),
 					) {
 						Box(modifier = Modifier.padding(8.dp)) {
 							Text("btn $vI", color = vOnSurface, fontSize = 14.sp)

@@ -272,7 +272,9 @@ internal class ComposeOwner(
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
-	override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+	// Modifier.Node coroutine scopes derive from this — hover's emitEnter/emitExit launch
+	// here. Use the SDL main dispatcher (installed by ComposeWindow, drained each frame).
+	override val coroutineContext: CoroutineContext = kotlinx.coroutines.Dispatchers.Main
 	override fun registerOnEndApplyChangesListener(listener: () -> Unit) = Unit
 	override fun onEndApplyChanges() = Unit
 	override val dragAndDropManager: DragAndDropManager = object : DragAndDropManager {

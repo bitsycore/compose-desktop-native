@@ -6,6 +6,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -146,7 +147,8 @@ private fun Scrollbar(
 ) {
     val vScope = rememberCoroutineScope()
     var vTrackPx by remember { mutableStateOf(0) }
-    var vHovered by remember { mutableStateOf(false) }
+    val vHoverSource = remember { MutableInteractionSource() }
+    val vHovered by vHoverSource.collectIsHoveredAsState()
     var vDraggingThumb by remember { mutableStateOf(false) }
     var vGrab by remember { mutableStateOf(0) }
 
@@ -163,7 +165,7 @@ private fun Scrollbar(
 
     val vRoot = (if (isVertical) modifier.width(style.thickness) else modifier.height(style.thickness))
         .onSizeChanged { vTrackPx = if (isVertical) it.height else it.width }
-        .hoverable { vHovered = it }
+        .hoverable(vHoverSource)
 
     Box(modifier = vRoot) {
         if (!vScrollable || vTrackPx <= 0) return@Box

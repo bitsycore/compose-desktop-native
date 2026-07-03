@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -143,7 +145,8 @@ internal val kSelfSignedColor = Color(0xFF3FB950L)
 internal fun CopyButton(inText: String, inLabel: String? = null) {
     val c = LocalAppColors.current
     var vCopied by remember { mutableStateOf(false) }
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     var vX by remember { mutableStateOf(0) }
     var vY by remember { mutableStateOf(0) }
     var vHeight by remember { mutableStateOf(0) }
@@ -154,7 +157,7 @@ internal fun CopyButton(inText: String, inLabel: String? = null) {
             .onSizeChanged { vHeight = it.height }
             .clip(RoundedCornerShape(7.dp))
             .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(7.dp))
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { currentClipboard.setText(AnnotatedString(inText)); vCopied = true }
             .padding(horizontal = if (inLabel != null) 10.dp else 5.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,

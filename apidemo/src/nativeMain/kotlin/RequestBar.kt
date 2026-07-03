@@ -1,4 +1,6 @@
 package apidemo
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import com.compose.desktop.native.modifier.onDrag
 import com.compose.desktop.native.modifier.onMiddleClick
@@ -152,12 +154,13 @@ internal fun UrlBar(
         // Inspect the server's TLS certificate chain (handshake-only probe).
         // During the probe the lock glyph swaps to a spinner IN PLACE — same
         // box, padding and size — so the bar doesn't shift.
-        var vLockHover by remember { mutableStateOf(false) }
+        val vLockHoverSrc = remember { MutableInteractionSource() }
+        val vLockHover by vLockHoverSrc.collectIsHoveredAsState()
         TooltipBox(text = "Inspect TLS certificate chain") {
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(6.dp))
                     .background(if (vLockHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
-                    .hoverable { vLockHover = it }
+                    .hoverable(vLockHoverSrc)
                     .clickable(onClick = inOnInspectChain)
                     .padding(6.dp),
             ) {

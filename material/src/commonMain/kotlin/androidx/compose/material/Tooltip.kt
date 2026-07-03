@@ -2,6 +2,8 @@ package androidx.compose.material
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -39,7 +41,8 @@ fun TooltipBox(
     delayMillis: Long = TooltipDefaults.DelayMillis,
     content: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     var vVisible by remember { mutableStateOf(false) }
     var vPos by remember { mutableStateOf(IntOffset.Zero) }
     var vHeight by remember { mutableStateOf(0) }
@@ -55,7 +58,7 @@ fun TooltipBox(
 
     Box(
         modifier = modifier
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .onGloballyPositioned { vPos = it.intOffset }
             .onSizeChanged { vHeight = it.height }
     ) {

@@ -1,7 +1,6 @@
 package androidx.compose.foundation
 
 import com.compose.desktop.native.element.ClickableModifier
-import com.compose.desktop.native.element.HoverableModifier
 import androidx.compose.ui.Modifier
 
 // ==================
@@ -10,7 +9,6 @@ import androidx.compose.ui.Modifier
 
 fun Modifier.clickable(onClick: () -> Unit) = then(ClickableModifier(onClick))
 
-/* Fires (true) when the cursor enters this node, (false) when it leaves.
-   Multiple hoverable ancestors of the cursor target all fire (true)
-   simultaneously, matching Compose's enter/exit semantics. */
-fun Modifier.hoverable(onChange: (Boolean) -> Unit) = then(HoverableModifier(onChange))
+// Modifier.hoverable is now VENDORED (androidx.compose.foundation.Hoverable.kt) — the upstream
+// `hoverable(interactionSource, enabled)` driven by the PointerInputEventProcessor. The old project
+// `hoverable(onChange)` + HoverableModifier/HoverableNode are retired.

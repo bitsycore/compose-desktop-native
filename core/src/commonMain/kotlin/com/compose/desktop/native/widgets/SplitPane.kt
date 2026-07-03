@@ -2,6 +2,8 @@ package com.compose.desktop.native.widgets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +51,8 @@ fun HorizontalSplitPane(
 ) {
     var vTotalWidth by remember { mutableStateOf(0) }
     var vFirstWidth by remember { mutableStateOf(initialFirstSize.value.toInt()) }
-    var vDividerHover by remember { mutableStateOf(false) }
+    val vDividerSource = remember { MutableInteractionSource() }
+    val vDividerHover by vDividerSource.collectIsHoveredAsState()
     var vDragging by remember { mutableStateOf(false) }
 
     val vDividerW = SplitPaneDefaults.DividerThickness.value.toInt()
@@ -78,7 +81,7 @@ fun HorizontalSplitPane(
                 .width(SplitPaneDefaults.DividerThickness)
                 .fillMaxHeight()
                 .background(if (vActive) dividerHoverColor else dividerColor)
-                .hoverable { vDividerHover = it }
+                .hoverable(vDividerSource)
                 .onDrag(
                     onStart = { _, _ -> vDragging = true },
                     onEnd = { vDragging = false },
@@ -111,7 +114,8 @@ fun VerticalSplitPane(
 ) {
     var vTotalHeight by remember { mutableStateOf(0) }
     var vFirstHeight by remember { mutableStateOf(initialFirstSize.value.toInt()) }
-    var vDividerHover by remember { mutableStateOf(false) }
+    val vDividerSource = remember { MutableInteractionSource() }
+    val vDividerHover by vDividerSource.collectIsHoveredAsState()
     var vDragging by remember { mutableStateOf(false) }
 
     val vDividerH = SplitPaneDefaults.DividerThickness.value.toInt()
@@ -138,7 +142,7 @@ fun VerticalSplitPane(
                 .height(SplitPaneDefaults.DividerThickness)
                 .fillMaxWidth()
                 .background(if (vActive) dividerHoverColor else dividerColor)
-                .hoverable { vDividerHover = it }
+                .hoverable(vDividerSource)
                 .onDrag(
                     onStart = { _, _ -> vDragging = true },
                     onEnd = { vDragging = false },

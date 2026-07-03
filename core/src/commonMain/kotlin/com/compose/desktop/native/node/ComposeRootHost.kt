@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.compose.desktop.native.element.ClickableNode
-import com.compose.desktop.native.element.HoverableNode
 import com.compose.desktop.native.element.HorizontalScrollNode
 import com.compose.desktop.native.element.MiddleClickNode
 import com.compose.desktop.native.element.OnDragNode
@@ -71,7 +70,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	private var fActivePressNode: LayoutNode? = null
 	private var fArmedClickNode: LayoutNode? = null
 	private var fArmedClick: (() -> Unit)? = null
-	private val fActiveHovers = HashSet<HoverableNode>()
 	private var fDragNode: LayoutNode? = null
 	private var fDrag: OnDragNode? = null
 
@@ -116,19 +114,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		fActivePressNode = null
 	}
 
-	private fun updateHover(inHit: LayoutNode?) {
-		val vNew = HashSet<HoverableNode>()
-		var n = inHit
-		while (n != null) {
-			n.nodes.headToTail { if (it is HoverableNode) vNew.add(it) }
-			n = n.parent
-		}
-		for (h in fActiveHovers) if (h !in vNew) h.onChange(false)
-		for (h in vNew) if (h !in fActiveHovers) h.onChange(true)
-		fActiveHovers.clear()
-		fActiveHovers.addAll(vNew)
-	}
-
 	// inType: 0=Move 1=Press 2=Release ; inButton: 0=primary 1=secondary 2=tertiary
 	fun onPointer(inX: Float, inY: Float, inType: Int, inButton: Int) {
 		val vHit = hitTest(inX, inY)
@@ -144,7 +129,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 
 		when (inType) {
 			0 -> {
-				updateHover(vHit)
 				fActivePressNode?.let { if (!inside(vHit, it)) cancelPress() }
 				fArmedClickNode?.let { if (!inside(vHit, it)) { fArmedClickNode = null; fArmedClick = null } }
 				fDrag?.let { dm ->

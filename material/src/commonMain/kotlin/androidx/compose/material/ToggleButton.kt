@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -38,7 +40,8 @@ fun ToggleButton(
     shape: Shape = ToggleButtonDefaults.Shape,
     content: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
 
     val vBg = when {
         !enabled -> Color.Transparent
@@ -59,7 +62,7 @@ fun ToggleButton(
             )
             .background(vBg, shape)
             .border(vBorder, shape)
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { if (enabled) onCheckedChange(!checked) }
             .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,

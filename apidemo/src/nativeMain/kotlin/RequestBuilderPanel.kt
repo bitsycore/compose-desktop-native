@@ -1,4 +1,6 @@
 package apidemo
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import com.compose.desktop.native.modifier.onDrag
 import com.compose.desktop.native.modifier.onMiddleClick
@@ -201,7 +203,8 @@ internal fun HoverIconBtn(
     inModifier: Modifier = Modifier,
 ) {
     val c = LocalAppColors.current
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     val vBg = when {
         inActive -> c.accent.copy(alpha = 0.20f)
         vHover   -> c.accent.copy(alpha = 0.18f)
@@ -212,7 +215,7 @@ internal fun HoverIconBtn(
             modifier = inModifier
                 .clip(RoundedCornerShape(6.dp))
                 .background(vBg, RoundedCornerShape(6.dp))
-                .hoverable { vHover = it }
+                .hoverable(vHoverSrc)
                 .clickable(onClick = inOnClick)
                 .padding(6.dp),
         ) {
@@ -229,7 +232,8 @@ internal fun HoverIconBtn(
 internal fun TabSizeSelector() {
     val c = LocalAppColors.current
     var vOpen by remember { mutableStateOf(false) }
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     val vAnchor = rememberMenuAnchor()
     val vSize = TextLayoutConfig.tabWidth
     TooltipBox(text = "Editor tab size") {
@@ -238,7 +242,7 @@ internal fun TabSizeSelector() {
                 modifier = Modifier.menuAnchor(vAnchor)
                     .clip(RoundedCornerShape(6.dp))
                     .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
-                    .hoverable { vHover = it }
+                    .hoverable(vHoverSrc)
                     .clickable { vOpen = true }
                     .padding(horizontal = 8.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,

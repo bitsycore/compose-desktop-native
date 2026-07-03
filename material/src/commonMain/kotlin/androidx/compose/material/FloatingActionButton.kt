@@ -3,6 +3,8 @@ package androidx.compose.material
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -37,7 +39,8 @@ fun FloatingActionButton(
     contentColor: Color = MaterialTheme.colors.onSecondary,
     content: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     var vPress by remember { mutableStateOf(false) }
     val vBg = when {
         vPress -> backgroundColor.blend(contentColor, 0.12f)
@@ -51,7 +54,7 @@ fun FloatingActionButton(
                 minHeight = FloatingActionButtonDefaults.Size,
             )
             .background(vBg, shape)
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { onClick() },
         contentAlignment = Alignment.Center,
     ) { content() }

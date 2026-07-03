@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -60,7 +62,8 @@ fun SegmentedButton(
     shape: androidx.compose.ui.graphics.Shape = SegmentedButtonDefaults.itemShape(0, 1),
     label: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
 
     val vBg: Color = when {
         !enabled -> Color.Transparent
@@ -79,7 +82,7 @@ fun SegmentedButton(
             .defaultMinSize(minHeight = SegmentedButtonDefaults.Height)
             .background(vBg, shape)
             .border(BorderStroke(1.dp, vBorderColor), shape)
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { if (enabled) onClick() }
             .padding(horizontal = 16.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,

@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -122,7 +124,8 @@ fun DropdownMenuItem(
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    var vHover by remember { mutableStateOf(false) }
+    val vHoverSrc = remember { MutableInteractionSource() }
+    val vHover by vHoverSrc.collectIsHoveredAsState()
     // Theme-aware hover overlay — a translucent white is invisible on a light
     // surface, so tint toward the content colour (dark on light, light on dark).
     val vBg = when {
@@ -135,7 +138,7 @@ fun DropdownMenuItem(
             .fillMaxWidth()
             .defaultMinSize(minHeight = DropdownMenuDefaults.ItemHeight)
             .background(vBg)
-            .hoverable { vHover = it }
+            .hoverable(vHoverSrc)
             .clickable { if (enabled) onClick() }
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.CenterStart,

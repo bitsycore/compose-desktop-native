@@ -127,17 +127,12 @@ class DrawBehindNode(
     }
 }
 
-/* Identity is by callback reference — not great across recomposition. The
-   dispatch code in ComposeWindow keys hover/press state by the upstream LayoutNode
-   identity (which is stable) rather than by the modifier itself. */
-class HoverableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<HoverableNode>() {
-    override fun create() = HoverableNode(onChange)
-    override fun update(node: HoverableNode) { node.onChange = onChange }
-    override fun hashCode(): Int = onChange.hashCode()
-    override fun equals(other: Any?): Boolean = other is HoverableModifier && other.onChange === onChange
-}
-class HoverableNode(var onChange: (Boolean) -> Unit) : Modifier.Node()
+// HoverableModifier/HoverableNode retired — hover is now the vendored upstream
+// Modifier.hoverable (PointerInputModifierNode) driven by PointerInputEventProcessor.
 
+/* Identity is by callback reference — not great across recomposition. The
+   dispatch code in ComposeWindow keys press state by the upstream LayoutNode
+   identity (which is stable) rather than by the modifier itself. */
 class PressableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<PressableNode>() {
     override fun create() = PressableNode(onChange)
     override fun update(node: PressableNode) { node.onChange = onChange }
