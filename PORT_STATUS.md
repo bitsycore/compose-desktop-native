@@ -13,7 +13,7 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
 
 ## TL;DR — where we are
 
-- Branch: **`phase9`** (~130 commits ahead of `main`; **`main` is untouched and runnable**).
+- Branch: **`phase9`** (~140 commits ahead of `main`; **`main` is untouched and runnable**).
 - The upstream **`androidx.compose.ui.node.LayoutNode` engine is fully in charge**
   (the old hand-written `ProjectLayoutNode` is deleted). The strategy is: vendor as
   much of upstream Compose **byte-for-byte** as possible into `core/src/vendor/`, and
@@ -22,11 +22,14 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
 - **Vendored & runtime-verified** this far: the whole interaction stack (clickable /
   focusable / hoverable / pointer-input engine / focus engine), keyboard+text input
   routing (B6b), scroll (scrollable/draggable + wheel), SubcomposeLayout +
-  BoxWithConstraints, the gesture family, animation transitions, the **full lazy
-  system** (LazyList/LazyGrid), the spatial RectManager, and **Phase 1 of the
-  text-paragraph engine** (`SdlParagraph` measurement bridge).
-- Counts: `core/src/commonMain` **100 → ~60** `.kt` (`.shim.kt` **30 → 16**),
-  `core/src/vendor` **591 → ~760**.
+  BoxWithConstraints, the gesture family (+ `TransformableState`), animation
+  transitions, the **full lazy system** (LazyList/LazyGrid), the spatial RectManager,
+  the **text-paragraph engine Phase 2** (`SdlParagraph` measure + paint bridging
+  through `NativeTextCanvas.drawNativeText`), the DnD engine (`DragAndDropNode`
+  vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
+  + `ApproachMeasureScope` + `LookaheadScope`).
+- Counts: `core/src/commonMain` **100 → 57** `.kt` (`.shim.kt` **30 → 8**),
+  `core/src/vendor` **591 → 774**.
 - Full **mingwX64** (SDL) + **macOS Skia** + **macOS `-Prenderer=sdl3`** graph is
   compile-green. All verification probes PASS (see [Verification](#verification)).
 
@@ -208,56 +211,78 @@ Scroll, Animation, Modifiers.
 
 ---
 
-## NEXT WORK — Text engine Phase 2
+## Text engine Phase 2 — DONE
 
-Phase 1 (done) vendored the paragraph engine and wrote `SdlParagraph`
-(`core/src/nativeMain/.../ui/text/SdlParagraph.native.kt`) — a native `Paragraph`
-actual bridging upstream's text engine to the project's name-based SDL
-`TextMeasurer`. **Measurement is real and verified** (`--paragraphtest` PASS:
-width/height/lineCount/line-metrics/offset↔position/cursor/word-boundary).
-`paint()` and `drawMultiParagraph` are **Phase-1 no-ops**, and it is **NOT wired
-to `BasicText`** — `BasicText`/`BasicTextField` are still the project's custom
-`TextMeasurer` impls (which work: `--keytest` PASS).
+Phase 1 vendored the paragraph engine and wrote `SdlParagraph` — real
+measurement (`--paragraphtest` PASS).
 
-**Phase 2 plan** (do it deliberately — text is the one place rushing breaks
-everything at once):
-1. Implement `SdlParagraph.paint(canvas, …)` + `drawMultiParagraph` (in
-   `core/src/nativeMain/.../ui/text/platform/MultiParagraphDraw.native.kt`): draw
-   each wrapped line's glyphs onto the Compose `Canvas`. The project already draws
-   text via `TextDrawModifier`/`TextDrawNode` (SDL_ttf) — reuse that path or add a
-   `drawTextLine` to `Sdl3Canvas`/`SkiaCanvas`. Apply per-span `SpanStyle` colors.
-2. Enable upstream `foundation/text/BasicText.kt` in the manifest, delete the
-   project `core/src/commonMain/.../foundation/text/BasicText.kt`, fix call sites
-   (material `Text`, apps). Verify Text/TextField screens render (screenshot diff).
-3. LATER phase: `BasicTextField` (cursor/selection/editing) — the biggest, most
-   delicate piece; keep the project one until Phase 2 text rendering is solid.
+**Phase 2 (done)**: `SdlParagraph.paint(canvas, …)` now casts the Compose
+Canvas to `NativeTextCanvas` and calls `drawNativeText` with the already-wrapped
+text — no re-measure at draw time. All three `paint(…)` overloads
+(color / brush / deprecated) route through `paintCore`. `MultiParagraphDraw`
+iterates `paragraphInfoList` with per-paragraph `canvas.translate(0, height)`
+mirroring upstream's color-based `MultiParagraph.paint`. `BasicText` /
+`BasicTextField` are **not yet vendored** — Phase 3 pulls the
+foundation.text.modifiers/ ecosystem behind them.
 
-Why `BasicText`/`BasicTextField` couldn't just be vendored: they need
-`ui.text.Paragraph`, an `expect` whose only actuals upstream are skiko (Skia) /
-android — there's no Skia on mingwX64. `SdlParagraph` is our SDL actual; Phase 2
-makes it paint.
+## NEXT WORK — Text engine Phase 3: vendor upstream BasicText
+
+Vendor `foundation.text.modifiers/TextStringSimpleElement.kt` +
+`TextStringSimpleNode.kt` + `TextAnnotatedStringElement.kt` +
+`TextAnnotatedStringNode.kt` + `SelectableTextAnnotatedStringElement.kt` +
+`SelectableTextAnnotatedStringNode.kt` + upstream `BasicText.kt`.
+Blocking gaps:
+- `StylePhase` / `inheritedTextStyle` / `StyleOuterNode` from
+  `foundation/style/*` (unvendored, ~1000L).
+- Semantics actions (`text`, `textSubstitution`, `setTextSubstitution`,
+  `clearTextSubstitution`, `showTextSubstitution`, `isShowingTextSubstitution`,
+  `getTextLayoutResult`) — add these to `SemanticsShim.kt` as accept-and-discard.
+- `TextDragObserver` / `MouseSelectionObserver` / `MultiWidgetSelectionDelegate`
+  / `SelectionAdjustment` / `awaitSelectionGestures` from
+  `foundation/text/selection/*` (needed for SelectableTextAnnotatedString*).
+
+Alternative: vendor upstream BasicText, remove project one, patch call sites
+(material Text) — the fontFamily/fontVariationSettings non-upstream params drop,
+so per-site migration is needed for icon fonts.
+
+**Vendored this session (post-PORT_STATUS)**: `TextInputService.kt` + `EditCommand.kt`
++ `EditingBuffer.kt` + `GapBuffer.kt` + `LayoutUtils.kt` + `ParagraphLayoutCache.kt`
++ `MinLinesConstrainer.kt` + `InputEventCallback.kt` + `PointerInputEvent.skiko.kt`
++ `TransformableState.kt` + `ApproachLayoutModifierNode.kt` + `ApproachMeasureScope.kt`
++ `LookaheadScope.kt` + `DragAndDropNode.kt` — retired 8 shims (TextInputService,
+DragAndDropNode, 3 approach) + 3 rename-off-.shim (ViewConfiguration, LocalGraphicsContext,
+PlatformTextInputSessionScope). Added `ceilToIntPx` project helper for text
+modifiers that need it without pulling TextDelegate.kt.
+
+Text Phase 2 paint (SdlParagraph.paint through NativeTextCanvas) landed.
 
 ---
 
-## Remaining `commonMain` (the 16 shims + project files)
+## Remaining `commonMain` (the 8 shims + project files)
 
 **Blocked on this target** (need Skia or a from-scratch engine):
-- `text/input/TextInputService.shim.kt` + the text engine paint/wiring (Phase 2/3).
-- `graphics/shadow/ShadowContext.shim.kt`, `graphics/painter/PainterStubs.shim.kt`,
-  `graphics/vector/VectorPainterStubs.shim.kt` — shadow/bitmap/vector painters need
-  Skia blur/raster. (`Modifier.blur` is vendored but its render effect is ignored.)
+- `graphics/shadow/ShadowContext.shim.kt`, `graphics/painter/PainterStubs.shim.kt`
+  (BitmapPainter), `graphics/vector/VectorPainterStubs.shim.kt` — shadow/bitmap/vector
+  painters need Skia blur/raster + `ImageBitmap` engine. (`Modifier.blur` is vendored
+  but its render effect is ignored.)
 
-**Deferred / large / trivial:**
+**Deferred / large:**
 - `semantics/Semantics{Node,Owner,Info,ModifierStub}.shim.kt` — the a11y engine
   (no backend consumes it here). `SemanticsShim.kt` (non-`.shim`) is the
   accept-and-discard property surface — grows as vendored files reference new props.
-- `layout/Approach{MeasureScope,MeasureScopeImpl,ModifierStubs}.shim.kt` —
-  lookahead/approach layout (out of scope).
-- `draganddrop/DragAndDropNode.shim.kt` — DnD engine (~492L).
-- `runtime/retain/RetainedValuesStore.shim.kt` — blocked on a runtime version bump.
-- `platform/ViewConfigurationStub.shim.kt`, `platform/LocalGraphicsContext.shim.kt`,
-  `platform/SoftwareKeyboardController.shim.kt` — small real providers; rename off
-  `.shim` when convenient.
+- `runtime/retain/RetainedValuesStore.shim.kt` — blocked on a runtime version bump
+  (compose-runtime 1.11.1 doesn't yet include the `retain` package).
+
+**Retired this session:**
+- `text/input/TextInputService.shim.kt` → real upstream `TextInputService.kt`
+  vendored (via `NoOpPlatformTextInputService` for Owner impls).
+- `draganddrop/DragAndDropNode.shim.kt` → real upstream `DragAndDropNode.kt` (492L).
+- `layout/Approach{MeasureScope,ModifierStubs,MeasureScopeImpl}.shim.kt` → real
+  upstream `ApproachLayoutModifierNode.kt` + `ApproachMeasureScope.kt` + `LookaheadScope.kt`.
+- Non-shim renames (kept behavior, dropped `.shim.kt`):
+  `ViewConfigurationStub.shim → ViewConfigurationLocal`,
+  `LocalGraphicsContext.shim → LocalGraphicsContext`,
+  `SoftwareKeyboardController.shim → PlatformTextInputSessionScope`.
 
 Irreducible intentional-custom project code (documented in FIDELITY.md): the SDL
 `TextMeasurer` bridge + custom `BasicText`/`BasicTextField`, `FontFamily.Named`
