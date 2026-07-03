@@ -3,6 +3,12 @@
 Guidance for Claude Code working in this repository. This is the only
 context the next agent will have — read it first.
 
+> **Continuing the Compose-vendoring port (branch `phase9`)? Read
+> [`PORT_STATUS.md`](PORT_STATUS.md) first** — fresh-machine bootstrap (the
+> vendored tree is gitignored, must re-sync), what's done, the runtime gotchas,
+> how to verify (`demo.exe --*test` probes), and the next work (text engine
+> Phase 2). Fidelity rules: [`FIDELITY.md`](FIDELITY.md).
+
 ## Project Overview
 
 **ComposeNativeSDL3** — a Kotlin/Native subset of Compose Desktop running

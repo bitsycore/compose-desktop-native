@@ -2,7 +2,7 @@
 
 This directory is the tooling that vendors **byte-for-byte verbatim** source
 files from [`JetBrains/compose-multiplatform-core`](https://github.com/JetBrains/compose-multiplatform-core)
-into `core/src/vendor/`. See [`../../NODE_ENGINE_PORT.md`](../../NODE_ENGINE_PORT.md)
+into `core/src/vendor/`. See [`../../PORT_STATUS.md`](../../PORT_STATUS.md)
 for the overall port strategy and [`../../CLAUDE.md`](../../CLAUDE.md) → "Compose
 API Fidelity" for the three fix strategies (pull-verbatim / surface-match /
 intentional-custom).
