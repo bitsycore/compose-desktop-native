@@ -45,3 +45,7 @@ val LocalHapticFeedback = staticCompositionLocalOf<androidx.compose.ui.hapticfee
 val LocalSoundEffect = staticCompositionLocalOf<SoundEffect> {
 	object : SoundEffect { override fun playClickSound() {} }
 }
+
+/** Whether a scroll-capture (accessibility screenshot scrolling) is in progress. Upstream declares
+ *  it in the unvendored CompositionLocals.kt; no scroll-capture on SDL, so always false. */
+val LocalScrollCaptureInProgress = staticCompositionLocalOf<Boolean> { false }

@@ -245,6 +245,25 @@ abstract class Placeable : Measured {
 			placeAt(vX, y)
 		}
 
+		/** IntOffset + concrete GraphicsLayer overload — LazyListMeasuredItem calls this. */
+		fun Placeable.placeRelativeWithLayer(
+			position: androidx.compose.ui.unit.IntOffset,
+			@Suppress("UNUSED_PARAMETER") layer: androidx.compose.ui.graphics.layer.GraphicsLayer,
+			zIndex: Float = 0f,
+		) {
+			placeRelative(position.x, position.y, zIndex)
+		}
+
+		/** IntOffset + layerBlock overload. */
+		fun Placeable.placeRelativeWithLayer(
+			position: androidx.compose.ui.unit.IntOffset,
+			zIndex: Float = 0f,
+			@Suppress("UNUSED_PARAMETER")
+			layerBlock: (androidx.compose.ui.graphics.GraphicsLayerScope.() -> Unit)? = null,
+		) {
+			placeRelative(position.x, position.y, zIndex)
+		}
+
 		internal companion object Default : PlacementScope()
 	}
 }
