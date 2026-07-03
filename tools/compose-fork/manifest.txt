@@ -657,9 +657,9 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 
 # ── androidx.compose.foundation.text.modifiers ──────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/LayoutUtils.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/LayoutUtils.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/MinLinesConstrainer.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/MinLinesConstrainer.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/ModifierUtils.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/LayoutUtils.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/LayoutUtils.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/MinLinesConstrainer.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/MinLinesConstrainer.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/MultiParagraphLayoutCache.kt             core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/MultiParagraphLayoutCache.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/ParagraphLayoutCache.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/ParagraphLayoutCache.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/SelectableTextAnnotatedStringElement.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/SelectableTextAnnotatedStringElement.kt
@@ -1274,13 +1274,13 @@ compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.native.kt
 
 # ── androidx.compose.ui.text.font ───────────────────────────────────────────
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt         core/src/vendor/common/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt                                      core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontVariation.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontVariation.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontWeight.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Typeface.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Typeface.kt
+# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt       core/src/vendor/common/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Font.kt                                         core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Font.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamily.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamily.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt
