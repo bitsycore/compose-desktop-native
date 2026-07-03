@@ -252,7 +252,9 @@ internal class ComposeOwner(
 	override val semanticsOwner: SemanticsOwner = SemanticsOwner()
 	override val focusOwner: FocusOwner = androidx.compose.ui.focus.FocusOwnerImpl(
 		platformFocusOwner = object : androidx.compose.ui.focus.PlatformFocusOwner {
-			override fun requestOwnerFocus(focusDirection: androidx.compose.ui.focus.FocusDirection?, previouslyFocusedRect: androidx.compose.ui.geometry.Rect?): Boolean = false
+			// The SDL window always owns/accepts focus, so grant owner focus — returning false
+			// here denies the very first focus request (performRequestFocus, previousActiveNode==null).
+			override fun requestOwnerFocus(focusDirection: androidx.compose.ui.focus.FocusDirection?, previouslyFocusedRect: androidx.compose.ui.geometry.Rect?): Boolean = true
 			override fun clearOwnerFocus() {}
 			override fun moveFocusInChildren(focusDirection: androidx.compose.ui.focus.FocusDirection): Boolean = false
 			override fun getEmbeddedViewFocusRect(): androidx.compose.ui.geometry.Rect? = null
@@ -284,8 +286,22 @@ internal class ComposeOwner(
 	// Modifier.Node coroutine scopes derive from this — hover's emitEnter/emitExit launch
 	// here. Use the SDL main dispatcher (installed by ComposeWindow, drained each frame).
 	override val coroutineContext: CoroutineContext = kotlinx.coroutines.Dispatchers.Main
-	override fun registerOnEndApplyChangesListener(listener: () -> Unit) = Unit
-	override fun onEndApplyChanges() = Unit
+	// End-of-apply-changes listeners — the focus system (FocusInvalidationManager) and other
+	// engine parts register here to defer work until changes are applied; without this the
+	// focus invalidation never flushes and requestFocus() (e.g. focus-on-click) never sticks.
+	private val fEndApplyChangesListeners = mutableListOf<() -> Unit>()
+
+	override fun registerOnEndApplyChangesListener(listener: () -> Unit) {
+		if (listener !in fEndApplyChangesListeners) fEndApplyChangesListeners.add(listener)
+	}
+
+	override fun onEndApplyChanges() {
+		// Drain in order; listeners may re-register, so loop until empty.
+		while (fEndApplyChangesListeners.isNotEmpty()) {
+			val vListener = fEndApplyChangesListeners.removeAt(0)
+			vListener()
+		}
+	}
 	override val dragAndDropManager: DragAndDropManager = object : DragAndDropManager {
 		override val modifier = androidx.compose.ui.Modifier
 		override val isRequestDragAndDropTransferRequired: Boolean = false

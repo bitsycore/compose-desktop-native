@@ -51,6 +51,12 @@ fun main(args: Array<String>) {
         runToggleTest()
         return
     }
+    // Verifies B6b key/text routing: a focused node receives injected SDL TEXT_INPUT
+    // (onTextInput) and KEY (onKeyEvent) events through the FocusOwner.
+    if (args.any { it == "--keytest" }) {
+        runKeyTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -183,6 +189,48 @@ private fun runToggleTest() {
                 androidx.compose.material.Switch(
                     checked = vChecked,
                     onCheckedChange = { vChecked = it; vChanges++; println("toggletest: onCheckedChange -> $it") },
+                )
+            }
+        }
+    }
+}
+
+/* Boots a window with a real project BasicTextField, clicks it to focus (focus-on-click via the
+   FocusOwner), then injects TEXT_INPUT ("A","B") and a Backspace key through the live SDL path.
+   Asserts the field edits to "A" — proving click-to-focus + typing + editing keys route to the
+   focused field via B6b (host.dispatchTextInput / dispatchKeyEvent). */
+private fun runKeyTest() {
+    val vText = mutableStateOf("")
+    nativeComposeWindow(
+        title = "keytest",
+        width = 400,
+        height = 200,
+        onFrame = { _, frameIndex ->
+            when (frameIndex) {
+                12 -> { com.compose.desktop.native.injectMouseEvent(1, 200f, 100f); true } // click field to focus
+                14 -> { com.compose.desktop.native.injectMouseEvent(2, 200f, 100f); true }
+                24 -> { com.compose.desktop.native.injectTextInput("A"); true }
+                28 -> { com.compose.desktop.native.injectTextInput("B"); true }
+                32 -> { com.compose.desktop.native.injectKey(42, true); com.compose.desktop.native.injectKey(42, false); true } // Backspace → "A"
+                70 -> {
+                    println("keytest: real BasicTextField value='${vText.value}'")
+                    println(
+                        if (vText.value == "A") "keytest: PASS (click-to-focus + type 'AB' + backspace = 'A')"
+                        else "keytest: FAIL (expected 'A')"
+                    )
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        // The exact regression path: a real project BasicTextField, focused by clicking it,
+        // receiving typed text (SDL TEXT_INPUT) + editing keys (Backspace) via B6b.
+        MaterialTheme(colors = darkColors()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                androidx.compose.foundation.text.BasicTextField(
+                    value = vText.value,
+                    onValueChange = { vText.value = it },
                 )
             }
         }

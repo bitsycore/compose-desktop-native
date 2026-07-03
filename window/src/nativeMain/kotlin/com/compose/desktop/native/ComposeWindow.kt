@@ -158,7 +158,10 @@ fun nativeComposeWindow(
                     is AppEvent.MouseWheel -> {
                         host.onWheel(event.x.toFloat(), event.y.toFloat(), event.deltaX, event.deltaY)
                     }
-                    else -> { /* B6b: key / text input (focus) dispatch on upstream */ }
+                    // B6b — route keyboard + typed text to the focused node via the FocusOwner.
+                    is AppEvent.Key -> host.dispatchKeyEvent(event.event)
+                    is AppEvent.TextInput -> host.dispatchTextInput(event.text)
+                    else -> { /* Quit handled above */ }
                 }
             }
 

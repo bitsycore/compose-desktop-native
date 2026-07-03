@@ -44,3 +44,34 @@ fun injectMouseEvent(inType: Int, inX: Float, inY: Float) {
 		SDL_PushEvent(vEv.ptr)
 	}
 }
+
+/* Test-only: push a synthetic SDL_EVENT_TEXT_INPUT (typed character[s]). SDL_TextInputEvent.text
+   is a const char* that SDL does NOT copy on push, so the UTF-8 buffer is allocated on nativeHeap
+   and intentionally leaked — it must stay valid until the event is polled next frame. */
+@OptIn(ExperimentalForeignApi::class)
+fun injectTextInput(inText: String) {
+	val vBytes = inText.encodeToByteArray()
+	val vBuf = nativeHeap.allocArray<ByteVar>(vBytes.size + 1)
+	for (i in vBytes.indices) vBuf[i] = vBytes[i]
+	vBuf[vBytes.size] = 0
+	memScoped {
+		val vEv = alloc<SDL_Event>()
+		vEv.type = SDL_EVENT_TEXT_INPUT
+		vEv.text.text = vBuf
+		SDL_PushEvent(vEv.ptr)
+	}
+}
+
+/* Test-only: push a synthetic key event. inScancode is an SDL_SCANCODE_* value (e.g. 42=Backspace). */
+@OptIn(ExperimentalForeignApi::class)
+fun injectKey(inScancode: Int, inDown: Boolean) {
+	memScoped {
+		val vEv = alloc<SDL_Event>()
+		vEv.type = if (inDown) SDL_EVENT_KEY_DOWN else SDL_EVENT_KEY_UP
+		vEv.key.scancode = inScancode.toUInt()
+		vEv.key.down = inDown
+		vEv.key.mod = 0u
+		vEv.key.key = 0u
+		SDL_PushEvent(vEv.ptr)
+	}
+}

@@ -10,8 +10,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.compose.desktop.native.element.HorizontalScrollNode
 import com.compose.desktop.native.element.MiddleClickNode
+import androidx.compose.ui.node.requireLayoutNode
 import com.compose.desktop.native.element.OnDragNode
 import com.compose.desktop.native.element.OnPressedNode
+import com.compose.desktop.native.element.OnTextInputNode
 import com.compose.desktop.native.element.PressableNode
 import com.compose.desktop.native.element.SecondaryClickNode
 import com.compose.desktop.native.element.VerticalScrollNode
@@ -49,6 +51,10 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	val applier: Applier<*> get() = fApplier
 
 	fun attach() {
+		// Install the focus root on the root LayoutNode (upstream AndroidComposeView does
+		// `.then(focusOwner.modifier)`). Without it the focus tree has no root, so requestFocus()
+		// can't establish a focus path (focus-on-click never sticks) and key dispatch crashes.
+		rootNode.modifier = fOwner.focusOwner.modifier
 		fOwner.attach()
 	}
 
@@ -57,11 +63,35 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	}
 
 	fun measureAndLayout() {
+		// Flush deferred end-of-apply work (focus invalidation etc.) before measuring, so
+		// requestFocus() from composition OR from a pointer event this frame takes effect —
+		// e.g. focus-on-click, which schedules a focus invalidation during event dispatch.
+		fOwner.onEndApplyChanges()
 		fOwner.measureAndLayout()
 	}
 
 	// The owner's FocusOwner IS a FocusManager — the window provides it as LocalFocusManager.
 	val focusManager: androidx.compose.ui.focus.FocusManager get() = fOwner.focusOwner
+
+	// ==================
+	// MARK: Key / text input (B6b) — route to the focused node via the FocusOwner
+	// ==================
+
+	/* Routes a key event to the focused node's KeyInput chain (upstream onPreKeyEvent /
+	   onKeyEvent) — drives text-field editing keys (backspace / arrows / enter) and
+	   clickable Enter/Space activation. Returns true if some node consumed it. */
+	fun dispatchKeyEvent(inEvent: androidx.compose.ui.input.key.KeyEvent): Boolean =
+		runCatching { fOwner.focusOwner.dispatchKeyEvent(inEvent) }.getOrDefault(false)
+
+	/* Routes typed text (SDL TEXT_INPUT) to the focused node's project OnTextInputNode.
+	   The focusable + onTextInput modifiers share one LayoutNode, so we take the active
+	   focus target's LayoutNode and hand the text to its OnTextInputNode. */
+	fun dispatchTextInput(inText: String) {
+		val vFocused = fOwner.focusOwner.activeFocusTargetNode ?: return
+		if (!vFocused.node.isAttached) return
+		val vLayoutNode = runCatching { vFocused.requireLayoutNode() }.getOrNull() ?: return
+		vLayoutNode.nodes.headToTail { if (it is OnTextInputNode) it.handler(inText) }
+	}
 
 	// ==================
 	// MARK: Input (B6a) — hit-test + dispatch on the upstream tree
@@ -133,6 +163,11 @@ class ComposeRootHost(inDensity: Float = 1f) {
 				2 -> findUp<MiddleClickNode>(vHit)?.second?.onClick()
 				else -> {
 					cancelPress()
+					// Focus-on-click: focus the nearest focusable under the cursor (text field / button /
+					// any .focusable). Upstream clickable self-focuses, but plain focusables (text fields)
+					// don't — this gives the intuitive click-to-focus behaviour and is what makes typing
+					// into a clicked text field work (the focused node then receives key/text via B6b).
+					findUp<androidx.compose.ui.focus.FocusTargetNode>(vHit)?.second?.requestFocus()
 					findUp<PressableNode>(vHit)?.let { (node, p) ->
 						fActivePress = p; fActivePressNode = node; p.onChange(true)
 					}

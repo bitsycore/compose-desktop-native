@@ -134,7 +134,7 @@ internal object StubOwner : Owner {
 	override val semanticsOwner: SemanticsOwner = SemanticsOwner()
 	override val focusOwner: FocusOwner = androidx.compose.ui.focus.FocusOwnerImpl(
 		platformFocusOwner = object : androidx.compose.ui.focus.PlatformFocusOwner {
-			override fun requestOwnerFocus(focusDirection: androidx.compose.ui.focus.FocusDirection?, previouslyFocusedRect: androidx.compose.ui.geometry.Rect?): Boolean = false
+			override fun requestOwnerFocus(focusDirection: androidx.compose.ui.focus.FocusDirection?, previouslyFocusedRect: androidx.compose.ui.geometry.Rect?): Boolean = true
 			override fun clearOwnerFocus() {}
 			override fun moveFocusInChildren(focusDirection: androidx.compose.ui.focus.FocusDirection): Boolean = false
 			override fun getEmbeddedViewFocusRect(): androidx.compose.ui.geometry.Rect? = null
