@@ -80,8 +80,9 @@ internal class ComposeOwner(
 
 	// Dispatch one pointer event to the upstream PointerInputModifierNode tree.
 	// [this] is the PositionCalculator (Owner : PositionCalculator).
-	internal fun processPointerInput(inEvent: androidx.compose.ui.input.pointer.PointerInputEvent) {
-		fPointerProcessor.process(inEvent, this)
+	internal fun processPointerInput(inEvent: androidx.compose.ui.input.pointer.PointerInputEvent): Boolean {
+		val vResult = fPointerProcessor.process(inEvent, this)
+		return vResult.dispatchedToAPointerInputModifier
 	}
 
 	// Attaches the root subtree to this owner. Call once after construction,

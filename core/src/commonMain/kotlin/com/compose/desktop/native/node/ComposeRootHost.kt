@@ -166,12 +166,12 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	}
 
 	// Feed a raw pointer event to the vendored PointerInputEventProcessor (upstream
-	// PointerInputModifierNode dispatch — hover / gestures). Runs alongside the B6a
-	// project-node dispatch during the interaction migration. inType: 0=Move 1=Press 2=Release.
-	// The internal `expect PointerInputEvent` has no commonMain constructor, so the actual
-	// build+dispatch lives in nativeMain (feedPointerToProcessor).
-	fun onPointerRaw(inX: Float, inY: Float, inType: Int, inUptime: Long) {
-		feedPointerToProcessor(fOwner, inType, inUptime, inX, inY)
+	// PointerInputModifierNode dispatch — hover / gestures / clickable). inType: 0=Move
+	// 1=Press 2=Release; inButton: 0=primary 1=secondary 2=tertiary. The internal
+	// `expect PointerInputEvent` has no commonMain constructor, so the actual build+dispatch
+	// lives in nativeMain (feedPointerToProcessor).
+	fun onPointerRaw(inX: Float, inY: Float, inType: Int, inButton: Int, inUptime: Long) {
+		feedPointerToProcessor(fOwner, inType, inButton, inUptime, inX, inY)
 	}
 
 	fun onWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float) {
@@ -194,6 +194,7 @@ class ComposeRootHost(inDensity: Float = 1f) {
 internal expect fun feedPointerToProcessor(
 	inOwner: androidx.compose.ui.node.ComposeOwner,
 	inType: Int,
+	inButton: Int,
 	inUptime: Long,
 	inX: Float,
 	inY: Float,

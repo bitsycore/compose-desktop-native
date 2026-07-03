@@ -1,0 +1,46 @@
+package com.compose.desktop.native
+
+import kotlinx.cinterop.*
+import sdl3.*
+
+// ==================
+// MARK: SdlEventInject
+// ==================
+
+/* Test-only: push a synthetic mouse event into SDL's real event queue so it flows
+   through the exact live path (pollEvents → AppEvent.Pointer → host.onPointerRaw →
+   PointerInputEventProcessor → upstream clickable). Used by the demo's `--clicktest`
+   to verify the vendored interaction engine end-to-end. inType: 0=Move 1=Press 2=Release. */
+@OptIn(ExperimentalForeignApi::class)
+fun injectMouseEvent(inType: Int, inX: Float, inY: Float) {
+	memScoped {
+		val vEv = alloc<SDL_Event>()
+		when (inType) {
+			0 -> {
+				vEv.type = SDL_EVENT_MOUSE_MOTION
+				vEv.motion.which = 0u
+				vEv.motion.x = inX
+				vEv.motion.y = inY
+			}
+			1 -> {
+				vEv.type = SDL_EVENT_MOUSE_BUTTON_DOWN
+				vEv.button.which = 0u
+				vEv.button.button = 1u
+				vEv.button.down = true
+				vEv.button.clicks = 1u
+				vEv.button.x = inX
+				vEv.button.y = inY
+			}
+			2 -> {
+				vEv.type = SDL_EVENT_MOUSE_BUTTON_UP
+				vEv.button.which = 0u
+				vEv.button.button = 1u
+				vEv.button.down = false
+				vEv.button.clicks = 1u
+				vEv.button.x = inX
+				vEv.button.y = inY
+			}
+		}
+		SDL_PushEvent(vEv.ptr)
+	}
+}

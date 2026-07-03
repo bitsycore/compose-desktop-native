@@ -68,15 +68,19 @@ fun nativeComposeWindow(
     currentTextMeasurer = renderBackend.textMeasurer
     currentImageLoader = renderBackend.imageLoader
 
+    // Install the Main dispatcher BEFORE creating the owner: ComposeOwner captures
+    // Dispatchers.Main eagerly for its per-node coroutine scopes (the pointerInput /
+    // gesture handlers behind upstream clickable/hoverable). If it's installed after,
+    // the owner captures the MissingMainDispatcher and every gesture coroutine crashes.
+    val mainDispatcher = Sdl3MainDispatcher()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    Dispatchers.setMain(mainDispatcher)
+
     // Upstream layout root + owner, hidden behind the public facade.
     val host = ComposeRootHost(inDensity = backend.pixelDensity)
     host.attach()
 
     val frameClock = SDL3FrameClock()
-
-    val mainDispatcher = Sdl3MainDispatcher()
-    @OptIn(ExperimentalCoroutinesApi::class)
-    Dispatchers.setMain(mainDispatcher)
 
     val composeWindow = ComposeNativeWindow(backend, gpuMode, title)
     val windowScope = object : ComposeWindowScope {
@@ -146,9 +150,10 @@ fun nativeComposeWindow(
                             popupHost.notifyOutsidePress(event.event.x, event.event.y)
                         }
                         host.onPointer(event.event.x.toFloat(), event.event.y.toFloat(), vType, vBtn)
-                        // Also drive the upstream PointerInputEventProcessor (hover / gestures via
-                        // PointerInputModifierNode). Coexists with the B6a project-node dispatch above.
-                        host.onPointerRaw(event.event.x.toFloat(), event.event.y.toFloat(), vType, SDL_GetTicks().toLong())
+                        // Also drive the upstream PointerInputEventProcessor (hover / gestures /
+                        // clickable via PointerInputModifierNode). Coexists with the B6a project-node
+                        // dispatch above during the interaction migration.
+                        host.onPointerRaw(event.event.x.toFloat(), event.event.y.toFloat(), vType, vBtn, SDL_GetTicks().toLong())
                     }
                     is AppEvent.MouseWheel -> {
                         host.onWheel(event.x.toFloat(), event.y.toFloat(), event.deltaX, event.deltaY)

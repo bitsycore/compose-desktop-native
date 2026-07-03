@@ -37,6 +37,14 @@ fun main(args: Array<String>) {
         com.compose.desktop.native.renderer.sdl.runInputProbe()
         return
     }
+    // End-to-end verification of the vendored interaction engine: boots a real
+    // window with a clickable box and injects synthetic SDL mouse events through
+    // the live path (SDL queue → pollEvents → host.onPointerRaw → processor →
+    // upstream clickable's pointerInput gesture coroutine).
+    if (args.any { it == "--clicktest" }) {
+        runClickTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -89,6 +97,50 @@ fun main(args: Array<String>) {
                 }
             } else {
                 App()
+            }
+        }
+    }
+}
+
+// ==================
+// MARK: clicktest
+// ==================
+
+/* Boots a real nativeComposeWindow with a full-size clickable box, then injects
+   move→press→release SDL mouse events a few frames apart (giving the upstream
+   clickable's gesture coroutine time to launch + await between frames), and prints
+   PASS/FAIL based on whether onClick fired. Proves the whole vendored interaction
+   pipeline works under the real Sdl3MainDispatcher + frame loop. */
+private fun runClickTest() {
+    var vClicks = 0
+    nativeComposeWindow(
+        title = "clicktest",
+        width = 400,
+        height = 300,
+        onFrame = { _, frameIndex ->
+            when (frameIndex) {
+                20 -> { com.compose.desktop.native.injectMouseEvent(0, 200f, 150f); true }
+                26 -> { com.compose.desktop.native.injectMouseEvent(1, 200f, 150f); true }
+                32 -> { com.compose.desktop.native.injectMouseEvent(2, 200f, 150f); true }
+                70 -> {
+                    println(
+                        if (vClicks > 0) "clicktest: PASS ($vClicks click(s) via upstream clickable)"
+                        else "clicktest: FAIL (0 clicks — upstream clickable did not fire)"
+                    )
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colors = darkColors()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF303040))
+                    .clickable { vClicks++; println("clicktest: onClick fired -> $vClicks") },
+            ) {
+                Text("Click test", color = Color.White, fontSize = 16.sp)
             }
         }
     }
