@@ -191,10 +191,10 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TrackpadScrollingLogic.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TrackpadScrollingLogic.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Transformable.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Transformable.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformableState.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformableState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformableState.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformableState.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/DragGesture.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/DragGesture.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.native.kt
 
@@ -978,8 +978,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/input/pointer/Suspending
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/InternalPointerEvent.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerButton.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerButton.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerEvent.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.native.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.native.kt
 
