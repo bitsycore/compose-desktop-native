@@ -8,7 +8,6 @@ import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import com.compose.desktop.native.element.ClickableNode
 import com.compose.desktop.native.element.HorizontalScrollNode
 import com.compose.desktop.native.element.MiddleClickNode
 import com.compose.desktop.native.element.OnDragNode
@@ -70,8 +69,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 
 	private var fActivePress: PressableNode? = null
 	private var fActivePressNode: LayoutNode? = null
-	private var fArmedClickNode: LayoutNode? = null
-	private var fArmedClick: (() -> Unit)? = null
 	private var fDragNode: LayoutNode? = null
 	private var fDrag: OnDragNode? = null
 
@@ -119,14 +116,13 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// inType: 0=Move 1=Press 2=Release ; inButton: 0=primary 1=secondary 2=tertiary
 	fun onPointer(inX: Float, inY: Float, inType: Int, inButton: Int) {
 		val vHit = hitTest(inX, inY)
-		// Gesture (pointerInput) delivery is now handled by the vendored
-		// PointerInputEventProcessor via onPointerRaw; B6a only routes the
-		// project click/press/drag/scroll modifiers below.
+		// clickable + hoverable are now vendored upstream and delivered through the
+		// PointerInputEventProcessor (onPointerRaw). B6a only routes the remaining
+		// project-only modifiers: pressable / onPressed / onDrag / secondary+middle click.
 
 		when (inType) {
 			0 -> {
 				fActivePressNode?.let { if (!inside(vHit, it)) cancelPress() }
-				fArmedClickNode?.let { if (!inside(vHit, it)) { fArmedClickNode = null; fArmedClick = null } }
 				fDrag?.let { dm ->
 					val dn = fDragNode!!; val vAp = absOf(dn)
 					dm.onDrag((inX - vAp.x).toInt(), (inY - vAp.y).toInt())
@@ -140,9 +136,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 					findUp<PressableNode>(vHit)?.let { (node, p) ->
 						fActivePress = p; fActivePressNode = node; p.onChange(true)
 					}
-					val vClick = findUp<ClickableNode>(vHit)
-					fArmedClickNode = vClick?.first
-					fArmedClick = vClick?.second?.onClick
 					var op = vHit
 					while (op != null) {
 						val vAp = absOf(op)
@@ -158,9 +151,6 @@ class ComposeRootHost(inDensity: Float = 1f) {
 			2 -> {
 				cancelPress()
 				fDrag?.onEnd?.invoke(); fDragNode = null; fDrag = null
-				val vArmed = fArmedClickNode; val vCb = fArmedClick
-				fArmedClickNode = null; fArmedClick = null
-				if (vArmed != null && vCb != null && inside(vHit, vArmed)) vCb()
 			}
 		}
 	}

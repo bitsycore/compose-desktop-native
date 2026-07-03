@@ -73,13 +73,9 @@ class BorderNode(var width: Int, var color: Color, var shape: Shape) : Modifier.
 // SizeNode / FillNode / WrapContentNode / UnspecifiedConstraintsNode classes
 // participate in the LayoutModifierNode chain.
 
-class ClickableModifier(val onClick: () -> Unit) : ModifierNodeElement<ClickableNode>() {
-    override fun create() = ClickableNode(onClick)
-    override fun update(node: ClickableNode) { node.onClick = onClick }
-    override fun hashCode(): Int = onClick.hashCode()
-    override fun equals(other: Any?): Boolean = other is ClickableModifier && other.onClick === onClick
-}
-class ClickableNode(var onClick: () -> Unit) : Modifier.Node()
+// ClickableModifier / ClickableNode retired — Modifier.clickable is now the vendored
+// upstream androidx.compose.foundation.Clickable (a PointerInputModifierNode driven by
+// the PointerInputEventProcessor), so the project click element is no longer created.
 
 class SecondaryClickModifier(val onClick: (x: Int, y: Int) -> Unit) : ModifierNodeElement<SecondaryClickNode>() {
     override fun create() = SecondaryClickNode(onClick)
