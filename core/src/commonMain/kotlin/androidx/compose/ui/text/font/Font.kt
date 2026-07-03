@@ -26,5 +26,9 @@ interface Font {
 	/** Upstream deprecated `Font.ResourceLoader` — vendored Owner has a
 	 *  `val fontLoader: Font.ResourceLoader`. Marker; no real loading. */
 	@Deprecated("Use FontFamily.Resolver instead")
-	interface ResourceLoader
+	interface ResourceLoader {
+		/** Deprecated load path (vendored TextLayoutResult overrides it); name-based
+		 *  renderer never calls this, so a placeholder is fine. */
+		fun load(font: Font): Any = Unit
+	}
 }

@@ -271,7 +271,7 @@ internal class ComposeOwner(
 	override val retainedValuesStore: RetainedValuesStore = object : RetainedValuesStore {}
 	@Suppress("DEPRECATION")
 	override val fontLoader: Font.ResourceLoader = object : Font.ResourceLoader {}
-	override val fontFamilyResolver: FontFamily.Resolver = object : FontFamily.Resolver {}
+	override val fontFamilyResolver: FontFamily.Resolver = androidx.compose.ui.text.font.createFontFamilyResolver()
 	override val localeList: LocaleList = LocaleList()
 	override var showLayoutBounds: Boolean = false
 

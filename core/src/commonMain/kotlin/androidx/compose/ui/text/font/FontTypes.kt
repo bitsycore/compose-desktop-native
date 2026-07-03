@@ -25,8 +25,16 @@ sealed class FontFamily {
 		override fun hashCode(): Int = name.hashCode()
 	}
 
-	/** Upstream `FontFamily.Resolver` — marker for vendored Owner.
-	 *  Real Resolver has `resolve(family, weight, style, synthesis): State<Any>`;
-	 *  desktop path doesn't invoke it. */
-	interface Resolver
+	/** Upstream `FontFamily.Resolver`. The vendored text engine threads this through
+	 *  MultiParagraph → Paragraph; our SdlParagraph reads `style.fontFamily` (name-based)
+	 *  directly, so `resolve` returns a placeholder typeface State (only the deprecated
+	 *  TextLayoutResult.load path reads `.value`). */
+	interface Resolver {
+		fun resolve(
+			fontFamily: FontFamily? = null,
+			fontWeight: FontWeight = FontWeight.Normal,
+			fontStyle: FontStyle = FontStyle.Normal,
+			fontSynthesis: FontSynthesis = FontSynthesis.All,
+		): androidx.compose.runtime.State<Any>
+	}
 }

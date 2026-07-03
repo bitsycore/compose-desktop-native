@@ -63,6 +63,12 @@ fun main(args: Array<String>) {
         runScrollTest()
         return
     }
+    // Verifies the vendored text-paragraph engine: builds a real upstream Paragraph (bridged to the
+    // SDL TextMeasurer via SdlParagraph) and checks width-wrapping + offset<->position geometry.
+    if (args.any { it == "--paragraphtest" }) {
+        runParagraphTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -117,6 +123,39 @@ fun main(args: Array<String>) {
                 App()
             }
         }
+    }
+}
+
+/* Boots a real window (installs the SDL TextMeasurer), then builds an upstream Paragraph via the
+   vendored factory (→ SdlParagraph) for a long string constrained to a narrow width. Verifies it
+   wrapped to multiple lines, has positive size, and that getHorizontalPosition/getOffsetForPosition
+   round-trip — proving the paragraph-engine measurement bridge works. */
+private fun runParagraphTest() {
+    nativeComposeWindow(
+        title = "paragraphtest",
+        width = 400,
+        height = 200,
+        onFrame = { _, frameIndex ->
+            if (frameIndex == 10) {
+                val vP = androidx.compose.ui.text.Paragraph(
+                    text = "Hello world foo bar baz qux quux corge grault garply waldo",
+                    style = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
+                    constraints = androidx.compose.ui.unit.Constraints(maxWidth = 120),
+                    density = androidx.compose.ui.unit.Density(1f),
+                    fontFamilyResolver = androidx.compose.ui.text.font.createFontFamilyResolver(),
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+                )
+                val vHpos = vP.getHorizontalPosition(3, true)
+                val vOffBack = vP.getOffsetForPosition(androidx.compose.ui.geometry.Offset(vHpos, 2f))
+                val vLine = vP.getLineForOffset(30)
+                println("paragraphtest: lineCount=${vP.lineCount} w=${vP.width} h=${vP.height} hpos(3)=$vHpos offBack=$vOffBack lineFor(30)=$vLine")
+                val vPass = vP.lineCount >= 2 && vP.height > 0f && vP.width > 0f && vOffBack in 2..4
+                println(if (vPass) "paragraphtest: PASS (real width-wrapped Paragraph via SdlParagraph)" else "paragraphtest: FAIL")
+                false
+            } else true
+        },
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {}
     }
 }
 

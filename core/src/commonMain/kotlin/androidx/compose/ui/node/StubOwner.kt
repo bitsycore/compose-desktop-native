@@ -152,7 +152,7 @@ internal object StubOwner : Owner {
 	override val rectManager: RectManager = RectManager()
 	@Suppress("DEPRECATION")
 	override val fontLoader: Font.ResourceLoader = object : Font.ResourceLoader {}
-	override val fontFamilyResolver: FontFamily.Resolver = object : FontFamily.Resolver {}
+	override val fontFamilyResolver: FontFamily.Resolver = androidx.compose.ui.text.font.createFontFamilyResolver()
 	override val layoutDirection: LayoutDirection = LayoutDirection.Ltr
 	override val localeList: LocaleList = LocaleList()
 	override var showLayoutBounds: Boolean = false

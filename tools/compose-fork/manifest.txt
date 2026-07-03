@@ -1235,6 +1235,10 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ExperimentalTe
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/InternalTextApi.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/InternalTextApi.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/LinkAnnotation.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt           core/src/vendor/common/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraph.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraph.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt          core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Paragraph.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/Paragraph.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Placeholder.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/text/Placeholder.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
@@ -1245,6 +1249,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/StringAnnotati
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextDecorationLineStyle.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/TextDecorationLineStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextGranularity.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextGranularity.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLinkStyles.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLinkStyles.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
@@ -1253,13 +1258,9 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/UrlAnnotation.
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/WeakReference.skiko.kt                core/src/vendor/common/kotlin/androidx/compose/ui/text/WeakReference.kt
 compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/AnnotatedString.native.kt
 compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AtomicReference.nonJvm.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/AtomicReference.native.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraph.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraph.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/Paragraph.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/text/Paragraph.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt                core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextPainter.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/text/TextPainter.kt
@@ -1267,7 +1268,6 @@ compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/FontRasterizationSettings.native.kt
-# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ParagraphIntrisics.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/text/ParagraphIntrisics.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/SkiaParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
@@ -1326,8 +1326,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformL
 
 # ── androidx.compose.ui.text.platform ───────────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt      core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt    core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt             core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.native.kt
