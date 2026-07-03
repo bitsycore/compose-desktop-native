@@ -1,81 +1,25 @@
 package com.compose.desktop.native.element
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
-import com.compose.desktop.native.graphics.drawBackgroundShape
-import com.compose.desktop.native.graphics.drawBorderShape
 
 // ==================
-// MARK: Modifier Elements
+// MARK: Project modifier elements
 // ==================
-// Each modifier is a `ModifierNodeElement<XxxNode>` paired with a
-// `XxxNode : Modifier.Node, DrawModifierNode` (or other *ModifierNode
-// interface). the upstream LayoutNode and the renderers read these via Modifier.foldIn
-// (ModifierNodeElement IS-A Modifier.Element), so the migration to the
-// upstream factory pattern is transparent to the renderer today — the
-// Node lifecycle stays dormant until the renderer rewrite drives it via
-// NodeCoordinator. Equality is hand-written to match data-class semantics.
-
-// `PaddingModifier` + `PaddingNode` retired — replaced by vendored
-// upstream `androidx.compose.foundation.layout.Padding.kt`. The chain
-// measure pipeline runs PaddingNode.measure() outermost-first;
-// `placeable.place(start, top)` inside its layout block accumulates
-// into `the upstream LayoutNode.contentOffsetX/Y` via `ChainLeafPlaceable.placeAt`.
-
-
-class BackgroundModifier(
-    val color: Color,
-    val shape: Shape = RectangleShape,
-) : ModifierNodeElement<BackgroundNode>() {
-    override fun create() = BackgroundNode(color, shape)
-    override fun update(node: BackgroundNode) { node.color = color; node.shape = shape }
-    override fun hashCode(): Int = 31 * color.hashCode() + shape.hashCode()
-    override fun equals(other: Any?): Boolean =
-        other is BackgroundModifier && other.color == color && other.shape == shape
-}
-
-class BackgroundNode(var color: Color, var shape: Shape) : Modifier.Node(), DrawModifierNode {
-    override fun ContentDrawScope.draw() {
-        if (color.alpha > 0f) drawBackgroundShape(color, shape)
-        drawContent()
-    }
-}
-
-class BorderModifier(
-    val width: Int,
-    val color: Color,
-    val shape: Shape = RectangleShape,
-) : ModifierNodeElement<BorderNode>() {
-    override fun create() = BorderNode(width, color, shape)
-    override fun update(node: BorderNode) { node.width = width; node.color = color; node.shape = shape }
-    override fun hashCode(): Int = (31 * width + color.hashCode()) * 31 + shape.hashCode()
-    override fun equals(other: Any?): Boolean =
-        other is BorderModifier && other.width == width && other.color == color && other.shape == shape
-}
-
-class BorderNode(var width: Int, var color: Color, var shape: Shape) : Modifier.Node(), DrawModifierNode {
-    override fun ContentDrawScope.draw() {
-        if (width > 0 && color.alpha > 0f) drawBorderShape(width, color, shape)
-        drawContent()
-    }
-}
-
-// SizeModifier / SizeNode retired — all size / fill / wrapContent / widthIn /
-// heightIn / sizeIn / required* / defaultMinSize behaviour comes from upstream
-// vendored `androidx.compose.foundation.layout.Size.kt`, whose private
-// SizeNode / FillNode / WrapContentNode / UnspecifiedConstraintsNode classes
-// participate in the LayoutModifierNode chain.
-
-// ClickableModifier / ClickableNode retired — Modifier.clickable is now the vendored
-// upstream androidx.compose.foundation.Clickable (a PointerInputModifierNode driven by
-// the PointerInputEventProcessor), so the project click element is no longer created.
+// Small set of project-only modifier elements — each pairs a
+// `ModifierNodeElement<XxxNode>` with a `XxxNode : Modifier.Node`. Upstream
+// LayoutNode reads them through the chain (ModifierNodeElement IS-A
+// Modifier.Element). Nothing that has a full upstream equivalent lives here
+// anymore — Modifier.background / border / drawBehind / focusable / weight
+// / alpha are all vendored. What's left:
+//   * SecondaryClick / MiddleClick — non-upstream (upstream Clickable is
+//     primary-only).
+//   * Pressable / OnTextInput / OnPressed / OnDrag — the project's cheap
+//     pointer surface used by ComposeRootHost.onPointer (B6a).
+//   * ClipModifier — GraphicsLayer.kt lowers `clip = true` to it (project
+//     GraphicsLayerModifier still owns the transform pipeline).
 
 class SecondaryClickModifier(val onClick: (x: Int, y: Int) -> Unit) : ModifierNodeElement<SecondaryClickNode>() {
     override fun create() = SecondaryClickNode(onClick)
@@ -93,42 +37,6 @@ class MiddleClickModifier(val onClick: () -> Unit) : ModifierNodeElement<MiddleC
 }
 class MiddleClickNode(var onClick: () -> Unit) : Modifier.Node()
 
-// GloballyPositionedModifier / GloballyPositionedNode retired —
-// `Modifier.onGloballyPositioned { … }` is now provided by vendored
-// upstream `androidx.compose.ui.layout.OnGloballyPositionedModifier.kt`
-// whose private `OnGloballyPositionedNode` implements
-// `GlobalPositionAwareModifierNode`. The dispatch loop in
-// `the upstream LayoutNode.dispatchGloballyPositioned()` walks the chain and calls
-// `onGloballyPositioned(coordinates)` directly.
-
-/* Paints user-supplied content under the node's children via a DrawScope
-   lambda. The renderer invokes onDraw after background / border and before
-   painting children, with the DrawScope sized to the node's bounds.
-   Multiple drawBehinds on the same node compose in modifier order — the
-   later one paints on top. */
-class DrawBehindModifier(
-    val onDraw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
-) : ModifierNodeElement<DrawBehindNode>() {
-    override fun create() = DrawBehindNode(onDraw)
-    override fun update(node: DrawBehindNode) { node.onDraw = onDraw }
-    override fun hashCode(): Int = onDraw.hashCode()
-    override fun equals(other: Any?): Boolean = other is DrawBehindModifier && other.onDraw === onDraw
-}
-class DrawBehindNode(
-    var onDraw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
-) : Modifier.Node(), DrawModifierNode {
-    override fun ContentDrawScope.draw() {
-        onDraw(this)
-        drawContent()
-    }
-}
-
-// HoverableModifier/HoverableNode retired — hover is now the vendored upstream
-// Modifier.hoverable (PointerInputModifierNode) driven by PointerInputEventProcessor.
-
-/* Identity is by callback reference — not great across recomposition. The
-   dispatch code in ComposeWindow keys press state by the upstream LayoutNode
-   identity (which is stable) rather than by the modifier itself. */
 class PressableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<PressableNode>() {
     override fun create() = PressableNode(onChange)
     override fun update(node: PressableNode) { node.onChange = onChange }
@@ -136,33 +44,6 @@ class PressableModifier(val onChange: (Boolean) -> Unit) : ModifierNodeElement<P
     override fun equals(other: Any?): Boolean = other is PressableModifier && other.onChange === onChange
 }
 class PressableNode(var onChange: (Boolean) -> Unit) : Modifier.Node()
-
-// OffsetModifier / OffsetNode retired — `Modifier.offset(...)` and
-// `Modifier.absoluteOffset(...)` come from upstream vendored
-// `androidx.compose.foundation.layout.Offset.kt`, whose private OffsetNode /
-// OffsetPxNode classes participate in the LayoutModifierNode chain.
-
-// ==================
-// MARK: Focus + keyboard input
-// ==================
-
-/* Marks the node as a focus target. */
-class FocusableModifier(val onFocusChanged: (Boolean) -> Unit) : ModifierNodeElement<FocusableNode>() {
-    override fun create() = FocusableNode(onFocusChanged)
-    override fun update(node: FocusableNode) { node.onFocusChanged = onFocusChanged }
-    override fun hashCode(): Int = onFocusChanged.hashCode()
-    override fun equals(other: Any?): Boolean = other is FocusableModifier && other.onFocusChanged === onFocusChanged
-}
-class FocusableNode(var onFocusChanged: (Boolean) -> Unit) : Modifier.Node()
-
-// `OnKeyEventModifier` + `OnKeyEventNode` were retired when
-// `androidx.compose.ui.input.key.KeyInputModifier.kt` got vendored —
-// the vendored file ships the official-shape `Modifier.onKeyEvent {}`
-// and `Modifier.onPreviewKeyEvent {}` extensions + a `private
-// KeyInputElement` element + `internal KeyInputNode : KeyInputModifierNode`.
-// `the upstream LayoutNode.dispatchKeyEvent` walks the Modifier.Node chain for
-// every `KeyInputModifierNode` and calls its `onKeyEvent` method.
-
 
 class OnTextInputModifier(val handler: (String) -> Unit) : ModifierNodeElement<OnTextInputNode>() {
     override fun create() = OnTextInputNode(handler)
@@ -197,19 +78,6 @@ class OnDragNode(
     var onEnd: () -> Unit,
 ) : Modifier.Node()
 
-// `OnSizeChangedModifier` + `OnSizeChangedNode` were retired when
-// `androidx.compose.ui.layout.OnRemeasuredModifier.kt` got vendored —
-// the vendored file ships the official-shape pair (a `private
-// OnSizeChangedModifier` element + `internal OnSizeChangedNode :
-// Modifier.Node, MeasuredSizeAwareModifierNode`). The renderer reads
-// the new node via `nodes` chain in `the upstream LayoutNode.measure()`.
-
-
-// VerticalScroll / HorizontalScroll modifiers + nodes retired — Modifier.verticalScroll /
-// horizontalScroll are now the vendored upstream androidx.compose.foundation.Scroll (built on the
-// vendored Modifier.scrollable + ScrollState), driven by the PointerInputEventProcessor (mouse
-// wheel via MouseWheelScrollingLogic).
-
 class ClipModifier(val shape: Shape) : ModifierNodeElement<ClipNode>() {
     override fun create() = ClipNode(shape)
     override fun update(node: ClipNode) { node.shape = shape }
@@ -217,22 +85,6 @@ class ClipModifier(val shape: Shape) : ModifierNodeElement<ClipNode>() {
     override fun equals(other: Any?): Boolean = other is ClipModifier && other.shape == shape
 }
 class ClipNode(var shape: Shape) : Modifier.Node()
-
-class LayoutWeightModifier(val weight: Float, val fill: Boolean) : ModifierNodeElement<LayoutWeightNode>() {
-    override fun create() = LayoutWeightNode(weight, fill)
-    override fun update(node: LayoutWeightNode) { node.weight = weight; node.fill = fill }
-    override fun hashCode(): Int = weight.hashCode() * 31 + fill.hashCode()
-    override fun equals(other: Any?): Boolean = other is LayoutWeightModifier && other.weight == weight && other.fill == fill
-}
-class LayoutWeightNode(var weight: Float, var fill: Boolean) : Modifier.Node()
-
-class AlphaModifier(val alpha: Float) : ModifierNodeElement<AlphaNode>() {
-    override fun create() = AlphaNode(alpha)
-    override fun update(node: AlphaNode) { node.alpha = alpha }
-    override fun hashCode(): Int = alpha.hashCode()
-    override fun equals(other: Any?): Boolean = other is AlphaModifier && other.alpha == alpha
-}
-class AlphaNode(var alpha: Float) : Modifier.Node()
 
 // ==================
 // MARK: GraphicsLayerModifier
@@ -244,7 +96,7 @@ class AlphaNode(var alpha: Float) : Modifier.Node()
  * render-to-texture caching across frames. See `Modifier.graphicsLayer`
  * (in `androidx.compose.ui.graphics`) for the caching semantics.
  *
- * The renderer reads this element directly via the `the upstream LayoutNode.graphicsLayer`
+ * The renderer reads this element directly via the `LayoutNode.graphicsLayer`
  * `foldIn` over the chain; the paired [GraphicsLayerNode] lifecycle stays
  * dormant until the renderer rewrite drives it.
  */

@@ -28,8 +28,8 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   through `NativeTextCanvas.drawNativeText`), the DnD engine (`DragAndDropNode`
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
-- Counts: `core/src/commonMain` **100 → 57** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 774**.
+- Counts: `core/src/commonMain` **100 → 59** `.kt` (`.shim.kt` **30 → 8**),
+  `core/src/vendor` **591 → 780**.
 - Full **mingwX64** (SDL) + **macOS Skia** + **macOS `-Prenderer=sdl3`** graph is
   compile-green. All verification probes PASS (see [Verification](#verification)).
 
