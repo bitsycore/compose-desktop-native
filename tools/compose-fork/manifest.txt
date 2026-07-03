@@ -370,13 +370,13 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGridState.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGridState.kt
 
 # ── androidx.compose.foundation.pager ───────────────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/MeasuredPage.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/pager/MeasuredPage.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PageInfo.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PageInfo.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PageSize.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PageSize.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerLayoutInfo.kt              core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerLayoutInfo.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerScope.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerScope.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/LazyLayoutPager.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/pager/LazyLayoutPager.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/LazyLayoutSemanticState.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/pager/LazyLayoutSemanticState.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/MeasuredPage.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/pager/MeasuredPage.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/Pager.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/pager/Pager.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerBeyondBoundsModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerBeyondBoundsModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/PagerCacheWindowLogic.kt      core/src/vendor/common/kotlin/androidx/compose/foundation/pager/PagerCacheWindowLogic.kt
@@ -822,6 +822,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Experi
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/FilterQuality.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/FilterQuality.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Float16.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Float16.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt                core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsContext.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerScope.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerScope.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/ImageBitmap.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/InlineClassHelper.kt              core/src/vendor/common/kotlin/androidx/compose/ui/graphics/InlineClassHelper.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Interpolatable.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Interpolatable.kt
@@ -863,7 +864,6 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaCol
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt              core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerScope.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerScope.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
