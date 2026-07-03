@@ -7,11 +7,15 @@
 # Never hand-edit vendored files — change the manifest / ref and re-run sync.sh.
 
 # ── androidx.compose.animation ──────────────────────────────────────────────
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                                     core/src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt                     core/src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt                   core/src/vendor/common/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/EnterExitTransition.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/EnterExitTransition.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt  core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt               core/src/vendor/common/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
@@ -24,11 +28,7 @@ compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Tra
 compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt      core/src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
 compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.native.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/EnterExitTransition.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/EnterExitTransition.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt         core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt        core/src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
 # compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
@@ -167,7 +167,6 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 
 # ── androidx.compose.foundation.gestures ────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/AbstractScrollableNode.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/AbstractScrollableNode.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/AnchoredDraggable.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/AnchoredDraggable.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewRequestPriorityQueue.kt      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/BringIntoViewRequestPriorityQueue.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/ContentInViewNode.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/ContentInViewNode.kt
@@ -191,10 +190,11 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TrackpadScrollingLogic.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TrackpadScrollingLogic.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformGestureDetector.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/Transformable.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/Transformable.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformableState.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformableState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/UpdatableAnimationState.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/BringIntoViewSpec.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGestureDetector.native.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/AnchoredDraggable.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/AnchoredDraggable.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/TransformableState.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/TransformableState.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/DragGesture.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/DragGesture.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.native.kt
 
@@ -202,12 +202,12 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/g
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt
 
 # ── androidx.compose.foundation.gestures.snapping ───────────────────────────
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapFlingBehavior.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapFlingBehavior.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapLayoutInfoProvider.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapLayoutInfoProvider.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapPosition.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/LazyGridSnapLayoutInfoProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/LazyGridSnapLayoutInfoProvider.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/LazyListSnapLayoutInfoProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/LazyListSnapLayoutInfoProvider.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/PagerSnapLayoutInfoProvider.kt     core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/PagerSnapLayoutInfoProvider.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapFlingBehavior.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/SnapFlingBehavior.kt
 
 # ── androidx.compose.foundation.interaction ─────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/interaction/DragInteraction.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/interaction/DragInteraction.kt
