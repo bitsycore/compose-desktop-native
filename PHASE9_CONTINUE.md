@@ -117,9 +117,9 @@ silently does nothing, check these in order:
 
 | Metric | Start of Phase 9 | Now |
 | --- | ---: | ---: |
-| `core/src/commonMain/**/*.kt` | 100 | **60** |
-| `core/src/commonMain/**/*.shim.kt` | 30 | **18** |
-| `core/src/vendor/**/*.kt` | 591 | **748** |
+| `core/src/commonMain/**/*.kt` | 100 | **58** |
+| `core/src/commonMain/**/*.shim.kt` | 30 | **16** |
+| `core/src/vendor/**/*.kt` | 591 | **753** |
 | `core/src/nativeMain/**/*.kt` | 48 | **59** |
 
 Full mingwX64 (SDL) + macOS-Skia + macOS-sdl3 graph is compile-green.
@@ -143,7 +143,7 @@ Full mingwX64 (SDL) + macOS-Skia + macOS-sdl3 graph is compile-green.
 
 ## The remaining commonMain
 
-### 18 shims still in place
+### 16 shims still in place
 
 | Shim | Blocks / retires when… |
 | --- | --- |
