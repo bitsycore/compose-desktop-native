@@ -1294,6 +1294,9 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Typeface.
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.native.kt
 
 # ── androidx.compose.ui.text.input ──────────────────────────────────────────
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt      core/src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt
@@ -1302,15 +1305,12 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtil
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt          core/src/vendor/common/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt              core/src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextInputService.kt            core/src/vendor/common/kotlin/androidx/compose/ui/text/input/TextInputService.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
+compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextInputService.kt          core/src/vendor/common/kotlin/androidx/compose/ui/text/input/TextInputService.kt
-# compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt      core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt
 
 # ── androidx.compose.ui.text.internal ───────────────────────────────────────

@@ -66,7 +66,7 @@ internal object StubOwner : Owner {
 		override val density: Density = Density(1f, 1f)
 		override val semanticsOwner = androidx.compose.ui.semantics.SemanticsOwner()
 		override val textInputService = androidx.compose.ui.text.input.TextInputService(
-			object : androidx.compose.ui.text.input.PlatformTextInputService {})
+			androidx.compose.ui.text.input.NoOpPlatformTextInputService)
 		override fun sendKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean = false
 	}
 	override val hapticFeedBack: HapticFeedback = object : HapticFeedback {
@@ -118,7 +118,7 @@ internal object StubOwner : Owner {
 	override val density: Density = Density(1f, 1f)
 	@Suppress("DEPRECATION")
 	override val textInputService: TextInputService =
-		TextInputService(object : PlatformTextInputService {})
+		TextInputService(androidx.compose.ui.text.input.NoOpPlatformTextInputService)
 	override val softwareKeyboardController: SoftwareKeyboardController =
 		object : SoftwareKeyboardController {
 			override fun show() = Unit

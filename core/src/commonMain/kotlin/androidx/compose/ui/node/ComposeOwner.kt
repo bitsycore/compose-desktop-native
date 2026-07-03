@@ -186,7 +186,7 @@ internal class ComposeOwner(
 	override val rootForTest: RootForTest = object : RootForTest {
 		override val density: Density = this@ComposeOwner.density
 		override val semanticsOwner = SemanticsOwner()
-		override val textInputService = TextInputService(object : PlatformTextInputService {})
+		override val textInputService = TextInputService(androidx.compose.ui.text.input.NoOpPlatformTextInputService)
 		override fun sendKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean = false
 	}
 	override val hapticFeedBack: HapticFeedback = object : HapticFeedback {
@@ -236,7 +236,7 @@ internal class ComposeOwner(
 	override val autofill: Autofill? = null
 	override val autofillManager: AutofillManager? = null
 	@Suppress("DEPRECATION")
-	override val textInputService: TextInputService = TextInputService(object : PlatformTextInputService {})
+	override val textInputService: TextInputService = TextInputService(androidx.compose.ui.text.input.NoOpPlatformTextInputService)
 	override val softwareKeyboardController: SoftwareKeyboardController =
 		object : SoftwareKeyboardController {
 			override fun show() = Unit
