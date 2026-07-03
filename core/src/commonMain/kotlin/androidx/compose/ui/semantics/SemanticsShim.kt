@@ -222,3 +222,39 @@ fun SemanticsPropertyReceiver.indexForKey(mapping: (Any) -> Int) = Unit
 fun SemanticsPropertyReceiver.scrollToIndex(label: String? = null, action: (Int) -> Boolean) = Unit
 
 fun SemanticsPropertyReceiver.getScrollViewportLength(label: String? = null, action: (() -> Float?)) = Unit
+
+// ============
+//  Text semantics — used by vendored foundation.text.modifiers/TextStringSimpleNode.
+//  Accept-and-discard (no a11y backend).
+
+var SemanticsPropertyReceiver.text: androidx.compose.ui.text.AnnotatedString
+	get() = error("text is write-only in this semantics shim")
+	set(value) = Unit
+
+var SemanticsPropertyReceiver.textSubstitution: androidx.compose.ui.text.AnnotatedString
+	get() = error("textSubstitution is write-only in this semantics shim")
+	set(value) = Unit
+
+var SemanticsPropertyReceiver.isShowingTextSubstitution: Boolean
+	get() = false
+	set(value) = Unit
+
+fun SemanticsPropertyReceiver.getTextLayoutResult(
+	label: String? = null,
+	action: ((MutableList<androidx.compose.ui.text.TextLayoutResult>) -> Boolean)?,
+) = Unit
+
+fun SemanticsPropertyReceiver.setTextSubstitution(
+	label: String? = null,
+	action: ((androidx.compose.ui.text.AnnotatedString) -> Boolean)?,
+) = Unit
+
+fun SemanticsPropertyReceiver.showTextSubstitution(
+	label: String? = null,
+	action: ((Boolean) -> Boolean)?,
+) = Unit
+
+fun SemanticsPropertyReceiver.clearTextSubstitution(
+	label: String? = null,
+	action: (() -> Boolean)?,
+) = Unit
