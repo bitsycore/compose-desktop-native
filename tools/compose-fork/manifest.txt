@@ -1026,6 +1026,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt  
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt      core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt               core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
@@ -1046,7 +1047,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt               core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
@@ -1218,10 +1218,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsRegio
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.native.kt
 
 # ── androidx.compose.ui.spatial ─────────────────────────────────────────────
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectList.kt              core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectList.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectManager.kt           core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectManager.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt    core/src/vendor/common/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectList.kt              core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectList.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectManager.kt           core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt  core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RelativeLayoutBounds.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt    core/src/vendor/common/kotlin/androidx/compose/ui/spatial/ThrottledCallbacks.kt
 
 # ── androidx.compose.ui.state ───────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/state/ToggleableState.kt  core/src/vendor/common/kotlin/androidx/compose/ui/state/ToggleableState.kt
