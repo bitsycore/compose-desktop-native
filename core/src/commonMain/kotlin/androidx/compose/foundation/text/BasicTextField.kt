@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -119,7 +121,9 @@ fun BasicTextField(
     val color = if (textStyle.color == Color.Unspecified) Color.Black else textStyle.color
     val fontSize = if (textStyle.fontSize.isUnspecified) 16.sp else textStyle.fontSize
     val cursorColor = (cursorBrush as? androidx.compose.ui.graphics.SolidColor)?.value ?: Color.Black
-    var isFocused by remember { mutableStateOf(false) }
+    val vFocusSource = remember { MutableInteractionSource() }
+    val isFocused by vFocusSource.collectIsFocusedAsState()
+    LaunchedEffect(isFocused) { onFocusChanged(isFocused) }
     var cursorBlinkVisible by remember { mutableStateOf(true) }
     var dragAnchor by remember { mutableStateOf(-1) }
     var lastPressMs by remember { mutableStateOf(0L) }
@@ -227,10 +231,7 @@ fun BasicTextField(
             .onSizeChanged { fieldWidthPx = it.width }
             .onGloballyPositioned { fieldWinY = it.y }
             .clip(RectangleShape)
-            .focusable {
-                isFocused = it
-                onFocusChanged(it)
-            }
+            .focusable(interactionSource = vFocusSource)
             .onDrag(
                 onStart = { relX, relY ->
                     if (!enabled) return@onDrag

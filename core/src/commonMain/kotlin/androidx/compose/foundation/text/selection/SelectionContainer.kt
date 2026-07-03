@@ -1,5 +1,6 @@
 package androidx.compose.foundation.text.selection
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.kMultiClickMs
@@ -60,7 +61,7 @@ fun SelectionContainer(modifier: Modifier = Modifier, content: @Composable () ->
 		Box(
 			modifier = modifier
 				.onGloballyPositioned { vWinX = it.x; vWinY = it.y }
-				.focusable { }
+				.focusable(interactionSource = remember { MutableInteractionSource() })
 				.onKeyEvent { ev ->
 					val vK = ev
 					// Cmd on macOS, Ctrl on Windows / Linux. Match the produced

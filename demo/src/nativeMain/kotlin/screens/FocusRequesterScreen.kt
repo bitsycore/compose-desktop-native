@@ -59,7 +59,7 @@ internal fun FocusRequesterScreen() {
 						.size(120.dp, 60.dp)
 						.background(if (vFocusedA) vSecondary else vSurface, RoundedCornerShape(8.dp))
 						.focusRequester(vReqA)
-						.focusable(onFocusChanged = { vFocusedA = it }),
+						.onFocusChanged { vFocusedA = it.isFocused }.focusable(),
 				) {
 					Box(modifier = Modifier.padding(12.dp)) {
 						Text("Target A (${if (vFocusedA) "focused" else "idle"})", color = vOnSurface, fontSize = 14.sp)
@@ -70,7 +70,7 @@ internal fun FocusRequesterScreen() {
 						.size(120.dp, 60.dp)
 						.background(if (vFocusedB) vSecondary else vSurface, RoundedCornerShape(8.dp))
 						.focusRequester(vReqB)
-						.focusable(onFocusChanged = { vFocusedB = it }),
+						.onFocusChanged { vFocusedB = it.isFocused }.focusable(),
 				) {
 					Box(modifier = Modifier.padding(12.dp)) {
 						Text("Target B (${if (vFocusedB) "focused" else "idle"})", color = vOnSurface, fontSize = 14.sp)

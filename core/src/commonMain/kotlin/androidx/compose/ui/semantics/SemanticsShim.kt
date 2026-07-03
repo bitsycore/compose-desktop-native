@@ -143,3 +143,11 @@ class SemanticsConfiguration : SemanticsPropertyReceiver {
 	var isMergingSemanticsOfDescendants: Boolean = false
 	fun collapsePeer(peer: SemanticsConfiguration) {}
 }
+
+/* Action semantics used by vendored Clickable — accept-and-discard (no a11y backend). */
+fun SemanticsPropertyReceiver.onClick(label: String? = null, action: (() -> Boolean)?) = Unit
+fun SemanticsPropertyReceiver.onLongClick(label: String? = null, action: (() -> Boolean)?) = Unit
+fun SemanticsPropertyReceiver.disabled() = Unit
+
+/* requestFocus action semantics — used by vendored Focusable. Accept-and-discard. */
+fun SemanticsPropertyReceiver.requestFocus(label: String? = null, action: (() -> Boolean)?) = Unit
