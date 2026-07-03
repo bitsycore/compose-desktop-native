@@ -447,6 +447,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/UndoManager.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/text/UndoManager.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ValidatingOffsetMapping.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/ValidatingOffsetMapping.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/AutofillHighlight.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/AutofillHighlight.native.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuIcons.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/KeyMapping.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyMapping.native.kt
@@ -479,7 +480,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicText.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicText.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicTextField.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicTextField.native.kt
 # compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt           core/src/vendor/native/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuIcons.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CoreTextField.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/CoreTextField.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.native.kt
@@ -1280,6 +1280,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontSynth
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontVariation.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontVariation.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontWeight.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Typeface.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Typeface.kt
+compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt                           core/src/vendor/native/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt       core/src/vendor/common/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Font.kt                                         core/src/vendor/common/kotlin/androidx/compose/ui/text/font/Font.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontFamily.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamily.kt
@@ -1289,7 +1290,6 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/Typeface.
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.native.kt
-# compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.native.kt
 
