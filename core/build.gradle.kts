@@ -204,7 +204,10 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xcollection-literals",
-            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi"
+            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+            // Vendored code is upstream foundation/ui, which their build compiles with these
+            // module-level opt-ins (e.g. lazy-layout prefetch uses ExperimentalFoundationApi).
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
         )
     }
 }

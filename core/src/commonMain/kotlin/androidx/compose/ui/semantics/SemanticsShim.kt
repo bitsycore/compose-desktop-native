@@ -207,3 +207,18 @@ var SemanticsPropertyReceiver.isTraversalGroup: Boolean
 fun SemanticsPropertyReceiver.scrollBy(label: String? = null, action: ((x: Float, y: Float) -> Boolean)?) = Unit
 
 fun SemanticsPropertyReceiver.scrollByOffset(action: suspend (offset: androidx.compose.ui.geometry.Offset) -> androidx.compose.ui.geometry.Offset) = Unit
+
+// ============
+//  Lazy-layout semantics — used by vendored LazyLayoutSemantics. Accept-and-discard.
+
+class CollectionInfo(val rowCount: Int, val columnCount: Int)
+
+var SemanticsPropertyReceiver.collectionInfo: CollectionInfo
+	get() = error("collectionInfo is write-only in this semantics shim")
+	set(value) = Unit
+
+fun SemanticsPropertyReceiver.indexForKey(mapping: (Any) -> Int) = Unit
+
+fun SemanticsPropertyReceiver.scrollToIndex(label: String? = null, action: (Int) -> Boolean) = Unit
+
+fun SemanticsPropertyReceiver.getScrollViewportLength(label: String? = null, action: (() -> Float?)) = Unit
