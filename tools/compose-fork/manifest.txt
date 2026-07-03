@@ -756,7 +756,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/autofill/FillableData.ski
 # ── androidx.compose.ui.draganddrop ─────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDrop.kt         core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDrop.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt  core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropManager.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt   core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt     core/src/vendor/common/kotlin/androidx/compose/ui/draganddrop/DragAndDropNode.kt
 
 # ── androidx.compose.ui.draw ────────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/draw/Alpha.kt            core/src/vendor/common/kotlin/androidx/compose/ui/draw/Alpha.kt
