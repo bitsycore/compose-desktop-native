@@ -1386,13 +1386,13 @@ compose/ui/ui-util/src/nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHel
 compose/ui/ui-util/src/macosMain/kotlin/androidx/compose/ui/util/Trace.macos.kt                core/src/vendor/native/kotlin/androidx/compose/ui/util/Trace.native.kt
 
 # ── androidx.compose.ui.viewinterop ─────────────────────────────────────────
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropView.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropView.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt         core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropContainer.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropContainer.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropView.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropView.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.native.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropView.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropView.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt       core/src/vendor/common/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewFactoryHolder.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropContainer.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropContainer.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropPointerInput.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropView.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropView.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.native.kt
 
 # ── androidx.compose.ui.window ──────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Popup.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/window/Popup.kt
