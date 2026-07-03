@@ -16,7 +16,6 @@ import com.compose.desktop.native.element.OnPressedNode
 import com.compose.desktop.native.element.PressableNode
 import com.compose.desktop.native.element.SecondaryClickNode
 import com.compose.desktop.native.element.VerticalScrollNode
-import com.compose.desktop.native.input.PointerInputNode
 
 // ==================
 // MARK: ComposeRootHost
@@ -117,15 +116,9 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// inType: 0=Move 1=Press 2=Release ; inButton: 0=primary 1=secondary 2=tertiary
 	fun onPointer(inX: Float, inY: Float, inType: Int, inButton: Int) {
 		val vHit = hitTest(inX, inY)
-		val vPressed = inType != 2
-
-		// Pointer-input (gesture) delivery to every PointerInputNode on hit → root.
-		var pn = vHit
-		while (pn != null) {
-			val vAp = absOf(pn)
-			pn.nodes.headToTail { if (it is PointerInputNode) it.scope.deliverChange(Offset(inX - vAp.x, inY - vAp.y), vPressed, 0L) }
-			pn = pn.parent
-		}
+		// Gesture (pointerInput) delivery is now handled by the vendored
+		// PointerInputEventProcessor via onPointerRaw; B6a only routes the
+		// project click/press/drag/scroll modifiers below.
 
 		when (inType) {
 			0 -> {
