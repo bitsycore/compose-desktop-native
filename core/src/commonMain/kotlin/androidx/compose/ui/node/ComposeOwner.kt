@@ -283,9 +283,18 @@ internal class ComposeOwner(
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
-	// Modifier.Node coroutine scopes derive from this — hover's emitEnter/emitExit launch
-	// here. Use the SDL main dispatcher (installed by ComposeWindow, drained each frame).
-	override val coroutineContext: CoroutineContext = kotlinx.coroutines.Dispatchers.Main
+	// Drives node-level animations (scroll fling, animateScrollToItem, Animatable inside
+	// Modifier.Nodes). These call withFrameNanos on the MonotonicFrameClock in their coroutine
+	// scope, which derives from this owner's coroutineContext — so it MUST carry a frame clock,
+	// or every node animation hangs (e.g. mouse-wheel smooth scroll never applies). ComposeWindow
+	// pumps it once per frame via ComposeRootHost.sendAnimationFrame.
+	internal val animationFrameClock = androidx.compose.runtime.BroadcastFrameClock()
+
+	// Modifier.Node coroutine scopes derive from this — hover's emitEnter/emitExit launch here,
+	// and node animations await frames on animationFrameClock. Dispatcher is the SDL main
+	// dispatcher (installed by ComposeWindow, drained each frame).
+	override val coroutineContext: CoroutineContext =
+		kotlinx.coroutines.Dispatchers.Main + animationFrameClock
 	// End-of-apply-changes listeners — the focus system (FocusInvalidationManager) and other
 	// engine parts register here to defer work until changes are applied; without this the
 	// focus invalidation never flushes and requestFocus() (e.g. focus-on-click) never sticks.

@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 class LazyListState(initialFirstVisibleItemIndex: Int = 0) {
     // Internal — the project bridge to ScrollState; module-local. Upstream
     // LazyListState doesn't expose this field, so keep it off the public ABI.
-    internal val scrollState: ScrollState = ScrollState()
+    internal val scrollState: ScrollState = ScrollState(0)
 
     /* Bypass-the-mutex push of a pixel delta. Returns the delta actually
        consumed after clamping at edges. Matches ScrollableState's same-named

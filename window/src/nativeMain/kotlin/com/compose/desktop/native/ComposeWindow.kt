@@ -10,7 +10,6 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
-import com.compose.desktop.native.scroll.ScrollAnimator
 import com.compose.desktop.native.node.ComposeRootHost
 import androidx.compose.ui.res.currentImageLoader
 import com.compose.desktop.native.text.currentTextMeasurer
@@ -156,7 +155,7 @@ fun nativeComposeWindow(
                         host.onPointerRaw(event.event.x.toFloat(), event.event.y.toFloat(), vType, vBtn, SDL_GetTicks().toLong())
                     }
                     is AppEvent.MouseWheel -> {
-                        host.onWheel(event.x.toFloat(), event.y.toFloat(), event.deltaX, event.deltaY)
+                        host.onWheel(event.x.toFloat(), event.y.toFloat(), event.deltaX, event.deltaY, SDL_GetTicks().toLong())
                     }
                     // B6b — route keyboard + typed text to the focused node via the FocusOwner.
                     is AppEvent.Key -> host.dispatchKeyEvent(event.event)
@@ -165,8 +164,10 @@ fun nativeComposeWindow(
                 }
             }
 
+            // Advance node-level animations (scroll fling / animateScrollToItem) then drain the
+            // resumed continuations this same frame.
+            host.sendAnimationFrame(SDL_GetTicks().toLong() * 1_000_000L)
             mainDispatcher.drainPending()
-            ScrollAnimator.tick()
             com.compose.desktop.native.text.currentViewportHeight = backend.windowHeight
             com.compose.desktop.native.text.currentViewportWidth = backend.windowWidth
 

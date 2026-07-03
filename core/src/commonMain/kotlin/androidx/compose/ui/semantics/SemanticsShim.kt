@@ -181,3 +181,29 @@ fun SemanticsPropertyReceiver.onFillData(
 
 /* Marks a container as a radio-group-style single-selection group. Accept-and-discard. */
 fun SemanticsPropertyReceiver.selectableGroup() = Unit
+
+// ============
+//  Scroll semantics — used by vendored foundation Scroll.kt / AbstractScrollableNode.
+//  Accept-and-discard (no a11y backend); ScrollAxisRange is the real upstream shape.
+
+class ScrollAxisRange(
+	val value: () -> Float,
+	val maxValue: () -> Float,
+	val reverseScrolling: Boolean = false,
+)
+
+var SemanticsPropertyReceiver.verticalScrollAxisRange: ScrollAxisRange
+	get() = error("verticalScrollAxisRange is write-only in this semantics shim")
+	set(value) = Unit
+
+var SemanticsPropertyReceiver.horizontalScrollAxisRange: ScrollAxisRange
+	get() = error("horizontalScrollAxisRange is write-only in this semantics shim")
+	set(value) = Unit
+
+var SemanticsPropertyReceiver.isTraversalGroup: Boolean
+	get() = false
+	set(value) = Unit
+
+fun SemanticsPropertyReceiver.scrollBy(label: String? = null, action: ((x: Float, y: Float) -> Boolean)?) = Unit
+
+fun SemanticsPropertyReceiver.scrollByOffset(action: suspend (offset: androidx.compose.ui.geometry.Offset) -> androidx.compose.ui.geometry.Offset) = Unit

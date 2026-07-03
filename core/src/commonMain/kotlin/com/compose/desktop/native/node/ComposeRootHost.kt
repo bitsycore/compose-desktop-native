@@ -8,7 +8,6 @@ import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import com.compose.desktop.native.element.HorizontalScrollNode
 import com.compose.desktop.native.element.MiddleClickNode
 import androidx.compose.ui.node.requireLayoutNode
 import com.compose.desktop.native.element.OnDragNode
@@ -16,7 +15,6 @@ import com.compose.desktop.native.element.OnPressedNode
 import com.compose.desktop.native.element.OnTextInputNode
 import com.compose.desktop.native.element.PressableNode
 import com.compose.desktop.native.element.SecondaryClickNode
-import com.compose.desktop.native.element.VerticalScrollNode
 
 // ==================
 // MARK: ComposeRootHost
@@ -60,6 +58,12 @@ class ComposeRootHost(inDensity: Float = 1f) {
 
 	fun setConstraints(inWidth: Int, inHeight: Int) {
 		fOwner.setRootConstraints(Constraints.fixed(inWidth, inHeight))
+	}
+
+	// Pump the owner's node-animation frame clock (scroll fling / animateScrollToItem / node
+	// Animatables). Called once per frame by ComposeWindow with a monotonic nanos timestamp.
+	fun sendAnimationFrame(inNanos: Long) {
+		fOwner.animationFrameClock.sendFrame(inNanos)
 	}
 
 	fun measureAndLayout() {
@@ -199,13 +203,10 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		feedPointerToProcessor(fOwner, inType, inButton, inUptime, inX, inY)
 	}
 
-	fun onWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float) {
-		val vHit = hitTest(inX, inY)
-		val vVert = findUp<VerticalScrollNode>(vHit)?.second?.state
-		val vHorz = findUp<HorizontalScrollNode>(vHit)?.second?.state
-		if (vVert != null && inDeltaY != 0f) vVert.smoothScrollByPxInternal(-(inDeltaY * 50f).toInt())
-		else if (vHorz != null && inDeltaY != 0f) vHorz.smoothScrollByPxInternal(-(inDeltaY * 50f).toInt())
-		if (vHorz != null && inDeltaX != 0f) vHorz.smoothScrollByPxInternal(-(inDeltaX * 50f).toInt())
+	// Mouse wheel — feed a scroll PointerInputEvent to the processor so the vendored
+	// Modifier.scrollable (MouseWheelScrollingLogic) handles it, exactly like upstream.
+	fun onWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float, inUptime: Long) {
+		feedScrollToProcessor(fOwner, inX, inY, inDeltaX, inDeltaY, inUptime)
 	}
 }
 
@@ -223,4 +224,15 @@ internal expect fun feedPointerToProcessor(
 	inUptime: Long,
 	inX: Float,
 	inY: Float,
+)
+
+/* Builds a Scroll-type PointerInputEvent (scrollDelta) and drives the processor, so the vendored
+   Modifier.scrollable's MouseWheelScrollingLogic handles the wheel. nativeMain-only (ctor is native). */
+internal expect fun feedScrollToProcessor(
+	inOwner: androidx.compose.ui.node.ComposeOwner,
+	inX: Float,
+	inY: Float,
+	inDeltaX: Float,
+	inDeltaY: Float,
+	inUptime: Long,
 )

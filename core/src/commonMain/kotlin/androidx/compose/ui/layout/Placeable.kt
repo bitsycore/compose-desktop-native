@@ -136,6 +136,15 @@ abstract class Placeable : Measured {
 		open fun Ruler.current(@Suppress("UNUSED_PARAMETER") defaultValue: Float): Float = defaultValue
 
 		/**
+		 * Upstream `Placeable.PlacementScope.withMotionFrameOfReferencePlacement` — marks
+		 * placements inside [block] as excluded from motion tracking (scroll offset etc.).
+		 * Our renderer doesn't track a motion frame of reference, so just run the block.
+		 */
+		fun withMotionFrameOfReferencePlacement(block: PlacementScope.() -> Unit) {
+			block()
+		}
+
+		/**
 		 * Phase 4f: upstream-shape `place(x, y)` extension on Placeable.
 		 * Mirrors upstream `Placeable.kt` line 245. Our Placeable.placeAt
 		 * is a public 2-arg `(x: Int, y: Int)` instead of upstream's

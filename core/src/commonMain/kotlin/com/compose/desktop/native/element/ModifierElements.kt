@@ -205,86 +205,10 @@ class OnDragNode(
 // the new node via `nodes` chain in `the upstream LayoutNode.measure()`.
 
 
-// ==================
-// MARK: Scroll
-// ==================
-
-class VerticalScrollModifier(
-    val state: androidx.compose.foundation.ScrollState,
-) : ModifierNodeElement<VerticalScrollNode>() {
-    override fun create() = VerticalScrollNode(state)
-    override fun update(node: VerticalScrollNode) { node.state = state }
-    override fun hashCode(): Int = state.hashCode()
-    override fun equals(other: Any?): Boolean = other is VerticalScrollModifier && other.state === state
-}
-class VerticalScrollNode(
-    var state: androidx.compose.foundation.ScrollState,
-) : Modifier.Node(),
-    androidx.compose.ui.node.LayoutModifierNode,
-    DrawModifierNode {
-
-    override fun androidx.compose.ui.layout.MeasureScope.measure(
-        measurable: androidx.compose.ui.layout.Measurable,
-        constraints: androidx.compose.ui.unit.Constraints,
-    ): androidx.compose.ui.layout.MeasureResult {
-        // Content measures with UNBOUNDED height so it lays out its natural size;
-        // the modified node is constrained to the incoming viewport height and
-        // places the content shifted up by the current scroll offset.
-        val vChildConstraints = constraints.copy(maxHeight = androidx.compose.ui.unit.Constraints.Infinity)
-        val vPlaceable = measurable.measure(vChildConstraints)
-        val vViewportH = vPlaceable.height.coerceAtMost(constraints.maxHeight)
-        val vScrollRange = (vPlaceable.height - vViewportH).coerceAtLeast(0)
-        state.setMaxInternal(vScrollRange, vViewportH)
-        val vScrollY = state.value.coerceIn(0, vScrollRange)
-        return layout(vPlaceable.width, vViewportH) {
-            vPlaceable.placeRelative(0, -vScrollY)
-        }
-    }
-
-    override fun ContentDrawScope.draw() {
-        // Clip to the viewport so the scrolled-out overflow doesn't paint
-        // into siblings / outside the scroll box.
-        clipRect(left = 0f, top = 0f, right = size.width, bottom = size.height) {
-            this@draw.drawContent()
-        }
-    }
-}
-
-class HorizontalScrollModifier(
-    val state: androidx.compose.foundation.ScrollState,
-) : ModifierNodeElement<HorizontalScrollNode>() {
-    override fun create() = HorizontalScrollNode(state)
-    override fun update(node: HorizontalScrollNode) { node.state = state }
-    override fun hashCode(): Int = state.hashCode()
-    override fun equals(other: Any?): Boolean = other is HorizontalScrollModifier && other.state === state
-}
-class HorizontalScrollNode(
-    var state: androidx.compose.foundation.ScrollState,
-) : Modifier.Node(),
-    androidx.compose.ui.node.LayoutModifierNode,
-    DrawModifierNode {
-
-    override fun androidx.compose.ui.layout.MeasureScope.measure(
-        measurable: androidx.compose.ui.layout.Measurable,
-        constraints: androidx.compose.ui.unit.Constraints,
-    ): androidx.compose.ui.layout.MeasureResult {
-        val vChildConstraints = constraints.copy(maxWidth = androidx.compose.ui.unit.Constraints.Infinity)
-        val vPlaceable = measurable.measure(vChildConstraints)
-        val vViewportW = vPlaceable.width.coerceAtMost(constraints.maxWidth)
-        val vScrollRange = (vPlaceable.width - vViewportW).coerceAtLeast(0)
-        state.setMaxInternal(vScrollRange, vViewportW)
-        val vScrollX = state.value.coerceIn(0, vScrollRange)
-        return layout(vViewportW, vPlaceable.height) {
-            vPlaceable.placeRelative(-vScrollX, 0)
-        }
-    }
-
-    override fun ContentDrawScope.draw() {
-        clipRect(left = 0f, top = 0f, right = size.width, bottom = size.height) {
-            this@draw.drawContent()
-        }
-    }
-}
+// VerticalScroll / HorizontalScroll modifiers + nodes retired — Modifier.verticalScroll /
+// horizontalScroll are now the vendored upstream androidx.compose.foundation.Scroll (built on the
+// vendored Modifier.scrollable + ScrollState), driven by the PointerInputEventProcessor (mouse
+// wheel via MouseWheelScrollingLogic).
 
 class ClipModifier(val shape: Shape) : ModifierNodeElement<ClipNode>() {
     override fun create() = ClipNode(shape)

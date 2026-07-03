@@ -62,6 +62,21 @@ fun injectTextInput(inText: String) {
 	}
 }
 
+/* Test-only: push a synthetic mouse-wheel event at (inX,inY) with wheel deltas (inDeltaX,inDeltaY).
+   SDL convention: deltaY positive = wheel up. */
+@OptIn(ExperimentalForeignApi::class)
+fun injectWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float) {
+	memScoped {
+		val vEv = alloc<SDL_Event>()
+		vEv.type = SDL_EVENT_MOUSE_WHEEL
+		vEv.wheel.mouse_x = inX
+		vEv.wheel.mouse_y = inY
+		vEv.wheel.x = inDeltaX
+		vEv.wheel.y = inDeltaY
+		SDL_PushEvent(vEv.ptr)
+	}
+}
+
 /* Test-only: push a synthetic key event. inScancode is an SDL_SCANCODE_* value (e.g. 42=Backspace). */
 @OptIn(ExperimentalForeignApi::class)
 fun injectKey(inScancode: Int, inDown: Boolean) {

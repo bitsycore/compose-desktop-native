@@ -57,6 +57,12 @@ fun main(args: Array<String>) {
         runKeyTest()
         return
     }
+    // Verifies the vendored scroll system: a Column(verticalScroll) scrolls when wheel
+    // events are injected through the live pipeline (MouseWheelScrollingLogic).
+    if (args.any { it == "--scrolltest" }) {
+        runScrollTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -232,6 +238,43 @@ private fun runKeyTest() {
                     value = vText.value,
                     onValueChange = { vText.value = it },
                 )
+            }
+        }
+    }
+}
+
+/* Boots a tall Column wrapped in the vendored Modifier.verticalScroll, injects several wheel-down
+   events through the live SDL path (→ processor → MouseWheelScrollingLogic), and asserts the
+   ScrollState offset advanced — proving upstream scrolling works end-to-end. */
+private fun runScrollTest() {
+    val vScroll = androidx.compose.foundation.ScrollState(0)
+    nativeComposeWindow(
+        title = "scrolltest",
+        width = 400,
+        height = 300,
+        onFrame = { _, frameIndex ->
+            when {
+                frameIndex in 20..40 && frameIndex % 2 == 0 -> {
+                    com.compose.desktop.native.injectWheel(200f, 150f, 0f, -3f) // wheel down
+                    true
+                }
+                frameIndex == 90 -> {
+                    println("scrolltest: ScrollState.value=${vScroll.value} maxValue=${vScroll.maxValue}")
+                    println(
+                        if (vScroll.value > 0) "scrolltest: PASS (scrolled to ${vScroll.value}px)"
+                        else "scrolltest: FAIL (did not scroll)"
+                    )
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colors = darkColors()) {
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(vScroll)) {
+                repeat(40) { i ->
+                    Text("Scroll row $i — lorem ipsum dolor sit", color = Color.White, fontSize = 16.sp)
+                }
             }
         }
     }

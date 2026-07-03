@@ -73,3 +73,38 @@ internal actual fun feedPointerToProcessor(
 		PointerInputEvent(vType, inUptime, listOf(vData), buttons = vButtons, button = vButton)
 	)
 }
+
+// ==================
+// MARK: feedScrollToProcessor — native actual
+// ==================
+
+/* Builds a Scroll-type PointerInputEvent carrying scrollDelta and drives the processor. The
+   vendored Modifier.scrollable (MouseWheelScrollingLogic) consumes it. SDL wheel delta maps
+   directly to scrollDelta (wheel-down = SDL deltaY<0 → content scrolls down); magnitude is scaled
+   in Sdl3ScrollConfig (dp per notch). */
+internal actual fun feedScrollToProcessor(
+	inOwner: ComposeOwner,
+	inX: Float,
+	inY: Float,
+	inDeltaX: Float,
+	inDeltaY: Float,
+	inUptime: Long,
+) {
+	val vPos = Offset(inX, inY)
+	val vData = PointerInputEventData(
+		id = PointerId(0L),
+		uptime = inUptime,
+		positionOnScreen = vPos,
+		position = vPos,
+		down = false,
+		pressure = 0f,
+		type = PointerType.Mouse,
+		activeHover = false,
+		scrollDelta = Offset(inDeltaX, inDeltaY),
+		scaleGestureFactor = 1f,
+		panGestureOffset = Offset.Zero,
+	)
+	inOwner.processPointerInput(
+		PointerInputEvent(PointerEventType.Scroll, inUptime, listOf(vData))
+	)
+}
