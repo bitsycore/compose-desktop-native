@@ -8,13 +8,16 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.ResolvedTextDirection
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isUnspecified
+import com.compose.desktop.native.text.NativeTextCanvas
 import com.compose.desktop.native.text.currentTextMeasurer
 import kotlin.math.max
 
@@ -168,9 +171,42 @@ internal class SdlParagraph(
 	): TextRange = TextRange.Zero
 
 	// ============
-	//  Paint — Phase 1 no-op (MultiParagraph still paints via the project text path).
+	//  Paint — Phase 2. Route through NativeTextCanvas.drawNativeText using the
+	//  paragraph's already-computed wrap so no re-measure happens at draw time.
+	//  Shadow / textDecoration / drawStyle / blendMode aren't wired yet (SDL text
+	//  path draws opaque glyphs; those are accept-and-ignore).
+
+	private fun paintCore(
+		inCanvas: Canvas,
+		inColor: Color,
+		@Suppress("UNUSED_PARAMETER") inShadow: Shadow?,
+		@Suppress("UNUSED_PARAMETER") inDecoration: TextDecoration?,
+		@Suppress("UNUSED_PARAMETER") inDrawStyle: DrawStyle?,
+		@Suppress("UNUSED_PARAMETER") inBlendMode: BlendMode,
+	) {
+		val vNative = inCanvas as? NativeTextCanvas ?: return
+		val vEffectiveColor = if (inColor == Color.Unspecified) (style.color.takeIf { it != Color.Unspecified } ?: Color.Black) else inColor
+		val vAlign = style.textAlign ?: TextAlign.Start
+		vNative.drawNativeText(
+			inText = text,
+			inSpans = null,
+			inX = 0f,
+			inY = 0f,
+			inBoxWidth = width,
+			inBoxHeight = height,
+			inColor = vEffectiveColor,
+			inFontSizePx = fontPx,
+			inTextAlign = vAlign,
+			inSoftWrap = maxWidthPx != Int.MAX_VALUE,
+			inFontFamily = family,
+			inFontVariations = null,
+		)
+	}
+
 	@Deprecated("Use the new paint function that takes canvas as the only required parameter.", level = DeprecationLevel.HIDDEN)
-	override fun paint(canvas: Canvas, color: Color, shadow: Shadow?, textDecoration: TextDecoration?) {}
+	override fun paint(canvas: Canvas, color: Color, shadow: Shadow?, textDecoration: TextDecoration?) {
+		paintCore(canvas, color, shadow, textDecoration, null, BlendMode.SrcOver)
+	}
 
 	override fun paint(
 		canvas: Canvas,
@@ -179,7 +215,9 @@ internal class SdlParagraph(
 		textDecoration: TextDecoration?,
 		drawStyle: DrawStyle?,
 		blendMode: BlendMode,
-	) {}
+	) {
+		paintCore(canvas, color, shadow, textDecoration, drawStyle, blendMode)
+	}
 
 	override fun paint(
 		canvas: Canvas,
@@ -189,5 +227,12 @@ internal class SdlParagraph(
 		textDecoration: TextDecoration?,
 		drawStyle: DrawStyle?,
 		blendMode: BlendMode,
-	) {}
+	) {
+		// Reduce brush to the SolidColor case (SDL text path is solid-color only);
+		// non-SolidColor brushes fall back to the style's color.
+		val vColor = (brush as? SolidColor)?.value?.let {
+			if (alpha.isFinite()) it.copy(alpha = it.alpha * alpha) else it
+		} ?: style.color
+		paintCore(canvas, vColor, shadow, textDecoration, drawStyle, blendMode)
+	}
 }
