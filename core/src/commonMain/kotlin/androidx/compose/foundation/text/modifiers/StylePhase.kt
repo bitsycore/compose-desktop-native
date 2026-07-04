@@ -6,21 +6,25 @@ import androidx.compose.ui.text.TextStyle
 import kotlin.jvm.JvmInline
 
 // ==================
-// MARK: StylePhase / TextStyleProviderNode / inheritedTextStyle — project subset
+// MARK: StylePhase / inheritedTextStyle — project stub
 // ==================
+//
+// Byte-identical value class extracted from upstream `TextStyleProviderNode.kt`
+// (foundation/text/modifiers). We can't vendor that file because it imports
+// `androidx.compose.foundation.style.OuterNodeKey` + `StyleOuterNode` from
+// `foundation/style/` (7 files, ~7000L — a whole experimental style system).
+// Vendored TextStringSimpleNode / TextAnnotatedStringNode call
+// `inheritedTextStyle(phase, fallback)` and read `StylePhase` values, so this
+// stub keeps the vendored files compiling.
+//
+// `inheritedTextStyle` short-circuits to `fallback` — no upstream style
+// provider ancestry is traversed. A wrapping `Modifier.style { ... }` doesn't
+// propagate a `TextStyle` — but nothing in our tree constructs one anyway.
+//
+// TODO: delete this file once `foundation.style.` (StyleOuterNode + OuterNodeKey
+// + StyleScope + StyleProperties + StyleModifier + StyleAnimations + StyleState
+// + ResolvedStyle) vendors cleanly.
 
-/*
- Extracted from upstream foundation.text.modifiers.TextStyleProviderNode.kt (which
- depends on foundation.style.StyleOuterNode + OuterNodeKey — 1000+L style module
- we don't vendor). The vendored TextStringSimpleNode / TextAnnotatedStringNode
- reference StylePhase.Layout / Draw / All and call inheritedTextStyle to resolve
- style inheritance up the tree.
-
- Since foundation.style is unvendored, no `StyleOuterNode` ever mounts and
- `inheritedTextStyle` short-circuits to `fallback`. Text styles are set inline
- on each Text() call — no ambient style inheritance. Byte-identical value class
- shape matches upstream so vendored files link.
-*/
 @JvmInline
 internal value class StylePhase private constructor(internal val value: Int) {
 	companion object {
@@ -34,9 +38,6 @@ internal interface TextStyleProviderNode : TraversableNode {
 	fun computeInheritedTextStyle(phase: StylePhase, fallback: TextStyle): TextStyle
 }
 
-// Short-circuit: no StyleOuterNode ancestors exist because foundation.style isn't
-// vendored. Vendored TextStringSimple/TextAnnotatedString nodes call this to
-// resolve inherited style; we always return `fallback` (their explicit style).
 internal fun DelegatableNode.inheritedTextStyle(
 	@Suppress("UNUSED_PARAMETER") phase: StylePhase,
 	fallback: TextStyle,
