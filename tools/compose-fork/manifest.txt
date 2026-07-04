@@ -476,6 +476,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicTextField.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicTextField.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuIcons.native.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CoreTextField.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/CoreTextField.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
@@ -486,7 +487,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldScrollState.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldScrollState.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextPointerIcon.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/UndoManager.native.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/UndoManager.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/text/StringHelpers.nonJvm.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldDelegate.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldDelegate.native.kt
@@ -579,81 +579,81 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/internal/undo/UndoManager.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/internal/undo/UndoManager.kt
 
 # ── androidx.compose.foundation.text.l10n ───────────────────────────────────
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Af.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Af.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Am.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Am.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ar.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ar.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/As.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/As.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Az.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Az.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Be.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Be.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bg.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bg.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bn.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bs.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bs.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ca.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ca.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Cs.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Cs.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Da.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Da.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/De.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/De.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/El.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/El.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/En.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/En.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Es.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Es.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Et.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Et.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Eu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Eu.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fa.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fa.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fi.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fr.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Gl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Gl.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Gu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Gu.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hi.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hr.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hu.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hy.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hy.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/In.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/In.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Is.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Is.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/It.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/It.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Iw.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Iw.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ja.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ja.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ka.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ka.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Kk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Kk.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Km.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Km.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Kn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Kn.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ko.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ko.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ky.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ky.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lo.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lo.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lt.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lt.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lv.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lv.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mk.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ml.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ml.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mn.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mr.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ms.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ms.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/My.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/My.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Nb.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Nb.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ne.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ne.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Nl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Nl.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Or.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Or.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pa.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pa.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pl.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pt.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pt.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ro.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ro.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ru.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ru.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Si.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Si.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sk.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sl.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sq.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sq.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sr.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sv.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sv.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sw.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sw.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ta.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ta.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Te.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Te.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Th.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Th.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Tl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Tl.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Tr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Tr.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Translations.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Translations.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Uk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Uk.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ur.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ur.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Uz.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Uz.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Vi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Vi.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Zh.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Zh.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Zu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Zu.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Af.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Af.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Am.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Am.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ar.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ar.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/As.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/As.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Az.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Az.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Be.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Be.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bg.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bg.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bn.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Bs.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Bs.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ca.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ca.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Cs.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Cs.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Da.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Da.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/De.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/De.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/El.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/El.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/En.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/En.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Es.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Es.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Et.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Et.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Eu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Eu.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fa.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fa.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fi.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Fr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Fr.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Gl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Gl.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Gu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Gu.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hi.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hr.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hu.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Hy.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Hy.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/In.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/In.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Is.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Is.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/It.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/It.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Iw.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Iw.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ja.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ja.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ka.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ka.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Kk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Kk.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Km.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Km.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Kn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Kn.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ko.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ko.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ky.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ky.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lo.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lo.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lt.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lt.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Lv.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Lv.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mk.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ml.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ml.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mn.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mn.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Mr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Mr.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ms.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ms.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/My.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/My.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Nb.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Nb.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ne.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ne.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Nl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Nl.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Or.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Or.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pa.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pa.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pl.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Pt.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Pt.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ro.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ro.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ru.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ru.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Si.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Si.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sk.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sl.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sq.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sq.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sr.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sv.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sv.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Sw.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Sw.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ta.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ta.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Te.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Te.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Th.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Th.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Tl.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Tl.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Tr.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Tr.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Translations.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Translations.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Uk.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Uk.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Ur.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Ur.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Uz.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Uz.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Vi.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Vi.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Zh.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Zh.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/l10n/Zu.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/text/l10n/Zu.kt
 
 # ── androidx.compose.foundation.text.modifiers ──────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/InlineDensity.kt
