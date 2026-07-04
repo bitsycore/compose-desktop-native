@@ -1399,10 +1399,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewFa
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.native.kt
 
 # ── androidx.compose.ui.window ──────────────────────────────────────────────
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Popup.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/window/Popup.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt            core/src/vendor/common/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/OnBackClickEventHandler.kt           core/src/vendor/native/kotlin/androidx/compose/ui/window/OnBackClickEventHandler.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt  core/src/vendor/native/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Dialog.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/window/Dialog.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Popup.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/window/Popup.native.kt
