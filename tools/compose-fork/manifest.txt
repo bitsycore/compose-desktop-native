@@ -1136,6 +1136,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AtomicInt.kt   
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/DebugUtils.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/DebugUtils.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InspectableValue.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/platform/InspectableValue.kt
@@ -1176,7 +1177,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInpu
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/platform/Subcomposition.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt

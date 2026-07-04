@@ -136,11 +136,13 @@ val platformClipboardManager: ClipboardManager get() = sharedClipboardManager
 /** Non-composable access to the SDL3-backed [Clipboard] (suspend API). */
 val platformClipboard: Clipboard get() = sharedClipboard
 
-// ============
-//  Actuals for `internal expect val` in commonMain ClipboardLocals.kt.
+// Non-composable defaults consumed by ComposeWindow's `CompositionLocalProvider`
+// wrap (used to seed `LocalClipboardManager` / `LocalClipboard` — upstream's
+// vendored CompositionLocals.kt defaults for both throw noLocalProvidedFor).
+val defaultClipboardManager: ClipboardManager get() = sharedClipboardManager
+val defaultClipboard: Clipboard get() = sharedClipboard
 
-internal actual val defaultClipboardManager: ClipboardManager
-	get() = sharedClipboardManager
-
-internal actual val defaultClipboard: Clipboard
-	get() = sharedClipboard
+/** Project alias — non-composable event handlers / coroutines reach the SDL3
+ *  clipboard through this. Inside composition prefer `LocalClipboardManager.current`. */
+@Suppress("DEPRECATION")
+val currentClipboard: ClipboardManager get() = sharedClipboardManager

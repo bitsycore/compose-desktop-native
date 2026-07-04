@@ -16,4 +16,4 @@ package androidx.compose.ui.text.font
  * `FontFamilyResolver.kt` inside the sealed hierarchy. Native `actual` returns
  * one such instance built from a [SdlPlatformFontLoader].
  */
-internal expect val projectFontFamilyResolver: FontFamily.Resolver
+expect val projectFontFamilyResolver: FontFamily.Resolver

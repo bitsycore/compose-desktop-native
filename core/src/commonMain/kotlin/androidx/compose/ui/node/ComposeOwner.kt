@@ -286,7 +286,7 @@ internal class ComposeOwner(
 	override fun localToScreen(localPosition: Offset): Offset = localPosition
 	override fun requestAutofill(node: LayoutNode) = Unit
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
-	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
+	override val viewConfiguration: ViewConfiguration = com.compose.desktop.native.platform.DefaultViewConfiguration
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
 	// Drives node-level animations (scroll fling, animateScrollToItem, Animatable inside
 	// Modifier.Nodes). These call withFrameNanos on the MonotonicFrameClock in their coroutine

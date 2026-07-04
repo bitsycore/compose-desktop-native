@@ -67,14 +67,12 @@ fun nativeComposeWindow(
     currentTextMeasurer = renderBackend.textMeasurer
     currentImageLoader = renderBackend.imageLoader
 
-    // Wire the URI handler default (LocalUriHandler.current inside vendored
-    // TextLinkScope reads this). Routes to SDL_OpenURL — opens browser / mail
+    // Project SDL3 UriHandler — LocalUriHandler.current inside vendored
+    // TextLinkScope reads this. Routes to SDL_OpenURL — opens browser / mail
     // client / file manager on macOS, Linux, and Windows.
-    androidx.compose.ui.platform.installDefaultUriHandler(
-        object : androidx.compose.ui.platform.UriHandler {
-            override fun openUri(uri: String) { openUrl(uri) }
-        }
-    )
+    val sdlUriHandler = object : androidx.compose.ui.platform.UriHandler {
+        override fun openUri(uri: String) { openUrl(uri) }
+    }
 
     // Install the Main dispatcher BEFORE creating the owner: ComposeOwner captures
     // Dispatchers.Main eagerly for its per-node coroutine scopes (the pointerInput /
@@ -111,8 +109,32 @@ fun nativeComposeWindow(
             CompositionLocalProvider(
                 LocalComposeNativeWindow provides composeWindow,
                 LocalPopupHost provides popupHost,
-                // Real focus: the ComposeOwner's FocusOwner (a FocusManager) via the host.
-                androidx.compose.ui.focus.LocalFocusManager provides host.focusManager,
+                // Upstream vendored CompositionLocals.kt declares each of these as
+                // `staticCompositionLocalOf<T> { noLocalProvidedFor("…") }` — reading
+                // one without a Provider throws. Seed them all here from the ComposeOwner
+                // (density / focus / graphics / input / text / clipboard / …) so any
+                // vendored composable reading them off a window succeeds.
+                androidx.compose.ui.platform.LocalDensity provides host.density,
+                androidx.compose.ui.platform.LocalLayoutDirection provides host.layoutDirection,
+                androidx.compose.ui.platform.LocalFocusManager provides host.focusManager,
+                androidx.compose.ui.platform.LocalGraphicsContext provides host.graphicsContext,
+                androidx.compose.ui.platform.LocalViewConfiguration provides host.viewConfiguration,
+                androidx.compose.ui.platform.LocalInputModeManager provides host.inputModeManager,
+                androidx.compose.ui.platform.LocalHapticFeedback provides host.hapticFeedback,
+                androidx.compose.ui.platform.LocalTextToolbar provides host.textToolbar,
+                androidx.compose.ui.platform.LocalWindowInfo provides host.windowInfo,
+                androidx.compose.ui.platform.LocalSoftwareKeyboardController provides host.softwareKeyboardController,
+                @Suppress("DEPRECATION")
+                androidx.compose.ui.platform.LocalTextInputService provides host.textInputService,
+                @Suppress("DEPRECATION")
+                androidx.compose.ui.platform.LocalClipboardManager provides
+                    androidx.compose.ui.platform.defaultClipboardManager,
+                androidx.compose.ui.platform.LocalClipboard provides
+                    androidx.compose.ui.platform.defaultClipboard,
+                androidx.compose.ui.platform.LocalFontFamilyResolver provides
+                    androidx.compose.ui.text.font.projectFontFamilyResolver,
+                androidx.compose.ui.platform.LocalUriHandler provides sdlUriHandler,
+                androidx.compose.ui.platform.LocalAutofillTree provides host.autofillTree,
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     with(windowScope) { content() }

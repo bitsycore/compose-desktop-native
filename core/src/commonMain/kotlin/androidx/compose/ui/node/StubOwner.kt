@@ -203,7 +203,7 @@ internal object StubOwner : Owner {
 	override fun onLayoutNodeDeactivated(layoutNode: LayoutNode) = Unit
 	override fun onInteropViewLayoutChange(view: InteropView) = Unit
 	override val measureIteration: Long = 0L
-	override val viewConfiguration: ViewConfiguration = androidx.compose.ui.platform.DefaultViewConfiguration
+	override val viewConfiguration: ViewConfiguration = com.compose.desktop.native.platform.DefaultViewConfiguration
 	override val snapshotObserver: OwnerSnapshotObserver = OwnerSnapshotObserver { it() }
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
 	override val coroutineContext: CoroutineContext = EmptyCoroutineContext

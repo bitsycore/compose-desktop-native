@@ -59,7 +59,7 @@ fun createFontFamilyResolver(): FontFamily.Resolver =
 
 /** Actual for `internal expect val projectFontFamilyResolver` — a shared instance
  *  used by `LocalFontFamilyResolver`'s composition-local default. */
-internal actual val projectFontFamilyResolver: FontFamily.Resolver = createFontFamilyResolver()
+actual val projectFontFamilyResolver: FontFamily.Resolver = createFontFamilyResolver()
 
 /** Bridge for the deprecated `Font.ResourceLoader → FontFamily.Resolver` path
  *  (upstream declares this in `DelegatingFontLoaderForDeprecatedUsage.kt`).

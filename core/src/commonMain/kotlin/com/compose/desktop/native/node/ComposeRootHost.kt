@@ -78,6 +78,28 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	val focusManager: androidx.compose.ui.focus.FocusManager get() = fOwner.focusOwner
 
 	// ==================
+	// MARK: Owner-backed values for the composition-locals seed
+	// ==================
+	// Upstream vendored `CompositionLocals.kt` defaults throw when read without a
+	// Provider; ComposeWindow wraps setContent in a CompositionLocalProvider whose
+	// values come from the ComposeOwner attached below. These accessors expose the
+	// right fields without leaking the `internal Owner` interface across modules.
+	val density: androidx.compose.ui.unit.Density get() = fOwner.density
+	val layoutDirection: androidx.compose.ui.unit.LayoutDirection get() = fOwner.layoutDirection
+	val viewConfiguration: androidx.compose.ui.platform.ViewConfiguration get() = fOwner.viewConfiguration
+	val graphicsContext: androidx.compose.ui.graphics.GraphicsContext get() = fOwner.graphicsContext
+	val inputModeManager: androidx.compose.ui.input.InputModeManager get() = fOwner.inputModeManager
+	val hapticFeedback: androidx.compose.ui.hapticfeedback.HapticFeedback get() = fOwner.hapticFeedBack
+	val textToolbar: androidx.compose.ui.platform.TextToolbar get() = fOwner.textToolbar
+	val windowInfo: androidx.compose.ui.platform.WindowInfo get() = fOwner.windowInfo
+	val softwareKeyboardController: androidx.compose.ui.platform.SoftwareKeyboardController
+		get() = fOwner.softwareKeyboardController
+	@Suppress("DEPRECATION")
+	val textInputService: androidx.compose.ui.text.input.TextInputService get() = fOwner.textInputService
+	@Suppress("DEPRECATION")
+	val autofillTree: androidx.compose.ui.autofill.AutofillTree get() = fOwner.autofillTree
+
+	// ==================
 	// MARK: Key / text input (B6b) — route to the focused node via the FocusOwner
 	// ==================
 
