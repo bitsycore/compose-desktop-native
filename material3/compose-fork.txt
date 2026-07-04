@@ -1,0 +1,375 @@
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :material3.
+# Re-sync with: tools/compose-fork/sync.sh :material3   (or `sync.sh` for every module).
+# Upstream ref pinned in tools/compose-fork/compose-ref.txt.
+#
+# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
+# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
+# candidate. Never hand-edit the vendored files — change this manifest / the ref
+# and re-run sync.sh.
+
+# ── androidx.compose.material3 ──────────────────────────────────────────────
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ComposeMaterial3Flags.kt                      src/vendor/common/kotlin/androidx/compose/material3/ComposeMaterial3Flags.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ExperimentalMaterial3Api.kt                   src/vendor/common/kotlin/androidx/compose/material3/ExperimentalMaterial3Api.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ExperimentalMaterial3ComponentOverrideApi.kt  src/vendor/common/kotlin/androidx/compose/material3/ExperimentalMaterial3ComponentOverrideApi.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ExperimentalMaterial3ExpressiveApi.kt         src/vendor/common/kotlin/androidx/compose/material3/ExperimentalMaterial3ExpressiveApi.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AlertDialog.kt                              src/vendor/common/kotlin/androidx/compose/material3/AlertDialog.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBar.kt                                   src/vendor/common/kotlin/androidx/compose/material3/AppBar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBarColumn.kt                             src/vendor/common/kotlin/androidx/compose/material3/AppBarColumn.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBarDsl.kt                                src/vendor/common/kotlin/androidx/compose/material3/AppBarDsl.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBarRow.kt                                src/vendor/common/kotlin/androidx/compose/material3/AppBarRow.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Badge.kt                                    src/vendor/common/kotlin/androidx/compose/material3/Badge.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/BottomSheet.kt                              src/vendor/common/kotlin/androidx/compose/material3/BottomSheet.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/BottomSheetScaffold.kt                      src/vendor/common/kotlin/androidx/compose/material3/BottomSheetScaffold.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Button.kt                                   src/vendor/common/kotlin/androidx/compose/material3/Button.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ButtonGroup.kt                              src/vendor/common/kotlin/androidx/compose/material3/ButtonGroup.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/CalendarLocale.kt                           src/vendor/common/kotlin/androidx/compose/material3/CalendarLocale.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Card.kt                                     src/vendor/common/kotlin/androidx/compose/material3/Card.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Checkbox.kt                                 src/vendor/common/kotlin/androidx/compose/material3/Checkbox.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Chip.kt                                     src/vendor/common/kotlin/androidx/compose/material3/Chip.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ColorScheme.kt                              src/vendor/common/kotlin/androidx/compose/material3/ColorScheme.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ContentColor.kt                             src/vendor/common/kotlin/androidx/compose/material3/ContentColor.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DateInput.kt                                src/vendor/common/kotlin/androidx/compose/material3/DateInput.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DatePicker.kt                               src/vendor/common/kotlin/androidx/compose/material3/DatePicker.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DatePickerDialog.kt                         src/vendor/common/kotlin/androidx/compose/material3/DatePickerDialog.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DateRangeInput.kt                           src/vendor/common/kotlin/androidx/compose/material3/DateRangeInput.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DateRangePicker.kt                          src/vendor/common/kotlin/androidx/compose/material3/DateRangePicker.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Divider.kt                                  src/vendor/common/kotlin/androidx/compose/material3/Divider.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DragHandle.kt                               src/vendor/common/kotlin/androidx/compose/material3/DragHandle.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ExposedDropdownMenu.kt                      src/vendor/common/kotlin/androidx/compose/material3/ExposedDropdownMenu.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingActionButton.kt                     src/vendor/common/kotlin/androidx/compose/material3/FloatingActionButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingActionButtonMenu.kt                 src/vendor/common/kotlin/androidx/compose/material3/FloatingActionButtonMenu.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingToolbar.kt                          src/vendor/common/kotlin/androidx/compose/material3/FloatingToolbar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/HorizontalCenterOptically.kt                src/vendor/common/kotlin/androidx/compose/material3/HorizontalCenterOptically.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Icon.kt                                     src/vendor/common/kotlin/androidx/compose/material3/Icon.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/IconButton.kt                               src/vendor/common/kotlin/androidx/compose/material3/IconButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/IconButtonDefaults.kt                       src/vendor/common/kotlin/androidx/compose/material3/IconButtonDefaults.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/InteractiveComponentSize.kt                 src/vendor/common/kotlin/androidx/compose/material3/InteractiveComponentSize.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Label.kt                                    src/vendor/common/kotlin/androidx/compose/material3/Label.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ListItem.kt                                 src/vendor/common/kotlin/androidx/compose/material3/ListItem.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ListItemDefaults.kt                         src/vendor/common/kotlin/androidx/compose/material3/ListItemDefaults.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/LoadingIndicator.kt                         src/vendor/common/kotlin/androidx/compose/material3/LoadingIndicator.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Material3ExpressiveApi.kt                   src/vendor/common/kotlin/androidx/compose/material3/Material3ExpressiveApi.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MaterialShapes.kt                           src/vendor/common/kotlin/androidx/compose/material3/MaterialShapes.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MaterialTheme.kt                            src/vendor/common/kotlin/androidx/compose/material3/MaterialTheme.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Menu.kt                                     src/vendor/common/kotlin/androidx/compose/material3/Menu.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MenuDefaults.kt                             src/vendor/common/kotlin/androidx/compose/material3/MenuDefaults.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ModalBottomSheet.kt                         src/vendor/common/kotlin/androidx/compose/material3/ModalBottomSheet.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MotionScheme.kt                             src/vendor/common/kotlin/androidx/compose/material3/MotionScheme.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationBar.kt                            src/vendor/common/kotlin/androidx/compose/material3/NavigationBar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationDrawer.kt                         src/vendor/common/kotlin/androidx/compose/material3/NavigationDrawer.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationItem.kt                           src/vendor/common/kotlin/androidx/compose/material3/NavigationItem.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationRail.kt                           src/vendor/common/kotlin/androidx/compose/material3/NavigationRail.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/OutlinedTextField.kt                        src/vendor/common/kotlin/androidx/compose/material3/OutlinedTextField.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/PrecisionPointer.kt                         src/vendor/common/kotlin/androidx/compose/material3/PrecisionPointer.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ProgressIndicator.kt                        src/vendor/common/kotlin/androidx/compose/material3/ProgressIndicator.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/RadioButton.kt                              src/vendor/common/kotlin/androidx/compose/material3/RadioButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Ripple.kt                                   src/vendor/common/kotlin/androidx/compose/material3/Ripple.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Scaffold.kt                                 src/vendor/common/kotlin/androidx/compose/material3/Scaffold.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Scrim.kt                                    src/vendor/common/kotlin/androidx/compose/material3/Scrim.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ScrollField.kt                              src/vendor/common/kotlin/androidx/compose/material3/ScrollField.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Scrollbar.kt                                src/vendor/common/kotlin/androidx/compose/material3/Scrollbar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SearchBar.kt                                src/vendor/common/kotlin/androidx/compose/material3/SearchBar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SecureTextField.kt                          src/vendor/common/kotlin/androidx/compose/material3/SecureTextField.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SegmentedButton.kt                          src/vendor/common/kotlin/androidx/compose/material3/SegmentedButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Shapes.kt                                   src/vendor/common/kotlin/androidx/compose/material3/Shapes.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SheetDefaults.kt                            src/vendor/common/kotlin/androidx/compose/material3/SheetDefaults.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ShortNavigationBar.kt                       src/vendor/common/kotlin/androidx/compose/material3/ShortNavigationBar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Slider.kt                                   src/vendor/common/kotlin/androidx/compose/material3/Slider.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Snackbar.kt                                 src/vendor/common/kotlin/androidx/compose/material3/Snackbar.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SnackbarHost.kt                             src/vendor/common/kotlin/androidx/compose/material3/SnackbarHost.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SplitButton.kt                              src/vendor/common/kotlin/androidx/compose/material3/SplitButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Surface.kt                                  src/vendor/common/kotlin/androidx/compose/material3/Surface.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SwipeToDismissBox.kt                        src/vendor/common/kotlin/androidx/compose/material3/SwipeToDismissBox.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Switch.kt                                   src/vendor/common/kotlin/androidx/compose/material3/Switch.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Tab.kt                                      src/vendor/common/kotlin/androidx/compose/material3/Tab.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TabRow.kt                                   src/vendor/common/kotlin/androidx/compose/material3/TabRow.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Text.kt                                     src/vendor/common/kotlin/androidx/compose/material3/Text.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TextField.kt                                src/vendor/common/kotlin/androidx/compose/material3/TextField.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TextFieldDefaults.kt                        src/vendor/common/kotlin/androidx/compose/material3/TextFieldDefaults.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TimeFormat.kt                               src/vendor/common/kotlin/androidx/compose/material3/TimeFormat.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TimePicker.kt                               src/vendor/common/kotlin/androidx/compose/material3/TimePicker.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TimePickerDialog.kt                         src/vendor/common/kotlin/androidx/compose/material3/TimePickerDialog.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ToggleButton.kt                             src/vendor/common/kotlin/androidx/compose/material3/ToggleButton.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TonalPalette.kt                             src/vendor/common/kotlin/androidx/compose/material3/TonalPalette.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Tooltip.kt                                  src/vendor/common/kotlin/androidx/compose/material3/Tooltip.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Typography.kt                               src/vendor/common/kotlin/androidx/compose/material3/Typography.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/WavyProgressIndicator.kt                    src/vendor/common/kotlin/androidx/compose/material3/WavyProgressIndicator.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/WideNavigationRail.kt                       src/vendor/common/kotlin/androidx/compose/material3/WideNavigationRail.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/WideNavigationRailState.kt                  src/vendor/common/kotlin/androidx/compose/material3/WideNavigationRailState.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/AlertDialog.skiko.kt                         src/vendor/native/kotlin/androidx/compose/material3/AlertDialog.native.kt
+# compose/material3/material3/src/nonJvmMain/kotlin/androidx/compose/material3/CalendarLocale.nonJvm.kt                    src/vendor/native/kotlin/androidx/compose/material3/CalendarLocale.native.kt
+# compose/material3/material3/src/nonJvmMain/kotlin/androidx/compose/material3/DatePicker.nonJvm.kt                        src/vendor/native/kotlin/androidx/compose/material3/DatePicker.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/DatePickerDialog.skiko.kt                    src/vendor/native/kotlin/androidx/compose/material3/DatePickerDialog.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/ExposedDropdownMenu.skiko.kt                 src/vendor/native/kotlin/androidx/compose/material3/ExposedDropdownMenu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/Menu.skiko.kt                                src/vendor/native/kotlin/androidx/compose/material3/Menu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/ModalBottomSheet.skiko.kt                    src/vendor/native/kotlin/androidx/compose/material3/ModalBottomSheet.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/PrecisionPointer.skiko.kt                    src/vendor/native/kotlin/androidx/compose/material3/PrecisionPointer.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/SearchBar.skiko.kt                           src/vendor/native/kotlin/androidx/compose/material3/SearchBar.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/SkikoMenu.skiko.kt                           src/vendor/native/kotlin/androidx/compose/material3/SkikoMenu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/TimeFormat.skiko.kt                          src/vendor/native/kotlin/androidx/compose/material3/TimeFormat.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/TimePicker.skiko.kt                          src/vendor/native/kotlin/androidx/compose/material3/TimePicker.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/WideNavigationRail.skiko.kt                  src/vendor/native/kotlin/androidx/compose/material3/WideNavigationRail.native.kt
+
+# ── androidx.compose.material3.carousel ─────────────────────────────────────
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Arrangement.kt          src/vendor/common/kotlin/androidx/compose/material3/carousel/Arrangement.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Carousel.kt             src/vendor/common/kotlin/androidx/compose/material3/carousel/Carousel.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/CarouselItemScope.kt    src/vendor/common/kotlin/androidx/compose/material3/carousel/CarouselItemScope.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/CarouselState.kt        src/vendor/common/kotlin/androidx/compose/material3/carousel/CarouselState.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/KeylineList.kt          src/vendor/common/kotlin/androidx/compose/material3/carousel/KeylineList.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/KeylineSnapPosition.kt  src/vendor/common/kotlin/androidx/compose/material3/carousel/KeylineSnapPosition.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Keylines.kt             src/vendor/common/kotlin/androidx/compose/material3/carousel/Keylines.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/MultiAspectCarousel.kt  src/vendor/common/kotlin/androidx/compose/material3/carousel/MultiAspectCarousel.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Strategy.kt             src/vendor/common/kotlin/androidx/compose/material3/carousel/Strategy.kt
+
+# ── androidx.compose.material3.internal ─────────────────────────────────────
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/DefaultPlatformTextStyle.kt                         src/vendor/common/kotlin/androidx/compose/material3/internal/DefaultPlatformTextStyle.kt
+compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/DefaultPlatformTextStyle.skiko.kt                    src/vendor/native/kotlin/androidx/compose/material3/internal/DefaultPlatformTextStyle.native.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/AccessibilityServiceStateProvider.kt              src/vendor/common/kotlin/androidx/compose/material3/internal/AccessibilityServiceStateProvider.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/AccessibilityUtil.kt                              src/vendor/common/kotlin/androidx/compose/material3/internal/AccessibilityUtil.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/AnimatedShape.kt                                  src/vendor/common/kotlin/androidx/compose/material3/internal/AnimatedShape.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/BackHandler.kt                                    src/vendor/common/kotlin/androidx/compose/material3/internal/BackHandler.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.kt                          src/vendor/common/kotlin/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/BasicTooltip.kt                                   src/vendor/common/kotlin/androidx/compose/material3/internal/BasicTooltip.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/CalendarModel.kt                                  src/vendor/common/kotlin/androidx/compose/material3/internal/CalendarModel.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ChildParentSemantics.kt                           src/vendor/common/kotlin/androidx/compose/material3/internal/ChildParentSemantics.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/CircularWavyProgressModifiers.kt                  src/vendor/common/kotlin/androidx/compose/material3/internal/CircularWavyProgressModifiers.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/DragGestureDetectorCopy.kt                        src/vendor/common/kotlin/androidx/compose/material3/internal/DragGestureDetectorCopy.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/DraggableAnchors.kt                               src/vendor/common/kotlin/androidx/compose/material3/internal/DraggableAnchors.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/Elevation.kt                                      src/vendor/common/kotlin/androidx/compose/material3/internal/Elevation.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/FloatProducer.kt                                  src/vendor/common/kotlin/androidx/compose/material3/internal/FloatProducer.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/Icons.kt                                          src/vendor/common/kotlin/androidx/compose/material3/internal/Icons.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/InternalMutatorMutex.kt                           src/vendor/common/kotlin/androidx/compose/material3/internal/InternalMutatorMutex.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/KeyboardUtil.kt                                   src/vendor/common/kotlin/androidx/compose/material3/internal/KeyboardUtil.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/LayoutUtil.kt                                     src/vendor/common/kotlin/androidx/compose/material3/internal/LayoutUtil.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/LinearWavyProgressModifiers.kt                    src/vendor/common/kotlin/androidx/compose/material3/internal/LinearWavyProgressModifiers.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/MappedInteractionSource.kt                        src/vendor/common/kotlin/androidx/compose/material3/internal/MappedInteractionSource.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/MenuPosition.kt                                   src/vendor/common/kotlin/androidx/compose/material3/internal/MenuPosition.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/MutableWindowInsets.kt                            src/vendor/common/kotlin/androidx/compose/material3/internal/MutableWindowInsets.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/PlatformOptimizedCancellationException.kt         src/vendor/common/kotlin/androidx/compose/material3/internal/PlatformOptimizedCancellationException.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ProvideContentColorTextStyle.kt                   src/vendor/common/kotlin/androidx/compose/material3/internal/ProvideContentColorTextStyle.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ShapeUtil.kt                                      src/vendor/common/kotlin/androidx/compose/material3/internal/ShapeUtil.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/Strings.kt                                        src/vendor/common/kotlin/androidx/compose/material3/internal/Strings.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/System.kt                                         src/vendor/common/kotlin/androidx/compose/material3/internal/System.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/SystemBarsDefaultInsets.kt                        src/vendor/common/kotlin/androidx/compose/material3/internal/SystemBarsDefaultInsets.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/TextFieldImpl.kt                                  src/vendor/common/kotlin/androidx/compose/material3/internal/TextFieldImpl.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/AccessibilityServiceStateProvider.skiko.kt         src/vendor/native/kotlin/androidx/compose/material3/internal/AccessibilityServiceStateProvider.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/BackHandler.skiko.kt                               src/vendor/native/kotlin/androidx/compose/material3/internal/BackHandler.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.skiko.kt                     src/vendor/native/kotlin/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/BasicTooltip.skiko.kt                              src/vendor/native/kotlin/androidx/compose/material3/internal/BasicTooltip.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/CalendarModel.skiko.kt                             src/vendor/native/kotlin/androidx/compose/material3/internal/CalendarModel.native.kt
+# compose/material3/material3/src/nonJvmMain/kotlin/androidx/compose/material3/internal/InternalMutatorMutex.nonJvm.kt                    src/vendor/native/kotlin/androidx/compose/material3/internal/InternalMutatorMutex.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/KotlinxDatetimeCalendarModel.kt                    src/vendor/native/kotlin/androidx/compose/material3/internal/KotlinxDatetimeCalendarModel.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/PlatformDateFormat.kt                              src/vendor/native/kotlin/androidx/compose/material3/internal/PlatformDateFormat.native.kt
+# compose/material3/material3/src/nonJvmMain/kotlin/androidx/compose/material3/internal/PlatformOptimizedCancellationException.nonJvm.kt  src/vendor/native/kotlin/androidx/compose/material3/internal/PlatformOptimizedCancellationException.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/Strings.skiko.kt                                   src/vendor/native/kotlin/androidx/compose/material3/internal/Strings.native.kt
+# compose/material3/material3/src/nativeMain/kotlin/androidx/compose/material3/internal/System.native.kt                                  src/vendor/native/kotlin/androidx/compose/material3/internal/System.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/SystemBarsDefaultInsets.skiko.kt                   src/vendor/native/kotlin/androidx/compose/material3/internal/SystemBarsDefaultInsets.native.kt
+
+# ── androidx.compose.material3.internal.ripple ──────────────────────────────
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ripple/Border.kt            src/vendor/common/kotlin/androidx/compose/material3/internal/ripple/Border.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ripple/CommonRipple.kt      src/vendor/common/kotlin/androidx/compose/material3/internal/ripple/CommonRipple.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ripple/Ripple.kt            src/vendor/common/kotlin/androidx/compose/material3/internal/ripple/Ripple.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ripple/RippleAnimation.kt   src/vendor/common/kotlin/androidx/compose/material3/internal/ripple/RippleAnimation.kt
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/ripple/RippleNodeConfig.kt  src/vendor/common/kotlin/androidx/compose/material3/internal/ripple/RippleNodeConfig.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/internal/ripple/Ripple.skiko.kt       src/vendor/native/kotlin/androidx/compose/material3/internal/ripple/Ripple.native.kt
+
+# ── androidx.compose.material3.l10n ─────────────────────────────────────────
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Af.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Af.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Am.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Am.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ar.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ar.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/As.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/As.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Az.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Az.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Be.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Be.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Bg.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Bg.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Bn.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Bn.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Bs.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Bs.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ca.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ca.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Cs.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Cs.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Da.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Da.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/De.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/De.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/El.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/El.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/En.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/En.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Es.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Es.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Et.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Et.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Eu.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Eu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Fa.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Fa.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Fi.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Fi.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Fr.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Fr.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Gl.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Gl.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Gu.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Gu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Hi.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Hi.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Hr.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Hr.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Hu.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Hu.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Hy.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Hy.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/In.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/In.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Is.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Is.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/It.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/It.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Iw.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Iw.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ja.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ja.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ka.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ka.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Kk.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Kk.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Km.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Km.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Kn.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Kn.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ko.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ko.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ky.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ky.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Lo.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Lo.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Lt.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Lt.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Lv.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Lv.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Mk.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Mk.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ml.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ml.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Mn.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Mn.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Mr.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Mr.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ms.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ms.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/My.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/My.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Nb.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Nb.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ne.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ne.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Nl.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Nl.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Or.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Or.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Pa.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Pa.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Pl.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Pl.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Pt.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Pt.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ro.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ro.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ru.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ru.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Si.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Si.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sk.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sk.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sl.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sl.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sq.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sq.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sr.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sr.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sv.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sv.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Sw.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Sw.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ta.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ta.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Te.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Te.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Th.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Th.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Tl.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Tl.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Tr.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Tr.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Translations.kt  src/vendor/native/kotlin/androidx/compose/material3/l10n/Translations.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Uk.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Uk.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Ur.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Ur.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Uz.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Uz.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Vi.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Vi.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Zh.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Zh.native.kt
+# compose/material3/material3/src/skikoMain/kotlin/androidx/compose/material3/l10n/Zu.kt            src/vendor/native/kotlin/androidx/compose/material3/l10n/Zu.native.kt
+
+# ── androidx.compose.material3.pulltorefresh ────────────────────────────────
+# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/pulltorefresh/PullToRefresh.kt  src/vendor/common/kotlin/androidx/compose/material3/pulltorefresh/PullToRefresh.kt
+
+# ── androidx.compose.material3.tokens ───────────────────────────────────────
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarLargeFlexibleTokens.kt           src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarLargeFlexibleTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarLargeTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarMediumFlexibleTokens.kt          src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarMediumFlexibleTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarMediumTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarMediumTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarSmallTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AppBarTokens.kt                        src/vendor/common/kotlin/androidx/compose/material3/tokens/AppBarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/AssistChipTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/AssistChipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/BadgeTokens.kt                         src/vendor/common/kotlin/androidx/compose/material3/tokens/BadgeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/BaselineButtonTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/BaselineButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/BottomAppBarTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/BottomAppBarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonGroupSmallTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonGroupSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonLargeTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonMediumTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonMediumTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonSmallTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonXLargeTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonXLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ButtonXSmallTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/ButtonXSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/CheckboxTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/CheckboxTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/CircularProgressIndicatorTokens.kt     src/vendor/common/kotlin/androidx/compose/material3/tokens/CircularProgressIndicatorTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorLightTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/ColorLightTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorSchemeKeyTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/ColorSchemeKeyTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ConnectedButtonGroupSmallTokens.kt     src/vendor/common/kotlin/androidx/compose/material3/tokens/ConnectedButtonGroupSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DateInputModalTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/DateInputModalTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DatePickerModalTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/DatePickerModalTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DialogTokens.kt                        src/vendor/common/kotlin/androidx/compose/material3/tokens/DialogTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DividerTokens.kt                       src/vendor/common/kotlin/androidx/compose/material3/tokens/DividerTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DockedToolbarTokens.kt                 src/vendor/common/kotlin/androidx/compose/material3/tokens/DockedToolbarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/DragHandleTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/DragHandleTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ElevatedButtonTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/ElevatedButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ElevatedCardTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/ElevatedCardTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ElevationTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/ElevationTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExpandedListTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/ExpandedListTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExpressiveMotionTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/ExpressiveMotionTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExtendedFabLargeTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/ExtendedFabLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExtendedFabMediumTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/ExtendedFabMediumTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExtendedFabPrimaryTokens.kt            src/vendor/common/kotlin/androidx/compose/material3/tokens/ExtendedFabPrimaryTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExtendedFabSmallTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/ExtendedFabSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabBaselineTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/FabBaselineTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabLargeTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/FabLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabMediumTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/FabMediumTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabMenuBaselineTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/FabMenuBaselineTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabPrimaryContainerTokens.kt           src/vendor/common/kotlin/androidx/compose/material3/tokens/FabPrimaryContainerTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabSecondaryContainerTokens.kt         src/vendor/common/kotlin/androidx/compose/material3/tokens/FabSecondaryContainerTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FabSmallTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/FabSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledAutocompleteTokens.kt            src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledAutocompleteTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledButtonTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledCardTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledCardTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledIconButtonTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledTextFieldTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledTextFieldTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledTonalButtonTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledTonalButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilledTonalIconButtonTokens.kt         src/vendor/common/kotlin/androidx/compose/material3/tokens/FilledTonalIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FilterChipTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/FilterChipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/FloatingToolbarTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/FloatingToolbarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/IconButtonTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/IconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/InputChipTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/InputChipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/LargeIconButtonTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/LargeIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/LinearProgressIndicatorTokens.kt       src/vendor/common/kotlin/androidx/compose/material3/tokens/LinearProgressIndicatorTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ListTokens.kt                          src/vendor/common/kotlin/androidx/compose/material3/tokens/ListTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/LoadingIndicatorTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/LoadingIndicatorTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/MediumIconButtonTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/MediumIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/MenuTokens.kt                          src/vendor/common/kotlin/androidx/compose/material3/tokens/MenuTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/MotionSchemeKeyTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/MotionSchemeKeyTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/MotionTokens.kt                        src/vendor/common/kotlin/androidx/compose/material3/tokens/MotionTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationBarHorizontalItemTokens.kt   src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationBarHorizontalItemTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationBarTokens.kt                 src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationBarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationBarVerticalItemTokens.kt     src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationBarVerticalItemTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationDrawerTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationDrawerTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailBaselineItemTokens.kt    src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailBaselineItemTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailCollapsedTokens.kt       src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailCollapsedTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailColorTokens.kt           src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailColorTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailExpandedTokens.kt        src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailExpandedTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailHorizontalItemTokens.kt  src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailHorizontalItemTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/NavigationRailVerticalItemTokens.kt    src/vendor/common/kotlin/androidx/compose/material3/tokens/NavigationRailVerticalItemTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedAutocompleteTokens.kt          src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedAutocompleteTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedButtonTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedCardTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedCardTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedIconButtonTokens.kt            src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedSegmentedButtonTokens.kt       src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedSegmentedButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/OutlinedTextFieldTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/OutlinedTextFieldTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/PaletteTokens.kt                       src/vendor/common/kotlin/androidx/compose/material3/tokens/PaletteTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/PlainTooltipTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/PlainTooltipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/PrimaryNavigationTabTokens.kt          src/vendor/common/kotlin/androidx/compose/material3/tokens/PrimaryNavigationTabTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ProgressIndicatorTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/ProgressIndicatorTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/RadioButtonTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/RadioButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ReorderListTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/ReorderListTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/RevealListTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/RevealListTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/RichTooltipTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/RichTooltipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ScrimTokens.kt                         src/vendor/common/kotlin/androidx/compose/material3/tokens/ScrimTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SecondaryNavigationTabTokens.kt        src/vendor/common/kotlin/androidx/compose/material3/tokens/SecondaryNavigationTabTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SegmentedMenuTokens.kt                 src/vendor/common/kotlin/androidx/compose/material3/tokens/SegmentedMenuTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeKeyTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/ShapeKeyTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt                         src/vendor/common/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SheetBottomTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/SheetBottomTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SliderTokens.kt                        src/vendor/common/kotlin/androidx/compose/material3/tokens/SliderTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SmallIconButtonTokens.kt               src/vendor/common/kotlin/androidx/compose/material3/tokens/SmallIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SnackbarTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/SnackbarTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SplitButtonLargeTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/SplitButtonLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SplitButtonMediumTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/SplitButtonMediumTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SplitButtonSmallTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/SplitButtonSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SplitButtonXLargeTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/SplitButtonXLargeTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SplitButtonXSmallTokens.kt             src/vendor/common/kotlin/androidx/compose/material3/tokens/SplitButtonXSmallTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/StandardMenuTokens.kt                  src/vendor/common/kotlin/androidx/compose/material3/tokens/StandardMenuTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/StandardMotionTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/StandardMotionTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/StateTokens.kt                         src/vendor/common/kotlin/androidx/compose/material3/tokens/StateTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SuggestionChipTokens.kt                src/vendor/common/kotlin/androidx/compose/material3/tokens/SuggestionChipTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SwitchTokens.kt                        src/vendor/common/kotlin/androidx/compose/material3/tokens/SwitchTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TextButtonTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/TextButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TimeInputTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/TimeInputTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TimePickerTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/TimePickerTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TonalButtonTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/TonalButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TypeScaleTokens.kt                     src/vendor/common/kotlin/androidx/compose/material3/tokens/TypeScaleTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TypefaceTokens.kt                      src/vendor/common/kotlin/androidx/compose/material3/tokens/TypefaceTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TypographyKeyTokens.kt                 src/vendor/common/kotlin/androidx/compose/material3/tokens/TypographyKeyTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/TypographyTokens.kt                    src/vendor/common/kotlin/androidx/compose/material3/tokens/TypographyTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/VibrantMenuTokens.kt                   src/vendor/common/kotlin/androidx/compose/material3/tokens/VibrantMenuTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/XLargeIconButtonTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/XLargeIconButtonTokens.kt
+compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/XSmallIconButtonTokens.kt              src/vendor/common/kotlin/androidx/compose/material3/tokens/XSmallIconButtonTokens.kt
