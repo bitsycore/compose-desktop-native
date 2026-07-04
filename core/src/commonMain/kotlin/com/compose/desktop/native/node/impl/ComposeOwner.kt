@@ -370,9 +370,10 @@ private class ProjectOwnedLayer(
 
 	override fun isInLayer(position: Offset): Boolean {
 		if (!fClip) return true
-		val vLx = position.x - fPosition.x
-		val vLy = position.y - fPosition.y
-		return vLx in 0f..fSize.width.toFloat() && vLy in 0f..fSize.height.toFloat()
+		// `position` is already the layer-LOCAL coord (NodeCoordinator.fromParentPosition
+		// has already stripped this.position and applied mapOffset). Just check the
+		// layer-local size box.
+		return position.x in 0f..fSize.width.toFloat() && position.y in 0f..fSize.height.toFloat()
 	}
 
 	override fun move(position: androidx.compose.ui.unit.IntOffset) {
@@ -405,19 +406,25 @@ private class ProjectOwnedLayer(
 	override fun updateDisplayList() {}
 	override fun invalidate() {}
 	override fun destroy() {}
+	// mapOffset / mapBounds apply ONLY the layer-block transforms (translationX/Y —
+	// scale + rotation TODO), NOT `fPosition`. `fPosition` is the layer's `move(…)`
+	// value, which NodeCoordinator.fromParentPosition/toParentPosition already
+	// subtracts/adds via `this.position` before/after calling mapOffset — including
+	// it here would double-count and land hit-tests at 2× the visible offset (this
+	// showed up as popups drawing correctly but their menu items not receiving
+	// clicks).
 	override fun mapOffset(point: Offset, inverse: Boolean): Offset {
-		val vDx = fPosition.x + fTranslationX
-		val vDy = fPosition.y + fTranslationY
-		return if (inverse) Offset(point.x - vDx, point.y - vDy) else Offset(point.x + vDx, point.y + vDy)
+		if (fTranslationX == 0f && fTranslationY == 0f) return point
+		return if (inverse) Offset(point.x - fTranslationX, point.y - fTranslationY)
+		else Offset(point.x + fTranslationX, point.y + fTranslationY)
 	}
 	override fun mapBounds(rect: androidx.compose.ui.geometry.MutableRect, inverse: Boolean) {
-		val vDx = fPosition.x + fTranslationX
-		val vDy = fPosition.y + fTranslationY
+		if (fTranslationX == 0f && fTranslationY == 0f) return
 		val vSx = if (inverse) -1 else 1
-		rect.left += vSx * vDx
-		rect.right += vSx * vDx
-		rect.top += vSx * vDy
-		rect.bottom += vSx * vDy
+		rect.left += vSx * fTranslationX
+		rect.right += vSx * fTranslationX
+		rect.top += vSx * fTranslationY
+		rect.bottom += vSx * fTranslationY
 	}
 	override fun reuseLayer(
 		drawBlock: (canvas: Canvas, parentLayer: GraphicsLayer?) -> Unit,
