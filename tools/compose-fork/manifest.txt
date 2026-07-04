@@ -438,6 +438,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyboardActions.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyboardActions.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyboardOptions.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyboardOptions.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/LinkStateInteractionSourceObserver.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/LinkStateInteractionSourceObserver.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/LongPressTextDragObserver.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/LongPressTextDragObserver.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/PointerMoveDetector.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/text/PointerMoveDetector.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/StringHelpers.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/StringHelpers.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextAutoSize.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextAutoSize.kt
@@ -462,7 +463,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/CoreTextField.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/CoreTextField.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyboardActionRunner.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyboardActionRunner.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/LongPressTextDragObserver.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/text/LongPressTextDragObserver.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextDelegate.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextDelegate.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldCursor.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldCursor.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldDefaultSizeModifier.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldDefaultSizeModifier.kt
@@ -675,6 +675,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/TextStyleProviderNode.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/TextStyleProviderNode.kt
 
 # ── androidx.compose.foundation.text.selection ──────────────────────────────
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.kt          core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/Selectable.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/Selectable.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/Selection.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/Selection.kt
@@ -686,7 +687,6 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt      core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionContainer.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionContainer.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.kt
