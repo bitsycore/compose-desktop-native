@@ -461,12 +461,14 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/UndoManager.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/text/UndoManager.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ValidatingOffsetMapping.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/ValidatingOffsetMapping.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/AutofillHighlight.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/AutofillHighlight.native.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicSecureTextField.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicText.skiko.kt                            core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicText.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuIcons.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/KeyMapping.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyMapping.native.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextPointerIcon.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/UndoManager.native.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/UndoManager.native.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicTextField.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicTextField.kt
@@ -478,7 +480,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldKeyInput.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldKeyInput.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldPointerModifier.common.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldPointerModifier.common.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicSecureTextField.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicTextField.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicTextField.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/foundation/text/ContextMenuStrings.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CoreTextField.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/CoreTextField.native.kt
@@ -489,7 +490,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldDelegate.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldDelegate.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldScrollState.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldScrollState.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextPointerIcon.native.kt
 
 # ── androidx.compose.foundation.text.contextmenu.builder ────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt
@@ -517,8 +517,8 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt
 
 # ── androidx.compose.foundation.text.handwriting ────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.native.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt     core/src/vendor/common/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt
 
 # ── androidx.compose.foundation.text.input ──────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt
