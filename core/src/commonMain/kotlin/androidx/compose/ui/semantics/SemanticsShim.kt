@@ -281,3 +281,16 @@ fun SemanticsPropertyReceiver.pageUp(label: String? = null, action: (() -> Boole
 fun SemanticsPropertyReceiver.pageDown(label: String? = null, action: (() -> Boolean)?) = Unit
 fun SemanticsPropertyReceiver.pageLeft(label: String? = null, action: (() -> Boolean)?) = Unit
 fun SemanticsPropertyReceiver.pageRight(label: String? = null, action: (() -> Boolean)?) = Unit
+
+// ============
+//  LiveRegion (a11y announcement mode) + paneTitle — used by BasicTooltip
+
+enum class LiveRegionMode { Polite, Assertive }
+
+var SemanticsPropertyReceiver.liveRegion: LiveRegionMode
+	get() = LiveRegionMode.Polite
+	set(value) = Unit
+
+var SemanticsPropertyReceiver.paneTitle: String
+	get() = ""
+	set(value) = Unit

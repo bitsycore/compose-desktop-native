@@ -117,6 +117,15 @@ abstract class Placeable : Measured {
 		override val fontScale: Float
 			get() = 1f
 
+		/** Upstream property; used by vendored WindowInsetsPadding to compute the current
+		 *  LayoutCoordinates from the placement scope. Our renderer doesn't track a live
+		 *  LayoutCoordinates here — return null so callers fall through to the "no
+		 *  coordinates yet" path (safe default; WindowInsets are always zero on desktop
+		 *  anyway).
+		 *  TODO: wire a real LayoutCoordinates once WindowInsets support lands. */
+		open val coordinates: androidx.compose.ui.layout.LayoutCoordinates?
+			get() = null
+
 		/** RTL mirroring origin. 0 disables mirroring. */
 		protected open val parentWidth: Int
 			get() = 0

@@ -135,22 +135,22 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/D
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Scrollbar.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/foundation/Scrollbar.native.kt
 
 # ── androidx.compose.foundation.border ──────────────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/border/BorderLogic.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/border/BorderLogic.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/border/BorderLogic.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/border/BorderLogic.kt
 
 # ── androidx.compose.foundation.content ─────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/MediaType.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/content/MediaType.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContent.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContent.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/TransferableContent.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/content/TransferableContent.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/MediaType.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/foundation/content/MediaType.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/TransferableContent.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/TransferableContent.native.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContent.kt          core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContent.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/content/ReceiveContentListener.kt
 
 # ── androidx.compose.foundation.content.internal ────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.native.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentConfiguration.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/DragAndDropRequestPermission.native.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.native.kt
 
 # ── androidx.compose.foundation.contextmenu ─────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt
@@ -161,8 +161,8 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.native.kt
 
 # ── androidx.compose.foundation.draganddrop ─────────────────────────────────
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropTarget.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/draganddrop/DragAndDropTarget.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropTarget.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/draganddrop/DragAndDropTarget.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.native.kt
 
 # ── androidx.compose.foundation.gestures ────────────────────────────────────
@@ -199,7 +199,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/g
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/TapGesturesDetector.native.kt
 
 # ── androidx.compose.foundation.gestures.cupertino ──────────────────────────
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/gestures/cupertino/CupertinoFlingBehavior.kt
 
 # ── androidx.compose.foundation.gestures.snapping ───────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/LazyGridSnapLayoutInfoProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/gestures/snapping/LazyGridSnapLayoutInfoProvider.kt
@@ -241,9 +241,11 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalFlexBoxApi.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalFlexBoxApi.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalGridApi.kt           core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalGridApi.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/ExperimentalLayoutApi.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/layout/ExperimentalLayoutApi.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlexBox.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlexBox.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayout.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayout.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt      core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayoutBuildingBlocks.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlowLayoutOverflow.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlowLayoutOverflow.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Grid.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Grid.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Intrinsic.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Intrinsic.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/LayoutScopeMarker.kt             core/src/vendor/common/kotlin/androidx/compose/foundation/layout/LayoutScopeMarker.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Offset.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Offset.kt
@@ -255,8 +257,6 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Spacer.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Spacer.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Visible.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Visible.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/FlexBox.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/layout/FlexBox.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Grid.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/layout/Grid.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsets.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsets.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
 # compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
