@@ -33,18 +33,20 @@ import kotlin.math.max
  word boundary); PAINT is stubbed for now (Phase 1) — MultiParagraph draws through the existing
  project text path, so this actual is exercised for LAYOUT geometry, not glyph rasterisation yet.
 
- fontSize is treated as pixels (matching the project's `fontSize.value.toInt()` convention — the SDL
- renderer scales by DPR at draw time), so `density` is accepted-and-ignored here.
+ fontSize is `sp` and is converted to physical pixels through `density`. `Modifier.padding` /
+ `defaultMinSize` / etc. also resolve `Dp.toPx()` via `LocalDensity` in the tree; this file matches
+ that convention so text measurement lands in the same pixel space as everything else.
 */
 internal class SdlParagraph(
 	private val text: String,
 	private val style: TextStyle,
 	widthConstraint: Float,
 	private val maxLines: Int,
+	density: Float = 1f,
 ) : Paragraph {
 
 	private val fontPx: Int =
-		(if (style.fontSize.isUnspecified) 14f else style.fontSize.value).toInt().coerceAtLeast(1)
+		((if (style.fontSize.isUnspecified) 14f else style.fontSize.value) * density).toInt().coerceAtLeast(1)
 	private val family: String? = style.fontFamily.projectFontName()
 
 	private val maxWidthPx: Int =

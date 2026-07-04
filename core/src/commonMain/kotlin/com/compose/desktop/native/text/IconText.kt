@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -43,7 +44,11 @@ fun IconText(
 	textAlign: TextAlign = TextAlign.Start,
 	fontVariationSettings: List<FontVariation.Setting>? = null,
 ) {
-	val vFontPx = fontSize.value.toInt()
+	// Layout runs in physical pixels (LocalDensity = DPR), so the icon font
+	// size must also convert `sp → px`. Matches SdlParagraph's `fontSize.value
+	// * density`. Without this the icons render at half size on Retina.
+	val vDensity = LocalDensity.current.density
+	val vFontPx = (fontSize.value * vDensity).toInt().coerceAtLeast(1)
 	Box(modifier = modifier) {
 		androidx.compose.ui.layout.Layout(
 			modifier = TextDrawElement(

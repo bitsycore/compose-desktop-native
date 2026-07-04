@@ -69,7 +69,7 @@ internal class SkiaRenderBackend(
 
     override fun drawRoot(inHost: com.compose.desktop.native.node.ComposeRootHost) {
         val canvas = fCurrentCanvas ?: return
-        val vSize = androidx.compose.ui.geometry.Size(sdl.windowWidth.toFloat(), sdl.windowHeight.toFloat())
+        val vSize = androidx.compose.ui.geometry.Size(sdl.pixelWidth.toFloat(), sdl.pixelHeight.toFloat())
         val vCanvas = SkiaCanvas(canvas, vSize, fSkiaTextRenderer, fSkiaImageCache)
         inHost.rootNode.draw(vCanvas, null)
         vCanvas.finish()

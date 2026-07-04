@@ -11,12 +11,15 @@ import androidx.compose.ui.unit.Density
 // ==================
 
 /* Carries text+style for the intrinsics-based Paragraph factories; intrinsic widths come from a
-   throwaway unbounded SdlParagraph. */
+   throwaway unbounded SdlParagraph. `density` here is the LocalDensity scalar (dpr on Retina); it
+   converts sp → pixels so the intrinsic widths land in the same pixel space the layout tree measures
+   itself in. */
 internal class SdlParagraphIntrinsics(
 	val paragraphText: String,
 	val paragraphStyle: TextStyle,
+	val density: Float,
 ) : ParagraphIntrinsics {
-	private val probe = SdlParagraph(paragraphText, paragraphStyle, Float.POSITIVE_INFINITY, Int.MAX_VALUE)
+	private val probe = SdlParagraph(paragraphText, paragraphStyle, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density)
 	override val minIntrinsicWidth: Float = probe.minIntrinsicWidth
 	override val maxIntrinsicWidth: Float = probe.maxIntrinsicWidth
 	override val hasStaleResolvedFonts: Boolean = false
@@ -35,7 +38,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style)
+): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -44,7 +47,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style)
+): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -53,7 +56,7 @@ actual fun ParagraphIntrinsics(
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style)
+): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -63,7 +66,7 @@ actual fun ParagraphIntrinsics(
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	softWrap: Boolean,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style)
+): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density)
 
 // ---- Paragraph factories ----
 
@@ -78,7 +81,7 @@ actual fun Paragraph(
 	width: Float,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): Paragraph = SdlParagraph(text, style, width, maxLines)
+): Paragraph = SdlParagraph(text, style, width, maxLines, density.density)
 
 actual fun Paragraph(
 	text: String,
@@ -90,7 +93,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = SdlParagraph(text, style, width, maxLines)
+): Paragraph = SdlParagraph(text, style, width, maxLines, density.density)
 
 actual fun Paragraph(
 	text: String,
@@ -102,7 +105,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines)
+): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines, density.density)
 
 actual fun Paragraph(
 	text: String,
@@ -114,7 +117,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	overflow: TextOverflow,
-): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines)
+): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines, density.density)
 
 actual fun Paragraph(
 	paragraphIntrinsics: ParagraphIntrinsics,
@@ -123,7 +126,7 @@ actual fun Paragraph(
 	width: Float,
 ): Paragraph {
 	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, width, maxLines)
+	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, width, maxLines, vI.density)
 }
 
 actual fun Paragraph(
@@ -133,7 +136,7 @@ actual fun Paragraph(
 	ellipsis: Boolean,
 ): Paragraph {
 	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines)
+	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines, vI.density)
 }
 
 actual fun Paragraph(
@@ -143,5 +146,5 @@ actual fun Paragraph(
 	overflow: TextOverflow,
 ): Paragraph {
 	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines)
+	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines, vI.density)
 }

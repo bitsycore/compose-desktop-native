@@ -83,6 +83,14 @@ fun nativeComposeWindow(
     Dispatchers.setMain(mainDispatcher)
 
     // Upstream layout root + owner, hidden behind the public facade.
+    //
+    // We follow upstream Compose Multiplatform's flow: layout runs in *physical
+    // pixels*, with `LocalDensity` = the real DPR (so `8.dp.toPx()` on Retina
+    // is 16 px, matching Material spec sizes). The renderer therefore does NOT
+    // apply a second `canvas.scale(dpr)` / `SDL_SetRenderScale(dpr)` — that
+    // would be a double-scale. Constraints below are in `pixelWidth/pixelHeight`,
+    // beginFrame gets `1f`, and pointer coords are multiplied by DPR before
+    // dispatch (SDL3 delivers mouse in logical points on Retina by default).
     val host = ComposeRootHost(inDensity = backend.pixelDensity)
     host.attach()
 
@@ -176,17 +184,24 @@ fun nativeComposeWindow(
                             PointerButton.Tertiary -> 2
                             else -> 0
                         }
+                        // SDL3 delivers mouse coords in logical points on HiDPI (Retina) —
+                        // multiply by DPR so hit-testing lands in the same pixel space the
+                        // layout tree is measured in.
+                        val vDpr = backend.pixelDensity
+                        val vPx = event.event.x.toFloat() * vDpr
+                        val vPy = event.event.y.toFloat() * vDpr
                         if (event.event.type == PointerEventType.Press) {
-                            popupHost.notifyOutsidePress(event.event.x, event.event.y)
+                            popupHost.notifyOutsidePress(vPx.toInt(), vPy.toInt())
                         }
-                        host.onPointer(event.event.x.toFloat(), event.event.y.toFloat(), vType, vBtn)
+                        host.onPointer(vPx, vPy, vType, vBtn)
                         // Also drive the upstream PointerInputEventProcessor (hover / gestures /
                         // clickable via PointerInputModifierNode). Coexists with the B6a project-node
                         // dispatch above during the interaction migration.
-                        host.onPointerRaw(event.event.x.toFloat(), event.event.y.toFloat(), vType, vBtn, SDL_GetTicks().toLong())
+                        host.onPointerRaw(vPx, vPy, vType, vBtn, SDL_GetTicks().toLong())
                     }
                     is AppEvent.MouseWheel -> {
-                        host.onWheel(event.x.toFloat(), event.y.toFloat(), event.deltaX, event.deltaY, SDL_GetTicks().toLong())
+                        val vDpr = backend.pixelDensity
+                        host.onWheel(event.x.toFloat() * vDpr, event.y.toFloat() * vDpr, event.deltaX, event.deltaY, SDL_GetTicks().toLong())
                     }
                     // B6b — route keyboard + typed text to the focused node via the FocusOwner.
                     is AppEvent.Key -> host.dispatchKeyEvent(event.event)
@@ -199,8 +214,8 @@ fun nativeComposeWindow(
             // resumed continuations this same frame.
             host.sendAnimationFrame(SDL_GetTicks().toLong() * 1_000_000L)
             mainDispatcher.drainPending()
-            com.compose.desktop.native.text.currentViewportHeight = backend.windowHeight
-            com.compose.desktop.native.text.currentViewportWidth = backend.windowWidth
+            com.compose.desktop.native.text.currentViewportHeight = backend.pixelHeight
+            com.compose.desktop.native.text.currentViewportWidth = backend.pixelWidth
 
             // ============
             //  Signal frame to recomposer
@@ -212,12 +227,17 @@ fun nativeComposeWindow(
             //  Layout — via the upstream MeasureAndLayoutDelegate.
             backend.updateWindowSize()
             renderBackend.ensureSize(backend.pixelWidth, backend.pixelHeight)
-            host.setConstraints(backend.windowWidth, backend.windowHeight)
+            // Constraints in physical pixels — LocalDensity inside the tree = DPR,
+            // so a `Modifier.size(64.dp)` inside a `800×600` logical window on
+            // Retina resolves to 128px within a 1600×1200 pixel constraint.
+            host.setConstraints(backend.pixelWidth, backend.pixelHeight)
             host.measureAndLayout()
 
             // ============
             //  Draw — upstream coordinator/DrawModifierNode pipeline → Canvas backend.
-            renderBackend.beginFrame(backend.pixelDensity)
+            //  Renderer runs 1:1 (no `canvas.scale(dpr)` / `SDL_SetRenderScale(dpr)`):
+            //  the tree already measured itself in physical pixels above.
+            renderBackend.beginFrame(1f)
             renderBackend.drawRoot(host)
 
             if (onFrame != null && !onFrame(renderBackend, frameIndex)) {

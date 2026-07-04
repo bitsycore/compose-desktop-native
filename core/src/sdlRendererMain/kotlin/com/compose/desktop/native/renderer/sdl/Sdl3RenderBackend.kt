@@ -79,7 +79,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         val vRenderer = backend.renderer ?: return
         val vCanvas = Sdl3Canvas(
             vRenderer,
-            androidx.compose.ui.geometry.Size(backend.windowWidth.toFloat(), backend.windowHeight.toFloat()),
+            androidx.compose.ui.geometry.Size(backend.pixelWidth.toFloat(), backend.pixelHeight.toFloat()),
             fTextRenderer,
             fImageCache,
         )
