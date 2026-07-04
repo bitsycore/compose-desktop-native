@@ -1049,8 +1049,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
 
 # ── androidx.compose.ui.modifier ────────────────────────────────────────────
@@ -1264,6 +1264,7 @@ compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AtomicReferenc
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.native.kt
 compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/ActualParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
@@ -1271,7 +1272,6 @@ compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/FontRasterizationSettings.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ParagraphIntrisics.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/text/ParagraphIntrisics.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/SkiaParagraph.native.kt
-# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.native.kt
 
 # ── androidx.compose.ui.text.font ───────────────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt
