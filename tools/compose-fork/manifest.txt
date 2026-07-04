@@ -864,6 +864,7 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Vertex
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Vertices.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Vertices.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.native.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt                 core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt                  core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt                     core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt
@@ -872,7 +873,6 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTil
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/graphics/MeshGradientRenderer.native.kt
 # compose/ui/ui-graphics/src/nativeMain/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.native.kt
@@ -1218,8 +1218,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/semantics/SemanticsSort.
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/semantics/SemanticsRegion.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/semantics/SemanticsRegion.native.kt
 
 # ── androidx.compose.ui.skiko ───────────────────────────────────────────────
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/skiko/OverlayRenderDecorator.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/skiko/OverlayRenderDecorator.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/skiko/OverlayRenderDecorator.skiko.kt         core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/skiko/OverlayRenderDecorator.skiko.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt  core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt
 
 # ── androidx.compose.ui.spatial ─────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/spatial/RectList.kt              core/src/vendor/common/kotlin/androidx/compose/ui/spatial/RectList.kt
