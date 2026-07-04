@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.InteropView
+import androidx.compose.runtime.retain.ForgetfulRetainedValuesStore
 import androidx.compose.runtime.retain.RetainedValuesStore
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.PlacementScope
@@ -148,7 +149,7 @@ internal object StubOwner : Owner {
 		override val containerDpSize: androidx.compose.ui.unit.DpSize
 			get() = androidx.compose.ui.unit.DpSize.Zero
 	}
-	override val retainedValuesStore: RetainedValuesStore = object : RetainedValuesStore {}
+	override val retainedValuesStore: RetainedValuesStore = ForgetfulRetainedValuesStore
 	override val rectManager: RectManager = RectManager()
 	@Suppress("DEPRECATION")
 	override val fontLoader: Font.ResourceLoader = object : Font.ResourceLoader {}

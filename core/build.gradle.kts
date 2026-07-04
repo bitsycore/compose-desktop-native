@@ -139,6 +139,7 @@ kotlin {
             dependencies {
                 api("org.jetbrains.compose.runtime:runtime:1.11.1")
                 api("org.jetbrains.compose.runtime:runtime-saveable:1.11.1")
+                api("androidx.compose.runtime:runtime-retain:1.11.1")
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.okio)
                 implementation("org.jetbrains.kotlinx:atomicfu:0.23.1")
