@@ -28,8 +28,10 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   through `NativeTextCanvas.drawNativeText`), the DnD engine (`DragAndDropNode`
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
-- Counts: `core/src/commonMain` **100 → 38** `.kt` (`.shim.kt` **30 → 0**),
-  `core/src/vendor` **591 → 1132** (+ real
+- Counts: `core/src/commonMain` **100 → 31** `.kt` (`.shim.kt` **30 → 0**;
+  `androidx.compose.*` namespace **50 → 6** files — only `ui.res.*`,
+  `ui.text.font.FontFamilyResolverExpect`, `ui.text.input.NoOpPlatformTextInputService`
+  and `ui.text.platform.Synchronization` remain), `core/src/vendor` **591 → 1133** (+ real
   `androidx.compose.runtime:runtime-retain` on the classpath —
   `ForgetfulRetainedValuesStore` replaces the project marker; plus
   `androidx.navigationevent:navigationevent-compose`,
