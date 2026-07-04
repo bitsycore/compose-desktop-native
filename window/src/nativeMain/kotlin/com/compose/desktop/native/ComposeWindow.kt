@@ -67,6 +67,15 @@ fun nativeComposeWindow(
     currentTextMeasurer = renderBackend.textMeasurer
     currentImageLoader = renderBackend.imageLoader
 
+    // Wire the URI handler default (LocalUriHandler.current inside vendored
+    // TextLinkScope reads this). Routes to SDL_OpenURL — opens browser / mail
+    // client / file manager on macOS, Linux, and Windows.
+    androidx.compose.ui.platform.installDefaultUriHandler(
+        object : androidx.compose.ui.platform.UriHandler {
+            override fun openUri(uri: String) { openUrl(uri) }
+        }
+    )
+
     // Install the Main dispatcher BEFORE creating the owner: ComposeOwner captures
     // Dispatchers.Main eagerly for its per-node coroutine scopes (the pointerInput /
     // gesture handlers behind upstream clickable/hoverable). If it's installed after,

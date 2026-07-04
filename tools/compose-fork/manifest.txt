@@ -426,11 +426,12 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # ── androidx.compose.foundation.text ────────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/AnnotatedStringResolveInlineContent.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/AnnotatedStringResolveInlineContent.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/AutofillHighlight.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/AutofillHighlight.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicText.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicText.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/ClipboardEventsHandler.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuIcons.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenuStrings.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/CoreTextField.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/CoreTextField.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/InlineTextContent.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/InlineTextContent.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/InternalFoundationTextApi.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/InternalFoundationTextApi.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyCommand.kt                                core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyCommand.kt
@@ -444,7 +445,11 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/PointerMoveDetector.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/text/PointerMoveDetector.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/StringHelpers.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/StringHelpers.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextAutoSize.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextAutoSize.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextDelegate.kt                              core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextDelegate.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldDelegate.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldDelegate.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldPressGestureFilter.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldPressGestureFilter.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextLayoutHelper.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextLayoutHelper.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextLayoutResultProxy.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextLayoutResultProxy.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextLinkScope.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextLinkScope.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextPointerIcon.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TouchMode.kt                                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/TouchMode.kt
@@ -458,25 +463,20 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/KeyMapping.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyMapping.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/UndoManager.native.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/UndoManager.native.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicText.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicText.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicTextField.kt                          core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicTextField.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ClickableText.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/ClickableText.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/CommonContextMenuArea.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/CommonContextMenuArea.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/ContextMenu.kt                             core/src/vendor/common/kotlin/androidx/compose/foundation/text/ContextMenu.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/CoreTextField.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/CoreTextField.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/HeightInLinesModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/KeyboardActionRunner.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/KeyboardActionRunner.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextDelegate.kt                            core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextDelegate.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldCursor.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldCursor.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldDefaultSizeModifier.kt            core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldDefaultSizeModifier.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldDelegate.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldDelegate.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldGestureModifiers.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldGestureModifiers.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldKeyInput.kt                       core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldKeyInput.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldPointerModifier.common.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldPointerModifier.common.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldScroll.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldScroll.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextFieldSize.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextFieldSize.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextLayoutHelper.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextLayoutHelper.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/TextLayoutResultProxy.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/text/TextLayoutResultProxy.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicSecureTextField.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicText.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicText.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/BasicTextField.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/foundation/text/BasicTextField.native.kt
@@ -1251,6 +1251,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextGranularit
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLinkStyles.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLinkStyles.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextPainter.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/text/TextPainter.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TtsAnnotation.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/text/TtsAnnotation.kt
@@ -1261,9 +1263,7 @@ compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AtomicReferenc
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextPainter.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/text/TextPainter.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/ActualParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
@@ -1295,6 +1295,7 @@ compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/font/FontSynth
 
 # ── androidx.compose.ui.text.input ──────────────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
@@ -1310,7 +1311,6 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextInpu
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt        core/src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
 compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
-# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt             core/src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt
 
 # ── androidx.compose.ui.text.internal ───────────────────────────────────────
