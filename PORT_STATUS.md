@@ -29,7 +29,7 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 47** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 962**.
+  `core/src/vendor` **591 → 1065**.
 - **Full CoreTextField + BasicTextField pipeline vendored**: `BasicTextField.kt`
   (upstream, replaces project) + `CoreTextField.kt` (1200+L: LegacyTextFieldState +
   Handle / HandleState + requestFocusAndShowKeyboardIfNeeded) + `TextFieldKeyInput` +
