@@ -28,10 +28,16 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   through `NativeTextCanvas.drawNativeText`), the DnD engine (`DragAndDropNode`
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
-- Counts: `core/src/commonMain` **100 → 47** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 1074** (+ real
+- Counts: `core/src/commonMain` **100 → 42** `.kt` (`.shim.kt` **30 → 1**),
+  `core/src/vendor` **591 → 1107** (+ real
   `androidx.compose.runtime:runtime-retain` on the classpath —
-  `ForgetfulRetainedValuesStore` replaces the project marker).
+  `ForgetfulRetainedValuesStore` replaces the project marker; plus
+  `androidx.navigationevent:navigationevent-compose`,
+  `androidx.savedstate:savedstate` /
+  `androidx.savedstate:savedstate-compose` /
+  `androidx.lifecycle:lifecycle-viewmodel-compose` /
+  `androidx.lifecycle:lifecycle-runtime-compose` for the vendored
+  back-handler + saved-state / view-model plumbing).
 - **Full CoreTextField + BasicTextField pipeline vendored**: `BasicTextField.kt`
   (upstream, replaces project) + `CoreTextField.kt` (1200+L: LegacyTextFieldState +
   Handle / HandleState + requestFocusAndShowKeyboardIfNeeded) + `TextFieldKeyInput` +
