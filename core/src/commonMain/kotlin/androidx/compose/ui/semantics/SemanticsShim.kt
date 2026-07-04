@@ -273,3 +273,11 @@ object SemanticsProperties {
 var SemanticsPropertyReceiver.maxTextLength: Int
 	get() = Int.MAX_VALUE
 	set(value) = Unit
+
+// ============
+//  Page navigation actions — Pager reads these.
+
+fun SemanticsPropertyReceiver.pageUp(label: String? = null, action: (() -> Boolean)?) = Unit
+fun SemanticsPropertyReceiver.pageDown(label: String? = null, action: (() -> Boolean)?) = Unit
+fun SemanticsPropertyReceiver.pageLeft(label: String? = null, action: (() -> Boolean)?) = Unit
+fun SemanticsPropertyReceiver.pageRight(label: String? = null, action: (() -> Boolean)?) = Unit
