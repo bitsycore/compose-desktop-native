@@ -258,3 +258,13 @@ fun SemanticsPropertyReceiver.clearTextSubstitution(
 	label: String? = null,
 	action: (() -> Boolean)?,
 ) = Unit
+
+// ============
+//  SemanticsProperties — object holding a few SemanticsPropertyKey constants
+//  that vendored files import as `SemanticsProperties.X`. Upstream declares
+//  a big companion catalog in SemanticsProperties.kt (1739L) — we only
+//  surface the keys that vendored code names by qualified path.
+
+object SemanticsProperties {
+	val LinkTestMarker = SemanticsPropertyKey<Unit>("LinkTestMarker")
+}
