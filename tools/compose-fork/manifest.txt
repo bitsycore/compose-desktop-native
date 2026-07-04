@@ -517,8 +517,8 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt
 
 # ── androidx.compose.foundation.text.handwriting ────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.native.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.native.kt
 
 # ── androidx.compose.foundation.text.input ──────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt    core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt
@@ -1127,63 +1127,63 @@ compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.nativ
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/RootNodeOwner.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/node/RootNodeOwner.native.kt
 
 # ── androidx.compose.ui.platform ────────────────────────────────────────────
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AtomicInt.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/AtomicInt.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/DebugUtils.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/DebugUtils.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InspectableValue.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/platform/InspectableValue.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InspectionMode.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/platform/InspectionMode.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InvertMatrix.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/InvertMatrix.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt              core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoundEffect.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoundEffect.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TestTag.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/platform/TestTag.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbar.kt                                 core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbar.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/UriHandler.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/UriHandler.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/WindowInfo.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/WindowInfo.kt
-compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Atomic.nonJvm.kt                               core/src/vendor/native/kotlin/androidx/compose/ui/platform/Atomic.native.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.native.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.native.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AtomicInt.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/platform/AtomicInt.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClassHelpers.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClassHelpers.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Clipboard.kt                                     core/src/vendor/common/kotlin/androidx/compose/ui/platform/Clipboard.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ClipboardManager.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/platform/ClipboardManager.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/DebugUtils.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/DebugUtils.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/platform/InfiniteAnimationPolicy.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InspectableValue.kt                              core/src/vendor/common/kotlin/androidx/compose/ui/platform/InspectableValue.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InspectionMode.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/InspectionMode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/InvertMatrix.kt                                  core/src/vendor/common/kotlin/androidx/compose/ui/platform/InvertMatrix.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt                core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/ShapeContainingUtil.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoundEffect.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/SoundEffect.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt                                core/src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt                               core/src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TestTag.kt                                       core/src/vendor/common/kotlin/androidx/compose/ui/platform/TestTag.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbar.kt                                   core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbar.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/UriHandler.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/UriHandler.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt                             core/src/vendor/common/kotlin/androidx/compose/ui/platform/ViewConfiguration.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/WindowInfo.kt                                    core/src/vendor/common/kotlin/androidx/compose/ui/platform/WindowInfo.kt
+compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Atomic.nonJvm.kt                                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/Atomic.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultAccessibilityManager.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultHapticFeedback.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.native.kt
+compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/platform/NativeActuals.kt                                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/NativeActuals.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt               core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt
+# compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Actuals.nonJvm.kt                              core/src/vendor/native/kotlin/androidx/compose/ui/platform/Actuals.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultNavigationEventDispatcherOwner.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultNavigationEventDispatcherOwner.native.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultUiApplier.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultUiApplier.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultViewModelOwnerStore.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultViewModelOwnerStore.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DisposableSaveableStateRegistry.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/platform/DisposableSaveableStateRegistry.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FrameRecomposer.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/FrameRecomposer.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt
-compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/platform/NativeActuals.kt                               core/src/vendor/native/kotlin/androidx/compose/ui/platform/NativeActuals.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.native.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt             core/src/vendor/common/kotlin/androidx/compose/ui/platform/PlatformTextInputModifierNode.kt
-# compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Actuals.nonJvm.kt                            core/src/vendor/native/kotlin/androidx/compose/ui/platform/Actuals.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultUiApplier.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultUiApplier.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DisposableSaveableStateRegistry.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/platform/DisposableSaveableStateRegistry.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FrameRecomposer.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/FrameRecomposer.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformUriHandler.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformUriHandler.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/platform/Subcomposition.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/Synchronization.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Wrapper.skiko.kt                              core/src/vendor/native/kotlin/androidx/compose/ui/platform/Wrapper.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformUriHandler.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformUriHandler.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/platform/Subcomposition.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/Synchronization.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Wrapper.skiko.kt                                core/src/vendor/native/kotlin/androidx/compose/ui/platform/Wrapper.native.kt
 
 # ── androidx.compose.ui.relocation ──────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt
