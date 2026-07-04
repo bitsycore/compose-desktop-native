@@ -84,7 +84,7 @@ compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animatio
 compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.native.kt
 
 # ── androidx.compose.animation.graphics ─────────────────────────────────────
-# compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt  core/src/vendor/common/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt
+compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt  core/src/vendor/common/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt
 
 # ── androidx.compose.animation.graphics.vector ──────────────────────────────
 # compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt     core/src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt
@@ -465,6 +465,7 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/DeadKeyCombiner.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyEventHelpers.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/KeyMapping.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/foundation/text/KeyMapping.native.kt
+# compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/text/StringHelpers.nonJvm.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/UndoManager.native.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/UndoManager.native.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicSecureTextField.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/BasicText.kt                               core/src/vendor/common/kotlin/androidx/compose/foundation/text/BasicText.kt
@@ -484,7 +485,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CoreTextField.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/foundation/text/CoreTextField.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.native.kt
 # compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/NativeCursorHandle.native.kt               core/src/vendor/native/kotlin/androidx/compose/foundation/text/NativeCursorHandle.native.kt
-# compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/text/StringHelpers.nonJvm.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/StringHelpers.native.kt
 # compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/TextFieldCursor.native.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldCursor.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldDelegate.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldDelegate.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextFieldFocusModifier.native.kt
@@ -691,6 +691,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt
+compose/foundation/foundation/src/macosMain/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.macos.kt     core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/PlatformSelectionBehaviors.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.native.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/selection/SelectionManager.native.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/SelectionManager.native.kt
@@ -699,7 +700,6 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextPreparedSelection.kt             core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextPreparedSelection.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextSelectionDelegate.kt             core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextSelectionDelegate.kt
-# compose/foundation/foundation/src/macosMain/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.macos.kt   core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.native.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.native.kt
 # compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.native.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.native.kt
 
@@ -980,7 +980,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerButt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerEvent.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerEvent.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/PointerInputEvent.native.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.nonJvm.kt  core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SuspendingPointerInputFilter.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/SyntheticEventSender.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/input/pointer/TestPointerInputEventData.native.kt
 
 # ── androidx.compose.ui.input.pointer.util ──────────────────────────────────
@@ -1048,8 +1048,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
 
@@ -1115,10 +1115,10 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TouchBoundsExpansio
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/TraversableNode.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/node/TraversableNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt             core/src/vendor/common/kotlin/androidx/compose/ui/node/UnplacedAwareModifierNode.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/node/WeakReference.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/node/WeakReference.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/DragAndDropOwner.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/node/DragAndDropOwner.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt
 compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.native.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/node/WeakReference.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/DragAndDropOwner.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/node/DragAndDropOwner.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/EmptySemanticsElement.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/node/EmptySemanticsElement.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/node/FrameRateVoteCollector.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.native.kt
@@ -1252,6 +1252,7 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextInclusionS
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextLinkStyles.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/text/TextLinkStyles.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextPainter.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/text/TextPainter.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextRange.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
@@ -1263,7 +1264,6 @@ compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/AtomicReferenc
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
 compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurerHelper.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/ActualParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt              core/src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
