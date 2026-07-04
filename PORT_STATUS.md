@@ -29,7 +29,7 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 42** `.kt` (`.shim.kt` **30 → 1**),
-  `core/src/vendor` **591 → 1107** (+ real
+  `core/src/vendor` **591 → 1113** (+ real
   `androidx.compose.runtime:runtime-retain` on the classpath —
   `ForgetfulRetainedValuesStore` replaces the project marker; plus
   `androidx.navigationevent:navigationevent-compose`,
