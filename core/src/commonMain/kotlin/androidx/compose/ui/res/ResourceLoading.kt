@@ -2,7 +2,7 @@ package androidx.compose.ui.res
 
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.painter.ResourcePainter
+import com.compose.desktop.native.res.ResourcePainter
 
 // ==================
 // MARK: ResourceKind

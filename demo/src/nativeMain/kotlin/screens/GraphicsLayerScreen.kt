@@ -67,7 +67,7 @@ internal fun GraphicsLayerScreen() {
 					Box(
 						modifier = Modifier
 							.size(64.dp)
-							.graphicsLayer(cacheKey = "tile-$vI"),
+							.graphicsLayer(),
 					) {
 						Canvas(modifier = Modifier.size(64.dp)) {
 							drawCircle(color = vPrimary, radius = 22f, center = Offset(32f, 32f))
@@ -87,7 +87,6 @@ internal fun GraphicsLayerScreen() {
 							.size(64.dp)
 							.graphicsLayer(
 								rotationZ = vSpin + vI * 30f,
-								cacheKey = "combo-$vI",
 							),
 					) {
 						Canvas(modifier = Modifier.size(64.dp)) {

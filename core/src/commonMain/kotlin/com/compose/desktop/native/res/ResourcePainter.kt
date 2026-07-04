@@ -1,8 +1,9 @@
-package androidx.compose.ui.graphics.painter
+package com.compose.desktop.native.res
 
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.ResourceKind
 import androidx.compose.ui.res.currentImageLoader
 import com.compose.desktop.native.graphics.NativePainterCanvas
