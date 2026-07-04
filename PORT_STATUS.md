@@ -29,12 +29,26 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 51** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 786**.
+  `core/src/vendor` **591 → 795**.
 - `ModifierElements.kt` trimmed — 6 dead project modifier pairs deleted
   (Background / Border / DrawBehind / Focusable / LayoutWeight / Alpha —
   all replaced by their vendored upstream equivalents).
 - 3 project actuals swapped out for byte-identical upstream: FontSynthesis,
   ContextMenuIcons, InteropViewFactoryHolder.
+- **Selection engine — passive registry side vendored** (Phases A+B, 13 files):
+  Selectable / SelectionRegistrar / SelectionRegistrarImpl / Selection /
+  SelectionAdjustment / SelectionHelpers / SelectionLayout / SelectionMagnifier /
+  SimpleLayout / PlatformSelectionBehaviors (+.skiko) / TextSelectionColors /
+  TextSelectionDelegate / MultiWidgetSelectionDelegate + foundation/text/
+  LongPressTextDragObserver. Project `Selection.kt` / `SelectionContainer.kt`
+  retired; project `BasicText.kt` no longer routes through selection (leaf
+  only). Manager side (`SelectionContainer` + `SelectionManager` 1804L +
+  `TextFieldSelectionManager` 1503L + gestures + handles + prepared-selection
+  + `SelectionMode` + `SelectionState`) is NOT vendored — needs
+  `foundation.contextmenu.*`, `TextContextMenuItems`, `Handle`,
+  `DefaultMouseSelectionObserver`, toolbar-modifier family, all unvendored.
+  A pass-through `SelectionContainerStub` keeps existing call sites
+  compiling; nothing selects text via SelectionContainer at runtime yet.
 - Full **mingwX64** (SDL) + **macOS Skia** + **macOS `-Prenderer=sdl3`** graph is
   compile-green. All verification probes PASS (see [Verification](#verification)).
 
