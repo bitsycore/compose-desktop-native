@@ -862,13 +862,13 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/TileMo
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/TransformOrigin.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/TransformOrigin.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/VertexMode.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/graphics/VertexMode.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/Vertices.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/Vertices.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt                 core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt                     core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt           core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt              core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/graphics/BaseMeshGradientRenderer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/DefaultMeshGradientRenderer.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/graphics/Matrices.native.kt
