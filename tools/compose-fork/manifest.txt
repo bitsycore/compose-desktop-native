@@ -153,11 +153,11 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/c
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.native.kt
 
 # ── androidx.compose.foundation.contextmenu ─────────────────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.native.kt
 
 # ── androidx.compose.foundation.draganddrop ─────────────────────────────────
@@ -492,11 +492,11 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/TextPointerIcon.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/TextPointerIcon.native.kt
 
 # ── androidx.compose.foundation.text.contextmenu.builder ────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/contextmenu/builder/TextContextMenuBuilderScope.native.kt
 
 # ── androidx.compose.foundation.text.contextmenu.data ───────────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.kt
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/contextmenu/data/TextContextMenuData.native.kt
 
 # ── androidx.compose.foundation.text.contextmenu.gestures ───────────────────
@@ -508,13 +508,13 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 # compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.native.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/text/contextmenu/internal/ProvideDefaultPlatformTextContextMenuProviders.native.kt
 
 # ── androidx.compose.foundation.text.contextmenu.modifier ───────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuGesturesModifier.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuGesturesModifier.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuModifier.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuModifier.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuToolbarHandlerModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuToolbarHandlerModifier.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuGesturesModifier.kt        core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuGesturesModifier.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuModifier.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuModifier.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuToolbarHandlerModifier.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/modifier/TextContextMenuToolbarHandlerModifier.kt
 
 # ── androidx.compose.foundation.text.contextmenu.provider ───────────────────
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/BasicTextContextMenuProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/BasicTextContextMenuProvider.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/BasicTextContextMenuProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/BasicTextContextMenuProvider.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/contextmenu/provider/TextContextMenuProvider.kt
 
 # ── androidx.compose.foundation.text.handwriting ────────────────────────────
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.kt
@@ -682,6 +682,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionAdjustment.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionAdjustment.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionHelpers.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionHelpers.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionLayout.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionLayout.kt
+# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionManager.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionManager.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrar.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrar.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrarImpl.kt              core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionRegistrarImpl.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt                        core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SimpleLayout.kt
@@ -691,7 +692,6 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionGestures.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionHandles.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionMagnifier.kt                core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionMagnifier.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionManager.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionManager.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionMode.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionMode.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/SelectionState.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextFieldSelectionManager.kt
