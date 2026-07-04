@@ -29,7 +29,7 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 51** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 795**.
+  `core/src/vendor` **591 → 804**.
 - `ModifierElements.kt` trimmed — 6 dead project modifier pairs deleted
   (Background / Border / DrawBehind / Focusable / LayoutWeight / Alpha —
   all replaced by their vendored upstream equivalents).
