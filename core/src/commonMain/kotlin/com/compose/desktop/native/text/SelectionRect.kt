@@ -1,4 +1,4 @@
-package androidx.compose.foundation.text.selection
+package com.compose.desktop.native.text
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

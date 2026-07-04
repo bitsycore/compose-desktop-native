@@ -22,7 +22,7 @@ import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import com.compose.desktop.native.layout.y
-import androidx.compose.foundation.text.selection.SelectionRect
+import com.compose.desktop.native.text.SelectionRect
 import com.compose.desktop.native.modifier.onTextInput
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
