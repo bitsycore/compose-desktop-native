@@ -415,13 +415,13 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 
 # ── androidx.compose.foundation.style ───────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ExperimentalFoundationStyleApi.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/style/ExperimentalFoundationStyleApi.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/Style.kt                         core/src/vendor/common/kotlin/androidx/compose/foundation/style/Style.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleAnimations.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleAnimations.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleModifier.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleProperties.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleProperties.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleScope.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleScope.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleState.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleState.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/style/ResolvedStyle.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/Style.kt                           core/src/vendor/common/kotlin/androidx/compose/foundation/style/Style.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleAnimations.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleAnimations.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleModifier.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleModifier.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleProperties.kt                 core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleProperties.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleScope.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleScope.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/style/StyleState.kt                      core/src/vendor/common/kotlin/androidx/compose/foundation/style/StyleState.kt
 
 # ── androidx.compose.foundation.text ────────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/AnnotatedStringResolveInlineContent.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/text/AnnotatedStringResolveInlineContent.kt
