@@ -268,3 +268,8 @@ fun SemanticsPropertyReceiver.clearTextSubstitution(
 object SemanticsProperties {
 	val LinkTestMarker = SemanticsPropertyKey<Unit>("LinkTestMarker")
 }
+
+/** `Modifier.semantics { maxTextLength = 10 }` — accept-and-discard. */
+var SemanticsPropertyReceiver.maxTextLength: Int
+	get() = Int.MAX_VALUE
+	set(value) = Unit
