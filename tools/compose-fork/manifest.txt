@@ -1189,6 +1189,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCach
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt  core/src/vendor/common/kotlin/androidx/compose/ui/relocation/BringIntoViewModifierNode.kt
 
 # ── androidx.compose.ui.scene ───────────────────────────────────────────────
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeScenePointer.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeScenePointer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/BaseComposeScene.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/scene/BaseComposeScene.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/CanvasLayersComposeScene.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/scene/CanvasLayersComposeScene.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeScene.skiko.kt                 core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeScene.native.kt
@@ -1197,7 +1198,6 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/relocation/BringIntoView
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneFocusManager.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneFocusManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeScenePointer.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeScenePointer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.kt   core/src/vendor/native/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.kt
 
@@ -1371,7 +1371,7 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt   
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
 compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt      core/src/vendor/native/kotlin/androidx/compose/ui/unit/DpInsets.native.kt
 compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/ui/unit/FontScaling.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/unit/Geometry.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/unit/Geometry.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/unit/Geometry.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/unit/Geometry.native.kt
 
 # ── androidx.compose.ui.unit.internal ───────────────────────────────────────
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt         core/src/vendor/common/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt
