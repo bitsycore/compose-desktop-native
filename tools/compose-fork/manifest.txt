@@ -1160,6 +1160,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FlushCoroutineDi
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FrameRecomposer.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/ui/platform/FrameRecomposer.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.native.kt
 compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/platform/NativeActuals.kt                                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/NativeActuals.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
@@ -1176,7 +1177,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCach
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformUriHandler.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformUriHandler.native.kt
