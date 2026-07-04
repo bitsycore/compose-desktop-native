@@ -1369,8 +1369,8 @@ compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt    
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/LayoutDirection.kt              core/src/vendor/common/kotlin/androidx/compose/ui/unit/LayoutDirection.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/TextUnit.kt
 compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
+compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt      core/src/vendor/native/kotlin/androidx/compose/ui/unit/DpInsets.native.kt
 compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/ui/unit/FontScaling.native.kt
-# compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt    core/src/vendor/native/kotlin/androidx/compose/ui/unit/DpInsets.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/unit/Geometry.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/unit/Geometry.native.kt
 
 # ── androidx.compose.ui.unit.internal ───────────────────────────────────────
