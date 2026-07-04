@@ -62,11 +62,17 @@ wrong design:
 
 - `compose-ref.txt` — pinned upstream commit of JetBrains/compose-multiplatform-core
   (currently `1be9d64a` = `v1.12.0-beta01+dev4324`).
-- `manifest.txt` — `<upstream-path>  <dest-under-repo>`; the list of verbatim-vendored files.
-- `sync.sh` — clones the ref (sparse: ui/foundation/animation) to `$CMP_REF` or
-  `../cmp-ref`, then copies each manifest file **byte-for-byte verbatim** into
-  `core/src/vendor/{common,native}/kotlin/`. Idempotent; `git diff` after a
-  re-sync shows upstream drift. **Never hand-edit `core/src/vendor/**`** — see its README.
+- `<module>/compose-fork.txt` — per-module manifest (co-located with the
+  module's `build.gradle.kts`). Currently only `:core` carries one; a future
+  `:material3` module would add its own. Each line is
+  `<upstream-path>  <dest-relative-to-this-module>`.
+- `sync.sh` — clones the ref (sparse-checkout is the union of upstream modules
+  referenced by the selected manifests) to `$CMP_REF` or `../cmp-ref`, then
+  copies each manifest entry **byte-for-byte verbatim** into
+  `<module>/src/vendor/{common,native}/kotlin/`. `bash sync.sh :core` targets
+  one module; `bash sync.sh` (no arg) hits every manifest under the repo.
+  Idempotent; `git diff` after a re-sync shows upstream drift.
+  **Never hand-edit `**/src/vendor/**`** — see the README under `tools/compose-fork/`.
 
 ### On macOS (first time)
 

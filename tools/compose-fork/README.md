@@ -2,65 +2,75 @@
 
 This directory is the tooling that vendors **byte-for-byte verbatim** source
 files from [`JetBrains/compose-multiplatform-core`](https://github.com/JetBrains/compose-multiplatform-core)
-into `core/src/vendor/`. See [`../../PORT_STATUS.md`](../../PORT_STATUS.md)
-for the overall port strategy and [`../../CLAUDE.md`](../../CLAUDE.md) → "Compose
-API Fidelity" for the three fix strategies (pull-verbatim / surface-match /
-intentional-custom).
+into the repo. See [`../../PORT_STATUS.md`](../../PORT_STATUS.md) for the overall
+port strategy and [`../../CLAUDE.md`](../../CLAUDE.md) → "Compose API Fidelity"
+for the three fix strategies (pull-verbatim / surface-match / intentional-custom).
 
 ## The vendored files are NOT committed
 
-`core/src/vendor/` is **gitignored** — it is a generated artifact, not source.
-Only the tooling in this directory is tracked:
+`<module>/src/vendor/` is **gitignored** — it is a generated artifact, not
+source. Only the tooling here and the per-module manifests are tracked:
 
 | File | Purpose |
 | --- | --- |
-| `sync.sh` | Idempotent script that canonicalizes the manifest then copies each active entry verbatim from the pinned upstream ref. |
-| `manifest.txt` | One line per file (`<upstream-path>  <repo-dest>`), grouped by androidx package. Uncommented = vendored; commented = a not-yet-vendored candidate. |
-| `format-manifest.py` | Canonicalizes `manifest.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone. |
+| `sync.sh` | Idempotent script that canonicalizes the selected manifest(s) then copies each active entry verbatim from the pinned upstream ref. |
+| `format-manifest.py` | Canonicalizes a `compose-fork.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone. |
 | `compose-ref.txt` | The pinned upstream commit the vendored files are synced from. |
 | `README.md` | This file. |
+| `../../<module>/compose-fork.txt` | Per-module manifest — lives **alongside the module's `build.gradle.kts`**. Today only `:core` has one; a future `:material3` module would add its own. |
 
-## Manifest layout
+## Manifest layout — per module, co-located with `build.gradle.kts`
 
-`manifest.txt` is grouped by androidx package in hierarchy (alphabetical)
-order under `# ── androidx.compose.<pkg> ──` headers. Within each package the
-**vendored** (uncommented) entries come first, then the **not-yet-vendored**
-(commented) candidates below. `format-manifest.py` regenerates exactly this
-layout — deduping by dest (last active line wins, matching `sync.sh`'s copy
-order) and dropping stray comments. It is idempotent and a pure re-layout: the
-set of active `upstream → dest` pairs is preserved, so the vendored tree is
-byte-identical. `sync.sh` runs it automatically before copying; run it yourself
-after hand-editing:
+Each Gradle module that vendors upstream code carries its own `compose-fork.txt`
+next to its `build.gradle.kts`. That file lists every upstream file the module
+vendors:
+
+```
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Modifier.kt   src/vendor/common/kotlin/androidx/compose/ui/Modifier.kt
+```
+
+The destination is **relative to the manifest's own directory** (so `core/`
+paths don't have a `core/` prefix — the manifest already lives in `core/`).
+Entries are grouped by androidx package in hierarchy (alphabetical) order under
+`# ── androidx.compose.<pkg> ──` headers. Within each package the **vendored**
+(uncommented) entries come first, then the **not-yet-vendored** (commented)
+candidates below.
+
+`format-manifest.py` regenerates exactly this layout — deduping by dest (last
+active line wins, matching `sync.sh`'s copy order) and dropping stray comments.
+It is idempotent and a pure re-layout: the set of active `upstream → dest`
+pairs is preserved, so the vendored tree is byte-identical. `sync.sh` runs it
+automatically before copying; run it yourself after hand-editing:
 
 ```bash
-python3 tools/compose-fork/format-manifest.py                 # rewrite in place
-python3 tools/compose-fork/format-manifest.py --check          # exit 1 if not canonical
-python3 tools/compose-fork/format-manifest.py --discover PATH  # + surface new upstream files
+python3 tools/compose-fork/format-manifest.py                                       # rewrite EVERY <module>/compose-fork.txt
+python3 tools/compose-fork/format-manifest.py --manifest core/compose-fork.txt      # single manifest
+python3 tools/compose-fork/format-manifest.py --check                               # exit 1 if any manifest is not canonical
+python3 tools/compose-fork/format-manifest.py --discover PATH                       # + surface new upstream files
 ```
 
 ### Discovering new upstream files
 
-`--discover <clone>` (or `$CMP_REF`) scans the tracked modules
-(`compose/{ui,foundation,animation}`) in the upstream clone across the mirrored
-source sets (`commonMain`, `nonJvmMain`, `nativeMain`, `nonAndroidMain`,
-`skikoMain`) and adds any `.kt` **not already listed** as a commented candidate
-under its package section, with a best-guess dest (refine when you vendor it;
-only the upstream path is deduped, so curated entries keep their dests).
-`sync.sh` runs `--discover $CMP_REF` automatically after cloning, so a
+`--discover <clone>` (or `$CMP_REF`) scans, for each manifest, every
+`compose/<area>/<module>` upstream module the manifest already references, and
+adds any `.kt` **not already listed** as a commented candidate under its
+package section, with a best-guess dest (refine when you vendor it; only the
+upstream path is deduped, so curated entries keep their dests). `sync.sh` runs
+`--discover $CMP_REF` automatically after cloning per manifest, so a
 `compose-ref.txt` bump surfaces newly-added upstream files as candidates.
-JVM / Android / JS / test source sets are intentionally skipped.
+Source sets mirrored: `commonMain`, `nonJvmMain`, `nativeMain`, `nonAndroidMain`,
+`skikoMain`. JVM / Android / JS / test are intentionally skipped.
 
-Because the copies are verbatim, provenance lives entirely in `manifest.txt` +
-`compose-ref.txt`. **Never hand-edit a file under `core/src/vendor/`** — change
-the manifest or the ref and re-run `sync.sh` instead. Hand-written glue
-(shims, `expect`/`actual` actuals, project-specific code) lives outside the
-vendor tree — in `core/src/commonMain/` (`*.shim.kt`) and
-`core/src/nativeMain/` (`*.native.kt`) — and IS committed.
+Because the copies are verbatim, provenance lives entirely in
+`<module>/compose-fork.txt` + `compose-ref.txt`. **Never hand-edit a file under
+`<module>/src/vendor/`** — change the manifest or the ref and re-run `sync.sh`
+instead. Hand-written glue (shims, `expect`/`actual` actuals, project-specific
+code) lives outside the vendor tree and IS committed.
 
 ## Bootstrapping a fresh checkout
 
 The build needs the vendored files present on disk. After cloning this repo
-you must populate `core/src/vendor/` once before building:
+you must populate `<module>/src/vendor/` once before building:
 
 ```bash
 # Clones/updates the sparse upstream checkout at $CMP_REF (default ../cmp-ref)
@@ -68,22 +78,61 @@ you must populate `core/src/vendor/` once before building:
 CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh
 ```
 
-Re-run any time after editing `manifest.txt` or bumping `compose-ref.txt`.
+## Syncing selectively — per-module
+
+`sync.sh` accepts one or more arguments identifying which manifests to run:
+
+```bash
+bash tools/compose-fork/sync.sh                              # every <module>/compose-fork.txt in the repo
+bash tools/compose-fork/sync.sh :core                        # Gradle path
+bash tools/compose-fork/sync.sh core                         # module name (same thing)
+bash tools/compose-fork/sync.sh :material-symbols:outlined   # nested Gradle path
+bash tools/compose-fork/sync.sh core/compose-fork.txt        # direct path to a manifest
+bash tools/compose-fork/sync.sh :core :material              # multiple
+```
+
+Argument resolution:
+
+| Form | Resolves to |
+| --- | --- |
+| `:foo:bar` | `foo/bar/compose-fork.txt` |
+| `foo/bar` | `foo/bar/compose-fork.txt` |
+| `foo`     | `foo/compose-fork.txt` |
+| `path/to/file.txt` | that path |
+
+Re-run any time after editing a manifest or bumping `compose-ref.txt`.
 The script is idempotent.
 
-## Adding a file to the vendor set
+## Adding an upstream module
 
-1. Find the upstream path (in the `$CMP_REF` clone, or its package section in
-   `manifest.txt` where it may already be listed, commented out).
-2. Add / uncomment its `<upstream-path>  <repo-dest>` line under the matching
-   `# ── androidx.compose.<pkg> ──` section. Destinations map source sets:
-   `commonMain` → `core/src/vendor/common/`,
-   `nonJvmMain`/`nativeMain`/`skikoMain` → `core/src/vendor/native/`, Skia
-   renderer sources → `core/src/vendor/skikoRenderer/`. Exact placement /
-   ordering doesn't matter — `sync.sh` re-canonicalizes it.
-3. Run `sync.sh` (canonicalizes the manifest, then copies).
-4. Build all five paths and add any hand-written glue the new file needs
-   (shims / actuals) outside the vendor tree.
+If you want to vendor a Compose module we don't yet cover (e.g. `material3`):
+
+1. Create the module in the repo if needed (`material3/build.gradle.kts` etc.),
+   and add its `include(":material3")` to `settings.gradle.kts`.
+2. Create `material3/compose-fork.txt` with the standard header (any comment;
+   `format-manifest.py` will fix the layout). Populate it either by hand or by
+   letting `--discover` seed it:
+   ```bash
+   # Add ONE commented candidate to seed the upstream module reference, then
+   # let discover fill in the rest:
+   printf '# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Placeholder.kt  src/vendor/common/kotlin/androidx/compose/material3/Placeholder.kt\n' > material3/compose-fork.txt
+   CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh :material3
+   ```
+3. Uncomment the entries you actually want to vendor, then re-run `sync.sh
+   :material3`.
+
+## Adding a file to an existing module's vendor set
+
+1. Find the upstream path in the module's `compose-fork.txt` — it may already
+   be listed, commented out.
+2. Add / uncomment its `<upstream-path>  <dest>` line under the matching
+   `# ── androidx.compose.<pkg> ──` section. Destinations are relative to the
+   module dir: `commonMain` → `src/vendor/common/`, `nonJvmMain` /
+   `nativeMain` / `skikoMain` → `src/vendor/native/`. Exact placement /
+   ordering doesn't matter — `sync.sh` re-canonicalizes.
+3. Run `sync.sh :<module>` (canonicalizes the manifest, then copies).
+4. Build and add any hand-written glue the new file needs (shims / actuals)
+   outside the vendor tree.
 
 ## Bumping the upstream ref
 

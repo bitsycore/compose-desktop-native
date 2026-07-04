@@ -169,7 +169,9 @@ git checkout phase9
 #    shallow copy of JetBrains/compose-multiplatform-core into ../cmp-ref (override
 #    with CMP_REF=<path>) at the SHA in tools/compose-fork/compose-ref.txt
 #    (currently 1be9d64… = v1.12.0-beta01+dev4324), then copies every active
-#    manifest entry verbatim. Idempotent; re-run after editing manifest.txt.
+#    entry from every <module>/compose-fork.txt in the repo verbatim. Add
+#    `:core` (or another module name / gradle path) to sync just one module.
+#    Idempotent; re-run after editing any manifest.
 CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh
 ```
 
@@ -212,9 +214,10 @@ grep `core/src/skikoRendererMain/` + `skikoRenderer{Macos,Linux}Main/` manually
 
 ## The vendoring workflow (how to add more)
 
-1. Everything upstream is vendored **byte-for-byte** via
-   `tools/compose-fork/manifest.txt` (one line: `<upstream-path>  <repo-dest>`).
-   Uncommented = vendored; `# `-commented = a not-yet-vendored candidate.
+1. Everything upstream is vendored **byte-for-byte** via a per-module manifest
+   at `<module>/compose-fork.txt` (co-located with the module's `build.gradle.kts`).
+   Each line: `<upstream-path>  <dest-relative-to-this-module>`. Uncommented =
+   vendored; `# `-commented = a not-yet-vendored candidate.
 2. To vendor a file: **uncomment its manifest line** (or add it), then run
    `bash tools/compose-fork/sync.sh`. Dest maps source sets: `commonMain →
    core/src/vendor/common/`, `nativeMain`/`nonJvmMain`/`skikoMain →
@@ -429,5 +432,5 @@ data classes in `com.compose.desktop.native.*`, the project input modifiers
   `Dispatchers.setMain` order, per-frame anim clock + snapshot pumps.
 - `core/src/commonMain/.../ui/semantics/SemanticsShim.kt` — accept-and-discard
   semantics props (add here when a vendored file needs a new one).
-- `tools/compose-fork/manifest.txt` — the vendor set.
+- `<module>/compose-fork.txt` — per-module vendor set (e.g. `core/compose-fork.txt`).
 - `demo/src/nativeMain/kotlin/Main.kt` — the `--*test` probes.
