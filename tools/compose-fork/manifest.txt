@@ -1328,12 +1328,12 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformL
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt      core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt               core/src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 # compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt             core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/PlatformFont.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/PlatformFont.native.kt
-# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/Synchronization.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/text/platform/Synchronization.native.kt
