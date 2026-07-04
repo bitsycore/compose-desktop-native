@@ -29,7 +29,11 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 54** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 918**.
+  `core/src/vendor` **591 → 921**.
+- Additional: `TraversableNodeInDrawOrder.skiko` +
+  `foundation.text.handwriting.StylusHandwriting` + skiko actual +
+  `contextmenu.internal.ProvideDefaultPlatformTextContextMenuProviders` +
+  its native no-op actual.
 - **BasicText upstream vendor + icon-font decouple — DONE**:
   * project `BasicText` retired; upstream `foundation.text.BasicText.kt` is
     the source of truth. All overloads (String / AnnotatedString /
