@@ -3,8 +3,8 @@ package com.compose.desktop.native.renderer.skia
 import com.compose.desktop.native.*
 
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.AndroidVectorToSvg
-import androidx.compose.ui.res.ResourceKind
+import com.compose.desktop.native.res.AndroidVectorToSvg
+import com.compose.desktop.native.res.ResourceKind
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color

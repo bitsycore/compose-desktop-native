@@ -26,8 +26,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.currentClipboard
-import androidx.compose.ui.res.ResourceKind
-import androidx.compose.ui.res.painterResource
+import com.compose.desktop.native.res.ResourceKind
+import com.compose.desktop.native.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import com.compose.desktop.native.text.currentTextMeasurer
 import androidx.compose.ui.text.font.FontWeight

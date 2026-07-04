@@ -10,7 +10,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
-import androidx.compose.ui.res.*
+import com.compose.desktop.native.res.*
 import androidx.compose.ui.unit.*
 import composeresources.generated.*
 

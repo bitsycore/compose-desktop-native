@@ -196,7 +196,7 @@ internal class ComposeOwner(
 	override val rootForTest: RootForTest = object : RootForTest {
 		override val density: Density = this@ComposeOwner.density
 		override val semanticsOwner = SemanticsOwner(this@ComposeOwner.root, androidx.compose.ui.semantics.EmptySemanticsModifier(), this@ComposeOwner.layoutNodes)
-		override val textInputService = TextInputService(androidx.compose.ui.text.input.NoOpPlatformTextInputService)
+		override val textInputService = TextInputService(com.compose.desktop.native.text.input.NoOpPlatformTextInputService)
 		override fun sendKeyEvent(keyEvent: androidx.compose.ui.input.key.KeyEvent): Boolean = false
 	}
 	override val hapticFeedBack: HapticFeedback = object : HapticFeedback {
@@ -246,7 +246,7 @@ internal class ComposeOwner(
 	override val autofill: Autofill? = null
 	override val autofillManager: AutofillManager? = null
 	@Suppress("DEPRECATION")
-	override val textInputService: TextInputService = TextInputService(androidx.compose.ui.text.input.NoOpPlatformTextInputService)
+	override val textInputService: TextInputService = TextInputService(com.compose.desktop.native.text.input.NoOpPlatformTextInputService)
 	override val softwareKeyboardController: SoftwareKeyboardController =
 		object : SoftwareKeyboardController {
 			override fun show() = Unit
@@ -285,7 +285,7 @@ internal class ComposeOwner(
 		override fun load(font: Font): Any = Unit
 	}
 	override val fontFamilyResolver: FontFamily.Resolver =
-		androidx.compose.ui.text.font.projectFontFamilyResolver
+		com.compose.desktop.native.text.font.projectFontFamilyResolver
 	override val localeList: LocaleList = LocaleList()
 	override var showLayoutBounds: Boolean = false
 

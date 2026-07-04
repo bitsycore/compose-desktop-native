@@ -1,7 +1,7 @@
 package com.compose.desktop.native.graphics
 
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.ResourceKind
+import com.compose.desktop.native.res.ResourceKind
 
 // ==================
 // MARK: NativePainterCanvas bridge

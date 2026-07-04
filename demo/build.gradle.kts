@@ -128,8 +128,8 @@ val generateComposeResAccessors = tasks.register("generateComposeResAccessors") 
         vSb.appendLine("package composeresources.generated")
         vSb.appendLine()
         vSb.appendLine("import androidx.compose.ui.graphics.painter.Painter")
-        vSb.appendLine("import androidx.compose.ui.res.Res")
-        vSb.appendLine("import androidx.compose.ui.res.painterResource")
+        vSb.appendLine("import com.compose.desktop.native.res.Res")
+        vSb.appendLine("import com.compose.desktop.native.res.painterResource")
         vSb.appendLine()
         File(vSrcDir, "drawable").listFiles()?.filter { it.isFile }?.sortedBy { it.name }?.forEach { vFile ->
             vSb.appendLine(

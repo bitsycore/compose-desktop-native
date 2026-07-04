@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import com.compose.desktop.native.node.ComposeRootHost
-import androidx.compose.ui.res.currentImageLoader
+import com.compose.desktop.native.res.currentImageLoader
 import com.compose.desktop.native.text.currentTextMeasurer
 import com.compose.desktop.native.window.LocalPopupHost
 import com.compose.desktop.native.window.PopupLayer
@@ -132,7 +132,7 @@ fun nativeComposeWindow(
                 androidx.compose.ui.platform.LocalClipboard provides
                     androidx.compose.ui.platform.defaultClipboard,
                 androidx.compose.ui.platform.LocalFontFamilyResolver provides
-                    androidx.compose.ui.text.font.projectFontFamilyResolver,
+                    com.compose.desktop.native.text.font.projectFontFamilyResolver,
                 androidx.compose.ui.platform.LocalUriHandler provides sdlUriHandler,
                 androidx.compose.ui.platform.LocalAutofillTree provides host.autofillTree,
             ) {

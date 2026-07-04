@@ -1,4 +1,6 @@
-package androidx.compose.ui.text.font
+package com.compose.desktop.native.text.font
+
+import androidx.compose.ui.text.font.FontFamily
 
 // ==================
 // MARK: Project font-family resolver expect

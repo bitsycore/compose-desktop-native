@@ -1,6 +1,6 @@
 package com.compose.desktop.native
 
-import androidx.compose.ui.res.ImageLoader
+import com.compose.desktop.native.res.ImageLoader
 import com.compose.desktop.native.text.TextMeasurer
 
 // ==================

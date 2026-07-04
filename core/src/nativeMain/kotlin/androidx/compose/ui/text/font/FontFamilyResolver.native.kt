@@ -1,7 +1,7 @@
 package androidx.compose.ui.text.font
 
 // ==================
-// MARK: FontFamilyResolver — native actuals
+// MARK: FontFamilyResolver — native actuals for vendored expects
 // ==================
 
 /*
@@ -56,10 +56,6 @@ fun createFontFamilyResolver(): FontFamily.Resolver =
 	FontFamilyResolverImpl(
 		platformFontLoader = kSdlPlatformFontLoader,
 	)
-
-/** Actual for `internal expect val projectFontFamilyResolver` — a shared instance
- *  used by `LocalFontFamilyResolver`'s composition-local default. */
-actual val projectFontFamilyResolver: FontFamily.Resolver = createFontFamilyResolver()
 
 /** Bridge for the deprecated `Font.ResourceLoader → FontFamily.Resolver` path
  *  (upstream declares this in `DelegatingFontLoaderForDeprecatedUsage.kt`).

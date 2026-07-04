@@ -19,7 +19,7 @@ import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbol
 import com.compose.desktop.native.icons.material.symbols.rounded.MaterialSymbolsRounded
 import com.compose.desktop.native.icons.material.symbols.sharp.MaterialSymbolsSharp
 import composeresources.generated.heart
-import androidx.compose.ui.res.Res
+import com.compose.desktop.native.res.Res
 
 @Composable
 internal fun IconsScreen() {

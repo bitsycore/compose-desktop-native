@@ -246,7 +246,7 @@ internal class Sdl3Canvas(
 
 	override fun drawNativePainter(
 		inResourcePath: String,
-		inKind: androidx.compose.ui.res.ResourceKind,
+		inKind: com.compose.desktop.native.res.ResourceKind,
 		inX: Float,
 		inY: Float,
 		inWidth: Float,

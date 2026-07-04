@@ -1,6 +1,10 @@
-package androidx.compose.ui.text.input
+package com.compose.desktop.native.text.input
 
-import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.EditCommand
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.ImeOptions
+import androidx.compose.ui.text.input.PlatformTextInputService
+import androidx.compose.ui.text.input.TextFieldValue
 
 // ==================
 // MARK: NoOpPlatformTextInputService

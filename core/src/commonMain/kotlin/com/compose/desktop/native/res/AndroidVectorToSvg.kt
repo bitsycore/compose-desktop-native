@@ -1,4 +1,4 @@
-package androidx.compose.ui.res
+package com.compose.desktop.native.res
 
 // ==================
 // MARK: AndroidVectorToSvg

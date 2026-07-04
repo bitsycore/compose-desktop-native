@@ -1,8 +1,8 @@
 package com.compose.desktop.native.renderer.sdl
 
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.res.ImageLoader
-import androidx.compose.ui.res.ResourceKind
+import com.compose.desktop.native.res.ImageLoader
+import com.compose.desktop.native.res.ResourceKind
 import com.compose.desktop.native.text.TextMeasurer
 import com.compose.desktop.native.*
 import kotlinx.cinterop.*
