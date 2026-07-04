@@ -28,8 +28,32 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   through `NativeTextCanvas.drawNativeText`), the DnD engine (`DragAndDropNode`
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
-- Counts: `core/src/commonMain` **100 → 54** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 921**.
+- Counts: `core/src/commonMain` **100 → 47** `.kt` (`.shim.kt` **30 → 8**),
+  `core/src/vendor` **591 → 962**.
+- **Full CoreTextField + BasicTextField pipeline vendored**: `BasicTextField.kt`
+  (upstream, replaces project) + `CoreTextField.kt` (1200+L: LegacyTextFieldState +
+  Handle / HandleState + requestFocusAndShowKeyboardIfNeeded) + `TextFieldKeyInput` +
+  `TextFieldPointerModifier.common` + `TextFieldCursor` + `TextFieldFocusModifier` +
+  `TextFieldDelegate` + all `input/internal/*` modifier chain
+  (TextFieldCoreModifier + TextFieldDecoratorModifier + TextFieldTextLayoutModifier +
+  TextFieldKeyEventHandler + TextFieldDragAndDropNode + TransformedTextFieldState +
+  TextFieldLayoutStateCache + TextLayoutState + CodepointTransformation +
+  CoreTextFieldSemanticsModifier + LegacyAdaptingPlatformTextInputModifierNode +
+  LegacyPlatformTextInputServiceAdapter + TextInputSession.skiko) + full
+  `input/internal/selection/*` (TextFieldSelectionState + TextPreparedSelection +
+  TextFieldMagnifier). Plus `BasicSecureTextField` + `TextFieldScrollState.skiko` +
+  `TextPointerIcon.skiko`.
+- **Full IME platform stack**: `PlatformTextInputModifierNode.kt` +
+  `PlatformTextInputMethodRequest.skiko.kt` — real IME session interface with
+  all slot properties (value / state / imeOptions / onEditCommand /
+  onImeAction / textLayoutResult / focusedRectInRoot / etc).
+- Project extracts retired (now provided by vendored files): `HandleExtract`,
+  `LegacyTextFieldStateExtract`, `DefaultCursorThicknessExtract`,
+  `IsTypedEventExtract`, `PlatformTextInputMethodRequest.native.kt`,
+  `TextFieldDecoratorModifier.native.kt`, `OffsetCoerceInExtract`,
+  `PlatformTextInputSessionScope.kt`, `TextPointerIcon.native.kt`,
+  `CommonContextMenuAreaExtract`, `ContextMenuExtract`, `CeilToIntPx`,
+  `TextLayoutHelperExtract`.
 - Additional: `TraversableNodeInDrawOrder.skiko` +
   `foundation.text.handwriting.StylusHandwriting` + skiko actual +
   `contextmenu.internal.ProvideDefaultPlatformTextContextMenuProviders` +
