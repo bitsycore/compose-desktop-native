@@ -1161,6 +1161,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetch
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/ui/platform/Subcomposition.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/CompositionLocals.kt                           core/src/vendor/common/kotlin/androidx/compose/ui/platform/CompositionLocals.kt
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/platform/Actuals.nonJvm.kt                              core/src/vendor/native/kotlin/androidx/compose/ui/platform/Actuals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
@@ -1182,7 +1183,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.s
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.skiko.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/Synchronization.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Wrapper.skiko.kt                                core/src/vendor/native/kotlin/androidx/compose/ui/platform/Wrapper.native.kt
 
 # ── androidx.compose.ui.relocation ──────────────────────────────────────────
