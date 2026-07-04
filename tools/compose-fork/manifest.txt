@@ -7,9 +7,11 @@
 # Never hand-edit vendored files — change the manifest / ref and re-run sync.sh.
 
 # ── androidx.compose.animation ──────────────────────────────────────────────
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                                     core/src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
@@ -21,22 +23,20 @@ compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Exp
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt    core/src/vendor/common/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt           core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt           core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt          core/src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt                                 core/src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElementEntry.kt                            core/src/vendor/common/kotlin/androidx/compose/animation/SharedElementEntry.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt                  core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
+compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                              core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt            core/src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
 compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                    core/src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
 compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt      core/src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
 compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.nonAndroid.kt  core/src/vendor/native/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.native.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                             core/src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt         core/src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt        core/src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                           core/src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt                               core/src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElementEntry.kt                          core/src/vendor/common/kotlin/androidx/compose/animation/SharedElementEntry.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt                       core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt                core/src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt
-# compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt                     core/src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
 
 # ── androidx.compose.animation.core ─────────────────────────────────────────
 compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animatable.kt                         core/src/vendor/common/kotlin/androidx/compose/animation/core/Animatable.kt
@@ -716,6 +716,7 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/Expect.kt               
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt        core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt  core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt       core/src/vendor/common/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRate.kt                            core/src/vendor/common/kotlin/androidx/compose/ui/FrameRate.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRateCategory.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/FrameRateCategory.kt
 compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/InternalComposeUiApi.kt            core/src/vendor/common/kotlin/androidx/compose/ui/InternalComposeUiApi.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/KeepScreenOn.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/KeepScreenOn.kt
@@ -730,7 +731,6 @@ compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/Actuals.native.kt       
 compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/AtomicReference.nonJvm.kt               core/src/vendor/native/kotlin/androidx/compose/ui/AtomicReference.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/ComposeUiFlags.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/ComposeUiFlags.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/SystemTheme.kt                           core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/SystemTheme.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/FrameRate.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/FrameRate.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/ImageComposeScene.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/ImageComposeScene.native.kt
 
 # ── androidx.compose.ui.animation ───────────────────────────────────────────
@@ -931,16 +931,16 @@ compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/shadow
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/graphics/shadow/Blur.native.kt
 
 # ── androidx.compose.ui.graphics.vector ─────────────────────────────────────
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/FastFloatParser.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt      core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathBuilder.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt         core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathNode.kt
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt       core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/PathParser.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/Vector.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/Vector.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorComposable.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/DrawCache.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt             core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/ImageVector.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/Vector.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/Vector.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt           core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt             core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorCompose.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt             core/src/vendor/common/kotlin/androidx/compose/ui/graphics/vector/VectorPainter.kt
 
 # ── androidx.compose.ui.hapticfeedback ──────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedback.kt           core/src/vendor/common/kotlin/androidx/compose/ui/hapticfeedback/HapticFeedback.kt
@@ -1008,50 +1008,50 @@ compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/internal/Threading.nativ
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/internal/SkikoListUtils.skiko.kt                          core/src/vendor/native/kotlin/androidx/compose/ui/internal/SkikoListUtils.native.kt
 
 # ── androidx.compose.ui.layout ──────────────────────────────────────────────
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt     core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ContentScale.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt          core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Layout.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/layout/Layout.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutCoordinates.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutCoordinates.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutInfo.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt     core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measurable.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measurable.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureScope.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt                       core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt      core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt               core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PinnableContainer.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/PinnableContainer.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RectRulers.kt                     core/src/vendor/common/kotlin/androidx/compose/ui/layout/RectRulers.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt          core/src/vendor/common/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Ruler.kt                          core/src/vendor/common/kotlin/androidx/compose/ui/layout/Ruler.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ScaleFactor.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/ScaleFactor.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt               core/src/vendor/common/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
-compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt       core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
-# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/AlignmentLine.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/AlignmentLine.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachLayoutModifierNode.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt          core/src/vendor/common/kotlin/androidx/compose/ui/layout/ApproachMeasureScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/BeyondBoundsLayout.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ContentScale.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/ContentScale.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasurable.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt         core/src/vendor/common/kotlin/androidx/compose/ui/layout/IntrinsicMeasureScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Layout.kt                        core/src/vendor/common/kotlin/androidx/compose/ui/layout/Layout.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutBoundsHolder.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutCoordinates.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutCoordinates.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutId.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutId.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutInfo.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutInfo.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LayoutModifier.kt                core/src/vendor/common/kotlin/androidx/compose/ui/layout/LayoutModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt    core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadLayoutCoordinates.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/LookaheadScope.kt                core/src/vendor/common/kotlin/androidx/compose/ui/layout/LookaheadScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measurable.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measurable.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasurePolicy.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureResult.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureResult.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MeasureScope.kt                  core/src/vendor/common/kotlin/androidx/compose/ui/layout/MeasureScope.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Measured.kt                      core/src/vendor/common/kotlin/androidx/compose/ui/layout/Measured.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt     core/src/vendor/common/kotlin/androidx/compose/ui/layout/MultiContentMeasurePolicy.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt        core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnFirstVisibleModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt        core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGlobalLayoutListener.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt  core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnGloballyPositionedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnLayoutRectChangedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnPlacedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt          core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnRemeasuredModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt   core/src/vendor/common/kotlin/androidx/compose/ui/layout/OnVisibilityChangedModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/ParentDataModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PinnableContainer.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/PinnableContainer.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt          core/src/vendor/common/kotlin/androidx/compose/ui/layout/PlacementScopeMarker.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RectRulers.kt                    core/src/vendor/common/kotlin/androidx/compose/ui/layout/RectRulers.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt         core/src/vendor/common/kotlin/androidx/compose/ui/layout/RemeasurementModifier.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt             core/src/vendor/common/kotlin/androidx/compose/ui/layout/RootMeasurePolicy.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Ruler.kt                         core/src/vendor/common/kotlin/androidx/compose/ui/layout/Ruler.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/ScaleFactor.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/ScaleFactor.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt              core/src/vendor/common/kotlin/androidx/compose/ui/layout/SubcomposeLayout.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt           core/src/vendor/common/kotlin/androidx/compose/ui/layout/TestModifierUpdater.kt
+compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt            core/src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/Placeable.kt                   core/src/vendor/common/kotlin/androidx/compose/ui/layout/Placeable.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
 
 # ── androidx.compose.ui.modifier ────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt              core/src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
