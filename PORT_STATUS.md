@@ -29,7 +29,19 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 53** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 908**.
+  `core/src/vendor` **591 → 912**.
+- Attempted upstream BasicText vendor (reverted): the vendored BasicText
+  compiles through the whole vendored modifier chain (LocalFontFamilyResolver
+  shim + validateMinMaxLines extract + TextLinkScope), and BasicTextField
+  is migrated to pass fontFamily via `TextStyle(fontFamily = FontFamily.Named(name))`.
+  BUT: our project's icon-font pipeline threads `fontVariationSettings`
+  (a `List<FontVariation.Setting>`) as a separate arg through project
+  TextDrawModifier — upstream TextStyle has no `fontVariationSettings`
+  field (variation is set per-Font, not per-usage). Migrating fully would
+  require either (a) a project `Modifier.textFontVariations(...)` that the
+  paint path reads, or (b) routing variation via a custom SpanStyle
+  extension. TODO once icon-font paint path is decoupled from the
+  BasicText call surface.
 - `ModifierElements.kt` trimmed — 6 dead project modifier pairs deleted
   (Background / Border / DrawBehind / Focusable / LayoutWeight / Alpha —
   all replaced by their vendored upstream equivalents).
