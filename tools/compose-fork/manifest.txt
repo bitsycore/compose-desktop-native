@@ -564,8 +564,8 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/t
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/internal/TextFieldKeyEventHandler.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/TextFieldKeyEventHandler.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/internal/TextFieldLayoutStateCache.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/TextFieldLayoutStateCache.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/internal/TextInputSession.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/TextInputSession.native.kt
+compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/internal/ToCharArray.skiko.kt                             core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/ToCharArray.native.kt
 # compose/foundation/foundation/src/nonJvmMain/kotlin/androidx/compose/foundation/text/input/internal/CodepointHelpers.nonJvm.kt                    core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/CodepointHelpers.native.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/internal/ToCharArray.skiko.kt                           core/src/vendor/native/kotlin/androidx/compose/foundation/text/input/internal/ToCharArray.native.kt
 
 # ── androidx.compose.foundation.text.input.internal.selection ───────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/internal/selection/PressDownGesture.kt         core/src/vendor/common/kotlin/androidx/compose/foundation/text/input/internal/selection/PressDownGesture.kt
