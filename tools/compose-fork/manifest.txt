@@ -153,12 +153,12 @@ compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/c
 # compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/foundation/content/internal/ReceiveContentDragAndDropNode.native.kt
 
 # ── androidx.compose.foundation.contextmenu ─────────────────────────────────
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                    core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt                   core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuArea.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
-# compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt               core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuGestures.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuPopupPositionProvider.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt                  core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuState.kt
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt                     core/src/vendor/common/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.kt
-# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.native.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/foundation/contextmenu/ContextMenuUi.native.kt
 
 # ── androidx.compose.foundation.draganddrop ─────────────────────────────────
 # compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.kt       core/src/vendor/common/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.kt
