@@ -33,7 +33,12 @@ actual typealias NativePaint = Any
 actual fun Paint(): Paint = ProjectPaint()
 
 // ============
-//  Shader
+//  Shader — placeholder actuals. Skia's SkiaShader.skiko.kt is blocked
+//  because it uses SkiaImageAsset.asSkiaBitmap (SkiaImageAsset is blocked
+//  by K2's expect+actual same-source-set rule for
+//  `internal expect fun ByteArray.putBytesInto`). SDL3 has no shader
+//  pipeline — gradient rasterisation goes through
+//  com.compose.desktop.native.graphics.GradientBridge directly, not Shader.
 
 actual class Shader internal constructor()
 
@@ -89,7 +94,9 @@ internal actual fun ActualCompositeShader(dst: Shader, src: Shader, blendMode: B
 //                    fun actual{Corner,Dash,Chain,Stamped}PathEffect`.
 
 // ============
-//  ImageBitmap
+//  ImageBitmap — placeholder actuals. SkiaImageAsset.skiko.kt (real Skia
+//  backing) is blocked on the same-source-set expect+actual K2 rule for
+//  `ByteArray.putBytesInto`. Both renderers use ProjectImageBitmap for now.
 
 internal actual fun ActualImageBitmap(
 	width: Int,

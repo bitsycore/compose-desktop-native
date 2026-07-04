@@ -877,13 +877,13 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaPat
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt          core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt               core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/graphics/ImageBitmap.native.kt
-# compose/ui/ui-graphics/src/nativeMain/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt    core/src/vendor/native/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.skiko.kt       core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.native.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.native.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt            core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaShader.native.kt
+# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt           core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt
+# compose/ui/ui-graphics/src/nativeMain/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt    core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/NativeImageAsset.skiko.kt
+# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt        core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt
+# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt
 
 # ── androidx.compose.ui.graphics.colorspace ─────────────────────────────────
 compose/ui/ui-graphics/src/commonMain/kotlin/androidx/compose/ui/graphics/colorspace/Adaptation.kt          core/src/vendor/common/kotlin/androidx/compose/ui/graphics/colorspace/Adaptation.kt
