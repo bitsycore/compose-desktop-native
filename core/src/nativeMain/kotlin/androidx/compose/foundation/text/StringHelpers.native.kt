@@ -48,3 +48,32 @@ internal actual fun String.findCodePointOrEmojiStartBefore(index: Int, ifNotFoun
 	if (i > 0 && this[i].isLowSurrogate() && this[i - 1].isHighSurrogate()) i--
 	return i
 }
+
+/*
+ Byte-identical extract of `internal fun CharSequence.offsetByCodePoints`
+ from upstream `foundation.text.StringHelpers.skiko.kt`. The skiko file
+ pulls org.jetbrains.skia.BreakIterator, so we can't vendor it whole; this
+ helper stands alone as a pure Kotlin/Native codepoint walker.
+ TODO: delete this once StringHelpers.skiko can be reduced to the
+ Skia-independent portion.
+*/
+internal fun CharSequence.offsetByCodePoints(index: Int, offset: Int): Int {
+	val sign = kotlin.math.sign(offset.toFloat()).toInt()
+	val distance = kotlin.math.abs(offset)
+
+	var currentOffset = index
+	for (i in 0 until distance) {
+		currentOffset += sign
+		if (currentOffset <= 0) return 0
+		else if (currentOffset >= length) return length
+
+		val lead = this[currentOffset - 1]
+		val trail = this[currentOffset]
+
+		if (lead.isHighSurrogate() && trail.isLowSurrogate()) {
+			currentOffset += sign
+		}
+	}
+
+	return currentOffset
+}
