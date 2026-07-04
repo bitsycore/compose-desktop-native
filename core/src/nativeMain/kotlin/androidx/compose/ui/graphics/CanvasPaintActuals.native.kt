@@ -82,24 +82,11 @@ internal actual fun ActualCompositeShader(dst: Shader, src: Shader, blendMode: B
 //   - SDL3 path: stubs in core/src/sdlRendererMain/.../graphics/ColorFilter.sdl.kt.
 
 // ============
-//  PathEffect
-
-private class StubPathEffect : PathEffect
-
-internal actual fun actualCornerPathEffect(radius: Float): PathEffect = StubPathEffect()
-
-internal actual fun actualDashPathEffect(intervals: FloatArray, phase: Float): PathEffect =
-	StubPathEffect()
-
-internal actual fun actualChainPathEffect(outer: PathEffect, inner: PathEffect): PathEffect =
-	StubPathEffect()
-
-internal actual fun actualStampedPathEffect(
-	shape: Path,
-	advance: Float,
-	phase: Float,
-	style: StampedPathEffectStyle,
-): PathEffect = StubPathEffect()
+//  PathEffect actuals live per-renderer:
+//   * skikoRenderer: vendored SkiaBackedPathEffect.skiko.kt (Skia-backed).
+//   * sdlRenderer:   SdlPathEffect.sdl.kt (no-op; SDL3 has no path-effect
+//                    pipeline). Both provide the four `internal actual
+//                    fun actual{Corner,Dash,Chain,Stamped}PathEffect`.
 
 // ============
 //  ImageBitmap

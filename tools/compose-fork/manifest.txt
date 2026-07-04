@@ -868,7 +868,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/MeshGradientRend
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt                 core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/BlendMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt                  core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt                     core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/Rects.skiko.kt
+compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt
+compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPathEffect.skiko.kt      core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaBackedPathEffect.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt           core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaColorFilter.skiko.kt
+compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.skiko.kt          core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt              core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaTileMode.skiko.kt
 compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt            core/src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 # compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt                 core/src/vendor/common/kotlin/androidx/compose/ui/graphics/GraphicsLayerModifier.kt
@@ -876,13 +879,10 @@ compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVer
 # compose/ui/ui-graphics/src/nativeMain/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt      core/src/vendor/native/kotlin/androidx/compose/ui/graphics/NativeImageAsset.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.skiko.kt         core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.native.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPath.native.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPathEffect.skiko.kt    core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPathEffect.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPathMeasure.skiko.kt   core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedPathMeasure.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedRenderEffect.skiko.kt  core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaBackedRenderEffect.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.skiko.kt     core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt          core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.native.kt
-# compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.skiko.kt        core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaPathIterator.native.kt
 # compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt              core/src/vendor/native/kotlin/androidx/compose/ui/graphics/SkiaShader.native.kt
 
 # ── androidx.compose.ui.graphics.colorspace ─────────────────────────────────
