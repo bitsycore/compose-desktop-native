@@ -1156,6 +1156,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultHapticFee
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.skiko.kt                       core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultTextToolbar.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultUiApplier.skiko.kt                         core/src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultUiApplier.native.kt
 compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/platform/NativeActuals.kt                                 core/src/vendor/native/kotlin/androidx/compose/ui/platform/NativeActuals.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.skiko.kt                core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformPrefetchScheduler.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                     core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.skiko.kt           core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.native.kt
@@ -1174,7 +1175,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.s
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                      core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                        core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt             core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt                   core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOutOfFrameExecutor.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.skiko.kt                  core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformOwnerProvider.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                    core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.skiko.kt               core/src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.native.kt
