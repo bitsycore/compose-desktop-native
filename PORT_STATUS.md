@@ -29,7 +29,9 @@ rules (pull-verbatim / surface-match / intentional-custom) live in
   vendored), and the **approach/lookahead layout pipeline** (`ApproachLayoutModifierNode`
   + `ApproachMeasureScope` + `LookaheadScope`).
 - Counts: `core/src/commonMain` **100 → 47** `.kt` (`.shim.kt` **30 → 8**),
-  `core/src/vendor` **591 → 1074**.
+  `core/src/vendor` **591 → 1074** (+ real
+  `androidx.compose.runtime:runtime-retain` on the classpath —
+  `ForgetfulRetainedValuesStore` replaces the project marker).
 - **Full CoreTextField + BasicTextField pipeline vendored**: `BasicTextField.kt`
   (upstream, replaces project) + `CoreTextField.kt` (1200+L: LegacyTextFieldState +
   Handle / HandleState + requestFocusAndShowKeyboardIfNeeded) + `TextFieldKeyInput` +
