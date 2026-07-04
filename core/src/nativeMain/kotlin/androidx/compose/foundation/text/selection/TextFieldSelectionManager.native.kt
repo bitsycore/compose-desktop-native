@@ -26,4 +26,3 @@ internal actual fun Modifier.addBasicTextFieldTextContextMenuComponents(
 	coroutineScope: CoroutineScope,
 ): Modifier = this
 
-internal actual suspend fun TextFieldSelectionManager.hasAvailableTextToPaste(): Boolean = true
