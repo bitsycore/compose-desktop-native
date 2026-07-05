@@ -25,7 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.compose.desktop.native.modifier.onDrag
 import kotlinx.coroutines.launch
@@ -151,6 +153,14 @@ private fun Scrollbar(
     val vHovered by vHoverSource.collectIsHoveredAsState()
     var vDraggingThumb by remember { mutableStateOf(false) }
     var vGrab by remember { mutableStateOf(0) }
+    // onSizeChanged reports PHYSICAL pixels (Option-B density flow), so every
+    // int/px carried through here — vTrackPx, vThumbLen, vThumbPos — is in
+    // physical pixels. Passing them into `.dp` doubles again through
+    // density.toPx() on Retina, which visibly bloated the thumb (filled the
+    // whole track) and made drag/track-click positions land 2× too far down.
+    // Route pixel-sized modifiers through the current density so `.dp` and the
+    // pixel value stay in the same coord space.
+    val vDensity = LocalDensity.current
 
     val vContent = adapter.contentSize
     val vViewport = adapter.viewportSize
@@ -188,9 +198,10 @@ private fun Scrollbar(
             vScope.launch { adapter.scrollTo(vFrac * vMaxScroll) }
         }
 
+        val vThumbLenDp = with(vDensity) { vThumbLen.toDp() }
         val vThumbMod = (
-            if (isVertical) Modifier.offset(y = vThumbPos.dp).width(style.thickness).height(vThumbLen.dp)
-            else Modifier.offset(x = vThumbPos.dp).height(style.thickness).width(vThumbLen.dp)
+            if (isVertical) Modifier.offset { IntOffset(0, vThumbPos) }.width(style.thickness).height(vThumbLenDp)
+            else Modifier.offset { IntOffset(vThumbPos, 0) }.height(style.thickness).width(vThumbLenDp)
             )
             .clip(style.shape)
             .background(vColor)
@@ -202,7 +213,7 @@ private fun Scrollbar(
         //  coordinates have a stable (non-moving) origin.
         Box(
             modifier = Modifier
-                .matchTrackSize(isVertical, vTrackPx, style.thickness)
+                .matchTrackSize(isVertical, with(vDensity) { vTrackPx.toDp() }, style.thickness)
                 .onDrag(
                     onStart = { rx, ry ->
                         val vPress = if (isVertical) ry else rx
@@ -228,7 +239,9 @@ private fun Scrollbar(
     }
 }
 
-/* Sizes the invisible drag-capture overlay to the full track. */
-private fun Modifier.matchTrackSize(inVertical: Boolean, inTrackPx: Int, inThickness: Dp): Modifier =
-    if (inVertical) this.width(inThickness).height(inTrackPx.dp)
-    else this.height(inThickness).width(inTrackPx.dp)
+/* Sizes the invisible drag-capture overlay to the full track. `inTrackDp`
+   comes from the caller pre-converted via LocalDensity (Option-B: layout
+   coords are physical px, so px-to-dp goes through the current density). */
+private fun Modifier.matchTrackSize(inVertical: Boolean, inTrackDp: Dp, inThickness: Dp): Modifier =
+    if (inVertical) this.width(inThickness).height(inTrackDp)
+    else this.height(inThickness).width(inTrackDp)
