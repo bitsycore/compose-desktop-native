@@ -67,6 +67,11 @@ fun HorizontalSplitPane(
 	val vDividerSource = remember { MutableInteractionSource() }
 	val vDividerHover by vDividerSource.collectIsHoveredAsState()
 	var vDragging by remember { mutableStateOf(false) }
+	// Divider width at press start — the drag callback delivers (relX, relY) from the
+	// receiver's press-time anchor (see `ComposeRootHost.fDragAnchorX/Y`), so we add
+	// the delta to *this* captured value, not vFirstWidthPx re-read every move (which
+	// would accumulate: vFirstWidth += delta → divergent slide).
+	var vPressStartFirstPx by remember { mutableStateOf(0) }
 
 	Row(
 		modifier = modifier
@@ -92,17 +97,19 @@ fun HorizontalSplitPane(
 				.background(if (vActive) dividerHoverColor else dividerColor)
 				.hoverable(vDividerSource)
 				.onDrag(
-					onStart = { _, _ -> vDragging = true },
+					onStart = { _, _ ->
+						vDragging = true
+						// Snapshot the divider's width so onDrag's press-relative delta
+						// resolves cleanly (see `vPressStartFirstPx`).
+						vPressStartFirstPx = vFirstWidthPx
+					},
 					onEnd = { vDragging = false },
 					onDrag = { x, _ ->
-						// `x` is a PIXEL delta relative to the divider's current top-left
-						// (onDrag's dispatcher passes pointerPx - node.absPx each move).
-						// Add it to the divider's live pixel offset read from state — NOT
-						// the value captured at press time, or reference/delta disagree
-						// each frame and the divider oscillates.
+						// `x` is a PIXEL delta relative to the divider's PRESS-time top-left
+						// (ComposeRootHost holds the anchor across the whole drag session).
+						// Add it to the width the divider had at press start.
 						val vMax = (vTotalWidthPx - vDividerPx - vMinSecondPx).coerceAtLeast(vMinFirstPx)
-						val vLive = if (vTotalWidthPx > 0) vFirstWidthPx.coerceIn(vMinFirstPx, vMax) else vFirstWidthPx
-						vFirstWidthPx = (vLive + x).coerceIn(vMinFirstPx, vMax)
+						vFirstWidthPx = (vPressStartFirstPx + x).coerceIn(vMinFirstPx, vMax)
 					}
 				),
 		)
@@ -133,6 +140,7 @@ fun VerticalSplitPane(
 	val vDividerSource = remember { MutableInteractionSource() }
 	val vDividerHover by vDividerSource.collectIsHoveredAsState()
 	var vDragging by remember { mutableStateOf(false) }
+	var vPressStartFirstPx by remember { mutableStateOf(0) }
 
 	Column(
 		modifier = modifier
@@ -156,12 +164,14 @@ fun VerticalSplitPane(
 				.background(if (vActive) dividerHoverColor else dividerColor)
 				.hoverable(vDividerSource)
 				.onDrag(
-					onStart = { _, _ -> vDragging = true },
+					onStart = { _, _ ->
+						vDragging = true
+						vPressStartFirstPx = vFirstHeightPx
+					},
 					onEnd = { vDragging = false },
 					onDrag = { _, y ->
 						val vMax = (vTotalHeightPx - vDividerPx - vMinSecondPx).coerceAtLeast(vMinFirstPx)
-						val vLive = if (vTotalHeightPx > 0) vFirstHeightPx.coerceIn(vMinFirstPx, vMax) else vFirstHeightPx
-						vFirstHeightPx = (vLive + y).coerceIn(vMinFirstPx, vMax)
+						vFirstHeightPx = (vPressStartFirstPx + y).coerceIn(vMinFirstPx, vMax)
 					}
 				),
 		)

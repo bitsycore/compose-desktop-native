@@ -243,20 +243,39 @@ internal class Sdl3Canvas(
 		// alpha (SDL_SetTextureAlphaMod would work, but we bake it in here to keep
 		// the renderer path simple).
 		val vColor = if (fAlpha >= 1f) inColor else inColor.copy(alpha = inColor.alpha * fAlpha)
-		fTextRenderer?.drawText(
-			inText = inText,
-			inX = (fTx + inX).toInt(),
-			inY = (fTy + inY).toInt(),
-			inBoxWidth = inBoxWidth.toInt(),
-			inBoxHeight = inBoxHeight.toInt(),
-			inColor = vColor,
-			inFontSize = inFontSizePx,
-			inAlign = inTextAlign,
-			inFontFamily = inFontFamily,
-			inFontVariations = inFontVariations,
-			inSpans = inSpans,
-			inTextStart = 0,
-		)
+		val vTr = fTextRenderer ?: return
+		val vRenderer = vTr.textMeasurer
+
+		// Wrap first, then draw one line at a time. Sdl3TextRenderer.drawText assumes
+		// the input is a SINGLE already-wrapped line; if we passed the raw multi-word
+		// text it would just render it flat (skiko path used to do the same until it
+		// was fixed to call inSoftWrap-driven wrap inside SkiaTextRenderer.drawText).
+		// Result: text stayed one line at full length and clipped at the container's
+		// right edge instead of wrapping when the sidebar was resized narrower.
+		val vWrapWidth = if (inSoftWrap && inBoxWidth > 0f) inBoxWidth.toInt() else Int.MAX_VALUE
+		val vWrapped = vRenderer.wrap(inText, inFontSizePx, vWrapWidth, inFontFamily, inFontVariations)
+		val vLineH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
+
+		for ((vIdx, vLine) in vWrapped.lines.withIndex()) {
+			val vLineY = inY + vIdx * vLineH
+			// Cull lines that would fall entirely below the box (softWrap keeps the
+			// natural line count; the box just clips at draw time).
+			if (vLineY >= inY + inBoxHeight) break
+			vTr.drawText(
+				inText = vLine,
+				inX = (fTx + inX).toInt(),
+				inY = (fTy + vLineY).toInt(),
+				inBoxWidth = inBoxWidth.toInt(),
+				inBoxHeight = vLineH.toInt(),
+				inColor = vColor,
+				inFontSize = inFontSizePx,
+				inAlign = inTextAlign,
+				inFontFamily = inFontFamily,
+				inFontVariations = inFontVariations,
+				inSpans = inSpans,
+				inTextStart = vWrapped.lineStarts.getOrElse(vIdx) { 0 },
+			)
+		}
 	}
 
 	// ============

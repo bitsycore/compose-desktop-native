@@ -135,6 +135,16 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	private var fActivePressNode: LayoutNode? = null
 	private var fDragNode: LayoutNode? = null
 	private var fDrag: OnDragNode? = null
+	// Press-time anchor: absolute position of the drag receiver at the moment its
+	// press fired. Held constant for the whole drag session so the reported
+	// (relX, relY) reflect the pointer's OFFSET from where the drag started —
+	// even if the receiver moves during the drag (typical apidemo pattern: apply
+	// `graphicsLayer(translationX = vDragDx)` so the tab visually follows the
+	// pointer). Without this we read positionInRoot every move, which INCLUDES
+	// the layer translation → the reference oscillates against the delta and
+	// the drag ghost trembles between two spots.
+	private var fDragAnchorX: Float = 0f
+	private var fDragAnchorY: Float = 0f
 
 	// Deepest node containing (x,y), children-first in reverse z-order.
 	private fun hitTest(inX: Float, inY: Float): LayoutNode? = hitNode(rootNode, inX, inY)
@@ -188,8 +198,10 @@ class ComposeRootHost(inDensity: Float = 1f) {
 			0 -> {
 				fActivePressNode?.let { if (!inside(vHit, it)) cancelPress() }
 				fDrag?.let { dm ->
-					val dn = fDragNode!!; val vAp = absOf(dn)
-					dm.onDrag((inX - vAp.x).toInt(), (inY - vAp.y).toInt())
+					// Use the press-time anchor, NOT the live positionInRoot — the
+					// dragged node's abs pos may include a graphicsLayer(translationX = …)
+					// that itself feeds off the value we compute here, which oscillates.
+					dm.onDrag((inX - fDragAnchorX).toInt(), (inY - fDragAnchorY).toInt())
 				}
 			}
 			1 -> when (inButton) {
@@ -214,7 +226,10 @@ class ComposeRootHost(inDensity: Float = 1f) {
 						op = op.parent
 					}
 					findUp<OnDragNode>(vHit)?.let { (node, d) ->
-						fDragNode = node; fDrag = d; val vAp = absOf(node)
+						fDragNode = node; fDrag = d
+						val vAp = absOf(node)
+						fDragAnchorX = vAp.x
+						fDragAnchorY = vAp.y
 						d.onStart((inX - vAp.x).toInt(), (inY - vAp.y).toInt())
 					}
 				}
