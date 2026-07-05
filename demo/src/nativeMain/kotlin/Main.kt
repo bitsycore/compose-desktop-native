@@ -24,14 +24,12 @@ import utils.writeFile
 // ==================
 
 fun main(args: Array<String>) {
-    // Phase 9 B4 probe: render a hand-built upstream LayoutNode tree through
-    // ComposeOwner + Sdl3Canvas and screenshot it — proves the upstream pipeline
-    // end-to-end without the full ComposeWindow pivot. `--pipetest=<path.bmp>`.
-    // `--pipetest` / `--inputtest` probes are SDL3-renderer-only (defined in
-    // core/src/sdlRendererMain/…/renderer/sdl/UpstreamPipelineProbe.kt) and won't
-    // resolve on the default Skia build. Rebuild with -Prenderer=sdl3 to run them.
+    // Phase 9 B4 probes (`--pipetest=<path.bmp>` / `--inputtest`) were retired
+    // during the :core/:foundation split — they lived in :core's sdlRendererMain
+    // but relied on foundation's Modifier.background / .clickable, which moved
+    // to :foundation. Reachable via git history if anyone needs them again.
     if (args.any { it.startsWith("--pipetest") || it == "--inputtest" }) {
-        println("[demo] --pipetest / --inputtest are only available under -Prenderer=sdl3")
+        println("[demo] --pipetest / --inputtest were retired in the :foundation split")
         return
     }
     // End-to-end verification of the vendored interaction engine: boots a real

@@ -43,7 +43,9 @@ interface NativeTextCanvas {
 }
 
 // Modifier element carrying the text paint params onto a LayoutNode's chain.
-internal data class TextDrawElement(
+// Public (not internal) so :foundation's IconText.kt can reach it — same
+// package, different module.
+data class TextDrawElement(
 	val text: String,
 	val spans: List<Range<SpanStyle>>?,
 	val color: Color,
@@ -70,7 +72,7 @@ internal data class TextDrawElement(
 }
 
 // DrawModifierNode that paints the text via the renderer Canvas at the node's origin.
-internal class TextDrawNode(
+class TextDrawNode(
 	var text: String,
 	var spans: List<Range<SpanStyle>>?,
 	var color: Color,

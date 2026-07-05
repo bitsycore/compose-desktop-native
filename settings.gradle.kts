@@ -15,6 +15,8 @@ rootProject.name = "ComposeNativeSDL3"
 // (:core, :window, …) so build files across the repo stay terse; each project's
 // directory is redirected via projectDir below.
 include(":core")
+include(":animation-core")
+include(":foundation")
 include(":material3")
 include(":window")
 include(":material-symbols")
@@ -22,6 +24,8 @@ include(":material-symbols:outlined")
 include(":material-symbols:rounded")
 include(":material-symbols:sharp")
 project(":core").projectDir = file("compose/native/core")
+project(":animation-core").projectDir = file("compose/native/animation-core")
+project(":foundation").projectDir = file("compose/native/foundation")
 project(":material3").projectDir = file("compose/native/material3")
 project(":window").projectDir = file("compose/native/window")
 project(":material-symbols").projectDir = file("compose/native/material-symbols")

@@ -1,0 +1,53 @@
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:native:animation-core.
+# Re-sync with: tools/compose-fork/sync.sh :compose:native:animation-core   (or `sync.sh` for every module).
+# Upstream ref pinned in tools/compose-fork/compose-ref.txt.
+#
+# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
+# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
+# candidate. Never hand-edit the vendored files — change this manifest / the ref
+# and re-run sync.sh.
+
+# ── androidx.compose.animation.core ─────────────────────────────────────────
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animatable.kt                         src/vendor/common/kotlin/androidx/compose/animation/core/Animatable.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimateAsState.kt                     src/vendor/common/kotlin/androidx/compose/animation/core/AnimateAsState.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Animation.kt                          src/vendor/common/kotlin/androidx/compose/animation/core/Animation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationEndReason.kt                 src/vendor/common/kotlin/androidx/compose/animation/core/AnimationEndReason.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationSpec.kt                      src/vendor/common/kotlin/androidx/compose/animation/core/AnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationState.kt                     src/vendor/common/kotlin/androidx/compose/animation/core/AnimationState.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimationVectors.kt                   src/vendor/common/kotlin/androidx/compose/animation/core/AnimationVectors.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ArcSpline.kt                          src/vendor/common/kotlin/androidx/compose/animation/core/ArcSpline.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/DecayAnimationSpec.kt                 src/vendor/common/kotlin/androidx/compose/animation/core/DecayAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt            src/vendor/common/kotlin/androidx/compose/animation/core/DeferredTargetAnimation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Easing.kt                             src/vendor/common/kotlin/androidx/compose/animation/core/Easing.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/EasingFunctions.kt                    src/vendor/common/kotlin/androidx/compose/animation/core/EasingFunctions.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Expect.kt                             src/vendor/common/kotlin/androidx/compose/animation/core/Expect.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt       src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalAnimationSpecApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt  src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalDeferredTransitionApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt          src/vendor/common/kotlin/androidx/compose/animation/core/ExperimentalTransitionApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/FloatAnimationSpec.kt                 src/vendor/common/kotlin/androidx/compose/animation/core/FloatAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/FloatDecayAnimationSpec.kt            src/vendor/common/kotlin/androidx/compose/animation/core/FloatDecayAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt            src/vendor/common/kotlin/androidx/compose/animation/core/InfiniteAnimationPolicy.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InfiniteTransition.kt                 src/vendor/common/kotlin/androidx/compose/animation/core/InfiniteTransition.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InternalAnimationApi.kt               src/vendor/common/kotlin/androidx/compose/animation/core/InternalAnimationApi.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt               src/vendor/common/kotlin/androidx/compose/animation/core/InternalMutatorMutex.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/MonoSpline.kt                         src/vendor/common/kotlin/androidx/compose/animation/core/MonoSpline.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/PathEasing.kt                         src/vendor/common/kotlin/androidx/compose/animation/core/PathEasing.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Preconditions.kt                      src/vendor/common/kotlin/androidx/compose/animation/core/Preconditions.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SpringEstimation.kt                   src/vendor/common/kotlin/androidx/compose/animation/core/SpringEstimation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SpringSimulation.kt                   src/vendor/common/kotlin/androidx/compose/animation/core/SpringSimulation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/SuspendAnimation.kt                   src/vendor/common/kotlin/androidx/compose/animation/core/SuspendAnimation.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/Transition.kt                         src/vendor/common/kotlin/androidx/compose/animation/core/Transition.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorConverters.kt                   src/vendor/common/kotlin/androidx/compose/animation/core/VectorConverters.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedAnimationSpec.kt            src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedDecayAnimationSpec.kt       src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedDecayAnimationSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VectorizedMonoSplineKeyframesSpec.kt  src/vendor/common/kotlin/androidx/compose/animation/core/VectorizedMonoSplineKeyframesSpec.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/VisibilityThresholds.kt               src/vendor/common/kotlin/androidx/compose/animation/core/VisibilityThresholds.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/ArcSpline.nonJvm.kt                   src/vendor/native/kotlin/androidx/compose/animation/core/ArcSpline.native.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/AtomicReference.nonJvm.kt             src/vendor/native/kotlin/androidx/compose/animation/core/AtomicReference.native.kt
+
+# ── androidx.compose.animation.core.internal ────────────────────────────────
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/Arrays.kt                                         src/vendor/common/kotlin/androidx/compose/animation/core/internal/Arrays.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt                    src/vendor/common/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.kt
+compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt         src/vendor/common/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.nonJvm.kt             src/vendor/native/kotlin/androidx/compose/animation/core/internal/JvmDefaultWithCompatibility.native.kt
+compose/animation/animation-core/src/nonJvmMain/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.nonJvm.kt  src/vendor/native/kotlin/androidx/compose/animation/core/internal/PlatformOptimizedCancellationException.native.kt

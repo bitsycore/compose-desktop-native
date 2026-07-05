@@ -50,13 +50,17 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // api so apps depending on :window also get the compose re-impl,
-            // Res/resources, GpuMode, and the renderer pipeline from :core.
+            // Res/resources, GpuMode, and the renderer pipeline from :core, plus
+            // the foundation / animation-core / animation modules that were split
+            // out of :core (upstream Compose layout).
             // Material widgets used to be re-exported from :material here; the
             // module was retired when :apidemo and :demo migrated to :material3.
             // Apps that want Material 3 widgets pull `implementation(project(":material3"))`
             // themselves (:material3 doesn't need to be `api`-exposed — the
             // upstream vendored surface is stable and apps import it directly).
             api(project(":core"))
+            api(project(":foundation"))
+            api(project(":animation-core"))
             implementation(libs.kotlinx.coroutines.core)
             // setMain() / resetMain() — see Sdl3MainDispatcher.kt for usage.
             implementation(libs.kotlinx.coroutines.test)

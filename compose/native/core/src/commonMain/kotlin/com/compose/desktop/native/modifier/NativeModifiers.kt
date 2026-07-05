@@ -1,8 +1,5 @@
 package com.compose.desktop.native.modifier
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import com.compose.desktop.native.element.MiddleClickModifier
 import androidx.compose.ui.Modifier
 import com.compose.desktop.native.element.OnDragModifier
@@ -49,12 +46,9 @@ fun Modifier.onDrag(
 	onEnd: () -> Unit = {},
 ) = then(OnDragModifier(onStart, onDrag, onEnd))
 
-// ==================
-// MARK: InteractionSource convenience
-// ==================
-
-/* Convenience around the official MutableInteractionSource() factory. Official
-   Compose uses `remember { MutableInteractionSource() }` directly; this helper
-   is a project shorthand. */
-@Composable
-fun rememberMutableInteractionSource(): MutableInteractionSource = remember { MutableInteractionSource() }
+// The rememberMutableInteractionSource() helper moved to :foundation
+// (com.compose.desktop.native.modifier.InteractionSourceHelper.kt) so
+// :core doesn't need to depend on foundation. Callers that were importing
+// com.compose.desktop.native.modifier.rememberMutableInteractionSource
+// keep the same import — the fully-qualified path is unchanged; it just
+// lives in a different Gradle module now.
