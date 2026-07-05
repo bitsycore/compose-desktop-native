@@ -112,7 +112,7 @@ internal class Sdl3Canvas(
 		// simple widget); overlapping shapes composite at the paint level rather than
 		// at the layer level, which can produce slight visual differences from Skia.
 		save()
-		fAlpha *= (paint.alpha * fAlpha)
+		fAlpha *= paint.alpha
 	}
 
 	override fun translate(dx: Float, dy: Float) {
