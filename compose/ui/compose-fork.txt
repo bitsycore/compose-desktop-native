@@ -1,5 +1,5 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:native:ui.
-# Re-sync with: tools/compose-fork/sync.sh :compose:native:ui   (or `sync.sh` for every module).
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui.
+# Re-sync with: tools/compose-fork/sync.sh :compose:ui   (or `sync.sh` for every module).
 # Upstream ref pinned in tools/compose-fork/compose-ref.txt.
 #
 # Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
@@ -429,6 +429,7 @@ compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.nativ
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt        src/vendor/native/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.skiko.kt          src/vendor/native/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/RootNodeOwner.skiko.kt                  src/vendor/native/kotlin/androidx/compose/ui/node/RootNodeOwner.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/SnapshotInvalidationTracker.skiko.kt    src/vendor/native/kotlin/androidx/compose/ui/node/SnapshotInvalidationTracker.native.kt
 
 # ── androidx.compose.ui.platform ────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt                        src/vendor/common/kotlin/androidx/compose/ui/platform/AccessibilityManager.kt
@@ -481,7 +482,10 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.s
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.skiko.kt             src/vendor/native/kotlin/androidx/compose/ui/platform/DefaultViewConfiguration.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GraphicsLayerOwnerLayer.skiko.kt              src/vendor/native/kotlin/androidx/compose/ui/platform/GraphicsLayerOwnerLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt                    src/vendor/native/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/LegacyRenderNodeLayer.skiko.kt                src/vendor/native/kotlin/androidx/compose/ui/platform/LegacyRenderNodeLayer.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/OwnedLayerManager.kt                          src/vendor/native/kotlin/androidx/compose/ui/platform/OwnedLayerManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                  src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
@@ -502,6 +506,7 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeScenePointer
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneFocusManager.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneFocusManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.skiko.kt            src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneRecomposer.skiko.kt       src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneRecomposer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.skiko.kt   src/vendor/native/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.kt   src/vendor/native/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.kt
 
@@ -570,6 +575,7 @@ compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.skiko.kt    src/vendor/native/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.native.kt
 compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt              src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
+# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/ComposeUiTextFlags.kt              src/vendor/common/kotlin/androidx/compose/ui/text/ComposeUiTextFlags.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt            src/vendor/native/kotlin/androidx/compose/ui/text/ActualParagraph.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
 # compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt              src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.native.kt
@@ -634,6 +640,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Platf
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt                  src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.native.kt
+# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformParagraph.kt             src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformParagraph.kt
+# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ActualParagraph.skiko.kt          src/vendor/native/kotlin/androidx/compose/ui/text/platform/ActualParagraph.native.kt
 # compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt             src/vendor/native/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.skiko.kt         src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.native.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt        src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt
@@ -706,3 +714,4 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/OnBackClickEventHa
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt  src/vendor/native/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Dialog.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/window/Dialog.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Popup.skiko.kt                     src/vendor/native/kotlin/androidx/compose/ui/window/Popup.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/RootMeasurePolicy.skiko.kt         src/vendor/native/kotlin/androidx/compose/ui/window/RootMeasurePolicy.native.kt

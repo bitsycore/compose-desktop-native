@@ -1,5 +1,5 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:native:foundation.
-# Re-sync with: tools/compose-fork/sync.sh :compose:native:foundation   (or `sync.sh` for every module).
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:foundation.
+# Re-sync with: tools/compose-fork/sync.sh :compose:foundation   (or `sync.sh` for every module).
 # Upstream ref pinned in tools/compose-fork/compose-ref.txt.
 #
 # Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
@@ -306,6 +306,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/layout/PrefetchScheduler.kt                    src/vendor/common/kotlin/androidx/compose/foundation/lazy/layout/PrefetchScheduler.kt
 compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/lazy/layout/Lazy.native.kt                          src/vendor/native/kotlin/androidx/compose/foundation/lazy/layout/Lazy.native.kt
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/lazy/layout/PrefetchScheduler.skiko.kt               src/vendor/native/kotlin/androidx/compose/foundation/lazy/layout/PrefetchScheduler.native.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/lazy/layout/PrefetchExecutor.skiko.kt              src/vendor/native/kotlin/androidx/compose/foundation/lazy/layout/PrefetchExecutor.native.kt
 
 # ── androidx.compose.foundation.lazy.staggeredgrid ──────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGrid.kt                      src/vendor/common/kotlin/androidx/compose/foundation/lazy/staggeredgrid/LazyStaggeredGrid.kt
@@ -477,19 +478,20 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.skiko.kt  src/vendor/native/kotlin/androidx/compose/foundation/text/handwriting/StylusHandwriting.native.kt
 
 # ── androidx.compose.foundation.text.input ──────────────────────────────────
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt    src/vendor/common/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt  src/vendor/common/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt   src/vendor/common/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldBuffer.kt        src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldBuffer.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldCharSequence.kt  src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldCharSequence.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt     src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt    src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldState.kt         src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldState.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldTextStyles.kt    src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldTextStyles.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.kt    src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextUndoManager.kt        src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextUndoManager.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TrackedRange.kt           src/vendor/common/kotlin/androidx/compose/foundation/text/input/TrackedRange.kt
-compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/UndoState.kt              src/vendor/common/kotlin/androidx/compose/foundation/text/input/UndoState.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt         src/vendor/common/kotlin/androidx/compose/foundation/text/input/InputTransformation.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt       src/vendor/common/kotlin/androidx/compose/foundation/text/input/KeyboardActionHandler.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt        src/vendor/common/kotlin/androidx/compose/foundation/text/input/OutputTransformation.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldBuffer.kt             src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldBuffer.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldCharSequence.kt       src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldCharSequence.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt          src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldDecorator.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt         src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldLineLimits.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldState.kt              src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldState.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextFieldTextStyles.kt         src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextFieldTextStyles.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.kt         src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TextUndoManager.kt             src/vendor/common/kotlin/androidx/compose/foundation/text/input/TextUndoManager.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/TrackedRange.kt                src/vendor/common/kotlin/androidx/compose/foundation/text/input/TrackedRange.kt
+compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/UndoState.kt                   src/vendor/common/kotlin/androidx/compose/foundation/text/input/UndoState.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.skiko.kt  src/vendor/native/kotlin/androidx/compose/foundation/text/input/TextObfuscationMode.native.kt
 
 # ── androidx.compose.foundation.text.input.internal ─────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/input/internal/ChangeTracker.kt                                src/vendor/common/kotlin/androidx/compose/foundation/text/input/internal/ChangeTracker.kt
@@ -629,6 +631,7 @@ compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/TextStringSimpleElement.kt               src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/TextStringSimpleElement.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/TextStringSimpleNode.kt                  src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/TextStringSimpleNode.kt
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/modifiers/TextStyleProviderNode.kt                 src/vendor/common/kotlin/androidx/compose/foundation/text/modifiers/TextStyleProviderNode.kt
+# compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/text/modifiers/SelectionController.skiko.kt            src/vendor/native/kotlin/androidx/compose/foundation/text/modifiers/SelectionController.native.kt
 
 # ── androidx.compose.foundation.text.selection ──────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt      src/vendor/common/kotlin/androidx/compose/foundation/text/selection/MultiWidgetSelectionDelegate.kt
@@ -944,6 +947,7 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.skiko.kt            src/vendor/native/kotlin/androidx/compose/ui/node/LegacyRenderNodeLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/OwnedLayerManager.skiko.kt                src/vendor/native/kotlin/androidx/compose/ui/node/OwnedLayerManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/RootNodeOwner.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/node/RootNodeOwner.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/SnapshotInvalidationTracker.skiko.kt      src/vendor/native/kotlin/androidx/compose/ui/node/SnapshotInvalidationTracker.native.kt
 # compose/ui/ui/src/nonJvmMain/kotlin/androidx/compose/ui/node/SortedSet.nonJvm.kt                      src/vendor/native/kotlin/androidx/compose/ui/node/SortedSet.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/TraversableNodeInDrawOrder.skiko.kt       src/vendor/native/kotlin/androidx/compose/ui/node/TraversableNodeInDrawOrder.native.kt
 # compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/node/WeakReference.native.kt                  src/vendor/native/kotlin/androidx/compose/ui/node/WeakReference.native.kt
@@ -987,8 +991,11 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.skiko.kt               src/vendor/native/kotlin/androidx/compose/ui/platform/FlushCoroutineDispatcher.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/FrameRecomposer.skiko.kt                        src/vendor/native/kotlin/androidx/compose/ui/platform/FrameRecomposer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.skiko.kt                  src/vendor/native/kotlin/androidx/compose/ui/platform/GlobalSnapshotManager.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/GraphicsLayerOwnerLayer.skiko.kt                src/vendor/native/kotlin/androidx/compose/ui/platform/GraphicsLayerOwnerLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/HostDefaultProviderImpl.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/LegacyRenderNodeLayer.skiko.kt                  src/vendor/native/kotlin/androidx/compose/ui/platform/LegacyRenderNodeLayer.native.kt
 # compose/ui/ui/src/nativeMain/kotlin/androidx/compose/ui/platform/NativeActuals.kt                               src/vendor/native/kotlin/androidx/compose/ui/platform/NativeActuals.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/OwnedLayerManager.kt                            src/vendor/native/kotlin/androidx/compose/ui/platform/OwnedLayerManager.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformClipboard.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                        src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.skiko.kt             src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformDragAndDropManager.native.kt
@@ -1020,6 +1027,7 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneInputHandler.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.skiko.kt            src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneLayer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeScenePointer.skiko.kt          src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeScenePointer.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/ComposeSceneRecomposer.skiko.kt       src/vendor/native/kotlin/androidx/compose/ui/scene/ComposeSceneRecomposer.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.skiko.kt   src/vendor/native/kotlin/androidx/compose/ui/scene/PlatformLayersComposeScene.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.kt   src/vendor/native/kotlin/androidx/compose/ui/scene/SingleComposeSceneRenderingScope.native.kt
 
@@ -1064,6 +1072,11 @@ compose/foundation/foundation/src/nativeMain/kotlin/androidx/compose/foundation/
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.skiko.kt         src/vendor/native/kotlin/androidx/compose/ui/viewinterop/InteropViewHolder.native.kt
 
 # ── androidx.compose.ui.window ──────────────────────────────────────────────
-# Dialog.kt + Popup.kt (+ our project actuals for them) live in :ui — the ui.window
-# package name matches the module boundary now that the actuals were rewritten to
-# use androidx.compose.ui.layout.Layout + drawBehind instead of foundation.Box.
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Dialog.kt                         src/vendor/common/kotlin/androidx/compose/ui/window/Dialog.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/window/Popup.kt                          src/vendor/common/kotlin/androidx/compose/ui/window/Popup.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.kt  src/vendor/native/kotlin/androidx/compose/ui/window/ComposeSceneLayerMeasurePolicy.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Dialog.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/window/Dialog.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/OnBackClickEventHandler.kt         src/vendor/native/kotlin/androidx/compose/ui/window/OnBackClickEventHandler.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/Popup.skiko.kt                     src/vendor/native/kotlin/androidx/compose/ui/window/Popup.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/RootMeasurePolicy.skiko.kt         src/vendor/native/kotlin/androidx/compose/ui/window/RootMeasurePolicy.native.kt
+# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt          src/vendor/native/kotlin/androidx/compose/ui/window/WindowExceptionHandler.native.kt

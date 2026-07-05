@@ -93,11 +93,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # ---------------- Linux (x64 + arm64) ----------------
-      # :ui has FOUR cinterops (sdl3, sdl3_ttf, sdl3_image, freetype), all
-      # exercised on every :ui compile — cross-target metadata compilation
-      # too. Install the -dev headers for all four. Skia/Skiko links
-      # fontconfig + GL + X11 for its own use.
-      - name: Install Linux deps (SDL3 family + FreeType + Skia system libs)
+      # Release builds on macOS/Linux use the Skia renderer only. SDL3 is
+      # kept as a dev-only target on those hosts (turn on with `-Prenderer=sdl3`
+      # locally), so only `sdl3` is needed here — the sdl3_ttf / sdl3_image /
+      # freetype cinterops aren't created when the SDL3 renderer isn't active
+      # for the target (see :ui/build.gradle.kts).
+      # Skia/Skiko links fontconfig + GL + X11 for its own use.
+      - name: Install Linux deps (SDL3 + Skia system libs)
         if: runner.os == 'Linux'
         env:
           SDL_REF: release-3.4.10
@@ -105,37 +107,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libfontconfig-dev libgl-dev libx11-dev libxext-dev libxrandr-dev \
-            libxi-dev libxcursor-dev libxinerama-dev libfreetype6-dev
-          # Prefer distro packages, fall back to building SDL3 from source if
-          # any of the three -dev packages aren't in apt yet on this runner.
-          if sudo apt-get install -y libsdl3-dev libsdl3-ttf-dev libsdl3-image-dev; then
-            echo "::notice::Using distro libsdl3{,-ttf,-image}-dev"
+            libxi-dev libxcursor-dev libxinerama-dev
+          if sudo apt-get install -y libsdl3-dev; then
+            echo "::notice::Using distro libsdl3-dev"
           else
-            echo "::notice::libsdl3* not in apt — building SDL3 + SDL3_ttf + SDL3_image $SDL_REF from source"
+            echo "::notice::libsdl3-dev not in apt — building SDL3 $SDL_REF from source"
             sudo apt-get install -y --no-install-recommends cmake ninja-build pkg-config \
               libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev
-            install_sdl_repo() {
-              local repo="$1" src="$2"
-              git clone --depth 1 -b "$SDL_REF" "https://github.com/libsdl-org/$repo.git" "$src"
-              cmake -S "$src" -B "$src/build" -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON \
-                -DSDL_SHARED=ON -DSDL_STATIC=OFF \
-                -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDLTTF_SAMPLES=OFF -DSDLIMAGE_SAMPLES=OFF \
-                -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/${{ matrix.multiarch }}
-              cmake --build "$src/build"
-              sudo cmake --install "$src/build"
-            }
-            install_sdl_repo SDL /tmp/SDL
-            install_sdl_repo SDL_ttf /tmp/SDL_ttf
-            install_sdl_repo SDL_image /tmp/SDL_image
+            git clone --depth 1 -b "$SDL_REF" https://github.com/libsdl-org/SDL.git /tmp/SDL
+            cmake -S /tmp/SDL -B /tmp/SDL/build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+              -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/${{ matrix.multiarch }}
+            cmake --build /tmp/SDL/build
+            sudo cmake --install /tmp/SDL/build
             sudo ldconfig
           fi
 
       # ---------------- macOS ----------------
-      # Same four cinterops as Linux; brew ships all of them.
-      - name: Install macOS deps (SDL3 family + FreeType)
+      - name: Install macOS deps (SDL3)
         if: runner.os == 'macOS'
-        run: brew install sdl3 sdl3_ttf sdl3_image freetype
+        run: brew install sdl3
 
       # ---------------- Windows (static libs) ----------------
       # mingwX64 links SDL3 / SDL3_ttf / SDL3_image / FreeType statically. Build

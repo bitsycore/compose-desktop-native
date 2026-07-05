@@ -80,44 +80,56 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().all {
         val vTargetName = name
+        // Whether this target compiles the SDL3 drawing pipeline. mingwX64 is
+        // always SDL3 (no Skiko on Windows); macOS / Linux switch to it only
+        // under -Prenderer=sdl3. SDL3 on macOS/Linux is a DEBUG target we don't
+        // ship in releases, so the default release build (Skia) skips the
+        // sdl3_ttf / sdl3_image / freetype cinterops entirely — one fewer set
+        // of system headers to install in CI, and a smaller klib footprint.
+        val vSdlRenderer = vTargetName == "mingwX64" ||
+            ((vTargetName == "macosArm64" || vTargetName == "linuxX64" || vTargetName == "linuxArm64") && useSdl3Everywhere)
+
         // Path to the sdl3 cinterop output klib for this target — used to
         // wire `depends = sdl3` in sdl3_ttf / sdl3_image / freetype below.
-        // When cinterops are in the same module (instead of split across
-        // :core + :renderer-sdl3), Gradle does NOT auto-add the sdl3 klib to
-        // the dependent cinterop tasks' -library list, so cinterop generates
-        // its own SDL_Surface / SDL_Color inside sdl3_image / sdl3_ttf
-        // instead of reusing the sdl3 ones, breaking type unification.
-        // Passing the path explicitly via extraOpts forces the link.
+        // Gradle does NOT auto-add the sdl3 klib to the dependent cinterop
+        // tasks' -library list, so cinterop generates its own SDL_Surface /
+        // SDL_Color inside sdl3_image / sdl3_ttf instead of reusing the sdl3
+        // ones. Passing the path explicitly via extraOpts forces the link.
         val vSdl3Klib = layout.buildDirectory.dir(
             "classes/kotlin/$vTargetName/main/cinterop/ui-cinterop-sdl3"
         ).get().asFile.absolutePath
 
         compilations["main"].cinterops {
+            // sdl3 stays for every target — :window uses the SDL3 main-loop
+            // types (SDL_Window / SDL_Event / SDL_GetBasePath / …) regardless
+            // of the renderer choice.
             val sdl3 by creating {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
                 if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
-            val sdl3_ttf by creating {
-                defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
-                packageName("sdl3_ttf")
-                extraOpts("-library", vSdl3Klib)
-                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
-            }
-            val sdl3_image by creating {
-                defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
-                packageName("sdl3_image")
-                extraOpts("-library", vSdl3Klib)
-                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                if (vHostImageInclude != null) extraOpts("-compiler-options", "-I$vHostImageInclude")
-            }
-            // FreeType powers variable-font axis rendering (FILL / wght /
-            // GRAD / opsz) on Material Symbols icons in the SDL3 path.
-            val freetype by creating {
-                defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
-                packageName("freetype")
-                if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
+            if (vSdlRenderer) {
+                val sdl3_ttf by creating {
+                    defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
+                    packageName("sdl3_ttf")
+                    extraOpts("-library", vSdl3Klib)
+                    if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                    if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
+                }
+                val sdl3_image by creating {
+                    defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
+                    packageName("sdl3_image")
+                    extraOpts("-library", vSdl3Klib)
+                    if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                    if (vHostImageInclude != null) extraOpts("-compiler-options", "-I$vHostImageInclude")
+                }
+                // FreeType powers variable-font axis rendering (FILL / wght /
+                // GRAD / opsz) on Material Symbols icons in the SDL3 path.
+                val freetype by creating {
+                    defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
+                    packageName("freetype")
+                    if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
+                }
             }
         }
 
@@ -125,9 +137,11 @@ kotlin {
         // cinteropSdl3*Target — the -library reference above only points at
         // the klib path; without a task dependency Gradle might run the
         // dependent cinterop first and the path wouldn't exist yet.
-        val vT = vTargetName.replaceFirstChar { it.uppercase() }
-        tasks.matching { it.name == "cinteropSdl3_ttf$vT" || it.name == "cinteropSdl3_image$vT" }
-            .configureEach { dependsOn("cinteropSdl3$vT") }
+        if (vSdlRenderer) {
+            val vT = vTargetName.replaceFirstChar { it.uppercase() }
+            tasks.matching { it.name == "cinteropSdl3_ttf$vT" || it.name == "cinteropSdl3_image$vT" }
+                .configureEach { dependsOn("cinteropSdl3$vT") }
+        }
     }
 
     sourceSets {
