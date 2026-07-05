@@ -104,18 +104,20 @@ kotlin {
                 if (vReleased != null) {
                     implementation("com.bitsycore.compose.native:desktop-window:$vReleased")
                     implementation("com.bitsycore.compose.native:desktop-material3:$vReleased")
+                    // Swap :material-symbols too — otherwise its transitive
+                    // project deps (:foundation, :animation-core, :ui) collide
+                    // with the same klibs pulled from Maven via desktop-window,
+                    // and the K/N compiler fails with duplicate `unique_name`.
+                    // The material-symbols module stays in settings.gradle
+                    // regardless — the Zip task below still references its
+                    // Gradle Project object via rootProject.project(...) to
+                    // read the per-style font-download task extras.
+                    implementation("com.bitsycore.compose.native:desktop-material-symbols:$vReleased")
                 } else {
                     implementation(project(":window"))
                     implementation(project(":material3"))
+                    implementation(project(":material-symbols"))
                 }
-                // Single :material-symbols dep brings all three style objects
-                // (Outlined / Rounded / Sharp). Which style FONT(S) actually
-                // end up in data.kres is decided by the Zip task below —
-                // it scans this module's Kotlin sources for style call sites
-                // and bundles only the fonts that are used. Stays a project
-                // dep even under -PuseReleased because the Zip task hooks
-                // its per-style font download tasks by name.
-                implementation(project(":material-symbols"))
             }
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             kotlin.srcDir(composeResGenDir)
