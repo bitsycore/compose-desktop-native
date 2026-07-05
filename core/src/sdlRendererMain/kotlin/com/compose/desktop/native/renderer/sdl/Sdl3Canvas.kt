@@ -67,8 +67,15 @@ internal class Sdl3Canvas(
 	// Current clip (absolute px), or null for unclipped.
 	private var fClip: IntArray? = null // [left, top, right, bottom]
 
-	// save/restore stack of (tx, ty, clip).
-	private val fStack = ArrayDeque<Triple<Float, Float, IntArray?>>()
+	// Current alpha multiplier (product of every enclosing saveLayer's (paint.alpha * fAlpha)).
+	// SDL3 has no offscreen-layer compositing, so alpha propagates by multiplication
+	// through every primitive draw. Correct as long as painted shapes don't overlap
+	// within a layer (which is the normal case for a graphicsLayer(alpha=…) block).
+	private var fAlpha: Float = 1f
+
+	// save/restore stack of (tx, ty, clip, alpha).
+	private data class State(val tx: Float, val ty: Float, val clip: IntArray?, val alpha: Float)
+	private val fStack = ArrayDeque<State>()
 
 	// Flushes any pending batched geometry to SDL, then frees the scope's
 	// native buffer + clears the SDL clip. Call once per frame after the draw.
@@ -81,23 +88,31 @@ internal class Sdl3Canvas(
 	//  State (translate + clip stack)
 
 	override fun save() {
-		fStack.addLast(Triple(fTx, fTy, fClip))
+		fStack.addLast(State(fTx, fTy, fClip, fAlpha))
 	}
 
 	override fun restore() {
 		val vPrev = fStack.removeLastOrNull() ?: return
-		fTx = vPrev.first
-		fTy = vPrev.second
-		if (vPrev.third !== fClip) {
+		fTx = vPrev.tx
+		fTy = vPrev.ty
+		if (vPrev.clip !== fClip) {
 			fScope.flush()
-			fClip = vPrev.third
+			fClip = vPrev.clip
 			applyClip()
 		}
+		fAlpha = vPrev.alpha
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
-		// TODO(B6): real offscreen layer for alpha / blend. For now behaves as save().
+		// No real offscreen buffer — SDL3 lacks a portable render-target-in-a-batched-scope
+		// primitive here. Instead, multiplicatively propagate the layer's alpha through
+		// every enclosed primitive: each draw() reads `fAlpha` and multiplies against
+		// (paint.alpha * fAlpha). Restore() pops the multiplier back. Correct for non-overlapping
+		// content (the common case for a `Modifier.graphicsLayer(alpha=…)` wrapping a
+		// simple widget); overlapping shapes composite at the paint level rather than
+		// at the layer level, which can produce slight visual differences from Skia.
 		save()
+		fAlpha *= (paint.alpha * fAlpha)
 	}
 
 	override fun translate(dx: Float, dy: Float) {
@@ -171,37 +186,37 @@ internal class Sdl3Canvas(
 		else Fill
 
 	override fun drawRect(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
-		prep().rectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), paint.alpha, styleFor(paint))
+		prep().rectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	override fun drawRoundRect(
 		left: Float, top: Float, right: Float, bottom: Float,
 		radiusX: Float, radiusY: Float, paint: Paint,
 	) {
-		prep().roundRectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), radiusX, paint.alpha, styleFor(paint))
+		prep().roundRectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), radiusX, (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	override fun drawOval(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
-		prep().ovalCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), paint.alpha, styleFor(paint))
+		prep().ovalCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	override fun drawCircle(center: Offset, radius: Float, paint: Paint) {
-		prep().circleCore(brushFor(paint), radius, center, paint.alpha, styleFor(paint))
+		prep().circleCore(brushFor(paint), radius, center, (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	override fun drawArc(
 		left: Float, top: Float, right: Float, bottom: Float,
 		startAngle: Float, sweepAngle: Float, useCenter: Boolean, paint: Paint,
 	) {
-		prep().arcCore(brushFor(paint), startAngle, sweepAngle, useCenter, Offset(left, top), Size(right - left, bottom - top), paint.alpha, styleFor(paint))
+		prep().arcCore(brushFor(paint), startAngle, sweepAngle, useCenter, Offset(left, top), Size(right - left, bottom - top), (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	override fun drawLine(p1: Offset, p2: Offset, paint: Paint) {
-		prep().lineCore(brushFor(paint), p1, p2, paint.strokeWidth, paint.strokeCap, paint.alpha)
+		prep().lineCore(brushFor(paint), p1, p2, paint.strokeWidth, paint.strokeCap, (paint.alpha * fAlpha))
 	}
 
 	override fun drawPath(path: ComposePath, paint: Paint) {
-		prep().pathCore(path, brushFor(paint), paint.alpha, styleFor(paint))
+		prep().pathCore(path, brushFor(paint), (paint.alpha * fAlpha), styleFor(paint))
 	}
 
 	// ============
@@ -224,13 +239,17 @@ internal class Sdl3Canvas(
 		inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?,
 	) {
 		fScope.flush()
+		// Fold the layer's alpha stack into the text colour; SDL3_ttf has no per-blit
+		// alpha (SDL_SetTextureAlphaMod would work, but we bake it in here to keep
+		// the renderer path simple).
+		val vColor = if (fAlpha >= 1f) inColor else inColor.copy(alpha = inColor.alpha * fAlpha)
 		fTextRenderer?.drawText(
 			inText = inText,
 			inX = (fTx + inX).toInt(),
 			inY = (fTy + inY).toInt(),
 			inBoxWidth = inBoxWidth.toInt(),
 			inBoxHeight = inBoxHeight.toInt(),
-			inColor = inColor,
+			inColor = vColor,
 			inFontSize = inFontSizePx,
 			inAlign = inTextAlign,
 			inFontFamily = inFontFamily,
@@ -258,7 +277,7 @@ internal class Sdl3Canvas(
 		fImageCache?.draw(
 			inResourcePath, inKind,
 			fTx + inX, fTy + inY, inWidth, inHeight,
-			inContentScale, inAlpha,
+			inContentScale, inAlpha * fAlpha,
 		)
 	}
 

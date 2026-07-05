@@ -393,7 +393,25 @@ private class ProjectOwnedLayer(
 	}
 
 	override fun drawLayer(canvas: Canvas, parentLayer: GraphicsLayer?) {
-		canvas.save()
+		val vNeedsAlphaLayer = fAlpha < 1f
+		if (vNeedsAlphaLayer && fSize.width > 0 && fSize.height > 0) {
+			// Offscreen layer with alpha so overlapping shapes composite correctly.
+			// Bounds are the layer's LOCAL rect BEFORE the translate below (saveLayer
+			// captures the current canvas state's transform, then we translate for
+			// child painting). Restore() pops the layer + composites at alpha.
+			val vPaint = androidx.compose.ui.graphics.Paint().apply { alpha = fAlpha }
+			canvas.saveLayer(
+				androidx.compose.ui.geometry.Rect(
+					fPosition.x + fTranslationX,
+					fPosition.y + fTranslationY,
+					fPosition.x + fTranslationX + fSize.width,
+					fPosition.y + fTranslationY + fSize.height,
+				),
+				vPaint,
+			)
+		} else {
+			canvas.save()
+		}
 		canvas.translate(fPosition.x + fTranslationX, fPosition.y + fTranslationY)
 		if (fScaleX != 1f || fScaleY != 1f) canvas.scale(fScaleX, fScaleY)
 		if (fClip && fSize.width > 0 && fSize.height > 0) {
