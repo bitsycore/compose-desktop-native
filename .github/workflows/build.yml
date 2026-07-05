@@ -1,13 +1,17 @@
 name: Build apps
 
-# Builds the demo + apidemo native executables for every target:
-#   linuxX64 / linuxArm64 (Skia/OpenGL), macosArm64 (Skia/Metal), mingwX64 (SDL3, fully static).
-# Each job uploads <app>/<target> = the executable + data.kres.
+# CI-only build: linuxX64 / linuxArm64 / macosArm64 / mingwX64. Verifies the
+# demo + apidemo executables + data.kres link for every target on every
+# push/PR against a branch.
+#
+# Tag pushes (semver) are handled by release.yml — that workflow does the
+# same build + zips + publishes + attaches to a GitHub Release. `build.yml`
+# skips tag events so we don't run the same matrix twice.
 
 on:
   push:
     branches: ["**"]
-    tags: ["[0-9]+.[0-9]+.[0-9]+"]
+    tags-ignore: ["**"]
   pull_request:
   workflow_dispatch:
 

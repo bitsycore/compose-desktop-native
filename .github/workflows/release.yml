@@ -1,0 +1,241 @@
+name: Release
+
+# Fires only on a semver tag push (e.g. `git tag 0.2.0 && git push origin 0.2.0`).
+# Steps, in order:
+#   1. Matrix build per target — Linux x64/arm64 (Skia/OpenGL), macOS arm64
+#      (Skia/Metal), Windows mingwX64 (SDL3 static). Each job:
+#        - Builds Release binaries of :demo + :apidemo for its target.
+#        - Zips <target>-demo.zip + <target>-apidemo.zip (executable + data.kres).
+#        - Publishes the library klibs Gradle knows how to build on this host
+#          to GitHub Packages (com.bitsycore.compose.native:desktop-*).
+#        - Uploads the two zips as workflow artifacts for the release job.
+#   2. `release` — downloads every artifact, attaches them to a fresh
+#      GitHub Release named after the tag.
+#
+# The metadata / root `kotlinMultiplatform` artifact (which normally ties all
+# target artifacts together for automatic KMP resolution) is intentionally
+# skipped for now: `compileCommonMainKotlinMetadata` trips on Kotlin 2.4's
+# stricter `@OptionalExpectation` checks against our vendored files.
+# Consumers pin the per-target artifact directly, e.g.
+# `com.bitsycore.compose.native:desktop-ui-macosarm64:0.2.0`.
+
+on:
+  push:
+    tags: ["[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 0.2.0). Overrides the git tag."
+        required: true
+
+permissions:
+  contents: write        # create the release + upload assets
+  packages: write        # publish to GitHub Packages
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+
+  # ============================================================================
+  # Per-target: build the two apps + publish the target's klibs.
+  # ============================================================================
+  build-and-publish:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linuxX64
+            os: ubuntu-24.04
+            gradle: LinuxX64
+            multiarch: x86_64-linux-gnu
+          - target: linuxArm64
+            os: ubuntu-24.04-arm
+            gradle: LinuxArm64
+            multiarch: aarch64-linux-gnu
+          - target: macosArm64
+            os: macos-14
+            gradle: MacosArm64
+          - target: mingwX64
+            os: windows-2022
+            gradle: MingwX64
+
+    env:
+      PUBLISH_URL: https://maven.pkg.github.com/${{ github.repository }}
+      PUBLISH_USERNAME: ${{ github.actor }}
+      PUBLISH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: echo "v=${{ github.event.inputs.version || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Cache Kotlin/Native (~/.konan)
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # ---------------- Linux (x64 + arm64) ----------------
+      # Skia/Skiko links fontconfig + GL + X11; SDL3 links from the system.
+      # Prefer the distro's libsdl3-dev; build SDL3 from source if unavailable.
+      - name: Install Linux deps (+ SDL3)
+        if: runner.os == 'Linux'
+        env:
+          SDL_REF: release-3.4.10
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libfontconfig-dev libgl-dev libx11-dev libxext-dev libxrandr-dev \
+            libxi-dev libxcursor-dev libxinerama-dev
+          if sudo apt-get install -y libsdl3-dev; then
+            echo "::notice::Using distro libsdl3-dev"
+          else
+            echo "::notice::libsdl3-dev not in apt — building SDL3 $SDL_REF from source"
+            sudo apt-get install -y --no-install-recommends cmake ninja-build pkg-config \
+              libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev
+            git clone --depth 1 -b "$SDL_REF" https://github.com/libsdl-org/SDL.git /tmp/SDL
+            cmake -S /tmp/SDL -B /tmp/SDL/build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+              -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/${{ matrix.multiarch }}
+            cmake --build /tmp/SDL/build
+            sudo cmake --install /tmp/SDL/build
+            sudo ldconfig
+          fi
+
+      # ---------------- macOS ----------------
+      - name: Install macOS deps
+        if: runner.os == 'macOS'
+        run: brew install sdl3
+
+      # ---------------- Windows (static libs) ----------------
+      # mingwX64 links SDL3 / SDL3_ttf / SDL3_image / FreeType statically. Build
+      # them from source with Kotlin/Native's OWN bundled mingw gcc — a newer
+      # host gcc emits __intrinsic_setjmpex, which K/N's bundled mingw
+      # doesn't define, and linking fails at the very end.
+      - name: Cache Windows static libs (libs/)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: libs
+          key: winlibs-${{ hashFiles('tools/**') }}-v2
+
+      - name: Pre-fetch Kotlin/Native mingw toolchain
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $dep = Join-Path $HOME ".konan/dependencies"
+          $have = Get-ChildItem -Path $dep -Recurse -Filter gcc.exe -ErrorAction SilentlyContinue |
+                  Where-Object { $_.FullName -match 'mingw' }
+          if (-not $have) {
+            New-Item -ItemType Directory -Force -Path $dep | Out-Null
+            $zip = Join-Path $env:RUNNER_TEMP "knmingw.zip"
+            Invoke-WebRequest -Uri "https://download.jetbrains.com/kotlin/native/msys2-mingw-w64-x86_64-2.zip" -OutFile $zip
+            Expand-Archive -Path $zip -DestinationPath $dep -Force
+          }
+
+      - name: Build Windows static deps (libs/)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          if [ -f libs/SDL3/lib/libSDL3.a ]; then echo "libs/ restored from cache"; exit 0; fi
+          tools/build-all.sh
+
+      # ---------------- Build the apps ----------------
+      - name: Build demo + apidemo (release)
+        shell: bash
+        run: |
+          ./gradlew --no-daemon -PsubsetIcons=true \
+            -PreleaseVersion=${{ steps.ver.outputs.v }} \
+            :demo:linkReleaseExecutable${{ matrix.gradle }} \
+            :apidemo:linkReleaseExecutable${{ matrix.gradle }}
+
+      # ---------------- Zip the apps for this target ----------------
+      - name: Package demo + apidemo zips
+        shell: bash
+        run: |
+          set -euo pipefail
+          V=${{ steps.ver.outputs.v }}
+          mkdir -p dist
+          # demo
+          pushd demo/build/bin/${{ matrix.target }}/releaseExecutable >/dev/null
+          zip -r -9 -j "$GITHUB_WORKSPACE/dist/demo-${{ matrix.target }}-$V.zip" .
+          popd >/dev/null
+          # apidemo
+          pushd apidemo/build/bin/${{ matrix.target }}/releaseExecutable >/dev/null
+          zip -r -9 -j "$GITHUB_WORKSPACE/dist/apidemo-${{ matrix.target }}-$V.zip" .
+          popd >/dev/null
+          ls -la dist/
+
+      - name: Upload app zips
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-${{ matrix.target }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      # ---------------- Publish this target's klibs ----------------
+      # `publishAllPublicationsToPublishRepository` publishes every publication
+      # the KMP plugin registered — including per-target ones for targets this
+      # host can build, plus the root `kotlinMultiplatform` metadata artifact
+      # (the metadata compile currently fails on Kotlin 2.4; see comment at
+      # the top). Use `--continue` so a metadata failure doesn't block the
+      # per-target uploads that succeed.
+      - name: Publish library klibs
+        shell: bash
+        continue-on-error: true
+        run: |
+          ./gradlew --no-daemon -PsubsetIcons=false --continue \
+            -PreleaseVersion=${{ steps.ver.outputs.v }} \
+            publishAllPublicationsToPublishRepository
+
+  # ============================================================================
+  # Attach every app zip to a fresh GitHub Release.
+  # ============================================================================
+  release:
+    name: Create GitHub Release
+    needs: [build-and-publish]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: echo "v=${{ github.event.inputs.version || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download every target's app zips
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: apps-*
+          merge-multiple: true
+
+      - name: List assets
+        run: ls -la artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.v }}
+          name: ${{ steps.ver.outputs.v }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: artifacts/*.zip
