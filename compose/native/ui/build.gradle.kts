@@ -89,7 +89,7 @@ kotlin {
         // instead of reusing the sdl3 ones, breaking type unification.
         // Passing the path explicitly via extraOpts forces the link.
         val vSdl3Klib = layout.buildDirectory.dir(
-            "classes/kotlin/$vTargetName/main/cinterop/core-cinterop-sdl3"
+            "classes/kotlin/$vTargetName/main/cinterop/ui-cinterop-sdl3"
         ).get().asFile.absolutePath
 
         compilations["main"].cinterops {

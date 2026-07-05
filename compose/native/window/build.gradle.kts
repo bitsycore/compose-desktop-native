@@ -58,7 +58,7 @@ kotlin {
             // Apps that want Material 3 widgets pull `implementation(project(":material3"))`
             // themselves (:material3 doesn't need to be `api`-exposed — the
             // upstream vendored surface is stable and apps import it directly).
-            api(project(":core"))
+            api(project(":ui"))
             api(project(":foundation"))
             api(project(":animation-core"))
             implementation(libs.kotlinx.coroutines.core)

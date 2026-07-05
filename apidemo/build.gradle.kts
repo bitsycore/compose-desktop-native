@@ -130,7 +130,7 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // :core downloads the variable Noto fonts into its build/fonts. Reference them
 // by layout (lazy providers, no evaluation of :core needed) and depend on the
 // download task by path so ordering doesn't rely on :core being configured first.
-val coreBuildDir = rootProject.project(":core").layout.buildDirectory
+val coreBuildDir = rootProject.project(":ui").layout.buildDirectory
 val notoSansFile = coreBuildDir.file("fonts/NotoSans.ttf")
 val notoMonoFile = coreBuildDir.file("fonts/NotoSansMono.ttf")
 
@@ -254,7 +254,7 @@ for (variant in variants) {
             entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) org.gradle.api.tasks.bundling.ZipEntryCompression.DEFLATED else org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
             from(notoSansFile) { into("font") }
             from(notoMonoFile) { into("font") }
-            dependsOn(":core:downloadNotoFonts")
+            dependsOn(":ui:downloadNotoFonts")
             iconFontModules.forEach { vP ->
                 @Suppress("UNCHECKED_CAST")
                 val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>

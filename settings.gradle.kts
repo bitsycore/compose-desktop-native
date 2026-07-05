@@ -9,12 +9,20 @@ pluginManagement {
 
 rootProject.name = "ComposeNativeSDL3"
 
-// Library modules live under `compose/native/` (mirrors upstream's `compose/`
-// layout — keeps room to split the current mega-:core into per-package
-// modules later without renaming top-level dirs). Module PATHS stay short
-// (:core, :window, …) so build files across the repo stay terse; each project's
-// directory is redirected via projectDir below.
-include(":core")
+// Library modules live under `compose/native/` (mirrors upstream Compose
+// Multiplatform's compose/ tree). The current split:
+//   :ui              — androidx.compose.ui.* + com.compose.desktop.native.*
+//                      (cinterops + both renderer pipelines)
+//   :animation-core  — androidx.compose.animation.core.*
+//   :foundation      — androidx.compose.foundation.* + androidx.compose.animation.*
+//                      (non-core; merged to sidestep the foundation-layout
+//                      circular dep without splitting :foundation-layout too)
+//   :window          — nativeComposeWindow() main loop
+//   :material3       — androidx.compose.material3.*
+//   :material-symbols — icon-font modules (outlined / rounded / sharp)
+// Module PATHS stay short (:ui, :window, …) so build files across the repo
+// stay terse; each project's directory is redirected via projectDir below.
+include(":ui")
 include(":animation-core")
 include(":foundation")
 include(":material3")
@@ -23,7 +31,7 @@ include(":material-symbols")
 include(":material-symbols:outlined")
 include(":material-symbols:rounded")
 include(":material-symbols:sharp")
-project(":core").projectDir = file("compose/native/core")
+project(":ui").projectDir = file("compose/native/ui")
 project(":animation-core").projectDir = file("compose/native/animation-core")
 project(":foundation").projectDir = file("compose/native/foundation")
 project(":material3").projectDir = file("compose/native/material3")

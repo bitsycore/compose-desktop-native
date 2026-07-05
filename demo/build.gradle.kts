@@ -175,7 +175,7 @@ val composeResourcesDir = layout.projectDirectory.dir("src/nativeMain/composeRes
 // Reference it by layout (a lazy provider, no evaluation of :core needed) and
 // depend on the download task by path so ordering doesn't rely on :core being
 // configured first.
-val notoSansFile = rootProject.project(":core").layout.buildDirectory.file("fonts/NotoSans.ttf")
+val notoSansFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSans.ttf")
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
 // Walk the demo's declared dependencies and pick out every :material-symbols:*
@@ -221,7 +221,7 @@ for (variant in variants) {
             // Default UI font (Noto Sans), downloaded by :core.
             if (bundleDefaultFont) {
                 from(notoSansFile) { into("font") }
-                dependsOn(":core:downloadNotoFonts")
+                dependsOn(":ui:downloadNotoFonts")
             }
             // Pull each icon-font module's downloaded .ttf into the font/ entry.
             iconFontModules.forEach { vP ->

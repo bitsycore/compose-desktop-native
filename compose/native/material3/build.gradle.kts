@@ -33,7 +33,7 @@ kotlin {
 				// :core provides ui / ui-text / runtime; :foundation provides
 				// foundation.* + animation.* (non-core, merged in — see foundation/
 				// build.gradle.kts for why); :animation-core provides animation.core.*.
-				api(project(":core"))
+				api(project(":ui"))
 				api(project(":foundation"))
 				api(project(":animation-core"))
 				// androidx.collection is used by material3 internals (MutableIntObjectMap, …).

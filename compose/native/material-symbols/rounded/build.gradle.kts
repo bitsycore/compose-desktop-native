@@ -27,7 +27,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":core"))
+            api(project(":ui"))
             api(project(":material3"))
             api(project(":material-symbols"))
         }

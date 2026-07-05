@@ -41,7 +41,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":core"))
+            api(project(":ui"))
             // The MaterialSymbols* objects emit Icon(...) and read
             // IconDefaults/MaterialIconAxisDefaults from :material.
             api(project(":material3"))

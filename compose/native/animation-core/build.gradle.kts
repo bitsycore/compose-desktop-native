@@ -34,7 +34,7 @@ kotlin {
         commonMain {
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                api(project(":core"))
+                api(project(":ui"))
             }
         }
         nativeMain {

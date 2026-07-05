@@ -45,7 +45,7 @@ allprojects {
 }
 
 val publishModules = setOf(
-    ":core", ":material", ":renderer-sdl3", ":renderer-skia", ":window",
+    ":ui", ":foundation", ":animation-core", ":material3", ":window",
     ":material-symbols:outlined", ":material-symbols:rounded", ":material-symbols:sharp",
 )
 
