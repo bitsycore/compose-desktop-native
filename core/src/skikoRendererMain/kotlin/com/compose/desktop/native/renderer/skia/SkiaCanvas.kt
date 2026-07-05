@@ -12,6 +12,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path as ComposePath
+import androidx.compose.ui.graphics.SkiaBackedPath
+import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
 import androidx.compose.ui.graphics.Vertices
@@ -143,7 +145,6 @@ internal class SkiaCanvas(
 	override fun drawPath(path: ComposePath, paint: Paint) {
 		fCanvas.drawPath(toSkiaPath(path), toSkiaPaint(paint))
 	}
-
 	// ============
 	//  Native bridges.
 
@@ -243,12 +244,25 @@ internal class SkiaCanvas(
 	}
 
 	// ============
-	//  Path translation from our ProjectPath command list into a Skia Path.
+	//  Path translation. Two possible source types since our skikoRenderer source
+	//  set inherits BOTH the commonMain `ProjectPath` and the vendored
+	//  `SkiaBackedPath` (`actual fun Path(): Path = SkiaBackedPath()` lives in
+	//  vendor/skikoRenderer/…/SkiaBackedPath.skiko.kt). Upstream callers that build
+	//  a Path via `Path()` — including `MultiParagraph.getPathForRange`, which
+	//  drives text-selection highlight rendering — get a SkiaBackedPath. Our own
+	//  `ProjectPath` still surfaces from code paths that build via
+	//  `com.compose.desktop.native.graphics.ProjectPath()` directly. Try
+	//  SkiaBackedPath's own Skia handle first (zero-copy, avoids replaying a
+	//  command list); otherwise, replay ProjectPath's commands.
+	//
+	//  Regression that motivated the branch: selection highlight painted an empty
+	//  Skia path — the SkiaBackedPath fell through the `as? ProjectPath` check and
+	//  returned an empty PathBuilder snapshot.
 
 	private fun toSkiaPath(inPath: ComposePath): SkPath {
+		(inPath as? SkiaBackedPath)?.let { return (it as ComposePath).asSkiaPath() }
 		val vB = PathBuilder()
-		val vCommands = (inPath as? ProjectPath)?.commands
-		if (vCommands == null) return vB.snapshot().also { vB.close() }
+		val vCommands = (inPath as? ProjectPath)?.commands ?: return vB.snapshot().also { vB.close() }
 		for (vCmd in vCommands) when (vCmd) {
 			is PathCommand.MoveTo -> vB.moveTo(vCmd.x, vCmd.y)
 			is PathCommand.LineTo -> vB.lineTo(vCmd.x, vCmd.y)
