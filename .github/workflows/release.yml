@@ -162,6 +162,19 @@ jobs:
           if [ -f libs/SDL3/lib/libSDL3.a ]; then echo "libs/ restored from cache"; exit 0; fi
           tools/build-all.sh
 
+      # ---------------- Vendor sync ----------------
+      # The vendored `src/vendor/**/kotlin/` trees under each module are
+      # gitignored — populated on demand from a pinned upstream ref via
+      # tools/compose-fork/sync.sh. CI runners get an empty checkout, so
+      # sync the tree here before the Kotlin compile. First run clones the
+      # upstream repo (blob:none, no-checkout, sparse over the needed dirs)
+      # into $CMP_REF; subsequent runs on the same runner reuse it.
+      - name: Sync vendored Compose sources
+        shell: bash
+        env:
+          CMP_REF: ${{ github.workspace }}/.cmp-ref
+        run: tools/compose-fork/sync.sh
+
       # ---------------- Build the apps ----------------
       - name: Build demo + apidemo (release)
         shell: bash
