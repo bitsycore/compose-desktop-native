@@ -160,6 +160,32 @@ for m in "${kManifests[@]}"; do
 		if [ ! -f "$kSrc/$vUp" ]; then echo "MISSING upstream file: $vUp" >&2; exit 1; fi
 		mkdir -p "$vModuleDir/$(dirname "$vDest")"
 		cp "$kSrc/$vUp" "$vModuleDir/$vDest"
+		# Kotlin 2.4's K2 metadata compile rejects two upstream-Compose idioms
+		# that were fine in 2.3:
+		#   - OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE — imports of
+		#     kotlin.jvm.JvmField / JvmName / JvmStatic (declared
+		#     @OptionalExpectation in stdlib). Per-target native compiles ignore
+		#     them (they're no-ops on native), but metadata compile treats their
+		#     use in commonMain as an error.
+		#   - LESS_VISIBLE_TYPE_ACCESS_IN_INLINE — upstream's Synchronization /
+		#     lock helpers expose `internal` types from `public inline` fns; K2
+		#     hard-errors on this in metadata compile.
+		# Suppress both file-level on every vendored .kt so the metadata publish
+		# succeeds without hand-editing files (the vendor tree is regenerated
+		# by this script and must not carry local edits).
+		if [[ "$vDest" == src/vendor/*.kt ]]; then
+			vLocal="$vModuleDir/$vDest"
+			vNames='"OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE", "LESS_VISIBLE_TYPE_ACCESS_IN_INLINE"'
+			if ! grep -q 'OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE' "$vLocal"; then
+				if grep -qE '^@file:Suppress\(' "$vLocal"; then
+					sed -i.bak -E "s/^@file:Suppress\\(/@file:Suppress($vNames, /" "$vLocal"
+					rm -f "$vLocal.bak"
+				else
+					{ printf '@file:Suppress(%s)\n\n' "$vNames"; cat "$vLocal"; } > "$vLocal.tmp"
+					mv "$vLocal.tmp" "$vLocal"
+				fi
+			fi
+		fi
 		vCount=$((vCount + 1))
 	done < <(grep -v '^[[:space:]]*#' "$m" | grep -v '^[[:space:]]*$')
 	echo "  $vLabel: $vCount files"

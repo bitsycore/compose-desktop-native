@@ -1,8 +1,10 @@
+@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+@file:JvmName("SynchronizationKt")
+
 /*
  * Copyright 2024 The Android Open Source Project
  * (verbatim copy of upstream Synchronization.skiko.kt for K2 diag test)
  */
-@file:JvmName("SynchronizationKt")
 
 package androidx.compose.ui.text.platform
 

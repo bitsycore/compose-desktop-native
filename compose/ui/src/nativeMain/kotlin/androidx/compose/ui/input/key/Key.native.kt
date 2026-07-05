@@ -1,3 +1,5 @@
+@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")
+
 package androidx.compose.ui.input.key
 
 // ==================

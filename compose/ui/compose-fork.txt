@@ -449,7 +449,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/ShapeContaining
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt                  src/vendor/common/kotlin/androidx/compose/ui/platform/SoftwareKeyboardController.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/SoundEffect.kt                                 src/vendor/common/kotlin/androidx/compose/ui/platform/SoundEffect.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Subcomposition.kt                              src/vendor/common/kotlin/androidx/compose/ui/platform/Subcomposition.kt
-compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt                             src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
+# manually vendored + edited (adds @PublishedApi) — see src/commonMain/…/Synchronization.kt
+# compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt                           src/vendor/common/kotlin/androidx/compose/ui/platform/Synchronization.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TestTag.kt                                     src/vendor/common/kotlin/androidx/compose/ui/platform/TestTag.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbar.kt                                 src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbar.kt
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt                           src/vendor/common/kotlin/androidx/compose/ui/platform/TextToolbarStatus.kt
@@ -638,7 +639,8 @@ compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/intl/PlatformL
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt                      src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt      src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt                  src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
+# manually vendored + edited (adds @PublishedApi) — see src/commonMain/…/text/platform/Synchronization.kt
+# compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt               src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
 compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.native.kt
 # compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/PlatformParagraph.kt             src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformParagraph.kt
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/platform/ActualParagraph.skiko.kt          src/vendor/native/kotlin/androidx/compose/ui/text/platform/ActualParagraph.native.kt
