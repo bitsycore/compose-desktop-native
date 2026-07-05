@@ -258,11 +258,11 @@ compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foun
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Size.kt                          src/vendor/common/kotlin/androidx/compose/foundation/layout/Size.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Spacer.kt                        src/vendor/common/kotlin/androidx/compose/foundation/layout/Spacer.kt
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/Visible.kt                       src/vendor/common/kotlin/androidx/compose/foundation/layout/Visible.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsets.kt                src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsets.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt         src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
-# compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt            src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
-# compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsets.skiko.kt           src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsets.native.kt
-# compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.skiko.kt    src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.native.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsets.kt                  src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsets.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt           src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.kt
+compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt              src/vendor/common/kotlin/androidx/compose/foundation/layout/WindowInsetsSize.kt
+compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsets.skiko.kt             src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsets.native.kt
+compose/foundation/foundation-layout/src/skikoMain/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.skiko.kt      src/vendor/native/kotlin/androidx/compose/foundation/layout/WindowInsetsPadding.native.kt
 
 # ── androidx.compose.foundation.layout.internal ─────────────────────────────
 compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt                   src/vendor/common/kotlin/androidx/compose/foundation/layout/internal/InlineClassHelper.kt
@@ -1055,8 +1055,8 @@ compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/TestModifierUpdat
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt            src/vendor/common/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/EmptyLayout.skiko.kt              src/vendor/native/kotlin/androidx/compose/ui/layout/EmptyLayout.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OverlayLayout.skiko.kt            src/vendor/native/kotlin/androidx/compose/ui/layout/OverlayLayout.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt       src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.skiko.kt    src/vendor/native/kotlin/androidx/compose/ui/layout/OffsetToFocusedRect.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/layout/WindowInsetsRulers.native.kt
 
 # ── androidx.compose.ui.modifier ────────────────────────────────────────────
 compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt              src/vendor/common/kotlin/androidx/compose/ui/modifier/ModifierLocal.kt
@@ -1176,6 +1176,8 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformPrefetch
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformScreenReader.skiko.kt                   src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformScreenReader.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.skiko.kt         src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputMethodRequest.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.skiko.kt               src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformTextInputSession.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.skiko.kt                   src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.native.kt
+compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.skiko.kt       src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Subcomposition.skiko.kt                         src/vendor/native/kotlin/androidx/compose/ui/platform/Subcomposition.native.kt
 compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCache.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/TranslationsCache.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/CompositionLocals.skiko.kt                    src/vendor/native/kotlin/androidx/compose/ui/platform/CompositionLocals.native.kt
@@ -1185,8 +1187,6 @@ compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/TranslationsCach
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformContext.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformContext.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformRootForTest.skiko.kt                  src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformRootForTest.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformUriHandler.skiko.kt                   src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformUriHandler.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.skiko.kt                 src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsets.native.kt
-# compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/platform/PlatformWindowInsetsProviderNode.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt                      src/vendor/native/kotlin/androidx/compose/ui/platform/Synchronization.native.kt
 # compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Wrapper.skiko.kt                              src/vendor/native/kotlin/androidx/compose/ui/platform/Wrapper.native.kt
 
@@ -1299,24 +1299,24 @@ compose/ui/ui-text/src/nativeMain/kotlin/androidx/compose/ui/text/font/FontSynth
 # compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.skiko.kt                          src/vendor/native/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.native.kt
 
 # ── androidx.compose.ui.text.input ──────────────────────────────────────────
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt               src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt               src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt                   src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt                   src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt                  src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt          src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt      src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardType.kt                src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardType.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtils.kt                   src/vendor/common/kotlin/androidx/compose/ui/text/input/MathUtils.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt               src/vendor/common/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt          src/vendor/common/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt              src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextInputService.kt            src/vendor/common/kotlin/androidx/compose/ui/text/input/TextInputService.kt
-compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt        src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
-compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt        src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
-compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt     src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
-# compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt  src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt               src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt             src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt             src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt                src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt        src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt    src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/KeyboardType.kt              src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardType.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/MathUtils.kt                 src/vendor/common/kotlin/androidx/compose/ui/text/input/MathUtils.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt             src/vendor/common/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt        src/vendor/common/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt            src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/TextInputService.kt          src/vendor/common/kotlin/androidx/compose/ui/text/input/TextInputService.kt
+compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt      src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
+compose/ui/ui-text/src/nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt      src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt   src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
+compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt  src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt
 
 # ── androidx.compose.ui.text.internal ───────────────────────────────────────
 compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt                         src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt

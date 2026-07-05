@@ -28,11 +28,28 @@ import androidx.compose.ui.unit.IntOffset
  default width on desktop).
 */
 
+// Skiko's DialogProperties carries extra fields (usePlatformInsets /
+// useSoftwareKeyboardInset / scrimColor / animateTransition) that vendored
+// material3 file `internal/BasicEdgeToEdgeDialog.skiko.kt` passes explicitly.
+// Add them as accept-and-ignore params so upstream call sites compile — none
+// have effect on this desktop renderer (no OS window insets, no soft keyboard).
+@androidx.compose.ui.ExperimentalComposeUiApi
 actual class DialogProperties actual constructor(
 	actual val dismissOnBackPress: Boolean,
 	actual val dismissOnClickOutside: Boolean,
 	actual val usePlatformDefaultWidth: Boolean,
-)
+) {
+	@Suppress("unused")
+	constructor(
+		dismissOnBackPress: Boolean = true,
+		dismissOnClickOutside: Boolean = true,
+		usePlatformDefaultWidth: Boolean = true,
+		usePlatformInsets: Boolean = true,
+		useSoftwareKeyboardInset: Boolean = true,
+		scrimColor: Color = Color(0f, 0f, 0f, 0.32f),
+		animateTransition: Boolean = false,
+	) : this(dismissOnBackPress, dismissOnClickOutside, usePlatformDefaultWidth)
+}
 
 @Composable
 actual fun Dialog(

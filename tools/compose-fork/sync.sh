@@ -89,11 +89,23 @@ fi
 
 # ============
 #  Compute sparse-checkout set: union of `compose/<area>/<module>` prefixes
-#  referenced by any selected manifest. New upstream modules (material3, …) are
-#  picked up by simply adding a manifest — no hand-editing this script.
+#  referenced by EVERY manifest in the repo (not just the selected ones).
+#  Partial-sync must not shrink the clone or a subsequent full sync would
+#  fail with MISSING upstream file. New upstream modules are picked up by
+#  simply adding a manifest — no hand-editing this script.
 kSparseDirs=()
+kAllManifests=()
+while IFS= read -r line; do
+	[ -n "$line" ] && kAllManifests+=("$line")
+done < <(find "$kRoot" \
+	-name compose-fork.txt \
+	-not -path '*/build/*' \
+	-not -path '*/.gradle/*' \
+	-not -path '*/tools/*' \
+	-type f \
+	| sort)
 {
-	for m in "${kManifests[@]}"; do
+	for m in "${kAllManifests[@]}"; do
 		sed -e 's/^#[[:space:]]*//' -e 's/[[:space:]].*//' "$m" \
 			| grep -oE '^compose/[a-z0-9-]+/[a-z0-9-]+' \
 			|| true

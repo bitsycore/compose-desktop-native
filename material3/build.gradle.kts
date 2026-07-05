@@ -36,6 +36,8 @@ kotlin {
 				// androidx.collection is used by material3 internals (MutableIntObjectMap, …).
 				// Already on the classpath via :core's runtime; declare here for clarity.
 				implementation("androidx.collection:collection:1.5.0")
+				// kotlinx.datetime — DatePicker / TimePicker / CalendarModel.
+				implementation(libs.kotlinx.datetime)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}
@@ -49,6 +51,11 @@ kotlin {
 			"-Xcollection-literals",
 			"-Xexpect-actual-classes",
 			"-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+			"-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
+			"-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+			"-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+			"-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+			"-opt-in=androidx.compose.foundation.text.ExperimentalTextApi",
 		)
 	}
 }

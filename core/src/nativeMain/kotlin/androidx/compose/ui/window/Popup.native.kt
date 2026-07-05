@@ -60,6 +60,23 @@ actual class PopupProperties {
 		clippingEnabled: Boolean,
 	) : this(focusable, dismissOnBackPress, dismissOnClickOutside, clippingEnabled, usePlatformDefaultWidth = false)
 
+	// Skiko-shape overload material3's Menu.skiko.kt / ModalBottomSheet.skiko.kt pass
+	// (usePlatformInsets / useSoftwareKeyboardInset / scrimColor / onKeyEvent /
+	// animateTransition / …). Accept-and-ignore — this desktop renderer has no
+	// OS window insets, no soft keyboard, no scrim animation.
+	@Suppress("unused")
+	constructor(
+		focusable: Boolean = false,
+		dismissOnBackPress: Boolean = true,
+		dismissOnClickOutside: Boolean = true,
+		clippingEnabled: Boolean = true,
+		usePlatformDefaultWidth: Boolean = false,
+		usePlatformInsets: Boolean = true,
+		useSoftwareKeyboardInset: Boolean = true,
+		scrimColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Transparent,
+		animateTransition: Boolean = false,
+	) : this(focusable, dismissOnBackPress, dismissOnClickOutside, clippingEnabled, usePlatformDefaultWidth)
+
 	override fun equals(other: Any?): Boolean =
 		other is PopupProperties &&
 			focusable == other.focusable &&
@@ -113,6 +130,21 @@ actual fun Popup(
 	DisposableEffect(Unit) {
 		onDispose { vHost.remove(vId) }
 	}
+}
+
+// Extra Popup overload with an `onKeyEvent` param, called by vendored
+// `material3/SkikoMenu.skiko.kt` to intercept arrow keys inside a dropdown.
+// Not part of official Compose common API; skiko-only. We ignore the handler
+// (SDL keyboard focus flows are TBD).
+@androidx.compose.runtime.Composable
+fun Popup(
+	popupPositionProvider: PopupPositionProvider,
+	onDismissRequest: (() -> Unit)?,
+	properties: PopupProperties = PopupProperties(),
+	onKeyEvent: ((androidx.compose.ui.input.key.KeyEvent) -> Boolean)? = null,
+	content: @Composable () -> Unit,
+) {
+	Popup(popupPositionProvider, onDismissRequest, properties, content)
 }
 
 /* Position-provider overload — resolves an offset from the provider (best-effort: the
