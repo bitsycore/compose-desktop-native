@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
@@ -397,9 +398,14 @@ internal fun BodyView(
     // side keeps the numbers from kissing the body text or the panel edge.
     val vDigits = vLines.size.toString().length
     val vGutterWidth = (vDigits * 7 + 4).dp
-    // Body wrap width (logical px), reported by the body Box once it's laid out
-    // (0 on the first frame). The gutter numbering depends on it — see vNumbers.
+    // Body wrap width (physical px, from onSizeChanged), reported by the body
+    // Box once it's laid out (0 on the first frame). The gutter numbering
+    // depends on it — see vNumbers. NativeTextMeasurer.wrap expects the font
+    // size + max-width in the SAME unit (both physical px on Retina), so we
+    // scale 12.sp through the current density here, matching what SdlParagraph
+    // does when it builds the body's real paragraph.
     var vBodyWidthPx by remember { mutableStateOf(0) }
+    val vFontPx = with(LocalDensity.current) { 12.sp.toPx().toInt() }
     // Horizontal scroll for no-wrap mode (read-only body only); dormant when wrapping.
     val vHScroll = rememberScrollState()
     Row(modifier = modifier) {
@@ -420,14 +426,19 @@ internal fun BodyView(
         // source line is exactly one row, so a naive 1..N is correct (and we
         // also use it for the first frame, before the body reports its width).
         val vNumColor = c.dim.copy(alpha = 0.45f)
-        val vNumbers = remember(inText, vBodyWidthPx, inSoftWrap) {
+        val vNumbers = remember(inText, vBodyWidthPx, inSoftWrap, vFontPx) {
             val vM = if (inSoftWrap && vBodyWidthPx > 0) currentTextMeasurer else null
             buildString {
                 for ((vIdx, vSrc) in vLines.withIndex()) {
                     if (vIdx > 0) append('\n')
                     append(vIdx + 1)
                     if (vM != null) {
-                        val vRows = vM.wrap(vSrc, 12, vBodyWidthPx, monoFontFamilyName).lines.size.coerceAtLeast(1)
+                        // Pass the density-scaled font size so this wrap matches the body's
+                        // actual glyph pixel widths — passing 12 (sp) here counted each
+                        // char as half its rendered size, so long lines that visually
+                        // wrapped into 3 rows in the body were estimated as 1 or 2 rows
+                        // here and the gutter numbers drifted upward.
+                        val vRows = vM.wrap(vSrc, vFontPx, vBodyWidthPx, monoFontFamilyName).lines.size.coerceAtLeast(1)
                         repeat(vRows - 1) { append('\n') }
                     }
                 }
