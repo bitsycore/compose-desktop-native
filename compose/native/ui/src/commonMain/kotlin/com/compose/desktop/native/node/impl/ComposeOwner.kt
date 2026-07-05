@@ -367,6 +367,17 @@ private class ProjectOwnedLayer(
 	private var fScaleY: Float = 1f
 	private var fAlpha: Float = 1f
 	private var fClip: Boolean = false
+	// Shape used when fClip=true. RectangleShape / null → rect clip, anything else
+	// (RoundedCornerShape / CircleShape / GenericShape) → path clip via the shape's
+	// Outline. Without this the `Modifier.clip(RoundedCornerShape(6.dp))` on a
+	// small icon-button clipped subsequent draws (background, indication) to a
+	// plain rectangle — the button's rounded hover fill wasn't clipped to its
+	// rounded shape and looked square.
+	private var fShape: androidx.compose.ui.graphics.Shape = androidx.compose.ui.graphics.RectangleShape
+	private var fLayoutDirection: androidx.compose.ui.unit.LayoutDirection =
+		androidx.compose.ui.unit.LayoutDirection.Ltr
+	private var fDensity: androidx.compose.ui.unit.Density =
+		androidx.compose.ui.unit.Density(1f)
 
 	override fun isInLayer(position: Offset): Boolean {
 		if (!fClip) return true
@@ -386,6 +397,14 @@ private class ProjectOwnedLayer(
 		fScaleY = scope.scaleY
 		fAlpha = scope.alpha
 		fClip = scope.clip
+		fShape = scope.shape
+		// Density + layoutDirection are `internal` on ReusableGraphicsLayerScope but
+		// visible here (same :ui module). shape.createOutline needs them to convert
+		// `RoundedCornerShape(6.dp)` corner-radius from Dp to px against the current
+		// scale — without this the rounded corners would be sized against Density(1f)
+		// and look pixel-sharp on Retina but under-radiused everywhere else.
+		fDensity = androidx.compose.ui.unit.Density(scope.density, scope.fontScale)
+		fLayoutDirection = scope.layoutDirection
 	}
 
 	override fun resize(size: androidx.compose.ui.unit.IntSize) {
@@ -415,7 +434,35 @@ private class ProjectOwnedLayer(
 		canvas.translate(fPosition.x + fTranslationX, fPosition.y + fTranslationY)
 		if (fScaleX != 1f || fScaleY != 1f) canvas.scale(fScaleX, fScaleY)
 		if (fClip && fSize.width > 0 && fSize.height > 0) {
-			canvas.clipRect(0f, 0f, fSize.width.toFloat(), fSize.height.toFloat())
+			// Route the clip through the layer's shape so `Modifier.clip(RoundedCornerShape(6.dp))`
+			// actually rounds — was `canvas.clipRect(0, 0, w, h)` which clipped to a plain
+			// rectangle regardless of fShape and left rounded-button hover fills looking
+			// square. RectangleShape shortcut avoids the shape.createOutline allocation for
+			// the common case.
+			if (fShape === androidx.compose.ui.graphics.RectangleShape) {
+				canvas.clipRect(0f, 0f, fSize.width.toFloat(), fSize.height.toFloat())
+			} else {
+				val vOutline = fShape.createOutline(
+					androidx.compose.ui.geometry.Size(fSize.width.toFloat(), fSize.height.toFloat()),
+					fLayoutDirection,
+					fDensity,
+				)
+				when (vOutline) {
+					is androidx.compose.ui.graphics.Outline.Rectangle -> canvas.clipRect(
+						vOutline.rect.left, vOutline.rect.top, vOutline.rect.right, vOutline.rect.bottom,
+					)
+					is androidx.compose.ui.graphics.Outline.Rounded -> {
+						// Renderer canvases only expose clipRect / clipPath — we build the rounded
+						// rect as a Path with addRoundRect so the clip lands via clipPath. Skia's
+						// clipPath handles the rounded corners; SDL3Canvas approximates by
+						// falling back to clipRect (SDL has no clip-path primitive).
+						val vPath = androidx.compose.ui.graphics.Path()
+						vPath.addRoundRect(vOutline.roundRect)
+						canvas.clipPath(vPath)
+					}
+					is androidx.compose.ui.graphics.Outline.Generic -> canvas.clipPath(vOutline.path)
+				}
+			}
 		}
 		drawBlock(canvas, parentLayer)
 		canvas.restore()
