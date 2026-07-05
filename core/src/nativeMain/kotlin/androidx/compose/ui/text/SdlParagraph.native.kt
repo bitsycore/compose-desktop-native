@@ -165,7 +165,35 @@ internal class SdlParagraph(
 	override fun getParagraphDirection(offset: Int): ResolvedTextDirection = ResolvedTextDirection.Ltr
 	override fun getBidiRunDirection(offset: Int): ResolvedTextDirection = ResolvedTextDirection.Ltr
 
-	override fun getPathForRange(start: Int, end: Int): Path = Path()
+	override fun getPathForRange(start: Int, end: Int): Path {
+		// Selection highlight is rendered by TextFieldDelegate.draw via
+		// `textLayoutResult.getPathForRange(start, end)` + `canvas.drawPath(path, paint)`.
+		// Empty path here meant Shift+arrow updated the value's selection state, but the
+		// blue selection band never painted. Build a rectangle per line in the range,
+		// using the same wrap output the paint path already uses so bounds stay aligned
+		// to what's on screen.
+		val vPath = Path()
+		if (start >= end || text.isEmpty()) return vPath
+		val vFrom = start.coerceIn(0, text.length)
+		val vTo = end.coerceIn(0, text.length)
+		if (vFrom == vTo) return vPath
+		val vFirstLine = getLineForOffset(vFrom)
+		val vLastLine = getLineForOffset(vTo).coerceAtMost(lineCount - 1)
+		for (vLine in vFirstLine..vLastLine) {
+			val vLineStart = lineStarts[vLine]
+			val vLineEnd = vLineStart + (allLines.getOrElse(vLine) { "" }.length)
+			val vRangeStart = maxOf(vFrom, vLineStart)
+			val vRangeEnd = minOf(vTo, vLineEnd)
+			val vLeftPx = getHorizontalPosition(vRangeStart, true)
+			val vRightPx =
+				if (vRangeEnd < vLineEnd || vLine == vLastLine) getHorizontalPosition(vRangeEnd, true)
+				else lineWidths[vLine] // selection extends past newline → paint to line's end
+			if (vRightPx > vLeftPx) {
+				vPath.addRect(Rect(vLeftPx, getLineTop(vLine), vRightPx, getLineBottom(vLine)))
+			}
+		}
+		return vPath
+	}
 
 	override fun getRangeForRect(
 		rect: Rect,
