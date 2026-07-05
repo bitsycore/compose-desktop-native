@@ -167,8 +167,8 @@ val iconsBuildDir = layout.buildDirectory.dir("icons")
 val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") {
     description = "Scan src/ for MaterialSymbols.<Name> usages → usage-codepoint.txt."
     val vScript = rootProject.layout.projectDirectory.file("scripts/subset-material-symbols.py").asFile
-    val vConstants = rootProject.layout.projectDirectory.file(
-        "material-symbols/src/commonMain/kotlin/com/compose/desktop/native/icons/MaterialSymbols.kt").asFile
+    val vConstants = rootProject.project(":material-symbols").layout.projectDirectory
+        .file("src/commonMain/kotlin/com/compose/desktop/native/icons/MaterialSymbols.kt").asFile
     val vUsageFile = iconsBuildDir.get().file("usage-codepoint.txt").asFile
     inputs.files(fileTree("src") { include("**/*.kt") })
     inputs.file(vConstants)
