@@ -65,6 +65,16 @@ class SkiaTextRenderer {
         return inV.sortedBy { it.axisName }.joinToString(",") { "${it.axisName}=${it.toVariationValue(null)}" }
     }
 
+    /* Overrides the wght axis (or adds one) on top of caller-supplied variations,
+       so per-span FontWeight can be applied without discarding the base font's
+       other axes (e.g. a Material Symbols icon that already carries FILL/GRAD/opsz).
+       weight=400 short-circuits back to the caller list — the outer drawLine already
+       reuses the pre-loaded default font in that case. */
+    private fun withWeight(inV: List<ComposeFontVariation.Setting>?, inWeight: Int): List<ComposeFontVariation.Setting> {
+        val vOthers = inV?.filter { it.axisName != "wght" } ?: emptyList()
+        return vOthers + ComposeFontVariation.Setting("wght", inWeight.toFloat())
+    }
+
     // Per-family + variations typeface cache. Default font (key family=null,
     // variations="") is the one resolved by pickTypeface(); other entries
     // lazily resolve from IconFont.bytesFor() and Typeface.makeClone(...).
@@ -150,22 +160,36 @@ class SkiaTextRenderer {
             }
         }
 
-        // Draw one wrapped line at its baseline. With colour spans, split the
-        // line into same-colour segments (mapped from original-text indices via
-        // inLineStart) and paint each at its prefix x in its own colour.
+        // Draw one wrapped line at its baseline. With style spans, split the
+        // line into same-style segments (colour + weight + italic; mapped from
+        // original-text indices via inLineStart) and paint each at its prefix
+        // x in its own font.
         fun drawLine(inLine: String, inLineStart: Int, inBaseline: Float) {
             val vPenX = penXFor(inLine)
             if (inSpans == null) {
                 inCanvas.drawString(expandTabs(inLine), vPenX, inBaseline, vFont, vPaint)
                 return
             }
-            // O(spans + line length) colour runs, instead of an O(chars × spans)
+            // O(spans + line length) style runs, instead of an O(chars × spans)
             // per-character span scan, so a highlighted body with many spans
             // stays cheap per visible line.
             for (vRun in lineColorRuns(inLine, inLineStart, inSpans, inColor)) {
                 val vSegX = vPenX + estimateTextWidth(inLine.substring(0, vRun.start), inFontSize, inFontFamily, inFontVariations).toFloat()
                 val vSegPaint = Paint().apply { color = toSkiaColor(vRun.color); isAntiAlias = true }
-                inCanvas.drawString(expandTabs(inLine.substring(vRun.start, vRun.end)), vSegX, inBaseline, vFont, vSegPaint)
+                // Per-run font: apply the run's weight as a wght axis variation on
+                // top of any caller-supplied variations. `default` (400) reuses the
+                // outer `vFont` (already loaded with `inFontVariations`) so the
+                // common case pays no extra work; only spans that actually change
+                // weight rebuild via getFont's typeface cache.
+                val vSegFont = if (vRun.weight == 400 && !vRun.italic) vFont
+                    else getFont(
+                        inKey = TypefaceKey(inFontFamily, variationsKey(withWeight(inFontVariations, vRun.weight))),
+                        inFamily = inFontFamily,
+                        inVariations = withWeight(inFontVariations, vRun.weight),
+                        inSize = inFontSize,
+                    ).let { if (vRun.italic) it.apply { skewX = -0.2f } else it }
+                inCanvas.drawString(expandTabs(inLine.substring(vRun.start, vRun.end)), vSegX, inBaseline, vSegFont, vSegPaint)
+                if (vRun.italic && vSegFont !== vFont) vSegFont.skewX = 0f
                 vSegPaint.close()
             }
         }
