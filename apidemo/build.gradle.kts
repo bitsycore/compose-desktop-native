@@ -84,7 +84,12 @@ kotlin {
             dependencies {
                 implementation(project(":window"))
                 implementation(project(":material3"))
-                implementation(project(":material-symbols:outlined"))
+                // Single :material-symbols dep brings all three style objects
+                // (Outlined / Rounded / Sharp). Which style FONT(S) actually
+                // end up in data.kres is decided by detectUsedStyles() below —
+                // it scans this module's Kotlin sources for style call sites
+                // and only bundles the fonts that are used.
+                implementation(project(":material-symbols"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
@@ -134,21 +139,30 @@ val coreBuildDir = rootProject.project(":ui").layout.buildDirectory
 val notoSansFile = coreBuildDir.file("fonts/NotoSans.ttf")
 val notoMonoFile = coreBuildDir.file("fonts/NotoSansMono.ttf")
 
-// Material Symbols icon-font modules this app depends on — each exposes its
-// downloaded .ttf via extra["iconFontFile"]; we pull it into data.kres/font/
-// so the icons render at runtime (same scheme as :demo).
-val iconFontModules: List<Project> = run {
-    val vSet = mutableSetOf<Project>()
-    for (vName in listOf("commonMainImplementation", "commonMainApi", "nativeMainImplementation", "nativeMainApi")) {
-        val vCfg = configurations.findByName(vName) ?: continue
-        for (vDep in vCfg.dependencies) {
-            if (vDep is org.gradle.api.artifacts.ProjectDependency && vDep.path.startsWith(":material-symbols:")) {
-                rootProject.findProject(vDep.path)?.let { vSet.add(it) }
-            }
+// Which Material Symbols style(s) this app uses = which style call sites appear
+// in its Kotlin sources. `MaterialSymbolsOutlined(...)` → outlined font,
+// `MaterialSymbolsRounded(...)` → rounded, `MaterialSymbolsSharp(...)` → sharp.
+// The Zip task below downloads + bundles ONLY the fonts a style actually
+// referenced — an app that only ever calls MaterialSymbolsOutlined never pays
+// for Rounded/Sharp .ttf bytes (each is ~600KB uncompressed).
+val kAllStyles = listOf(
+    "Outlined" to Regex("\\bMaterialSymbolsOutlined\\b"),
+    "Rounded"  to Regex("\\bMaterialSymbolsRounded\\b"),
+    "Sharp"    to Regex("\\bMaterialSymbolsSharp\\b"),
+)
+fun detectUsedStyles(): List<String> {
+    val vSrcRoot = layout.projectDirectory.dir("src").asFile
+    val vUsed = mutableSetOf<String>()
+    if (!vSrcRoot.exists()) return emptyList()
+    vSrcRoot.walk().filter { it.isFile && it.extension == "kt" }.forEach { vFile ->
+        val vText = vFile.readText()
+        for ((vStyle, vRegex) in kAllStyles) {
+            if (vStyle !in vUsed && vRegex.containsMatchIn(vText)) vUsed.add(vStyle)
         }
     }
-    vSet.toList()
+    return vUsed.toList()
 }
+val vUsedStyles: List<String> = detectUsedStyles()
 
 // ==================
 // MARK: Material Symbols subsetting (-PsubsetIcons=true)
@@ -181,17 +195,17 @@ val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") 
     )
 }
 
-/* Register `subsetMaterialSymbols<Style>` for a style module — hb-subsets
-   its downloaded TTF to only the codepoints in usage-codepoint.txt and
-   writes the output under this app's build/icons/ dir. */
-fun registerSubsetTask(inStyleProject: Project): TaskProvider<*> {
-    val vStyleName = inStyleProject.name.replaceFirstChar { it.uppercase() }
-    return tasks.register("subsetMaterialSymbols$vStyleName") {
-        description = "hb-subset the $vStyleName Material Symbols font to icons actually used."
+/* Register `subsetMaterialSymbols<Style>` for a style — hb-subsets the style's
+   downloaded TTF (owned by :material-symbols) to only the codepoints in
+   usage-codepoint.txt and writes the output under this app's build/icons/ dir. */
+fun registerSubsetTask(inStyle: String): TaskProvider<*> {
+    val vSymbolsProject = rootProject.project(":material-symbols")
+    return tasks.register("subsetMaterialSymbols$inStyle") {
+        description = "hb-subset the $inStyle Material Symbols font to icons actually used."
         @Suppress("UNCHECKED_CAST")
-        val vInputProvider = inStyleProject.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
-        val vDownloadTask = inStyleProject.extra["iconFontDownloadTask"] as TaskProvider<*>
-        val vOut = iconsBuildDir.get().file("MaterialSymbols$vStyleName.subset.ttf").asFile
+        val vInputProvider = vSymbolsProject.extra["iconFontFile$inStyle"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+        val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$inStyle"] as TaskProvider<*>
+        val vOut = iconsBuildDir.get().file("MaterialSymbols$inStyle.subset.ttf").asFile
         val vUsage = iconsBuildDir.get().file("usage-codepoint.txt").asFile
         inputs.file(vInputProvider)
         inputs.file(vUsage)
@@ -222,7 +236,7 @@ fun registerSubsetTask(inStyleProject: Project): TaskProvider<*> {
                 ).redirectErrorStream(true).start()
             } catch (e: java.io.IOException) {
                 vInputFile.copyTo(vOut, overwrite = true)
-                logger.warn("[subset $vStyleName] hb-subset not found on PATH — bundling the full font " +
+                logger.warn("[subset $inStyle] hb-subset not found on PATH — bundling the full font " +
                     "(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
                     "pacman -S mingw-w64-x86_64-harfbuzz / apt install harfbuzz-utils).")
                 return@doLast
@@ -232,16 +246,16 @@ fun registerSubsetTask(inStyleProject: Project): TaskProvider<*> {
             if (vCode != 0) throw GradleException("hb-subset failed (exit $vCode):\n$vOutput")
             val vAfter = vOut.length()
             val vPct = if (vBefore == 0L) 0 else ((100 - 100 * vAfter / vBefore)).coerceAtLeast(0)
-            logger.lifecycle("[subset $vStyleName] ${vBefore / 1024}KB → ${vAfter / 1024}KB (-$vPct%) · ${vCodepoints.size} glyphs kept")
+            logger.lifecycle("[subset $inStyle] ${vBefore / 1024}KB → ${vAfter / 1024}KB (-$vPct%) · ${vCodepoints.size} glyphs kept")
         }
     }
 }
 
-// Pre-create subset tasks per style module when enabled; the Zip below
-// uses them as the font source. Built outside the variant×target loop
-// so each style is subset once and reused across all bundle variants.
-val subsetTasksByModule: Map<Project, TaskProvider<*>> =
-    if (subsetIcons) iconFontModules.associateWith { registerSubsetTask(it) } else emptyMap()
+// Pre-create subset tasks per USED style when enabled; the Zip below uses
+// them as the font source. Built outside the variant×target loop so each
+// style is subset once and reused across all bundle variants.
+val subsetTasksByStyle: Map<String, TaskProvider<*>> =
+    if (subsetIcons) vUsedStyles.associateWith { registerSubsetTask(it) } else emptyMap()
 
 for (variant in variants) {
     for (target in nativeTargets) {
@@ -255,11 +269,12 @@ for (variant in variants) {
             from(notoSansFile) { into("font") }
             from(notoMonoFile) { into("font") }
             dependsOn(":ui:downloadNotoFonts")
-            iconFontModules.forEach { vP ->
+            val vSymbolsProject = rootProject.project(":material-symbols")
+            for (vStyle in vUsedStyles) {
                 @Suppress("UNCHECKED_CAST")
-                val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
-                val vDownloadTask = vP.extra["iconFontDownloadTask"] as TaskProvider<*>
-                val vSubsetTask = subsetTasksByModule[vP]
+                val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+                val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
+                val vSubsetTask = subsetTasksByStyle[vStyle]
                 if (vSubsetTask != null) {
                     // Trimmed font: depend on the subset task and bundle its output
                     // with the original filename so the runtime IconFont registration

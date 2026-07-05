@@ -73,9 +73,12 @@ kotlin {
             dependencies {
                 implementation(project(":window"))
                 implementation(project(":material3"))
-                implementation(project(":material-symbols:outlined"))
-                implementation(project(":material-symbols:rounded"))
-                implementation(project(":material-symbols:sharp"))
+                // Single :material-symbols dep brings all three style objects
+                // (Outlined / Rounded / Sharp). Which style FONT(S) actually
+                // end up in data.kres is decided by the Zip task below —
+                // it scans this module's Kotlin sources for style call sites
+                // and bundles only the fonts that are used.
+                implementation(project(":material-symbols"))
             }
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             kotlin.srcDir(composeResGenDir)
@@ -178,33 +181,30 @@ val composeResourcesDir = layout.projectDirectory.dir("src/nativeMain/composeRes
 val notoSansFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSans.ttf")
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
-// Walk the demo's declared dependencies and pick out every :material-symbols:*
-// project this module actually pulls in. Each such module exposes
-// extra["iconFontFile"] (Provider<RegularFile> for the downloaded .ttf) and
-// extra["iconFontDownloadTask"] (TaskProvider). The Zip task pulls the file
-// into data.kres under font/ and depends on the download task — apps just
-// declare the dependency on the style(s) they want, the bundling is
-// automatic and only ships what's depended on.
-fun collectIconFontModules(): List<Project> {
-    val vConfigs = listOf(
-        "commonMainImplementation", "commonMainApi",
-        "nativeMainImplementation", "nativeMainApi",
-    )
-    val vSet = mutableSetOf<Project>()
-    for (vName in vConfigs) {
-        val vCfg = configurations.findByName(vName) ?: continue
-        for (vDep in vCfg.dependencies) {
-            if (vDep is org.gradle.api.artifacts.ProjectDependency) {
-                val vPath = vDep.path
-                if (vPath.startsWith(":material-symbols:")) {
-                    rootProject.findProject(vPath)?.let { vSet.add(it) }
-                }
-            }
+// Which Material Symbols style(s) this app uses = which style call sites appear
+// in its Kotlin sources. `MaterialSymbolsOutlined(...)` -> outlined font,
+// `MaterialSymbolsRounded(...)` -> rounded, `MaterialSymbolsSharp(...)` -> sharp.
+// The Zip task below downloads + bundles ONLY the fonts a style actually
+// referenced — an app that only ever calls MaterialSymbolsOutlined never pays
+// for Rounded/Sharp .ttf bytes (each is ~600KB uncompressed).
+val kAllStyles = listOf(
+    "Outlined" to Regex("\\bMaterialSymbolsOutlined\\b"),
+    "Rounded"  to Regex("\\bMaterialSymbolsRounded\\b"),
+    "Sharp"    to Regex("\\bMaterialSymbolsSharp\\b"),
+)
+fun detectUsedStyles(): List<String> {
+    val vSrcRoot = layout.projectDirectory.dir("src").asFile
+    val vUsed = mutableSetOf<String>()
+    if (!vSrcRoot.exists()) return emptyList()
+    vSrcRoot.walk().filter { it.isFile && it.extension == "kt" }.forEach { vFile ->
+        val vText = vFile.readText()
+        for ((vStyle, vRegex) in kAllStyles) {
+            if (vStyle !in vUsed && vRegex.containsMatchIn(vText)) vUsed.add(vStyle)
         }
     }
-    return vSet.toList()
+    return vUsed.toList()
 }
-val iconFontModules: List<Project> = collectIconFontModules()
+val vUsedStyles: List<String> = detectUsedStyles()
 
 for (variant in variants) {
     for (target in nativeTargets) {
@@ -223,11 +223,14 @@ for (variant in variants) {
                 from(notoSansFile) { into("font") }
                 dependsOn(":ui:downloadNotoFonts")
             }
-            // Pull each icon-font module's downloaded .ttf into the font/ entry.
-            iconFontModules.forEach { vP ->
+            // Pull each USED style's downloaded .ttf into the font/ entry.
+            // `:material-symbols` module exposes per-style extras named
+            // iconFontFile<Style> / iconFontDownloadTask<Style>.
+            val vSymbolsProject = rootProject.project(":material-symbols")
+            for (vStyle in vUsedStyles) {
                 @Suppress("UNCHECKED_CAST")
-                val vFontFile = vP.extra["iconFontFile"] as org.gradle.api.provider.Provider<RegularFile>
-                val vDownloadTask = vP.extra["iconFontDownloadTask"] as TaskProvider<*>
+                val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as org.gradle.api.provider.Provider<RegularFile>
+                val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
                 from(vFontFile) { into("font") }
                 dependsOn(vDownloadTask)
             }

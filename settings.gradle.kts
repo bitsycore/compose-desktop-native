@@ -35,18 +35,12 @@ include(":foundation")
 include(":material3")
 include(":window")
 include(":material-symbols")
-include(":material-symbols:outlined")
-include(":material-symbols:rounded")
-include(":material-symbols:sharp")
 project(":ui").projectDir = file("compose/ui")
 project(":animation-core").projectDir = file("compose/animation-core")
 project(":foundation").projectDir = file("compose/foundation")
 project(":material3").projectDir = file("compose/material3")
 project(":window").projectDir = file("compose/native/window")
 project(":material-symbols").projectDir = file("compose/material-symbols")
-project(":material-symbols:outlined").projectDir = file("compose/material-symbols/outlined")
-project(":material-symbols:rounded").projectDir = file("compose/material-symbols/rounded")
-project(":material-symbols:sharp").projectDir = file("compose/material-symbols/sharp")
 
 // App modules stay at the top level so `./gradlew :demo:run…` reads naturally
 // as an app-facing command, distinct from library modules.

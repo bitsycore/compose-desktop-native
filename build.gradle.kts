@@ -23,7 +23,7 @@ plugins {
 // surface worth tracking, so skip them.
 apiValidation {
     klib { enabled = true }
-    ignoredProjects.addAll(listOf("demo", "apidemo", "outlined", "rounded", "sharp"))
+    ignoredProjects.addAll(listOf("demo", "apidemo"))
 }
 
 // ==================
@@ -46,7 +46,7 @@ allprojects {
 
 val publishModules = setOf(
     ":ui", ":foundation", ":animation-core", ":material3", ":window",
-    ":material-symbols:outlined", ":material-symbols:rounded", ":material-symbols:sharp",
+    ":material-symbols",
 )
 
 subprojects {
