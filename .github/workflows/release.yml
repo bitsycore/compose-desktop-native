@@ -190,20 +190,31 @@ jobs:
             :apidemo:linkReleaseExecutable${{ matrix.gradle }}
 
       # ---------------- Zip the apps for this target ----------------
+      # Bundle only the two runtime-required files (executable + data.kres).
+      # The releaseExecutable dir also contains a debug bundle
+      # (`<app>.kexe.dSYM/` on macOS) whose interior DWARF file is named
+      # `<app>.kexe` too — `zip -j` (flatten paths) collided on the duplicate
+      # basename and failed with "cannot repeat names in zip file". Naming the
+      # two files explicitly skips the dSYM entirely; users who need symbols
+      # for crash-symbolication can grab them from the build artifacts.
       - name: Package demo + apidemo zips
         shell: bash
         run: |
           set -euo pipefail
           V=${{ steps.ver.outputs.v }}
           mkdir -p dist
-          # demo
-          pushd demo/build/bin/${{ matrix.target }}/releaseExecutable >/dev/null
-          zip -r -9 -j "$GITHUB_WORKSPACE/dist/demo-${{ matrix.target }}-$V.zip" .
-          popd >/dev/null
-          # apidemo
-          pushd apidemo/build/bin/${{ matrix.target }}/releaseExecutable >/dev/null
-          zip -r -9 -j "$GITHUB_WORKSPACE/dist/apidemo-${{ matrix.target }}-$V.zip" .
-          popd >/dev/null
+          # File extension of the executable: `.kexe` on macOS/Linux, `.exe` on mingw.
+          case "${{ matrix.target }}" in
+            mingwX64) EXE=".exe" ;;
+            *)        EXE=".kexe" ;;
+          esac
+          for APP in demo apidemo; do
+            DIR="$APP/build/bin/${{ matrix.target }}/releaseExecutable"
+            pushd "$DIR" >/dev/null
+            zip -9 "$GITHUB_WORKSPACE/dist/$APP-${{ matrix.target }}-$V.zip" \
+              "$APP$EXE" data.kres
+            popd >/dev/null
+          done
           ls -la dist/
 
       - name: Upload app zips
