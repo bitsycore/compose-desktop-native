@@ -43,6 +43,13 @@ internal class SdlParagraph(
 	widthConstraint: Float,
 	private val maxLines: Int,
 	density: Float = 1f,
+	// AnnotatedString span ranges (colour, weight, family, size). Ignored for
+	// measurement — the wrap path measures in the base style's font metrics — but
+	// forwarded to the native paint path so each glyph run picks up its span's
+	// colour / weight / italic / family / fontSize when drawn. Weight + italic
+	// currently only reach the Skia renderer path (SkiaTextRenderer.drawText),
+	// which is where the multi-run colour + font pipeline is already wired.
+	private val spanStyles: List<AnnotatedString.Range<SpanStyle>> = emptyList(),
 ) : Paragraph {
 
 	private val fontPx: Int =
@@ -220,7 +227,7 @@ internal class SdlParagraph(
 		val vAlign = style.textAlign ?: TextAlign.Start
 		vNative.drawNativeText(
 			inText = text,
-			inSpans = null,
+			inSpans = spanStyles.takeIf { it.isNotEmpty() },
 			inX = 0f,
 			inY = 0f,
 			inBoxWidth = width,
