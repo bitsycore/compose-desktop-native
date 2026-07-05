@@ -59,18 +59,21 @@ internal class SkiaCanvas(
 	override fun save() { fCanvas.save() }
 	override fun restore() { fCanvas.restore() }
 	override fun saveLayer(bounds: Rect, paint: Paint) {
-		// Pass null bounds instead of the caller-computed rect. Compose's Canvas
-		// interface forces a non-null Rect on this API, but `ProjectOwnedLayer.drawLayer`
+		// Ignore caller-computed bounds and pass a huge rect. ProjectOwnedLayer.drawLayer
 		// computes bounds from THIS layer's own fPosition + fTranslation + fSize —
-		// it can't see inner-layer translations that would paint outside those bounds
-		// (e.g. `Modifier.graphicsLayer(translationX=200).clip(...)` inside a
-		// `.alpha(0.65f)` wrapping layer: alpha's saveLayer bounds don't know the inner
-		// translation of 200px, so the dragged-tab ghost gets clipped by the alpha
-		// layer's backbuffer, disappearing as the drag slides it out of the original
-		// container's rect). Skia's saveLayer(null, paint) uses the current clip as
-		// the layer extent — memory-heavier but correct. Bounds are a "hint" per Skia
-		// docs, but GPU backends (Metal/OpenGL) do use them to allocate the offscreen.
-		fCanvas.saveLayer(null as SkRect?, toSkiaPaint(paint))
+		// it can't see inner-layer translations that would paint outside those bounds.
+		// Concrete failure: dragging a tab with `graphicsLayer(alpha=0.65f, translationX=X)`
+		// — the layer's saveLayer bounds don't include any subsequent inner-layer
+		// translation, so on Skia GPU backends the offscreen buffer is allocated too
+		// small and the ghost gets clipped as it slides. Even with the single-layer app
+		// fix, Skia's saveLayer(bounds, alphaPaint) allocates an offscreen SIZED to
+		// bounds — passing tight (fPos + fTrans + size) bounds is exactly the layer's
+		// own painted rect, so anything drawn OUTSIDE that rect via child modifiers
+		// (padding overshoot, border stroke overshoot, drop shadow) is trimmed.
+		// A large explicit rect avoids overload resolution ambiguity that `null as
+		// SkRect?` had (didn't seem to hit the null branch consistently). Alpha compositing
+		// still works — Skia does the alpha modulation via layerPaint on restore().
+		fCanvas.saveLayer(-100_000f, -100_000f, 100_000f, 100_000f, toSkiaPaint(paint))
 	}
 	override fun translate(dx: Float, dy: Float) { fCanvas.translate(dx, dy) }
 	override fun scale(sx: Float, sy: Float) { fCanvas.scale(sx, sy) }
