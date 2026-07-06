@@ -25,6 +25,10 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
 
     private val fTextRenderer = Sdl3TextRenderer(backend)
     private val fImageCache = Sdl3ImageCache(backend)
+    // Persistent offscreen render targets for rounded-shape clipping. Created
+    // lazily on the first drawRoot (the renderer must exist first) and reused
+    // across frames — allocated here, not per-frame Sdl3Canvas.
+    private var fClipTargets: Sdl3ClipTargets? = null
 
     init {
         if (!fTextRenderer.init()) {
@@ -77,11 +81,13 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     // → Sdl3Canvas → SDL_RenderGeometry.
     override fun drawRoot(inHost: com.compose.desktop.native.node.ComposeRootHost) {
         val vRenderer = backend.renderer ?: return
+        val vClipTargets = fClipTargets ?: Sdl3ClipTargets(vRenderer).also { fClipTargets = it }
         val vCanvas = Sdl3Canvas(
             vRenderer,
             androidx.compose.ui.geometry.Size(backend.pixelWidth.toFloat(), backend.pixelHeight.toFloat()),
             fTextRenderer,
             fImageCache,
+            vClipTargets,
         )
         inHost.rootNode.draw(vCanvas, null)
         vCanvas.finish()
@@ -128,6 +134,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     }
 
     override fun destroy() {
+        fClipTargets?.destroy()
         fImageCache.destroy()
         fTextRenderer.destroy()
     }

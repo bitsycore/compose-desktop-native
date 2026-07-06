@@ -452,13 +452,20 @@ private class ProjectOwnedLayer(
 						vOutline.rect.left, vOutline.rect.top, vOutline.rect.right, vOutline.rect.bottom,
 					)
 					is androidx.compose.ui.graphics.Outline.Rounded -> {
-						// Renderer canvases only expose clipRect / clipPath — we build the rounded
-						// rect as a Path with addRoundRect so the clip lands via clipPath. Skia's
-						// clipPath handles the rounded corners; SDL3Canvas approximates by
-						// falling back to clipRect (SDL has no clip-path primitive).
-						val vPath = androidx.compose.ui.graphics.Path()
-						vPath.addRoundRect(vOutline.roundRect)
-						canvas.clipPath(vPath)
+						// Skia's clipPath rounds natively, so we build the rounded rect as a
+						// Path and clip with it there. The SDL3 canvas has no path-clip
+						// primitive, so it implements NativeShapeClipCanvas and clips the
+						// rounded OUTLINE via an offscreen masked target — preferred over
+						// clipPath (which on SDL falls back to the bounding rect and left
+						// rounded-button state layers looking square).
+						val vShapeClip = canvas as? com.compose.desktop.native.graphics.NativeShapeClipCanvas
+						if (vShapeClip != null) {
+							vShapeClip.clipRoundRect(vOutline.roundRect)
+						} else {
+							val vPath = androidx.compose.ui.graphics.Path()
+							vPath.addRoundRect(vOutline.roundRect)
+							canvas.clipPath(vPath)
+						}
 					}
 					is androidx.compose.ui.graphics.Outline.Generic -> canvas.clipPath(vOutline.path)
 				}

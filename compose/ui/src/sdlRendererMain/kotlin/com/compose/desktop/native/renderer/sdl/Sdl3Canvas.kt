@@ -2,6 +2,7 @@ package com.compose.desktop.native.renderer.sdl
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Canvas
@@ -20,8 +21,11 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlinx.cinterop.*
 import sdl3.*
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sin
 
 // ==================
 // MARK: Sdl3Canvas
@@ -52,9 +56,11 @@ internal class Sdl3Canvas(
 	private val fSize: Size,
 	private val fTextRenderer: Sdl3TextRenderer? = null,
 	private val fImageCache: Sdl3ImageCache? = null,
+	private val fClipTargets: Sdl3ClipTargets? = null,
 ) : Canvas,
 	com.compose.desktop.native.text.NativeTextCanvas,
-	com.compose.desktop.native.graphics.NativePainterCanvas {
+	com.compose.desktop.native.graphics.NativePainterCanvas,
+	com.compose.desktop.native.graphics.NativeShapeClipCanvas {
 
 	// The tessellating scope whose origin we retarget per draw call. Origin 0,0
 	// initially; each draw sets it to the current translate (fTx, fTy).
@@ -73,14 +79,37 @@ internal class Sdl3Canvas(
 	// within a layer (which is the normal case for a graphicsLayer(alpha=…) block).
 	private var fAlpha: Float = 1f
 
-	// save/restore stack of (tx, ty, clip, alpha).
-	private data class State(val tx: Float, val ty: Float, val clip: IntArray?, val alpha: Float)
+	// save/restore stack of (tx, ty, clip, alpha, clipLayers). `clipLayers` is the
+	// offscreen-clip stack depth at save() time; restore() composites+pops any
+	// offscreen clip opened inside this save frame (see fClipLayers below).
+	private data class State(val tx: Float, val ty: Float, val clip: IntArray?, val alpha: Float, val clipLayers: Int)
 	private val fStack = ArrayDeque<State>()
+
+	// Stack of active rounded-shape clips, each backed by an offscreen render
+	// target (see clipRoundRect / compositeClipLayer). SDL only clips to a rect,
+	// so a rounded clip draws its subtree into an offscreen target, zeroes the
+	// pixels outside the rounded outline, then composites the target back on the
+	// matching restore().
+	private class OffscreenClip(
+		val target: COpaquePointer,   // scratch render target this clip draws into
+		val prevTarget: COpaquePointer?, // render target active before this clip (null = window)
+		val prevClip: IntArray?,      // SDL clip rect active before this clip
+		val region: IntArray,         // [l,t,r,b] absolute px actually cleared + composited back
+		val bbox: IntArray,           // [l,t,r,b] absolute px of the full rounded rect (corner math)
+		val roundRect: RoundRect,     // the rounded outline (local coords, for corner radii)
+	)
+	private val fClipLayers = ArrayDeque<OffscreenClip>()
 
 	// Flushes any pending batched geometry to SDL, then frees the scope's
 	// native buffer + clears the SDL clip. Call once per frame after the draw.
 	fun finish() {
 		fScope.release()
+		// Safety: an unbalanced save/restore must never leave the renderer pointed
+		// at a scratch target when the frame is presented.
+		if (fClipLayers.isNotEmpty()) {
+			SDL_SetRenderTarget(fRenderer.reinterpret(), null)
+			fClipLayers.clear()
+		}
 		SDL_SetRenderClipRect(fRenderer.reinterpret(), null)
 	}
 
@@ -88,11 +117,17 @@ internal class Sdl3Canvas(
 	//  State (translate + clip stack)
 
 	override fun save() {
-		fStack.addLast(State(fTx, fTy, fClip, fAlpha))
+		fStack.addLast(State(fTx, fTy, fClip, fAlpha, fClipLayers.size))
 	}
 
 	override fun restore() {
 		val vPrev = fStack.removeLastOrNull() ?: return
+		// Composite + pop any offscreen rounded clips opened inside this save frame
+		// before restoring the plain state (each composite restores render target
+		// and SDL clip to what it was when the clip was opened).
+		while (fClipLayers.size > vPrev.clipLayers) {
+			compositeClipLayer()
+		}
 		fTx = vPrev.tx
 		fTy = vPrev.ty
 		if (vPrev.clip !== fClip) {
@@ -167,6 +202,151 @@ internal class Sdl3Canvas(
 			max(inA[0], inB[0]), max(inA[1], inB[1]),
 			min(inA[2], inB[2]), min(inA[3], inB[3]),
 		)
+	}
+
+	// ============
+	//  Rounded-shape clip (NativeShapeClipCanvas) — SDL only clips to a rect, so
+	//  a rounded / circular clip renders its subtree into an offscreen target,
+	//  zeroes the pixels outside the rounded outline (blend NONE writes 0), then
+	//  composites the target back on the matching restore(). Only reached for
+	//  RoundedCornerShape / CircleShape (Outline.Rounded); rects use clipRect and
+	//  arbitrary paths keep the clipPath bbox fallback.
+
+	override fun clipRoundRect(inRoundRect: RoundRect) {
+		val vMaxRadius = maxOf(
+			inRoundRect.topLeftCornerRadius.x, inRoundRect.topLeftCornerRadius.y,
+			inRoundRect.topRightCornerRadius.x, inRoundRect.topRightCornerRadius.y,
+			inRoundRect.bottomRightCornerRadius.x, inRoundRect.bottomRightCornerRadius.y,
+			inRoundRect.bottomLeftCornerRadius.x, inRoundRect.bottomLeftCornerRadius.y,
+		)
+		// Effectively-square corners or no offscreen pool → plain rectangular clip.
+		if (vMaxRadius < 0.5f || fClipTargets == null || fSize.width < 1f || fSize.height < 1f) {
+			clipRect(inRoundRect.left, inRoundRect.top, inRoundRect.right, inRoundRect.bottom)
+			return
+		}
+		fScope.flush()
+		val vBbox = intArrayOf(
+			(fTx + inRoundRect.left).toInt(), (fTy + inRoundRect.top).toInt(),
+			(fTx + inRoundRect.right).toInt(), (fTy + inRoundRect.bottom).toInt(),
+		)
+		val vRegion = intersect(fClip, vBbox)
+		// Nothing visible: keep behaviour of a normal clip (cull) without an
+		// offscreen pass. The enclosing save/restore restores the clip afterwards.
+		if (vRegion[2] <= vRegion[0] || vRegion[3] <= vRegion[1]) {
+			fClip = vRegion
+			applyClip()
+			return
+		}
+		val vTarget = fClipTargets.target(fClipLayers.size, fSize.width.toInt(), fSize.height.toInt())
+		if (vTarget == null) {
+			// Couldn't allocate a scratch target — degrade to a rectangular clip.
+			clipRect(inRoundRect.left, inRoundRect.top, inRoundRect.right, inRoundRect.bottom)
+			return
+		}
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		val vPrevTarget = SDL_GetRenderTarget(vRenderer)
+		val vPrevClip = fClip
+		SDL_SetRenderTarget(vRenderer, vTarget.reinterpret())
+		fClip = vRegion
+		applyClip()
+		clearRegion(vRegion)
+		fClipLayers.addLast(OffscreenClip(vTarget, vPrevTarget, vPrevClip, vRegion, vBbox, inRoundRect))
+	}
+
+	// Pops the top offscreen clip: flush its subtree, cut the rounded corners out
+	// of the scratch, restore the previous target + clip, then blit the masked
+	// region back onto the previous target (alpha-blended).
+	private fun compositeClipLayer() {
+		val vLayer = fClipLayers.removeLastOrNull() ?: return
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		fScope.flush()
+		zeroRoundRectCorners(vLayer.bbox, vLayer.roundRect)
+		SDL_SetRenderTarget(vRenderer, vLayer.prevTarget?.reinterpret())
+		fClip = vLayer.prevClip
+		applyClip()
+		blitRegion(vLayer.target, vLayer.region)
+	}
+
+	// Clears [inRect] on the current target to fully transparent (blend NONE
+	// writes src directly, so it zeroes the region's RGBA).
+	private fun clearRegion(inRect: IntArray) {
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_NONE)
+		SDL_SetRenderDrawColor(vRenderer, 0u, 0u, 0u, 0u)
+		memScoped {
+			val vFRect = alloc<SDL_FRect>()
+			vFRect.x = inRect[0].toFloat()
+			vFRect.y = inRect[1].toFloat()
+			vFRect.w = (inRect[2] - inRect[0]).toFloat()
+			vFRect.h = (inRect[3] - inRect[1]).toFloat()
+			SDL_RenderFillRect(vRenderer, vFRect.ptr)
+		}
+		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_BLEND)
+	}
+
+	// Blits [inRegion] of [inTarget] back onto the current render target 1:1
+	// (render scale is 1, so absolute px map directly to target texels).
+	private fun blitRegion(inTarget: COpaquePointer, inRegion: IntArray) {
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		memScoped {
+			val vSrc = alloc<SDL_FRect>()
+			val vDst = alloc<SDL_FRect>()
+			vSrc.x = inRegion[0].toFloat(); vSrc.y = inRegion[1].toFloat()
+			vSrc.w = (inRegion[2] - inRegion[0]).toFloat(); vSrc.h = (inRegion[3] - inRegion[1]).toFloat()
+			vDst.x = vSrc.x; vDst.y = vSrc.y; vDst.w = vSrc.w; vDst.h = vSrc.h
+			SDL_RenderTexture(vRenderer, inTarget.reinterpret(), vSrc.ptr, vDst.ptr)
+		}
+	}
+
+	// Overwrites the four corner regions that fall OUTSIDE the rounded outline
+	// with transparent pixels (blend NONE). Each corner is a triangle fan from
+	// the bounding-box corner to the quarter-ellipse arc, so the fan covers
+	// exactly "corner square minus rounded corner". Circles/pills fall out of
+	// this too (radius == half-size makes the four arcs meet).
+	private fun zeroRoundRectCorners(inBbox: IntArray, inRoundRect: RoundRect) {
+		val vLeft = inBbox[0].toFloat(); val vTop = inBbox[1].toFloat()
+		val vRight = inBbox[2].toFloat(); val vBottom = inBbox[3].toFloat()
+		val vSeg = 12
+		// Collect triangle vertices (x, y) for all four corner cutouts.
+		val vVerts = ArrayList<Float>()
+		fun cutout(inApexX: Float, inApexY: Float, inCx: Float, inCy: Float, inRx: Float, inRy: Float, inStartDeg: Float) {
+			if (inRx <= 0f || inRy <= 0f) return
+			var vPrevX = 0f; var vPrevY = 0f
+			for (vI in 0..vSeg) {
+				val vAngle = ((inStartDeg + 90f * vI / vSeg) * (PI / 180.0)).toFloat()
+				val vPx = inCx + inRx * cos(vAngle)
+				val vPy = inCy + inRy * sin(vAngle)
+				if (vI > 0) {
+					vVerts.add(inApexX); vVerts.add(inApexY)
+					vVerts.add(vPrevX); vVerts.add(vPrevY)
+					vVerts.add(vPx); vVerts.add(vPy)
+				}
+				vPrevX = vPx; vPrevY = vPy
+			}
+		}
+		val vTl = inRoundRect.topLeftCornerRadius
+		val vTr = inRoundRect.topRightCornerRadius
+		val vBr = inRoundRect.bottomRightCornerRadius
+		val vBl = inRoundRect.bottomLeftCornerRadius
+		cutout(vLeft, vTop, vLeft + vTl.x, vTop + vTl.y, vTl.x, vTl.y, 180f)
+		cutout(vRight, vTop, vRight - vTr.x, vTop + vTr.y, vTr.x, vTr.y, 270f)
+		cutout(vRight, vBottom, vRight - vBr.x, vBottom - vBr.y, vBr.x, vBr.y, 0f)
+		cutout(vLeft, vBottom, vLeft + vBl.x, vBottom - vBl.y, vBl.x, vBl.y, 90f)
+		val vCount = vVerts.size / 2
+		if (vCount == 0) return
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_NONE)
+		memScoped {
+			val vBuf = allocArray<SDL_Vertex>(vCount)
+			for (vI in 0 until vCount) {
+				vBuf[vI].position.x = vVerts[vI * 2]
+				vBuf[vI].position.y = vVerts[vI * 2 + 1]
+				vBuf[vI].color.r = 0f; vBuf[vI].color.g = 0f; vBuf[vI].color.b = 0f; vBuf[vI].color.a = 0f
+				vBuf[vI].tex_coord.x = 0f; vBuf[vI].tex_coord.y = 0f
+			}
+			SDL_RenderGeometry(vRenderer, null, vBuf, vCount, null, 0)
+		}
+		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_BLEND)
 	}
 
 	// ============
