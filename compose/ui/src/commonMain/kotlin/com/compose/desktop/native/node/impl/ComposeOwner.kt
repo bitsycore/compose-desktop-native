@@ -365,6 +365,10 @@ private class ProjectOwnedLayer(
 	private var fTranslationY: Float = 0f
 	private var fScaleX: Float = 1f
 	private var fScaleY: Float = 1f
+	private var fRotationZ: Float = 0f
+	// transformOrigin pivot as a fraction of the layer size (Center = 0.5, 0.5).
+	private var fPivotFractionX: Float = 0.5f
+	private var fPivotFractionY: Float = 0.5f
 	private var fAlpha: Float = 1f
 	private var fClip: Boolean = false
 	// Shape used when fClip=true. RectangleShape / null → rect clip, anything else
@@ -395,6 +399,9 @@ private class ProjectOwnedLayer(
 		fTranslationY = scope.translationY
 		fScaleX = scope.scaleX
 		fScaleY = scope.scaleY
+		fRotationZ = scope.rotationZ
+		fPivotFractionX = scope.transformOrigin.pivotFractionX
+		fPivotFractionY = scope.transformOrigin.pivotFractionY
 		fAlpha = scope.alpha
 		fClip = scope.clip
 		fShape = scope.shape
@@ -432,7 +439,20 @@ private class ProjectOwnedLayer(
 			canvas.save()
 		}
 		canvas.translate(fPosition.x + fTranslationX, fPosition.y + fTranslationY)
-		if (fScaleX != 1f || fScaleY != 1f) canvas.scale(fScaleX, fScaleY)
+		// scale + rotationZ apply about the transformOrigin pivot (Center by
+		// default) — translate to the pivot, transform, translate back. Modifier
+		// .scale / .rotate rely on this; scaling about (0,0) had shifted + resized
+		// the wrong way (and rotation was ignored entirely).
+		val vHasScale = fScaleX != 1f || fScaleY != 1f
+		val vHasRotation = fRotationZ != 0f
+		if ((vHasScale || vHasRotation) && fSize.width > 0 && fSize.height > 0) {
+			val vPivotX = fSize.width * fPivotFractionX
+			val vPivotY = fSize.height * fPivotFractionY
+			canvas.translate(vPivotX, vPivotY)
+			if (vHasRotation) canvas.rotate(fRotationZ)
+			if (vHasScale) canvas.scale(fScaleX, fScaleY)
+			canvas.translate(-vPivotX, -vPivotY)
+		}
 		if (fClip && fSize.width > 0 && fSize.height > 0) {
 			// Route the clip through the layer's shape so `Modifier.clip(RoundedCornerShape(6.dp))`
 			// actually rounds — was `canvas.clipRect(0, 0, w, h)` which clipped to a plain
@@ -508,6 +528,8 @@ private class ProjectOwnedLayer(
 		fSize = androidx.compose.ui.unit.IntSize.Zero
 		fTranslationX = 0f; fTranslationY = 0f
 		fScaleX = 1f; fScaleY = 1f
+		fRotationZ = 0f
+		fPivotFractionX = 0.5f; fPivotFractionY = 0.5f
 		fAlpha = 1f
 		fClip = false
 	}

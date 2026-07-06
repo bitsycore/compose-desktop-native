@@ -102,6 +102,17 @@ internal class Sdl3DrawScope(
 	internal val originX: Float get() = fOriginX
 	internal val originY: Float get() = fOriginY
 
+	// User→screen affine (a,b,c,d,e,f): screen = (a*x+c*y+e, b*x+d*y+f). The
+	// canvas sets this per draw so graphicsLayer translate / scale / rotate apply
+	// to every emitted vertex. Identity by default; positions are otherwise the
+	// scope's own (origin-relative) coords. Gradient samplers still run in the
+	// pre-transform space (originX/Y), so a gradient transforms with its shape.
+	private var fMa = 1f; private var fMb = 0f; private var fMc = 0f
+	private var fMd = 1f; private var fMe = 0f; private var fMf = 0f
+	internal fun setMatrix(a: Float, b: Float, c: Float, d: Float, e: Float, f: Float) {
+		fMa = a; fMb = b; fMc = c; fMd = d; fMe = e; fMf = f
+	}
+
 	// ============
 	//  Vertex batch — heap-allocated buffer of SDL_Vertex shared across
 	//  every draw call in this scope. Submitted in one SDL_RenderGeometry
@@ -110,31 +121,26 @@ internal class Sdl3DrawScope(
 
 	private val fBatch: CPointer<SDL_Vertex> = nativeHeap.allocArray(kBatchCapacity)
 	private var fBatchCount: Int = 0
+	// Vertices are staged into a plain Kotlin FloatArray (8 floats per SDL_Vertex:
+	// pos.xy, color.rgba, tex.xy — tightly packed) and bulk-copied to the native
+	// buffer once per flush. Writing floats to a Kotlin array is far cheaper than
+	// per-field cinterop struct access, which dominated once AA tripled the vertex
+	// count. kFloatsPerVertex must match SDL_Vertex's layout.
+	private val fVertexData = FloatArray(kBatchCapacity * kFloatsPerVertex)
 
-	/* Pushes a single vertex into the batch buffer. If the buffer is full
-	   the batch is auto-flushed before writing. Returns the slot the
-	   vertex was written to so emitters can configure position / colour. */
-	private fun pushVertex(): SDL_Vertex {
-		if (fBatchCount >= kBatchCapacity) flush()
-		val vSlot = fBatch[fBatchCount]
-		fBatchCount++
-		return vSlot
-	}
-
-	/* Submit the accumulated triangles to SDL. Called once per drawer
-	   invocation by the renderer; safe to call mid-scope when the buffer
-	   fills up (state across draw calls is purely positional, no
-	   between-tri state). */
+	/* Submit the accumulated triangles to SDL: copy the staged floats into the
+	   native SDL_Vertex buffer in one memcpy, then one SDL_RenderGeometry. Safe to
+	   call mid-scope when the buffer fills up (no cross-triangle state). */
 	fun flush() {
 		if (fBatchCount == 0) return
-		SDL_RenderGeometry(
-			fRenderer.reinterpret(),
-			null,
-			fBatch,
-			fBatchCount,
-			null,
-			0,
-		)
+		fVertexData.usePinned { vPinned ->
+			platform.posix.memcpy(
+				fBatch,
+				vPinned.addressOf(0),
+				(fBatchCount * kFloatsPerVertex * 4).convert(),
+			)
+		}
+		SDL_RenderGeometry(fRenderer.reinterpret(), null, fBatch, fBatchCount, null, 0)
 		fBatchCount = 0
 	}
 
@@ -236,7 +242,18 @@ internal class Sdl3DrawScope(
 		val vR = vL + size.width
 		val vB = vT + size.height
 		when (style) {
-			Fill -> emitQuad(vL, vT, vR, vT, vR, vB, vL, vB, vSampler)
+			Fill -> {
+				emitQuad(vL, vT, vR, vT, vR, vB, vL, vB, vSampler)
+				// Axis-aligned rects are pixel-crisp and need no AA. When the affine
+				// rotates/shears them, the edges become diagonal — feather each edge
+				// outward (normals in local space; the matrix orients them on screen).
+				if (fMb != 0f || fMc != 0f) {
+					emitEdgeFringe(vL, vT, vR, vT, 0f, -kAaFeather, vSampler) // top
+					emitEdgeFringe(vR, vT, vR, vB, kAaFeather, 0f, vSampler)  // right
+					emitEdgeFringe(vR, vB, vL, vB, 0f, kAaFeather, vSampler)  // bottom
+					emitEdgeFringe(vL, vB, vL, vT, -kAaFeather, 0f, vSampler) // left
+				}
+			}
 			is Stroke -> {
 				val vW = style.width
 				val vIL = vL + vW; val vIT = vT + vW; val vIR = vR - vW; val vIB = vB - vW
@@ -332,12 +349,12 @@ internal class Sdl3DrawScope(
 		val vRx = size.width / 2f
 		val vRy = size.height / 2f
 		when (style) {
-			Fill -> emitFilledArc(vCx, vCy, vRx, vRy, 0f, 360f, true, 64, vSampler)
+			Fill -> emitFilledArc(vCx, vCy, vRx, vRy, 0f, 360f, true, 24, vSampler)
 			is Stroke -> {
 				// Approximate oval stroke as ring between r - w/2 and r + w/2
 				// using the smaller axis as the radius reference.
 				val vR = kotlin.math.min(vRx, vRy)
-				emitStrokedArc(vCx, vCy, vR - style.width / 2f, vR + style.width / 2f, 0f, 360f, 64, vSampler)
+				emitStrokedArc(vCx, vCy, vR - style.width / 2f, vR + style.width / 2f, 0f, 360f, 24, vSampler)
 			}
 		}
 	}
@@ -371,10 +388,18 @@ internal class Sdl3DrawScope(
 			// Bottom edge
 			emitQuad(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH - vR, vX + vW - vR, vY + vH, vX + vR, vY + vH, vSampler)
 			// 4 corner fills
-			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, false, 16, vSampler)
-			emitFilledArc(vX + vW - vR,     vY + vR,         vR, vR, 270f,  90f, false, 16, vSampler)
-			emitFilledArc(vX + vW - vR,     vY + vH - vR,    vR, vR,   0f,  90f, false, 16, vSampler)
-			emitFilledArc(vX + vR,          vY + vH - vR,    vR, vR,  90f,  90f, false, 16, vSampler)
+			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, false, 8, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vR,         vR, vR, 270f,  90f, false, 8, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vH - vR,    vR, vR,   0f,  90f, false, 8, vSampler)
+			emitFilledArc(vX + vR,          vY + vH - vR,    vR, vR,  90f,  90f, false, 8, vSampler)
+			// Under rotation/shear the four outer straight edges become diagonal —
+			// feather them (corners already AA via the arcs). Axis-aligned: skip.
+			if (fMb != 0f || fMc != 0f) {
+				emitEdgeFringe(vX + vR, vY, vX + vW - vR, vY, 0f, -kAaFeather, vSampler)                       // top
+				emitEdgeFringe(vX + vR, vY + vH, vX + vW - vR, vY + vH, 0f, kAaFeather, vSampler)              // bottom
+				emitEdgeFringe(vX, vY + vR, vX, vY + vH - vR, -kAaFeather, 0f, vSampler)                       // left
+				emitEdgeFringe(vX + vW, vY + vR, vX + vW, vY + vH - vR, kAaFeather, 0f, vSampler)              // right
+			}
 		} else if (style is Stroke) {
 			// Stroked rounded rect: 4 straight edges + 4 quarter arcs.
 			val vSw = style.width
@@ -382,10 +407,10 @@ internal class Sdl3DrawScope(
 			lineCore(brush, Offset(topLeft.x + vW, topLeft.y + cornerRadius), Offset(topLeft.x + vW, topLeft.y + vH - cornerRadius), vSw, StrokeCap.Butt, alpha)
 			lineCore(brush, Offset(topLeft.x + vW - cornerRadius, topLeft.y + vH), Offset(topLeft.x + cornerRadius, topLeft.y + vH), vSw, StrokeCap.Butt, alpha)
 			lineCore(brush, Offset(topLeft.x, topLeft.y + vH - cornerRadius), Offset(topLeft.x, topLeft.y + cornerRadius), vSw, StrokeCap.Butt, alpha)
-			emitStrokedArc(vX + vR,      vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 180f, 90f, 16, vSampler)
-			emitStrokedArc(vX + vW - vR, vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 270f, 90f, 16, vSampler)
-			emitStrokedArc(vX + vW - vR, vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,   0f, 90f, 16, vSampler)
-			emitStrokedArc(vX + vR,      vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,  90f, 90f, 16, vSampler)
+			emitStrokedArc(vX + vR,      vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 180f, 90f, 8, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 270f, 90f, 8, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,   0f, 90f, 8, vSampler)
+			emitStrokedArc(vX + vR,      vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,  90f, 90f, 8, vSampler)
 		}
 	}
 
@@ -416,8 +441,8 @@ internal class Sdl3DrawScope(
 			vSampler,
 		)
 		if (cap == StrokeCap.Round) {
-			emitFilledArc(vX1, vY1, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 12, vSampler)
-			emitFilledArc(vX2, vY2, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 12, vSampler)
+			emitFilledArc(vX1, vY1, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 8, vSampler)
+			emitFilledArc(vX2, vY2, strokeWidth / 2f, strokeWidth / 2f, 0f, 360f, true, 8, vSampler)
 		}
 	}
 
@@ -486,25 +511,58 @@ internal class Sdl3DrawScope(
 	}
 
 	private fun fanFill(inPolyline: List<Pair<Float, Float>>, inSampler: Sampler) {
-		if (inPolyline.size < 3) return
+		val vN = inPolyline.size
+		if (vN < 3) return
 		val (vAx, vAy) = inPolyline[0]
-		for (vI in 1 until inPolyline.size - 1) {
+		for (vI in 1 until vN - 1) {
 			val (vBx, vBy) = inPolyline[vI]
 			val (vCx, vCy) = inPolyline[vI + 1]
 			emitTri(vAx, vAy, vBx, vBy, vCx, vCy, inSampler)
 		}
+		// AA the outer boundary: feather each edge outward (normal oriented away
+		// from the centroid). Correct for convex fills, which is what fan fill
+		// supports; concave paths already fan-overlap, so this doesn't regress them.
+		var vSumX = 0f; var vSumY = 0f
+		for (vP in inPolyline) { vSumX += vP.first; vSumY += vP.second }
+		val vCx = vSumX / vN; val vCy = vSumY / vN
+		for (vI in 0 until vN) {
+			val (x0, y0) = inPolyline[vI]
+			val (x1, y1) = inPolyline[(vI + 1) % vN]
+			val vDx = x1 - x0; val vDy = y1 - y0
+			val vLen = sqrt(vDx * vDx + vDy * vDy)
+			if (vLen < 1e-4f) continue
+			var vNx = -vDy / vLen; var vNy = vDx / vLen
+			val vMidToCx = (x0 + x1) * 0.5f - vCx
+			val vMidToCy = (y0 + y1) * 0.5f - vCy
+			if (vMidToCx * vNx + vMidToCy * vNy < 0f) { vNx = -vNx; vNy = -vNy }
+			emitEdgeFringe(x0, y0, x1, y1, vNx * kAaFeather, vNy * kAaFeather, inSampler)
+		}
 	}
 
 	private fun strokePolyline(inPolyline: List<Pair<Float, Float>>, inWidth: Float, inSampler: Sampler) {
+		val vHalfW = inWidth / 2f
+		val vSolidW = (vHalfW - kAaHalf).coerceAtLeast(0f)
+		val vEdgeW = vHalfW + kAaHalf
 		for (vI in 0 until inPolyline.size - 1) {
 			val (vAx, vAy) = inPolyline[vI]
 			val (vBx, vBy) = inPolyline[vI + 1]
 			val vDx = vBx - vAx; val vDy = vBy - vAy
 			val vLen = sqrt(vDx * vDx + vDy * vDy)
 			if (vLen < 1e-4f) continue
-			val vNx = -vDy / vLen * inWidth / 2f
-			val vNy =  vDx / vLen * inWidth / 2f
-			emitQuad(vAx + vNx, vAy + vNy, vBx + vNx, vBy + vNy, vBx - vNx, vBy - vNy, vAx - vNx, vAy - vNy, inSampler)
+			val vUx = -vDy / vLen; val vUy = vDx / vLen // unit normal
+			// Solid core band, then feather each long side out to alpha 0.
+			emitQuad(
+				vAx + vUx * vSolidW, vAy + vUy * vSolidW, vBx + vUx * vSolidW, vBy + vUy * vSolidW,
+				vBx - vUx * vSolidW, vBy - vUy * vSolidW, vAx - vUx * vSolidW, vAy - vUy * vSolidW, inSampler,
+			)
+			emitFringeQuad(
+				vAx + vUx * vSolidW, vAy + vUy * vSolidW, vBx + vUx * vSolidW, vBy + vUy * vSolidW,
+				vBx + vUx * vEdgeW, vBy + vUy * vEdgeW, vAx + vUx * vEdgeW, vAy + vUy * vEdgeW, inSampler,
+			)
+			emitFringeQuad(
+				vAx - vUx * vSolidW, vAy - vUy * vSolidW, vBx - vUx * vSolidW, vBy - vUy * vSolidW,
+				vBx - vUx * vEdgeW, vBy - vUy * vEdgeW, vAx - vUx * vEdgeW, vAy - vUy * vEdgeW, inSampler,
+			)
 		}
 	}
 
@@ -516,7 +574,10 @@ internal class Sdl3DrawScope(
 	   facets at the head when sweep is small). */
 	private fun arcSegments(inSweepDeg: Float): Int {
 		val vAbs = if (inSweepDeg < 0) -inSweepDeg else inSweepDeg
-		return max(8, ((vAbs / 360f) * 64f).toInt() + 1)
+		// Lower than a non-AA renderer would need: the ~1px feather hides the
+		// facets, so ~24 segments/full-circle stays smooth at UI sizes while
+		// keeping the (fringe-tripled) vertex count near the pre-AA budget.
+		return max(6, ((vAbs / 360f) * 24f).toInt() + 1)
 	}
 
 	private fun emitFilledArc(
@@ -527,14 +588,27 @@ internal class Sdl3DrawScope(
 		val vStartRad = inStartDeg * (PI / 180.0).toFloat()
 		val vSweepRad = inSweepDeg * (PI / 180.0).toFloat()
 		val vStep = vSweepRad / inSegments
+		// Fill to a radius inset by half the feather, then feather the curved edge
+		// out to +half at alpha 0. Tiny radii (< feather) skip the inset.
+		val vRxIn = (inRx - kAaHalf).coerceAtLeast(0f)
+		val vRyIn = (inRy - kAaHalf).coerceAtLeast(0f)
+		val vRxOut = inRx + kAaHalf
+		val vRyOut = inRy + kAaHalf
 		for (i in 0 until inSegments) {
 			val vA = vStartRad + i * vStep
 			val vB = vStartRad + (i + 1) * vStep
-			val vAx = inCx + inRx * cos(vA)
-			val vAy = inCy + inRy * sin(vA)
-			val vBx = inCx + inRx * cos(vB)
-			val vBy = inCy + inRy * sin(vB)
-			emitTri(inCx, inCy, vAx, vAy, vBx, vBy, inSampler)
+			val vCa = cos(vA); val vSa = sin(vA)
+			val vCb = cos(vB); val vSb = sin(vB)
+			// Solid fan wedge to the inset radius.
+			emitTri(inCx, inCy, inCx + vRxIn * vCa, inCy + vRyIn * vSa, inCx + vRxIn * vCb, inCy + vRyIn * vSb, inSampler)
+			// AA fringe along the curved outer edge.
+			emitFringeQuad(
+				inCx + vRxIn * vCa, inCy + vRyIn * vSa,
+				inCx + vRxIn * vCb, inCy + vRyIn * vSb,
+				inCx + vRxOut * vCb, inCy + vRyOut * vSb,
+				inCx + vRxOut * vCa, inCy + vRyOut * vSa,
+				inSampler,
+			)
 		}
 	}
 
@@ -546,16 +620,44 @@ internal class Sdl3DrawScope(
 		val vStartRad = inStartDeg * (PI / 180.0).toFloat()
 		val vSweepRad = inSweepDeg * (PI / 180.0).toFloat()
 		val vStep = vSweepRad / inSegments
+		// Solid band inset by half the feather on both edges; feather each curved
+		// edge (outer + inner) out to alpha 0. If the band is thinner than the
+		// feather it drops out and the two fringes meet — a thin AA'd ring.
+		val vOuterSolid = (inOuterR - kAaHalf).coerceAtLeast(0f)
+		val vOuterEdge = inOuterR + kAaHalf
+		val vInnerSolid = inInnerR + kAaHalf
+		val vInnerEdge = (inInnerR - kAaHalf).coerceAtLeast(0f)
+		val vHasBand = vOuterSolid > vInnerSolid
 		for (i in 0 until inSegments) {
 			val vA = vStartRad + i * vStep
 			val vB = vStartRad + (i + 1) * vStep
 			val vCosA = cos(vA); val vSinA = sin(vA)
 			val vCosB = cos(vB); val vSinB = sin(vB)
-			val vOAX = inCx + inOuterR * vCosA; val vOAY = inCy + inOuterR * vSinA
-			val vOBX = inCx + inOuterR * vCosB; val vOBY = inCy + inOuterR * vSinB
-			val vIAX = inCx + inInnerR * vCosA; val vIAY = inCy + inInnerR * vSinA
-			val vIBX = inCx + inInnerR * vCosB; val vIBY = inCy + inInnerR * vSinB
-			emitQuad(vOAX, vOAY, vOBX, vOBY, vIBX, vIBY, vIAX, vIAY, inSampler)
+			if (vHasBand) {
+				emitQuad(
+					inCx + vOuterSolid * vCosA, inCy + vOuterSolid * vSinA,
+					inCx + vOuterSolid * vCosB, inCy + vOuterSolid * vSinB,
+					inCx + vInnerSolid * vCosB, inCy + vInnerSolid * vSinB,
+					inCx + vInnerSolid * vCosA, inCy + vInnerSolid * vSinA,
+					inSampler,
+				)
+			}
+			// Outer fringe: solid edge → outside, fading out.
+			emitFringeQuad(
+				inCx + vOuterSolid * vCosA, inCy + vOuterSolid * vSinA,
+				inCx + vOuterSolid * vCosB, inCy + vOuterSolid * vSinB,
+				inCx + vOuterEdge * vCosB, inCy + vOuterEdge * vSinB,
+				inCx + vOuterEdge * vCosA, inCy + vOuterEdge * vSinA,
+				inSampler,
+			)
+			// Inner fringe: solid edge → inside, fading out.
+			emitFringeQuad(
+				inCx + vInnerSolid * vCosA, inCy + vInnerSolid * vSinA,
+				inCx + vInnerSolid * vCosB, inCy + vInnerSolid * vSinB,
+				inCx + vInnerEdge * vCosB, inCy + vInnerEdge * vSinB,
+				inCx + vInnerEdge * vCosA, inCy + vInnerEdge * vSinA,
+				inSampler,
+			)
 		}
 	}
 
@@ -566,7 +668,7 @@ internal class Sdl3DrawScope(
 		val vRad = inAtAngleDeg * (PI / 180.0).toFloat()
 		val vPx = inCx + inR * cos(vRad)
 		val vPy = inCy + inR * sin(vRad)
-		emitFilledArc(vPx, vPy, inCapRadius, inCapRadius, 0f, 360f, true, 12, inSampler)
+		emitFilledArc(vPx, vPy, inCapRadius, inCapRadius, 0f, 360f, true, 8, inSampler)
 	}
 
 	private fun emitQuad(
@@ -582,22 +684,60 @@ internal class Sdl3DrawScope(
 		ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float,
 		inSampler: Sampler,
 	) {
-		writeVertex(pushVertex(), ax, ay, inSampler(ax, ay))
-		writeVertex(pushVertex(), bx, by, inSampler(bx, by))
-		writeVertex(pushVertex(), cx, cy, inSampler(cx, cy))
+		writeVertex(ax, ay, inSampler.sample(ax, ay))
+		writeVertex(bx, by, inSampler.sample(bx, by))
+		writeVertex(cx, cy, inSampler.sample(cx, cy))
 	}
 
-	private fun writeVertex(inV: SDL_Vertex, inX: Float, inY: Float, inColor: ComposeColor) {
-		inV.position.x = inX
-		inV.position.y = inY
-		inV.color.r = inColor.r8 / 255f
-		inV.color.g = inColor.g8 / 255f
-		inV.color.b = inColor.b8 / 255f
-		inV.color.a = inColor.a8 / 255f
-		inV.tex_coord.x = 0f
-		inV.tex_coord.y = 0f
+	/* Antialiasing fringe: a quad whose SOLID edge (sA→sB) carries the shape's
+	   colour at full coverage and whose FADE edge (fB→fA) carries the same colour
+	   at alpha 0, so SDL interpolates a ~1px feather along an edge. */
+	private fun emitFringeQuad(
+		sAx: Float, sAy: Float, sBx: Float, sBy: Float,
+		fBx: Float, fBy: Float, fAx: Float, fAy: Float,
+		inSampler: Sampler,
+	) {
+		writeVertex(sAx, sAy, inSampler.sample(sAx, sAy))
+		writeVertex(sBx, sBy, inSampler.sample(sBx, sBy))
+		writeVertex(fBx, fBy, inSampler.sample(fBx, fBy), 0f)
+		writeVertex(sAx, sAy, inSampler.sample(sAx, sAy))
+		writeVertex(fBx, fBy, inSampler.sample(fBx, fBy), 0f)
+		writeVertex(fAx, fAy, inSampler.sample(fAx, fAy), 0f)
+	}
+
+	/* Feathers one straight edge (x0,y0)→(x1,y1) outward along (inNx,inNy) — a
+	   pre-scaled outward normal — from full alpha at the edge to 0 just outside.
+	   Used to AA the edges of rotated rects and filled paths (which are otherwise
+	   crisp only when axis-aligned). */
+	private fun emitEdgeFringe(
+		x0: Float, y0: Float, x1: Float, y1: Float, inNx: Float, inNy: Float, inSampler: Sampler,
+	) {
+		emitFringeQuad(x0, y0, x1, y1, x1 + inNx, y1 + inNy, x0 + inNx, y0 + inNy, inSampler)
+	}
+
+	// Stage one vertex into fVertexData (auto-flush when full). Position goes
+	// through the current affine so scale/rotate reach the GPU; the colour is
+	// sampled at the pre-transform point so a gradient rides its shape.
+	private fun writeVertex(inX: Float, inY: Float, inColor: ComposeColor, inAlphaScale: Float = 1f) {
+		if (fBatchCount >= kBatchCapacity) flush()
+		val vBase = fBatchCount * kFloatsPerVertex
+		fVertexData[vBase + 0] = fMa * inX + fMc * inY + fMe
+		fVertexData[vBase + 1] = fMb * inX + fMd * inY + fMf
+		fVertexData[vBase + 2] = inColor.r8 / 255f
+		fVertexData[vBase + 3] = inColor.g8 / 255f
+		fVertexData[vBase + 4] = inColor.b8 / 255f
+		fVertexData[vBase + 5] = inColor.a8 / 255f * inAlphaScale
+		fVertexData[vBase + 6] = 0f
+		fVertexData[vBase + 7] = 0f
+		fBatchCount++
 	}
 }
+
+// AA fringe width in user units. Layout runs in physical pixels (render scale 1),
+// so ~1 unit ≈ 1 px; the fringe straddles the true edge (±half) so the geometric
+// radius stays put and the edge hits 50% coverage exactly on it.
+private const val kAaFeather: Float = 1.0f
+private const val kAaHalf: Float = kAaFeather * 0.5f
 
 // ============
 //  Batch capacity — 8192 vertices = ~2730 triangles per submission. At
@@ -605,6 +745,10 @@ internal class Sdl3DrawScope(
 //  shapes per Canvas{} before any flush. Bigger gives fewer GPU
 //  submissions; smaller saves RAM. ~128 KB at 16 bytes per SDL_Vertex.
 private const val kBatchCapacity: Int = 8192
+
+// Floats per SDL_Vertex: position(x,y) + color(r,g,b,a) + tex_coord(x,y), tightly
+// packed. Used to stage vertices in a Kotlin FloatArray and memcpy them across.
+private const val kFloatsPerVertex: Int = 8
 
 // ==================
 // MARK: Brush → per-vertex colour sampler
@@ -617,7 +761,11 @@ private const val kBatchCapacity: Int = 8192
    approximation is good when the tessellation is fine enough — circles use
    64 segments by default, so the inter-vertex gap is < 6° which keeps the
    linear-interp colour close to the analytic gradient value. */
-private typealias Sampler = (x: Float, y: Float) -> ComposeColor
+// A fun interface (not a (Float,Float)->Color function type): K/N boxes the Float
+// arguments of a generic function type on every call, which — multiplied by the
+// per-vertex sampling and the AA fringe — dominated frame time. Primitive-param
+// interface method → no per-vertex boxing.
+private fun interface Sampler { fun sample(x: Float, y: Float): ComposeColor }
 
 @OptIn(ExperimentalForeignApi::class)
 private fun Sdl3DrawScope.samplerFor(

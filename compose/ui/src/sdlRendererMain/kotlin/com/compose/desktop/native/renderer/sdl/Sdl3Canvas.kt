@@ -62,13 +62,42 @@ internal class Sdl3Canvas(
 	com.compose.desktop.native.graphics.NativePainterCanvas,
 	com.compose.desktop.native.graphics.NativeShapeClipCanvas {
 
-	// The tessellating scope whose origin we retarget per draw call. Origin 0,0
-	// initially; each draw sets it to the current translate (fTx, fTy).
+	// The tessellating scope. It emits geometry in the canvas's user space; the
+	// canvas hands it the current affine each draw (setMatrix) so scale / rotate /
+	// translate reach the vertices.
 	private val fScope = Sdl3DrawScope(fRenderer, 0f, 0f, fSize)
 
-	// Current translate (accumulated Canvas.translate) in absolute pixel space.
-	private var fTx: Float = 0f
-	private var fTy: Float = 0f
+	// Current user→screen affine (a,b,c,d,e,f): screen = (a*x+c*y+e, b*x+d*y+f).
+	// Accumulates Canvas.translate/scale/rotate/concat; identity + a translate is
+	// the common layout-positioning case.
+	private var fMa = 1f; private var fMb = 0f; private var fMc = 0f
+	private var fMd = 1f; private var fMe = 0f; private var fMf = 0f
+
+	private fun mapX(inX: Float, inY: Float): Float = fMa * inX + fMc * inY + fMe
+	private fun mapY(inX: Float, inY: Float): Float = fMb * inX + fMd * inY + fMf
+
+	// Right-multiply the affine by [na..nf] — applies the new transform in the
+	// current user space, matching Canvas.translate/scale/rotate semantics.
+	private fun concatMatrix(na: Float, nb: Float, nc: Float, nd: Float, ne: Float, nf: Float) {
+		val a = fMa; val b = fMb; val c = fMc; val d = fMd; val e = fMe; val f = fMf
+		fMa = a * na + c * nb
+		fMb = b * na + d * nb
+		fMc = a * nc + c * nd
+		fMd = b * nc + d * nd
+		fMe = a * ne + c * nf + e
+		fMf = b * ne + d * nf + f
+	}
+
+	// Axis-aligned bounding box of a user-space rect after the affine (SDL clips
+	// only to a rect; a rotated clip degrades to its AABB).
+	private fun mapRectAABB(inL: Float, inT: Float, inR: Float, inB: Float): IntArray {
+		val vXs = floatArrayOf(mapX(inL, inT), mapX(inR, inT), mapX(inR, inB), mapX(inL, inB))
+		val vYs = floatArrayOf(mapY(inL, inT), mapY(inR, inT), mapY(inR, inB), mapY(inL, inB))
+		return intArrayOf(
+			vXs.minOrNull()!!.toInt(), vYs.minOrNull()!!.toInt(),
+			vXs.maxOrNull()!!.toInt(), vYs.maxOrNull()!!.toInt(),
+		)
+	}
 
 	// Current clip (absolute px), or null for unclipped.
 	private var fClip: IntArray? = null // [left, top, right, bottom]
@@ -82,7 +111,10 @@ internal class Sdl3Canvas(
 	// save/restore stack of (tx, ty, clip, alpha, clipLayers). `clipLayers` is the
 	// offscreen-clip stack depth at save() time; restore() composites+pops any
 	// offscreen clip opened inside this save frame (see fClipLayers below).
-	private data class State(val tx: Float, val ty: Float, val clip: IntArray?, val alpha: Float, val clipLayers: Int)
+	private data class State(
+		val a: Float, val b: Float, val c: Float, val d: Float, val e: Float, val f: Float,
+		val clip: IntArray?, val alpha: Float, val clipLayers: Int,
+	)
 	private val fStack = ArrayDeque<State>()
 
 	// Stack of active rounded-shape clips, each backed by an offscreen render
@@ -117,7 +149,7 @@ internal class Sdl3Canvas(
 	//  State (translate + clip stack)
 
 	override fun save() {
-		fStack.addLast(State(fTx, fTy, fClip, fAlpha, fClipLayers.size))
+		fStack.addLast(State(fMa, fMb, fMc, fMd, fMe, fMf, fClip, fAlpha, fClipLayers.size))
 	}
 
 	override fun restore() {
@@ -128,8 +160,7 @@ internal class Sdl3Canvas(
 		while (fClipLayers.size > vPrev.clipLayers) {
 			compositeClipLayer()
 		}
-		fTx = vPrev.tx
-		fTy = vPrev.ty
+		fMa = vPrev.a; fMb = vPrev.b; fMc = vPrev.c; fMd = vPrev.d; fMe = vPrev.e; fMf = vPrev.f
 		if (vPrev.clip !== fClip) {
 			fScope.flush()
 			fClip = vPrev.clip
@@ -150,25 +181,28 @@ internal class Sdl3Canvas(
 		fAlpha *= paint.alpha
 	}
 
-	override fun translate(dx: Float, dy: Float) {
-		fTx += dx
-		fTy += dy
+	override fun translate(dx: Float, dy: Float) = concatMatrix(1f, 0f, 0f, 1f, dx, dy)
+
+	override fun scale(sx: Float, sy: Float) = concatMatrix(sx, 0f, 0f, sy, 0f, 0f)
+
+	override fun rotate(degrees: Float) {
+		val vRad = degrees * (PI / 180.0).toFloat()
+		val vCos = cos(vRad); val vSin = sin(vRad)
+		concatMatrix(vCos, vSin, -vSin, vCos, 0f, 0f)
 	}
 
-	// graphicsLayer transforms — deferred to B6. Positioning (translate) is
-	// enough for the layout pipeline's box placement.
-	override fun scale(sx: Float, sy: Float) {}
-	override fun rotate(degrees: Float) {}
-	override fun skew(sx: Float, sy: Float) {}
-	override fun concat(matrix: Matrix) {}
+	override fun skew(sx: Float, sy: Float) = concatMatrix(1f, sy, sx, 1f, 0f, 0f)
+
+	// Compose Matrix is a 4x4 column-major array; take the 2D affine components
+	// (scaleX, skewY, skewX, scaleY, translateX, translateY).
+	override fun concat(matrix: Matrix) {
+		val v = matrix.values
+		concatMatrix(v[0], v[1], v[4], v[5], v[12], v[13])
+	}
 
 	override fun clipRect(left: Float, top: Float, right: Float, bottom: Float, clipOp: ClipOp) {
 		fScope.flush()
-		val vNew = intArrayOf(
-			(fTx + left).toInt(), (fTy + top).toInt(),
-			(fTx + right).toInt(), (fTy + bottom).toInt(),
-		)
-		fClip = intersect(fClip, vNew)
+		fClip = intersect(fClip, mapRectAABB(left, top, right, bottom))
 		applyClip()
 	}
 
@@ -225,10 +259,7 @@ internal class Sdl3Canvas(
 			return
 		}
 		fScope.flush()
-		val vBbox = intArrayOf(
-			(fTx + inRoundRect.left).toInt(), (fTy + inRoundRect.top).toInt(),
-			(fTx + inRoundRect.right).toInt(), (fTy + inRoundRect.bottom).toInt(),
-		)
+		val vBbox = mapRectAABB(inRoundRect.left, inRoundRect.top, inRoundRect.right, inRoundRect.bottom)
 		val vRegion = intersect(fClip, vBbox)
 		// Nothing visible: keep behaviour of a normal clip (cull) without an
 		// offscreen pass. The enclosing save/restore restores the clip afterwards.
@@ -354,7 +385,10 @@ internal class Sdl3Canvas(
 	//  delegate to Sdl3DrawScope's tessellation with node-local coordinates.
 
 	private fun prep(): Sdl3DrawScope {
-		fScope.setOrigin(fTx, fTy)
+		// Feed the scope the full affine; it emits geometry in user space and
+		// transforms each vertex by this (origin stays 0 — the matrix carries the
+		// translate).
+		fScope.setMatrix(fMa, fMb, fMc, fMd, fMe, fMf)
 		return fScope
 	}
 
@@ -446,8 +480,11 @@ internal class Sdl3Canvas(
 			if (vLineY >= inY + inBoxHeight) break
 			vTr.drawText(
 				inText = vLine,
-				inX = (fTx + inX).toInt(),
-				inY = (fTy + vLineY).toInt(),
+				// Position maps through the affine (translate/scale reach the origin);
+				// glyph scaling/rotation isn't wired, so text in a rotated/scaled layer
+				// repositions but doesn't itself scale or rotate.
+				inX = mapX(inX, vLineY).toInt(),
+				inY = mapY(inX, vLineY).toInt(),
 				inBoxWidth = inBoxWidth.toInt(),
 				inBoxHeight = vLineH.toInt(),
 				inColor = vColor,
@@ -476,9 +513,14 @@ internal class Sdl3Canvas(
 		inAlpha: Float,
 	) {
 		fScope.flush()
+		// Map the origin through the affine and scale the size by the matrix's axis
+		// magnitudes (rotation contributes 1, so it only repositions the blit — the
+		// image itself isn't rotated, since SDL_RenderTexture is axis-aligned).
+		val vSx = kotlin.math.sqrt(fMa * fMa + fMb * fMb)
+		val vSy = kotlin.math.sqrt(fMc * fMc + fMd * fMd)
 		fImageCache?.draw(
 			inResourcePath, inKind,
-			fTx + inX, fTy + inY, inWidth, inHeight,
+			mapX(inX, inY), mapY(inX, inY), inWidth * vSx, inHeight * vSy,
 			inContentScale, inAlpha * fAlpha,
 		)
 	}
