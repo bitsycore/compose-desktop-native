@@ -106,12 +106,17 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
 private fun mapKey(inKk: SDL_KeyboardEvent, inType: KeyEventType): AppEvent.Key {
 	val vScancode = inKk.scancode.toInt()
-	val vChar = keyChar(inKk.key)
 	val vMod = inKk.mod.toInt()
 	return AppEvent.Key(KeyEvent(
 		key = kKeyForScancode(vScancode),
 		type = inType,
-		codePoint = vChar?.code ?: 0,
+		// Deliberately 0: SDL keycodes are UNSHIFTED (lowercase only, no numpad
+		// digits, base layout chars) — deriving typed characters from them broke
+		// Shift/caps and the numeric pad. Committed characters arrive through
+		// SDL_EVENT_TEXT_INPUT instead; ComposeRootHost.dispatchTextInput
+		// re-dispatches them as synthetic typed KeyEvents, and codePoint = 0
+		// here guarantees the physical KeyDown can't double-insert.
+		codePoint = 0,
 		isShiftPressed = (vMod and SDL_KMOD_SHIFT.toInt()) != 0,
 		isCtrlPressed = (vMod and SDL_KMOD_CTRL.toInt()) != 0,
 		isAltPressed = (vMod and SDL_KMOD_ALT.toInt()) != 0,
@@ -124,16 +129,6 @@ private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
 	2 -> PointerButton.Tertiary
 	3 -> PointerButton.Secondary
 	else -> PointerButton.Primary
-}
-
-/* The character a key produces under the active layout (SDL_Keycode), so
-   letter shortcuts (Ctrl+A/C/V/X/Z) match the real key on any layout — AZERTY,
-   Dvorak, … — not the physical QWERTY position the scancode encodes. SDL maps
-   non-character keys (arrows, F-keys) into a high range via SDL_SCANCODE_MASK,
-   so the printable-ASCII guard returns null for those. */
-private fun keyChar(inKeycode: UInt): Char? {
-	val v = inKeycode.toInt()
-	return if (v in 0x20..0x7E) v.toChar() else null
 }
 
 // ==================

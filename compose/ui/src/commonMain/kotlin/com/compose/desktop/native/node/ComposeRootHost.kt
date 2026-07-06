@@ -117,14 +117,23 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	fun dispatchKeyEvent(inEvent: androidx.compose.ui.input.key.KeyEvent): Boolean =
 		runCatching { fOwner.focusOwner.dispatchKeyEvent(inEvent) }.getOrDefault(false)
 
-	/* Routes typed text (SDL TEXT_INPUT) to the focused node's project OnTextInputNode.
-	   The focusable + onTextInput modifiers share one LayoutNode, so we take the active
-	   focus target's LayoutNode and hand the text to its OnTextInputNode. */
-	fun dispatchTextInput(inText: String) {
-		val vFocused = fOwner.focusOwner.activeFocusTargetNode ?: return
-		if (!vFocused.node.isAttached) return
-		val vLayoutNode = runCatching { vFocused.requireLayoutNode() }.getOrNull() ?: return
-		vLayoutNode.nodes.headToTail { if (it is OnTextInputNode) it.handler(inText) }
+	/* Routes typed text (SDL TEXT_INPUT) to the focused node's project
+	   OnTextInputNode (Modifier.onTextInput). Returns true if one consumed it.
+	   Vendored text fields have no OnTextInputNode — the window loop turns
+	   unconsumed text into synthetic TYPED KeyEvents (see ComposeWindow) so the
+	   vendored text stacks (CoreTextField's isTypedEvent path and the
+	   state-based field's key handler) commit it. SDL's committed text is the
+	   only layout-correct source of characters — SDL key events carry
+	   UNSHIFTED keycodes (no uppercase, no numpad digits, no dead keys). */
+	fun dispatchTextInput(inText: String): Boolean {
+		val vFocused = fOwner.focusOwner.activeFocusTargetNode ?: return false
+		if (!vFocused.node.isAttached) return false
+		val vLayoutNode = runCatching { vFocused.requireLayoutNode() }.getOrNull() ?: return false
+		var vConsumed = false
+		vLayoutNode.nodes.headToTail {
+			if (it is OnTextInputNode) { it.handler(inText); vConsumed = true }
+		}
+		return vConsumed
 	}
 
 	// ==================

@@ -256,7 +256,14 @@ fun nativeComposeWindow(
                     }
                     // B6b — route keyboard + typed text to the focused node via the FocusOwner.
                     is AppEvent.Key -> host.dispatchKeyEvent(event.event)
-                    is AppEvent.TextInput -> host.dispatchTextInput(event.text)
+                    is AppEvent.TextInput -> {
+                        // Project onTextInput fields take the raw string; otherwise
+                        // synthesise typed KeyEvents so the vendored text stacks
+                        // commit SDL's committed (shift/layout/numpad-correct) text.
+                        if (!host.dispatchTextInput(event.text)) {
+                            dispatchTypedText(host, event.text)
+                        }
+                    }
                     else -> { /* Quit handled above */ }
                 }
             }
@@ -352,4 +359,31 @@ fun nativeComposeWindow(
 
     renderBackend.destroy()
     backend.destroy()
+}
+
+/* Re-dispatches committed text (SDL TEXT_INPUT) as one synthetic typed
+   KeyDown per Unicode codepoint (surrogate pairs folded). Key.Unknown +
+   codePoint + no modifiers matches both vendored text stacks' isTypedEvent
+   criteria; the SDL key mapper leaves codePoint = 0 on real key events, so
+   the physical KeyDown and the synthetic one can never double-insert. */
+private fun dispatchTypedText(inHost: ComposeRootHost, inText: String) {
+    var vI = 0
+    while (vI < inText.length) {
+        val vHigh = inText[vI]
+        val vCodepoint: Int
+        if (vHigh.isHighSurrogate() && vI + 1 < inText.length && inText[vI + 1].isLowSurrogate()) {
+            vCodepoint = 0x10000 + ((vHigh.code - 0xD800) shl 10) + (inText[vI + 1].code - 0xDC00)
+            vI += 2
+        } else {
+            vCodepoint = vHigh.code
+            vI += 1
+        }
+        inHost.dispatchKeyEvent(
+            androidx.compose.ui.input.key.KeyEvent(
+                key = androidx.compose.ui.input.key.Key.Unknown,
+                type = androidx.compose.ui.input.key.KeyEventType.KeyDown,
+                codePoint = vCodepoint,
+            ),
+        )
+    }
 }
