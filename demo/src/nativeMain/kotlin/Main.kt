@@ -13,7 +13,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.compose.desktop.native.graphics.blend
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.compose.desktop.native.icons.MaterialSymbols
+import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.desktop.native.nativeComposeWindow
+import demo.DropdownMenu
+import demo.DropdownMenuItem
+import demo.menuAnchor
+import demo.rememberMenuAnchor
 import screens.*
 import utils.encodeBmpBgra32
 import utils.parseArgs
@@ -98,9 +104,9 @@ fun main(args: Array<String>) {
         // still call .install() explicitly.
         MaterialTheme(colorScheme = darkColorScheme()) {
             if (vCli.screen != null) {
-                val vMatch = Screens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
+                val vMatch = AllScreens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
                 if (vMatch == null) {
-                    println("Unknown --screen='${vCli.screen}'. Available: ${Screens.joinToString { it.name }}")
+                    println("Unknown --screen='${vCli.screen}'. Available: ${AllScreens.joinToString { it.name }}")
                     Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
                 } else {
                     // Single screen, no sidebar — wraps in the standard 24dp
@@ -320,40 +326,81 @@ private fun runScrollTest() {
 
 private data class Screen(val name: String, val content: @Composable () -> Unit)
 
-private val Screens: List<Screen> = listOf(
-    Screen("Window")         { WindowScreen() },
-    Screen("Buttons")        { ButtonsScreen() },
-    Screen("TextField")      { TextFieldScreen() },
-    Screen("Text")           { TextScreen() },
-    Screen("Layout")         { LayoutScreen() },
-    Screen("Modifiers")      { ModifiersScreen() },
-    Screen("Shapes")         { ShapesScreen() },
-    Screen("Images")         { ImagesScreen() },
-    Screen("Remember")       { StateScreen() },
-    Screen("Interaction")    { InteractionScreen() },
-    Screen("Recomposition")  { RecompositionScreen() },
-    Screen("Colors")         { ColorsScreen() },
-    Screen("Scroll")         { ScrollScreen() },
-    Screen("LazyColumn")     { LazyColumnScreen() },
-    Screen("Counter")        { CounterScreen() },
-    Screen("Clipboard")      { ClipboardScreen() },
-    Screen("Widgets")        { WidgetsScreen() },
-    Screen("Desktop")        { DesktopWidgetsScreen() },
-    Screen("Dialogs")        { DialogsScreen() },
-    Screen("Icons")          { IconsScreen() },
-    Screen("Dispatchers")    { DispatchersScreen() },
-    Screen("Canvas")         { CanvasScreen() },
-    Screen("GraphicsLayer")  { GraphicsLayerScreen() },
-    Screen("CustomLayout")   { CustomLayoutScreen() },
-    Screen("Animation")      { AnimationScreen() },
-    Screen("Gestures")       { GestureScreen() },
-    Screen("Path")           { PathScreen() },
-    Screen("ModShortcuts")   { ModifierShortcutsScreen() },
-    Screen("LazyExtra")      { LazyExtraScreen() },
+/* The top-level buckets the sidebar dropdown switches between.
+   - Foundation: base Compose Multiplatform ported onto SDL3 — androidx.compose
+     .ui / .foundation / .animation / runtime. These prove the native engine
+     (layout, draw, input, text, state, animation) works from the ground up.
+   - Material3: the vendored external library (~99.9% copied verbatim from
+     upstream). These prove that a real component library builds on top of the
+     re-implemented ui/foundation layers unchanged.
+   - Native: NOT androidx — the project's own SDL / platform / desktop layer
+     (com.compose.desktop.native.*): the window handle, OS clipboard, coroutine
+     dispatchers on the SDL main loop, and desktop-only composite widgets. */
+private enum class Category(val label: String) {
+    Foundation("Foundation · UI · Animation"),
+    Material3("Material 3"),
+    Native("Native · Desktop"),
+}
+
+// Base Compose (ui / foundation / animation / runtime) — the native engine.
+private val FoundationScreens: List<Screen> = listOf(
+    Screen("Text")              { TextScreen() },
+    Screen("AnnotatedString")   { AnnotatedStringScreen() },
+    Screen("Layout")            { LayoutScreen() },
+    Screen("CustomLayout")      { CustomLayoutScreen() },
+    Screen("Modifiers")         { ModifiersScreen() },
+    Screen("ModShortcuts")      { ModifierShortcutsScreen() },
+    Screen("Shapes")            { ShapesScreen() },
+    Screen("Path")              { PathScreen() },
+    Screen("Canvas")            { CanvasScreen() },
+    Screen("GraphicsLayer")     { GraphicsLayerScreen() },
+    Screen("Colors")            { ColorsScreen() },
+    Screen("Brushes")           { BrushScreen() },
+    Screen("Images")            { ImagesScreen() },
+    Screen("Scroll")            { ScrollScreen() },
+    Screen("LazyColumn")        { LazyColumnScreen() },
+    Screen("LazyGrid")          { LazyGridScreen() },
+    Screen("LazyExtra")         { LazyExtraScreen() },
+    Screen("Gestures")          { GestureScreen() },
+    Screen("Interaction")       { InteractionScreen() },
     Screen("InteractionSource") { InteractionSourceScreen() },
-    Screen("FocusRequester") { FocusRequesterScreen() },
-    Screen("AnnotatedString") { AnnotatedStringScreen() },
+    Screen("FocusRequester")    { FocusRequesterScreen() },
+    Screen("Remember")          { StateScreen() },
+    Screen("Counter")           { CounterScreen() },
+    Screen("Recomposition")     { RecompositionScreen() },
+    Screen("Animation")         { AnimationScreen() },
 )
+
+// Vendored material3 component library on top of the native ui/foundation.
+private val Material3Screens: List<Screen> = listOf(
+    Screen("Buttons")           { ButtonsScreen() },
+    Screen("Fab")               { FabScreen() },
+    Screen("TextField")         { TextFieldScreen() },
+    Screen("Widgets")           { WidgetsScreen() },
+    Screen("Cards")             { CardsScreen() },
+    Screen("Chips")             { ChipsScreen() },
+    Screen("Navigation")        { NavigationScreen() },
+    Screen("Lists")             { ListItemsScreen() },
+    Screen("Icons")             { IconsScreen() },
+    Screen("Dialogs")           { DialogsScreen() },
+)
+
+// NOT androidx — the project's SDL / platform / desktop layer.
+private val NativeScreens: List<Screen> = listOf(
+    Screen("Window")            { WindowScreen() },
+    Screen("Clipboard")         { ClipboardScreen() },
+    Screen("Dispatchers")       { DispatchersScreen() },
+    Screen("Desktop")           { DesktopWidgetsScreen() },
+)
+
+private fun screensFor(category: Category): List<Screen> = when (category) {
+    Category.Foundation -> FoundationScreens
+    Category.Material3 -> Material3Screens
+    Category.Native -> NativeScreens
+}
+
+// Flat list for the `--screen=<name>` CLI lookup (names are unique across all).
+private val AllScreens: List<Screen> = FoundationScreens + Material3Screens + NativeScreens
 
 // ==================
 // MARK: App shell — sidebar + content
@@ -361,7 +408,9 @@ private val Screens: List<Screen> = listOf(
 
 @Composable
 fun App() {
-    var current by remember { mutableStateOf(Screens[0]) }
+    var category by remember { mutableStateOf(Category.Foundation) }
+    var current by remember { mutableStateOf(FoundationScreens[0]) }
+    val vScreens = screensFor(category)
     val vSidebarBg = MaterialTheme.colorScheme.surface.blend(MaterialTheme.colorScheme.onSurface, 0.02f)
 
     val vSidebarScroll = rememberScrollState()
@@ -373,7 +422,7 @@ fun App() {
         // Sidebar (vertically scrollable — try resizing the window short)
         Column(
             modifier = Modifier
-                .width(180.dp)
+                .width(190.dp)
                 .fillMaxHeight()
                 .background(vSidebarBg)
                 .verticalScroll(vSidebarScroll)
@@ -387,7 +436,18 @@ fun App() {
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp).fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(8.dp))
-            for (screen in Screens) {
+            // Dropdown: switch the whole nav list between Foundation and Material3.
+            CategorySelector(
+                category = category,
+                onSelect = { picked ->
+                    if (picked != category) {
+                        category = picked
+                        current = screensFor(picked).first()
+                    }
+                },
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            for (screen in vScreens) {
                 NavItem(
                     label = screen.name,
                     selected = screen.name == current.name,
@@ -405,6 +465,64 @@ fun App() {
             contentAlignment = Alignment.TopStart,
         ) {
             current.content()
+        }
+    }
+}
+
+/* The category dropdown at the top of the sidebar. A styled trigger row (current
+   category + chevron) opens the project DropdownMenu anchored to it. */
+@Composable
+private fun CategorySelector(category: Category, onSelect: (Category) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val vAnchor = rememberMenuAnchor()
+    val vTriggerBg = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(vAnchor)
+                .background(vTriggerBg, RoundedCornerShape(8.dp))
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column {
+                Text(
+                    text = "CATEGORY",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
+                    fontSize = 9.sp,
+                )
+                Text(
+                    text = category.label,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 13.sp,
+                )
+            }
+            MaterialSymbolsOutlined(
+                if (expanded) MaterialSymbols.ExpandLess else MaterialSymbols.ExpandMore,
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                size = 20.dp,
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            anchor = vAnchor,
+            offsetY = 4.dp,
+            minWidth = 174.dp,
+        ) {
+            for (vCategory in Category.values()) {
+                DropdownMenuItem(onClick = { onSelect(vCategory); expanded = false }) {
+                    Text(
+                        text = vCategory.label,
+                        color = if (vCategory == category) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                    )
+                }
+            }
         }
     }
 }
