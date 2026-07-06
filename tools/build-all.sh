@@ -24,6 +24,21 @@ set -euo pipefail
 
 TOOLS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# SDL3 >= 3.4 compiles C++ on Windows (GameInput backend), but K/N's bundled
+# mingw is C-only -- its c++.exe driver has no cc1plus backend and dies with
+# "cannot execute 'cc1plus'". Capture the system g++ BEFORE the K/N toolchain
+# is prepended to PATH below, and hand it to CMake via the CXX env var. C
+# stays on the K/N gcc so the static libs keep matching K/N's CRT.
+SYSTEM_GXX="$(command -v g++ 2>/dev/null || true)"
+if [ -n "$SYSTEM_GXX" ]; then
+	[ -f "${SYSTEM_GXX}.exe" ] && SYSTEM_GXX="${SYSTEM_GXX}.exe"
+	export CXX="$(cygpath -m "$SYSTEM_GXX")"
+	echo ">> C++ compiler (K/N mingw is C-only): $CXX"
+else
+	echo ">> WARNING: no system g++ on PATH; SDL3's CMake configure needs a"
+	echo ">>          working C++ compiler and will fail. Install mingw-w64 g++."
+fi
+
 # Build with Kotlin/Native's OWN bundled mingw-w64 gcc when present, so the
 # static libs match the exact CRT K/N links them against. A newer host gcc
 # (11+) emits __intrinsic_setjmpex for x64 setjmp, which K/N's bundled mingw

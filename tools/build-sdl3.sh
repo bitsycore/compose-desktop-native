@@ -13,10 +13,23 @@
 #
 # Run from Git Bash on Windows. Requires: git, cmake, a mingw-w64 gcc in PATH,
 # plus curl + python (used to fetch ninja if absent). Override the version with
-# SDL_REF=release-3.4.10 (default below).
+# SDL_REF=release-3.4.12 (default below) -- changing SDL_REF/SDL_URL re-clones
+# automatically.
+#
+# SDL >= 3.4 also needs a working C++ compiler on Windows (GameInput backend;
+# it compiles to an empty stub when gameinput.h is absent). When run via
+# build-all.sh, CXX is pre-set to the system g++ because K/N's bundled mingw
+# is C-only; standalone runs let CMake find whatever c++/g++ is on PATH.
+#
+# The D3D12 render driver and the SDL_GPU subsystem (whose Windows backend
+# is also D3D12) are forced OFF: SDL >= 3.4 needs IDXGIFactory6 /
+# DXGI_GPU_PREFERENCE_* which K/N's bundled mingw-w64 headers (gcc 9.2 era)
+# predate -- its dxgi1_6.h exists, so SDL's HAVE_DXGI1_6_H gates pass, but
+# compilation then fails. D3D11 (the default Windows driver) is unaffected,
+# and this project only uses the SDL_Render API, never SDL_GPU.
 set -euo pipefail
 
-SDL_REF="${SDL_REF:-release-3.4.10}"
+SDL_REF="${SDL_REF:-release-3.4.12}"
 SDL_URL="${SDL_URL:-https://github.com/libsdl-org/SDL.git}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIBS="$REPO/libs"
@@ -40,10 +53,14 @@ else
 	NINJA="$(win "$BUILD/ninja.exe")"
 fi
 
-if [ ! -f "$SRC/CMakeLists.txt" ]; then
+# Re-clone whenever URL/ref changes so switching versions is clean.
+MARKER="$BUILD/.source"
+WANT="$SDL_URL $SDL_REF"
+if [ ! -f "$SRC/CMakeLists.txt" ] || [ "$(cat "$MARKER" 2>/dev/null)" != "$WANT" ]; then
 	echo ">> cloning SDL $SDL_REF"
 	rm -rf "$SRC"
 	git clone --depth 1 -b "$SDL_REF" "$SDL_URL" "$SRC"
+	echo "$WANT" > "$MARKER"
 fi
 
 echo ">> configuring (static, size-sectioned)"
@@ -55,7 +72,10 @@ cmake -S "$(win "$SRC")" -B "$(win "$OUT")" -G Ninja \
 	-DSDL_SHARED=OFF -DSDL_STATIC=ON \
 	-DSDL_TESTS=OFF -DSDL_TEST_LIBRARY=OFF -DSDL_EXAMPLES=OFF \
 	-DSDL_INSTALL_TESTS=OFF \
+	-DSDL_RENDER_D3D12=OFF \
+	-DSDL_GPU=OFF \
 	-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -Os" \
+	-DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -Os" \
 	-DCMAKE_INSTALL_PREFIX="$(win "$PREFIX")"
 
 echo ">> building + installing"
