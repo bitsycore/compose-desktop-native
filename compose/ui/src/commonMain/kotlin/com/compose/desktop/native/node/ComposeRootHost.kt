@@ -150,6 +150,12 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	private fun hitTest(inX: Float, inY: Float): LayoutNode? = hitNode(rootNode, inX, inY)
 
 	private fun hitNode(inNode: LayoutNode, inX: Float, inY: Float): LayoutNode? {
+		// A node can be mid-recycle (detached) while a pointer-move hit-test walks
+		// the tree — e.g. fast LazyGrid/LazyColumn scrolling. positionInRoot() on a
+		// detached coordinator throws ("LayoutCoordinate operations are only valid
+		// when isAttached is true"); an unattached node can't be under the pointer
+		// anyway, so skip it and its subtree.
+		if (!inNode.coordinates.isAttached) return null
 		val vPos = inNode.coordinates.positionInRoot()
 		val vSize = inNode.coordinates.size
 		if (inX < vPos.x || inY < vPos.y || inX >= vPos.x + vSize.width || inY >= vPos.y + vSize.height) return null
@@ -161,7 +167,8 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		return inNode
 	}
 
-	private fun absOf(inNode: LayoutNode): Offset = inNode.coordinates.positionInRoot()
+	private fun absOf(inNode: LayoutNode): Offset =
+		if (inNode.coordinates.isAttached) inNode.coordinates.positionInRoot() else Offset.Zero
 
 	private fun inside(inHit: LayoutNode?, inNode: LayoutNode): Boolean {
 		var n = inHit
