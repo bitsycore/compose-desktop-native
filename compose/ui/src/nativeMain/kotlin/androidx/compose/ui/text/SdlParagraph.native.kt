@@ -77,10 +77,14 @@ internal class SdlParagraph(
 	private fun measureStr(inStr: String): Float =
 		currentTextMeasurer.measure(inStr, fontPx, Int.MAX_VALUE, family, variations).width.toFloat()
 
-	private val lineWidths: FloatArray = FloatArray(lineCount) { measureStr(allLines[it]) }
+	// Lazy — measuring every wrapped line up-front taxed paragraphs that are
+	// only ever painted (draw doesn't read per-line widths; alignment and
+	// selection do, on demand).
+	private val lineWidths: FloatArray by lazy { FloatArray(lineCount) { measureStr(allLines[it]) } }
 
-	override val width: Float =
+	override val width: Float by lazy {
 		if (maxWidthPx == Int.MAX_VALUE) (lineWidths.maxOrNull() ?: 0f) else widthConstraint
+	}
 	override val height: Float = lineCount * lh
 	// Widest single HARD-BREAK line — NOT the concatenated all-on-one-line width.
 	// Compose's Text(softWrap = false) reads this to decide the paragraph width
@@ -89,7 +93,10 @@ internal class SdlParagraph(
 	// text `.replace("\n", " ")` as one line reported a 17-line gutter as a ~600px
 	// single line, so a Modifier.width(18.dp) gutter Text got laid out at 600px
 	// wide and the line-number column vanished under the body text.
-	override val maxIntrinsicWidth: Float = run {
+	// Both intrinsics are LAZY — they measure every hard line / every word, and
+	// most paragraphs (bounded-width Text) never read them. Eager computation
+	// here used to tax every Text() layout with a full extra measurement pass.
+	override val maxIntrinsicWidth: Float by lazy {
 		var vMax = 0f
 		var vStart = 0
 		while (vStart <= text.length) {
@@ -103,8 +110,20 @@ internal class SdlParagraph(
 		}
 		vMax
 	}
-	override val minIntrinsicWidth: Float =
-		text.split(Regex("\\s+")).fold(0f) { acc, w -> max(acc, measureStr(w)) }
+	// Manual whitespace scan — the old Regex("\\s+").split compiled the regex
+	// and allocated the full word list on every paragraph construction.
+	override val minIntrinsicWidth: Float by lazy {
+		var vMax = 0f
+		var vI = 0
+		val vN = text.length
+		while (vI < vN) {
+			while (vI < vN && text[vI].isWhitespace()) vI++
+			val vStart = vI
+			while (vI < vN && !text[vI].isWhitespace()) vI++
+			if (vI > vStart) vMax = max(vMax, measureStr(text.substring(vStart, vI)))
+		}
+		vMax
+	}
 
 	private val ascent: Float = lh * 0.8f
 	override val firstBaseline: Float = ascent
@@ -139,24 +158,42 @@ internal class SdlParagraph(
 
 	// ============
 	//  Offset <-> position
+
+	// Per-line cumulative advances, built lazily on the first position query:
+	// advances[c] = rendered width of the line's first c chars. Cursor math and
+	// selection then read O(1) / binary-search instead of re-measuring substring
+	// prefixes on every call (the old path was O(n²) per pointer event).
+	private val lineAdvances = arrayOfNulls<FloatArray>(lineCount)
+
+	private fun advancesFor(inLine: Int): FloatArray {
+		lineAdvances.getOrNull(inLine)?.let { if (it != null) return it }
+		val vLineStr = allLines.getOrElse(inLine) { "" }
+		val vArr = FloatArray(vLineStr.length + 1)
+		for (c in 1..vLineStr.length) vArr[c] = measureStr(vLineStr.substring(0, c))
+		if (inLine in lineAdvances.indices) lineAdvances[inLine] = vArr
+		return vArr
+	}
+
 	override fun getHorizontalPosition(offset: Int, usePrimaryDirection: Boolean): Float {
 		val vLine = getLineForOffset(offset)
-		val vLineStr = allLines.getOrElse(vLine) { "" }
-		val vCol = (offset - lineStarts[vLine]).coerceIn(0, vLineStr.length)
-		return measureStr(vLineStr.substring(0, vCol))
+		val vAdv = advancesFor(vLine)
+		val vCol = (offset - lineStarts[vLine]).coerceIn(0, vAdv.size - 1)
+		return vAdv[vCol]
 	}
 
 	override fun getOffsetForPosition(position: Offset): Int {
 		val vLine = (position.y / lh).toInt().coerceIn(0, lineCount - 1)
-		val vLineStr = allLines.getOrElse(vLine) { "" }
-		// Find the column whose left edge is nearest position.x.
-		var vBest = 0
-		var vBestDx = Float.MAX_VALUE
-		for (c in 0..vLineStr.length) {
-			val vX = measureStr(vLineStr.substring(0, c))
-			val vDx = kotlin.math.abs(vX - position.x)
-			if (vDx < vBestDx) { vBestDx = vDx; vBest = c }
+		val vAdv = advancesFor(vLine)
+		// Advances are monotonic — binary-search the first edge >= x, then pick
+		// the nearer of it and its left neighbour (same "nearest left edge"
+		// semantics as the old linear scan).
+		var vLo = 0
+		var vHi = vAdv.size - 1
+		while (vLo < vHi) {
+			val vMid = (vLo + vHi) / 2
+			if (vAdv[vMid] < position.x) vLo = vMid + 1 else vHi = vMid
 		}
+		val vBest = if (vLo > 0 && (position.x - vAdv[vLo - 1]) <= (vAdv[vLo] - position.x)) vLo - 1 else vLo
 		return lineStarts[vLine] + vBest
 	}
 
