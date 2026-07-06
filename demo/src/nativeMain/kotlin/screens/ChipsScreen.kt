@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ElevatedAssistChip
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.SuggestionChip
@@ -39,6 +42,18 @@ internal fun ChipsScreen() {
 			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
 				FilterChip(selected = vA, onClick = { vA = !vA }, label = { Text("Enabled") })
 				FilterChip(selected = vB, onClick = { vB = !vB }, label = { Text("Toggle me") })
+			}
+		}
+
+		Section("Elevated chips", "Shadow-lifted variants of Assist / Filter / Suggestion") {
+			var vSel by remember { mutableStateOf(true) }
+			Row(
+				horizontalArrangement = Arrangement.spacedBy(10.dp),
+				verticalAlignment = Alignment.CenterVertically,
+			) {
+				ElevatedAssistChip(onClick = {}, label = { Text("Assist") })
+				ElevatedFilterChip(selected = vSel, onClick = { vSel = !vSel }, label = { Text("Filter") })
+				ElevatedSuggestionChip(onClick = {}, label = { Text("Suggestion") })
 			}
 		}
 

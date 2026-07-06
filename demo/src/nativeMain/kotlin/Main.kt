@@ -369,6 +369,11 @@ private val FoundationScreens: List<Screen> = listOf(
     Screen("Counter")           { CounterScreen() },
     Screen("Recomposition")     { RecompositionScreen() },
     Screen("Animation")         { AnimationScreen() },
+    Screen("Pager")             { PagerScreen() },
+    Screen("GridsExtra")        { GridsExtraScreen() },
+    Screen("FlowLayout")        { FlowLayoutScreen() },
+    Screen("BasicText")         { FoundationTextScreen() },
+    Screen("FoundationExtra")   { FoundationExtraScreen() },
 )
 
 // Vendored material3 component library on top of the native ui/foundation.
@@ -383,6 +388,17 @@ private val Material3Screens: List<Screen> = listOf(
     Screen("Lists")             { ListItemsScreen() },
     Screen("Icons")             { IconsScreen() },
     Screen("Dialogs")           { DialogsScreen() },
+    Screen("AppBars")           { M3AppBarsScreen() },
+    Screen("Drawers")           { M3DrawersScreen() },
+    Screen("NavRails")          { M3RailsScreen() },
+    Screen("FabExtra")          { M3FabExtraScreen() },
+    Screen("ButtonsExtra")      { M3ButtonsExtraScreen() },
+    Screen("Sheets")            { M3SheetsScreen() },
+    Screen("Search")            { M3SearchScreen() },
+    Screen("Tabs")              { M3TabsScreen() },
+    Screen("Pickers")           { M3PickersScreen() },
+    Screen("Carousel")          { M3CarouselScreen() },
+    Screen("M3Misc")            { M3MiscScreen() },
 )
 
 // NOT androidx — the project's SDL / platform / desktop layer.
