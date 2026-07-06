@@ -58,6 +58,12 @@ fun main(args: Array<String>) {
         runKeyTest()
         return
     }
+    // Verifies the Escape→back pipeline: an unconsumed Escape completes a back
+    // navigation on the window's NavigationEventDispatcher (BackHandler fires).
+    if (args.any { it == "--backtest" }) {
+        runBackTest()
+        return
+    }
     // Verifies the vendored scroll system: a Column(verticalScroll) scrolls when wheel
     // events are injected through the live pipeline (MouseWheelScrollingLogic).
     if (args.any { it == "--scrolltest" }) {
@@ -130,6 +136,41 @@ fun main(args: Array<String>) {
                 App()
             }
         }
+    }
+}
+
+/* Boots a window with a BackHandler, injects an Escape key through the live SDL
+   path, and asserts the handler fired — proving ComposeWindow's
+   BackNavigationInput drives the NavigationEventDispatcher (the mechanism that
+   collapses an expanded m3 SearchBar on Escape). */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+private fun runBackTest() {
+    val vBackFired = mutableStateOf(false)
+    nativeComposeWindow(
+        title = "backtest",
+        width = 300,
+        height = 150,
+        onFrame = { _, frameIndex ->
+            when (frameIndex) {
+                20 -> {
+                    com.compose.desktop.native.injectKey(41, true)   // SDL_SCANCODE_ESCAPE
+                    com.compose.desktop.native.injectKey(41, false)
+                    true
+                }
+                50 -> {
+                    println(
+                        if (vBackFired.value) "backtest: PASS (Escape completed a back navigation)"
+                        else "backtest: FAIL (BackHandler never fired)"
+                    )
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        @Suppress("DEPRECATION")
+        androidx.compose.ui.backhandler.BackHandler(enabled = !vBackFired.value) { vBackFired.value = true }
+        Text(if (vBackFired.value) "back fired" else "waiting for Escape", color = Color.White)
     }
 }
 

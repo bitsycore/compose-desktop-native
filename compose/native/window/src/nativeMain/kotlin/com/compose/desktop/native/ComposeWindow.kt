@@ -14,6 +14,8 @@ import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import com.compose.desktop.native.node.ComposeRootHost
@@ -80,6 +82,17 @@ fun nativeComposeWindow(
     val sdlUriHandler = object : androidx.compose.ui.platform.UriHandler {
         override fun openUri(uri: String) { openUrl(uri) }
     }
+
+    // Navigation-event owner: BackHandler / PredictiveBackHandler consumers
+    // (m3 SearchBar collapse, sheets, dialogs) register on its dispatcher via
+    // LocalNavigationEventDispatcherOwner. The main loop feeds it an
+    // UNCONSUMED Escape as a completed back navigation — the port of upstream
+    // desktop's BackNavigationEventInput.
+    val navigationEventOwner = object : androidx.navigationevent.NavigationEventDispatcherOwner {
+        override val navigationEventDispatcher = androidx.navigationevent.NavigationEventDispatcher()
+    }
+    val backNavigationInput = BackNavigationInput()
+    navigationEventOwner.navigationEventDispatcher.addInput(backNavigationInput)
 
     // Install the Main dispatcher BEFORE creating the owner: ComposeOwner captures
     // Dispatchers.Main eagerly for its per-node coroutine scopes (the pointerInput /
@@ -164,19 +177,15 @@ fun nativeComposeWindow(
                 androidx.compose.ui.platform.LocalPlatformWindowInsets provides
                     object : androidx.compose.ui.platform.PlatformWindowInsets {},
                 // Runtime-level host defaults — mirrors upstream's skiko
-                // HostDefaultProviderImpl: a real NavigationEventDispatcherOwner
-                // (m3 SearchBar / sheets use it for predictive-back plumbing),
+                // HostDefaultProviderImpl: the window's NavigationEventDispatcherOwner
+                // (m3 SearchBar / sheets use it for back/predictive-back plumbing),
                 // null for keys this port has no equivalent of (viewmodel store).
                 androidx.compose.runtime.LocalHostDefaultProvider provides
                     remember {
-                        val vNavOwner = object : androidx.navigationevent.NavigationEventDispatcherOwner {
-                            override val navigationEventDispatcher =
-                                androidx.navigationevent.NavigationEventDispatcher()
-                        }
                         object : androidx.compose.runtime.HostDefaultProvider {
                             @Suppress("UNCHECKED_CAST")
                             override fun <T> getHostDefault(key: androidx.compose.runtime.HostDefaultKey<T>): T = when (key) {
-                                androidx.navigationevent.compose.NavigationEventDispatcherOwnerHostDefaultKey -> vNavOwner
+                                androidx.navigationevent.compose.NavigationEventDispatcherOwnerHostDefaultKey -> navigationEventOwner
                                 else -> null
                             } as T
                         }
@@ -254,8 +263,15 @@ fun nativeComposeWindow(
                         val vDpr = backend.pixelDensity
                         host.onWheel(event.x.toFloat() * vDpr, event.y.toFloat() * vDpr, event.deltaX, event.deltaY, SDL_GetTicks().toLong())
                     }
-                    // B6b — route keyboard + typed text to the focused node via the FocusOwner.
-                    is AppEvent.Key -> host.dispatchKeyEvent(event.event)
+                    // B6b — route keyboard + typed text to the focused node via the
+                    // FocusOwner. An UNCONSUMED Escape then completes a back
+                    // navigation (collapses expanded SearchBar / BackHandler
+                    // consumers) — same order as upstream desktop's key pipeline.
+                    is AppEvent.Key -> {
+                        if (!host.dispatchKeyEvent(event.event)) {
+                            backNavigationInput.onKeyEvent(event.event)
+                        }
+                    }
                     is AppEvent.TextInput -> {
                         // Project onTextInput fields take the raw string; otherwise
                         // synthesise typed KeyEvents so the vendored text stacks
@@ -359,6 +375,22 @@ fun nativeComposeWindow(
 
     renderBackend.destroy()
     backend.destroy()
+}
+
+/* Escape → back: port of upstream desktop's BackNavigationEventInput. An
+   unconsumed Escape KeyDown completes a back navigation on the dispatcher
+   this input is registered with (BackHandler / PredictiveBackHandler
+   consumers: m3 SearchBar collapse, sheet dismissal, …). */
+private class BackNavigationInput : androidx.navigationevent.NavigationEventInput() {
+    fun onKeyEvent(inEvent: androidx.compose.ui.input.key.KeyEvent): Boolean {
+        if (inEvent.type == androidx.compose.ui.input.key.KeyEventType.KeyDown &&
+            inEvent.key == androidx.compose.ui.input.key.Key.Escape
+        ) {
+            dispatchOnBackCompleted()
+            return true
+        }
+        return false
+    }
 }
 
 /* Re-dispatches committed text (SDL TEXT_INPUT) as one synthetic typed
