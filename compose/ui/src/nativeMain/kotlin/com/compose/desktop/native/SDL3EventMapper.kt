@@ -20,6 +20,10 @@ sealed class AppEvent {
 	data class TextInput(val text: String) : AppEvent()
 	data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float) : AppEvent()
 	data object WindowResized : AppEvent()
+	/* The OS invalidated the window contents (expose / un-minimise / focus
+	   regain). Carries no data — the render-on-demand main loop uses it to
+	   force a frame even though no state changed. */
+	data object RedrawNeeded : AppEvent()
 }
 
 fun pollEvents(): List<AppEvent> {
@@ -69,6 +73,17 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_KEY_UP -> mapKey(e.key, KeyEventType.KeyUp)
 
 		SDL_EVENT_WINDOW_RESIZED -> AppEvent.WindowResized
+		// Backing-store size / DPR changes flow through the same resize path.
+		SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED -> AppEvent.WindowResized
+		SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED -> AppEvent.WindowResized
+
+		// Content invalidations — the idle-skipping main loop must render a
+		// frame after these even though no Compose state changed.
+		SDL_EVENT_WINDOW_EXPOSED,
+		SDL_EVENT_WINDOW_SHOWN,
+		SDL_EVENT_WINDOW_RESTORED,
+		SDL_EVENT_WINDOW_MAXIMIZED,
+		SDL_EVENT_WINDOW_FOCUS_GAINED -> AppEvent.RedrawNeeded
 
 		SDL_EVENT_TEXT_INPUT -> {
 			val vText = e.text.text?.toKString().orEmpty()

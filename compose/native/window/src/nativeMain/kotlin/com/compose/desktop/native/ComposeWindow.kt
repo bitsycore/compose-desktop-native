@@ -23,6 +23,7 @@ import kotlinx.cinterop.reinterpret
 import sdl3.SDL_Delay
 import sdl3.SDL_GetTicks
 import sdl3.SDL_SetWindowTitle
+import sdl3.SDL_WaitEventTimeout
 
 // ==================
 // MARK: ComposeWindow
@@ -107,7 +108,15 @@ fun nativeComposeWindow(
 
         val recomposeJob = launch { recomposer.runRecomposeAndApplyChanges() }
 
+        // Render-on-demand: true when something invalidated since the last drawn
+        // frame (state write, input event, pending recomposition, OS expose).
+        // While false the loop skips layout/draw/present entirely and blocks in
+        // SDL_WaitEventTimeout — idle CPU/GPU drops to ~0 instead of re-drawing
+        // an unchanged tree at refresh rate.
+        var vNeedsFrame = true
+
         val snapshotHandle = Snapshot.registerGlobalWriteObserver {
+            vNeedsFrame = true
             Snapshot.sendApplyNotifications()
         }
 
@@ -175,6 +184,7 @@ fun nativeComposeWindow(
             // ============
             //  Events — only window lifecycle for now (input rebuilt in B6).
             val events = pollEvents()
+            if (events.isNotEmpty()) vNeedsFrame = true
             for (event in events) {
                 when (event) {
                     is AppEvent.Quit -> if (composeWindow.requestCloseFromUser()) running = false
@@ -230,8 +240,24 @@ fun nativeComposeWindow(
             com.compose.desktop.native.text.currentViewportWidth = backend.pixelWidth
 
             // ============
-            //  Signal frame to recomposer
+            //  Idle skip — nothing invalidated: no state writes, no events, no
+            //  pending recomposition/animation (hasPendingWork covers the
+            //  recomposer's broadcast frame clock awaiters). Block briefly for
+            //  events instead of layouting/drawing an unchanged tree. onFrame
+            //  consumers (screenshot / pipe probes) always get frames.
             Snapshot.sendApplyNotifications()
+            if (recomposer.hasPendingWork) vNeedsFrame = true
+            if (!vNeedsFrame && onFrame == null) {
+                SDL_WaitEventTimeout(null, 10)
+                // Keep the FPS window anchored to active periods only.
+                vFpsFrames = 0
+                vFpsLastMs = SDL_GetTicks()
+                continue
+            }
+            vNeedsFrame = false
+
+            // ============
+            //  Signal frame to recomposer
             frameClock.sendFrame()
             yield()
 
