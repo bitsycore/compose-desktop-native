@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.compose.desktop.native.icons.IconFont
 import kotlinx.cinterop.*
 import sdl3.*
 import kotlin.math.PI
@@ -462,6 +463,28 @@ internal class Sdl3Canvas(
 		val vColor = if (fAlpha >= 1f) inColor else inColor.copy(alpha = inColor.alpha * fAlpha)
 		val vTr = fTextRenderer ?: return
 		val vRenderer = vTr.textMeasurer
+
+		// Icon families are single-codepoint glyphs that never wrap — centre in the
+		// node's real box. The per-line path below centres within a lineHeight band
+		// (1.2 em for Material Symbols), taller than the size-clamped icon node,
+		// which pushed every icon ~0.1 em below centre.
+		if (inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
+			vTr.drawText(
+				inText = inText,
+				inX = mapX(inX, inY).toInt(),
+				inY = mapY(inX, inY).toInt(),
+				inBoxWidth = inBoxWidth.toInt(),
+				inBoxHeight = inBoxHeight.toInt(),
+				inColor = vColor,
+				inFontSize = inFontSizePx,
+				inAlign = inTextAlign,
+				inFontFamily = inFontFamily,
+				inFontVariations = inFontVariations,
+				inSpans = inSpans,
+				inTextStart = 0,
+			)
+			return
+		}
 
 		// Wrap first, then draw one line at a time. Sdl3TextRenderer.drawText assumes
 		// the input is a SINGLE already-wrapped line; if we passed the raw multi-word
