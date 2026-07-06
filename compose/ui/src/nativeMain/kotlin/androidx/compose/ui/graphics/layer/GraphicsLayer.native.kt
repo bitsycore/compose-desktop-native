@@ -81,15 +81,81 @@ actual class GraphicsLayer {
 	actual var isReleased: Boolean = false
 		internal set
 
+	// ============
+	//  Record / draw — lambda replay
+	//
+	// Upstream's skiko actual records into a Skia Picture. This renderer is
+	// immediate-mode, so record() stores the draw lambda and draw() REPLAYS it
+	// with the layer's transform / alpha / clip applied. Same visual result as
+	// a display list as long as callers re-record on invalidation (they do —
+	// that's the GraphicsLayer contract). This is what makes GraphicsContext
+	// consumers render: SharedTransitionLayout's overlay, rememberGraphicsLayer.
+
+	private var recordedBlock: (DrawScope.() -> Unit)? = null
+	private var recordedDensity: Density = Density(1f)
+	private var recordedLayoutDirection: LayoutDirection = LayoutDirection.Ltr
+	private val drawScope = androidx.compose.ui.graphics.drawscope.CanvasDrawScope()
+
 	actual fun record(
 		density: Density,
 		layoutDirection: LayoutDirection,
 		size: IntSize,
 		block: DrawScope.() -> Unit,
-	) { /* no-op — no display list */ }
+	) {
+		recordedDensity = density
+		recordedLayoutDirection = layoutDirection
+		this.size = size
+		recordedBlock = block
+	}
 
 	actual suspend fun toImageBitmap(): ImageBitmap =
 		throw NotImplementedError("GraphicsLayer.toImageBitmap not implemented on desktop")
 
-	internal actual fun draw(canvas: Canvas, parentLayer: GraphicsLayer?) { /* no-op */ }
+	internal actual fun draw(canvas: Canvas, parentLayer: GraphicsLayer?) {
+		if (isReleased) return
+		val vBlock = recordedBlock ?: return
+		canvas.save()
+		canvas.translate(topLeft.x.toFloat(), topLeft.y.toFloat())
+		// Transform about the pivot (defaults to the layer centre).
+		if (scaleX != 1f || scaleY != 1f || rotationZ != 0f || translationX != 0f || translationY != 0f) {
+			val vPivot =
+				if (pivotOffset == Offset.Unspecified) Offset(size.width / 2f, size.height / 2f)
+				else pivotOffset
+			canvas.translate(translationX + vPivot.x, translationY + vPivot.y)
+			if (scaleX != 1f || scaleY != 1f) canvas.scale(scaleX, scaleY)
+			if (rotationZ != 0f) canvas.rotate(rotationZ)
+			canvas.translate(-vPivot.x, -vPivot.y)
+		}
+		if (clip) {
+			// Rect/rounded outlines clip to their bounds (SDL clips are rects;
+			// rounded-corner exactness would need the offscreen mask path);
+			// generic outlines go through clipPath (bbox fallback on SDL).
+			when (val vOutline = outline) {
+				is Outline.Rectangle -> canvas.clipRect(vOutline.rect)
+				is Outline.Rounded -> canvas.clipRect(
+					androidx.compose.ui.geometry.Rect(
+						vOutline.roundRect.left, vOutline.roundRect.top,
+						vOutline.roundRect.right, vOutline.roundRect.bottom,
+					),
+				)
+				is Outline.Generic -> canvas.clipPath(vOutline.path)
+			}
+		}
+		val vNeedsAlphaLayer = alpha < 1f
+		if (vNeedsAlphaLayer) {
+			canvas.saveLayer(
+				androidx.compose.ui.geometry.Rect(0f, 0f, size.width.toFloat(), size.height.toFloat()),
+				androidx.compose.ui.graphics.Paint().apply { this.alpha = this@GraphicsLayer.alpha },
+			)
+		}
+		drawScope.draw(
+			recordedDensity,
+			recordedLayoutDirection,
+			canvas,
+			Size(size.width.toFloat(), size.height.toFloat()),
+			vBlock,
+		)
+		if (vNeedsAlphaLayer) canvas.restore()
+		canvas.restore()
+	}
 }

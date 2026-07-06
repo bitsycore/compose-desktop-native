@@ -215,10 +215,16 @@ internal class ComposeOwner(
 			containsControls: Boolean,
 		): Long = originalTimeoutMillis
 	}
+	// GraphicsLayer here is the project record/replay actual (see
+	// GraphicsLayer.native.kt) — SharedTransitionLayout overlays and
+	// rememberGraphicsLayer() create layers through this context. The
+	// expect class hides its constructor/release from commonMain, hence
+	// the project factory hops.
 	override val graphicsContext: GraphicsContext = object : GraphicsContext {
 		override fun createGraphicsLayer(): GraphicsLayer =
-			throw NotImplementedError("createGraphicsLayer not wired on ComposeOwner")
-		override fun releaseGraphicsLayer(layer: GraphicsLayer) = Unit
+			com.compose.desktop.native.graphics.createProjectGraphicsLayer()
+		override fun releaseGraphicsLayer(layer: GraphicsLayer) =
+			com.compose.desktop.native.graphics.releaseProjectGraphicsLayer(layer)
 	}
 	override val textToolbar: TextToolbar = object : TextToolbar {
 		override val status: androidx.compose.ui.platform.TextToolbarStatus
