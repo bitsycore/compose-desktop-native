@@ -1,3 +1,8 @@
+@file:OptIn(
+	androidx.compose.ui.InternalComposeUiApi::class,
+	androidx.compose.runtime.InternalComposeApi::class,
+)
+
 package com.compose.desktop.native
 
 import androidx.compose.foundation.layout.Box
@@ -6,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composition
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerButton
@@ -152,6 +158,29 @@ fun nativeComposeWindow(
                     com.compose.desktop.native.text.font.projectFontFamilyResolver,
                 androidx.compose.ui.platform.LocalUriHandler provides sdlUriHandler,
                 androidx.compose.ui.platform.LocalAutofillTree provides host.autofillTree,
+                // Desktop windows have no system bars / notch / IME insets — the
+                // interface's all-zero defaults are exactly right. Material3 app
+                // bars, drawers, sheets and search read this local.
+                androidx.compose.ui.platform.LocalPlatformWindowInsets provides
+                    object : androidx.compose.ui.platform.PlatformWindowInsets {},
+                // Runtime-level host defaults — mirrors upstream's skiko
+                // HostDefaultProviderImpl: a real NavigationEventDispatcherOwner
+                // (m3 SearchBar / sheets use it for predictive-back plumbing),
+                // null for keys this port has no equivalent of (viewmodel store).
+                androidx.compose.runtime.LocalHostDefaultProvider provides
+                    remember {
+                        val vNavOwner = object : androidx.navigationevent.NavigationEventDispatcherOwner {
+                            override val navigationEventDispatcher =
+                                androidx.navigationevent.NavigationEventDispatcher()
+                        }
+                        object : androidx.compose.runtime.HostDefaultProvider {
+                            @Suppress("UNCHECKED_CAST")
+                            override fun <T> getHostDefault(key: androidx.compose.runtime.HostDefaultKey<T>): T = when (key) {
+                                androidx.navigationevent.compose.NavigationEventDispatcherOwnerHostDefaultKey -> vNavOwner
+                                else -> null
+                            } as T
+                        }
+                    },
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     with(windowScope) { content() }
