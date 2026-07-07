@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.compose.desktop.native.graphics.b8
+import com.compose.desktop.native.graphics.g8
+import com.compose.desktop.native.graphics.r8
 import com.compose.desktop.native.icons.IconFont
 import kotlinx.cinterop.*
 import sdl3.*
@@ -59,6 +62,7 @@ internal class Sdl3Canvas(
 	private val fTextRenderer: Sdl3TextRenderer? = null,
 	private val fImageCache: Sdl3ImageCache? = null,
 	private val fClipTargets: Sdl3ClipTargets? = null,
+	private val fShadowCache: Sdl3ShadowCache? = null,
 ) : Canvas,
 	com.compose.desktop.native.text.NativeTextCanvas,
 	com.compose.desktop.native.graphics.NativePainterCanvas,
@@ -478,11 +482,51 @@ internal class Sdl3Canvas(
 		// the shadow down by a fraction of it.
 		val vBlur = inElevationPx.coerceAtLeast(1f)
 		val vOffsetY = inElevationPx * 0.4f
+		val vMaxAlpha = 0.28f * inSpotColor.alpha * fAlpha
+
+		// Fast path: one cached 9-slice tile blit (see Sdl3ShadowCache).
+		// Requires an axis-aligned transform (no rotation/skew) and a shape
+		// big enough that the four corner quadrants don't overlap.
+		val vAxisAligned = fMb == 0f && fMc == 0f
+		if (vAxisAligned && fShadowCache != null) {
+			val vRadI = vRadius.toInt().coerceAtLeast(0)
+			val vBlurI = vBlur.toInt().coerceAtLeast(1)
+			val vEntry = fShadowCache.get(vRadI, vBlurI)
+			val vCorner = vEntry?.corner?.toFloat() ?: 0f
+			// Map the blur-inflated shadow rect through the (axis-aligned) affine.
+			val vL = fMa * (vRect.left - vBlur) + fMe
+			val vT = fMd * (vRect.top - vBlur + vOffsetY) + fMf
+			val vRt = fMa * (vRect.right + vBlur) + fMe
+			val vB = fMd * (vRect.bottom + vBlur + vOffsetY) + fMf
+			val vScale = if (fMa > 0f) fMa else 1f
+			if (vEntry != null && (vRt - vL) >= 2f * vCorner * vScale && (vB - vT) >= 2f * vCorner * vScale) {
+				fScope.flush()  // z-order: pending geometry first
+				SDL_SetTextureColorMod(
+					vEntry.tex.reinterpret(),
+					inSpotColor.r8.toUByte(), inSpotColor.g8.toUByte(), inSpotColor.b8.toUByte(),
+				)
+				SDL_SetTextureAlphaMod(vEntry.tex.reinterpret(), (vMaxAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
+				memScoped {
+					val vDst = alloc<SDL_FRect>()
+					vDst.x = vL; vDst.y = vT; vDst.w = vRt - vL; vDst.h = vB - vT
+					SDL_RenderTexture9Grid(
+						fRenderer.reinterpret(),
+						vEntry.tex.reinterpret(),
+						null,
+						vCorner, vCorner, vCorner, vCorner,
+						vScale,
+						vDst.ptr,
+					)
+				}
+				return
+			}
+		}
+
+		// Fallback (rotated layers / tiny shapes / no cache): stacked rings.
 		// Peak coverage at the shape edge; per-ring alpha so N stacked blends
 		// accumulate to it: 1-(1-a)^N = max  →  a = 1-(1-max)^(1/N).
 		// Ring count scales with the blur radius — large elevations need more
 		// rings or the quadratic spacing shows visible stepping.
-		val vMaxAlpha = 0.28f * inSpotColor.alpha
 		val vRings = (vBlur / 4f).toInt().coerceIn(5, 12)
 		val vRingAlpha = 1f - (1f - vMaxAlpha).pow(1f / vRings)
 		val vBrush = SolidColor(inSpotColor.copy(alpha = 1f))
