@@ -395,6 +395,11 @@ private class ProjectOwnedLayer(
 		androidx.compose.ui.unit.LayoutDirection.Ltr
 	private var fDensity: androidx.compose.ui.unit.Density =
 		androidx.compose.ui.unit.Density(1f)
+	// Drop shadow (Modifier.shadow / m3 Surface shadowElevation) — painted by
+	// the renderer canvas via NativeShadowCanvas before content + clip.
+	private var fShadowElevation: Float = 0f
+	private var fAmbientColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black
+	private var fSpotColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black
 
 	override fun isInLayer(position: Offset): Boolean {
 		if (!fClip) return true
@@ -418,6 +423,9 @@ private class ProjectOwnedLayer(
 		fAlpha = scope.alpha
 		fClip = scope.clip
 		fShape = scope.shape
+		fShadowElevation = scope.shadowElevation
+		fAmbientColor = scope.ambientShadowColor
+		fSpotColor = scope.spotShadowColor
 		// Density + layoutDirection are `internal` on ReusableGraphicsLayerScope but
 		// visible here (same :ui module). shape.createOutline needs them to convert
 		// `RoundedCornerShape(6.dp)` corner-radius from Dp to px against the current
@@ -465,6 +473,20 @@ private class ProjectOwnedLayer(
 			if (vHasRotation) canvas.rotate(fRotationZ)
 			if (vHasScale) canvas.scale(fScaleX, fScaleY)
 			canvas.translate(-vPivotX, -vPivotY)
+		}
+		// Drop shadow — painted in layer-local coords BEFORE the clip (the
+		// shadow lives outside the bounds; Modifier.shadow layers ship
+		// clip=false, but ordering here keeps clip=true layers correct too).
+		if (fShadowElevation > 0f && fSize.width > 0 && fSize.height > 0) {
+			val vShadowCanvas = canvas as? com.compose.desktop.native.graphics.NativeShadowCanvas
+			if (vShadowCanvas != null) {
+				val vOutline = fShape.createOutline(
+					androidx.compose.ui.geometry.Size(fSize.width.toFloat(), fSize.height.toFloat()),
+					fLayoutDirection,
+					fDensity,
+				)
+				vShadowCanvas.drawDropShadow(vOutline, fShadowElevation, fAmbientColor, fSpotColor)
+			}
 		}
 		if (fClip && fSize.width > 0 && fSize.height > 0) {
 			// Route the clip through the layer's shape so `Modifier.clip(RoundedCornerShape(6.dp))`

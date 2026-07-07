@@ -51,9 +51,60 @@ internal class SkiaCanvas(
 	private val fImageCache: SkiaImageCache? = null,
 ) : Canvas,
 	com.compose.desktop.native.text.NativeTextCanvas,
-	com.compose.desktop.native.graphics.NativePainterCanvas {
+	com.compose.desktop.native.graphics.NativePainterCanvas,
+	com.compose.desktop.native.graphics.NativeShadowCanvas {
 
 	fun finish() { /* Skia save/restore is balanced per call */ }
+
+	// ============
+	//  Drop shadow (NativeShadowCanvas) — a real Gaussian blur MaskFilter on
+	//  the layer's outline, offset downward for the spot-light look. Called by
+	//  ProjectOwnedLayer in layer-local coords (canvas already translated).
+
+	override fun drawDropShadow(
+		inOutline: androidx.compose.ui.graphics.Outline,
+		inElevationPx: Float,
+		inAmbientColor: androidx.compose.ui.graphics.Color,
+		inSpotColor: androidx.compose.ui.graphics.Color,
+	) {
+		if (inElevationPx <= 0f) return
+		val vRect: Rect
+		val vRadius: Float
+		when (inOutline) {
+			is androidx.compose.ui.graphics.Outline.Rectangle -> {
+				vRect = inOutline.rect; vRadius = 0f
+			}
+			is androidx.compose.ui.graphics.Outline.Rounded -> {
+				val vRr = inOutline.roundRect
+				vRect = Rect(vRr.left, vRr.top, vRr.right, vRr.bottom)
+				vRadius = vRr.topLeftCornerRadius.x
+			}
+			is androidx.compose.ui.graphics.Outline.Generic -> {
+				vRect = inOutline.path.getBounds(); vRadius = 0f
+			}
+		}
+		if (vRect.width <= 0f || vRect.height <= 0f) return
+
+		val vOffsetY = inElevationPx * 0.4f
+		val vPaint = SkPaint().apply {
+			color = toSkiaColor(inSpotColor.copy(alpha = 0.28f * inSpotColor.alpha))
+			maskFilter = org.jetbrains.skia.MaskFilter.makeBlur(
+				org.jetbrains.skia.FilterBlurMode.NORMAL,
+				sigma = inElevationPx * 0.5f + 0.5f,
+			)
+		}
+		fCanvas.drawRRect(
+			org.jetbrains.skia.RRect.makeLTRB(
+				vRect.left,
+				vRect.top + vOffsetY,
+				vRect.right,
+				vRect.bottom + vOffsetY,
+				vRadius,
+			),
+			vPaint,
+		)
+		vPaint.close()
+	}
 
 	// ============
 	//  Transform / clip state — delegated to Skia's own stack.

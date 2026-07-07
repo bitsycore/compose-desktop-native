@@ -26,6 +26,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sin
 
 // ==================
@@ -61,7 +62,8 @@ internal class Sdl3Canvas(
 ) : Canvas,
 	com.compose.desktop.native.text.NativeTextCanvas,
 	com.compose.desktop.native.graphics.NativePainterCanvas,
-	com.compose.desktop.native.graphics.NativeShapeClipCanvas {
+	com.compose.desktop.native.graphics.NativeShapeClipCanvas,
+	com.compose.desktop.native.graphics.NativeShadowCanvas {
 
 	// The tessellating scope. It emits geometry in the canvas's user space; the
 	// canvas hands it the current affine each draw (setMatrix) so scale / rotate /
@@ -436,6 +438,67 @@ internal class Sdl3Canvas(
 		// translate).
 		fScope.setMatrix(fMa, fMb, fMc, fMd, fMe, fMf)
 		return fScope
+	}
+
+	// ============
+	//  Drop shadow (NativeShadowCanvas) — the SDL renderer has no blur
+	//  primitive, so the shadow is a stack of expanding, quadratically-spaced
+	//  rounded-rect fills whose alphas accumulate: the region at distance d
+	//  from the shape edge is covered by every ring inflated ≥ d, so coverage
+	//  is maximal at the edge and steps down to zero at edge+blur. Each ring
+	//  carries the tessellator's 1px AA fringe, which smooths the steps —
+	//  at UI blur radii the result reads as a Gaussian. Content paints on
+	//  top, hiding the (darkest) interior.
+
+	override fun drawDropShadow(
+		inOutline: androidx.compose.ui.graphics.Outline,
+		inElevationPx: Float,
+		inAmbientColor: androidx.compose.ui.graphics.Color,
+		inSpotColor: androidx.compose.ui.graphics.Color,
+	) {
+		if (inElevationPx <= 0f) return
+		val vRect: Rect
+		val vRadius: Float
+		when (inOutline) {
+			is androidx.compose.ui.graphics.Outline.Rectangle -> {
+				vRect = inOutline.rect; vRadius = 0f
+			}
+			is androidx.compose.ui.graphics.Outline.Rounded -> {
+				val vRr = inOutline.roundRect
+				vRect = Rect(vRr.left, vRr.top, vRr.right, vRr.bottom)
+				vRadius = vRr.topLeftCornerRadius.x
+			}
+			is androidx.compose.ui.graphics.Outline.Generic -> {
+				vRect = inOutline.path.getBounds(); vRadius = 0f
+			}
+		}
+		if (vRect.width <= 0f || vRect.height <= 0f) return
+
+		// Material-ish geometry: blur radius ≈ elevation, spot offset pushes
+		// the shadow down by a fraction of it.
+		val vBlur = inElevationPx.coerceAtLeast(1f)
+		val vOffsetY = inElevationPx * 0.4f
+		// Peak coverage at the shape edge; per-ring alpha so N stacked blends
+		// accumulate to it: 1-(1-a)^N = max  →  a = 1-(1-max)^(1/N).
+		val vMaxAlpha = 0.28f * inSpotColor.alpha
+		val vRings = 5
+		val vRingAlpha = 1f - (1f - vMaxAlpha).pow(1f / vRings)
+		val vBrush = SolidColor(inSpotColor.copy(alpha = 1f))
+		val vScope = prep()
+		for (vI in 0 until vRings) {
+			// Quadratic spacing — rings bunch near the edge where a Gaussian
+			// falls fastest.
+			val vT = (vI + 1).toFloat() / vRings
+			val vInflate = vBlur * vT * vT
+			vScope.roundRectCore(
+				brush = vBrush,
+				topLeft = Offset(vRect.left - vInflate, vRect.top - vInflate + vOffsetY),
+				size = Size(vRect.width + 2f * vInflate, vRect.height + 2f * vInflate),
+				cornerRadius = vRadius + vInflate,
+				alpha = vRingAlpha,
+				style = Fill,
+			)
+		}
 	}
 
 	// Gradient brushes stash themselves on the Paint's shader (ShaderBrush.applyTo
