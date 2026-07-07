@@ -137,9 +137,31 @@ class ProjectPath : Path {
 	}
 
 	override fun addRoundRect(roundRect: RoundRect, direction: Path.Direction) {
-		// Stripped-down: treat as plain rect (per-corner radii not used by
-		// our renderer's Path consumers today).
-		addRect(Rect(roundRect.left, roundRect.top, roundRect.right, roundRect.bottom), direction)
+		// Trace the outline clockwise with a cubic-Bézier quarter-ellipse per
+		// corner (same 0.5522847 handle factor addOval uses), honouring each
+		// corner's own radius. This is the path Compose builds for NON-simple
+		// (per-corner) rounded shapes — SegmentedButton item shapes, SplitButton
+		// halves, OutlinedTextField's cutout corners — which drawOutline routes
+		// through drawPath rather than drawRoundRect. Radii of 0 collapse the
+		// cubics to the corner point, so a plain rect still comes out square.
+		val vK = 0.5522847498f
+		val vL = roundRect.left; val vT = roundRect.top
+		val vR = roundRect.right; val vB = roundRect.bottom
+		val vTl = roundRect.topLeftCornerRadius
+		val vTr = roundRect.topRightCornerRadius
+		val vBr = roundRect.bottomRightCornerRadius
+		val vBl = roundRect.bottomLeftCornerRadius
+
+		moveTo(vL + vTl.x, vT)
+		lineTo(vR - vTr.x, vT)                                           // top edge
+		cubicTo(vR - vTr.x + vTr.x * vK, vT, vR, vT + vTr.y - vTr.y * vK, vR, vT + vTr.y)  // top-right
+		lineTo(vR, vB - vBr.y)                                           // right edge
+		cubicTo(vR, vB - vBr.y + vBr.y * vK, vR - vBr.x + vBr.x * vK, vB, vR - vBr.x, vB)  // bottom-right
+		lineTo(vL + vBl.x, vB)                                           // bottom edge
+		cubicTo(vL + vBl.x - vBl.x * vK, vB, vL, vB - vBl.y + vBl.y * vK, vL, vB - vBl.y)  // bottom-left
+		lineTo(vL, vT + vTl.y)                                           // left edge
+		cubicTo(vL, vT + vTl.y - vTl.y * vK, vL + vTl.x - vTl.x * vK, vT, vL + vTl.x, vT)  // top-left
+		close()
 	}
 
 	override fun addArcRad(oval: Rect, startAngleRadians: Float, sweepAngleRadians: Float) {
