@@ -255,15 +255,22 @@ internal class Sdl3DrawScope(
 				}
 			}
 			is Stroke -> {
-				val vW = style.width
-				val vIL = vL + vW; val vIT = vT + vW; val vIR = vR - vW; val vIB = vB - vW
+				// Center the stroke on the rect path (Compose stroke semantics; matches
+				// roundRectCore and the border-ring path). Modifier.border pre-insets the
+				// rect by halfStroke, so the centered outer edges land back exactly on the
+				// node bounds — pixel-crisp and 1:1 with rounded borders on the same row
+				// (an inward stroke here sat half a pixel high → a 1px seam next to a
+				// rounded segment in a SegmentedButtonRow).
+				val vHw = style.width / 2f
+				val vOL = vL - vHw; val vOT = vT - vHw; val vOR = vR + vHw; val vOB = vB + vHw
+				val vIL = vL + vHw; val vIT = vT + vHw; val vIR = vR - vHw; val vIB = vB - vHw
 				if (vIR <= vIL || vIB <= vIT) {
-					emitQuad(vL, vT, vR, vT, vR, vB, vL, vB, vSampler)
+					emitQuad(vOL, vOT, vOR, vOT, vOR, vOB, vOL, vOB, vSampler)
 				} else {
-					emitQuad(vL, vT, vR, vT, vIR, vIT, vIL, vIT, vSampler) // top
-					emitQuad(vIR, vIT, vR, vT, vR, vB, vIR, vIB, vSampler) // right
-					emitQuad(vIL, vIB, vIR, vIB, vR, vB, vL, vB, vSampler) // bottom
-					emitQuad(vL, vT, vIL, vIT, vIL, vIB, vL, vB, vSampler) // left
+					emitQuad(vOL, vOT, vOR, vOT, vIR, vIT, vIL, vIT, vSampler) // top
+					emitQuad(vIR, vIT, vOR, vOT, vOR, vOB, vIR, vIB, vSampler) // right
+					emitQuad(vIL, vIB, vIR, vIB, vOR, vOB, vOL, vOB, vSampler) // bottom
+					emitQuad(vOL, vOT, vIL, vIT, vIL, vIB, vOL, vOB, vSampler) // left
 				}
 			}
 		}
