@@ -1,3 +1,7 @@
+@file:OptIn(KotlinNativeCacheApi::class)
+
+import org.jetbrains.kotlin.gradle.plugin.mpp.DisableCacheInKotlinVersion
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCacheApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -54,7 +58,9 @@ val vHostSupportsMingw: Boolean by rootProject.extra
 kotlin {
     linuxArm64()
     linuxX64()
-    macosArm64()
+    macosArm64(){
+
+    }
     if (vHostSupportsMingw) mingwX64()
 
     // Give us a real `nativeMain` intermediate source set (all targets are
@@ -68,6 +74,10 @@ kotlin {
         val isMingw = name == "mingwX64"
         val isLinuxX64 = name == "linuxX64"
         binaries.executable {
+            disableNativeCache(
+                version = DisableCacheInKotlinVersion.`2_4_0`,
+                reason = "Weird undef symbole on macos"
+            )
             entryPoint = "main"
             // mingwX64 links SDL3 / SDL3_ttf / SDL3_image / FreeType + image
             // codecs all statically into the .exe (clean app.exe + data.kres,

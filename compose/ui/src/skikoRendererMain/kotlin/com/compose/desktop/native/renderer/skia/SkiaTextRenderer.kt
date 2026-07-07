@@ -8,12 +8,18 @@ import com.compose.desktop.native.graphics.r8
 import com.compose.desktop.native.graphics.g8
 import com.compose.desktop.native.graphics.b8
 import com.compose.desktop.native.graphics.a8
+import com.compose.desktop.native.text.ColorRun
 import com.compose.desktop.native.text.TextMeasurer
 import com.compose.desktop.native.text.TextRendererCapabilities
 import com.compose.desktop.native.text.WrappedText
+import androidx.compose.ui.graphics.Color as ComposeColorAlias
 import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 import com.compose.desktop.native.text.lineColorRuns
+import com.compose.desktop.native.text.resolveRunPx
+import com.compose.desktop.native.text.runVariations
+import com.compose.desktop.native.text.spansAffectMetrics
+import com.compose.desktop.native.text.styledLineCellHeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
@@ -23,6 +29,7 @@ import org.jetbrains.skia.Font
 import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontStyle
 import org.jetbrains.skia.Paint
+import org.jetbrains.skia.Rect as SkRect
 import org.jetbrains.skia.Typeface
 import androidx.compose.ui.text.font.FontVariation as ComposeFontVariation
 import org.jetbrains.skia.FontVariation as SkiaFontVariation
@@ -54,6 +61,14 @@ class SkiaTextRenderer {
     }
 
     private val fFontMgr: FontMgr = FontMgr.default
+
+    // Density used to resolve Sp-valued span sizes via resolveRunPx. The Skia
+    // canvas is drawn at 1:1 (beginFrame(1f)) so the base fontPx arrives already
+    // resolved; this only matters for Sp span sizes (Em spans multiply the base
+    // and don't consult density). Mirrors Sdl3TextRenderer.fDpr.
+    private var fDensity: Float = 1f
+    internal val density: Float get() = fDensity
+    fun setDensity(inDensity: Float) { fDensity = inDensity }
 
     private val fTypeface: Typeface? = pickTypeface()
 
@@ -142,88 +157,247 @@ class SkiaTextRenderer {
         // Visible vertical band in canvas coords; lines outside it are skipped.
         inViewTop: Float = Float.NEGATIVE_INFINITY,
         inViewBottom: Float = Float.POSITIVE_INFINITY,
+        // Paragraph-level bits folded into every wrapped-line run — mirrors the
+        // SDL path so a TextStyle(fontStyle = Italic, textDecoration = Underline)
+        // still paints when there are no span styles.
+        inBaseItalic: Boolean = false,
+        inBaseUnderline: Boolean = false,
+        inBaseLineThrough: Boolean = false,
     ) {
         val vKey = TypefaceKey(inFontFamily, variationsKey(inFontVariations))
-        val vFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
-        val vPaint = Paint().apply {
-            color = toSkiaColor(inColor)
-            isAntiAlias = true
-        }
-
-        val vMetrics = vFont.metrics
-        val vLineHeight = vMetrics.descent - vMetrics.ascent
-        val vCapHeight = if (vMetrics.capHeight > 0f) vMetrics.capHeight
+        val vBaseFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
+        val vBaseMetrics = vBaseFont.metrics
+        val vBaseLineHeight = (vBaseMetrics.descent - vBaseMetrics.ascent).coerceAtLeast(1f)
+        val vCapHeight = if (vBaseMetrics.capHeight > 0f) vBaseMetrics.capHeight
                          else inFontSize * 0.7f
 
-        fun penXFor(inLineText: String): Float {
-            val vLineWidth = estimateTextWidth(inLineText, inFontSize, inFontFamily, inFontVariations).toFloat()
-            return when (inAlign) {
-                TextAlign.Start  -> inX
-                TextAlign.Center -> inX + (inBoxWidth - vLineWidth) / 2f
-                TextAlign.End    -> inX + inBoxWidth.toFloat() - vLineWidth
-                else             -> inX
-            }
-        }
-
-        // Draw one wrapped line at its baseline. With style spans, split the
-        // line into same-style segments (colour + weight + italic; mapped from
-        // original-text indices via inLineStart) and paint each at its prefix
-        // x in its own font.
-        fun drawLine(inLine: String, inLineStart: Int, inBaseline: Float) {
-            val vPenX = penXFor(inLine)
-            if (inSpans == null) {
-                inCanvas.drawString(expandTabs(inLine), vPenX, inBaseline, vFont, vPaint)
-                return
-            }
-            // O(spans + line length) style runs, instead of an O(chars × spans)
-            // per-character span scan, so a highlighted body with many spans
-            // stays cheap per visible line.
-            for (vRun in lineColorRuns(inLine, inLineStart, inSpans, inColor)) {
-                val vSegX = vPenX + estimateTextWidth(inLine.substring(0, vRun.start), inFontSize, inFontFamily, inFontVariations).toFloat()
-                val vSegPaint = Paint().apply { color = toSkiaColor(vRun.color); isAntiAlias = true }
-                // Per-run font: apply the run's weight as a wght axis variation on
-                // top of any caller-supplied variations. `default` (400) reuses the
-                // outer `vFont` (already loaded with `inFontVariations`) so the
-                // common case pays no extra work; only spans that actually change
-                // weight rebuild via getFont's typeface cache.
-                val vSegFont = if (vRun.weight == 400 && !vRun.italic) vFont
-                    else getFont(
-                        inKey = TypefaceKey(inFontFamily, variationsKey(withWeight(inFontVariations, vRun.weight))),
-                        inFamily = inFontFamily,
-                        inVariations = withWeight(inFontVariations, vRun.weight),
-                        inSize = inFontSize,
-                    ).let { if (vRun.italic) it.apply { skewX = -0.2f } else it }
-                inCanvas.drawString(expandTabs(inLine.substring(vRun.start, vRun.end)), vSegX, inBaseline, vSegFont, vSegPaint)
-                if (vRun.italic && vSegFont !== vFont) vSegFont.skewX = 0f
-                vSegPaint.close()
-            }
-        }
-
-        // Use the same wrap algorithm as measureText so layout and rendering
-        // produce identical line breakdowns. softWrap = false (e.g. a
-        // singleLine field) stays one line and overflows the box width.
-        // Reuse the measure pass's cached wrap when supplied.
+        // Same wrap algorithm as measureText so layout and rendering produce
+        // identical line breakdowns. softWrap = false (e.g. a singleLine field)
+        // stays one line and overflows the box width. Reuse the measure pass's
+        // cached wrap when supplied.
         val vWrapWidth = if (inSoftWrap) inBoxWidth else Int.MAX_VALUE
         val vWrapped = inWrapped ?: wrapTextWithStarts(inText, inFontSize, vWrapWidth, inFontFamily, inFontVariations)
         val vLines = vWrapped.lines
-        if (vLines.size == 1 && '\n' !in inText) {
-            // Single line, no wrap, no explicit newlines: cap-centre across
-            // the full box (button text in a taller container).
-            val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
-            drawLine(vLines[0], vWrapped.lineStarts[0], vBaseline)
-        } else {
-            for ((vIdx, vLine) in vLines.withIndex()) {
-                val vSlotTop = inY + vIdx * vLineHeight
-                // Cull lines outside the visible band — a huge scrolled body
-                // draws only the on-screen lines. The node keeps the full text,
-                // so cross-element selection is unaffected.
-                if (vSlotTop + vLineHeight < inViewTop || vSlotTop > inViewBottom) continue
-                val vBaseline = vSlotTop + (vLineHeight + vCapHeight) / 2f
-                drawLine(vLine, vWrapped.lineStarts[vIdx], vBaseline)
+        // Base-only fast path: no per-span styling AND no paragraph decoration or
+        // italic to fold in — keep the original single-line cap-centring for the
+        // button case and uniform per-line stacking for multi-line.
+        val vHasSpans = inSpans != null
+        val vBaseOnly = !vHasSpans && !inBaseItalic && !inBaseUnderline && !inBaseLineThrough
+        if (vBaseOnly) {
+            val vFastPaint = Paint().apply { color = toSkiaColor(inColor); isAntiAlias = true }
+            if (vLines.size == 1 && '\n' !in inText) {
+                val vBaseline = inY + (inBoxHeight + vCapHeight) / 2f
+                val vPenX = alignX(inX, inBoxWidth, estimateTextWidth(vLines[0], inFontSize, inFontFamily, inFontVariations).toFloat(), inAlign)
+                inCanvas.drawString(expandTabs(vLines[0]), vPenX, vBaseline, vBaseFont, vFastPaint)
+            } else {
+                for ((vIdx, vLine) in vLines.withIndex()) {
+                    val vSlotTop = inY + vIdx * vBaseLineHeight
+                    if (vSlotTop + vBaseLineHeight < inViewTop || vSlotTop > inViewBottom) continue
+                    val vBaseline = vSlotTop + (vBaseLineHeight + vCapHeight) / 2f
+                    val vPenX = alignX(inX, inBoxWidth, estimateTextWidth(vLine, inFontSize, inFontFamily, inFontVariations).toFloat(), inAlign)
+                    inCanvas.drawString(expandTabs(vLine), vPenX, vBaseline, vBaseFont, vFastPaint)
+                }
             }
+            vFastPaint.close()
+            return
         }
 
-        vPaint.close()
+        // Per-line size spans → the line's box height matches the tallest run
+        // cell (same styledLineCellHeight the paragraph measured with, so paint
+        // stacks lines exactly where layout put them). No metric-affecting spans →
+        // uniform base line height.
+        val vMetricSpans = spansAffectMetrics(inSpans)
+        var vLineY = inY
+        for ((vIdx, vLine) in vLines.withIndex()) {
+            val vLineStart = vWrapped.lineStarts.getOrElse(vIdx) { 0 }
+            val vLineH =
+                if (vMetricSpans && inSpans != null) {
+                    styledLineCellHeight(
+                        vLine, vLineStart, inSpans, inFontSize, fDensity,
+                        textMeasurer, inFontFamily, inFontVariations,
+                    ).coerceAtLeast(1f)
+                } else vBaseLineHeight
+            if (vLineY + vLineH < inViewTop || vLineY > inViewBottom) {
+                vLineY += vLineH
+                continue
+            }
+            drawLineStyled(
+                inCanvas, vLine, vLineStart, inSpans, inColor, inFontSize,
+                inFontFamily, inFontVariations,
+                inBoxLeft = inX, inBoxTop = vLineY, inBoxWidth = inBoxWidth, inBoxHeight = vLineH,
+                inAlign = inAlign,
+                inBaseFont = vBaseFont, inBaseCapHeight = vCapHeight,
+                inBaseItalic = inBaseItalic,
+                inBaseUnderline = inBaseUnderline,
+                inBaseLineThrough = inBaseLineThrough,
+            )
+            vLineY += vLineH
+            if (vLineY > inBoxHeight + inY) break
+        }
+    }
+
+    /* Aligns a line's pen X inside the box by its natural line width. */
+    private fun alignX(inX: Float, inBoxWidth: Int, inLineWidth: Float, inAlign: TextAlign): Float =
+        when (inAlign) {
+            TextAlign.Start  -> inX
+            TextAlign.Center -> inX + (inBoxWidth - inLineWidth) / 2f
+            TextAlign.End    -> inX + inBoxWidth.toFloat() - inLineWidth
+            else             -> inX
+        }
+
+    /* Renders ONE wrapped line inside a per-line box, with per-run styling and a
+       common baseline. Mirrors Sdl3TextRenderer.drawText's spans path: styled
+       prefix advances, alignment width = sum of styled run advances, common
+       baseline centres the line's TALLEST run cell in the box, background rect
+       behind each run, underline / lineThrough rects from run metrics. Paragraph-
+       level italic / decoration fold in via lineColorRuns's base flags. */
+    private fun drawLineStyled(
+        inCanvas: Canvas,
+        inLine: String,
+        inLineStart: Int,
+        inSpans: List<Range<SpanStyle>>?,
+        inColor: ComposeColor,
+        inFontSize: Int,
+        inFontFamily: String?,
+        inFontVariations: List<ComposeFontVariation.Setting>?,
+        inBoxLeft: Float,
+        inBoxTop: Float,
+        inBoxWidth: Int,
+        inBoxHeight: Float,
+        inAlign: TextAlign,
+        inBaseFont: Font,
+        inBaseCapHeight: Float,
+        inBaseItalic: Boolean,
+        inBaseUnderline: Boolean,
+        inBaseLineThrough: Boolean,
+    ) {
+        // Build style runs. inSpans is null when only paragraph-level base flags
+        // affect painting — a single run covers the whole line with the base flags
+        // folded in via lineColorRuns's inBase* args.
+        val vRuns: List<ColorRun> = lineColorRuns(
+            inLine, inLineStart, inSpans ?: emptyList(), inColor,
+            inBaseItalic = inBaseItalic,
+            inBaseUnderline = inBaseUnderline,
+            inBaseLineThrough = inBaseLineThrough,
+        )
+        if (vRuns.isEmpty()) return
+
+        // Per-run resolutions: run pixel size, run font (weight/variations), run
+        // advance measured at ITS style. Fresh instances retained across the
+        // background/paint/underline passes so we don't measure or resolve the
+        // same run multiple times.
+        val vN = vRuns.size
+        val vRunFonts = arrayOfNulls<Font>(vN)
+        val vRunPx = IntArray(vN)
+        val vRunAdvances = FloatArray(vN)
+        for (i in 0 until vN) {
+            val vRun = vRuns[i]
+            val vPx = resolveRunPx(vRun, inFontSize, fDensity)
+            vRunPx[i] = vPx
+            val vVars = runVariations(vRun, inFontVariations)
+            val vRunFont = if (vRun.weight == 400 && vPx == inFontSize && vVars === inFontVariations) inBaseFont
+                else {
+                    val vRunKey = TypefaceKey(inFontFamily, variationsKey(vVars))
+                    getFont(vRunKey, inFontFamily, vVars, vPx)
+                }
+            vRunFonts[i] = vRunFont
+            vRunAdvances[i] = estimateTextWidth(
+                inLine.substring(vRun.start, vRun.end),
+                vPx, inFontFamily, vVars,
+            ).toFloat()
+        }
+
+        // Alignment width = sum of styled advances (a bold/resized run pushes
+        // the total right by its own amount).
+        var vLineW = 0f
+        for (i in 0 until vN) vLineW += vRunAdvances[i]
+        val vPenX0 = alignX(inBoxLeft, inBoxWidth, vLineW, inAlign)
+
+        // Common baseline: centre the line's TALLEST run cell in the box, then
+        // sit every run's baseline on it. Uses -metrics.ascent (Skia ascent is
+        // negative) for the run's cap-top-to-baseline distance. Without this a
+        // bigger/smaller run centres its own texture and floats off the baseline.
+        var vMaxCellH = inBaseFont.metrics.let { (it.descent - it.ascent).coerceAtLeast(1f) }
+        var vMaxAscent = -inBaseFont.metrics.ascent
+        for (i in 0 until vN) {
+            val vFontI = vRunFonts[i] ?: continue
+            val vM = vFontI.metrics
+            val vCell = (vM.descent - vM.ascent).coerceAtLeast(1f)
+            if (vCell > vMaxCellH) vMaxCellH = vCell
+            val vAsc = -vM.ascent
+            if (vAsc > vMaxAscent) vMaxAscent = vAsc
+        }
+        val vBaselineY = inBoxTop + (inBoxHeight - vMaxCellH) / 2f + vMaxAscent
+
+        // 1) Backgrounds first — fill each run's slice of the line band before
+        // the glyphs so they sit ON the background.
+        var vRunX = vPenX0
+        for (i in 0 until vN) {
+            val vRun = vRuns[i]
+            val vAdv = vRunAdvances[i]
+            if (vRun.background != ComposeColorAlias.Unspecified && vRun.background.alpha > 0f) {
+                val vBgPaint = Paint().apply { color = toSkiaColor(vRun.background); isAntiAlias = false }
+                inCanvas.drawRect(
+                    SkRect.makeXYWH(vRunX, inBoxTop, vAdv, inBoxHeight),
+                    vBgPaint,
+                )
+                vBgPaint.close()
+            }
+            vRunX += vAdv
+        }
+
+        // 2) Glyphs — walk runs L→R, advancing by each run's styled advance so
+        // a bold/resized run pushes the following runs over by the right amount.
+        vRunX = vPenX0
+        for (i in 0 until vN) {
+            val vRun = vRuns[i]
+            val vFont = vRunFonts[i] ?: continue
+            val vAdv = vRunAdvances[i]
+            val vSeg = expandTabs(inLine.substring(vRun.start, vRun.end))
+            val vSegPaint = Paint().apply { color = toSkiaColor(vRun.color); isAntiAlias = true }
+            // Faux italic via skewX. Reset after so the cached Font handle
+            // is reusable by non-italic runs on the next line.
+            val vHadSkew = vFont.skewX
+            if (vRun.italic) vFont.skewX = -0.2f
+            inCanvas.drawString(vSeg, vRunX, vBaselineY, vFont, vSegPaint)
+            if (vRun.italic) vFont.skewX = vHadSkew
+            vSegPaint.close()
+            vRunX += vAdv
+        }
+
+        // 3) Underline / strikethrough — draw 1-2px rects from run metrics AFTER
+        // the glyphs (so a heavier run's stems don't paint over the line). Skia
+        // reports underlinePosition as distance from baseline to TOP of the
+        // stroke (positive downward); strikeoutPosition is negative (above the
+        // baseline, near x-height).
+        vRunX = vPenX0
+        for (i in 0 until vN) {
+            val vRun = vRuns[i]
+            val vFont = vRunFonts[i] ?: continue
+            val vAdv = vRunAdvances[i]
+            if (vRun.underline || vRun.lineThrough) {
+                val vM = vFont.metrics
+                val vDecoPaint = Paint().apply { color = toSkiaColor(vRun.color); isAntiAlias = false }
+                if (vRun.underline) {
+                    val vThick = (vM.underlineThickness ?: (vRunPx[i] / 16f)).coerceAtLeast(1f)
+                    val vPos = vM.underlinePosition ?: (vRunPx[i] * 0.08f)
+                    inCanvas.drawRect(
+                        SkRect.makeXYWH(vRunX, vBaselineY + vPos, vAdv, vThick),
+                        vDecoPaint,
+                    )
+                }
+                if (vRun.lineThrough) {
+                    val vThick = (vM.strikeoutThickness ?: (vRunPx[i] / 16f)).coerceAtLeast(1f)
+                    val vPos = vM.strikeoutPosition ?: (-vRunPx[i] * 0.28f)
+                    inCanvas.drawRect(
+                        SkRect.makeXYWH(vRunX, vBaselineY + vPos, vAdv, vThick),
+                        vDecoPaint,
+                    )
+                }
+                vDecoPaint.close()
+            }
+            vRunX += vAdv
+        }
     }
 
     /* Greedy soft-wrap that also tracks each line's start index in the

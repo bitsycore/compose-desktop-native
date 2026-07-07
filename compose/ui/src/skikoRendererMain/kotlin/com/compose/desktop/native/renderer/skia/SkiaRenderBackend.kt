@@ -64,11 +64,25 @@ internal class SkiaRenderBackend(
         canvas.clear(SkColor.makeARGB(0xFF, 0x12, 0x12, 0x12))
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
+        // Sp-valued span sizes resolve through resolveRunPx, which needs the
+        // same LocalDensity DPR the paragraph used to bake base fontPx (16sp *
+        // density=2 → 32px). ComposeWindow calls beginFrame(1f) — layout is
+        // already in physical pixels — so use backend.pixelDensity directly
+        // here or Sp spans render at logical-point sizes and look tiny next
+        // to their base text.
+        fSkiaTextRenderer.setDensity(sdl.pixelDensity)
         fCurrentCanvas = canvas
     }
 
     override fun drawRoot(inHost: com.compose.desktop.native.node.ComposeRootHost) {
         val canvas = fCurrentCanvas ?: return
+        // Register the offscreen (ImageBitmap) render path so the vendored
+        // VectorPainter / DrawCache pipeline — hence material3's ImageVector
+        // icons — renders. Idempotent.
+        if (com.compose.desktop.native.graphics.offscreenRenderer == null) {
+            com.compose.desktop.native.graphics.offscreenRenderer =
+                SkiaOffscreenRenderer(fSkiaTextRenderer, fSkiaImageCache)
+        }
         val vSize = androidx.compose.ui.geometry.Size(sdl.pixelWidth.toFloat(), sdl.pixelHeight.toFloat())
         val vCanvas = SkiaCanvas(canvas, vSize, fSkiaTextRenderer, fSkiaImageCache)
         inHost.rootNode.draw(vCanvas, null)

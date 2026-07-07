@@ -8,25 +8,48 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path as ComposePath
+import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.graphics.SkiaBackedPath
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.SweepGradient
+import androidx.compose.ui.graphics.TileMode as ComposeTileMode
+import androidx.compose.ui.graphics.asSkiaColorFilter
 import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
 import androidx.compose.ui.graphics.Vertices
+import androidx.compose.ui.graphics.toSkia
 import com.compose.desktop.native.graphics.PathCommand
 import com.compose.desktop.native.graphics.ProjectPath
+import com.compose.desktop.native.graphics.a8
+import com.compose.desktop.native.graphics.b8
+import com.compose.desktop.native.graphics.g8
+import com.compose.desktop.native.graphics.gradientCenter
+import com.compose.desktop.native.graphics.gradientColors
+import com.compose.desktop.native.graphics.gradientEnd
+import com.compose.desktop.native.graphics.gradientRadius
+import com.compose.desktop.native.graphics.gradientStart
+import com.compose.desktop.native.graphics.gradientStops
+import com.compose.desktop.native.graphics.gradientTileMode
+import com.compose.desktop.native.graphics.r8
 import org.jetbrains.skia.Canvas as SkCanvas
 import org.jetbrains.skia.ClipMode
 import org.jetbrains.skia.Color as SkColor
+import org.jetbrains.skia.Color4f
+import org.jetbrains.skia.FilterTileMode
+import org.jetbrains.skia.Gradient
 import org.jetbrains.skia.Paint as SkPaint
 import org.jetbrains.skia.PaintMode
 import org.jetbrains.skia.PaintStrokeCap
 import org.jetbrains.skia.Path as SkPath
 import org.jetbrains.skia.PathBuilder
+import org.jetbrains.skia.Point
+import org.jetbrains.skia.Shader as SkShader
 import org.jetbrains.skia.RRect
 import org.jetbrains.skia.Rect as SkRect
 
@@ -126,7 +149,12 @@ internal class SkiaCanvas(
 		// A large explicit rect avoids overload resolution ambiguity that `null as
 		// SkRect?` had (didn't seem to hit the null branch consistently). Alpha compositing
 		// still works — Skia does the alpha modulation via layerPaint on restore().
-		fCanvas.saveLayer(-100_000f, -100_000f, 100_000f, 100_000f, toSkiaPaint(paint))
+		// SaveLayer paint carries alpha (for compositing) — no shape geometry, so
+		// pass zero size / origin; the gradient/shader branches don't fire for a
+		// layer paint.
+		val vLayerPaint = toSkiaPaint(paint, Size(0f, 0f), Offset.Zero)
+		fCanvas.saveLayer(-100_000f, -100_000f, 100_000f, 100_000f, vLayerPaint)
+		vLayerPaint.close()
 	}
 	override fun translate(dx: Float, dy: Float) { fCanvas.translate(dx, dy) }
 	override fun scale(sx: Float, sy: Float) { fCanvas.scale(sx, sy) }
@@ -161,40 +189,59 @@ internal class SkiaCanvas(
 	//  Draw primitives.
 
 	override fun drawRect(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
-		fCanvas.drawRect(SkRect.makeLTRB(left, top, right, bottom), toSkiaPaint(paint))
+		val vSize = Size(right - left, bottom - top)
+		val vSk = toSkiaPaint(paint, vSize, Offset(left, top))
+		fCanvas.drawRect(SkRect.makeLTRB(left, top, right, bottom), vSk)
+		vSk.close()
 	}
 
 	override fun drawRoundRect(
 		left: Float, top: Float, right: Float, bottom: Float,
 		radiusX: Float, radiusY: Float, paint: Paint,
 	) {
+		val vSize = Size(right - left, bottom - top)
+		val vSk = toSkiaPaint(paint, vSize, Offset(left, top))
 		fCanvas.drawRRect(
 			RRect.makeLTRB(left, top, right, bottom, radiusX, radiusY),
-			toSkiaPaint(paint),
+			vSk,
 		)
+		vSk.close()
 	}
 
 	override fun drawOval(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
-		fCanvas.drawOval(SkRect.makeLTRB(left, top, right, bottom), toSkiaPaint(paint))
+		val vSize = Size(right - left, bottom - top)
+		val vSk = toSkiaPaint(paint, vSize, Offset(left, top))
+		fCanvas.drawOval(SkRect.makeLTRB(left, top, right, bottom), vSk)
+		vSk.close()
 	}
 
 	override fun drawCircle(center: Offset, radius: Float, paint: Paint) {
-		fCanvas.drawCircle(center.x, center.y, radius, toSkiaPaint(paint))
+		val vSize = Size(radius * 2f, radius * 2f)
+		val vSk = toSkiaPaint(paint, vSize, Offset(center.x - radius, center.y - radius))
+		fCanvas.drawCircle(center.x, center.y, radius, vSk)
+		vSk.close()
 	}
 
 	override fun drawArc(
 		left: Float, top: Float, right: Float, bottom: Float,
 		startAngle: Float, sweepAngle: Float, useCenter: Boolean, paint: Paint,
 	) {
-		fCanvas.drawArc(left, top, right, bottom, startAngle, sweepAngle, useCenter, toSkiaPaint(paint))
+		val vSize = Size(right - left, bottom - top)
+		val vSk = toSkiaPaint(paint, vSize, Offset(left, top))
+		fCanvas.drawArc(left, top, right, bottom, startAngle, sweepAngle, useCenter, vSk)
+		vSk.close()
 	}
 
 	override fun drawLine(p1: Offset, p2: Offset, paint: Paint) {
-		fCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, toSkiaPaint(paint))
+		val vSk = toSkiaPaint(paint, Size(0f, 0f), Offset.Zero)
+		fCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, vSk)
+		vSk.close()
 	}
 
 	override fun drawPath(path: ComposePath, paint: Paint) {
-		fCanvas.drawPath(toSkiaPath(path), toSkiaPaint(paint))
+		val vSk = toSkiaPaint(paint, Size(0f, 0f), Offset.Zero)
+		fCanvas.drawPath(toSkiaPath(path), vSk)
+		vSk.close()
 	}
 	// ============
 	//  Native bridges.
@@ -212,12 +259,11 @@ internal class SkiaCanvas(
 		inSoftWrap: Boolean,
 		inFontFamily: String?,
 		inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?,
-		// Paragraph-level italic / decoration — accepted for interface parity;
-		// the Skia run pipeline doesn't consume them yet (SDL renderer does).
-		// TODO(skia): wire into SkiaTextRenderer like Sdl3TextRenderer.drawText.
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 	) {
+		val vUnderline = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.Underline) == true
+		val vLineThrough = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.LineThrough) == true
 		fTextRenderer?.drawText(
 			inCanvas = fCanvas,
 			inText = inText,
@@ -232,6 +278,9 @@ internal class SkiaCanvas(
 			inFontFamily = inFontFamily,
 			inFontVariations = inFontVariations,
 			inSpans = inSpans,
+			inBaseItalic = inBaseItalic,
+			inBaseUnderline = vUnderline,
+			inBaseLineThrough = vLineThrough,
 		)
 	}
 
@@ -259,9 +308,18 @@ internal class SkiaCanvas(
 	}
 
 	// ============
-	//  Not-yet-wired ops — accept-and-ignore.
+	//  Native image (ImageBitmap-backed vector — see SkiaOffscreen). The offscreen
+	//  registers itself lazily, so anything not backed by a SkiaImageBitmap surface
+	//  (a hypothetical stub) is silently skipped.
 
-	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {}
+	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {
+		val vBmp = image as? SkiaImageBitmap ?: return
+		val vImg = vBmp.snapshot()
+		val vSkPaint = imageBlitPaint(paint)
+		fCanvas.drawImage(vImg, topLeftOffset.x, topLeftOffset.y, vSkPaint)
+		vSkPaint.close()
+	}
+
 	override fun drawImageRect(
 		image: ImageBitmap,
 		srcOffset: androidx.compose.ui.unit.IntOffset,
@@ -269,7 +327,37 @@ internal class SkiaCanvas(
 		dstOffset: androidx.compose.ui.unit.IntOffset,
 		dstSize: androidx.compose.ui.unit.IntSize,
 		paint: Paint,
-	) {}
+	) {
+		val vBmp = image as? SkiaImageBitmap ?: return
+		val vImg = vBmp.snapshot()
+		val vSrc = SkRect.makeXYWH(
+			srcOffset.x.toFloat(), srcOffset.y.toFloat(),
+			srcSize.width.toFloat(), srcSize.height.toFloat(),
+		)
+		val vDst = SkRect.makeXYWH(
+			dstOffset.x.toFloat(), dstOffset.y.toFloat(),
+			dstSize.width.toFloat(), dstSize.height.toFloat(),
+		)
+		val vSkPaint = imageBlitPaint(paint)
+		fCanvas.drawImageRect(vImg, vSrc, vDst, vSkPaint, true)
+		vSkPaint.close()
+	}
+
+	// Blit paint: alpha modulated as the paint colour's alpha; ColorFilter (Icon
+	// tint arrives here) forwarded to Skia so the vendored VectorPainter's
+	// ColorFilter.tint recolours the icon at composite time.
+	private fun imageBlitPaint(inPaint: Paint): SkPaint {
+		val vP = SkPaint()
+		vP.color = SkColor.makeARGB(
+			(inPaint.alpha * 255f).toInt().coerceIn(0, 255), 255, 255, 255,
+		)
+		vP.isAntiAlias = true
+		inPaint.colorFilter?.let {
+			vP.colorFilter = it.asSkiaColorFilter()
+		}
+		return vP
+	}
+
 	override fun drawPoints(pointMode: PointMode, points: List<Offset>, paint: Paint) {}
 	override fun drawRawPoints(pointMode: PointMode, points: FloatArray, paint: Paint) {}
 	override fun drawVertices(vertices: Vertices, blendMode: BlendMode, paint: Paint) {}
@@ -277,17 +365,16 @@ internal class SkiaCanvas(
 	override fun disableZ() {}
 
 	// ============
-	//  Paint translation. Solid color today; gradients fall back to Paint.color.
+	//  Paint translation. Recovers a gradient Brush stashed on paint.shader (see
+	//  CanvasPaintActuals.native.kt — ShaderBrush.applyTo drops everything but
+	//  color=Black otherwise) and builds the matching Skia Shader, using the
+	//  shape's [inShapeSize] to resolve infinite-anchor gradients. Forwards
+	//  paint.colorFilter and paint.blendMode (BlendMode.Clear zeroes the region,
+	//  which DrawCache relies on to clear the offscreen before rasterising a
+	//  vector).
 
-	private fun toSkiaPaint(inPaint: Paint): SkPaint {
+	private fun toSkiaPaint(inPaint: Paint, inShapeSize: Size, inShapeOrigin: Offset): SkPaint {
 		val vPaint = SkPaint()
-		val vC = inPaint.color
-		vPaint.color = SkColor.makeARGB(
-			(vC.alpha * inPaint.alpha * 255f).toInt().coerceIn(0, 255),
-			(vC.red * 255f).toInt().coerceIn(0, 255),
-			(vC.green * 255f).toInt().coerceIn(0, 255),
-			(vC.blue * 255f).toInt().coerceIn(0, 255),
-		)
 		vPaint.isAntiAlias = true
 		vPaint.mode = if (inPaint.style == PaintingStyle.Stroke) PaintMode.STROKE else PaintMode.FILL
 		vPaint.strokeWidth = inPaint.strokeWidth
@@ -296,7 +383,92 @@ internal class SkiaCanvas(
 			ComposeStrokeCap.Square -> PaintStrokeCap.SQUARE
 			else -> PaintStrokeCap.BUTT
 		}
+		val vBrush = inPaint.shader?.brush
+		val vBaseColor = SkColor.makeARGB(
+			(inPaint.color.alpha * inPaint.alpha * 255f).toInt().coerceIn(0, 255),
+			(inPaint.color.red * 255f).toInt().coerceIn(0, 255),
+			(inPaint.color.green * 255f).toInt().coerceIn(0, 255),
+			(inPaint.color.blue * 255f).toInt().coerceIn(0, 255),
+		)
+		when (vBrush) {
+			null, is SolidColor -> {
+				vPaint.color = vBaseColor
+			}
+			is LinearGradient -> {
+				vPaint.color = whiteAlpha(inPaint.alpha)
+				vPaint.shader = makeLinearShader(vBrush, inShapeSize, inShapeOrigin)
+			}
+			is RadialGradient -> {
+				vPaint.color = whiteAlpha(inPaint.alpha)
+				vPaint.shader = makeRadialShader(vBrush, inShapeSize, inShapeOrigin)
+			}
+			is SweepGradient -> {
+				vPaint.color = whiteAlpha(inPaint.alpha)
+				vPaint.shader = makeSweepShader(vBrush, inShapeSize, inShapeOrigin)
+			}
+			else -> {
+				vPaint.color = vBaseColor
+			}
+		}
+		inPaint.colorFilter?.let { vPaint.colorFilter = it.asSkiaColorFilter() }
+		vPaint.blendMode = inPaint.blendMode.toSkia()
 		return vPaint
+	}
+
+	private fun whiteAlpha(inAlpha: Float): Int =
+		SkColor.makeARGB((inAlpha * 255f).toInt().coerceIn(0, 255), 255, 255, 255)
+
+	private fun makeLinearShader(inB: LinearGradient, inSize: Size, inOrigin: Offset): SkShader {
+		val vSx = inOrigin.x + resolveX(inB.gradientStart.x, inSize.width)
+		val vSy = inOrigin.y + resolveY(inB.gradientStart.y, inSize.height)
+		val vEx = inOrigin.x + resolveX(inB.gradientEnd.x, inSize.width)
+		val vEy = inOrigin.y + resolveY(inB.gradientEnd.y, inSize.height)
+		return SkShader.makeLinearGradient(
+			p0 = Point(vSx, vSy),
+			p1 = Point(vEx, vEy),
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, inB.gradientTileMode.toSkia())),
+		)
+	}
+
+	private fun makeRadialShader(inB: RadialGradient, inSize: Size, inOrigin: Offset): SkShader {
+		val vCx = inOrigin.x + resolveX(inB.gradientCenter.x, inSize.width)
+		val vCy = inOrigin.y + resolveY(inB.gradientCenter.y, inSize.height)
+		val vR = if (inB.gradientRadius.isFinite()) inB.gradientRadius else (inSize.minDimension / 2f)
+		return SkShader.makeRadialGradient(
+			center = Point(vCx, vCy),
+			radius = vR,
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, inB.gradientTileMode.toSkia())),
+		)
+	}
+
+	private fun makeSweepShader(inB: SweepGradient, inSize: Size, inOrigin: Offset): SkShader {
+		val vCx = inOrigin.x + resolveX(inB.gradientCenter.x, inSize.width)
+		val vCy = inOrigin.y + resolveY(inB.gradientCenter.y, inSize.height)
+		return SkShader.makeSweepGradient(
+			center = Point(vCx, vCy),
+			gradient = Gradient(skiaColorsFor(inB.gradientColors, inB.gradientStops, FilterTileMode.CLAMP)),
+		)
+	}
+
+	private fun skiaColorsFor(
+		inColors: List<ComposeColor>,
+		inStops: List<Float>?,
+		inTile: FilterTileMode,
+	): Gradient.Colors = Gradient.Colors(
+		colors = Array(inColors.size) { Color4f(r = inColors[it].r8 / 255f, g = inColors[it].g8 / 255f, b = inColors[it].b8 / 255f, a = inColors[it].a8 / 255f) },
+		positions = inStops?.toFloatArray(),
+		tileMode = inTile,
+	)
+
+	private fun resolveX(inV: Float, inW: Float): Float = if (inV.isFinite()) inV else inW
+	private fun resolveY(inV: Float, inH: Float): Float = if (inV.isFinite()) inV else inH
+
+	private fun ComposeTileMode.toSkia(): FilterTileMode = when (this) {
+		ComposeTileMode.Clamp    -> FilterTileMode.CLAMP
+		ComposeTileMode.Repeated -> FilterTileMode.REPEAT
+		ComposeTileMode.Mirror   -> FilterTileMode.MIRROR
+		ComposeTileMode.Decal    -> FilterTileMode.DECAL
+		else                     -> FilterTileMode.CLAMP
 	}
 
 	// ============
