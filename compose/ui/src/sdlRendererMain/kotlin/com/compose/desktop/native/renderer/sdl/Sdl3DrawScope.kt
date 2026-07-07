@@ -350,19 +350,40 @@ internal class Sdl3DrawScope(
 	}
 
 	// Fills the band between two same-length, point-corresponding closed contours
-	// (an outer ring and its inset) as a triangle strip — two triangles per edge.
+	// (an outer ring and its inset) as a triangle strip — two triangles per edge —
+	// then feathers both boundaries (~1px) so the curved parts antialias like the
+	// rest of the renderer (fanFill / roundRectCore). Without the fringe the ring's
+	// corners read jagged and its hard edges look a pixel heavier than an AA'd rect.
 	private fun ringFill(
 		inOuter: List<Pair<Float, Float>>,
 		inInner: List<Pair<Float, Float>>,
 		inSampler: Sampler,
 	) {
 		val vN = minOf(inOuter.size, inInner.size)
-		// Contours are closed (last point == first), so segments 0..N-2 cover the loop.
+		if (vN < 2) return
+		// Solid band. Contours are closed (last == first), so segments 0..N-2 loop.
 		for (vI in 0 until vN - 1) {
 			val (vOx0, vOy0) = inOuter[vI]; val (vOx1, vOy1) = inOuter[vI + 1]
 			val (vIx0, vIy0) = inInner[vI]; val (vIx1, vIy1) = inInner[vI + 1]
 			emitTri(vOx0, vOy0, vOx1, vOy1, vIx1, vIy1, inSampler)
 			emitTri(vOx0, vOy0, vIx1, vIy1, vIx0, vIy0, inSampler)
+		}
+		// AA fringes. The outward radial at vertex i is (outer[i] − inner[i]); feather
+		// the outer edge outward and the inner edge inward, each fading to alpha 0.
+		for (vI in 0 until vN - 1) {
+			val (vOx0, vOy0) = inOuter[vI]; val (vOx1, vOy1) = inOuter[vI + 1]
+			val (vIx0, vIy0) = inInner[vI]; val (vIx1, vIy1) = inInner[vI + 1]
+			val vD0x = vOx0 - vIx0; val vD0y = vOy0 - vIy0
+			val vD1x = vOx1 - vIx1; val vD1y = vOy1 - vIy1
+			val vL0 = sqrt(vD0x * vD0x + vD0y * vD0y)
+			val vL1 = sqrt(vD1x * vD1x + vD1y * vD1y)
+			if (vL0 < 1e-4f || vL1 < 1e-4f) continue
+			val vN0x = vD0x / vL0 * kAaFeather; val vN0y = vD0y / vL0 * kAaFeather
+			val vN1x = vD1x / vL1 * kAaFeather; val vN1y = vD1y / vL1 * kAaFeather
+			// Outer edge: solid at the contour, fade outward.
+			emitFringeQuad(vOx0, vOy0, vOx1, vOy1, vOx1 + vN1x, vOy1 + vN1y, vOx0 + vN0x, vOy0 + vN0y, inSampler)
+			// Inner edge: solid at the contour, fade inward (into the hole).
+			emitFringeQuad(vIx0, vIy0, vIx1, vIy1, vIx1 - vN1x, vIy1 - vN1y, vIx0 - vN0x, vIy0 - vN0y, inSampler)
 		}
 	}
 
