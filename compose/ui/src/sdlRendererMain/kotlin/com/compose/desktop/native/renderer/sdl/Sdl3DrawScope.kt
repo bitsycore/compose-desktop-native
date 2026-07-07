@@ -350,10 +350,12 @@ internal class Sdl3DrawScope(
 	}
 
 	// Fills the band between two same-length, point-corresponding closed contours
-	// (an outer ring and its inset) as a triangle strip — two triangles per edge —
-	// then feathers both boundaries (~1px) so the curved parts antialias like the
-	// rest of the renderer (fanFill / roundRectCore). Without the fringe the ring's
-	// corners read jagged and its hard edges look a pixel heavier than an AA'd rect.
+	// (an outer ring and its inset) as a triangle strip. The solid band is drawn at
+	// FULL width on every segment so its opacity + thickness match the renderer's
+	// crisp (non-AA) straight strokes on the adjacent square segments. Only the
+	// diagonal corner-arc segments get an AA fringe — the axis-aligned straight
+	// edges are already crisp and must stay exactly strokeWidth, or the ring reads
+	// heavier (fringe added) or lighter (fringe straddled) than its neighbours.
 	private fun ringFill(
 		inOuter: List<Pair<Float, Float>>,
 		inInner: List<Pair<Float, Float>>,
@@ -368,10 +370,13 @@ internal class Sdl3DrawScope(
 			emitTri(vOx0, vOy0, vOx1, vOy1, vIx1, vIy1, inSampler)
 			emitTri(vOx0, vOy0, vIx1, vIy1, vIx0, vIy0, inSampler)
 		}
-		// AA fringes. The outward radial at vertex i is (outer[i] − inner[i]); feather
-		// the outer edge outward and the inner edge inward, each fading to alpha 0.
+		// Feather ONLY the corner-arc (non-axis-aligned) edges — outward on the outer
+		// boundary, inward on the inner — so the curves antialias while the straight
+		// sides stay crisp and exactly strokeWidth.
 		for (vI in 0 until vN - 1) {
 			val (vOx0, vOy0) = inOuter[vI]; val (vOx1, vOy1) = inOuter[vI + 1]
+			val vEdx = vOx1 - vOx0; val vEdy = vOy1 - vOy0
+			if (kotlin.math.abs(vEdx) < 0.35f || kotlin.math.abs(vEdy) < 0.35f) continue // straight side
 			val (vIx0, vIy0) = inInner[vI]; val (vIx1, vIy1) = inInner[vI + 1]
 			val vD0x = vOx0 - vIx0; val vD0y = vOy0 - vIy0
 			val vD1x = vOx1 - vIx1; val vD1y = vOy1 - vIy1
@@ -380,9 +385,7 @@ internal class Sdl3DrawScope(
 			if (vL0 < 1e-4f || vL1 < 1e-4f) continue
 			val vN0x = vD0x / vL0 * kAaFeather; val vN0y = vD0y / vL0 * kAaFeather
 			val vN1x = vD1x / vL1 * kAaFeather; val vN1y = vD1y / vL1 * kAaFeather
-			// Outer edge: solid at the contour, fade outward.
 			emitFringeQuad(vOx0, vOy0, vOx1, vOy1, vOx1 + vN1x, vOy1 + vN1y, vOx0 + vN0x, vOy0 + vN0y, inSampler)
-			// Inner edge: solid at the contour, fade inward (into the hole).
 			emitFringeQuad(vIx0, vIy0, vIx1, vIy1, vIx1 - vN1x, vIy1 - vN1y, vIx0 - vN0x, vIy0 - vN0y, inSampler)
 		}
 	}
