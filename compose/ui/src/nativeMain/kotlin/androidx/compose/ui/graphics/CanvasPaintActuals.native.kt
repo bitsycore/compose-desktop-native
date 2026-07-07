@@ -132,13 +132,20 @@ internal actual fun ActualCompositeShader(dst: Shader, src: Shader, blendMode: B
 //  backing) is blocked on the same-source-set expect+actual K2 rule for
 //  `ByteArray.putBytesInto`. Both renderers use ProjectImageBitmap for now.
 
+// Delegate to the renderer's offscreen support when present (the SDL renderer
+// registers a render-to-texture impl so vendored VectorPainter / DrawCache — hence
+// material3's ImageVector icons — actually render). Falls back to the stub when no
+// renderer registered one (nothing renders offscreen, same as before).
 internal actual fun ActualImageBitmap(
 	width: Int,
 	height: Int,
 	config: ImageBitmapConfig,
 	hasAlpha: Boolean,
 	colorSpace: ColorSpace,
-): ImageBitmap = ProjectImageBitmap(width, height, config, hasAlpha, colorSpace)
+): ImageBitmap =
+	com.compose.desktop.native.graphics.offscreenRenderer
+		?.createImageBitmap(width, height, config, hasAlpha, colorSpace)
+		?: ProjectImageBitmap(width, height, config, hasAlpha, colorSpace)
 
 internal actual fun createImageBitmap(bytes: ByteArray): ImageBitmap =
 	throw UnsupportedOperationException("ImageBitmap from bytes not supported; use Res.painter")
@@ -148,7 +155,8 @@ internal actual fun createImageBitmap(bytes: ByteArray): ImageBitmap =
 
 actual typealias NativeCanvas = Any
 
-internal actual fun ActualCanvas(image: ImageBitmap): Canvas = ProjectCanvas()
+internal actual fun ActualCanvas(image: ImageBitmap): Canvas =
+	com.compose.desktop.native.graphics.offscreenRenderer?.createCanvas(image) ?: ProjectCanvas()
 
 // PathMeasure actuals live per-renderer:
 //   * skikoRenderer: vendored SkiaBackedPathMeasure.skiko.kt.

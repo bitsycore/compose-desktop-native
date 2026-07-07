@@ -63,6 +63,12 @@ internal class Sdl3Canvas(
 	private val fImageCache: Sdl3ImageCache? = null,
 	private val fClipTargets: Sdl3ClipTargets? = null,
 	private val fShadowCache: Sdl3ShadowCache? = null,
+	// Offscreen mode: this canvas renders into [fOffscreenTexture] (an ImageBitmap's
+	// render target) instead of the frame. Set by Sdl3OffscreenRenderer so the vendored
+	// VectorPainter / DrawCache pipeline works. fForceWhite draws every fill white (an
+	// Alpha8 mask) so the tint applied on blit colours it correctly.
+	private val fOffscreenTexture: COpaquePointer? = null,
+	private val fForceWhite: Boolean = false,
 ) : Canvas,
 	com.compose.desktop.native.text.NativeTextCanvas,
 	com.compose.desktop.native.graphics.NativePainterCanvas,
@@ -157,6 +163,9 @@ internal class Sdl3Canvas(
 	//  State (translate + clip stack)
 
 	override fun save() {
+		// Offscreen canvas: the outermost save (CanvasDrawScope brackets its draw with
+		// save/restore) switches the SDL render target to the ImageBitmap's texture.
+		if (fOffscreenTexture != null && fStack.isEmpty()) beginOffscreen()
 		fStack.addLast(State(fMa, fMb, fMc, fMd, fMe, fMf, fClip, fAlpha, fClipLayers.size))
 	}
 
@@ -175,6 +184,39 @@ internal class Sdl3Canvas(
 			applyClip()
 		}
 		fAlpha = vPrev.alpha
+		// Matching outermost restore of an offscreen canvas: flush the vector into the
+		// texture and hand the render target back to the frame.
+		if (fOffscreenTexture != null && fStack.isEmpty()) endOffscreen()
+	}
+
+	// Public so an offscreen render can commit the frame's pending geometry before it
+	// borrows the render target (keeps the icon above already-drawn content).
+	fun flushPending() {
+		fScope.flush()
+	}
+
+	// Render target this canvas draws its normal geometry into (the frame, or the
+	// current rounded-clip scratch layer).
+	private fun mainTarget(): COpaquePointer? = fClipLayers.lastOrNull()?.target
+
+	private var fSavedOffscreenTarget: COpaquePointer? = null
+
+	private fun beginOffscreen() {
+		val vTex = fOffscreenTexture ?: return
+		// Commit whatever the frame has drawn so far to its own target, THEN redirect.
+		currentMainCanvas?.flushPending()
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		fSavedOffscreenTarget = SDL_GetRenderTarget(vRenderer)
+		SDL_SetRenderTarget(vRenderer, vTex.reinterpret())
+		fClip = null
+		SDL_SetRenderClipRect(vRenderer, null)
+	}
+
+	private fun endOffscreen() {
+		fScope.flush()
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		SDL_SetRenderTarget(vRenderer, fSavedOffscreenTarget?.reinterpret())
+		fSavedOffscreenTarget = null
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
@@ -581,13 +623,26 @@ internal class Sdl3Canvas(
 	// otherwise loses everything but color=Black — see CanvasPaintActuals). Recover
 	// the gradient so the tessellator's per-vertex sampler paints it; fall back to
 	// the solid paint colour for plain fills.
-	private fun brushFor(inPaint: Paint): Brush = inPaint.shader?.brush ?: SolidColor(inPaint.color)
+	private fun brushFor(inPaint: Paint): Brush =
+		if (fForceWhite) SolidColor(androidx.compose.ui.graphics.Color.White)
+		else inPaint.shader?.brush ?: SolidColor(inPaint.color)
 
 	private fun styleFor(inPaint: Paint): DrawStyle =
 		if (inPaint.style == PaintingStyle.Stroke) Stroke(inPaint.strokeWidth, cap = inPaint.strokeCap)
 		else Fill
 
 	override fun drawRect(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
+		// BlendMode.Clear zeroes the region (DrawCache clears an offscreen this way
+		// before re-rasterising a vector). Write transparent directly instead of the
+		// paint colour.
+		if (paint.blendMode == BlendMode.Clear) {
+			fScope.flush()
+			clearRegion(intArrayOf(
+				mapX(left, top).toInt(), mapY(left, top).toInt(),
+				mapX(right, bottom).toInt(), mapY(right, bottom).toInt(),
+			))
+			return
+		}
 		prep().rectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), (paint.alpha * fAlpha), styleFor(paint))
 	}
 
@@ -735,7 +790,22 @@ internal class Sdl3Canvas(
 	// ============
 	//  Not-yet-wired ops (B5 image leaf / B6 layers). Accept-and-ignore.
 
-	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {}
+	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {
+		val vBmp = image as? SdlImageBitmap ?: return
+		drawImageRect(
+			image,
+			androidx.compose.ui.unit.IntOffset.Zero,
+			androidx.compose.ui.unit.IntSize(vBmp.width, vBmp.height),
+			androidx.compose.ui.unit.IntOffset(topLeftOffset.x.toInt(), topLeftOffset.y.toInt()),
+			androidx.compose.ui.unit.IntSize(vBmp.width, vBmp.height),
+			paint,
+		)
+	}
+
+	// Blit an ImageBitmap-backed texture (a rasterised vector: material icons etc.).
+	// The tint an Icon requests arrives as paint.colorFilter (ColorFilter.tint); SDL
+	// applies it as a texture colour-mod, which — because the mask was drawn WHITE
+	// (see fForceWhite) — recolours the covered pixels to the tint.
 	override fun drawImageRect(
 		image: ImageBitmap,
 		srcOffset: androidx.compose.ui.unit.IntOffset,
@@ -743,7 +813,40 @@ internal class Sdl3Canvas(
 		dstOffset: androidx.compose.ui.unit.IntOffset,
 		dstSize: androidx.compose.ui.unit.IntSize,
 		paint: Paint,
-	) {}
+	) {
+		val vTex = (image as? SdlImageBitmap)?.texture ?: return
+		// Commit pending frame geometry and re-assert this canvas's target + clip
+		// (an offscreen render just borrowed the render target).
+		fScope.flush()
+		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+		SDL_SetRenderTarget(vRenderer, mainTarget()?.reinterpret())
+		applyClip()
+
+		val vTint = (paint.colorFilter as? androidx.compose.ui.graphics.BlendModeColorFilter)?.color
+		val vAlpha = (paint.alpha * fAlpha).coerceIn(0f, 1f)
+		if (vTint != null) {
+			SDL_SetTextureColorMod(vTex.reinterpret(), vTint.r8.toUByte(), vTint.g8.toUByte(), vTint.b8.toUByte())
+			SDL_SetTextureAlphaMod(vTex.reinterpret(), (vTint.alpha * vAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
+		} else {
+			SDL_SetTextureColorMod(vTex.reinterpret(), 255u, 255u, 255u)
+			SDL_SetTextureAlphaMod(vTex.reinterpret(), (vAlpha * 255f).toInt().coerceIn(0, 255).toUByte())
+		}
+		SDL_SetTextureBlendMode(vTex.reinterpret(), SDL_BLENDMODE_BLEND_PREMULTIPLIED)
+
+		val vDl = dstOffset.x.toFloat(); val vDt = dstOffset.y.toFloat()
+		val vDr = vDl + dstSize.width; val vDb = vDt + dstSize.height
+		val vX0 = mapX(vDl, vDt); val vX1 = mapX(vDr, vDb)
+		val vY0 = mapY(vDl, vDt); val vY1 = mapY(vDr, vDb)
+		memScoped {
+			val vSrc = alloc<SDL_FRect>()
+			vSrc.x = srcOffset.x.toFloat(); vSrc.y = srcOffset.y.toFloat()
+			vSrc.w = srcSize.width.toFloat(); vSrc.h = srcSize.height.toFloat()
+			val vDst = alloc<SDL_FRect>()
+			vDst.x = min(vX0, vX1); vDst.y = min(vY0, vY1)
+			vDst.w = kotlin.math.abs(vX1 - vX0); vDst.h = kotlin.math.abs(vY1 - vY0)
+			SDL_RenderTexture(vRenderer, vTex.reinterpret(), vSrc.ptr, vDst.ptr)
+		}
+	}
 	override fun drawPoints(pointMode: PointMode, points: List<Offset>, paint: Paint) {}
 	override fun drawRawPoints(pointMode: PointMode, points: FloatArray, paint: Paint) {}
 	override fun drawVertices(vertices: Vertices, blendMode: BlendMode, paint: Paint) {}

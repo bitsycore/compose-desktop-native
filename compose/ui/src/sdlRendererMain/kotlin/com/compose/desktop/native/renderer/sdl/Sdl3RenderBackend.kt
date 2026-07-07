@@ -84,6 +84,11 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         val vRenderer = backend.renderer ?: return
         val vClipTargets = fClipTargets ?: Sdl3ClipTargets(vRenderer).also { fClipTargets = it }
         val vShadowCache = fShadowCache ?: Sdl3ShadowCache(vRenderer).also { fShadowCache = it }
+        // Register the offscreen (ImageBitmap) render path so the vendored VectorPainter /
+        // DrawCache pipeline — hence material3's ImageVector icons — renders. Idempotent.
+        if (com.compose.desktop.native.graphics.offscreenRenderer == null) {
+            com.compose.desktop.native.graphics.offscreenRenderer = Sdl3OffscreenRenderer(vRenderer, fTextRenderer)
+        }
         val vCanvas = Sdl3Canvas(
             vRenderer,
             androidx.compose.ui.geometry.Size(backend.pixelWidth.toFloat(), backend.pixelHeight.toFloat()),
@@ -92,8 +97,12 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
             vClipTargets,
             vShadowCache,
         )
+        // Expose the frame canvas so an offscreen render can flush it before borrowing
+        // the render target (z-order).
+        currentMainCanvas = vCanvas
         inHost.rootNode.draw(vCanvas, null)
         vCanvas.finish()
+        currentMainCanvas = null
     }
 
     override fun endFrame() {
