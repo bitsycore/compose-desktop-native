@@ -7,6 +7,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +90,20 @@ fun main(args: Array<String>) {
     // SDL TextMeasurer via SdlParagraph) and checks width-wrapping + offset<->position geometry.
     if (args.any { it == "--paragraphtest" }) {
         runParagraphTest()
+        return
+    }
+    // Verifies the Dialog appearance animation (upstream Dialog.skiko.kt parity):
+    // opens a real m3 AlertDialog via an injected click, dumps mid-animation and
+    // settled screenshots — the mid shots must show the dialog fainter and lower.
+    if (args.any { it == "--dialoganimtest" }) {
+        runDialogAnimTest()
+        return
+    }
+    // Traces AnimatedVisibility(fade+expand/shrink) frame-by-frame: the AV
+    // container's animated size + the Y of a marker below it, across three
+    // toggles — diagnoses end-of-animation size snaps / instant transitions.
+    if (args.any { it == "--animvistest" }) {
+        runAnimVisTest()
         return
     }
 
@@ -409,6 +426,122 @@ private fun runSearchEscTest() {
                     .padding(24.dp),
             ) {
                 screens.M3SearchScreen()
+            }
+        }
+    }
+}
+
+/* Frame-by-frame trace of AnimatedVisibility(fadeIn+expandVertically / fadeOut+
+   shrinkVertically): logs the AV container's animated size and the window-Y of a
+   marker Box below it every frame, toggling visibility three times. Diagnoses
+   (a) a size snap between just-before-end and end of the animation and (b)
+   instant (non-animated) transitions on subsequent toggles. */
+private fun runAnimVisTest() {
+    val vShown = mutableStateOf(true)
+    var vAvSize = androidx.compose.ui.unit.IntSize(-1, -1)
+    var vMarkerY = -1f
+    var vLastLog = ""
+    nativeComposeWindow(
+        title = "animvistest",
+        width = 600,
+        height = 500,
+        onFrame = { _, vFrame ->
+            // Log only when something moved — keeps the trace readable.
+            val vLine = "size=$vAvSize markerY=$vMarkerY shown=${vShown.value}"
+            if (vLine != vLastLog) {
+                println("animvistest: f=$vFrame $vLine")
+                vLastLog = vLine
+            }
+            when (vFrame) {
+                60 -> { println("animvistest: === HIDE 1 ==="); vShown.value = false; true }
+                140 -> { println("animvistest: === SHOW 2 ==="); vShown.value = true; true }
+                220 -> { println("animvistest: === HIDE 3 ==="); vShown.value = false; true }
+                300 -> false
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = vShown.value,
+                    modifier = Modifier.onSizeChanged { vAvSize = it },
+                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
+                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically(),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .background(androidx.compose.ui.graphics.Color(0xFF7040C0)),
+                    ) {
+                        Text("Animated content", modifier = Modifier.padding(14.dp))
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(androidx.compose.ui.graphics.Color(0xFF40C070))
+                        .onGloballyPositioned { vMarkerY = it.positionInRoot().y },
+                )
+            }
+        }
+    }
+}
+
+/* Boots a window whose full-size surface opens an m3 AlertDialog on click (the real
+   material3 → ui.window.Dialog path, default DialogProperties ⇒ animateTransition on),
+   injects the click, then dumps screenshots during the 0.2s appearance animation and
+   after it settles; then injects Escape and dumps mid-disappearance (0.1s reverse,
+   via the popup host's exit deferral) + after. Visual check: mid shots must show the
+   dialog semi-transparent, slightly scaled-down and shifted down vs the settled shot,
+   and exit_end must show no dialog at all — skiko-parity animation both ways. */
+private fun runDialogAnimTest() {
+    fun snap(inBridge: com.compose.desktop.native.RenderBackend, inName: String) {
+        val vSnap = inBridge.snapshotBgra() ?: return
+        val (vW, vH, vBgra) = vSnap
+        writeFile(inName, encodeBmpBgra32(vW, vH, vBgra))
+        println("dialoganimtest: wrote $inName")
+    }
+    nativeComposeWindow(
+        title = "dialoganimtest",
+        width = 1000,
+        height = 700,
+        onFrame = { vBridge, vFrame ->
+            when (vFrame) {
+                30 -> { com.compose.desktop.native.injectMouseEvent(1, 500f, 350f); true }
+                32 -> { com.compose.desktop.native.injectMouseEvent(2, 500f, 350f); true }
+                36 -> { snap(vBridge, "dialog_mid1.bmp"); true }
+                40 -> { snap(vBridge, "dialog_mid2.bmp"); true }
+                90 -> { snap(vBridge, "dialog_end.bmp"); true }
+                92 -> {
+                    com.compose.desktop.native.injectKey(41, true)   // Escape → dismiss
+                    com.compose.desktop.native.injectKey(41, false)
+                    true
+                }
+                97 -> { snap(vBridge, "dialog_exit_mid.bmp"); true }
+                140 -> { snap(vBridge, "dialog_exit_end.bmp"); false }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            var vShow by remember { mutableStateOf(false) }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .clickable { vShow = true },
+            )
+            if (vShow) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { vShow = false },
+                    title = { Text("Animated dialog") },
+                    text = { Text("Appearance animation parity with the JVM (skiko) Dialog.") },
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(onClick = { vShow = false }) { Text("OK") }
+                    },
+                )
             }
         }
     }
