@@ -51,6 +51,10 @@ kotlin {
             // :foundation (com.compose.desktop.native.icons package), which
             // itself already api-depends on :ui.
             api(project(":foundation"))
+            // Default tint follows upstream material3 Icon:
+            // `tint: Color = LocalContentColor.current` — needs material3's
+            // LocalContentColor (provided by Surface / button content / …).
+            api(project(":material3"))
         }
     }
 }

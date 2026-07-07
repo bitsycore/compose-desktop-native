@@ -4,6 +4,7 @@ import com.compose.desktop.native.icons.IconFontIcon
 import com.compose.desktop.native.icons.IconDefaults
 import com.compose.desktop.native.icons.MaterialIconAxes
 import com.compose.desktop.native.icons.MaterialIconAxisDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,7 +55,7 @@ object MaterialSymbolsRounded {
 		icon: Int,
 		contentDescription: String? = null,
 		modifier: Modifier = Modifier,
-		tint: Color = IconDefaults.LocalContentColor,
+		tint: Color = LocalContentColor.current,
 		size: Dp = IconDefaults.DefaultIconSize,
 		fill: Float = MaterialIconAxisDefaults.Fill,
 		weight: Int = MaterialIconAxisDefaults.Weight,

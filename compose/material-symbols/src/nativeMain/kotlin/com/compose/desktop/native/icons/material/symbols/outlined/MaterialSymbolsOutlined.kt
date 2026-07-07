@@ -4,6 +4,7 @@ import com.compose.desktop.native.icons.IconFontIcon
 import com.compose.desktop.native.icons.IconDefaults
 import com.compose.desktop.native.icons.MaterialIconAxes
 import com.compose.desktop.native.icons.MaterialIconAxisDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -87,13 +88,15 @@ object MaterialSymbolsOutlined {
 
 	/* Compose-style icon entry point. Resolves to an Icon backed by the
 	   Material Symbols Outlined font; fill / weight / grade / opticalSize
-	   feed the OpenType variable axes. Auto-installs the font on first use. */
+	   feed the OpenType variable axes. Auto-installs the font on first use.
+	   Default tint mirrors upstream material3 Icon — LocalContentColor.current,
+	   the `on` colour of the surface the icon sits on. */
 	@Composable
 	operator fun invoke(
 		icon: Int,
 		contentDescription: String? = null,
 		modifier: Modifier = Modifier,
-		tint: Color = IconDefaults.LocalContentColor,
+		tint: Color = LocalContentColor.current,
 		size: Dp = IconDefaults.DefaultIconSize,
 		fill: Float = MaterialIconAxisDefaults.Fill,
 		weight: Int = MaterialIconAxisDefaults.Weight,

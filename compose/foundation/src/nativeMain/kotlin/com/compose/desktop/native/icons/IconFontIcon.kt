@@ -91,8 +91,12 @@ object MaterialIconAxisDefaults {
 
 object IconDefaults {
 	val DefaultIconSize: Dp = 24.dp
-	/* Default tint when no explicit tint is provided. Tracks Compose's
-	   LocalContentColor — wired to onSurface in the dark theme. */
+	/* STATIC fallback tint for direct IconFontIcon use — :foundation cannot
+	   read material3's LocalContentColor (module layering, same as upstream).
+	   The themed default lives one layer up: MaterialSymbols<Style> defaults
+	   its tint to material3's LocalContentColor.current, mirroring upstream
+	   material3 Icon. Prefer passing an explicit tint when calling
+	   IconFontIcon directly. */
 	val LocalContentColor: Color = Color.White
 }
 
