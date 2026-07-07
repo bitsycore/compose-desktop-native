@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.compose.desktop.native.layout.intOffset
 import com.compose.desktop.native.window.LocalPopupHost
+import com.compose.desktop.native.window.PopupOutsideDismiss
 
 // ==================
 // MARK: Popup — native actuals for the vendored expect
@@ -210,6 +211,10 @@ actual fun Popup(
 	// The anchor's window-space rect. Empty until the probe fills it after the first
 	// layout; the hosted content re-positions reactively when it does.
 	val vAnchorBounds = remember { mutableStateOf(IntRect(IntOffset.Zero, IntSize.Zero)) }
+	// The content's placed window rect, reported by the host layout — used to
+	// dismiss the popup on a press OUTSIDE it (material3 DropdownMenu / menus rely
+	// on the platform Popup honouring dismissOnClickOutside).
+	val vPlaced = remember { mutableStateOf(IntRect(IntOffset.Zero, IntSize.Zero)) }
 
 	// Invisible zero-size probe rendered at the call site: its PARENT layout node is
 	// the popup's anchor (e.g. BasicTooltipBox's wrapper around the anchor content),
@@ -230,7 +235,13 @@ actual fun Popup(
 	SideEffect {
 		vHost.upsert(vId) {
 			CompositionLocalProvider(vLocals) {
-				ProviderPositionedLayout(popupPositionProvider, vAnchorBounds, content)
+				ProviderPositionedLayout(popupPositionProvider, vAnchorBounds, content) { vRect ->
+					if (vRect != vPlaced.value) vPlaced.value = vRect
+				}
+				if (properties.dismissOnClickOutside && onDismissRequest != null) {
+					val vRect = vPlaced.value
+					PopupOutsideDismiss(vRect.left, vRect.top, vRect.width, vRect.height, onDismissRequest)
+				}
 			}
 		}
 	}
@@ -248,6 +259,7 @@ private fun ProviderPositionedLayout(
 	provider: PopupPositionProvider,
 	anchorBounds: State<IntRect>,
 	content: @Composable () -> Unit,
+	onPlaced: (IntRect) -> Unit,
 ) {
 	Layout(content) { measurables, constraints ->
 		val vChildConstraints = Constraints(maxWidth = constraints.maxWidth, maxHeight = constraints.maxHeight)
@@ -261,6 +273,7 @@ private fun ProviderPositionedLayout(
 				layoutDirection = layoutDirection,
 				popupContentSize = IntSize(vChildW, vChildH),
 			)
+			onPlaced(IntRect(vOffset, IntSize(vChildW, vChildH)))
 			vChildren.forEach { it.place(vOffset.x, vOffset.y) }
 		}
 	}
