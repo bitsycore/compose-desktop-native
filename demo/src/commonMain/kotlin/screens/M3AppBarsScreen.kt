@@ -31,8 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 // Material3 — the full top/bottom app-bar family + the AppBarRow/Column DSL.
 @Composable
@@ -43,19 +42,19 @@ internal fun M3AppBarsScreen() {
 		Section("TopAppBar / CenterAlignedTopAppBar", "Single-row title bars") {
 			TopAppBar(
 				title = { Text("TopAppBar") },
-				navigationIcon = { BarIcon(MaterialSymbols.Menu) },
-				actions = { BarIcon(MaterialSymbols.Search); BarIcon(MaterialSymbols.MoreVert) },
+				navigationIcon = { BarIcon(DemoIcon.Menu) },
+				actions = { BarIcon(DemoIcon.Search); BarIcon(DemoIcon.MoreVert) },
 			)
 			CenterAlignedTopAppBar(
 				title = { Text("CenterAligned") },
-				navigationIcon = { BarIcon(MaterialSymbols.ArrowBack) },
-				actions = { BarIcon(MaterialSymbols.MoreVert) },
+				navigationIcon = { BarIcon(DemoIcon.ArrowBack) },
+				actions = { BarIcon(DemoIcon.MoreVert) },
 			)
 		}
 
 		Section("MediumTopAppBar / LargeTopAppBar", "Two-row title bars (collapsed state shown — no scroll linkage here)") {
-			MediumTopAppBar(title = { Text("MediumTopAppBar") }, navigationIcon = { BarIcon(MaterialSymbols.Menu) })
-			LargeTopAppBar(title = { Text("LargeTopAppBar") }, navigationIcon = { BarIcon(MaterialSymbols.Menu) })
+			MediumTopAppBar(title = { Text("MediumTopAppBar") }, navigationIcon = { BarIcon(DemoIcon.Menu) })
+			LargeTopAppBar(title = { Text("LargeTopAppBar") }, navigationIcon = { BarIcon(DemoIcon.Menu) })
 		}
 
 		Section("Flexible top app bars", "Expressive variants with subtitle slots") {
@@ -76,15 +75,15 @@ internal fun M3AppBarsScreen() {
 		Section("BottomAppBar / FlexibleBottomAppBar", "Bottom action strips") {
 			BottomAppBar(
 				actions = {
-					BarIcon(MaterialSymbols.Check)
-					BarIcon(MaterialSymbols.Edit)
-					BarIcon(MaterialSymbols.Delete)
+					BarIcon(DemoIcon.Check)
+					BarIcon(DemoIcon.Edit)
+					BarIcon(DemoIcon.Delete)
 				},
 			)
 			FlexibleBottomAppBar {
-				BarIcon(MaterialSymbols.Home)
-				BarIcon(MaterialSymbols.Search)
-				BarIcon(MaterialSymbols.Settings)
+				BarIcon(DemoIcon.Home)
+				BarIcon(DemoIcon.Search)
+				BarIcon(DemoIcon.Settings)
 			}
 		}
 
@@ -96,21 +95,21 @@ internal fun M3AppBarsScreen() {
 				// the default) so the component is exercised by name.
 				overflowIndicator = { vMenuState -> AppBarOverflowIndicator(vMenuState) },
 			) {
-				clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Home) }, label = "Home")
-				clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Search) }, label = "Search")
+				clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Home) }, label = "Home")
+				clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Search) }, label = "Search")
 				toggleableItem(
 					checked = vChecked,
 					onCheckedChange = { vChecked = it },
-					icon = { BarGlyph(MaterialSymbols.Star) },
+					icon = { BarGlyph(DemoIcon.Star) },
 					label = "Favourite",
 				)
-				clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Settings) }, label = "Settings")
+				clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Settings) }, label = "Settings")
 			}
 			Box(modifier = Modifier.height(160.dp)) {
 				AppBarColumn {
-					clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Home) }, label = "Home")
-					clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Edit) }, label = "Edit")
-					clickableItem(onClick = {}, icon = { BarGlyph(MaterialSymbols.Delete) }, label = "Delete")
+					clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Home) }, label = "Home")
+					clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Edit) }, label = "Edit")
+					clickableItem(onClick = {}, icon = { BarGlyph(DemoIcon.Delete) }, label = "Delete")
 				}
 			}
 		}
@@ -119,12 +118,12 @@ internal fun M3AppBarsScreen() {
 
 // IconButton-wrapped symbol for app-bar slots.
 @Composable
-private fun BarIcon(codepoint: Int) {
-	IconButton(onClick = {}) { BarGlyph(codepoint) }
+private fun BarIcon(icon: DemoIcon) {
+	IconButton(onClick = {}) { BarGlyph(icon) }
 }
 
 // Bare symbol glyph for DSL icon slots (the DSL provides its own button).
 @Composable
-private fun BarGlyph(codepoint: Int) {
-	MaterialSymbolsOutlined(codepoint)
+private fun BarGlyph(icon: DemoIcon) {
+	DemoIcon(icon)
 }

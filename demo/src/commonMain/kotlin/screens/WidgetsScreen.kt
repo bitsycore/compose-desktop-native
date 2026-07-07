@@ -1,13 +1,18 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
@@ -15,6 +20,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.VerticalSlider
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.ui.state.ToggleableState
@@ -95,6 +102,15 @@ internal fun WidgetsScreen() {
                 Slider(value = vSteps, onValueChange = { vSteps = it }, valueRange = 0f..5f, steps = 4)
                 Text("Stepped 0..5 (4 stops): ${vSteps.toInt()}", fontSize = 14.sp)
             }
+        }
+
+        // VerticalSlider (expressive)
+        Section("VerticalSlider", "The vertical orientation — drag the thumb up/down.") {
+            val vState = rememberSliderState(value = 0.4f)
+            Box(modifier = Modifier.height(160.dp)) {
+                VerticalSlider(state = vState)
+            }
+            Text("Value: ${(vState.value * 100).toInt()}%", fontSize = 14.sp)
         }
 
         // Progress

@@ -57,6 +57,13 @@ kotlin {
     macosArm64()
     if (vHostSupportsMingw) mingwX64()
 
+    // Give us a real `nativeMain` intermediate source set (all targets are
+    // native today). Screens that only touch androidx.compose.* live in
+    // commonMain so a future jvm() target can compile them against upstream
+    // Compose; project-only (com.compose.desktop.native.*) screens + the SDL3
+    // entry point stay in nativeMain.
+    applyDefaultHierarchyTemplate()
+
     targets.withType<KotlinNativeTarget>().all {
         val isMingw = name == "mingwX64"
         val isLinuxX64 = name == "linuxX64"
@@ -119,7 +126,13 @@ kotlin {
                     implementation(project(":material-symbols"))
                 }
             }
+        }
+        nativeMain {
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
+            // They import the project's native Res API, so they belong to the native
+            // source set — the resource shim's native actual is the only common-side
+            // consumer. Keeping them off commonMain lets a future jvm() target swap in
+            // org.jetbrains.compose.resources without seeing project accessors.
             kotlin.srcDir(composeResGenDir)
         }
     }

@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberBasicTooltipState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
@@ -30,30 +28,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupPositionProvider
 
-// Foundation — the text primitives below material3's Text/TextField.
+// Foundation — the undecorated text primitive below material3's Text, plus the
+// foundation selection + tooltip plumbing. The companion BasicTextField screen
+// covers editable text.
 @Composable
-internal fun FoundationTextScreen() {
+internal fun BasicTextScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		ScreenTitle("Basic text", "BasicText, BasicSecureTextField, SelectionContainer, BasicTooltipBox.")
+		ScreenTitle("BasicText", "BasicText, SelectionContainer / DisableSelection, BasicTooltipBox.")
 
-		Section("BasicText", "The undecorated foundation text primitive") {
+		Section("BasicText", "The undecorated foundation text primitive — style passed explicitly") {
 			BasicText(
 				"BasicText — no material styling, style passed explicitly.",
 				style = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
 			)
-		}
-
-		Section("BasicSecureTextField", "Foundation-level password field (masked input)") {
-			Box(
-				modifier = Modifier
-					.background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp))
-					.padding(10.dp),
-			) {
-				BasicSecureTextField(
-					state = rememberTextFieldState(),
-					textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
-				)
-			}
 		}
 
 		Section("SelectionContainer / DisableSelection", "Drag-select the first and last lines; the middle is opted out") {

@@ -30,8 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 import kotlinx.coroutines.launch
 
 // Material3 — the search-bar family (state-based + docked + app-bar-integrated).
@@ -50,7 +49,7 @@ internal fun M3SearchScreen() {
 					searchBarState = vState,
 					onSearch = { vScope.launch { vState.animateToCollapsed() } },
 					placeholder = { Text("Search the docs…") },
-					leadingIcon = { MaterialSymbolsOutlined(MaterialSymbols.Search) },
+					leadingIcon = { DemoIcon(DemoIcon.Search) },
 				)
 			}
 			SearchBar(state = vState, inputField = vInput)
@@ -145,7 +144,7 @@ internal fun M3SearchScreen() {
 					)
 				},
 				navigationIcon = {
-					IconButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Menu) }
+					IconButton(onClick = {}) { DemoIcon(DemoIcon.Menu) }
 				},
 			)
 		}

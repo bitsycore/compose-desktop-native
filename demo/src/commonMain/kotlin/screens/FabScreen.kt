@@ -16,8 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 // Material3 — FloatingActionButton family, IconButton variants, elevated/tonal buttons.
 @Composable
@@ -34,13 +33,13 @@ internal fun FabScreen() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				FloatingActionButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Add, size = 24.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+					DemoIcon(DemoIcon.Add, size = 24.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
 				}
 				SmallFloatingActionButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Edit, size = 20.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+					DemoIcon(DemoIcon.Edit, size = 20.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
 				}
 				ExtendedFloatingActionButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Add, size = 20.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+					DemoIcon(DemoIcon.Add, size = 20.dp, tint = MaterialTheme.colorScheme.onPrimaryContainer)
 					Text("  Compose", color = MaterialTheme.colorScheme.onPrimaryContainer)
 				}
 			}
@@ -52,13 +51,13 @@ internal fun FabScreen() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				IconButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Favorite, size = 22.dp, tint = MaterialTheme.colorScheme.onSurface)
+					DemoIcon(DemoIcon.Favorite, size = 22.dp, tint = MaterialTheme.colorScheme.onSurface)
 				}
 				FilledIconButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Star, size = 22.dp, tint = MaterialTheme.colorScheme.onPrimary)
+					DemoIcon(DemoIcon.Star, size = 22.dp, tint = MaterialTheme.colorScheme.onPrimary)
 				}
 				OutlinedIconButton(onClick = {}) {
-					MaterialSymbolsOutlined(MaterialSymbols.Settings, size = 22.dp, tint = MaterialTheme.colorScheme.onSurface)
+					DemoIcon(DemoIcon.Settings, size = 22.dp, tint = MaterialTheme.colorScheme.onSurface)
 				}
 			}
 		}

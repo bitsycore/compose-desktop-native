@@ -10,9 +10,11 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
-import com.compose.desktop.native.res.*
 import androidx.compose.ui.unit.*
-import composeresources.generated.*
+import demo.shim.DemoDrawable
+import demo.shim.DemoFile
+import demo.shim.demoPainter
+import demo.shim.demoReadBytes
 
 // ==================
 // MARK: Images / Resources screen
@@ -33,10 +35,10 @@ internal fun ImagesScreen() {
                 "(SDL3_image on Windows; Skia on macOS/Linux). SVG + Android XML are rasterised.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Top) {
-                LabeledImage("PNG · alpha", Res.drawable.compose_logo)
-                LabeledImage("JPG", Res.drawable.photo)
-                LabeledImage("SVG", Res.drawable.star)
-                LabeledImage("Android XML", Res.drawable.heart)
+                LabeledImage("PNG · alpha", demoPainter(DemoDrawable.ComposeLogo))
+                LabeledImage("JPG", demoPainter(DemoDrawable.Photo))
+                LabeledImage("SVG", demoPainter(DemoDrawable.Star))
+                LabeledImage("Android XML", demoPainter(DemoDrawable.Heart))
             }
         }
 
@@ -52,7 +54,7 @@ internal fun ImagesScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 for (vA in listOf(1f, 0.6f, 0.3f)) {
                     Image(
-                        painter = Res.drawable.star,
+                        painter = demoPainter(DemoDrawable.Star),
                         contentDescription = "star at alpha $vA",
                         modifier = Modifier.size(48.dp),
                         alpha = vA,
@@ -61,8 +63,8 @@ internal fun ImagesScreen() {
             }
         }
 
-        Section("Raw bytes", "Res.readBytes(Res.files.notice) — no decoding, just the file") {
-            val vText = remember { Res.readBytes(Res.files.notice)?.decodeToString() ?: "(resource missing)" }
+        Section("Raw bytes", "demoReadBytes(DemoFile.Notice) — no decoding, just the file") {
+            val vText = remember { demoReadBytes(DemoFile.Notice)?.decodeToString() ?: "(resource missing)" }
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = MaterialTheme.colorScheme.background,
@@ -116,7 +118,7 @@ private fun ScaledImage(label: String, scale: ContentScale) {
                 .clip(RoundedCornerShape(6.dp)),
         ) {
             Image(
-                painter = Res.drawable.compose_logo,
+                painter = demoPainter(DemoDrawable.ComposeLogo),
                 contentDescription = label,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = scale,

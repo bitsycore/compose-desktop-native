@@ -1,5 +1,3 @@
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -10,18 +8,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.compose.desktop.native.graphics.blend
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.desktop.native.Window
 import com.compose.desktop.native.nativeComposeApp
 import com.compose.desktop.native.nativeComposeWindow
-import demo.DropdownMenu
-import demo.DropdownMenuItem
-import demo.menuAnchor
-import demo.rememberMenuAnchor
+import demo.registry.allCategories
+import demo.shell.App
 import screens.*
 import utils.encodeBmpBgra32
 import utils.parseArgs
@@ -135,9 +128,10 @@ fun main(args: Array<String>) {
         // still call .install() explicitly.
         MaterialTheme(colorScheme = darkColorScheme()) {
             if (vCli.screen != null) {
-                val vMatch = AllScreens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
+                val vAllScreens = allCategories().flatMap { it.screens }
+                val vMatch = vAllScreens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
                 if (vMatch == null) {
-                    println("Unknown --screen='${vCli.screen}'. Available: ${AllScreens.joinToString { it.name }}")
+                    println("Unknown --screen='${vCli.screen}'. Available: ${vAllScreens.joinToString { it.name }}")
                     Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
                 } else {
                     // Single screen, no sidebar — SAME wrapper as the App's
@@ -611,252 +605,3 @@ private fun runScrollTest() {
     }
 }
 
-// ==================
-// MARK: Screen registry
-// ==================
-
-private data class Screen(val name: String, val content: @Composable () -> Unit)
-
-/* The top-level buckets the sidebar dropdown switches between.
-   - Foundation: base Compose Multiplatform ported onto SDL3 — androidx.compose
-     .ui / .foundation / .animation / runtime. These prove the native engine
-     (layout, draw, input, text, state, animation) works from the ground up.
-   - Material3: the vendored external library (~99.9% copied verbatim from
-     upstream). These prove that a real component library builds on top of the
-     re-implemented ui/foundation layers unchanged.
-   - Native: NOT androidx — the project's own SDL / platform / desktop layer
-     (com.compose.desktop.native.*): the window handle, OS clipboard, coroutine
-     dispatchers on the SDL main loop, and desktop-only composite widgets. */
-private enum class Category(val label: String) {
-    Foundation("Core"),
-    Material3("Material 3"),
-    Native("Native · Desktop"),
-}
-
-// Base Compose (ui / foundation / animation / runtime) — the native engine.
-private val FoundationScreens: List<Screen> = listOf(
-    Screen("Text")              { TextScreen() },
-    Screen("AnnotatedString")   { AnnotatedStringScreen() },
-    Screen("Layout")            { LayoutScreen() },
-    Screen("CustomLayout")      { CustomLayoutScreen() },
-    Screen("Modifiers")         { ModifiersScreen() },
-    Screen("ModShortcuts")      { ModifierShortcutsScreen() },
-    Screen("Shapes")            { ShapesScreen() },
-    Screen("Path")              { PathScreen() },
-    Screen("Canvas")            { CanvasScreen() },
-    Screen("GraphicsLayer")     { GraphicsLayerScreen() },
-    Screen("Shadows")           { ShadowScreen() },
-    Screen("Colors")            { ColorsScreen() },
-    Screen("Brushes")           { BrushScreen() },
-    Screen("Images")            { ImagesScreen() },
-    Screen("Scroll")            { ScrollScreen() },
-    Screen("LazyColumn")        { LazyColumnScreen() },
-    Screen("LazyGrid")          { LazyGridScreen() },
-    Screen("LazyExtra")         { LazyExtraScreen() },
-    Screen("Gestures")          { GestureScreen() },
-    Screen("Interaction")       { InteractionScreen() },
-    Screen("InteractionSource") { InteractionSourceScreen() },
-    Screen("FocusRequester")    { FocusRequesterScreen() },
-    Screen("Remember")          { StateScreen() },
-    Screen("Counter")           { CounterScreen() },
-    Screen("Recomposition")     { RecompositionScreen() },
-    Screen("Animation")         { AnimationScreen() },
-    Screen("Pager")             { PagerScreen() },
-    Screen("GridsExtra")        { GridsExtraScreen() },
-    Screen("FlowLayout")        { FlowLayoutScreen() },
-    Screen("BasicText")         { FoundationTextScreen() },
-    Screen("FoundationExtra")   { FoundationExtraScreen() },
-)
-
-// Vendored material3 component library on top of the native ui/foundation.
-private val Material3Screens: List<Screen> = listOf(
-    Screen("Buttons")           { ButtonsScreen() },
-    Screen("Fab")               { FabScreen() },
-    Screen("TextField")         { TextFieldScreen() },
-    Screen("Widgets")           { WidgetsScreen() },
-    Screen("Cards")             { CardsScreen() },
-    Screen("Chips")             { ChipsScreen() },
-    Screen("Navigation")        { NavigationScreen() },
-    Screen("Lists")             { ListItemsScreen() },
-    Screen("Icons")             { IconsScreen() },
-    Screen("Dialogs")           { DialogsScreen() },
-    Screen("AppBars")           { M3AppBarsScreen() },
-    Screen("Drawers")           { M3DrawersScreen() },
-    Screen("NavRails")          { M3RailsScreen() },
-    Screen("FabExtra")          { M3FabExtraScreen() },
-    Screen("ButtonsExtra")      { M3ButtonsExtraScreen() },
-    Screen("Sheets")            { M3SheetsScreen() },
-    Screen("Search")            { M3SearchScreen() },
-    Screen("Tabs")              { M3TabsScreen() },
-    Screen("Pickers")           { M3PickersScreen() },
-    Screen("Carousel")          { M3CarouselScreen() },
-    Screen("M3Misc")            { M3MiscScreen() },
-)
-
-// NOT androidx — the project's SDL / platform / desktop layer.
-private val NativeScreens: List<Screen> = listOf(
-    Screen("Window")            { WindowScreen() },
-    Screen("Clipboard")         { ClipboardScreen() },
-    Screen("Dispatchers")       { DispatchersScreen() },
-    Screen("Desktop")           { DesktopWidgetsScreen() },
-)
-
-private fun screensFor(category: Category): List<Screen> = when (category) {
-    Category.Foundation -> FoundationScreens
-    Category.Material3 -> Material3Screens
-    Category.Native -> NativeScreens
-}
-
-// Flat list for the `--screen=<name>` CLI lookup (names are unique across all).
-private val AllScreens: List<Screen> = FoundationScreens + Material3Screens + NativeScreens
-
-// ==================
-// MARK: App shell — sidebar + content
-// ==================
-
-@Composable
-fun App() {
-    var category by remember { mutableStateOf(Category.Foundation) }
-    var current by remember { mutableStateOf(FoundationScreens[0]) }
-    val vScreens = screensFor(category)
-    val vSidebarBg = MaterialTheme.colorScheme.surface.blend(MaterialTheme.colorScheme.onSurface, 0.02f)
-
-    val vSidebarScroll = rememberScrollState()
-    val vContentScroll = rememberScrollState()
-
-    Row(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-    ) {
-        // Sidebar (vertically scrollable — try resizing the window short)
-        Column(
-            modifier = Modifier
-                .width(190.dp)
-                .fillMaxHeight()
-                .background(vSidebarBg)
-                .verticalScroll(vSidebarScroll)
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = "ComposeNativeSDL3",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp).fillMaxWidth(),
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Dropdown: switch the whole nav list between Foundation and Material3.
-            CategorySelector(
-                category = category,
-                onSelect = { picked ->
-                    if (picked != category) {
-                        category = picked
-                        current = screensFor(picked).first()
-                    }
-                },
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            for (screen in vScreens) {
-                NavItem(
-                    label = screen.name,
-                    selected = screen.name == current.name,
-                    onClick = { current = screen },
-                )
-            }
-        }
-
-        // Content (vertically scrollable — long screens fit a short window)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(vContentScroll)
-                .padding(24.dp),
-            contentAlignment = Alignment.TopStart,
-        ) {
-            current.content()
-        }
-    }
-}
-
-/* The category dropdown at the top of the sidebar. A styled trigger row (current
-   category + chevron) opens the project DropdownMenu anchored to it. */
-@Composable
-private fun CategorySelector(category: Category, onSelect: (Category) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val vAnchor = rememberMenuAnchor()
-    val vTriggerBg = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
-
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(vAnchor)
-                .background(vTriggerBg, RoundedCornerShape(8.dp))
-                .clickable { expanded = !expanded }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column {
-                Text(
-                    text = "CATEGORY",
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                    fontSize = 9.sp,
-                )
-                Text(
-                    text = category.label,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 13.sp,
-                )
-            }
-            MaterialSymbolsOutlined(
-                if (expanded) MaterialSymbols.ExpandLess else MaterialSymbols.ExpandMore,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                size = 20.dp,
-            )
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            anchor = vAnchor,
-            offsetY = 4.dp,
-            minWidth = 174.dp,
-        ) {
-            for (vCategory in Category.values()) {
-                DropdownMenuItem(onClick = { onSelect(vCategory); expanded = false }) {
-                    Text(
-                        text = vCategory.label,
-                        color = if (vCategory == category) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun NavItem(label: String, selected: Boolean, onClick: () -> Unit) {
-    val hoveredSrc = remember { MutableInteractionSource() }
-    val hovered by hoveredSrc.collectIsHoveredAsState()
-    val vBg = when {
-        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
-        hovered  -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
-        else     -> Color.Transparent
-    }
-    val vFg = if (selected) MaterialTheme.colorScheme.primary
-              else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f)
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp)
-            .background(vBg, RoundedCornerShape(8.dp))
-            .hoverable(hoveredSrc)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(text = label, color = vFg, fontSize = 14.sp)
-    }
-}

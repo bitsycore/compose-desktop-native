@@ -9,14 +9,12 @@ import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import com.compose.desktop.native.modifier.rememberMutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import com.compose.desktop.native.modifier.pressable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.shape.RoundedCornerShape
+import demo.shim.demoPressable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -54,7 +53,7 @@ internal fun InteractionSourceScreen() {
 		// ============
 		//  Single button with manual InteractionSource wiring
 		Section("Press + Hover visual feedback", "Background transitions between idle / hovered / pressed.") {
-			val vInter = rememberMutableInteractionSource()
+			val vInter = remember { MutableInteractionSource() }
 			val vPress by vInter.collectIsPressedAsState()
 			val vHover by vInter.collectIsHoveredAsState()
 			val vBg by animateColorAsState(when {
@@ -71,7 +70,7 @@ internal fun InteractionSourceScreen() {
 						.size(120.dp, 48.dp)
 						.background(vBg, RoundedCornerShape(8.dp))
 						.hoverable(vInter)
-						.pressable { vIn ->
+						.demoPressable { vIn ->
 							vInter.tryEmit(if (vIn) vPressKey else PressInteraction.Release(vPressKey))
 						}
 						.clickable {},
@@ -95,7 +94,7 @@ internal fun InteractionSourceScreen() {
 			"All three buttons emit into the same InteractionSource. The source's isHovered " +
 				"stays true while ANY of them is hovered (Enter counts are tracked).",
 		) {
-			val vInter = rememberMutableInteractionSource()
+			val vInter = remember { MutableInteractionSource() }
 			val vHover by vInter.collectIsHoveredAsState()
 			Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 				for (vI in 1..3) {

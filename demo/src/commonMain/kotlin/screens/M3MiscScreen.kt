@@ -53,8 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 // Material3 — the remaining odds and ends: Scaffold, Snackbar, secure fields,
 // exposed dropdown, segmented list, sliders extra, expressive theme.
@@ -68,7 +67,7 @@ internal fun M3MiscScreen() {
 				Scaffold(
 					topBar = { TopAppBar(title = { Text("Scaffold demo") }) },
 					floatingActionButton = {
-						FloatingActionButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Add) }
+						FloatingActionButton(onClick = {}) { DemoIcon(DemoIcon.Add) }
 					},
 				) { vPadding ->
 					Box(modifier = Modifier.fillMaxSize().padding(vPadding), contentAlignment = Alignment.Center) {

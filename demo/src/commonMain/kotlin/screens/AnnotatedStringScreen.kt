@@ -1,6 +1,4 @@
 package screens
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import com.compose.desktop.native.modifier.rememberMutableInteractionSource
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

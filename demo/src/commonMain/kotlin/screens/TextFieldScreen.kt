@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package screens
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 
 import androidx.compose.runtime.*
 import androidx.compose.foundation.*
@@ -112,6 +115,21 @@ internal fun TextFieldScreen() {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
+        }
+
+        Section("SecureTextField / OutlinedSecureTextField", "Material 3 masked password fields (TextFieldState based)") {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SecureTextField(
+                    state = rememberTextFieldState(),
+                    label = { Text("Password") },
+                    modifier = Modifier.width(320.dp),
+                )
+                OutlinedSecureTextField(
+                    state = rememberTextFieldState(),
+                    label = { Text("Password (outlined)") },
+                    modifier = Modifier.width(320.dp),
+                )
             }
         }
     }

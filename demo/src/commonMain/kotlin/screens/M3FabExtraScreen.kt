@@ -30,8 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 // Material3 — FAB size/extended variants, the FAB menu, and floating toolbars.
 @Composable
@@ -41,8 +40,8 @@ internal fun M3FabExtraScreen() {
 
 		Section("Medium / Large FAB", "Size steps above the standard FAB") {
 			Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-				MediumFloatingActionButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Add) }
-				LargeFloatingActionButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Add, size = 32.dp) }
+				MediumFloatingActionButton(onClick = {}) { DemoIcon(DemoIcon.Add) }
+				LargeFloatingActionButton(onClick = {}) { DemoIcon(DemoIcon.Add, size = 32.dp) }
 			}
 		}
 
@@ -64,19 +63,19 @@ internal fun M3FabExtraScreen() {
 							checked = vExpanded,
 							onCheckedChange = { vExpanded = it },
 						) {
-							MaterialSymbolsOutlined(if (vExpanded) MaterialSymbols.Close else MaterialSymbols.Add)
+							DemoIcon(if (vExpanded) DemoIcon.Close else DemoIcon.Add)
 						}
 					},
 				) {
 					FloatingActionButtonMenuItem(
 						onClick = { vExpanded = false },
 						text = { Text("Compose") },
-						icon = { MaterialSymbolsOutlined(MaterialSymbols.Edit) },
+						icon = { DemoIcon(DemoIcon.Edit) },
 					)
 					FloatingActionButtonMenuItem(
 						onClick = { vExpanded = false },
 						text = { Text("Photo") },
-						icon = { MaterialSymbolsOutlined(MaterialSymbols.Image) },
+						icon = { DemoIcon(DemoIcon.Image) },
 					)
 				}
 			}
@@ -86,13 +85,13 @@ internal fun M3FabExtraScreen() {
 			var vExpanded by remember { mutableStateOf(true) }
 			Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Top) {
 				HorizontalFloatingToolbar(expanded = vExpanded) {
-					IconButton(onClick = { vExpanded = !vExpanded }) { MaterialSymbolsOutlined(MaterialSymbols.Edit) }
-					IconButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Delete) }
-					IconButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Share) }
+					IconButton(onClick = { vExpanded = !vExpanded }) { DemoIcon(DemoIcon.Edit) }
+					IconButton(onClick = {}) { DemoIcon(DemoIcon.Delete) }
+					IconButton(onClick = {}) { DemoIcon(DemoIcon.Share) }
 				}
 				VerticalFloatingToolbar(expanded = vExpanded) {
-					IconButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Add) }
-					IconButton(onClick = {}) { MaterialSymbolsOutlined(MaterialSymbols.Check) }
+					IconButton(onClick = {}) { DemoIcon(DemoIcon.Add) }
+					IconButton(onClick = {}) { DemoIcon(DemoIcon.Check) }
 				}
 			}
 		}

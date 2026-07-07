@@ -18,8 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 private val TabLabels = listOf("Overview", "Details", "Settings")
 private val ManyTabs = listOf("One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight")
@@ -70,14 +69,14 @@ internal fun M3TabsScreen() {
 			var vSel by remember { mutableStateOf(0) }
 			PrimaryTabRow(selectedTabIndex = vSel) {
 				listOf(
-					"Home" to MaterialSymbols.Home,
-					"Search" to MaterialSymbols.Search,
+					"Home" to DemoIcon.Home,
+					"Search" to DemoIcon.Search,
 				).forEachIndexed { vIdx, (vLabel, vGlyph) ->
 					LeadingIconTab(
 						selected = vSel == vIdx,
 						onClick = { vSel = vIdx },
 						text = { Text(vLabel) },
-						icon = { MaterialSymbolsOutlined(vGlyph, size = 18.dp) },
+						icon = { DemoIcon(vGlyph, size = 18.dp) },
 					)
 				}
 			}

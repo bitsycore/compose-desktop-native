@@ -23,14 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 
 private val NavItems = listOf(
-	"Home" to MaterialSymbols.Home,
-	"Search" to MaterialSymbols.Search,
-	"Profile" to MaterialSymbols.Person,
-	"Settings" to MaterialSymbols.Settings,
+	"Home" to DemoIcon.Home,
+	"Search" to DemoIcon.Search,
+	"Profile" to DemoIcon.Person,
+	"Settings" to DemoIcon.Settings,
 )
 
 // Material3 — TabRow + Tab, NavigationBar, NavigationRail.
@@ -64,7 +63,7 @@ internal fun NavigationScreen() {
 						selected = vSel == vIndex,
 						onClick = { vSel = vIndex },
 						icon = {
-							MaterialSymbolsOutlined(
+							DemoIcon(
 								vItem.second,
 								size = 24.dp,
 								tint = if (vSel == vIndex) MaterialTheme.colorScheme.onSecondaryContainer
@@ -85,7 +84,7 @@ internal fun NavigationScreen() {
 						selected = vSel == vIndex,
 						onClick = { vSel = vIndex },
 						icon = {
-							MaterialSymbolsOutlined(
+							DemoIcon(
 								vItem.second,
 								size = 24.dp,
 								tint = if (vSel == vIndex) MaterialTheme.colorScheme.onSecondaryContainer

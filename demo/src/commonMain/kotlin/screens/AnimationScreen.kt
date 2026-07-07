@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -110,7 +111,10 @@ internal fun AnimationScreen() {
 			) {
 				Box(
 					modifier = Modifier
-						.padding(start = vOffset.dp)
+						// offset (not padding): a bouncy spring overshoots past its
+						// target, so vOffset dips below 0 on the return — padding rejects
+						// negatives ("Padding must be non-negative"), offset shows the bounce.
+						.offset(x = vOffset.dp)
 						.size(40.dp)
 						.background(vSecondary, RoundedCornerShape(8.dp)),
 				) {}

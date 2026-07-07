@@ -28,14 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.compose.desktop.native.icons.MaterialSymbols
-import com.compose.desktop.native.icons.material.symbols.outlined.MaterialSymbolsOutlined
+import demo.shim.DemoIcon
 import kotlinx.coroutines.launch
 
 private val RailItems = listOf(
-	"Home" to MaterialSymbols.Home,
-	"Search" to MaterialSymbols.Search,
-	"Settings" to MaterialSymbols.Settings,
+	"Home" to DemoIcon.Home,
+	"Search" to DemoIcon.Search,
+	"Settings" to DemoIcon.Settings,
 )
 
 // Material3 — WideNavigationRail / ModalWideNavigationRail / ShortNavigationBar.
@@ -55,7 +54,7 @@ internal fun M3RailsScreen() {
 							WideNavigationRailItem(
 								selected = vSelected == vIdx,
 								onClick = { vSelected = vIdx },
-								icon = { MaterialSymbolsOutlined(vGlyph) },
+								icon = { DemoIcon(vGlyph) },
 								label = { Text(vLabel) },
 								railExpanded = vState.targetValue == WideNavigationRailValue.Expanded,
 							)
@@ -79,7 +78,7 @@ internal fun M3RailsScreen() {
 							WideNavigationRailItem(
 								selected = vSelected == vIdx,
 								onClick = { vSelected = vIdx },
-								icon = { MaterialSymbolsOutlined(vGlyph) },
+								icon = { DemoIcon(vGlyph) },
 								label = { Text(vLabel) },
 								railExpanded = vState.targetValue == WideNavigationRailValue.Expanded,
 							)
@@ -99,7 +98,7 @@ internal fun M3RailsScreen() {
 					ShortNavigationBarItem(
 						selected = vSelected == vIdx,
 						onClick = { vSelected = vIdx },
-						icon = { MaterialSymbolsOutlined(vGlyph) },
+						icon = { DemoIcon(vGlyph) },
 						label = { Text(vLabel) },
 					)
 				}
