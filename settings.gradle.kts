@@ -46,3 +46,9 @@ project(":material-symbols").projectDir = file("compose/material-symbols")
 // as an app-facing command, distinct from library modules.
 include(":demo")
 include(":apidemo")
+
+// The JVM comparison app: a Compose Desktop (JVM) target that compiles the SAME
+// shared screens as :demo (via kotlin.srcDir on demo/src/commonMain) but against
+// UPSTREAM org.jetbrains.compose instead of this project's native reimplementation.
+// Running both side-by-side is how we verify the commonization holds.
+include(":demojvm")
