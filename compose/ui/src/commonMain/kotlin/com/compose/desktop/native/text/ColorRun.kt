@@ -4,9 +4,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import kotlin.math.roundToInt
 
 // ==================
 // MARK: Per-line style runs (renderer helper)
@@ -135,6 +138,86 @@ fun lineColorRuns(
 		i = j
 	}
 	return vRuns
+}
+
+// ==================
+// MARK: Style-aware metrics helpers
+// ==================
+// Shared by BOTH the renderers (paint-time advances) and SdlParagraph
+// (layout-time widths/heights) so painted glyph runs land exactly inside the
+// measured box — per-run fontSize / fontWeight change metrics, not just paint.
+
+/* Resolves a run's SpanStyle.fontSize to pixels: Em scales the paragraph's
+   base size, Sp resolves through the density the base size was resolved with,
+   Unspecified inherits the base. */
+fun resolveRunPx(inRun: ColorRun, inBasePx: Int, inDensity: Float): Int = when (inRun.fontSize.type) {
+	TextUnitType.Em -> (inBasePx * inRun.fontSize.value).roundToInt().coerceAtLeast(1)
+	TextUnitType.Sp -> (inRun.fontSize.value * inDensity).roundToInt().coerceAtLeast(1)
+	else            -> inBasePx
+}
+
+/* A run's font axes: its own weight when set (400 = "no run weight"), else
+   the paragraph's base axes. */
+fun runVariations(
+	inRun: ColorRun,
+	inBaseVariations: List<FontVariation.Setting>?,
+): List<FontVariation.Setting>? =
+	if (inRun.weight != 400) listOf(FontVariation.weight(inRun.weight)) else inBaseVariations
+
+/* Whether any span carries a metric-affecting style (size / weight) — the
+   gate for the styled measurement paths, so plain/colour-only text keeps the
+   cheap single-measure route. */
+fun spansAffectMetrics(inSpans: List<Range<SpanStyle>>?): Boolean =
+	inSpans != null && inSpans.any {
+		it.item.fontSize != TextUnit.Unspecified || it.item.fontWeight != null
+	}
+
+/* Width of a text slice, span-aware: sums each style run's advance at its
+   resolved size/weight through [inMeasurer]. `inGlobalStart` maps the slice
+   into the spans' index space. */
+fun styledSliceWidth(
+	inSlice: String,
+	inGlobalStart: Int,
+	inSpans: List<Range<SpanStyle>>,
+	inBasePx: Int,
+	inDensity: Float,
+	inMeasurer: TextMeasurer,
+	inFontFamily: String?,
+	inBaseVariations: List<FontVariation.Setting>?,
+): Float {
+	if (inSlice.isEmpty()) return 0f
+	var vW = 0f
+	for (vRun in lineColorRuns(inSlice, inGlobalStart, inSpans, Color.Unspecified)) {
+		val vPx = resolveRunPx(vRun, inBasePx, inDensity)
+		val vVars = runVariations(vRun, inBaseVariations)
+		vW += inMeasurer.measure(
+			inSlice.substring(vRun.start, vRun.end), vPx, Int.MAX_VALUE, inFontFamily, vVars,
+		).width
+	}
+	return vW
+}
+
+/* Tallest run cell height on a line — the line's box height when spans carry
+   their own sizes; the base cell height when they don't (or the line is empty). */
+fun styledLineCellHeight(
+	inLine: String,
+	inGlobalStart: Int,
+	inSpans: List<Range<SpanStyle>>,
+	inBasePx: Int,
+	inDensity: Float,
+	inMeasurer: TextMeasurer,
+	inFontFamily: String?,
+	inBaseVariations: List<FontVariation.Setting>?,
+): Float {
+	var vH = inMeasurer.lineHeight(inBasePx, inFontFamily, inBaseVariations)
+	for (vRun in lineColorRuns(inLine, inGlobalStart, inSpans, Color.Unspecified)) {
+		val vPx = resolveRunPx(vRun, inBasePx, inDensity)
+		if (vPx != inBasePx) {
+			val vRunH = inMeasurer.lineHeight(vPx, inFontFamily, runVariations(vRun, inBaseVariations))
+			if (vRunH > vH) vH = vRunH
+		}
+	}
+	return vH
 }
 
 /* Index of the first span whose end is past inLineStart — i.e. the first that

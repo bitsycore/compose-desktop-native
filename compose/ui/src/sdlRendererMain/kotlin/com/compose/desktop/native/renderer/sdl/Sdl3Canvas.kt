@@ -738,10 +738,21 @@ internal class Sdl3Canvas(
 		// right edge instead of wrapping when the sidebar was resized narrower.
 		val vWrapWidth = if (inSoftWrap && inBoxWidth > 0f) inBoxWidth.toInt() else Int.MAX_VALUE
 		val vWrapped = vRenderer.wrap(inText, inFontSizePx, vWrapWidth, inFontFamily, inFontVariations)
-		val vLineH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
+		val vBaseLineH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
+		// Per-run fontSize spans make a line's box the TALLEST run cell on it —
+		// same styledLineCellHeight the paragraph measured with, so paint stacks
+		// lines exactly where layout put them.
+		val vMetricSpans = com.compose.desktop.native.text.spansAffectMetrics(inSpans)
 
+		var vLineY = inY
 		for ((vIdx, vLine) in vWrapped.lines.withIndex()) {
-			val vLineY = inY + vIdx * vLineH
+			val vLineH =
+				if (vMetricSpans && inSpans != null) {
+					com.compose.desktop.native.text.styledLineCellHeight(
+						vLine, vWrapped.lineStarts.getOrElse(vIdx) { 0 }, inSpans,
+						inFontSizePx, vTr.dpr, vRenderer, inFontFamily, inFontVariations,
+					)
+				} else vBaseLineH
 			// Cull lines that would fall entirely below the box (softWrap keeps the
 			// natural line count; the box just clips at draw time).
 			if (vLineY >= inY + inBoxHeight) break
@@ -765,6 +776,7 @@ internal class Sdl3Canvas(
 				inUnderline = vUnderline,
 				inLineThrough = vLineThrough,
 			)
+			vLineY += vLineH
 		}
 	}
 

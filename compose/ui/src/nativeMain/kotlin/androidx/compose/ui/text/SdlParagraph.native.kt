@@ -20,6 +20,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isUnspecified
 import com.compose.desktop.native.text.NativeTextCanvas
 import com.compose.desktop.native.text.currentTextMeasurer
+import com.compose.desktop.native.text.resolveRunPx
+import com.compose.desktop.native.text.runVariations
+import com.compose.desktop.native.text.spansAffectMetrics
+import com.compose.desktop.native.text.styledLineCellHeight
+import com.compose.desktop.native.text.styledSliceWidth
 import kotlin.math.max
 
 // ==================
@@ -42,13 +47,12 @@ internal class SdlParagraph(
 	private val style: TextStyle,
 	widthConstraint: Float,
 	private val maxLines: Int,
-	density: Float = 1f,
-	// AnnotatedString span ranges (colour, weight, family, size). Ignored for
-	// measurement — the wrap path measures in the base style's font metrics — but
-	// forwarded to the native paint path so each glyph run picks up its span's
-	// colour / weight / italic / family / fontSize when drawn. Weight + italic
-	// currently only reach the Skia renderer path (SkiaTextRenderer.drawText),
-	// which is where the multi-run colour + font pipeline is already wired.
+	private val density: Float = 1f,
+	// AnnotatedString span ranges (colour, weight, family, size). Colour-only
+	// spans stay measurement-free; size/weight spans switch the width/height/
+	// advance paths to the styled helpers (styledSliceWidth / cell height) so
+	// the layout box matches the styled glyphs the paint path draws. WRAPPING
+	// break points still come from the base style (known simplification).
 	private val spanStyles: List<AnnotatedString.Range<SpanStyle>> = emptyList(),
 ) : Paragraph {
 
@@ -71,21 +75,50 @@ internal class SdlParagraph(
 	private val lineStarts: IntArray = wrapped.lineStarts
 	private val lh: Float = currentTextMeasurer.lineHeight(fontPx, family, variations).coerceAtLeast(1f)
 
+	// True when a span changes glyph METRICS (fontSize / fontWeight) — gates
+	// the styled measurement paths so plain/colour-only text keeps the cheap
+	// single-measure route.
+	private val metricSpans: Boolean = spansAffectMetrics(spanStyles)
+
 	override val lineCount: Int = minOf(allLines.size, maxLines).coerceAtLeast(1)
 	override val didExceedMaxLines: Boolean = allLines.size > maxLines
 
 	private fun measureStr(inStr: String): Float =
 		currentTextMeasurer.measure(inStr, fontPx, Int.MAX_VALUE, family, variations).width.toFloat()
 
+	/* Width of a slice of the ORIGINAL text starting at inGlobalStart — styled
+	   (per-run size/weight) when metric spans exist, base otherwise. */
+	private fun measureSlice(inSlice: String, inGlobalStart: Int): Float =
+		if (metricSpans) {
+			styledSliceWidth(inSlice, inGlobalStart, spanStyles, fontPx, density, currentTextMeasurer, family, variations)
+		} else measureStr(inSlice)
+
 	// Lazy — measuring every wrapped line up-front taxed paragraphs that are
 	// only ever painted (draw doesn't read per-line widths; alignment and
 	// selection do, on demand).
-	private val lineWidths: FloatArray by lazy { FloatArray(lineCount) { measureStr(allLines[it]) } }
+	private val lineWidths: FloatArray by lazy {
+		FloatArray(lineCount) { measureSlice(allLines[it], lineStarts[it]) }
+	}
+
+	// Per-line box heights: base line height unless a size span makes a line's
+	// tallest run cell bigger. lineTops[i] = cumulative top; last entry = height.
+	private val lineHeights: FloatArray by lazy {
+		if (!metricSpans) FloatArray(lineCount) { lh }
+		else FloatArray(lineCount) {
+			styledLineCellHeight(allLines[it], lineStarts[it], spanStyles, fontPx, density, currentTextMeasurer, family, variations)
+				.coerceAtLeast(1f)
+		}
+	}
+	private val lineTops: FloatArray by lazy {
+		val vTops = FloatArray(lineCount + 1)
+		for (i in 0 until lineCount) vTops[i + 1] = vTops[i] + lineHeights[i]
+		vTops
+	}
 
 	override val width: Float by lazy {
 		if (maxWidthPx == Int.MAX_VALUE) (lineWidths.maxOrNull() ?: 0f) else widthConstraint
 	}
-	override val height: Float = lineCount * lh
+	override val height: Float by lazy { if (!metricSpans) lineCount * lh else lineTops[lineCount] }
 	// Widest single HARD-BREAK line — NOT the concatenated all-on-one-line width.
 	// Compose's Text(softWrap = false) reads this to decide the paragraph width
 	// (LayoutUtils.finalMaxWidth returns Constraints.Infinity when softWrap=false,
@@ -103,7 +136,7 @@ internal class SdlParagraph(
 			val vNl = text.indexOf('\n', vStart)
 			val vEnd = if (vNl < 0) text.length else vNl
 			val vLine = text.substring(vStart, vEnd)
-			val vW = if (vLine.isEmpty()) 0f else measureStr(vLine)
+			val vW = if (vLine.isEmpty()) 0f else measureSlice(vLine, vStart)
 			if (vW > vMax) vMax = vW
 			if (vNl < 0) break
 			vStart = vNl + 1
@@ -120,14 +153,15 @@ internal class SdlParagraph(
 			while (vI < vN && text[vI].isWhitespace()) vI++
 			val vStart = vI
 			while (vI < vN && !text[vI].isWhitespace()) vI++
-			if (vI > vStart) vMax = max(vMax, measureStr(text.substring(vStart, vI)))
+			if (vI > vStart) vMax = max(vMax, measureSlice(text.substring(vStart, vI), vStart))
 		}
 		vMax
 	}
 
-	private val ascent: Float = lh * 0.8f
-	override val firstBaseline: Float = ascent
-	override val lastBaseline: Float = (lineCount - 1) * lh + ascent
+	// Baseline ≈ 80% of the line's box — the same heuristic as before, now per
+	// line so a size-span line reports a baseline inside ITS taller box.
+	override val firstBaseline: Float by lazy { lineHeights[0] * 0.8f }
+	override val lastBaseline: Float by lazy { lineTops[lineCount - 1] + lineHeights[lineCount - 1] * 0.8f }
 
 	override val placeholderRects: List<Rect?> = emptyList()
 
@@ -136,10 +170,11 @@ internal class SdlParagraph(
 	override fun getLineLeft(lineIndex: Int): Float = 0f
 	override fun getLineRight(lineIndex: Int): Float = lineWidths.getOrElse(lineIndex) { 0f }
 	override fun getLineWidth(lineIndex: Int): Float = lineWidths.getOrElse(lineIndex) { 0f }
-	override fun getLineTop(lineIndex: Int): Float = lineIndex * lh
-	override fun getLineBottom(lineIndex: Int): Float = (lineIndex + 1) * lh
-	override fun getLineHeight(lineIndex: Int): Float = lh
-	override fun getLineBaseline(lineIndex: Int): Float = lineIndex * lh + ascent
+	override fun getLineTop(lineIndex: Int): Float = lineTops[lineIndex.coerceIn(0, lineCount)]
+	override fun getLineBottom(lineIndex: Int): Float = lineTops[(lineIndex + 1).coerceIn(0, lineCount)]
+	override fun getLineHeight(lineIndex: Int): Float = lineHeights.getOrElse(lineIndex) { lh }
+	override fun getLineBaseline(lineIndex: Int): Float =
+		getLineTop(lineIndex) + getLineHeight(lineIndex) * 0.8f
 	override fun getLineStart(lineIndex: Int): Int = lineStarts.getOrElse(lineIndex) { 0 }
 	override fun getLineEnd(lineIndex: Int, visibleEnd: Boolean): Int =
 		lineStarts.getOrElse(lineIndex) { 0 } + allLines.getOrElse(lineIndex) { "" }.length
@@ -153,8 +188,12 @@ internal class SdlParagraph(
 		return vLine
 	}
 
-	override fun getLineForVerticalPosition(vertical: Float): Int =
-		(vertical / lh).toInt().coerceIn(0, lineCount - 1)
+	override fun getLineForVerticalPosition(vertical: Float): Int {
+		if (!metricSpans) return (vertical / lh).toInt().coerceIn(0, lineCount - 1)
+		// Cumulative tops are monotonic — walk to the line containing `vertical`.
+		for (i in 0 until lineCount) if (vertical < lineTops[i + 1]) return i
+		return lineCount - 1
+	}
 
 	// ============
 	//  Offset <-> position
@@ -169,7 +208,27 @@ internal class SdlParagraph(
 		lineAdvances.getOrNull(inLine)?.let { if (it != null) return it }
 		val vLineStr = allLines.getOrElse(inLine) { "" }
 		val vArr = FloatArray(vLineStr.length + 1)
-		for (c in 1..vLineStr.length) vArr[c] = measureStr(vLineStr.substring(0, c))
+		if (!metricSpans) {
+			for (c in 1..vLineStr.length) vArr[c] = measureStr(vLineStr.substring(0, c))
+		} else {
+			// Styled prefixes: full runs before the column at their own size/
+			// weight, the partial run measured at ITS style — matches the paint
+			// path's per-run advances so the cursor/selection track the glyphs.
+			val vRuns = com.compose.desktop.native.text.lineColorRuns(
+				vLineStr, lineStarts.getOrElse(inLine) { 0 }, spanStyles, Color.Unspecified,
+			)
+			var vBase = 0f
+			for (vRun in vRuns) {
+				val vPx = resolveRunPx(vRun, fontPx, density)
+				val vVars = runVariations(vRun, variations)
+				for (c in vRun.start until vRun.end) {
+					vArr[c + 1] = vBase + currentTextMeasurer.measure(
+						vLineStr.substring(vRun.start, c + 1), vPx, Int.MAX_VALUE, family, vVars,
+					).width
+				}
+				vBase = vArr[vRun.end]
+			}
+		}
 		if (inLine in lineAdvances.indices) lineAdvances[inLine] = vArr
 		return vArr
 	}
@@ -182,7 +241,7 @@ internal class SdlParagraph(
 	}
 
 	override fun getOffsetForPosition(position: Offset): Int {
-		val vLine = (position.y / lh).toInt().coerceIn(0, lineCount - 1)
+		val vLine = getLineForVerticalPosition(position.y)
 		val vAdv = advancesFor(vLine)
 		// Advances are monotonic — binary-search the first edge >= x, then pick
 		// the nearer of it and its left neighbour (same "nearest left edge"

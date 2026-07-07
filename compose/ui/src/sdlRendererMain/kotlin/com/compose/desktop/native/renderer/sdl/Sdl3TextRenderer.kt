@@ -15,6 +15,8 @@ import androidx.compose.ui.text.AnnotatedString.Range
 import androidx.compose.ui.text.SpanStyle
 import com.compose.desktop.native.text.ColorRun
 import com.compose.desktop.native.text.lineColorRuns
+import com.compose.desktop.native.text.resolveRunPx
+import com.compose.desktop.native.text.runVariations
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import kotlinx.cinterop.*
@@ -51,8 +53,6 @@ import sdl3_ttf.TTF_StringToTag
 import sdl3.SDL_IOFromConstMem
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 
 // ==================
 // MARK: Sdl3TextRenderer (mingwX64 fallback)
@@ -100,6 +100,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     // Measurement results are divided back by DPR so layout still works
     // in logical points.
     private var fDpr: Float = 1f
+
+    // Exposed for Sdl3Canvas — Sp-valued span sizes resolve through the same
+    // density the paragraph resolved its base size with (see resolveRunPx).
+    internal val dpr: Float get() = fDpr
 
     fun setDpr(inDpr: Float) {
         if (inDpr == fDpr) return
@@ -427,19 +431,12 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 inBaseUnderline = inUnderline,
                 inBaseLineThrough = inLineThrough,
             )
-            // A run's own SpanStyle.fontWeight overrides the paragraph base weight;
-            // 400 means "no run weight" so it inherits the base (paragraph) axes.
+            // Shared resolution helpers (ColorRun.kt) — the SAME code SdlParagraph
+            // measures layout with, so painted runs land inside the measured box.
             fun runVars(inRun: ColorRun): List<androidx.compose.ui.text.font.FontVariation.Setting>? =
-                if (inRun.weight != 400) listOf(FontVariation.weight(inRun.weight)) else inFontVariations
+                runVariations(inRun, inFontVariations)
             fun runSeg(inRun: ColorRun): String = expandTabs(inText.substring(inRun.start, inRun.end))
-            // Per-run pixel size: SpanStyle.fontSize — Em scales the paragraph
-            // size, Sp resolves through the window DPR (the same density
-            // SdlParagraph resolved the base size with). Unspecified inherits.
-            fun runPx(inRun: ColorRun): Int = when (inRun.fontSize.type) {
-                TextUnitType.Em -> (inFontSize * inRun.fontSize.value).roundToInt().coerceAtLeast(1)
-                TextUnitType.Sp -> (inRun.fontSize.value * fDpr).roundToInt().coerceAtLeast(1)
-                else            -> inFontSize
-            }
+            fun runPx(inRun: ColorRun): Int = resolveRunPx(inRun, inFontSize, fDpr)
             fun runStyle(inRun: ColorRun): Int =
                 (if (inRun.italic) kStyleItalic else 0) or
                 (if (inRun.underline) kStyleUnderline else 0) or
@@ -454,12 +451,25 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 else             -> inX.toFloat()
             }
             fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
-            // Common baseline: centre the BASE font's cell in the line box (same
-            // as the non-span path), then sit every run's baseline on it. Without
-            // this, a bigger/smaller run would centre its own texture and float
-            // off the baseline.
-            val vBaseCellH = textMeasurer.lineHeight(inFontSize, inFontFamily, inFontVariations)
-            val vBaselineY = inY + (inBoxHeight - vBaseCellH) / 2f + fontAscent(inFontSize, inFontFamily, inFontVariations)
+            // Common baseline: centre the line's TALLEST run cell in the line box
+            // (the box the canvas passes IS that tall for mixed-size lines), then
+            // sit every run's baseline on it. Without this, a bigger/smaller run
+            // would centre its own texture and float off the baseline. For
+            // uniform lines this reduces to centring the base cell — identical
+            // to the non-span path.
+            var vMaxCellH = textMeasurer.lineHeight(inFontSize, inFontFamily, inFontVariations)
+            var vMaxAscent = fontAscent(inFontSize, inFontFamily, inFontVariations)
+            for (vRun in vRuns) {
+                val vPx = runPx(vRun)
+                if (vPx != inFontSize) {
+                    val vVars = runVars(vRun)
+                    val vCell = textMeasurer.lineHeight(vPx, inFontFamily, vVars)
+                    if (vCell > vMaxCellH) vMaxCellH = vCell
+                    val vAsc = fontAscent(vPx, inFontFamily, vVars)
+                    if (vAsc > vMaxAscent) vMaxAscent = vAsc
+                }
+            }
+            val vBaselineY = inY + (inBoxHeight - vMaxCellH) / 2f + vMaxAscent
             // Walk runs left to right, advancing by each run's styled advance so
             // a bold/resized run pushes the following runs over by the right amount.
             var vRunX = vPenX0
