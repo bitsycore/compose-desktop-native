@@ -480,8 +480,10 @@ internal class Sdl3Canvas(
 		val vOffsetY = inElevationPx * 0.4f
 		// Peak coverage at the shape edge; per-ring alpha so N stacked blends
 		// accumulate to it: 1-(1-a)^N = max  →  a = 1-(1-max)^(1/N).
+		// Ring count scales with the blur radius — large elevations need more
+		// rings or the quadratic spacing shows visible stepping.
 		val vMaxAlpha = 0.28f * inSpotColor.alpha
-		val vRings = 5
+		val vRings = (vBlur / 4f).toInt().coerceIn(5, 12)
 		val vRingAlpha = 1f - (1f - vMaxAlpha).pow(1f / vRings)
 		val vBrush = SolidColor(inSpotColor.copy(alpha = 1f))
 		val vScope = prep()

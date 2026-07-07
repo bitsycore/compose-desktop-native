@@ -645,6 +645,7 @@ private val FoundationScreens: List<Screen> = listOf(
     Screen("Path")              { PathScreen() },
     Screen("Canvas")            { CanvasScreen() },
     Screen("GraphicsLayer")     { GraphicsLayerScreen() },
+    Screen("Shadows")           { ShadowScreen() },
     Screen("Colors")            { ColorsScreen() },
     Screen("Brushes")           { BrushScreen() },
     Screen("Images")            { ImagesScreen() },
