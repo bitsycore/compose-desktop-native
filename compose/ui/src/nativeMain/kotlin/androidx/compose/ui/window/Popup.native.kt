@@ -5,15 +5,19 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import com.compose.desktop.native.layout.intOffset
 import com.compose.desktop.native.window.LocalPopupHost
 
 // ==================
@@ -180,9 +184,12 @@ fun Popup(
 	Popup(popupPositionProvider, onDismissRequest, properties, content)
 }
 
-/* Position-provider overload — resolves an offset from the provider (best-effort: the
-   anchor bounds aren't tracked in this reduced host) and delegates to the offset overload.
-   Not exercised by the current widgets, which self-position via the alignment overload. */
+/* Position-provider overload — the path upstream Tooltip / Menu / ExposedDropdown
+   components use. Positions the hosted content by asking [popupPositionProvider]
+   for an offset, feeding it the REAL anchor bounds (captured by the zero-size probe
+   below, whose parent layout is the popup's anchor) and the measured content size.
+   Reading the anchor-bounds state inside the host's placement block re-positions the
+   popup once the probe reports the anchor after the first layout pass. */
 @Composable
 actual fun Popup(
 	popupPositionProvider: PopupPositionProvider,
@@ -190,20 +197,71 @@ actual fun Popup(
 	properties: PopupProperties,
 	content: @Composable () -> Unit,
 ) {
-	val vOffset = popupPositionProvider.calculatePosition(
-		anchorBounds = IntRect(IntOffset.Zero, IntSize.Zero),
-		windowSize = IntSize(
-			com.compose.desktop.native.text.currentViewportWidth,
-			com.compose.desktop.native.text.currentViewportHeight,
-		),
-		layoutDirection = LayoutDirection.Ltr,
-		popupContentSize = IntSize.Zero,
-	)
-	Popup(
-		alignment = Alignment.TopStart,
-		offset = vOffset,
-		onDismissRequest = onDismissRequest,
-		properties = properties,
-		content = content,
-	)
+	val vHost = LocalPopupHost.current
+	val vId = remember { Any() }
+	// ESC dismisses, matching the alignment overload / upstream dismissOnBackPress.
+	if (properties.dismissOnBackPress && onDismissRequest != null) {
+		@Suppress("DEPRECATION")
+		@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+		androidx.compose.ui.backhandler.BackHandler(enabled = true, onBack = onDismissRequest)
+	}
+	val vLocals = currentCompositionLocalContext
+
+	// The anchor's window-space rect. Empty until the probe fills it after the first
+	// layout; the hosted content re-positions reactively when it does.
+	val vAnchorBounds = remember { mutableStateOf(IntRect(IntOffset.Zero, IntSize.Zero)) }
+
+	// Invisible zero-size probe rendered at the call site: its PARENT layout node is
+	// the popup's anchor (e.g. BasicTooltipBox's wrapper around the anchor content),
+	// so parentLayoutCoordinates gives the anchor bounds in window pixels — the same
+	// coordinate space PopupPositionProvider expects.
+	Layout(
+		content = {},
+		modifier = Modifier.onGloballyPositioned { coords ->
+			val vParent = coords.parentLayoutCoordinates
+			val vBounds =
+				if (vParent != null && vParent.isAttached) IntRect(vParent.intOffset, vParent.size)
+				else IntRect(IntOffset.Zero, IntSize.Zero)
+			if (vBounds != vAnchorBounds.value) vAnchorBounds.value = vBounds
+		},
+	) { _, _ -> layout(0, 0) {} }
+
+	// Host the content at the composition root, positioned by the provider.
+	SideEffect {
+		vHost.upsert(vId) {
+			CompositionLocalProvider(vLocals) {
+				ProviderPositionedLayout(popupPositionProvider, vAnchorBounds, content)
+			}
+		}
+	}
+	DisposableEffect(Unit) {
+		onDispose { vHost.remove(vId) }
+	}
+}
+
+/* Fills the window and places the popup content at the offset [provider] computes
+   from the live [anchorBounds], the window size, and the measured content size.
+   Reading [anchorBounds] inside the placement block subscribes this layout to
+   re-placement when the probe reports the anchor's bounds. */
+@Composable
+private fun ProviderPositionedLayout(
+	provider: PopupPositionProvider,
+	anchorBounds: State<IntRect>,
+	content: @Composable () -> Unit,
+) {
+	Layout(content) { measurables, constraints ->
+		val vChildConstraints = Constraints(maxWidth = constraints.maxWidth, maxHeight = constraints.maxHeight)
+		val vChildren = measurables.map { it.measure(vChildConstraints) }
+		val vChildW = vChildren.maxOfOrNull { it.width } ?: 0
+		val vChildH = vChildren.maxOfOrNull { it.height } ?: 0
+		layout(constraints.maxWidth, constraints.maxHeight) {
+			val vOffset = provider.calculatePosition(
+				anchorBounds = anchorBounds.value,
+				windowSize = IntSize(constraints.maxWidth, constraints.maxHeight),
+				layoutDirection = layoutDirection,
+				popupContentSize = IntSize(vChildW, vChildH),
+			)
+			vChildren.forEach { it.place(vOffset.x, vOffset.y) }
+		}
+	}
 }
