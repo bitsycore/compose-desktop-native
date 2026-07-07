@@ -1,8 +1,10 @@
 package com.compose.desktop.native.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -10,6 +12,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -34,14 +37,23 @@ import androidx.compose.ui.window.Popup
    Popups register via the `Popup` composable in androidx.compose.ui.window.
    Re-registration on each composition keeps the captured-state lambdas fresh;
    DisposableEffect's onDispose runs when the parent removes the popup from the
-   tree, removing the entry from the host.
+   tree, removing the entry from the host — unless the hosted content opted
+   into an exit transition via PopupExitHandle, in which case removal is
+   deferred until the content finished animating out (see PopupExitHandle).
 
    Lives in :ui (not :foundation) — the whole `ui.window` pair (Dialog + Popup +
    PopupHost) uses only androidx.compose.ui.layout.Layout for positioning, no
    foundation.background / .layout.Box / .layout.offset. */
 class PopupHostState internal constructor() {
 
-	internal class Entry(val id: Any, var content: @Composable () -> Unit)
+	internal class Entry(val id: Any, var content: @Composable () -> Unit) {
+		/* Exit deferral — set (from the hosted content, via PopupExitHandle) when
+		   the popup wants to play an exit animation before actual removal.
+		   `exiting` flips to true when the owning Popup composable disposes; the
+		   hosted content observes it, plays its animation, then finish()es. */
+		var hasExitTransition = false
+		val exiting = mutableStateOf(false)
+	}
 
 	internal val entries = mutableStateListOf<Entry>()
 
@@ -54,7 +66,21 @@ class PopupHostState internal constructor() {
 		}
 	}
 
+	/* Called when the owning Popup composable leaves the composition. Entries
+	   whose hosted content registered an exit transition are NOT removed —
+	   they switch to `exiting` and stay composed (the host composition owns
+	   them) until the content calls PopupExitHandle.finish(). */
 	internal fun remove(inId: Any) {
+		val vEntry = entries.firstOrNull { it.id === inId } ?: return
+		if (vEntry.hasExitTransition) {
+			if (!vEntry.exiting.value) vEntry.exiting.value = true
+		} else {
+			entries.removeAll { it.id === inId }
+		}
+	}
+
+	/* Unconditional removal — the end of an exit transition. */
+	internal fun forceRemove(inId: Any) {
 		entries.removeAll { it.id === inId }
 	}
 
@@ -101,6 +127,40 @@ val LocalPopupHost = compositionLocalOf<PopupHostState> {
 fun createPopupHostState(): PopupHostState = PopupHostState()
 
 // ==================
+// MARK: PopupExitHandle — deferred close for exit animations
+// ==================
+
+/* Handle a hosted popup's CONTENT uses to defer its removal for an exit
+   animation (mirrors upstream skiko's ComposeSceneLayer surviving the owner's
+   disposal so Dialog can animate out).
+
+   Contract: call [enableExitTransition] while composing; when the owning
+   Popup composable disposes, the host flips [isExiting] instead of removing
+   the entry. The hosted content (still composed — it lives in the HOST's
+   composition, not the owner's) observes that, plays its animation, and MUST
+   end with [finish], which actually removes the entry. */
+class PopupExitHandle internal constructor(
+	private val fHost: PopupHostState,       // owning host — target of finish()
+	private val fEntry: PopupHostState.Entry, // the entry this handle controls
+) {
+	/* True once the owning Popup left the composition and the host is waiting
+	   for this entry's exit animation. Observable — recomposes the content. */
+	val isExiting: State<Boolean> get() = fEntry.exiting
+
+	/* Opt in to exit deferral. Idempotent; call from a SideEffect. */
+	fun enableExitTransition() { fEntry.hasExitTransition = true }
+
+	/* Ends the deferral — the entry is removed from the host for real. */
+	fun finish() { fHost.forceRemove(fEntry.id) }
+}
+
+/* Per-entry handle, provided by PopupLayer around each hosted content. Null
+   outside a popup layer. NB: safe to expose through the caller-locals rewrap
+   in Popup (CompositionLocalProvider(callerContext)) — the caller never
+   provides this local, so the layer's per-entry value stays visible. */
+val LocalPopupExitHandle = staticCompositionLocalOf<PopupExitHandle?> { null }
+
+// ==================
 // MARK: PopupLayer
 // ==================
 
@@ -110,7 +170,12 @@ fun createPopupHostState(): PopupHostState = PopupHostState()
 @Composable
 fun PopupLayer(inHost: PopupHostState) {
 	for (vEntry in inHost.entries) {
-		key(vEntry.id) { vEntry.content() }
+		key(vEntry.id) {
+			val vHandle = remember { PopupExitHandle(inHost, vEntry) }
+			CompositionLocalProvider(LocalPopupExitHandle provides vHandle) {
+				vEntry.content()
+			}
+		}
 	}
 }
 
