@@ -18,8 +18,21 @@ actual fun getPlatformCategories(): List<DemoCategory> = listOf(
         DemoScreen("FoundationExtra") { FoundationExtraScreen() },
     )),
     DemoCategory("material3", "Material 3", listOf(
-        // Icons demos the variable-font axes + Outlined/Rounded/Sharp families — project-only,
-        // no upstream analog, so it can't be common.
+        // Material 3 EXPRESSIVE screens: the project exposes these APIs publicly, but
+        // released org.jetbrains.compose keeps ExperimentalMaterial3ExpressiveApi (and
+        // ButtonGroup / SplitButton / flexible app bars / WideNavigationRail / carousels
+        // / expressive FABs / sheets / drawers) internal — so they can't compile against
+        // upstream (:demojvm) and stay native-only.
+        DemoScreen("ButtonsExtra") { M3ButtonsExtraScreen() },
+        DemoScreen("FabExtra") { M3FabExtraScreen() },
+        DemoScreen("Sheets") { M3SheetsScreen() },
+        DemoScreen("Drawers") { M3DrawersScreen() },
+        DemoScreen("AppBars") { M3AppBarsScreen() },
+        DemoScreen("NavRails") { M3RailsScreen() },
+        DemoScreen("Search") { M3SearchScreen() },
+        DemoScreen("Carousel") { M3CarouselScreen() },
+        DemoScreen("M3Misc") { M3MiscScreen() },
+        // Icons demos the variable-font axes + Outlined/Rounded/Sharp families — project-only.
         DemoScreen("Icons") { IconsScreen() },
     )),
     DemoCategory("native", "Native", listOf(

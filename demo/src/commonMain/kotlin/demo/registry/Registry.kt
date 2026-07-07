@@ -54,29 +54,25 @@ val CoreScreens: List<DemoScreen> = listOf(
     DemoScreen("Recomposition") { RecompositionScreen() },
     DemoScreen("Animation") { AnimationScreen() },
 )
+// Only the screens that compile against UPSTREAM Compose too (verified by :demojvm)
+// live here. Material 3 EXPRESSIVE components (ButtonGroup, SplitButton, flexible
+// app bars, WideNavigationRail, carousels, expressive FABs/sheets/drawers, …) are
+// public in this project's material3 but internal in released org.jetbrains.compose,
+// so those screens stay native-only (see getPlatformCategories).
 val Material3Screens: List<DemoScreen> = listOf(
-    // Ordered by family: typography, buttons, inputs, containers, navigation, overlays.
+    // Ordered by family: typography, buttons, inputs, selection, containers, navigation, overlays.
     DemoScreen("Text") { TextScreen() },
     DemoScreen("Buttons") { ButtonsScreen() },
-    DemoScreen("ButtonsExtra") { M3ButtonsExtraScreen() },
     DemoScreen("Fab") { FabScreen() },
-    DemoScreen("FabExtra") { M3FabExtraScreen() },
     DemoScreen("TextField") { TextFieldScreen() },
     DemoScreen("Widgets") { WidgetsScreen() },
     DemoScreen("Cards") { CardsScreen() },
     DemoScreen("Chips") { ChipsScreen() },
     DemoScreen("Lists") { ListItemsScreen() },
     DemoScreen("Dialogs") { DialogsScreen() },
-    DemoScreen("Sheets") { M3SheetsScreen() },
-    DemoScreen("Drawers") { M3DrawersScreen() },
-    DemoScreen("AppBars") { M3AppBarsScreen() },
-    DemoScreen("NavRails") { M3RailsScreen() },
     DemoScreen("Navigation") { NavigationScreen() },
     DemoScreen("Tabs") { M3TabsScreen() },
-    DemoScreen("Search") { M3SearchScreen() },
     DemoScreen("Pickers") { M3PickersScreen() },
-    DemoScreen("Carousel") { M3CarouselScreen() },
-    DemoScreen("M3Misc") { M3MiscScreen() },
 )
 
 val commonCategories: List<DemoCategory> = listOf(
