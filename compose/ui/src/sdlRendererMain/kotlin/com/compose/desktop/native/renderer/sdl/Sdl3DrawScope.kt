@@ -331,8 +331,38 @@ internal class Sdl3DrawScope(
 		val vSampler = samplerFor(brush, size, alpha)
 		val vSubpaths = linearisePath(path)
 		when (style) {
-			Fill -> for (vSub in vSubpaths) fanFill(vSub, vSampler)
+			Fill -> {
+				// EVEN-ODD two-contour path = a ring (Modifier.border on a
+				// non-simple shape: outer ∪ inset, see ProjectPath.op). The two
+				// rounded-rect contours linearise to matching point counts, so
+				// fill the gap as a strip between them instead of fan-filling each
+				// (which would paint the inner region solid — a filled shape).
+				val vEvenOdd = (path as? com.compose.desktop.native.graphics.ProjectPath)?.fillType ==
+					androidx.compose.ui.graphics.PathFillType.EvenOdd
+				if (vEvenOdd && vSubpaths.size == 2 && vSubpaths[0].size == vSubpaths[1].size) {
+					ringFill(vSubpaths[0], vSubpaths[1], vSampler)
+				} else {
+					for (vSub in vSubpaths) fanFill(vSub, vSampler)
+				}
+			}
 			is Stroke -> for (vSub in vSubpaths) strokePolyline(vSub, style.width, vSampler)
+		}
+	}
+
+	// Fills the band between two same-length, point-corresponding closed contours
+	// (an outer ring and its inset) as a triangle strip — two triangles per edge.
+	private fun ringFill(
+		inOuter: List<Pair<Float, Float>>,
+		inInner: List<Pair<Float, Float>>,
+		inSampler: Sampler,
+	) {
+		val vN = minOf(inOuter.size, inInner.size)
+		// Contours are closed (last point == first), so segments 0..N-2 cover the loop.
+		for (vI in 0 until vN - 1) {
+			val (vOx0, vOy0) = inOuter[vI]; val (vOx1, vOy1) = inOuter[vI + 1]
+			val (vIx0, vIy0) = inInner[vI]; val (vIx1, vIy1) = inInner[vI + 1]
+			emitTri(vOx0, vOy0, vOx1, vOy1, vIx1, vIy1, inSampler)
+			emitTri(vOx0, vOy0, vIx1, vIy1, vIx0, vIy0, inSampler)
 		}
 	}
 

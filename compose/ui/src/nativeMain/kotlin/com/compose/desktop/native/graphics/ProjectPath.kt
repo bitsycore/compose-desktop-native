@@ -215,7 +215,25 @@ class ProjectPath : Path {
 		return if (vMinX.isFinite()) Rect(vMinX, vMinY, vMaxX, vMaxY) else Rect.Zero
 	}
 
-	override fun op(path1: Path, path2: Path, operation: PathOperation): Boolean = false  // unsupported
+	override fun op(path1: Path, path2: Path, operation: PathOperation): Boolean {
+		// Difference / Xor only, expressed as an EVEN-ODD overlay of the two
+		// operands: with path2 ⊆ path1 (Modifier.border's outer shape minus its
+		// inset), even-odd of (outer ∪ inner) fills exactly the ring. The SDL
+		// tessellator fills a two-contour EvenOdd path as a strip between them
+		// (Sdl3DrawScope.pathCore). Intersect / Union aren't expressible this way.
+		if (operation != PathOperation.Difference && operation != PathOperation.Xor) return false
+		val vP1 = path1 as? ProjectPath ?: return false
+		val vP2 = path2 as? ProjectPath ?: return false
+		// Copy first — path1 is often `this` (targetPath.op(this, inset, …)).
+		val vC1 = ArrayList(vP1.fCommands)
+		val vC2 = ArrayList(vP2.fCommands)
+		fCommands.clear()
+		fCommands.addAll(vC1)
+		fCommands.addAll(vC2)
+		fillType = PathFillType.EvenOdd
+		fGeneration++
+		return true
+	}
 
 	private fun currentPoint(): Pair<Float, Float> {
 		val vLast = fCommands.lastOrNull() ?: return 0f to 0f
