@@ -26,8 +26,8 @@ re-implements the layers on top (`androidx.compose.ui.*`, `.foundation.*`,
 ## Module layout
 
 Library modules mirror upstream Compose Multiplatform's `compose/` tree.
-Only `:window` is inherently native (SDL3 main loop) and lives under
-`compose/native/`.
+Only `:window` is the SDL integration layer ("Compose SDL" — SDL3 main loop)
+and lives under `compose/sdl/`.
 
 One Gradle module per upstream artifact; the directory mirrors the upstream
 `compose/` path, the gradle path is kept short (redirected via `projectDir`).
@@ -50,7 +50,7 @@ compose/
 ├── material-symbols/                → :material-symbols — codepoints + all three style objects
 │                                                   (Outlined / Rounded / Sharp). Apps get one dep;
 │                                                   the consumer Zip task bundles only the fonts used.
-└── native/
+└── sdl/                             ("Compose SDL" — the SDL3 integration layer)
     └── window/                      → :window     — nativeComposeApp { Window(...) {} } multi-window
                                                     shell + SDL3 main loop; nativeComposeWindow() wrapper
 
@@ -286,7 +286,7 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 tools/compose-fork/sync.sh
 
 # Sync one module by direct manifest path (module names use ':' → '/' → skip
-# 'compose/' prefix — modules under compose/native/ pass the full path).
+# 'compose/' prefix — nested modules like compose/sdl/window pass the full path).
 tools/compose-fork/sync.sh compose/ui/compose-fork.txt
 
 # Re-format a manifest (align columns, group by upstream folder).
@@ -301,7 +301,7 @@ build tell you what broke.
 ## Key files by area — start here when you need to find something
 
 ### Renderer + main loop
-- `compose/native/window/src/nativeMain/…/ComposeWindow.kt` — main loop,
+- `compose/sdl/window/src/nativeMain/…/ComposeWindow.kt` — main loop,
   recomposer lifecycle, SDL event dispatch, composition-local seeding.
 - `compose/ui/src/nativeMain/…/RenderBackend.kt` — the interface.
 - `compose/ui/src/nativeMain/…/GpuMode.kt` — sealed renderer / driver picker.

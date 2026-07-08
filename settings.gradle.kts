@@ -53,8 +53,8 @@ rootProject.name = "ComposeNativeSDL3"
 // project's directory is redirected via projectDir below.
 //
 // :window is the exception — it owns nativeComposeWindow(), the SDL3 main
-// loop, and the recomposer lifecycle. That's inherently native, so it
-// stays under compose/native/window/.
+// loop, and the recomposer lifecycle. That's the SDL integration layer
+// ("Compose SDL"), so it lives under compose/sdl/window/.
 include(":ui")
 include(":animation-core")
 include(":animation")
@@ -71,7 +71,7 @@ project(":foundation").projectDir = file("compose/foundation/foundation")
 project(":foundation-layout").projectDir = file("compose/foundation/foundation-layout")
 project(":material3").projectDir = file("compose/material3/material3")
 project(":material-ripple").projectDir = file("compose/material/material-ripple")
-project(":window").projectDir = file("compose/native/window")
+project(":window").projectDir = file("compose/sdl/window")
 project(":material-symbols").projectDir = file("compose/material-symbols")
 
 // App modules stay at the top level so `./gradlew :demo:run…` reads naturally
