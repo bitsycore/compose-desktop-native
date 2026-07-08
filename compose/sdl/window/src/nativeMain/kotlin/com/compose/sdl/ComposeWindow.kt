@@ -22,6 +22,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.lifecycle.enableSavedStateHandles
 import com.compose.sdl.node.ComposeRootHost
 import com.compose.sdl.res.currentImageLoader
 import com.compose.sdl.text.currentTextMeasurer
@@ -728,6 +729,12 @@ private class WindowArchitectureOwner :
 	init {
 		savedStateController.performAttach()
 		savedStateController.performRestore(null)
+		// SavedStateHandle support for WINDOW-scoped ViewModels — must run while
+		// the lifecycle is still ≤ CREATED; upstream desktop's ComposeContainer
+		// calls this at the same point. With it, `viewModel { ... }` against the
+		// window owner (the activityViewModels() analog) can take a
+		// SavedStateHandle instead of needing a saved-state-less child owner.
+		enableSavedStateHandles()
 		// CREATED (not RESUMED) until the first composition is done — code that
 		// runs enableSavedStateHandles() during composition (nav3's decorators,
 		// rememberViewModelStoreOwner, …) requires INITIALIZED/CREATED, and

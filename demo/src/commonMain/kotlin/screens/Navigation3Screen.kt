@@ -52,20 +52,17 @@ fun Navigation3Screen() {
 	val current = backStack.lastOrNull() ?: Nav3Home
 	val canGoBack = backStack.size > 1
 
-	// Screen-level store owner + the ViewModel shared by ALL detail entries.
-	// Obtained OUTSIDE the NavDisplay entries, so it isn't per-entry scoped —
-	// the entries capture the same instance through their content lambdas.
-	// savedStateRegistryOwner = null is REQUIRED here: the default (the window's
-	// registry owner) is legal only while its lifecycle is INITIALIZED/CREATED —
-	// getOrCreateOwner throws by contract past that. A screen composed on demand
-	// (sidebar click) runs at RESUMED, so saved-state support must be opted out;
-	// the shared totals ViewModel doesn't need a SavedStateHandle anyway.
-	val sharedOwner = androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner(
-		savedStateRegistryOwner = null,
-	)
-	val totals = androidx.lifecycle.viewmodel.compose.viewModel(viewModelStoreOwner = sharedOwner) {
-		Nav3TotalsViewModel()
-	}
+	// The ViewModel shared by ALL detail entries — scoped to the WINDOW owner
+	// (LocalViewModelStoreOwner outside the NavDisplay entries), the desktop
+	// analog of Android's activityViewModels(). The window owner is
+	// saved-state-enabled at construction (enableSavedStateHandles in
+	// WindowArchitectureOwner), so ViewModels in this scope may take a
+	// SavedStateHandle — no ad-hoc child owner needed. NOTE: creating a NEW
+	// owner here with rememberViewModelStoreOwner() and the default
+	// savedStateRegistryOwner would throw when this screen composes at RESUMED
+	// (sidebar flow) — saved-state scopes can only attach to owners whose
+	// lifecycle is still ≤ CREATED, same contract as on Android.
+	val totals = androidx.lifecycle.viewmodel.compose.viewModel { Nav3TotalsViewModel() }
 
 	// Console trace of the WINDOW lifecycle (driven by SDL focus/visibility:
 	// focused → RESUMED, unfocused → STARTED, minimised/hidden → CREATED).
@@ -210,10 +207,10 @@ private class Nav3DetailViewModel : androidx.lifecycle.ViewModel() {
 	var counter by androidx.compose.runtime.mutableStateOf(0)
 }
 
-// SHARED ViewModel: one instance for ALL detail entries. It lives in a store
-// owner scoped to the Navigation3Screen call site (rememberViewModelStoreOwner,
-// parented by the window's owner) — pushing/popping details never touches it,
-// so it accumulates the total across every Nav3Detail.
+// SHARED ViewModel: one instance for ALL detail entries. It lives in the
+// WINDOW's ViewModelStore (the activityViewModels() analog) — pushing/popping
+// details never touches it, so it accumulates the total across every
+// Nav3Detail; it clears when the window closes.
 private class Nav3TotalsViewModel : androidx.lifecycle.ViewModel() {
 	var total by androidx.compose.runtime.mutableStateOf(0)
 }
