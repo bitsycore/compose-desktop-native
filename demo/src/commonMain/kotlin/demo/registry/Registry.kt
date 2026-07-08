@@ -79,9 +79,14 @@ val Material3Screens: List<DemoScreen> = listOf(
     DemoScreen("M3Misc") { M3MiscScreen() },
 )
 
+val Navigation3Screens: List<DemoScreen> = listOf(
+    DemoScreen("Navigation3") { Navigation3Screen() },
+)
+
 val commonCategories: List<DemoCategory> = listOf(
     DemoCategory("core", "Core", CoreScreens),
-    DemoCategory("material3", "Material 3", Material3Screens),
+    DemoCategory("material3", "Material3", Material3Screens),
+    DemoCategory("navigation3", "Navigation3", Navigation3Screens),
 )
 
 /* Platform extras that fill the dropdown dynamically: screens that can't be

@@ -26,6 +26,11 @@
 #   python tools/compose-fork/sync.py :compose:animation-core      # gradle path
 #   python tools/compose-fork/sync.py compose/animation-core       # module path
 #   python tools/compose-fork/sync.py compose/ui/compose-fork.txt  # direct path to a manifest
+# Every sync ALSO re-annotates each selectRoot manifest in place (idempotent): under each
+# folder directive, commented `#     | src -> dest` lines for the files it copies (uncomment
+# one to pin it as a per-file entry), plus a trailing `# >>> GAPS` block listing every
+# upstream .kt under selectRoot not yet vendored (so new upstream files show up commented).
+#   python tools/compose-fork/sync.py --gaps navigation3/navigation3-ui  # annotate ONLY (no copy)
 # Env:
 #   CMP_REF=<path>   reuse/create the clone here (default ../cmp-ref)
 
@@ -83,15 +88,63 @@ def find_all_manifests():
 
 
 # ============
-#  Active (uncommented) `<up> <dest>` pairs from a manifest's text.
+#  Normalize a selectRoot value: strip quotes, a leading `./`, and any trailing `/`.
+def norm_root(r):
+	r = r.strip().strip('"').strip("'").strip()
+	if r.startswith('./'):
+		r = r[2:]
+	return r.rstrip('/')
+
+
+# ============
+#  Active (uncommented) `(upstream, dest)` pairs from a manifest. Three line forms:
+#    selectRoot=<up-base>        set an upstream base prepended to subsequent `->` entries
+#    <src> -> <dest>             arrow entry; <src> is relative to the current selectRoot.
+#                                Trailing `/` on either side ⇒ a folder directive (whole tree).
+#    <up> <dest>                 legacy: two full paths, whitespace-separated (root NOT applied)
+#  selectRoot + `->` let a manifest name a whole module/source-set once instead of listing files.
+#  A leading `|` on <src> (from an uncommented `--gaps` folder-expansion line) is stripped.
 def active_entries(text):
+	root = ''
 	for line in text.splitlines():
 		s = line.strip()
 		if not s or s.startswith('#'):
 			continue
+		m = re.match(r'selectRoot\s*=\s*(.+)$', s)
+		if m:
+			root = norm_root(m.group(1))
+			continue
+		if '->' in s:
+			src, dest = (p.strip() for p in s.split('->', 1))
+			src = src.lstrip('|').strip()
+			yield (root + '/' + src if root else src), dest
+			continue
 		parts = s.split()
 		if len(parts) >= 2:
 			yield parts[0], parts[1]
+
+
+# ============
+#  Upstream paths (relative to CMP_REF, resolved against selectRoot) that a `!<src>`
+#  line excludes from folder copies. Use this for MANUAL VENDORING inside a folder
+#  directive: a file we copied to src/{commonMain,...} and hand-edited (e.g. NavDisplay
+#  with the K/N rememberLifecycleOwner workaround) must be skipped by the folder copy so
+#  the edited project copy isn't shadowed by a pristine src/vendor duplicate.
+def active_exclusions(text):
+	root = ''
+	out = set()
+	for line in text.splitlines():
+		s = line.strip()
+		if not s or s.startswith('#'):
+			continue
+		m = re.match(r'selectRoot\s*=\s*(.+)$', s)
+		if m:
+			root = norm_root(m.group(1))
+			continue
+		if s.startswith('!'):
+			src = s[1:].strip().lstrip('|').strip()
+			out.add((root + '/' + src) if root else src)
+	return out
 
 
 # ============
@@ -100,13 +153,55 @@ def active_entries(text):
 #  Computed across EVERY manifest so a partial sync never shrinks the sparse clone.
 def sparse_prefixes(text):
 	prefixes = set()
+	root = ''
 	for line in text.splitlines():
 		s = line.strip().lstrip('#').strip()
-		tok = s.split(None, 1)[0] if s else ''
-		m = MODULE_RE.match(tok)
+		if not s:
+			continue
+		m = re.match(r'selectRoot\s*=\s*(.+)$', s)
 		if m:
-			prefixes.add(m.group(0))
+			root = norm_root(m.group(1))
+			continue
+		# The upstream token, resolving `->` entries against selectRoot.
+		if '->' in s:
+			src = s.split('->', 1)[0].strip().lstrip('|').strip()
+			tok = root + '/' + src if root else src
+		else:
+			tok = s.split(None, 1)[0]
+		# Any `<area>/<module>/src/...` token (per-file OR folder directive) maps to
+		# that module dir — generalises beyond compose/ (e.g. navigation3/navigation3-ui);
+		# the sparse dir is everything before `/src/`.
+		if '/src/' in tok:
+			prefixes.add(tok.split('/src/', 1)[0])
+			continue
+		mm = MODULE_RE.match(tok)
+		if mm:
+			prefixes.add(mm.group(0))
 	return prefixes
+
+
+# ============
+#  A manifest line whose upstream OR dest path ends with `/` is a FOLDER DIRECTIVE:
+#  copy every .kt under the upstream dir into the dest dir, preserving the sub-tree.
+#  One line then selects a whole module / source set instead of listing each file.
+def is_folder_entry(up, dest):
+	return up.endswith('/') or dest.endswith('/')
+
+
+# ============
+#  Write one vendored file: LF-normalize .kt, inject the K2 @file:Suppress into
+#  src/vendor .kt, then write the raw bytes. Returns 1 (files written).
+def write_vendor_file(src, dst, dest):
+	os.makedirs(os.path.dirname(dst), exist_ok=True)
+	with open(src, 'rb') as fh:
+		data = fh.read()
+	if dest.endswith('.kt'):
+		data = data.replace(b'\r\n', b'\n')
+	if dest.startswith('src/vendor/') and dest.endswith('.kt'):
+		data = inject_suppress(data)
+	with open(dst, 'wb') as fh:
+		fh.write(data)
+	return 1
 
 
 # ============
@@ -167,9 +262,232 @@ def read_ref():
 	sys.exit(1)
 
 
+# ==================
+# MARK: --gaps -- surface upstream files under selectRoot that the manifest doesn't select
+# ==================
+
+# Source-set (upstream dir name) -> vendor area, matching the project's
+# src/vendor/{common,native,skikoRenderer,sdlRenderer} layout. Anything not listed
+# falls back to the source-set name minus "Main" (e.g. desktopMain -> desktop) so a
+# non-K/N set is clearly flagged as "you probably don't want this here" in the
+# commented suggestion the user then edits.
+GAP_AREA = {
+	'commonMain': 'common',
+	'nativeMain': 'native', 'macosMain': 'native', 'iosMain': 'native',
+	'linuxMain': 'native', 'mingwMain': 'native', 'darwinMain': 'native',
+	'appleMain': 'native', 'unixMain': 'native', 'tvosMain': 'native', 'watchosMain': 'native',
+	'skikoMain': 'skikoRenderer', 'sdlMain': 'sdlRenderer',
+}
+GAP_START = '# >>> GAPS'
+GAP_END = '# <<< GAPS'
+
+
+# Every directive line -- ACTIVE or COMMENTED -- as (upstream, dest, is_folder),
+# resolving `->` against the running (active) selectRoot. --gaps uses this to know
+# which upstream paths are already listed (active or commented) so it never re-suggests.
+def iter_directives(text):
+	root = ''
+	for line in text.splitlines():
+		s = line.strip()
+		if not s:
+			continue
+		if s.startswith('#'):
+			s = s.lstrip('#').strip()
+			if not s:
+				continue
+			commented = True
+		else:
+			commented = False
+		m = re.match(r'selectRoot\s*=\s*(.+)$', s)
+		if m:
+			if not commented:  # a commented selectRoot is inert
+				root = norm_root(m.group(1))
+			continue
+		if '->' in s:
+			src, dest = (p.strip() for p in s.split('->', 1))
+			src = src.lstrip('|').strip()
+			up = root + '/' + src if root else src
+			yield up, dest, (src.endswith('/') or dest.endswith('/'))
+			continue
+		parts = s.split()
+		if len(parts) >= 2:
+			yield parts[0], parts[1], (parts[0].endswith('/') or parts[1].endswith('/'))
+
+
+# The active selectRoot of a manifest (or '' if none).
+def active_root(text):
+	for line in text.splitlines():
+		s = line.strip()
+		if s.startswith('#'):
+			continue
+		m = re.match(r'selectRoot\s*=\s*(.+)$', s)
+		if m:
+			return norm_root(m.group(1))
+	return ''
+
+
+# Guess a vendor dest for an unlisted upstream file. `rel` is the path relative to
+# selectRoot (e.g. desktopMain/kotlin/androidx/.../Foo.kt). Maps the source set to a
+# vendor area and drops the `<srcset>/(kotlin|java)/` prefix to get the package path.
+def gap_dest(rel):
+	srcset = rel.split('/', 1)[0]
+	area = GAP_AREA.get(srcset) or (srcset[:-4] if srcset.endswith('Main') else srcset)
+	pkg = rel
+	for lang in ('/kotlin/', '/java/'):
+		i = rel.find(lang)
+		if i != -1:
+			pkg = rel[i + len(lang):]
+			break
+	return 'src/vendor/%s/kotlin/%s' % (area, pkg)
+
+
+# An auto folder-expansion line: `#     | <src> -> <dest>` written under a folder
+# directive to show a file it copies. Uncommenting one (drop the `#`) turns it into a
+# real per-file `->` entry (the leading `|` is stripped by the parsers).
+EXP_RE = re.compile(r'#\s*\|')
+EXP_PREFIX = '#     | '
+
+
+# Strip ALL auto-generated content so --gaps regenerates rather than stacks: the gaps
+# block (between the markers) AND every `#     | ...` folder-expansion line. Returns the
+# clean manifest lines (no trailing blanks). Contract: to vendor an auto suggestion,
+# uncomment it (folder-expansion) or move it above the `# >>> GAPS` marker (gap line).
+def strip_auto(text):
+	out, skip = [], False
+	for ln in text.splitlines():
+		st = ln.strip()
+		low = st.lower()
+		if low.startswith('# >>> gaps'):  # case-insensitive: catches old verbose header too
+			skip = True
+			continue
+		if skip and low.startswith('# <<< gaps'):
+			skip = False
+			continue
+		if skip or EXP_RE.match(st):
+			continue
+		out.append(ln)
+	while out and out[-1].strip() == '':
+		out.pop()
+	return out
+
+
+# The .kt a folder directive copies, as (src, dest) both relative like the directive:
+# src relative to selectRoot (the `->` left side), dest the mapped vendor path. Sorted.
+def folder_files(up_folder, src_rel, dest_folder):
+	fr = os.path.join(CMP_REF, *up_folder.rstrip('/').split('/'))
+	out = []
+	if os.path.isdir(fr):
+		for dr, _, fs in os.walk(fr):
+			for fn in fs:
+				if not fn.endswith('.kt'):
+					continue
+				sub = os.path.relpath(os.path.join(dr, fn), fr).replace(os.sep, '/')
+				out.append((src_rel.rstrip('/') + '/' + sub, dest_folder.rstrip('/') + '/' + sub))
+	return sorted(out)
+
+
+# --gaps / --fill: annotate each selectRoot manifest in place, idempotently:
+#   1. under every ACTIVE folder directive, commented `#     | src -> dest` lines for the
+#      files it copies -- shows what the folder expands to, and uncommenting one converts
+#      it to a per-file entry (turn a folder into a file-by-file listing incrementally).
+#   2. a trailing block of commented `src -> dest` for every upstream .kt under selectRoot
+#      that NO directive lists -- surfaces source sets / files not yet vendored.
+def report_gaps(manifests, quiet_skips=False):
+	total = 0
+	for m in manifests:
+		with open(m, encoding='utf-8') as f:
+			text = f.read()
+		root = active_root(text)
+		label = os.path.relpath(os.path.dirname(m), REPO_ROOT).replace(os.sep, '/')
+		if not root:
+			# Legacy (non-selectRoot) manifests are reorganized by format-manifest.py instead.
+			if not quiet_skips:
+				print('  %s: no selectRoot -- --gaps only applies to folder-style manifests' % label)
+			continue
+		root_abs = os.path.join(CMP_REF, *root.split('/'))
+		if not os.path.isdir(root_abs):
+			sys.stderr.write('  %s: selectRoot %r not in the clone (re-run a normal sync first)\n' % (label, root))
+			continue
+
+		# Rebuild the body from the clean lines, inserting expansions under each active
+		# folder directive; track which upstream files end up covered (folder-expanded or
+		# listed single files) so the trailing gaps block only shows the truly-unlisted.
+		clean = strip_auto(text)
+		body, known, cur_root, expansions = [], set(), '', 0
+		for ln in clean:
+			body.append(ln)
+			s = ln.strip()
+			if not s or s.startswith('#'):
+				continue
+			mm = re.match(r'selectRoot\s*=\s*(.+)$', s)
+			if mm:
+				cur_root = norm_root(mm.group(1))
+				continue
+			if '->' in s:
+				src, dest = (p.strip() for p in s.split('->', 1))
+				src = src.lstrip('|').strip()
+				if src.endswith('/') or dest.endswith('/'):
+					up_folder = (cur_root + '/' + src) if cur_root else src
+					for fsrc, fdest in folder_files(up_folder, src, dest):
+						body.append('%s%s -> %s' % (EXP_PREFIX, fsrc, fdest))
+						known.add((cur_root + '/' + fsrc) if cur_root else fsrc)
+						expansions += 1
+				else:
+					known.add((cur_root + '/' + src) if cur_root else src)
+			else:
+				parts = s.split()
+				if len(parts) >= 2:
+					known.add(parts[0])
+
+		# Walk the whole module src; collect unlisted .kt, grouped by source set.
+		by_set = {}
+		for dr, _, fs in os.walk(root_abs):
+			rel_dir = os.path.relpath(dr, CMP_REF).replace(os.sep, '/')
+			after = rel_dir[len(root) + 1:] if rel_dir != root else ''
+			srcset = after.split('/', 1)[0] if after else ''
+			if 'test' in srcset.lower():  # androidDeviceTest, commonTest, jvmTest, ...
+				continue
+			for fn in sorted(fs):
+				if not fn.endswith('.kt'):
+					continue
+				up = rel_dir + '/' + fn
+				if up in known:
+					continue
+				rel = up[len(root) + 1:]  # relative to selectRoot -> the `src` half of a `->` line
+				by_set.setdefault(srcset or '(root)', []).append(rel)
+
+		# Gap lines share the folder-expansion format (`#     | src -> dest`) so uncommenting
+		# one yields a per-file entry exactly like an expansion; grouped by source set.
+		gap_body, count = [], 0
+		for srcset in sorted(by_set):
+			rels = sorted(by_set[srcset])
+			gap_body.append('#   %s (%d)' % (srcset, len(rels)))
+			for rel in rels:
+				gap_body.append('%s%s -> %s' % (EXP_PREFIX, rel, gap_dest(rel)))
+				count += 1
+		if not count:
+			gap_body.append('#   (none — every source set under selectRoot is vendored)')
+
+		# The GAPS block is ALWAYS emitted (a stable trailing section), even when empty.
+		new = '\n'.join(body).rstrip('\n') + '\n\n' + GAP_START + '\n' + '\n'.join(gap_body) + '\n' + GAP_END + '\n'
+		if new != text:
+			with open(m, 'w', encoding='utf-8', newline='\n') as f:
+				f.write(new)
+		print('  %s: %d folder-expansion line(s), %d unlisted .kt across %d source set(s)'
+			% (label, expansions, count, len(by_set)))
+		total += count
+	if not quiet_skips:
+		print('gaps: %d unlisted upstream .kt reported (commented, edit/uncomment to vendor)' % total)
+
+
 def main():
 	args = sys.argv[1:]
 	ref = read_ref()
+
+	# --gaps: don't sync -- instead append a regenerated block of commented `src -> dest`
+	# lines for upstream .kt under each manifest's selectRoot that it doesn't yet list.
+	gaps = '--gaps' in args or '--fill' in args
+	args = [a for a in args if a not in ('--gaps', '--fill')]
 
 	# ---- select manifests (all, or the ones named on the CLI)
 	if args:
@@ -196,10 +514,21 @@ def main():
 	# ---- 1. sparse clone at the pinned ref
 	ensure_clone(sparse_dirs, ref)
 
-	# ---- 1.5 canonicalize + discover each selected manifest (non-fatal)
+	# ---- --gaps mode: report unlisted upstream files into the manifest(s), then stop.
+	if gaps:
+		report_gaps(manifests)
+		return
+
+	# ---- 1.5 canonicalize + discover each selected manifest (non-fatal). Skipped for
+	#      manifests written in the selectRoot / `->` folder style — format-manifest.py
+	#      is per-file + compose/-specific and would drop those directives.
 	fmt = os.path.join(HERE, 'format-manifest.py')
 	if os.path.isfile(fmt):
 		for m in manifests:
+			with open(m, encoding='utf-8') as f:
+				mtext = f.read()
+			if 'selectRoot' in mtext or '->' in mtext:
+				continue
 			if subprocess.run([sys.executable, fmt, '--discover', CMP_REF, '--manifest', m]).returncode != 0:
 				sys.stderr.write('warn: format-manifest.py failed on %s -- continuing\n' % m)
 
@@ -211,26 +540,46 @@ def main():
 		count = 0
 		with open(m, encoding='utf-8') as f:
 			text = f.read()
+		excluded = active_exclusions(text)
+		skipped = 0
 		for up, dest in active_entries(text):
+			if is_folder_entry(up, dest):
+				# Folder directive: copy every .kt under the upstream dir into dest/,
+				# preserving the sub-tree. LF-normalize + K2-suppress happen per file.
+				src_root = os.path.join(CMP_REF, *up.rstrip('/').split('/'))
+				if not os.path.isdir(src_root):
+					sys.stderr.write('MISSING upstream folder: %s\n' % up)
+					sys.exit(1)
+				for droot, _, files in os.walk(src_root):
+					for fn in sorted(files):
+						if not fn.endswith('.kt'):
+							continue
+						sp = os.path.join(droot, fn)
+						up_path = os.path.relpath(sp, CMP_REF).replace(os.sep, '/')
+						rel = os.path.relpath(sp, src_root).replace(os.sep, '/')
+						rdest = dest.rstrip('/') + '/' + rel
+						dst = os.path.join(module_dir, *rdest.split('/'))
+						if up_path in excluded:  # manually vendored in src/{commonMain,...}; don't duplicate
+							skipped += 1
+							if os.path.isfile(dst):
+								os.remove(dst)  # drop any stale copy from a pre-exclusion sync
+							continue
+						count += write_vendor_file(sp, dst, rdest)
+				continue
 			src = os.path.join(CMP_REF, *up.split('/'))
 			if not os.path.isfile(src):
 				sys.stderr.write('MISSING upstream file: %s\n' % up)
 				sys.exit(1)
 			dst = os.path.join(module_dir, *dest.split('/'))
-			os.makedirs(os.path.dirname(dst), exist_ok=True)
-			with open(src, 'rb') as fh:
-				data = fh.read()
-			if dest.endswith('.kt'):
-				# Normalize to LF (upstream's real bytes) so a CRLF working tree from
-				# core.autocrlf can't leak mangled line endings into the vendor tree.
-				data = data.replace(b'\r\n', b'\n')
-			if dest.startswith('src/vendor/') and dest.endswith('.kt'):
-				data = inject_suppress(data)
-			with open(dst, 'wb') as fh:
-				fh.write(data)
-			count += 1
-		print('  %s: %d files' % (label, count))
+			count += write_vendor_file(src, dst, dest)
+		print('  %s: %d files%s' % (label, count, (' (%d excluded -> manually vendored)' % skipped) if skipped else ''))
 		total += count
+
+	# ---- 3. re-annotate selectRoot manifests in place so each always reflects the current
+	#      upstream tree: commented `#     | src -> dest` lines for the files each folder
+	#      directive copies, plus a `# >>> GAPS` block listing any new/unvendored .kt. Legacy
+	#      (non-selectRoot) manifests are reorganized by step 1.5's format-manifest.py instead.
+	report_gaps(manifests, quiet_skips=True)
 
 	print('synced %d files verbatim at %s' % (total, ref))
 

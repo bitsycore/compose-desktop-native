@@ -124,11 +124,6 @@ kotlin {
             }
         }
         nativeMain {
-            dependencies {
-                // Navigation 3 display — native-only (no K/N desktop artifact upstream), so it's
-                // a project reimpl and stays off commonMain (the shared/JVM path never sees it).
-                implementation(project(":navigation3-ui"))
-            }
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             // They import the project's native Res API, so they belong to the native
             // source set — the resource shim's native actual is the only common-side

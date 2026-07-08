@@ -35,6 +35,10 @@ kotlin {
                 implementation("org.jetbrains.compose.animation:animation:1.12.0-alpha03")
                 implementation("org.jetbrains.compose.material3:material3:1.12.0-alpha03")
                 implementation("org.jetbrains.compose.ui:ui:1.12.0-alpha03")
+                // navigation3 content model (NavKey / entryProvider / NavEntry.Content()).
+                // The `desktop` variant is a real JVM impl and pulls androidx.compose.runtime
+                // 1.9.x — aligned with org.jetbrains.compose 1.12.0-alpha03 above.
+                implementation("androidx.navigation3:navigation3-runtime:1.1.4")
             }
         }
         jvmMain {
@@ -57,4 +61,13 @@ compose.desktop {
     application {
         mainClass = "MainJvmKt"
     }
+}
+
+// Headless diagnostic: render the shared Navigation3Screen to nav3jvm.png (see RenderNav3.kt).
+tasks.register<JavaExec>("renderNav3") {
+    val jvmMain = kotlin.jvm().compilations.getByName("main")
+    dependsOn(jvmMain.compileTaskProvider)
+    classpath(jvmMain.output.allOutputs, jvmMain.runtimeDependencyFiles)
+    mainClass.set("RenderNav3Kt")
+    workingDir = rootProject.projectDir
 }

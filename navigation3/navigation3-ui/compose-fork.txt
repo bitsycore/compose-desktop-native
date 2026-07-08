@@ -1,0 +1,55 @@
+# :navigation3-ui — vendored VERBATIM from JetBrains/compose-multiplatform-core
+# (navigation3/navigation3-ui) at the ref in tools/compose-fork/compose-ref.txt.
+#
+# Folder-style manifest: `selectRoot` sets the upstream module/src base, then each
+# `src -> dest` copies a whole source-set tree (trailing `/` = folder directive).
+# Every sync re-annotates below: commented `#     | src -> dest` lines under each folder
+# directive show the files it copies, and a `# >>> GAPS` block lists upstream .kt not yet
+# vendored (new files appear there). Uncomment any `#     | ` line to pin it as a per-file
+# entry (the leading `|` is stripped). Run `sync.py --gaps <module>` to annotate without copying.
+#
+# navigation3-runtime + lifecycle-viewmodel-navigation3 stay Maven deps (real KMP
+# artifacts for every target, api-exposed by :ui) — only the UI is vendored here.
+# The fork's macosMain has the K/N actuals for NavDisplay's 3 default*TransitionSpec
+# expects (its desktop/macos impls are identical + platform-agnostic) → our nativeMain.
+#
+# MANUAL VENDOR (non-idempotent): the `!` lines below exclude three files from the folder
+# copy — they live hand-edited in src/commonMain/kotlin, dropping rememberLifecycleOwner
+# (which spins forever on Kotlin/Native) for LocalLifecycleOwner.current. Reconcile by hand
+# on a ref bump. Everything else syncs verbatim.
+
+selectRoot=navigation3/navigation3-ui/src
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/navigation3/ListUtils.kt -> src/vendor/common/kotlin/androidx/navigation3/ListUtils.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/DialogScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/DialogScene.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/NavigationEventHandler.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/NavigationEventHandler.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/OverlayScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/OverlayScene.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/RememberNavigationEventState.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/RememberNavigationEventState.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/Scene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/Scene.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SceneDecoratorStrategy.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneDecoratorStrategy.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SceneInfo.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneInfo.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SceneSetupNavEntryDecorator.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneSetupNavEntryDecorator.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SceneState.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneState.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SceneStrategy.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneStrategy.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SharedEntryInSceneNavEntryDecorator.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SharedEntryInSceneNavEntryDecorator.kt
+#     | commonMain/kotlin/androidx/navigation3/scene/SinglePaneScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SinglePaneScene.kt
+#     | commonMain/kotlin/androidx/navigation3/ui/LocalNavAnimatedContentScope.kt -> src/vendor/common/kotlin/androidx/navigation3/ui/LocalNavAnimatedContentScope.kt
+#     | commonMain/kotlin/androidx/navigation3/ui/NavDisplay.kt -> src/vendor/common/kotlin/androidx/navigation3/ui/NavDisplay.kt
+macosMain/kotlin/  -> src/vendor/native/kotlin/
+#     | macosMain/kotlin/androidx/navigation3/ui/NavDisplay.macos.kt -> src/vendor/native/kotlin/androidx/navigation3/ui/NavDisplay.macos.kt
+
+!commonMain/kotlin/androidx/navigation3/ui/NavDisplay.kt
+!commonMain/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt
+!commonMain/kotlin/androidx/navigation3/scene/DialogScene.kt
+
+# >>> GAPS
+#   androidMain (1)
+#     | androidMain/kotlin/androidx/navigation3/ui/NavDisplay.android.kt -> src/vendor/android/kotlin/androidx/navigation3/ui/NavDisplay.android.kt
+#   desktopMain (1)
+#     | desktopMain/kotlin/androidx/navigation3/ui/NavDisplay.desktop.kt -> src/vendor/desktop/kotlin/androidx/navigation3/ui/NavDisplay.desktop.kt
+#   iosMain (1)
+#     | iosMain/kotlin/androidx/navigation3/ui/NavDisplay.ios.kt -> src/vendor/native/kotlin/androidx/navigation3/ui/NavDisplay.ios.kt
+#   webMain (1)
+#     | webMain/kotlin/androidx/navigation3/ui/NavDisplay.web.kt -> src/vendor/web/kotlin/androidx/navigation3/ui/NavDisplay.web.kt
+# <<< GAPS

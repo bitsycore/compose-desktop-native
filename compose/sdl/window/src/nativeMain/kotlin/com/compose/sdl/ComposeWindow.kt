@@ -454,6 +454,18 @@ internal class WindowInstance(
 				// interface's all-zero defaults are exactly right.
 				androidx.compose.ui.platform.LocalPlatformWindowInsets provides
 					object : androidx.compose.ui.platform.PlatformWindowInsets {},
+				// A resumed lifecycle owner at the composition root — lifecycle-aware
+				// content (Navigation 3's NavDisplay, lifecycle-viewmodel-navigation3, …)
+				// reads LocalLifecycleOwner and errors if it's absent. A desktop window is
+				// always "resumed" while composed.
+				androidx.lifecycle.compose.LocalLifecycleOwner provides remember {
+					object : androidx.lifecycle.LifecycleOwner {
+						override val lifecycle =
+							androidx.lifecycle.LifecycleRegistry.createUnsafe(this).apply {
+								currentState = androidx.lifecycle.Lifecycle.State.RESUMED
+							}
+					}
+				},
 				// Runtime-level host defaults — this window's navigation-event
 				// owner (SearchBar / sheets back plumbing), null for keys this
 				// port has no equivalent of (viewmodel store).

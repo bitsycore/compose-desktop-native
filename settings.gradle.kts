@@ -74,7 +74,7 @@ project(":material3").projectDir = file("compose/material3/material3")
 project(":material-ripple").projectDir = file("compose/material/material-ripple")
 project(":window").projectDir = file("compose/sdl/window")
 project(":material-symbols").projectDir = file("compose/sdl/material-symbols")
-project(":navigation3-ui").projectDir = file("compose/sdl/navigation3-ui")
+project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")
 
 // Demo App testing foundation, animation, ui and material3
 include(":demo")
