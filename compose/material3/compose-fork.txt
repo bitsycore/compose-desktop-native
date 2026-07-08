@@ -7,13 +7,6 @@
 # candidate. Never hand-edit the vendored files — change this manifest / the ref
 # and re-run sync.sh.
 
-# ── androidx.compose.material.ripple ────────────────────────────────────────
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/CommonRipple.kt           src/vendor/common/kotlin/androidx/compose/material/ripple/CommonRipple.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/Ripple.kt                 src/vendor/common/kotlin/androidx/compose/material/ripple/Ripple.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/RippleAnimation.kt        src/vendor/common/kotlin/androidx/compose/material/ripple/RippleAnimation.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/RippleTheme.kt            src/vendor/common/kotlin/androidx/compose/material/ripple/RippleTheme.kt
-compose/material/material-ripple/src/nonAndroidMain/kotlin/androidx/compose/material/ripple/Ripple.nonAndroid.kt  src/vendor/native/kotlin/androidx/compose/material/ripple/Ripple.native.kt
-
 # ── androidx.compose.material3 ──────────────────────────────────────────────
 compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AlertDialog.kt                                src/vendor/common/kotlin/androidx/compose/material3/AlertDialog.kt
 compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBar.kt                                     src/vendor/common/kotlin/androidx/compose/material3/AppBar.kt

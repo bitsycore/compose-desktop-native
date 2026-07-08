@@ -27,12 +27,13 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				// :core provides ui / ui-text / runtime; :foundation provides
-				// foundation.* + animation.* (non-core, merged in — see foundation/
-				// build.gradle.kts for why); :animation-core provides animation.core.*.
+				// :ui provides ui / ui-text / runtime; :foundation provides foundation.* +
+				// (transitively) animation.* + foundation.layout.*; :animation-core provides
+				// animation.core.*; :material-ripple provides material.ripple.*.
 				api(project(":ui"))
 				api(project(":foundation"))
 				api(project(":animation-core"))
+				api(project(":material-ripple"))
 				// androidx.collection is used by material3 internals (MutableIntObjectMap, …).
 				// Already on the classpath via :core's runtime; declare here for clarity.
 				implementation("androidx.collection:collection:1.5.0")
