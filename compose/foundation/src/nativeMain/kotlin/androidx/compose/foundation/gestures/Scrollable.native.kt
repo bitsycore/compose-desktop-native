@@ -7,82 +7,72 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFold
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
 // ==================
 // MARK: Scrollable — native actuals (mouse-wheel config + platform fling)
 // ==================
 
-/* Native actuals for the vendored upstream `Scrollable.kt` `expect`s. Mirrors upstream's macOS
-   ScrollConfig (DesktopScrollable.desktop.kt → MacOSCocoaConfig): 10dp per scrollDelta unit,
-   smooth scrolling ON so mouse-wheel clicks tween over ~100ms instead of jumping instantly, and
-   precise-wheel detection so trackpads (fractional deltas at 60Hz) bypass the animation and feel
-   responsive. Without smooth scrolling every wheel click jumps kPixelsPerWheelNotchDp px on one
-   frame — the perceived jerkiness the JVM version doesn't have. */
+/* Native actuals for the vendored upstream `Scrollable.kt` `expect`s. Matches Compose Desktop's
+   WINDOWS config (DesktopScrollable.desktop.kt → WindowsWinUIConfig), which is what the app is
+   compared against:
 
-// Matches upstream MacOSCocoaConfig — one wheel unit = 10dp. Tuned against Cocoa; the animated
-// path smooths the discrete jump so absolute magnitude doesn't need to be large.
-private const val kPixelsPerWheelNotchDp = 10f
+     - each wheel unit scrolls a FRACTION of the viewport (bounds / 20), not a fixed dp — this is
+       what makes a wheel click move a natural amount regardless of list length;
+     - smooth scrolling ON, so MouseWheelScrollingLogic tweens each accumulated delta over up to
+       ~100ms instead of jumping in one frame (the "velocity" feel: spin fast and pending notches
+       sum into a longer, quicker sweep);
+     - wheel is NEVER treated as "precise" (Windows animates even free-spinning wheels), so every
+       notch stays on the smooth path.
+
+   The smooth animation is the whole feel — Compose Desktop does NOT fling on the wheel (its
+   default FlingBehavior is a ScrollableDefaultFlingBehavior, so `shouldBeTriggeredByMouseWheel`
+   is false). We match that: no synthetic wheel fling. */
+
+// Compose Desktop's Windows formula is `delta * (bounds/20) * scrollAmount`, where scrollAmount
+// is the OS "lines to scroll per notch" (default 3). AWT forwards it; SDL normalises a wheel notch
+// to ±1 and drops it, so without this factor each notch scrolls ~1/3 of Compose Desktop's distance.
+private const val kWheelLinesPerNotch = 3f
 
 private object Sdl3ScrollConfig : ScrollConfig {
-	// Animate mouse-wheel deltas over ~100ms (MouseWheelScrollingLogic's tween). The animation
-	// clock derives from ComposeOwner.coroutineContext, which now carries the BroadcastFrameClock
-	// pumped each frame by ComposeRootHost.sendAnimationFrame — so withFrameNanos resumes.
+	// Tween accumulated wheel deltas (MouseWheelScrollingLogic). The animation clock is the
+	// BroadcastFrameClock in ComposeOwner.coroutineContext, pumped each frame by
+	// ComposeRootHost.sendAnimationFrame, so withFrameNanos resumes.
 	override val isSmoothScrollingEnabled: Boolean = true
 
-	// Trackpads emit fractional deltas at 60Hz; each animated 100ms would cancel the previous, so
-	// upstream's `shouldApplyImmediately` bypass keeps them responsive. AWT surfaces this as
-	// `preciseWheelRotation != wheelRotation`; SDL doesn't tag events, so we heuristically detect
-	// "precise" by non-integer or sub-unit magnitude — regular mouse wheel emits ±1.0, ±2.0…
-	override fun isPreciseWheelScroll(event: PointerEvent): Boolean {
-		val vTotal = event.changes.fastFold(Offset.Zero) { acc, c -> acc + c.scrollDelta }
-		return isPrecise(vTotal.x) || isPrecise(vTotal.y)
-	}
-
-	private fun isPrecise(inV: Float): Boolean {
-		if (inV == 0f) return false
-		val vAbs = abs(inV)
-		if (vAbs < 1f) return true
-		return abs(vAbs - vAbs.roundToInt()) > 0.001f
-	}
+	// Windows treats every wheel (even free-spinning) as non-precise → always animate. (macOS
+	// uses `preciseWheelRotation != wheelRotation` to bypass the tween for trackpads; on the
+	// Windows target the smooth path is always what we want.)
+	override fun isPreciseWheelScroll(event: PointerEvent): Boolean = false
 
 	override fun Density.calculateMouseWheelScroll(event: PointerEvent, bounds: IntSize): Offset {
 		val vTotal = event.changes.fastFold(Offset.Zero) { acc, c -> acc + c.scrollDelta }
-		val vPx = kPixelsPerWheelNotchDp.dp.toPx()
-		return Offset(vTotal.x * vPx, vTotal.y * vPx)
+		// WindowsWinUIConfig formula: viewport-proportional * scrollAmount (sign kept as SDL
+		// delivers it — the scrollDelta arriving here is already SDL-oriented, see
+		// feedScrollToProcessor).
+		return Offset(
+			vTotal.x * (bounds.width / 20f) * kWheelLinesPerNotch,
+			vTotal.y * (bounds.height / 20f) * kWheelLinesPerNotch,
+		)
 	}
 }
 
 internal actual fun CompositionLocalConsumerModifierNode.platformScrollConfig(): ScrollConfig = Sdl3ScrollConfig
 
 // Fallback for AbstractScrollableNode.defaultFlingBehavior (used when the caller provides no
-// flingBehavior). Stays a ScrollableDefaultFlingBehavior so updateDensity keeps working.
+// flingBehavior). A ScrollableDefaultFlingBehavior so updateDensity keeps working AND so
+// `shouldBeTriggeredByMouseWheel` stays false — no wheel fling, matching Compose Desktop.
 internal actual fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
 	DefaultFlingBehavior(splineBasedDecay(Density(1f)))
 
-/* Wraps a DefaultFlingBehavior in a plain FlingBehavior so upstream's private
-   `shouldBeTriggeredByMouseWheel = this !is ScrollableDefaultFlingBehavior` check returns TRUE —
-   meaning mouse-wheel + trackpad scrolls trigger a spline-decay fling after their velocity is
-   tracked (see MouseWheelScrollingLogic.dispatchMouseWheelScroll → onScrollStopped(velocity)).
-   Upstream JVM Compose Desktop uses DefaultFlingBehavior directly, which SKIPS the fling on
-   wheel — the "velocity feel" there comes from macOS OS momentum events flowing through AWT.
-   SDL doesn't reliably forward that momentum through SDL_MOUSEWHEEL on every platform, so we
-   opt into fling explicitly. */
-private class Sdl3WheelFlingBehavior(private val fInner: DefaultFlingBehavior) : FlingBehavior {
-	override suspend fun ScrollScope.performFling(initialVelocity: Float): Float =
-		with(fInner) { performFling(initialVelocity) }
-}
-
+// Natural platform fling decay — identical to Compose Desktop's Scrollable.desktop.kt: a plain
+// DefaultFlingBehavior (spline decay). It IS a ScrollableDefaultFlingBehavior, so touch drags
+// fling but the mouse wheel does not (its smooth tween handles the wheel feel).
 @Composable
 internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior {
 	val vDensity = LocalDensity.current
 	val vDecay = remember(vDensity) { splineBasedDecay<Float>(vDensity) }
-	val vInner = remember(vDecay) { DefaultFlingBehavior(vDecay) }
-	return remember(vInner) { Sdl3WheelFlingBehavior(vInner) }
+	return remember(vDecay) { DefaultFlingBehavior(vDecay) }
 }
