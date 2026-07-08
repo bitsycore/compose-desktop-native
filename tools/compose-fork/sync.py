@@ -541,6 +541,7 @@ def main():
 			text = f.read()
 		excluded = active_exclusions(text)
 		skipped = 0
+		written = set()  # normalized abs dest paths THIS manifest produced
 		for up, dest in active_entries(text):
 			if is_folder_entry(up, dest):
 				# Folder directive: copy every .kt under the upstream dir into dest/,
@@ -564,6 +565,7 @@ def main():
 								os.remove(dst)  # drop any stale copy from a pre-exclusion sync
 							continue
 						count += write_vendor_file(sp, dst, rdest)
+						written.add(os.path.normcase(os.path.abspath(dst)))
 				continue
 			src = os.path.join(CMP_REF, *up.split('/'))
 			if not os.path.isfile(src):
@@ -571,7 +573,33 @@ def main():
 				sys.exit(1)
 			dst = os.path.join(module_dir, *dest.split('/'))
 			count += write_vendor_file(src, dst, dest)
-		print('  %s: %d files%s' % (label, count, (' (%d excluded -> manually vendored)' % skipped) if skipped else ''))
+			written.add(os.path.normcase(os.path.abspath(dst)))
+
+		# ---- 2.5 clean stale vendor files: any .kt under src/vendor/ that THIS sync
+		#      didn't write is a leftover from a renamed/dropped manifest entry (e.g.
+		#      ArcSpline.native.kt lingering after the dest moved to ArcSpline.nonJvm.kt)
+		#      and shadows/conflicts with the current tree. The vendor dir is fully
+		#      regenerated output — nothing hand-made lives there — so deleting is safe.
+		#      Non-.kt files (README etc.) are kept; emptied directories are pruned.
+		removed = 0
+		vendor_root = os.path.join(module_dir, 'src', 'vendor')
+		if os.path.isdir(vendor_root):
+			for droot, _, files in os.walk(vendor_root, topdown=False):
+				for fn in files:
+					if not fn.endswith('.kt'):
+						continue
+					p = os.path.join(droot, fn)
+					if os.path.normcase(os.path.abspath(p)) not in written:
+						os.remove(p)
+						removed += 1
+				if not os.listdir(droot):
+					os.rmdir(droot)
+		extras = ''
+		if skipped:
+			extras += ' (%d excluded -> manually vendored)' % skipped
+		if removed:
+			extras += ' (%d stale removed)' % removed
+		print('  %s: %d files%s' % (label, count, extras))
 		total += count
 
 	# ---- 3. re-annotate SET_ROOT manifests in place so each always reflects the current

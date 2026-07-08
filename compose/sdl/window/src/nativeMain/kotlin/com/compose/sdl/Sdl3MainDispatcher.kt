@@ -4,6 +4,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.CoroutineContext
+import sdl3.SDL_GetCurrentThreadID
 
 // ==================
 // MARK: Sdl3MainDispatcher
@@ -22,16 +23,26 @@ import kotlin.coroutines.CoroutineContext
    blocks. Channel.trySend is lock-free, so posts from other threads
    (Dispatchers.IO, Default, etc.) are safe.
 
-   immediate returns `this` — even calls from the main thread go through the
-   queue. Simpler than tracking thread identity for marginal benefit, and
-   matches the desktop-Compose Main dispatcher semantics where state writes
-   should be observable on the same frame they were posted from.
-*/
+   `immediate` is a REAL immediate dispatcher: its isDispatchNeeded() returns
+   false when already on the SDL main thread, so work runs inline — matching
+   Android's Main.immediate / Swing's EDT semantics. This is load-bearing:
+   androidx.lifecycle's KMP LifecycleRegistry enforces main-thread access by
+   round-tripping through Dispatchers.Main.immediate (MainDispatcherChecker);
+   with a queue-only Main that trip can never complete from the main thread
+   while the loop is inside setContent, deadlocking the app at 0% CPU (this
+   froze Navigation3's NavDisplay — rememberLifecycleOwner — on mingwX64,
+   see NAV_FIX.md). The BASE dispatcher intentionally KEEPS always-queue
+   semantics so LaunchedEffect / recomposer ordering is unchanged: state
+   writes land at the loop's drainPending(), observable on the same frame. */
 internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 
 	private val fQueue = Channel<Runnable>(Channel.UNLIMITED)
 
-	override val immediate: MainCoroutineDispatcher = this
+	// The SDL main thread — the dispatcher is constructed by nativeComposeApp
+	// on the thread that then runs the loop.
+	private val fMainThreadId = SDL_GetCurrentThreadID()
+
+	override val immediate: MainCoroutineDispatcher = ImmediateDispatcher()
 
 	override fun dispatch(context: CoroutineContext, block: Runnable) {
 		fQueue.trySend(block)
@@ -57,4 +68,19 @@ internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 	}
 
 	override fun toString(): String = "Sdl3MainDispatcher"
+
+	/* Dispatchers.Main.immediate: inline when already on the SDL main thread
+	   (isDispatchNeeded = false), queued like the base dispatcher otherwise. */
+	private inner class ImmediateDispatcher : MainCoroutineDispatcher() {
+		override val immediate: MainCoroutineDispatcher get() = this
+
+		override fun isDispatchNeeded(context: CoroutineContext): Boolean =
+			SDL_GetCurrentThreadID() != fMainThreadId
+
+		override fun dispatch(context: CoroutineContext, block: Runnable) {
+			fQueue.trySend(block)
+		}
+
+		override fun toString(): String = "Sdl3MainDispatcher.immediate"
+	}
 }

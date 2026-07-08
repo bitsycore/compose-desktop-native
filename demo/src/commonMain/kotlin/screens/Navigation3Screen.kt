@@ -16,15 +16,15 @@ import androidx.navigation3.ui.NavDisplay
 // ==================
 // MARK: Navigation 3 screen (shared — native + JVM)
 // ==================
-// Demonstrates androidx.navigation3-runtime with NO renderer-specific code: a
-// NavBackStack of NavKey routes, pushed/popped by the UI, with the top of the stack
-// driving what's shown.
+// Demonstrates androidx.navigation3-runtime + the vendored navigation3-ui NavDisplay:
+// a NavBackStack of NavKey routes, pushed/popped by the UI, rendered through the
+// full NavDisplay pipeline (scenes, decorators, predictive-back plumbing).
 //
-// It does NOT use navigation3-ui's NavDisplay nor call NavEntry.Content() directly:
-// navigation3-ui has no functional JVM-desktop artifact (androidx ships jvmStubs), the
-// vendored-from-fork NavDisplay doesn't settle on the native reimpl, and a bare
-// NavEntry.Content() (outside NavDisplay's decorator pipeline) misbehaves. So we dispatch
-// on the route with a plain `when` — the same pattern every other shared screen uses.
+// This USED to freeze on native: androidx.lifecycle's KMP LifecycleRegistry
+// enforces main-thread access through Dispatchers.Main.immediate, and the SDL
+// Main dispatcher had no true immediate — the check deadlocked inside
+// setContent. Fixed in Sdl3MainDispatcher (immediate runs inline on the SDL
+// main thread); see NAV_FIX.md for the full investigation.
 //
 // Shell contract (demo.shell.App): each screen is hosted in a
 // Box(fillMaxSize().verticalScroll()) — so a screen is a plain Column that flows
