@@ -106,6 +106,14 @@ fun main(args: Array<String>) {
         runAnimVisTest()
         return
     }
+    // Composes the Navigation3 screen LATE (window already RESUMED) — the
+    // normal sidebar flow, unlike --screen which composes during the first
+    // (CREATED) composition. Guards the enableSavedStateHandles contract:
+    // ViewModel store owners created at RESUMED must opt out of saved state.
+    if (args.any { it == "--nav3test" }) {
+        runNav3Test()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -426,6 +434,44 @@ private fun runSearchEscTest() {
                     .padding(24.dp),
             ) {
                 screens.M3SearchScreen()
+            }
+        }
+    }
+}
+
+/* Boots an empty window, then composes screens.Navigation3Screen() at frame 30 —
+   AFTER the window lifecycle reached RESUMED — mirroring the real sidebar flow.
+   Crashes here (e.g. enableSavedStateHandles' INITIALIZED/CREATED contract) never
+   reproduce under --screen, which composes during the initial CREATED composition.
+   PASS = a screenshot gets written and the app exits cleanly. */
+private fun runNav3Test() {
+    val vShow = mutableStateOf(false)
+    nativeComposeWindow(
+        title = "nav3test",
+        width = 1000,
+        height = 700,
+        onFrame = { vBridge, vFrame ->
+            when (vFrame) {
+                30 -> { vShow.value = true; true }
+                90 -> {
+                    val vSnap = vBridge.snapshotBgra()
+                    if (vSnap != null) {
+                        val (vW, vH, vBgra) = vSnap
+                        writeFile("nav3late.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                        println("nav3test: wrote nav3late.bmp (${vW}x${vH})")
+                        println("nav3test: PASS (Navigation3 composed at RESUMED without crashing)")
+                    } else println("nav3test: FAIL (no snapshot)")
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                if (vShow.value) {
+                    Box(modifier = Modifier.padding(24.dp)) { screens.Navigation3Screen() }
+                }
             }
         }
     }

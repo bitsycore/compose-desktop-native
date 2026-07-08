@@ -55,7 +55,14 @@ fun Navigation3Screen() {
 	// Screen-level store owner + the ViewModel shared by ALL detail entries.
 	// Obtained OUTSIDE the NavDisplay entries, so it isn't per-entry scoped —
 	// the entries capture the same instance through their content lambdas.
-	val sharedOwner = androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner()
+	// savedStateRegistryOwner = null is REQUIRED here: the default (the window's
+	// registry owner) is legal only while its lifecycle is INITIALIZED/CREATED —
+	// getOrCreateOwner throws by contract past that. A screen composed on demand
+	// (sidebar click) runs at RESUMED, so saved-state support must be opted out;
+	// the shared totals ViewModel doesn't need a SavedStateHandle anyway.
+	val sharedOwner = androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner(
+		savedStateRegistryOwner = null,
+	)
 	val totals = androidx.lifecycle.viewmodel.compose.viewModel(viewModelStoreOwner = sharedOwner) {
 		Nav3TotalsViewModel()
 	}
