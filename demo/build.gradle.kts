@@ -42,6 +42,8 @@ val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
+    jvm()
+
     linuxArm64()
     linuxX64()
     macosArm64()
@@ -123,6 +125,22 @@ kotlin {
             // org.jetbrains.compose.resources without seeing project accessors.
             kotlin.srcDir(composeResGenDir)
         }
+        jvmMain {
+            resources.srcDir(rootProject.file("demo/src/nativeMain/composeResources"))
+            dependencies {
+                implementation("org.jetbrains.compose.runtime:runtime:1.12.0-alpha03")
+                implementation("org.jetbrains.compose.foundation:foundation:1.12.0-alpha03")
+                implementation("org.jetbrains.compose.animation:animation:1.12.0-alpha03")
+                implementation("org.jetbrains.compose.material3:material3:1.12.0-alpha03")
+                implementation("org.jetbrains.compose.ui:ui:1.12.0-alpha03")
+
+                implementation("androidx.navigation3:navigation3-runtime:1.2.0-alpha05")
+                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.2.0-alpha02")
+                implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
+                implementation(compose.desktop.currentOs)
+                implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            }
+        }
     }
 
     compilerOptions {
@@ -131,6 +149,12 @@ kotlin {
             "-Xexpect-actual-classes",
             "-opt-in=kotlinx.cinterop.ExperimentalForeignApi"
         )
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "MainJvmKt"
     }
 }
 

@@ -1,17 +1,22 @@
 package screens
 
-import androidx.compose.runtime.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.*
-import androidx.compose.ui.*
-import androidx.compose.ui.unit.*
-import com.compose.sdl.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.compose.sdl.LocalComposeNativeWindow
 
 // ==================
 // MARK: Window screen
 // ==================
 
-/* Extra demo windows opened from this screen. The app composition in Main.kt
+/* Extra demo windows opened from this screen. The app composition in MainNative.kt
    declares one keyed Window() per id in this list — the list IS the windows'
    lifetime (multi-window, Compose Desktop style). Each window is keyed by its
    own id, so closing one removes exactly THAT id (a count would always drop the

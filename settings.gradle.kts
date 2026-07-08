@@ -78,7 +78,5 @@ project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")
 
 // Demo App testing foundation, animation, ui and material3
 include(":demo")
-// JVM version running demo directly on the jvm and upstream compose
-include(":demojvm")
 // postman like in compose sdl
 include(":apidemo")
