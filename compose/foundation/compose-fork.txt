@@ -7,38 +7,6 @@
 # candidate. Never hand-edit the vendored files — change this manifest / the ref
 # and re-run sync.sh.
 
-# ── androidx.compose.animation ──────────────────────────────────────────────
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt                         src/vendor/common/kotlin/androidx/compose/animation/AnimateBoundsModifier.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedContent.kt                               src/vendor/common/kotlin/androidx/compose/animation/AnimatedContent.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimatedVisibility.kt                            src/vendor/common/kotlin/androidx/compose/animation/AnimatedVisibility.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/AnimationModifier.kt                             src/vendor/common/kotlin/androidx/compose/animation/AnimationModifier.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/BoundsAnimation.kt                               src/vendor/common/kotlin/androidx/compose/animation/BoundsAnimation.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt                          src/vendor/common/kotlin/androidx/compose/animation/ColorVectorConverter.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/CompositionLocals.kt                             src/vendor/common/kotlin/androidx/compose/animation/CompositionLocals.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Crossfade.kt                                     src/vendor/common/kotlin/androidx/compose/animation/Crossfade.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt                     src/vendor/common/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt                   src/vendor/common/kotlin/androidx/compose/animation/DeferredEnterExitTransition.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/EnterExitTransition.kt                           src/vendor/common/kotlin/androidx/compose/animation/EnterExitTransition.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt  src/vendor/common/kotlin/androidx/compose/animation/ExperimentalLookaheadAnimationVisualDebugApi.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt               src/vendor/common/kotlin/androidx/compose/animation/ExperimentalSharedTransitionApi.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt                               src/vendor/common/kotlin/androidx/compose/animation/FlingCalculator.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt    src/vendor/common/kotlin/androidx/compose/animation/IsLookaheadAnimationVisualDebuggingEnabled.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt           src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugConfig.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt           src/vendor/common/kotlin/androidx/compose/animation/LookaheadAnimationVisualDebugHelper.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt          src/vendor/common/kotlin/androidx/compose/animation/RenderInTransitionOverlayNodeElement.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedContentNode.kt                             src/vendor/common/kotlin/androidx/compose/animation/SharedContentNode.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElement.kt                                 src/vendor/common/kotlin/androidx/compose/animation/SharedElement.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedElementEntry.kt                            src/vendor/common/kotlin/androidx/compose/animation/SharedElementEntry.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt                         src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionScope.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt                  src/vendor/common/kotlin/androidx/compose/animation/SharedTransitionStateMachine.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SingleValueAnimation.kt                          src/vendor/common/kotlin/androidx/compose/animation/SingleValueAnimation.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt                       src/vendor/common/kotlin/androidx/compose/animation/SkipToLookaheadSizeNode.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt                              src/vendor/common/kotlin/androidx/compose/animation/SplineBasedDecay.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt            src/vendor/common/kotlin/androidx/compose/animation/SplineBasedFloatDecayAnimationSpec.kt
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/Transition.kt                                    src/vendor/common/kotlin/androidx/compose/animation/Transition.kt
-compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.nonAndroid.kt      src/vendor/native/kotlin/androidx/compose/animation/DefaultDecayAnimationSpec.native.kt
-compose/animation/animation/src/nonAndroidMain/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.nonAndroid.kt  src/vendor/native/kotlin/androidx/compose/animation/SplineBasedDecayAnimationSpec.native.kt
-
 # ── androidx.compose.animation.graphics ─────────────────────────────────────
 compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt  src/vendor/common/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt
 
@@ -46,10 +14,6 @@ compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/anim
 compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt     src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt
 compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/Animator.kt                src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/Animator.kt
 compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt  src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt
-
-# ── androidx.compose.animation.internal ─────────────────────────────────────
-compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt         src/vendor/common/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.kt
-compose/animation/animation/src/nonJvmMain/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.nonJvm.kt  src/vendor/native/kotlin/androidx/compose/animation/internal/JvmDefaultWithCompatibility.native.kt
 
 # ── androidx.compose.foundation ─────────────────────────────────────────────
 compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/Background.kt                             src/vendor/common/kotlin/androidx/compose/foundation/Background.kt
