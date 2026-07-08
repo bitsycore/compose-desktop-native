@@ -1,5 +1,5 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:animation-core.
-# Re-sync with: tools/compose-fork/sync.sh :compose:animation-core   (or `sync.sh` for every module).
+# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:animation:animation-core.
+# Re-sync with: tools/compose-fork/sync.sh :compose:animation:animation-core   (or `sync.sh` for every module).
 # Upstream ref pinned in tools/compose-fork/compose-ref.txt.
 #
 # Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
