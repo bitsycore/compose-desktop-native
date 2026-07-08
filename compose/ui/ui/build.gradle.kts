@@ -163,6 +163,13 @@ kotlin {
                 api("androidx.savedstate:savedstate-compose:1.5.0")
                 api("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
                 api("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
+                // Navigation 3 runtime — the backstack / NavEntry / scene model. Published for
+                // all our K/N targets (mingwX64 + macos/linux) and pulls only runtime / lifecycle /
+                // savedstate / collection / serialization (no androidx.compose.ui). The NavDisplay
+                // UI (androidx.navigation3:navigation3-ui) has NO K/N desktop artifact, so it's not
+                // here — a display is hand-rolled on the project's own ui/animation.
+                api("androidx.navigation3:navigation3-runtime:1.1.4")
+                api("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.okio)
                 implementation("org.jetbrains.kotlinx:atomicfu:0.23.1")

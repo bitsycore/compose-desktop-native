@@ -30,5 +30,6 @@ actual fun getPlatformCategories(): List<DemoCategory> = listOf(
         DemoScreen("Desktop integration") { DesktopIntegrationScreen() },
         DemoScreen("PointerInput") { PointerInputScreen() },
         DemoScreen("Desktop widgets") { DesktopWidgetsScreen() },
+        DemoScreen("Navigation3") { Navigation3Screen() },
     )),
 )

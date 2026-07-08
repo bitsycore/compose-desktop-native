@@ -57,9 +57,17 @@ compose/
 └── sdl/                             ("Compose SDL" — project modules, not upstream CMP artifacts)
     ├── window/                      → :window     — nativeComposeApp { Window(...) {} } multi-window
     │                                               shell + SDL3 main loop; nativeComposeWindow() wrapper
-    └── material-symbols/            → :material-symbols — codepoints + all three style objects
-                                                    (Outlined / Rounded / Sharp). Apps get one dep;
-                                                    the consumer Zip task bundles only the fonts used.
+    ├── material-symbols/            → :material-symbols — codepoints + all three style objects
+    │                                               (Outlined / Rounded / Sharp). Apps get one dep;
+    │                                               the consumer Zip task bundles only the fonts used.
+    └── navigation3-ui/              → :navigation3-ui — a minimal NavDisplay reimpl. Navigation 3's
+                                                    runtime (androidx.navigation3:navigation3-runtime +
+                                                    lifecycle-viewmodel-navigation3) ARE real Maven KMP
+                                                    artifacts (all targets, api-exposed by :ui), but
+                                                    navigation3-ui/NavDisplay has no K/N desktop build
+                                                    (its non-Android upstream is NotImplemented), so the
+                                                    display is reimplemented here on this project's
+                                                    AnimatedContent.
 
 demo/                → :demo      — flagship showcase app (30+ screens)
 apidemo/             → :apidemo   — Postman-style REST API manager
