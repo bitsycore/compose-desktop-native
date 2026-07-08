@@ -39,14 +39,12 @@ val composeResGenDir = layout.buildDirectory.dir("generated/composeRes")
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
     linuxArm64()
     linuxX64()
-    macosArm64(){
-
-    }
+    macosArm64()
     if (vHostSupportsMingw) mingwX64()
 
     // Give us a real `nativeMain` intermediate source set (all targets are
@@ -107,20 +105,13 @@ kotlin {
                 if (vReleased != null) {
                     implementation("com.bitsycore.compose.sdl:desktop-window:$vReleased")
                     implementation("com.bitsycore.compose.sdl:desktop-material3:$vReleased")
-                    // Swap :material-symbols too — otherwise its transitive
-                    // project deps (:foundation, :animation-core, :ui) collide
-                    // with the same klibs pulled from Maven via desktop-window,
-                    // and the K/N compiler fails with duplicate `unique_name`.
-                    // The material-symbols module stays in settings.gradle
-                    // regardless — the Zip task below still references its
-                    // Gradle Project object via rootProject.project(...) to
-                    // read the per-style font-download task extras.
                     implementation("com.bitsycore.compose.sdl:desktop-material-symbols:$vReleased")
                 } else {
                     implementation(project(":window"))
                     implementation(project(":material3"))
                     implementation(project(":material-symbols"))
                 }
+                implementation(project(":navigation3-ui"))
             }
         }
         nativeMain {
@@ -162,6 +153,7 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // runtime + real Compose UI, which this repo deliberately re-implements).
 
 val generateComposeResAccessors = tasks.register("generateComposeResAccessors") {
+    description = "Generate typed Res accessors for drawable/ + files/ in composeResources/"
     val vSrcDir = composeResourcesDir.asFile
     val vOutDir = composeResGenDir.get().asFile
     inputs.dir(vSrcDir).withPropertyName("composeResources")
@@ -264,7 +256,7 @@ for (variant in variants) {
         val copyTask = tasks.register<Zip>(copyTaskName) {
             archiveFileName.set("data.kres")
             destinationDirectory.set(outDir)
-            entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) org.gradle.api.tasks.bundling.ZipEntryCompression.DEFLATED else org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
+            entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) ZipEntryCompression.DEFLATED else ZipEntryCompression.STORED
             from(composeResourcesDir)
             // Default UI font (Noto Sans), downloaded by :core.
             if (bundleDefaultFont) {
@@ -277,7 +269,7 @@ for (variant in variants) {
             val vSymbolsProject = rootProject.project(":material-symbols")
             for (vStyle in vUsedStyles) {
                 @Suppress("UNCHECKED_CAST")
-                val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as org.gradle.api.provider.Provider<RegularFile>
+                val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as Provider<RegularFile>
                 val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
                 from(vFontFile) { into("font") }
                 dependsOn(vDownloadTask)

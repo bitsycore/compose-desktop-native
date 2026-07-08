@@ -1,28 +1,17 @@
 package screens
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.ui.NavDisplay
 
 // ==================
 // MARK: Navigation 3 screen (shared — native + JVM)
@@ -72,15 +61,17 @@ fun Navigation3Screen() {
 			)
 		}
 		HorizontalDivider()
-
-		// Render the top of the back stack, crossfading between destinations. The shell's
-		// Box scrolls the whole thing; content flows naturally (no fixed height) so the
-		// fade sizes to whichever destination is showing.
-		Crossfade(targetState = current, animationSpec = tween(250), label = "nav3") { route ->
-			when (route) {
-				is Nav3Home -> Nav3HomeContent(onOpen = { id -> backStack.add(Nav3Detail(id)) })
-				is Nav3Detail -> Nav3DetailContent(id = route.id, onBack = { backStack.removeLastOrNull() })
-			}
+		NavDisplay(
+			backStack = backStack,
+		) { nav3Route ->
+			when(nav3Route) {
+				Nav3Home -> NavEntry(nav3Route) {
+					Nav3HomeContent(onOpen = { id -> backStack.add(Nav3Detail(id)) })
+				}
+                is Nav3Detail -> NavEntry(nav3Route) {
+					Nav3DetailContent(id = nav3Route.id, onBack = { backStack.removeLastOrNull() })
+				}
+            }
 		}
 	}
 }

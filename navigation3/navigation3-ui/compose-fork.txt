@@ -36,12 +36,9 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/navigation3/scene/SinglePaneScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SinglePaneScene.kt
 #     | commonMain/kotlin/androidx/navigation3/ui/LocalNavAnimatedContentScope.kt -> src/vendor/common/kotlin/androidx/navigation3/ui/LocalNavAnimatedContentScope.kt
 #     | commonMain/kotlin/androidx/navigation3/ui/NavDisplay.kt -> src/vendor/common/kotlin/androidx/navigation3/ui/NavDisplay.kt
-macosMain/kotlin/  -> src/vendor/native/kotlin/
-#     | macosMain/kotlin/androidx/navigation3/ui/NavDisplay.macos.kt -> src/vendor/native/kotlin/androidx/navigation3/ui/NavDisplay.macos.kt
 
-!commonMain/kotlin/androidx/navigation3/ui/NavDisplay.kt
-!commonMain/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt
-!commonMain/kotlin/androidx/navigation3/scene/DialogScene.kt
+# macosMain/kotlin/  -> src/vendor/native/kotlin/
+macosMain/kotlin/androidx/navigation3/ui/NavDisplay.macos.kt -> src/vendor/native/kotlin/androidx/navigation3/ui/NavDisplay.native.kt
 
 # >>> GAPS
 #   androidMain (1)
