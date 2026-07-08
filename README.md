@@ -51,7 +51,8 @@ navigation3/
 └── navigation3-ui/       → :navigation3-ui  (vendored NavDisplay + scene machinery — the one
                                               Navigation 3 layer without a K/N desktop artifact)
 
-demo/     → :demo     (showcase + CLI probe suite)   demojvm/ → :demojvm (JVM parity twin)
+demo/     → :demo     (showcase + CLI probe suite; multiplatform — the same screens
+                       also build for stock JVM Compose Desktop as a parity reference)
 apidemo/  → :apidemo  (Postman-style REST client)
 ```
 
@@ -68,7 +69,12 @@ graphics layers, custom layout, animation and gestures.
 ./gradlew :demo:runDebugExecutableMacosArm64      # macOS  (Skia / Metal)
 ./gradlew :demo:runDebugExecutableLinuxX64        # Linux  (Skia / OpenGL)
 gradlew.bat :demo:runDebugExecutableMingwX64      # Windows (SDL3)
+./gradlew :demo:run                               # stock JVM Compose Desktop (parity reference)
 ```
+
+The same shared screens drive both stacks — the JVM target runs them on
+upstream Compose Desktop unchanged, so any visual or behavioural difference
+against the native build is a porting bug, not a demo artifact.
 
 CLI: `--gpu=…`, `--screen=<Name>` (one screen, no sidebar),
 `--screenshot=out.bmp --frames=N`, `--width=W --height=H`.

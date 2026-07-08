@@ -73,8 +73,10 @@ navigation3/
                                                     (700ms fades, predictive-pop spring/scaleOut) because
                                                     the upstream macos actual ships all-None (no animation).
 
-demo/                → :demo      — flagship showcase app (30+ screens) + the CLI probe suite
-demojvm/             → :demojvm   — the same demo screens on stock JVM Compose Desktop (parity reference)
+demo/                → :demo      — flagship showcase app (30+ screens) + the CLI probe suite.
+                                    MULTIPLATFORM: also has a jvm() target running the SAME shared
+                                    screens on stock JVM Compose Desktop (`./gradlew :demo:run`,
+                                    MainJvmKt) — the parity reference; differences vs native = port bugs
 apidemo/             → :apidemo   — Postman-style REST API manager
 tools/               → vendor-sync + Windows static-lib build scripts (bash + python)
 libs/                → gitignored per-host static SDL3 / SDL3_ttf / SDL3_image / FreeType
@@ -266,6 +268,10 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 
 # Skiko-free build on macOS/Linux — SDL3 renderer everywhere
 ./gradlew :demo:runDebugExecutableMacosArm64 -Prenderer=sdl3
+
+# Stock JVM Compose Desktop (any host) — the parity reference: the SAME shared
+# demo screens on upstream Compose; differences vs the native build = port bugs.
+./gradlew :demo:run
 ```
 
 ### System dependencies
