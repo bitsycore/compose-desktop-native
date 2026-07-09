@@ -1,16 +1,17 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui:ui-backhandler.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:ui:ui-backhandler   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/ui/ui-backhandler/src
 
-# ── androidx.compose.ui.backhandler ─────────────────────────────────────────
-compose/ui/ui-backhandler/src/commonMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt       src/vendor/common/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt
-compose/ui/ui-backhandler/src/commonMain/kotlin/androidx/compose/ui/backhandler/BackHandler.kt           src/vendor/common/kotlin/androidx/compose/ui/backhandler/BackHandler.kt
-compose/ui/ui-backhandler/src/jbMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.jb.kt        src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackEventCompat.native.kt
-compose/ui/ui-backhandler/src/jbMain/kotlin/androidx/compose/ui/backhandler/BackEventHandler.kt          src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackEventHandler.kt
-compose/ui/ui-backhandler/src/jbMain/kotlin/androidx/compose/ui/backhandler/BackHandler.jb.kt            src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackHandler.native.kt
-compose/ui/ui-backhandler/src/jbMain/kotlin/androidx/compose/ui/backhandler/ProgressBackEventHandler.kt  src/vendor/native/kotlin/androidx/compose/ui/backhandler/ProgressBackEventHandler.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt -> src/vendor/common/kotlin/androidx/compose/ui/backhandler/BackEventCompat.kt
+#     | commonMain/kotlin/androidx/compose/ui/backhandler/BackHandler.kt -> src/vendor/common/kotlin/androidx/compose/ui/backhandler/BackHandler.kt
+
+jbMain/kotlin/ -> src/vendor/native/kotlin/
+#     | jbMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.jb.kt -> src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackEventCompat.jb.kt
+#     | jbMain/kotlin/androidx/compose/ui/backhandler/BackEventHandler.kt -> src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackEventHandler.kt
+#     | jbMain/kotlin/androidx/compose/ui/backhandler/BackHandler.jb.kt -> src/vendor/native/kotlin/androidx/compose/ui/backhandler/BackHandler.jb.kt
+#     | jbMain/kotlin/androidx/compose/ui/backhandler/ProgressBackEventHandler.kt -> src/vendor/native/kotlin/androidx/compose/ui/backhandler/ProgressBackEventHandler.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/androidx/compose/ui/backhandler/BackEventCompat.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/backhandler/BackEventCompat.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/backhandler/BackHandler.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/backhandler/BackHandler.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

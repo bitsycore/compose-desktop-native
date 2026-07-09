@@ -1,29 +1,35 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui:ui-unit.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:ui:ui-unit   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/ui/ui-unit/src
 
-# ── androidx.compose.ui.unit ────────────────────────────────────────────────
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt           src/vendor/common/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Constraints.kt                  src/vendor/common/kotlin/androidx/compose/ui/unit/Constraints.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Density.kt                      src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Dp.kt                           src/vendor/common/kotlin/androidx/compose/ui/unit/Dp.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/ExperimentalUnitApi.kt          src/vendor/common/kotlin/androidx/compose/ui/unit/ExperimentalUnitApi.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt                  src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt            src/vendor/common/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntOffset.kt                    src/vendor/common/kotlin/androidx/compose/ui/unit/IntOffset.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt                      src/vendor/common/kotlin/androidx/compose/ui/unit/IntRect.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt                      src/vendor/common/kotlin/androidx/compose/ui/unit/IntSize.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/LayoutDirection.kt              src/vendor/common/kotlin/androidx/compose/ui/unit/LayoutDirection.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt                     src/vendor/common/kotlin/androidx/compose/ui/unit/TextUnit.kt
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt                     src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
-compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt      src/vendor/native/kotlin/androidx/compose/ui/unit/DpInsets.native.kt
-compose/ui/ui-unit/src/nonAndroidMain/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt  src/vendor/native/kotlin/androidx/compose/ui/unit/FontScaling.native.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/ComposeUiUnitFlags.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/Constraints.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/Constraints.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/Density.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/Density.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/Dp.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/Dp.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/ExperimentalUnitApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/ExperimentalUnitApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/FontScaling.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/FontScaling.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/InlineClassHelper.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/IntOffset.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/IntOffset.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/IntRect.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/IntRect.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/IntSize.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/IntSize.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/LayoutDirection.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/LayoutDirection.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/TextUnit.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/TextUnit.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/Velocity.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/Velocity.kt
+#     | commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt -> src/vendor/common/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt
 
-# ── androidx.compose.ui.unit.internal ───────────────────────────────────────
-compose/ui/ui-unit/src/commonMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt         src/vendor/common/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.kt
-compose/ui/ui-unit/src/nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt  src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
+nonAndroidMain/kotlin/ -> src/vendor/native/kotlin/
+#     | nonAndroidMain/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt -> src/vendor/native/kotlin/androidx/compose/ui/unit/DpInsets.nonAndroid.kt
+#     | nonAndroidMain/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt -> src/vendor/native/kotlin/androidx/compose/ui/unit/FontScacling.nonAndroid.kt
+
+nonJvmMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (6)
+#     | androidMain/kotlin/androidx/compose/ui/unit/AndroidDensity.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/AndroidDensity.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/unit/FontScaling.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/FontScaling.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverter.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverter.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverterFactory.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverterFactory.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverterTable.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/fontscaling/FontScaleConverterTable.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/unit/fontscaling/MathUtils.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/unit/fontscaling/MathUtils.android.kt
+#   jvmAndAndroidMain (1)
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/unit/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

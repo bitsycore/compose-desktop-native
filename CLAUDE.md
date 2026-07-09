@@ -123,14 +123,28 @@ install the popup / scaffold layer at the composition root).
 **Prefer vendoring verbatim from upstream Compose Multiplatform over hand-rolling anything.**
 
 Every module that ships `androidx.compose.*` code carries a
-`<module>/compose-fork.txt` manifest — a text file with one line per file:
-`<upstream-path> <local-dest-path>`. `scripts/compose-fork/sync.sh` walks all
-manifests and copies each listed file byte-for-byte from a pinned
+`<module>/compose-fork.txt` manifest. `scripts/compose-fork/sync.sh` walks all
+manifests and copies each selected file byte-for-byte from a pinned
 `JetBrains/compose-multiplatform-core` checkout (ref in
 `scripts/compose-fork/compose-ref.txt`) into
 `<module>/src/vendor/{common,native,skikoRenderer,sdlRenderer}/kotlin/`. The
 `src/vendor/` tree is **gitignored** — you don't check it in, you re-sync
 on demand.
+
+Manifests are **folder-style**: a `SET_ROOT=<module>/src` line sets an upstream
+base, then `<sourceSet>/kotlin/ -> src/vendor/<area>/kotlin/` grabs a whole
+source set (every `.kt` under it). `!<sourceSet>/kotlin/<pkg>/<File>.kt` refuses
+one file inside a grabbed folder — use it for files hand-vendored + edited under
+`src/{commonMain,…}` so the folder copy doesn't shadow them, or for upstream
+files the port doesn't want. A plain `<src> -> <dest>` still pins (or renames on
+copy) a single file. Re-declare `SET_ROOT` to draw from a second upstream module
+(`:ui` pulls from ui + ui-graphics + ui-text). Every sync re-annotates the
+manifest in place: commented `#     | src -> dest` lines under each folder
+directive list what it expands to, and a trailing `# >>> DIAGNOSTIC GAPS` block
+lists every upstream `.kt` under SET_ROOT that no directive selects (grouped by
+source set) so new upstream files surface as comments to uncomment. That whole
+annotated tail is generated — never hand-edit it; edit only the directives up
+top and re-run sync.
 
 Two categories of code live in each module:
 

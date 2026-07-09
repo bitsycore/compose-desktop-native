@@ -1,16 +1,18 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:animation:animation-graphics.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:animation:animation-graphics   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/animation/animation-graphics/src
 
-# ── androidx.compose.animation.graphics ─────────────────────────────────────
-compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt  src/vendor/common/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt -> src/vendor/common/kotlin/androidx/compose/animation/graphics/ExperimentalAnimationGraphicsApi.kt
+#     | commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt -> src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt
+#     | commonMain/kotlin/androidx/compose/animation/graphics/vector/Animator.kt -> src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/Animator.kt
+#     | commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt -> src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt
 
-# ── androidx.compose.animation.graphics.vector ──────────────────────────────
-compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt     src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatedImageVector.kt
-compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/Animator.kt                src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/Animator.kt
-compose/animation/animation-graphics/src/commonMain/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt  src/vendor/common/kotlin/androidx/compose/animation/graphics/vector/AnimatorAnimationSpecs.kt
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (7)
+#     | androidMain/kotlin/androidx/compose/animation/graphics/res/AnimatedVectorPainterResources.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/res/AnimatedVectorPainterResources.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/res/AnimatedVectorResources.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/res/AnimatedVectorResources.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/res/AnimatorResources.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/res/AnimatorResources.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/vector/compat/AndroidVectorResources.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/vector/compat/AndroidVectorResources.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/vector/compat/XmlAnimatedVectorParser.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/vector/compat/XmlAnimatedVectorParser.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/vector/compat/XmlAnimatorParser.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/vector/compat/XmlAnimatorParser.android.kt
+#     | androidMain/kotlin/androidx/compose/animation/graphics/vector/compat/XmlPullParserUtils.android.kt -> src/vendor/android/kotlin/androidx/compose/animation/graphics/vector/compat/XmlPullParserUtils.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

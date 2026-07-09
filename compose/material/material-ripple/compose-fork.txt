@@ -1,15 +1,16 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:material:material-ripple.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:material:material-ripple   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/material/material-ripple/src
 
-# ── androidx.compose.material.ripple ────────────────────────────────────────
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/CommonRipple.kt           src/vendor/common/kotlin/androidx/compose/material/ripple/CommonRipple.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/Ripple.kt                 src/vendor/common/kotlin/androidx/compose/material/ripple/Ripple.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/RippleAnimation.kt        src/vendor/common/kotlin/androidx/compose/material/ripple/RippleAnimation.kt
-compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/RippleTheme.kt            src/vendor/common/kotlin/androidx/compose/material/ripple/RippleTheme.kt
-compose/material/material-ripple/src/nonAndroidMain/kotlin/androidx/compose/material/ripple/Ripple.nonAndroid.kt  src/vendor/native/kotlin/androidx/compose/material/ripple/Ripple.native.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/material/ripple/CommonRipple.kt -> src/vendor/common/kotlin/androidx/compose/material/ripple/CommonRipple.kt
+#     | commonMain/kotlin/androidx/compose/material/ripple/Ripple.kt -> src/vendor/common/kotlin/androidx/compose/material/ripple/Ripple.kt
+#     | commonMain/kotlin/androidx/compose/material/ripple/RippleAnimation.kt -> src/vendor/common/kotlin/androidx/compose/material/ripple/RippleAnimation.kt
+#     | commonMain/kotlin/androidx/compose/material/ripple/RippleTheme.kt -> src/vendor/common/kotlin/androidx/compose/material/ripple/RippleTheme.kt
+
+nonAndroidMain/kotlin/androidx/compose/material/ripple/Ripple.nonAndroid.kt -> src/vendor/native/kotlin/androidx/compose/material/ripple/Ripple.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (3)
+#     | androidMain/kotlin/androidx/compose/material/ripple/Ripple.android.kt -> src/vendor/android/kotlin/androidx/compose/material/ripple/Ripple.android.kt
+#     | androidMain/kotlin/androidx/compose/material/ripple/RippleContainer.android.kt -> src/vendor/android/kotlin/androidx/compose/material/ripple/RippleContainer.android.kt
+#     | androidMain/kotlin/androidx/compose/material/ripple/RippleHostView.android.kt -> src/vendor/android/kotlin/androidx/compose/material/ripple/RippleHostView.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

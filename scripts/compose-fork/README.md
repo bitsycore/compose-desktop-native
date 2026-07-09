@@ -2,8 +2,7 @@
 
 This directory is the tooling that vendors **byte-for-byte verbatim** source
 files from [`JetBrains/compose-multiplatform-core`](https://github.com/JetBrains/compose-multiplatform-core)
-into the repo. See [`../../PORT_STATUS.md`](../../PORT_STATUS.md) for the overall
-port strategy and [`../../CLAUDE.md`](../../CLAUDE.md) → "Compose API Fidelity"
+into the repo. See [`../../CLAUDE.md`](../../CLAUDE.md) → "Compose API Fidelity"
 for the three fix strategies (pull-verbatim / surface-match / intentional-custom).
 
 ## The vendored files are NOT committed
@@ -11,12 +10,12 @@ for the three fix strategies (pull-verbatim / surface-match / intentional-custom
 `<module>/src/vendor/` is **gitignored** — it is a generated artifact, not
 source. Only the tooling here and the per-module manifests are tracked:
 
-| File | Purpose |
-| --- | --- |
-| `sync.sh` | Idempotent script that canonicalizes the selected manifest(s) then copies each active entry verbatim from the pinned upstream ref. |
-| `format-manifest.py` | Canonicalizes a `compose-fork.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone. |
-| `compose-ref.txt` | The pinned upstream commit the vendored files are synced from. |
-| `README.md` | This file. |
+| File                              | Purpose                                                                                                                                                |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sync.sh`                         | Idempotent script that canonicalizes the selected manifest(s) then copies each active entry verbatim from the pinned upstream ref.                     |
+| `format-manifest.py`              | Canonicalizes a `compose-fork.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone.                                       |
+| `compose-ref.txt`                 | The pinned upstream commit the vendored files are synced from.                                                                                         |
+| `README.md`                       | This file.                                                                                                                                             |
 | `../../<module>/compose-fork.txt` | Per-module manifest — lives **alongside the module's `build.gradle.kts`**. Today only `:core` has one; a future `:material3` module would add its own. |
 
 ## Manifest layout — per module, co-located with `build.gradle.kts`
@@ -93,12 +92,12 @@ bash scripts/compose-fork/sync.sh :core :material              # multiple
 
 Argument resolution:
 
-| Form | Resolves to |
-| --- | --- |
-| `:foo:bar` | `foo/bar/compose-fork.txt` |
-| `foo/bar` | `foo/bar/compose-fork.txt` |
-| `foo`     | `foo/compose-fork.txt` |
-| `path/to/file.txt` | that path |
+| Form               | Resolves to                |
+|--------------------|----------------------------|
+| `:foo:bar`         | `foo/bar/compose-fork.txt` |
+| `foo/bar`          | `foo/bar/compose-fork.txt` |
+| `foo`              | `foo/compose-fork.txt`     |
+| `path/to/file.txt` | that path                  |
 
 Re-run any time after editing a manifest or bumping `compose-ref.txt`.
 The script is idempotent.

@@ -1,18 +1,15 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui:ui-geometry.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:ui:ui-geometry   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/ui/ui-geometry/src
 
-# ── androidx.compose.ui.geometry ────────────────────────────────────────────
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/CornerRadius.kt       src/vendor/common/kotlin/androidx/compose/ui/geometry/CornerRadius.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt      src/vendor/common/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt  src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/MutableRect.kt        src/vendor/common/kotlin/androidx/compose/ui/geometry/MutableRect.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt             src/vendor/common/kotlin/androidx/compose/ui/geometry/Offset.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Rect.kt               src/vendor/common/kotlin/androidx/compose/ui/geometry/Rect.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/RoundRect.kt          src/vendor/common/kotlin/androidx/compose/ui/geometry/RoundRect.kt
-compose/ui/ui-geometry/src/commonMain/kotlin/androidx/compose/ui/geometry/Size.kt               src/vendor/common/kotlin/androidx/compose/ui/geometry/Size.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/geometry/CornerRadius.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/CornerRadius.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/GeometryUtils.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/InlineClassHelper.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/MutableRect.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/MutableRect.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/Offset.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/Offset.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/Rect.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/Rect.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/RoundRect.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/RoundRect.kt
+#     | commonMain/kotlin/androidx/compose/ui/geometry/Size.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/Size.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   (none — every source set under SET_ROOT is vendored)
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

@@ -1,22 +1,28 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui:ui-util.
-# Re-sync with: scripts/compose-fork/sync.sh :compose:ui:ui-util   (or `sync.sh` for every module).
-# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
-#
-# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
-# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =
-# candidate. Never hand-edit the vendored files — change this manifest / the ref
-# and re-run sync.sh.
+SET_ROOT=compose/ui/ui-util/src
 
-# ── androidx.compose.ui ─────────────────────────────────────────────────────
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt        src/vendor/common/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt  src/vendor/common/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt       src/vendor/common/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/InternalComposeUiApi.kt            src/vendor/common/kotlin/androidx/compose/ui/InternalComposeUiApi.kt
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/ExperimentalComposeUiApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/ExperimentalIndirectPointerApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/ExperimentalMediaQueryApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/InternalComposeUiApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/InternalComposeUiApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/util/InlineClassHelper.kt -> src/vendor/common/kotlin/androidx/compose/ui/util/InlineClassHelper.kt
+#     | commonMain/kotlin/androidx/compose/ui/util/ListUtils.kt -> src/vendor/common/kotlin/androidx/compose/ui/util/ListUtils.kt
+#     | commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt -> src/vendor/common/kotlin/androidx/compose/ui/util/MathHelpers.kt
+#     | commonMain/kotlin/androidx/compose/ui/util/Trace.kt -> src/vendor/common/kotlin/androidx/compose/ui/util/Trace.kt
 
-# ── androidx.compose.ui.util ────────────────────────────────────────────────
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/InlineClassHelper.kt         src/vendor/common/kotlin/androidx/compose/ui/util/InlineClassHelper.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/ListUtils.kt                 src/vendor/common/kotlin/androidx/compose/ui/util/ListUtils.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/MathHelpers.kt               src/vendor/common/kotlin/androidx/compose/ui/util/MathHelpers.kt
-compose/ui/ui-util/src/commonMain/kotlin/androidx/compose/ui/util/Trace.kt                     src/vendor/common/kotlin/androidx/compose/ui/util/Trace.kt
-compose/ui/ui-util/src/nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHelper.nonJvm.kt  src/vendor/native/kotlin/androidx/compose/ui/util/InlineClassHelper.native.kt
-compose/ui/ui-util/src/macosMain/kotlin/androidx/compose/ui/util/Trace.macos.kt                src/vendor/native/kotlin/androidx/compose/ui/util/Trace.native.kt
+macosMain/kotlin/androidx/compose/ui/util/Trace.macos.kt -> src/vendor/native/kotlin/androidx/compose/ui/util/Trace.native.kt
+
+nonJvmMain/kotlin/androidx/compose/ui/util/InlineClassHelper.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/util/InlineClassHelper.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (1)
+#     | androidMain/kotlin/androidx/compose/ui/util/AndroidTrace.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/util/AndroidTrace.android.kt
+#   desktopMain (1)
+#     | desktopMain/kotlin/androidx/compose/ui/util/Trace.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/util/Trace.desktop.kt
+#   iosMain (1)
+#     | iosMain/kotlin/androidx/compose/ui/util/Trace.ios.kt -> src/vendor/native/kotlin/androidx/compose/ui/util/Trace.ios.kt
+#   jvmAndAndroidMain (1)
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/util/InlineClassHelper.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/util/InlineClassHelper.jvmAndAndroid.kt
+#   webMain (1)
+#     | webMain/kotlin/androidx/compose/ui/util/Trace.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/util/Trace.web.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>
