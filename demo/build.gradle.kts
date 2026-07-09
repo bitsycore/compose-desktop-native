@@ -102,7 +102,7 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
+        nativeMain {
             dependencies {
                 if (vReleased != null) {
                     implementation("com.bitsycore.compose.sdl:desktop-window:$vReleased")
@@ -116,8 +116,6 @@ kotlin {
                 implementation(project(":navigation3-ui"))
                 implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             }
-        }
-        nativeMain {
             // Generated typed Res.* accessors (produced by generateComposeResAccessors).
             // They import the project's native Res API, so they belong to the native
             // source set — the resource shim's native actual is the only common-side

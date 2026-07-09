@@ -205,9 +205,9 @@ kotlin {
             mingwX64Main.get().dependsOn(sdlRendererMingwMain)
         }
 
-        val macosArm64Main = create("macosArm64Main")
-        val linuxX64Main = create("linuxX64Main")
-        val linuxArm64Main = create("linuxArm64Main")
+        val macosArm64Main = get("macosArm64Main")
+        val linuxX64Main = get("linuxX64Main")
+        val linuxArm64Main = get("linuxArm64Main")
 
         if (useSdl3Everywhere) {
             // macOS / Linux flip to SDL3 — create the sdl intermediates.
