@@ -2,9 +2,9 @@
 // from upstream into src/vendor/. Split out to mirror Compose Multiplatform's
 // module packaging (compose/animation/animation-graphics).
 //
-// Provenance = animation-graphics/compose-fork.txt + tools/compose-fork/compose-ref.txt.
+// Provenance = animation-graphics/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
 // Never hand-edit files under src/vendor/ — change the manifest and re-run
-// `python tools/compose-fork/sync.py compose/animation/animation-graphics`.
+// `python scripts/compose-fork/sync.py compose/animation/animation-graphics`.
 //
 // Publication artifactId: desktop-animation-graphics.
 

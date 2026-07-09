@@ -1,6 +1,6 @@
 # Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :compose:ui:ui-util.
-# Re-sync with: tools/compose-fork/sync.sh :compose:ui:ui-util   (or `sync.sh` for every module).
-# Upstream ref pinned in tools/compose-fork/compose-ref.txt.
+# Re-sync with: scripts/compose-fork/sync.sh :compose:ui:ui-util   (or `sync.sh` for every module).
+# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.
 #
 # Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>
 # Grouped by androidx package (alphabetical). Uncommented = vendored, commented =

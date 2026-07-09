@@ -29,7 +29,7 @@ PREFIX="$BUILD/prefix"
 mkdir -p "$BUILD"
 win() { cygpath -m "$1"; }
 
-[ -f "$LIBS/SDL3/lib/libSDL3.a" ] || { echo "ERROR: static SDL3 not found -- run tools/build-sdl/build-sdl3.sh first" >&2; exit 1; }
+[ -f "$LIBS/SDL3/lib/libSDL3.a" ] || { echo "ERROR: static SDL3 not found -- run scripts/build-sdl/build-sdl3.sh first" >&2; exit 1; }
 
 if command -v ninja >/dev/null 2>&1; then
 	NINJA="ninja"

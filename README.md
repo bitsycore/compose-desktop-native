@@ -132,7 +132,7 @@ implementation(project(":material-symbols"))  // icon-font composables (optional
   Maven).
 - **Linux:** `sudo apt install libsdl3-dev`.
 - **Windows:** SDL3, SDL3_ttf, SDL3_image and FreeType are built from source
-  as **static** libraries by `tools/build-sdl/build-all.sh` into the gitignored
+  as **static** libraries by `scripts/build-sdl/build-all.sh` into the gitignored
   in-repo `libs/`, then linked into the executable — the Windows
   distributable is just `<app>.exe` + `data.kres`, no runtime DLLs.
 
@@ -145,11 +145,11 @@ carries a `compose-fork.txt` manifest listing which upstream files it pulls
 in.
 
 ```bash
-tools/compose-fork/sync.sh                           # sync every module
-tools/compose-fork/sync.sh compose/ui/compose-fork.txt   # one module
+scripts/compose-fork/sync.sh                           # sync every module
+scripts/compose-fork/sync.sh compose/ui/compose-fork.txt   # one module
 ```
 
-Upstream ref pinned in `tools/compose-fork/compose-ref.txt`.
+Upstream ref pinned in `scripts/compose-fork/compose-ref.txt`.
 
 See [CLAUDE.md](CLAUDE.md) for the full architecture, source-set hierarchy,
 vendoring rules, density flow (physical-pixel Option B), and per-area file

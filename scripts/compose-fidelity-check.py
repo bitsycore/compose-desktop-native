@@ -9,7 +9,7 @@
 #   - official dumps: the JetBrains/compose-multiplatform-core clone's
 #                     compose/**/api/*.klib.api  (default: C:/Dev/cmp-ref)
 #
-# Usage:  ./gradlew apiDump && python3 tools/compose-fidelity-check.py [cmp-ref-dir]
+# Usage:  ./gradlew apiDump && python3 scripts/compose-fidelity-check.py [cmp-ref-dir]
 #
 # Both files use the same binary-compatibility-validator klib format, where each
 # declaration carries a trailing `// <decl-id>|<mangle>` comment. We compare the
@@ -27,7 +27,7 @@ from pathlib import Path
 
 kRoot = Path(__file__).resolve().parent.parent
 # cmp-ref clone: explicit arg, then $CMP_REF, then <repo>/../cmp-ref (where
-# tools/compose-fork/sync.sh puts it), then the old Windows default. Portable
+# scripts/compose-fork/sync.sh puts it), then the old Windows default. Portable
 # across Windows / macOS / Linux.
 if len(sys.argv) > 1:
     kRefDir = Path(sys.argv[1])

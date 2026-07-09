@@ -2,9 +2,9 @@
 // from upstream into src/vendor/. Split out of :foundation to mirror Compose
 // Multiplatform's module packaging.
 //
-// Provenance = foundation-layout/compose-fork.txt + tools/compose-fork/compose-ref.txt.
+// Provenance = foundation-layout/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
 // Never hand-edit files under src/vendor/ — change the manifest and re-run
-// `python tools/compose-fork/sync.py compose/foundation/foundation-layout`.
+// `python scripts/compose-fork/sync.py compose/foundation/foundation-layout`.
 //
 // Publication artifactId: desktop-foundation-layout.
 

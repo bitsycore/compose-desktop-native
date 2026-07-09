@@ -13,7 +13,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
 }
 
-// In-repo (gitignored) native deps; see tools/. Driven off rootDir for portability.
+// In-repo (gitignored) native deps; see scripts/. Driven off rootDir for portability.
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
@@ -159,7 +159,7 @@ val vUsedStyles: List<String> = detectUsedStyles()
 // ==================
 // MARK: Material Symbols subsetting (-PsubsetIcons=true)
 // ==================
-// tools/subset-material-symbols.py scans this module's Kotlin sources for
+// scripts/subset-material-symbols.py scans this module's Kotlin sources for
 // MaterialSymbols.<Name> references and writes build/icons/usage-codepoint.txt.
 // When -PsubsetIcons=true is passed, each icon-font module's downloaded TTF
 // is hb-subset'd against that file and the Zip below bundles the trimmed
@@ -172,7 +172,7 @@ val iconsBuildDir = layout.buildDirectory.dir("icons")
 
 val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") {
     description = "Scan src/ for MaterialSymbols.<Name> usages → usage-codepoint.txt."
-    val vScript = rootProject.layout.projectDirectory.file("tools/subset-material-symbols.py").asFile
+    val vScript = rootProject.layout.projectDirectory.file("scripts/subset-material-symbols.py").asFile
     val vConstants = rootProject.project(":material-symbols").layout.projectDirectory
         .file("src/commonMain/kotlin/com/compose/sdl/icons/MaterialSymbols.kt").asFile
     val vUsageFile = iconsBuildDir.get().file("usage-codepoint.txt").asFile

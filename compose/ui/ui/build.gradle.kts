@@ -144,7 +144,7 @@ kotlin {
     sourceSets {
         commonMain {
             // Files vendored VERBATIM from upstream Compose by
-            // tools/compose-fork/sync.sh. Kept in their own folder so it's
+            // scripts/compose-fork/sync.sh. Kept in their own folder so it's
             // obvious they are generated — never hand-edit; re-run sync instead.
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {

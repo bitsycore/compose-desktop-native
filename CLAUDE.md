@@ -80,11 +80,11 @@ demo/                → :demo      — flagship showcase app (30+ screens) + th
                                     screens on stock JVM Compose Desktop (`./gradlew :demo:run`,
                                     MainJvmKt) — the parity reference; differences vs native = port bugs
 apidemo/             → :apidemo   — Postman-style REST API manager
-tools/               → vendor-sync + python helper scripts (compose-fidelity/coverage,
+scripts/             → vendor-sync + python helper scripts (compose-fidelity/coverage,
                       material-symbols generate/subset) + compose-fork/;
-                      tools/build-sdl/ = Windows static-lib build scripts (bash)
+                      scripts/build-sdl/ = Windows static-lib build scripts (bash)
 libs/                → gitignored per-host static SDL3 / SDL3_ttf / SDL3_image / FreeType
-                      output of tools/build-sdl/build-*.sh on Windows
+                      output of scripts/build-sdl/build-*.sh on Windows
 ```
 
 Module PATHS stay short (`:ui`, `:foundation`, `:window`, …) —
@@ -124,10 +124,10 @@ install the popup / scaffold layer at the composition root).
 
 Every module that ships `androidx.compose.*` code carries a
 `<module>/compose-fork.txt` manifest — a text file with one line per file:
-`<upstream-path> <local-dest-path>`. `tools/compose-fork/sync.sh` walks all
+`<upstream-path> <local-dest-path>`. `scripts/compose-fork/sync.sh` walks all
 manifests and copies each listed file byte-for-byte from a pinned
 `JetBrains/compose-multiplatform-core` checkout (ref in
-`tools/compose-fork/compose-ref.txt`) into
+`scripts/compose-fork/compose-ref.txt`) into
 `<module>/src/vendor/{common,native,skikoRenderer,sdlRenderer}/kotlin/`. The
 `src/vendor/` tree is **gitignored** — you don't check it in, you re-sync
 on demand.
@@ -289,10 +289,10 @@ for SDL3_ttf.
 **Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image + FreeType):**
 these four libraries + image codecs are **linked statically into the
 executable** — no runtime DLLs, distributable is just `<app>.exe` +
-`data.kres`. They're not downloaded — `tools/build-sdl/build-all.sh` (from Git
+`data.kres`. They're not downloaded — `scripts/build-sdl/build-all.sh` (from Git
 Bash) builds them from source as static libs into a gitignored, in-repo `libs/`
 folder. Needs: git, cmake, mingw-w64 gcc/g++ on PATH, plus curl + python for
-ninja fetch. `tools/build-sdl/build-all.sh` = `build-freetype.sh` → `build-sdl3.sh` →
+ninja fetch. `scripts/build-sdl/build-all.sh` = `build-freetype.sh` → `build-sdl3.sh` →
 `build-sdl3-image.sh` → `build-sdl3-ttf.sh`.
 
 ## Runtime bundling — data.kres
@@ -308,7 +308,7 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 - Material Symbols fonts for the styles the app **actually uses** — the
   Zip task scans the app's Kotlin sources for `MaterialSymbolsOutlined` /
   `Rounded` / `Sharp` and only bundles the fonts referenced.
-- `-PsubsetIcons=true` (default on): `tools/subset-material-symbols.py`
+- `-PsubsetIcons=true` (default on): `scripts/subset-material-symbols.py`
   scans app sources for `MaterialSymbols.<Name>` usage and hb-subsets each
   bundled font down to just those glyphs. Needs `hb-subset` on PATH
   (`brew install harfbuzz` / `apt install harfbuzz-utils`) — falls back
@@ -318,18 +318,18 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 
 ```bash
 # Sync every module's compose-fork.txt against the pinned upstream ref.
-tools/compose-fork/sync.sh
+scripts/compose-fork/sync.sh
 
 # Sync one module by direct manifest path (module names use ':' → '/' → skip
 # 'compose/' prefix — nested modules like compose/sdl/window pass the full path).
-tools/compose-fork/sync.sh compose/ui/compose-fork.txt
+scripts/compose-fork/sync.sh compose/ui/compose-fork.txt
 
 # Re-format a manifest (align columns, group by upstream folder).
-tools/compose-fork/format-manifest.py --discover ../cmp-ref \
+scripts/compose-fork/format-manifest.py --discover ../cmp-ref \
     --manifest compose/ui/compose-fork.txt
 ```
 
-Upstream ref: `tools/compose-fork/compose-ref.txt` — set to a specific commit
+Upstream ref: `scripts/compose-fork/compose-ref.txt` — set to a specific commit
 of `JetBrains/compose-multiplatform-core`. Bump the ref → re-sync → let the
 build tell you what broke.
 

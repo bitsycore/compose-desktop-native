@@ -1,6 +1,6 @@
 // :ui-util — androidx.compose.ui.util.* (+ Experimental/InternalComposeUiApi markers),
 // vendored VERBATIM from upstream. Split out of :ui to mirror CMP (compose/ui/ui-util).
-// Never hand-edit src/vendor/ — change the manifest + `python tools/compose-fork/sync.py compose/ui/ui-util`.
+// Never hand-edit src/vendor/ — change the manifest + `python scripts/compose-fork/sync.py compose/ui/ui-util`.
 // Publication artifactId: desktop-ui-util.
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)

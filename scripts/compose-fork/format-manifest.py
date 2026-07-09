@@ -53,8 +53,8 @@ EXCLUDE_PKGS = ('androidx.compose.ui.test', 'androidx.compose.ui.tooling')
 def header_for(module):
 	return [
 		'# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :{}.'.format(module),
-		'# Re-sync with: tools/compose-fork/sync.sh :{}   (or `sync.sh` for every module).'.format(module),
-		'# Upstream ref pinned in tools/compose-fork/compose-ref.txt.',
+		'# Re-sync with: scripts/compose-fork/sync.sh :{}   (or `sync.sh` for every module).'.format(module),
+		'# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.',
 		'#',
 		'# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>',
 		'# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =',
@@ -226,7 +226,7 @@ def discover_manifests(repo_root):
 		# Prune build / gradle / tool dirs
 		dirs[:] = [d for d in dirs if d not in {'build', '.gradle', '.git', 'node_modules'}]
 		if 'compose-fork.txt' in files:
-			# Avoid the legacy tools/compose-fork/manifest.txt (has a different name anyway).
+			# Avoid the legacy scripts/compose-fork/manifest.txt (has a different name anyway).
 			results.append(os.path.join(dirpath, 'compose-fork.txt'))
 	return sorted(results)
 

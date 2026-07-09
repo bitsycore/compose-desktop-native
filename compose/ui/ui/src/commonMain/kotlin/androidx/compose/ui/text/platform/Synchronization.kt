@@ -4,7 +4,7 @@
  * with @PublishedApi added to `SynchronizedObject` — same reason as
  * ui/platform/Synchronization.kt in this module. The entry in
  * compose/ui/compose-fork.txt is commented out so this file survives
- * `tools/compose-fork/sync.sh`.
+ * `scripts/compose-fork/sync.sh`.
  */
 
 package androidx.compose.ui.text.platform

@@ -8,7 +8,7 @@
  * NOT clear the error in metadata compile, so promote the class to
  * @PublishedApi so its effective ABI visibility matches the inline fn.
  * Line-for-line kept in sync; the entry in compose/ui/compose-fork.txt is
- * commented out so this file survives `tools/compose-fork/sync.sh`.
+ * commented out so this file survives `scripts/compose-fork/sync.sh`.
  */
 
 package androidx.compose.ui.platform

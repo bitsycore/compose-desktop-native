@@ -2,9 +2,9 @@
 // upstream into src/vendor/. Split out of :material3 to mirror Compose
 // Multiplatform's module packaging.
 //
-// Provenance = material-ripple/compose-fork.txt + tools/compose-fork/compose-ref.txt.
+// Provenance = material-ripple/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
 // Never hand-edit files under src/vendor/ — change the manifest and re-run
-// `python tools/compose-fork/sync.py compose/material/material-ripple`.
+// `python scripts/compose-fork/sync.py compose/material/material-ripple`.
 //
 // Publication artifactId: desktop-material-ripple.
 

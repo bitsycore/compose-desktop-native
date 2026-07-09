@@ -8,7 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.compose) apply false
     alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.compose.multiplatform) apply false
-    // Public-ABI dumps (api/<module>.klib.api). Used by tools/compose-fidelity-check.py
+    // Public-ABI dumps (api/<module>.klib.api). Used by scripts/compose-fidelity-check.py
     // to diff our androidx.compose.* surface against the official Compose klib ABI.
     alias(libs.plugins.binary.compatibility.validator)
 }
@@ -32,7 +32,7 @@ allprojects {
 // Whether the current host can build the mingwX64 target. Kotlin/Native can
 // only cross-compile mingwX64 cinterops from a Windows host — the sdl3_ttf /
 // sdl3_image cinterops need Windows SDL3 headers under libs/ (produced by
-// tools/build-sdl/build-*.sh, which only runs on Windows). Declaring `mingwX64()` on
+// scripts/build-sdl/build-*.sh, which only runs on Windows). Declaring `mingwX64()` on
 // a non-Windows host is safe for pure-Kotlin modules but blows up the moment
 // a `depends = sdl3` cinterop tries to include SDL3_ttf/SDL_ttf.h.
 // Override with `-PforceMingw=true` if you actually have the headers wired.

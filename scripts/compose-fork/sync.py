@@ -22,15 +22,15 @@
 # manifest or the ref and re-run instead.
 #
 # Usage (any platform):
-#   python tools/compose-fork/sync.py                              # every module with a compose-fork.txt
-#   python tools/compose-fork/sync.py :compose:animation-core      # gradle path
-#   python tools/compose-fork/sync.py compose/animation-core       # module path
-#   python tools/compose-fork/sync.py compose/ui/compose-fork.txt  # direct path to a manifest
+#   python scripts/compose-fork/sync.py                              # every module with a compose-fork.txt
+#   python scripts/compose-fork/sync.py :compose:animation-core      # gradle path
+#   python scripts/compose-fork/sync.py compose/animation-core       # module path
+#   python scripts/compose-fork/sync.py compose/ui/compose-fork.txt  # direct path to a manifest
 # Every sync ALSO re-annotates each SET_ROOT manifest in place (idempotent): under each
 # folder directive, commented `#     | src -> dest` lines for the files it copies (uncomment
 # one to pin it as a per-file entry), plus a trailing `# >>> GAPS` block listing every
 # upstream .kt under SET_ROOT not yet vendored (so new upstream files show up commented).
-#   python tools/compose-fork/sync.py --gaps navigation3/navigation3-ui  # annotate ONLY (no copy)
+#   python scripts/compose-fork/sync.py --gaps navigation3/navigation3-ui  # annotate ONLY (no copy)
 # Env:
 #   CMP_REF=<path>   reuse/create the clone here (default ../cmp-ref)
 
@@ -45,7 +45,7 @@ REPO_URL = 'https://github.com/JetBrains/compose-multiplatform-core'
 CMP_REF = os.environ.get('CMP_REF') or os.path.normpath(os.path.join(REPO_ROOT, '..', 'cmp-ref'))
 
 # Dirs we never descend into when auto-discovering manifests.
-PRUNE_DIRS = {'build', '.gradle', '.git', 'node_modules', 'tools'}
+PRUNE_DIRS = {'build', '.gradle', '.git', 'node_modules', 'scripts'}
 
 # `compose/<area>/<module>` prefix at the start of an upstream path -- one per
 # sparse-checkout dir.

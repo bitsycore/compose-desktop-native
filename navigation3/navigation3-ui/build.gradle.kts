@@ -5,8 +5,8 @@
 // transition-spec `expect`s are actualised from the fork's macosMain (platform-agnostic).
 //
 // navigation3-runtime + lifecycle-viewmodel-navigation3 are Maven deps (api-exposed by :ui).
-// Provenance = compose-fork.txt + tools/compose-fork/compose-ref.txt. Never hand-edit
-// src/vendor — change the manifest + `python tools/compose-fork/sync.py navigation3/navigation3-ui`.
+// Provenance = compose-fork.txt + scripts/compose-fork/compose-ref.txt. Never hand-edit
+// src/vendor — change the manifest + `python scripts/compose-fork/sync.py navigation3/navigation3-ui`.
 //
 // Publication artifactId: desktop-navigation3-ui.
 plugins {

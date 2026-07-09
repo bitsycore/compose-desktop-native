@@ -15,7 +15,7 @@ plugins {
 val composeResGenDir = layout.buildDirectory.dir("generated/composeRes")
 
 // Native deps live in a gitignored, in-repo folder populated by the scripts in
-// tools/build-sdl/ (build-all.sh, build-freetype.sh, …). Driven off rootDir so
+// scripts/build-sdl/ (build-all.sh, build-freetype.sh, …). Driven off rootDir so
 // it works regardless of where the repo is cloned.
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 

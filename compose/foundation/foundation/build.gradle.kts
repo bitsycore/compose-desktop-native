@@ -13,9 +13,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // stays a distinct package from androidx.compose.foundation.*), only the Gradle
 // module boundary is coalesced.
 //
-// Provenance = foundation/compose-fork.txt + tools/compose-fork/compose-ref.txt.
+// Provenance = foundation/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
 // Never hand-edit files under foundation/src/vendor/ — change the manifest and
-// re-run `bash tools/compose-fork/sync.sh :foundation`.
+// re-run `bash scripts/compose-fork/sync.sh :foundation`.
 //
 // Note on DarkTheme: foundation declares `internal expect fun _isSystemInDarkTheme()`,
 // and its actual lives here as a plain nativeMain kt file (see

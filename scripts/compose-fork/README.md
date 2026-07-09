@@ -43,10 +43,10 @@ pairs is preserved, so the vendored tree is byte-identical. `sync.sh` runs it
 automatically before copying; run it yourself after hand-editing:
 
 ```bash
-python3 tools/compose-fork/format-manifest.py                                       # rewrite EVERY <module>/compose-fork.txt
-python3 tools/compose-fork/format-manifest.py --manifest core/compose-fork.txt      # single manifest
-python3 tools/compose-fork/format-manifest.py --check                               # exit 1 if any manifest is not canonical
-python3 tools/compose-fork/format-manifest.py --discover PATH                       # + surface new upstream files
+python3 scripts/compose-fork/format-manifest.py                                       # rewrite EVERY <module>/compose-fork.txt
+python3 scripts/compose-fork/format-manifest.py --manifest core/compose-fork.txt      # single manifest
+python3 scripts/compose-fork/format-manifest.py --check                               # exit 1 if any manifest is not canonical
+python3 scripts/compose-fork/format-manifest.py --discover PATH                       # + surface new upstream files
 ```
 
 ### Discovering new upstream files
@@ -75,7 +75,7 @@ you must populate `<module>/src/vendor/` once before building:
 ```bash
 # Clones/updates the sparse upstream checkout at $CMP_REF (default ../cmp-ref)
 # to the ref in compose-ref.txt, then copies every manifest entry verbatim.
-CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh
+CMP_REF=../cmp-ref bash scripts/compose-fork/sync.sh
 ```
 
 ## Syncing selectively — per-module
@@ -83,12 +83,12 @@ CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh
 `sync.sh` accepts one or more arguments identifying which manifests to run:
 
 ```bash
-bash tools/compose-fork/sync.sh                              # every <module>/compose-fork.txt in the repo
-bash tools/compose-fork/sync.sh :core                        # Gradle path
-bash tools/compose-fork/sync.sh core                         # module name (same thing)
-bash tools/compose-fork/sync.sh :material-symbols:outlined   # nested Gradle path
-bash tools/compose-fork/sync.sh core/compose-fork.txt        # direct path to a manifest
-bash tools/compose-fork/sync.sh :core :material              # multiple
+bash scripts/compose-fork/sync.sh                              # every <module>/compose-fork.txt in the repo
+bash scripts/compose-fork/sync.sh :core                        # Gradle path
+bash scripts/compose-fork/sync.sh core                         # module name (same thing)
+bash scripts/compose-fork/sync.sh :material-symbols:outlined   # nested Gradle path
+bash scripts/compose-fork/sync.sh core/compose-fork.txt        # direct path to a manifest
+bash scripts/compose-fork/sync.sh :core :material              # multiple
 ```
 
 Argument resolution:
@@ -116,7 +116,7 @@ If you want to vendor a Compose module we don't yet cover (e.g. `material3`):
    # Add ONE commented candidate to seed the upstream module reference, then
    # let discover fill in the rest:
    printf '# compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Placeholder.kt  src/vendor/common/kotlin/androidx/compose/material3/Placeholder.kt\n' > material3/compose-fork.txt
-   CMP_REF=../cmp-ref bash tools/compose-fork/sync.sh :material3
+   CMP_REF=../cmp-ref bash scripts/compose-fork/sync.sh :material3
    ```
 3. Uncomment the entries you actually want to vendor, then re-run `sync.sh
    :material3`.
