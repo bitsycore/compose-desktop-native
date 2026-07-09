@@ -13,12 +13,6 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
 }
 
-// See :demo's build for the full rationale — `-PuseReleased=<version>` swaps
-// :window / :material3 for the published Maven artifacts. `:material-symbols`
-// stays a project dep because the Zip task below hooks its font download
-// tasks by name.
-val vReleased = (findProperty("useReleased") as String?)?.takeIf { it.isNotBlank() }
-
 // In-repo (gitignored) native deps; see tools/. Driven off rootDir for portability.
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 
@@ -85,23 +79,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                if (vReleased != null) {
-                    implementation("com.bitsycore.compose.sdl:desktop-window:$vReleased")
-                    implementation("com.bitsycore.compose.sdl:desktop-material3:$vReleased")
-                    // Swap :material-symbols too — otherwise its transitive
-                    // project deps (:foundation, :animation-core, :ui) collide
-                    // with the same klibs pulled from Maven via desktop-window,
-                    // and the K/N compiler fails with duplicate `unique_name`.
-                    // The material-symbols module stays in settings.gradle
-                    // regardless — the Zip task below still references its
-                    // Gradle Project object via rootProject.project(...) to
-                    // read the per-style font-download task extras.
-                    implementation("com.bitsycore.compose.sdl:desktop-material-symbols:$vReleased")
-                } else {
-                    implementation(project(":window"))
-                    implementation(project(":material3"))
-                    implementation(project(":material-symbols"))
-                }
+                implementation(project(":window"))
+                implementation(project(":material3"))
+                implementation(project(":material-symbols"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
@@ -179,7 +159,7 @@ val vUsedStyles: List<String> = detectUsedStyles()
 // ==================
 // MARK: Material Symbols subsetting (-PsubsetIcons=true)
 // ==================
-// scripts/subset-material-symbols.py scans this module's Kotlin sources for
+// tools/subset-material-symbols.py scans this module's Kotlin sources for
 // MaterialSymbols.<Name> references and writes build/icons/usage-codepoint.txt.
 // When -PsubsetIcons=true is passed, each icon-font module's downloaded TTF
 // is hb-subset'd against that file and the Zip below bundles the trimmed
@@ -192,7 +172,7 @@ val iconsBuildDir = layout.buildDirectory.dir("icons")
 
 val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") {
     description = "Scan src/ for MaterialSymbols.<Name> usages → usage-codepoint.txt."
-    val vScript = rootProject.layout.projectDirectory.file("scripts/subset-material-symbols.py").asFile
+    val vScript = rootProject.layout.projectDirectory.file("tools/subset-material-symbols.py").asFile
     val vConstants = rootProject.project(":material-symbols").layout.projectDirectory
         .file("src/commonMain/kotlin/com/compose/sdl/icons/MaterialSymbols.kt").asFile
     val vUsageFile = iconsBuildDir.get().file("usage-codepoint.txt").asFile

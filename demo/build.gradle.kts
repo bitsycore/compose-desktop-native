@@ -10,32 +10,13 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
 }
 
-// ==================
-// MARK: -PuseReleased=<version> — swap :window / :material3 for published artifacts
-// ==================
-// Default build (no property): :window + :material3 come from `project(...)`
-// so a local `./gradlew :demo:run…` picks up your uncommitted changes.
-// `-PuseReleased=<version>` swaps them for
-//     com.bitsycore.compose.sdl:desktop-window-<target>:<version>
-//     com.bitsycore.compose.sdl:desktop-material3-<target>:<version>
-// pulled from GitHub Packages — good for reproducing a release build against
-// the exact artifacts users will get. `:material-symbols` stays a project
-// dep either way — the Zip task below hooks its per-style font download
-// tasks (extra["iconFontDownloadTask<Style>"]), which don't exist on the
-// Maven artifact.
-//
-// GitHub Packages requires auth even for public reads. Provide creds via:
-//   -PgithubUser=<name> -PgithubToken=<pat>    or
-//   env: GITHUB_ACTOR / GITHUB_TOKEN            (auto-set on CI runners)
-val vReleased = (findProperty("useReleased") as String?)?.takeIf { it.isNotBlank() }
-
 // Output dir for the generated Res.* accessor file — wired into nativeMain
 // sources and produced by the generateComposeResAccessors task below.
 val composeResGenDir = layout.buildDirectory.dir("generated/composeRes")
 
 // Native deps live in a gitignored, in-repo folder populated by the scripts in
-// tools/ (fetch-sdl3.sh, build-freetype.sh). Driven off rootDir so it works
-// regardless of where the repo is cloned.
+// tools/build-sdl/ (build-all.sh, build-freetype.sh, …). Driven off rootDir so
+// it works regardless of where the repo is cloned.
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
@@ -104,15 +85,9 @@ kotlin {
     sourceSets {
         nativeMain {
             dependencies {
-                if (vReleased != null) {
-                    implementation("com.bitsycore.compose.sdl:desktop-window:$vReleased")
-                    implementation("com.bitsycore.compose.sdl:desktop-material3:$vReleased")
-                    implementation("com.bitsycore.compose.sdl:desktop-material-symbols:$vReleased")
-                } else {
-                    implementation(project(":window"))
-                    implementation(project(":material3"))
-                    implementation(project(":material-symbols"))
-                }
+                implementation(project(":window"))
+                implementation(project(":material3"))
+                implementation(project(":material-symbols"))
                 implementation(project(":navigation3-ui"))
                 implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             }

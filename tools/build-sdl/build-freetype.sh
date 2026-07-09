@@ -14,7 +14,7 @@
 set -euo pipefail
 
 FT_TAG="${FREETYPE_TAG:-VER-2-13-3}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LIBS="$REPO/libs"
 BUILD="$LIBS/.build/freetype"
 mkdir -p "$BUILD"

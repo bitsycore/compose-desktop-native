@@ -7,7 +7,7 @@
 # The codepoints are identical across the outlined / rounded / sharp styles, so
 # one file covers all three style modules.
 #
-# Usage:  python3 scripts/generate-material-symbols.py
+# Usage:  python3 tools/generate-material-symbols.py
 # Then build as usual. With -PsubsetIcons=true (default) the unused glyphs are
 # stripped from each app's font at build time, so shipping all names is free.
 
@@ -22,7 +22,7 @@ kCodepointsUrl = (
 
 kOutPath = (
     Path(__file__).resolve().parent.parent
-    / "material-symbols/src/commonMain/kotlin/com/compose/sdl/icons/MaterialSymbols.kt"
+    / "utils/material-symbols/src/commonMain/kotlin/com/compose/sdl/icons/MaterialSymbols.kt"
 )
 
 # snake_case (or kebab) icon name -> PascalCase Kotlin identifier. A leading
@@ -71,7 +71,7 @@ def main():
 	vSb.append("// ==================")
 	vSb.append("")
 	vSb.append("/* GENERATED — do not edit by hand. Regenerate with")
-	vSb.append("   scripts/generate-material-symbols.py (downloads Google's .codepoints")
+	vSb.append("   tools/generate-material-symbols.py (downloads Google's .codepoints")
 	vSb.append("   file for the Material Symbols variable font and emits every glyph as a")
 	vSb.append("   const). The codepoints are identical across the outlined / rounded /")
 	vSb.append("   sharp styles, so these constants resolve against whichever style module")

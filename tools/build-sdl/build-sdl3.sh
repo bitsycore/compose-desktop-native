@@ -31,7 +31,7 @@ set -euo pipefail
 
 SDL_REF="${SDL_REF:-release-3.4.12}"
 SDL_URL="${SDL_URL:-https://github.com/libsdl-org/SDL.git}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LIBS="$REPO/libs"
 BUILD="$LIBS/.build/sdl3src"
 SRC="$BUILD/src"

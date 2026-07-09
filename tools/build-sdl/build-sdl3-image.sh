@@ -20,7 +20,7 @@ set -euo pipefail
 
 SDL_IMAGE_REF="${SDL_IMAGE_REF:-release-3.4.4}"
 SDL_IMAGE_URL="${SDL_IMAGE_URL:-https://github.com/libsdl-org/SDL_image.git}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LIBS="$REPO/libs"
 BUILD="$LIBS/.build/sdl3imgsrc"
 SRC="$BUILD/src"
@@ -29,7 +29,7 @@ PREFIX="$BUILD/prefix"
 mkdir -p "$BUILD"
 win() { cygpath -m "$1"; }
 
-[ -f "$LIBS/SDL3/lib/libSDL3.a" ] || { echo "ERROR: static SDL3 not found -- run tools/build-sdl3.sh first" >&2; exit 1; }
+[ -f "$LIBS/SDL3/lib/libSDL3.a" ] || { echo "ERROR: static SDL3 not found -- run tools/build-sdl/build-sdl3.sh first" >&2; exit 1; }
 
 if command -v ninja >/dev/null 2>&1; then
 	NINJA="ninja"

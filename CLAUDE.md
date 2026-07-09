@@ -55,9 +55,11 @@ compose/
 ├── material/
 │   └── material-ripple/             → :material-ripple — androidx.compose.material.ripple.*
 └── sdl/                             ("Compose SDL" — project modules, not upstream CMP artifacts)
-    ├── window/                      → :window     — nativeComposeApp { Window(...) {} } multi-window
-    │                                               shell + SDL3 main loop; nativeComposeWindow() wrapper
-    └── material-symbols/            → :material-symbols — codepoints + all three style objects
+    └── window/                      → :window     — nativeComposeApp { Window(...) {} } multi-window
+                                                    shell + SDL3 main loop; nativeComposeWindow() wrapper
+
+utils/
+└── material-symbols/                → :material-symbols — codepoints + all three style objects
                                                     (Outlined / Rounded / Sharp). Apps get one dep;
                                                     the consumer Zip task bundles only the fonts used.
 
@@ -78,9 +80,11 @@ demo/                → :demo      — flagship showcase app (30+ screens) + th
                                     screens on stock JVM Compose Desktop (`./gradlew :demo:run`,
                                     MainJvmKt) — the parity reference; differences vs native = port bugs
 apidemo/             → :apidemo   — Postman-style REST API manager
-tools/               → vendor-sync + Windows static-lib build scripts (bash + python)
+tools/               → vendor-sync + python helper scripts (compose-fidelity/coverage,
+                      material-symbols generate/subset) + compose-fork/;
+                      tools/build-sdl/ = Windows static-lib build scripts (bash)
 libs/                → gitignored per-host static SDL3 / SDL3_ttf / SDL3_image / FreeType
-                      output of tools/build-*.sh on Windows
+                      output of tools/build-sdl/build-*.sh on Windows
 ```
 
 Module PATHS stay short (`:ui`, `:foundation`, `:window`, …) —
@@ -285,10 +289,10 @@ for SDL3_ttf.
 **Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image + FreeType):**
 these four libraries + image codecs are **linked statically into the
 executable** — no runtime DLLs, distributable is just `<app>.exe` +
-`data.kres`. They're not downloaded — `tools/build-all.sh` (from Git Bash)
-builds them from source as static libs into a gitignored, in-repo `libs/`
+`data.kres`. They're not downloaded — `tools/build-sdl/build-all.sh` (from Git
+Bash) builds them from source as static libs into a gitignored, in-repo `libs/`
 folder. Needs: git, cmake, mingw-w64 gcc/g++ on PATH, plus curl + python for
-ninja fetch. `tools/build-all.sh` = `build-freetype.sh` → `build-sdl3.sh` →
+ninja fetch. `tools/build-sdl/build-all.sh` = `build-freetype.sh` → `build-sdl3.sh` →
 `build-sdl3-image.sh` → `build-sdl3-ttf.sh`.
 
 ## Runtime bundling — data.kres
@@ -304,7 +308,7 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 - Material Symbols fonts for the styles the app **actually uses** — the
   Zip task scans the app's Kotlin sources for `MaterialSymbolsOutlined` /
   `Rounded` / `Sharp` and only bundles the fonts referenced.
-- `-PsubsetIcons=true` (default on): `scripts/subset-material-symbols.py`
+- `-PsubsetIcons=true` (default on): `tools/subset-material-symbols.py`
   scans app sources for `MaterialSymbols.<Name>` usage and hb-subsets each
   bundled font down to just those glyphs. Needs `hb-subset` on PATH
   (`brew install harfbuzz` / `apt install harfbuzz-utils`) — falls back
@@ -364,7 +368,7 @@ build tell you what broke.
 - `compose/foundation/foundation/src/nativeMain/…/icons/IconFontIcon.kt` —
   codepoint-based `Icon` composable + `MaterialIconAxes` /
   `MaterialIconAxisDefaults`.
-- `compose/sdl/material-symbols/src/…/MaterialSymbols{Outlined,Rounded,Sharp}.kt`.
+- `utils/material-symbols/src/…/MaterialSymbols{Outlined,Rounded,Sharp}.kt`.
 
 ### Resources
 - `compose/ui/ui/src/commonMain/…/res/Res.kt` — the project's

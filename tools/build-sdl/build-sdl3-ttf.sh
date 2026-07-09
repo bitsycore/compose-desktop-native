@@ -29,7 +29,7 @@ set -euo pipefail
 SDL_TTF_URL="${SDL_TTF_URL:-https://github.com/bitsycore/SDL_ttf.git}"
 SDL_TTF_REF="${SDL_TTF_REF:-variable-font-axes}"
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LIBS="$REPO/libs"
 BUILD="$LIBS/.build/sdl3_ttf"
 SRC="$BUILD/src"
@@ -38,8 +38,8 @@ PREFIX="$BUILD/prefix"
 MARKER="$BUILD/.source"
 mkdir -p "$BUILD"
 
-[ -f "$LIBS/SDL3/lib/cmake/SDL3/SDL3Config.cmake" ] || { echo "ERROR: SDL3 not found in libs/SDL3 -- run tools/build-sdl3.sh first" >&2; exit 1; }
-[ -f "$LIBS/FreeType/lib/libfreetype.a" ] || { echo "ERROR: FreeType not found in libs/FreeType -- run tools/build-freetype.sh first" >&2; exit 1; }
+[ -f "$LIBS/SDL3/lib/cmake/SDL3/SDL3Config.cmake" ] || { echo "ERROR: SDL3 not found in libs/SDL3 -- run tools/build-sdl/build-sdl3.sh first" >&2; exit 1; }
+[ -f "$LIBS/FreeType/lib/libfreetype.a" ] || { echo "ERROR: FreeType not found in libs/FreeType -- run tools/build-sdl/build-freetype.sh first" >&2; exit 1; }
 
 # cmake (a Windows exe) wants Windows-style paths; cygpath -m gives C:/foo form.
 win() { cygpath -m "$1"; }

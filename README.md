@@ -43,9 +43,11 @@ compose/
 ├── material3/material3/  → :material3
 ├── material/material-ripple/ → :material-ripple
 └── sdl/                  (project modules — the SDL integration layer)
-    ├── window/           → :window          (nativeComposeApp { Window(...) } + SDL3 main loop,
-    │                                         per-window Lifecycle/ViewModelStore/SavedState owners)
-    └── material-symbols/ → :material-symbols (codepoints + Outlined/Rounded/Sharp icon fonts)
+    └── window/           → :window          (nativeComposeApp { Window(...) } + SDL3 main loop,
+                                              per-window Lifecycle/ViewModelStore/SavedState owners)
+
+utils/
+└── material-symbols/    → :material-symbols (codepoints + Outlined/Rounded/Sharp icon fonts)
 
 navigation3/
 └── navigation3-ui/       → :navigation3-ui  (vendored NavDisplay + scene machinery — the one
@@ -130,7 +132,7 @@ implementation(project(":material-symbols"))  // icon-font composables (optional
   Maven).
 - **Linux:** `sudo apt install libsdl3-dev`.
 - **Windows:** SDL3, SDL3_ttf, SDL3_image and FreeType are built from source
-  as **static** libraries by `tools/build-all.sh` into the gitignored
+  as **static** libraries by `tools/build-sdl/build-all.sh` into the gitignored
   in-repo `libs/`, then linked into the executable — the Windows
   distributable is just `<app>.exe` + `data.kres`, no runtime DLLs.
 

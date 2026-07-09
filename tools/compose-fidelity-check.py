@@ -9,7 +9,7 @@
 #   - official dumps: the JetBrains/compose-multiplatform-core clone's
 #                     compose/**/api/*.klib.api  (default: C:/Dev/cmp-ref)
 #
-# Usage:  ./gradlew apiDump && python3 scripts/compose-fidelity-check.py [cmp-ref-dir]
+# Usage:  ./gradlew apiDump && python3 tools/compose-fidelity-check.py [cmp-ref-dir]
 #
 # Both files use the same binary-compatibility-validator klib format, where each
 # declaration carries a trailing `// <decl-id>|<mangle>` comment. We compare the
