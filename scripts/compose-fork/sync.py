@@ -31,8 +31,18 @@
 # one to pin it as a per-file entry), plus a trailing `# >>> GAPS` block listing every
 # upstream .kt under SET_ROOT not yet vendored (so new upstream files show up commented).
 #   python scripts/compose-fork/sync.py --gaps navigation3/navigation3-ui  # annotate ONLY (no copy)
+#
+# MULTI-REPO: a manifest may vendor from a DIFFERENT upstream repo with
+#   SET_REPO=<https-url>@<ref>
+# before its SET_ROOT (e.g. the compose-multiplatform umbrella repo for
+# components/resources). The ref is pinned INLINE so the manifest stays
+# self-contained provenance; the default (no SET_REPO) remains
+# compose-multiplatform-core at compose-ref.txt. Each extra repo gets its own
+# sibling sparse clone: ../cmp-ref-<repo-name>.
 # Env:
-#   CMP_REF=<path>   reuse/create the clone here (default ../cmp-ref)
+#   CMP_REF=<path>          reuse/create the DEFAULT clone here (default ../cmp-ref)
+#   CMP_REF_<REPO_NAME>=<path>  override an extra repo's clone dir (name upper-cased,
+#                               non-alphanumerics -> '_', e.g. CMP_REF_COMPOSE_MULTIPLATFORM)
 
 import os
 import re
@@ -43,6 +53,29 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 REPO_URL = 'https://github.com/JetBrains/compose-multiplatform-core'
 CMP_REF = os.environ.get('CMP_REF') or os.path.normpath(os.path.join(REPO_ROOT, '..', 'cmp-ref'))
+
+
+# ============
+#  Clone dir for a repo url: the default repo keeps CMP_REF; extra repos get a
+#  sibling `../cmp-ref-<name>` (overridable via CMP_REF_<NAME>).
+def repo_clone_dir(url):
+	if url == REPO_URL:
+		return CMP_REF
+	name = re.sub(r'\.git$', '', url.rstrip('/').split('/')[-1])
+	env = os.environ.get('CMP_REF_' + re.sub(r'[^A-Za-z0-9]+', '_', name).upper())
+	return env or os.path.normpath(os.path.join(REPO_ROOT, '..', 'cmp-ref-' + name))
+
+
+# ============
+#  Parse a SET_REPO value: `<https-url>@<ref>` — the ref is REQUIRED so every
+#  manifest pins its own provenance (ssh URLs unsupported; use https).
+def parse_set_repo(val):
+	v = val.strip().strip('"').strip("'").strip()
+	url, sep, ref = v.rpartition('@')
+	if not sep or not url or not ref:
+		sys.stderr.write("SET_REPO must be '<https-url>@<ref>' (inline-pinned ref): %r\n" % v)
+		sys.exit(1)
+	return url.rstrip('/'), ref
 
 # Dirs we never descend into when auto-discovering manifests.
 PRUNE_DIRS = {'build', '.gradle', '.git', 'node_modules', 'scripts'}
@@ -97,18 +130,26 @@ def norm_root(r):
 
 
 # ============
-#  Active (uncommented) `(upstream, dest)` pairs from a manifest. Three line forms:
+#  Active (uncommented) `(repo, upstream, dest)` triples from a manifest. Line forms:
+#    SET_REPO=<url>@<ref>      switch the upstream REPO for subsequent entries
+#                              (default: compose-multiplatform-core @ compose-ref.txt)
 #    SET_ROOT=<up-base>        set an upstream base prepended to subsequent `->` entries
 #    <src> -> <dest>             arrow entry; <src> is relative to the current SET_ROOT.
 #                                Trailing `/` on either side ⇒ a folder directive (whole tree).
 #    <up> <dest>                 legacy: two full paths, whitespace-separated (root NOT applied)
 #  SET_ROOT + `->` let a manifest name a whole module/source-set once instead of listing files.
 #  A leading `|` on <src> (from an uncommented `--gaps` folder-expansion line) is stripped.
-def active_entries(text):
+#  `repo` is an (url, ref) tuple; `default_repo` is used until a SET_REPO appears.
+def active_entries(text, default_repo):
 	root = ''
+	repo = default_repo
 	for line in text.splitlines():
 		s = line.strip()
 		if not s or s.startswith('#'):
+			continue
+		m = re.match(r'SET_REPO\s*=\s*(.+)$', s)
+		if m:
+			repo = parse_set_repo(m.group(1))
 			continue
 		m = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 		if m:
@@ -117,25 +158,30 @@ def active_entries(text):
 		if '->' in s:
 			src, dest = (p.strip() for p in s.split('->', 1))
 			src = src.lstrip('|').strip()
-			yield (root + '/' + src if root else src), dest
+			yield repo, (root + '/' + src if root else src), dest
 			continue
 		parts = s.split()
 		if len(parts) >= 2:
-			yield parts[0], parts[1]
+			yield repo, parts[0], parts[1]
 
 
 # ============
-#  Upstream paths (relative to CMP_REF, resolved against SET_ROOT) that a `!<src>`
+#  Upstream (repo, path) pairs (resolved against SET_REPO/SET_ROOT) that a `!<src>`
 #  line excludes from folder copies. Use this for MANUAL VENDORING inside a folder
 #  directive: a file we copied to src/{commonMain,...} and hand-edited (e.g. NavDisplay
 #  with the K/N rememberLifecycleOwner workaround) must be skipped by the folder copy so
 #  the edited project copy isn't shadowed by a pristine src/vendor duplicate.
-def active_exclusions(text):
+def active_exclusions(text, default_repo):
 	root = ''
+	repo = default_repo
 	out = set()
 	for line in text.splitlines():
 		s = line.strip()
 		if not s or s.startswith('#'):
+			continue
+		m = re.match(r'SET_REPO\s*=\s*(.+)$', s)
+		if m:
+			repo = parse_set_repo(m.group(1))
 			continue
 		m = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 		if m:
@@ -143,20 +189,26 @@ def active_exclusions(text):
 			continue
 		if s.startswith('!'):
 			src = s[1:].strip().lstrip('|').strip()
-			out.add((root + '/' + src) if root else src)
+			out.add((repo, (root + '/' + src) if root else src))
 	return out
 
 
 # ============
-#  Union of `compose/<area>/<module>` prefixes referenced by a manifest -- ACTIVE and
-#  COMMENTED alike (a leading `#` is stripped first, matching the old bash behaviour).
-#  Computed across EVERY manifest so a partial sync never shrinks the sparse clone.
-def sparse_prefixes(text):
-	prefixes = set()
+#  Per-repo union of `compose/<area>/<module>` prefixes referenced by a manifest --
+#  ACTIVE and COMMENTED alike (a leading `#` is stripped first, matching the old bash
+#  behaviour). Computed across EVERY manifest so a partial sync never shrinks a clone.
+#  Returns {repo: set(prefixes)}.
+def sparse_prefixes(text, default_repo):
+	prefixes = {}
 	root = ''
+	repo = default_repo
 	for line in text.splitlines():
 		s = line.strip().lstrip('#').strip()
 		if not s:
+			continue
+		m = re.match(r'SET_REPO\s*=\s*(.+)$', s)
+		if m:
+			repo = parse_set_repo(m.group(1))
 			continue
 		m = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 		if m:
@@ -172,11 +224,11 @@ def sparse_prefixes(text):
 		# that module dir — generalises beyond compose/ (e.g. navigation3/navigation3-ui);
 		# the sparse dir is everything before `/src/`.
 		if '/src/' in tok:
-			prefixes.add(tok.split('/src/', 1)[0])
+			prefixes.setdefault(repo, set()).add(tok.split('/src/', 1)[0])
 			continue
 		mm = MODULE_RE.match(tok)
 		if mm:
-			prefixes.add(mm.group(0))
+			prefixes.setdefault(repo, set()).add(mm.group(0))
 	return prefixes
 
 
@@ -219,37 +271,38 @@ def inject_suppress(data):
 
 # ============
 #  git helpers (a handful of calls total -- not per file).
-def git(args, quiet=False, check=True):
+def git(clone_dir, args, quiet=False, check=True):
 	kw = {}
 	if quiet:
 		kw['stdout'] = subprocess.DEVNULL
 		kw['stderr'] = subprocess.DEVNULL
-	return subprocess.run(['git', '-C', CMP_REF, *args], check=check, **kw)
+	return subprocess.run(['git', '-C', clone_dir, *args], check=check, **kw)
 
 
-def ensure_clone(sparse_dirs, ref):
-	if not os.path.isdir(os.path.join(CMP_REF, '.git')):
-		print('cloning %s -> %s (%d sparse dirs)' % (REPO_URL, CMP_REF, len(sparse_dirs)))
+def ensure_clone(url, ref, sparse_dirs):
+	clone_dir = repo_clone_dir(url)
+	if not os.path.isdir(os.path.join(clone_dir, '.git')):
+		print('cloning %s -> %s (%d sparse dirs)' % (url, clone_dir, len(sparse_dirs)))
 		# Pin autocrlf/eol off on the clone so the working tree holds upstream's exact
 		# LF bytes -- otherwise a machine with core.autocrlf=true (Windows default)
 		# checks files out as CRLF and we'd vendor mangled line endings. We also
 		# normalize on write below as a belt-and-suspenders for pre-existing clones.
 		subprocess.run(['git', 'clone', '--filter=blob:none', '--no-checkout',
-			'--config', 'core.autocrlf=false', '--config', 'core.eol=lf', REPO_URL, CMP_REF], check=True)
-		git(['sparse-checkout', 'set', *sparse_dirs])
+			'--config', 'core.autocrlf=false', '--config', 'core.eol=lf', url, clone_dir], check=True)
+		git(clone_dir, ['sparse-checkout', 'set', *sparse_dirs])
 	else:
 		# Keep an existing clone's line-ending config sane too (helps future checkouts).
-		git(['config', 'core.autocrlf', 'false'], quiet=True, check=False)
-		git(['config', 'core.eol', 'lf'], quiet=True, check=False)
+		git(clone_dir, ['config', 'core.autocrlf', 'false'], quiet=True, check=False)
+		git(clone_dir, ['config', 'core.eol', 'lf'], quiet=True, check=False)
 		# Extend the sparse set in case a new manifest reaches into a new area. Noop if covered.
-		git(['sparse-checkout', 'set', *sparse_dirs], quiet=True)
-	if git(['checkout', '-q', ref], quiet=True, check=False).returncode != 0:
+		git(clone_dir, ['sparse-checkout', 'set', *sparse_dirs], quiet=True)
+	if git(clone_dir, ['checkout', '-q', ref], quiet=True, check=False).returncode != 0:
 		print('ref %s not present locally -- fetching' % ref)
-		git(['fetch', 'origin', ref])
-		git(['checkout', '-q', ref])
-	desc = subprocess.run(['git', '-C', CMP_REF, 'describe', '--tags', '--always'],
+		git(clone_dir, ['fetch', 'origin', ref])
+		git(clone_dir, ['checkout', '-q', ref])
+	desc = subprocess.run(['git', '-C', clone_dir, 'describe', '--tags', '--always'],
 		capture_output=True, text=True).stdout.strip()
-	print('upstream @ %s' % desc)
+	print('upstream %s @ %s' % (url.rstrip('/').split('/')[-1], desc))
 
 
 def read_ref():
@@ -298,6 +351,8 @@ def iter_directives(text):
 			commented = True
 		else:
 			commented = False
+		if re.match(r'SET_REPO\s*=', s):
+			continue  # repo switches don't contribute paths here
 		m = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 		if m:
 			if not commented:  # a commented SET_ROOT is inert
@@ -314,16 +369,22 @@ def iter_directives(text):
 			yield parts[0], parts[1], (parts[0].endswith('/') or parts[1].endswith('/'))
 
 
-# The active SET_ROOT of a manifest (or '' if none).
-def active_root(text):
+# The manifest's active (repo, SET_ROOT) — the repo in effect at the FIRST active
+# SET_ROOT (root '' if none). --gaps walks that root inside that repo's clone.
+def active_repo_and_root(text, default_repo):
+	repo = default_repo
 	for line in text.splitlines():
 		s = line.strip()
 		if s.startswith('#'):
 			continue
+		m = re.match(r'SET_REPO\s*=\s*(.+)$', s)
+		if m:
+			repo = parse_set_repo(m.group(1))
+			continue
 		m = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 		if m:
-			return norm_root(m.group(1))
-	return ''
+			return repo, norm_root(m.group(1))
+	return repo, ''
 
 
 # Guess a vendor dest for an unlisted upstream file. `rel` is the path relative to
@@ -372,8 +433,8 @@ def strip_auto(text):
 
 # The .kt a folder directive copies, as (src, dest) both relative like the directive:
 # src relative to SET_ROOT (the `->` left side), dest the mapped vendor path. Sorted.
-def folder_files(up_folder, src_rel, dest_folder):
-	fr = os.path.join(CMP_REF, *up_folder.rstrip('/').split('/'))
+def folder_files(clone_dir, up_folder, src_rel, dest_folder):
+	fr = os.path.join(clone_dir, *up_folder.rstrip('/').split('/'))
 	out = []
 	if os.path.isdir(fr):
 		for dr, _, fs in os.walk(fr):
@@ -391,19 +452,20 @@ def folder_files(up_folder, src_rel, dest_folder):
 #      it to a per-file entry (turn a folder into a file-by-file listing incrementally).
 #   2. a trailing block of commented `src -> dest` for every upstream .kt under SET_ROOT
 #      that NO directive lists -- surfaces source sets / files not yet vendored.
-def report_gaps(manifests, quiet_skips=False):
+def report_gaps(manifests, default_repo, quiet_skips=False):
 	total = 0
 	for m in manifests:
 		with open(m, encoding='utf-8') as f:
 			text = f.read()
-		root = active_root(text)
+		repo, root = active_repo_and_root(text, default_repo)
+		clone_dir = repo_clone_dir(repo[0])
 		label = os.path.relpath(os.path.dirname(m), REPO_ROOT).replace(os.sep, '/')
 		if not root:
 			# Legacy (non-SET_ROOT) manifests are reorganized by format-manifest.py instead.
 			if not quiet_skips:
 				print('  %s: no SET_ROOT -- --gaps only applies to folder-style manifests' % label)
 			continue
-		root_abs = os.path.join(CMP_REF, *root.split('/'))
+		root_abs = os.path.join(clone_dir, *root.split('/'))
 		if not os.path.isdir(root_abs):
 			sys.stderr.write('  %s: SET_ROOT %r not in the clone (re-run a normal sync first)\n' % (label, root))
 			continue
@@ -411,12 +473,17 @@ def report_gaps(manifests, quiet_skips=False):
 		# Rebuild the body from the clean lines, inserting expansions under each active
 		# folder directive; track which upstream files end up covered (folder-expanded or
 		# listed single files) so the trailing gaps block only shows the truly-unlisted.
+		# cur_dir follows SET_REPO switches so folder expansions read the right clone.
 		clean = strip_auto(text)
-		body, known, cur_root, expansions = [], set(), '', 0
+		body, known, cur_root, cur_dir, expansions = [], set(), '', repo_clone_dir(default_repo[0]), 0
 		for ln in clean:
 			body.append(ln)
 			s = ln.strip()
 			if not s or s.startswith('#'):
+				continue
+			mm = re.match(r'SET_REPO\s*=\s*(.+)$', s)
+			if mm:
+				cur_dir = repo_clone_dir(parse_set_repo(mm.group(1))[0])
 				continue
 			mm = re.match(r'SET_ROOT\s*=\s*(.+)$', s)
 			if mm:
@@ -427,7 +494,7 @@ def report_gaps(manifests, quiet_skips=False):
 				src = src.lstrip('|').strip()
 				if src.endswith('/') or dest.endswith('/'):
 					up_folder = (cur_root + '/' + src) if cur_root else src
-					for fsrc, fdest in folder_files(up_folder, src, dest):
+					for fsrc, fdest in folder_files(cur_dir, up_folder, src, dest):
 						body.append('%s%s -> %s' % (EXP_PREFIX, fsrc, fdest))
 						known.add((cur_root + '/' + fsrc) if cur_root else fsrc)
 						expansions += 1
@@ -441,7 +508,7 @@ def report_gaps(manifests, quiet_skips=False):
 		# Walk the whole module src; collect unlisted .kt, grouped by source set.
 		by_set = {}
 		for dr, _, fs in os.walk(root_abs):
-			rel_dir = os.path.relpath(dr, CMP_REF).replace(os.sep, '/')
+			rel_dir = os.path.relpath(dr, clone_dir).replace(os.sep, '/')
 			after = rel_dir[len(root) + 1:] if rel_dir != root else ''
 			srcset = after.split('/', 1)[0] if after else ''
 			if 'test' in srcset.lower():  # androidDeviceTest, commonTest, jvmTest, ...
@@ -481,7 +548,7 @@ def report_gaps(manifests, quiet_skips=False):
 
 def main():
 	args = sys.argv[1:]
-	ref = read_ref()
+	default_repo = (REPO_URL, read_ref())
 
 	# --gaps: don't sync -- instead append a regenerated block of commented `src -> dest`
 	# lines for upstream .kt under each manifest's SET_ROOT that it doesn't yet list.
@@ -503,19 +570,29 @@ def main():
 			sys.stderr.write('no <module>/compose-fork.txt found under %s\n' % REPO_ROOT)
 			sys.exit(1)
 
-	# ---- sparse set = union across ALL manifests (partial sync must not shrink the clone)
-	sparse = set()
+	# ---- per-repo sparse sets = union across ALL manifests (partial sync must not
+	#      shrink a clone). Two manifests pinning the SAME url at DIFFERENT refs
+	#      would fight over one clone dir -> hard error.
+	repo_sparse = {}
 	for m in find_all_manifests():
 		with open(m, encoding='utf-8') as f:
-			sparse |= sparse_prefixes(f.read())
-	sparse_dirs = sorted(sparse)
+			for repo, prefixes in sparse_prefixes(f.read(), default_repo).items():
+				repo_sparse.setdefault(repo, set()).update(prefixes)
+	by_url = {}
+	for (url, ref) in repo_sparse:
+		if url in by_url and by_url[url] != ref:
+			sys.stderr.write('conflicting refs for %s: %s vs %s (one clone per url)\n'
+				% (url, by_url[url], ref))
+			sys.exit(1)
+		by_url[url] = ref
 
-	# ---- 1. sparse clone at the pinned ref
-	ensure_clone(sparse_dirs, ref)
+	# ---- 1. sparse clone(s) at the pinned ref(s)
+	for (url, ref), prefixes in sorted(repo_sparse.items()):
+		ensure_clone(url, ref, sorted(prefixes))
 
 	# ---- --gaps mode: report unlisted upstream files into the manifest(s), then stop.
 	if gaps:
-		report_gaps(manifests)
+		report_gaps(manifests, default_repo)
 		return
 
 	# ---- 1.5 canonicalize + discover each selected manifest (non-fatal). Skipped for
@@ -539,27 +616,28 @@ def main():
 		count = 0
 		with open(m, encoding='utf-8') as f:
 			text = f.read()
-		excluded = active_exclusions(text)
+		excluded = active_exclusions(text, default_repo)
 		skipped = 0
 		written = set()  # normalized abs dest paths THIS manifest produced
-		for up, dest in active_entries(text):
+		for repo, up, dest in active_entries(text, default_repo):
+			clone_dir = repo_clone_dir(repo[0])
 			if is_folder_entry(up, dest):
 				# Folder directive: copy every .kt under the upstream dir into dest/,
 				# preserving the sub-tree. LF-normalize + K2-suppress happen per file.
-				src_root = os.path.join(CMP_REF, *up.rstrip('/').split('/'))
+				src_root = os.path.join(clone_dir, *up.rstrip('/').split('/'))
 				if not os.path.isdir(src_root):
-					sys.stderr.write('MISSING upstream folder: %s\n' % up)
+					sys.stderr.write('MISSING upstream folder: %s (repo %s)\n' % (up, repo[0]))
 					sys.exit(1)
 				for droot, _, files in os.walk(src_root):
 					for fn in sorted(files):
 						if not fn.endswith('.kt'):
 							continue
 						sp = os.path.join(droot, fn)
-						up_path = os.path.relpath(sp, CMP_REF).replace(os.sep, '/')
+						up_path = os.path.relpath(sp, clone_dir).replace(os.sep, '/')
 						rel = os.path.relpath(sp, src_root).replace(os.sep, '/')
 						rdest = dest.rstrip('/') + '/' + rel
 						dst = os.path.join(module_dir, *rdest.split('/'))
-						if up_path in excluded:  # manually vendored in src/{commonMain,...}; don't duplicate
+						if (repo, up_path) in excluded:  # manually vendored in src/{commonMain,...}; don't duplicate
 							skipped += 1
 							if os.path.isfile(dst):
 								os.remove(dst)  # drop any stale copy from a pre-exclusion sync
@@ -567,9 +645,9 @@ def main():
 						count += write_vendor_file(sp, dst, rdest)
 						written.add(os.path.normcase(os.path.abspath(dst)))
 				continue
-			src = os.path.join(CMP_REF, *up.split('/'))
+			src = os.path.join(clone_dir, *up.split('/'))
 			if not os.path.isfile(src):
-				sys.stderr.write('MISSING upstream file: %s\n' % up)
+				sys.stderr.write('MISSING upstream file: %s (repo %s)\n' % (up, repo[0]))
 				sys.exit(1)
 			dst = os.path.join(module_dir, *dest.split('/'))
 			count += write_vendor_file(src, dst, dest)
@@ -606,9 +684,10 @@ def main():
 	#      upstream tree: commented `#     | src -> dest` lines for the files each folder
 	#      directive copies, plus a `# >>> GAPS` block listing any new/unvendored .kt. Legacy
 	#      (non-SET_ROOT) manifests are reorganized by step 1.5's format-manifest.py instead.
-	report_gaps(manifests, quiet_skips=True)
+	report_gaps(manifests, default_repo, quiet_skips=True)
 
-	print('synced %d files verbatim at %s' % (total, ref))
+	print('synced %d files verbatim at %s (+%d extra repo(s))'
+		% (total, default_repo[1], max(0, len(by_url) - 1)))
 
 
 if __name__ == '__main__':
