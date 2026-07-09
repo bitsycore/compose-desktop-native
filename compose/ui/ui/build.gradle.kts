@@ -65,7 +65,7 @@ fun isSkiaTarget(targetName: String): Boolean = when (targetName) {
 }
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
     linuxArm64()
@@ -100,20 +100,20 @@ kotlin {
             // sdl3 stays for every target — :window uses the SDL3 main-loop
             // types (SDL_Window / SDL_Event / SDL_GetBasePath / …) regardless
             // of the renderer choice.
-            val sdl3 by creating {
+            create("sdl3") {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
                 if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
             if (vSdlRenderer) {
-                val sdl3_ttf by creating {
+               create("sdl3_ttf") {
                     defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
                     packageName("sdl3_ttf")
                     extraOpts("-library", vSdl3Klib)
                     if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
                     if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
                 }
-                val sdl3_image by creating {
+                create("sdl3_image") {
                     defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
                     packageName("sdl3_image")
                     extraOpts("-library", vSdl3Klib)
@@ -122,7 +122,7 @@ kotlin {
                 }
                 // FreeType powers variable-font axis rendering (FILL / wght /
                 // GRAD / opsz) on Material Symbols icons in the SDL3 path.
-                val freetype by creating {
+                create("freetype") {
                     defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
                     packageName("freetype")
                     if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
@@ -187,7 +187,7 @@ kotlin {
         //  doesn't warn about unused source sets when the build is asymmetric
         //  (e.g. -Prenderer=sdl3 wouldn't use any skikoRenderer* sets).
 
-        val sdlRendererMain by creating {
+        val sdlRendererMain = create("sdlRendererMain") {
             dependsOn(nativeMain.get())
             // src/vendor/sdlRenderer/kotlin holds files vendored verbatim
             // from upstream's skikoMain that are SDL3-friendly (no Skia refs)
@@ -201,24 +201,24 @@ kotlin {
         // target itself was declared (host is Windows). Non-Windows hosts skip
         // both the target and its source-set wiring.
         if (vHostSupportsMingw) {
-            val sdlRendererMingwMain by creating { dependsOn(sdlRendererMain) }
+            val sdlRendererMingwMain = create("sdlRendererMingwMain") { dependsOn(sdlRendererMain) }
             mingwX64Main.get().dependsOn(sdlRendererMingwMain)
         }
 
-        val macosArm64Main by getting
-        val linuxX64Main by getting
-        val linuxArm64Main by getting
+        val macosArm64Main = create("macosArm64Main")
+        val linuxX64Main = create("linuxX64Main")
+        val linuxArm64Main = create("linuxArm64Main")
 
         if (useSdl3Everywhere) {
             // macOS / Linux flip to SDL3 — create the sdl intermediates.
-            val sdlRendererMacosMain by creating { dependsOn(sdlRendererMain) }
-            val sdlRendererLinuxMain by creating { dependsOn(sdlRendererMain) }
+            val sdlRendererMacosMain = create("sdlRendererMacosMain") { dependsOn(sdlRendererMain) }
+            val sdlRendererLinuxMain = create("sdlRendererLinuxMain") { dependsOn(sdlRendererMain) }
             macosArm64Main.dependsOn(sdlRendererMacosMain)
             linuxX64Main.dependsOn(sdlRendererLinuxMain)
             linuxArm64Main.dependsOn(sdlRendererLinuxMain)
         } else {
             // Default: macOS / Linux use Skia. Create the skiko tree.
-            val skikoRendererMain by creating {
+            val skikoRendererMain = create("skikoRendererMain") {
                 dependsOn(nativeMain.get())
                 // src/vendor/skikoRenderer/kotlin holds upstream's `skikoMain`
                 // files (Skia-tied actuals / helpers like BlendMode.skiko.kt)
@@ -228,8 +228,8 @@ kotlin {
                     implementation(libs.skiko)
                 }
             }
-            val skikoRendererMacosMain by creating { dependsOn(skikoRendererMain) }
-            val skikoRendererLinuxMain by creating { dependsOn(skikoRendererMain) }
+            val skikoRendererMacosMain = create("skikoRendererMacosMain") { dependsOn(skikoRendererMain) }
+            val skikoRendererLinuxMain = create("skikoRendererLinuxMain") { dependsOn(skikoRendererMain) }
             macosArm64Main.dependsOn(skikoRendererMacosMain)
             linuxX64Main.dependsOn(skikoRendererLinuxMain)
             linuxArm64Main.dependsOn(skikoRendererLinuxMain)
@@ -261,6 +261,7 @@ val notoSansFont = layout.buildDirectory.file("fonts/NotoSans.ttf")
 val notoSansMonoFont = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
 
 val downloadNotoFonts = tasks.register("downloadNotoFonts") {
+    description = "Download Google NotoSans and NotoSansMono variable fonts to build/fonts/ for use in SDL3 text rendering"
     val vDownloads = listOf(
         "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
             to notoSansFont.get().asFile,

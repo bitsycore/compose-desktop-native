@@ -15,16 +15,16 @@ plugins {
 }
 
 // See core/build.gradle.kts for the rationale on the host-side -I.
-val vHostOs = System.getProperty("os.name")
+val vHostOs: String = System.getProperty("os.name") ?: "Unknown"
 val vHostSdlInclude: String? = when {
-    vHostOs.startsWith("Mac")     -> "/opt/homebrew/include"
-    vHostOs == "Linux"            -> "/usr/include"
+    vHostOs.startsWith("Mac") -> "/opt/homebrew/include"
+    vHostOs == "Linux" -> "/usr/include"
     vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/SDL3/include"
-    else                          -> null
+    else -> null
 }
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
     linuxArm64()
@@ -36,7 +36,7 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().all {
         compilations["main"].cinterops {
-            val sdl3 by creating {
+            create("sdl3") {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
                 if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")

@@ -13,7 +13,6 @@
 //
 // Publication artifactId (when set up): compose-desktop-material-symbols.
 
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.net.URI
 
 plugins {
@@ -27,7 +26,7 @@ plugins {
 }
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
     linuxArm64()
@@ -64,19 +63,28 @@ kotlin {
 //     rootProject.project(":material-symbols").extra["iconFontFileSharp"]
 
 data class SymbolsStyle(val id: String, val fileName: String, val url: String)
-val kStyles = listOf(
-    SymbolsStyle("outlined", "MaterialSymbolsOutlined.ttf",
-        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"),
-    SymbolsStyle("rounded", "MaterialSymbolsRounded.ttf",
-        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"),
-    SymbolsStyle("sharp", "MaterialSymbolsSharp.ttf",
-        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsSharp%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"),
-)
 
-for (style in kStyles) {
+listOf(
+    SymbolsStyle(
+        "outlined",
+        "MaterialSymbolsOutlined.ttf",
+        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"
+    ),
+    SymbolsStyle(
+        "rounded",
+        "MaterialSymbolsRounded.ttf",
+        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"
+    ),
+    SymbolsStyle(
+        "sharp",
+        "MaterialSymbolsSharp.ttf",
+        "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsSharp%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"
+    ),
+).forEach { style ->
     val vTitle = style.id.replaceFirstChar { it.uppercase() }
     val vOutProvider = layout.buildDirectory.file("iconFont/${style.fileName}")
     val vDownloadTask = tasks.register("downloadMaterialSymbols$vTitle") {
+        description = "Download Material Symbols $vTitle variable font to build/iconFont/${style.fileName}"
         // Capture local vals so the config-cache can serialize doLast.
         val vUrl = style.url
         val vOut = vOutProvider.get().asFile

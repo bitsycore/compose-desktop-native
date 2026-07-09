@@ -6,7 +6,9 @@ plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.kotlin.plugin.compose)
 }
-val vHostSupportsMingw: Boolean by rootProject.extra
+
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
+
 kotlin {
 	linuxArm64(); linuxX64(); macosArm64(); if (vHostSupportsMingw) mingwX64()
 	applyDefaultHierarchyTemplate()
