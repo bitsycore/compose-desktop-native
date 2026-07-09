@@ -47,6 +47,7 @@ include(":material-ripple")
 include(":window")
 include(":material-symbols")
 include(":navigation3-ui")
+include(":components-resources")
 project(":ui").projectDir = file("compose/ui/ui")
 project(":ui-util").projectDir = file("compose/ui/ui-util")
 project(":ui-geometry").projectDir = file("compose/ui/ui-geometry")
@@ -62,6 +63,7 @@ project(":material-ripple").projectDir = file("compose/material/material-ripple"
 project(":window").projectDir = file("compose/sdl/window")
 project(":material-symbols").projectDir = file("utils/material-symbols")
 project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")
+project(":components-resources").projectDir = file("components/resources/library")
 
 // Demo App testing foundation, animation, ui and material3
 include(":demo")

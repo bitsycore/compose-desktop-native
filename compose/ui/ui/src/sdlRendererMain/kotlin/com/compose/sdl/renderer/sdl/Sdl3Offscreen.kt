@@ -8,6 +8,11 @@ import androidx.compose.ui.graphics.colorspace.ColorSpace
 import com.compose.sdl.graphics.OffscreenRenderer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.COpaquePointer
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.reinterpret
 import sdl3.*
 
@@ -32,12 +37,16 @@ internal class SdlImageBitmap(
 	override val config: ImageBitmapConfig,
 	override val hasAlpha: Boolean,
 	override val colorSpace: ColorSpace,
+	// A pre-made texture (the encoded-image decode path — see
+	// Sdl3EncodedImageDecoder); null → create a render TARGET for the
+	// vector-rasterisation path below.
+	inDecodedTexture: COpaquePointer? = null,
 ) : ImageBitmap {
 
 	// RGBA render-target texture, premultiplied blend for compositing back (content
 	// is drawn over a transparent clear with ordinary BLEND, leaving premultiplied
 	// colours — see Sdl3ClipTargets for the same reasoning).
-	val texture: COpaquePointer? = SDL_CreateTexture(
+	val texture: COpaquePointer? = inDecodedTexture ?: SDL_CreateTexture(
 		inRenderer.reinterpret(),
 		SDL_PIXELFORMAT_RGBA32,
 		SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET,
@@ -86,6 +95,45 @@ internal class Sdl3OffscreenRenderer(
 			// the tint applied on blit (SDL_SetTextureColorMod, a multiply) yields the
 			// tint colour where covered instead of multiplying a black icon to black.
 			fForceWhite = vBmp.config == ImageBitmapConfig.Alpha8,
+		)
+	}
+}
+
+// ==================
+// MARK: Sdl3EncodedImageDecoder — encoded bytes → drawable ImageBitmap
+// ==================
+
+/* Registered on the com.compose.sdl.graphics decode hook; backs
+   :components-resources' painterResource / SVG path on the SDL renderer.
+   IMG_Load_IO auto-detects the container (png/jpg/bmp/gif/webp/svg — SVG is
+   rasterised at its intrinsic size). Decoded surfaces carry STRAIGHT alpha,
+   so the texture gets the ordinary BLEND mode (unlike the premultiplied
+   render-target path above). */
+@OptIn(ExperimentalForeignApi::class)
+internal class Sdl3EncodedImageDecoder(
+	private val fRenderer: COpaquePointer,
+) : com.compose.sdl.graphics.EncodedImageDecoder {
+
+	override fun decode(inBytes: ByteArray): ImageBitmap? {
+		if (inBytes.isEmpty()) return null
+		val vSurface = inBytes.usePinned { vPinned ->
+			val vIo = SDL_IOFromConstMem(vPinned.addressOf(0), inBytes.size.convert())
+				?: return@usePinned null
+			sdl3_image.IMG_Load_IO(vIo.reinterpret(), true)
+		} ?: return null
+		val vSdlSurface = vSurface.reinterpret<SDL_Surface>()
+		val vW = vSdlSurface.pointed.w
+		val vH = vSdlSurface.pointed.h
+		val vTex = SDL_CreateTextureFromSurface(fRenderer.reinterpret(), vSdlSurface)
+		SDL_DestroySurface(vSdlSurface)
+		if (vTex == null) return null
+		SDL_SetTextureBlendMode(vTex.reinterpret(), SDL_BLENDMODE_BLEND)
+		return SdlImageBitmap(
+			fRenderer, vW, vH,
+			config = ImageBitmapConfig.Argb8888,
+			hasAlpha = true,
+			colorSpace = androidx.compose.ui.graphics.colorspace.ColorSpaces.Srgb,
+			inDecodedTexture = vTex,
 		)
 	}
 }

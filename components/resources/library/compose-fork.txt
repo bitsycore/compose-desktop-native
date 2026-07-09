@@ -1,0 +1,97 @@
+# Files vendored VERBATIM from JetBrains/compose-multiplatform (the umbrella repo —
+# NOT compose-multiplatform-core) into :components-resources. The official
+# org.jetbrains.compose.components:components-resources artifact publishes NO
+# mingwX64/linux variants, so the runtime library is vendored and the platform
+# actuals are project code:
+#   src/nativeMain      — ResourceReader (data.kres), getSystemEnvironment (SDL),
+#                         pure-Kotlin DomXmlParser (upstream's is Darwin NSXMLParser)
+#   src/sdlRendererMain — image decode via the :ui SDL3_image hook, SVG unsupported,
+#                         Font via the project font registry
+#   vendor/skikoRenderer — upstream skikoMain Skia-bound files, verbatim
+# Re-sync: python scripts/compose-fork/sync.py components/resources/library
+
+SET_REPO=https://github.com/JetBrains/compose-multiplatform@v1.9.3
+SET_ROOT=components/resources/library/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/org/jetbrains/compose/resources/FontResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/FontResources.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ImageDecoders.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ImageDecoders.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ImageResources.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/PluralStringResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/PluralStringResources.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/Qualifier.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/Qualifier.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/Resource.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ResourceCaches.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ResourceCaches.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ResourceReader.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ResourceReader.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/ResourceState.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/ResourceState.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/StringArrayResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/StringArrayResources.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/StringResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/StringResources.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/StringResourcesUtils.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/StringResourcesUtils.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/plural/CLDRPluralRuleLists.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/plural/CLDRPluralRuleLists.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralCategory.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/plural/PluralCategory.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRule.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/plural/PluralRule.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRuleList.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/plural/PluralRuleList.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/ValueParsers.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/ValueParsers.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/XmlVectorParser.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/XmlVectorParser.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/Element.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/xmldom/Element.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/MalformedXMLException.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/xmldom/MalformedXMLException.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/Node.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/xmldom/Node.kt
+#     | commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeList.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeList.kt
+blockingMain/kotlin/ -> src/vendor/native/kotlin/
+#     | blockingMain/kotlin/org/jetbrains/compose/resources/ResourceState.blocking.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceState.blocking.kt
+nativeMain/kotlin/ -> src/vendor/native/kotlin/
+#     | nativeMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt
+#     | nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+# Darwin-only (Foundation NSXMLParser) — replaced by a pure-Kotlin project parser
+# in src/nativeMain so mingwX64/linux compile.
+!nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
+
+# Portable pieces of upstream skikoMain (no Skia references — pure delegation /
+# runtime-only) — every native target gets them.
+skikoMain/kotlin/org/jetbrains/compose/resources/ImageDecoders.skiko.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ImageDecoders.skiko.kt
+skikoMain/kotlin/org/jetbrains/compose/resources/ResourceReader.skiko.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceReader.skiko.kt
+
+# Skia-bound pieces — only attached when the Skia renderer is active (macOS/Linux
+# default; never on mingwX64). COMPILE-UNVERIFIED on Windows hosts.
+skikoMain/kotlin/org/jetbrains/compose/resources/ImageResources.skiko.kt -> src/vendor/skikoRenderer/kotlin/org/jetbrains/compose/resources/ImageResources.skiko.kt
+skikoMain/kotlin/org/jetbrains/compose/resources/FontResources.skiko.kt -> src/vendor/skikoRenderer/kotlin/org/jetbrains/compose/resources/FontResources.skiko.kt
+skikoMain/kotlin/org/jetbrains/compose/resources/SvgPainter.kt -> src/vendor/skikoRenderer/kotlin/org/jetbrains/compose/resources/SvgPainter.kt
+skikoMain/kotlin/org/jetbrains/compose/resources/DrawCache.kt -> src/vendor/skikoRenderer/kotlin/org/jetbrains/compose/resources/DrawCache.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (5)
+#     | androidMain/kotlin/org/jetbrains/compose/resources/AndroidContextProvider.kt -> src/vendor/android/kotlin/org/jetbrains/compose/resources/AndroidContextProvider.kt
+#     | androidMain/kotlin/org/jetbrains/compose/resources/FontResources.android.kt -> src/vendor/android/kotlin/org/jetbrains/compose/resources/FontResources.android.kt
+#     | androidMain/kotlin/org/jetbrains/compose/resources/ImageResources.android.kt -> src/vendor/android/kotlin/org/jetbrains/compose/resources/ImageResources.android.kt
+#     | androidMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.android.kt -> src/vendor/android/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.android.kt
+#     | androidMain/kotlin/org/jetbrains/compose/resources/ResourceReader.android.kt -> src/vendor/android/kotlin/org/jetbrains/compose/resources/ResourceReader.android.kt
+#   desktopMain (3)
+#     | desktopMain/kotlin/org/jetbrains/compose/resources/ResourceCaches.desktop.kt -> src/vendor/desktop/kotlin/org/jetbrains/compose/resources/ResourceCaches.desktop.kt
+#     | desktopMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.desktop.kt -> src/vendor/desktop/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.desktop.kt
+#     | desktopMain/kotlin/org/jetbrains/compose/resources/ResourceReader.desktop.kt -> src/vendor/desktop/kotlin/org/jetbrains/compose/resources/ResourceReader.desktop.kt
+#   iosMain (2)
+#     | iosMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ios.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.ios.kt
+#     | iosMain/kotlin/org/jetbrains/compose/resources/ResourceReader.ios.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceReader.ios.kt
+#   jsMain (5)
+#     | jsMain/kotlin/org/jetbrains/compose/resources/ImageResources.js.kt -> src/vendor/js/kotlin/org/jetbrains/compose/resources/ImageResources.js.kt
+#     | jsMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.js.kt -> src/vendor/js/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.js.kt
+#     | jsMain/kotlin/org/jetbrains/compose/resources/ResourceReader.js.kt -> src/vendor/js/kotlin/org/jetbrains/compose/resources/ResourceReader.js.kt
+#     | jsMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt -> src/vendor/js/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt
+#     | jsMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt -> src/vendor/js/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt
+#   jvmAndAndroidMain (3)
+#     | jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/ImageResources.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/org/jetbrains/compose/resources/ImageResources.jvmAndAndroid.kt
+#     | jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt -> src/vendor/jvmAndAndroid/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt
+#     | jvmAndAndroidMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt -> src/vendor/jvmAndAndroid/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt
+#   macosMain (2)
+#     | macosMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.macos.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.macos.kt
+#     | macosMain/kotlin/org/jetbrains/compose/resources/ResourceReader.macos.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceReader.macos.kt
+#   wasmJsMain (5)
+#     | wasmJsMain/kotlin/org/jetbrains/compose/resources/ImageResources.wasmJs.kt -> src/vendor/wasmJs/kotlin/org/jetbrains/compose/resources/ImageResources.wasmJs.kt
+#     | wasmJsMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.wasmJs.kt -> src/vendor/wasmJs/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.wasmJs.kt
+#     | wasmJsMain/kotlin/org/jetbrains/compose/resources/ResourceReader.wasmJs.kt -> src/vendor/wasmJs/kotlin/org/jetbrains/compose/resources/ResourceReader.wasmJs.kt
+#     | wasmJsMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt -> src/vendor/wasmJs/kotlin/org/jetbrains/compose/resources/vector/xmldom/ElementImpl.kt
+#     | wasmJsMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt -> src/vendor/wasmJs/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeImpl.kt
+#   webMain (2)
+#     | webMain/kotlin/org/jetbrains/compose/resources/Resource.web.kt -> src/vendor/web/kotlin/org/jetbrains/compose/resources/Resource.web.kt
+#     | webMain/kotlin/org/jetbrains/compose/resources/ResourceState.web.kt -> src/vendor/web/kotlin/org/jetbrains/compose/resources/ResourceState.web.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

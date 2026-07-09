@@ -35,6 +35,14 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         if (!fTextRenderer.init()) {
             error("Sdl3RenderBackend: SDL3_ttf failed to init")
         }
+        // Encoded-image decode (painterResource / SVG in :components-resources).
+        // Registered at CONSTRUCTION, not first frame: the official resources
+        // pipeline decodes during COMPOSITION, which runs before beginFrame.
+        backend.renderer?.let { vRenderer ->
+            if (com.compose.sdl.graphics.encodedImageDecoder == null) {
+                com.compose.sdl.graphics.encodedImageDecoder = Sdl3EncodedImageDecoder(vRenderer)
+            }
+        }
     }
 
     override val textMeasurer: TextMeasurer
