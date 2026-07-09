@@ -18,8 +18,8 @@ import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.outlined.MaterialSymbolsOutlined
 import com.compose.sdl.icons.material.symbols.rounded.MaterialSymbolsRounded
 import com.compose.sdl.icons.material.symbols.sharp.MaterialSymbolsSharp
-import composeresources.generated.heart
-import com.compose.sdl.res.Res
+import demo.shim.DemoDrawable
+import demo.shim.demoPainter
 
 @Composable
 internal fun IconsScreen() {
@@ -165,8 +165,8 @@ internal fun IconsScreen() {
         Section("Painter-based Icon", "Reads from composeResources/drawable/*.xml (Android vector) or *.svg.") {
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Icon(painter = Res.drawable.heart, contentDescription = "Heart")
-                Text("Res.drawable.heart", fontSize = 13.sp)
+                Icon(painter = demoPainter(DemoDrawable.Heart), contentDescription = "Heart")
+                Text("painterResource(Res.drawable.heart)", fontSize = 13.sp)
             }
         }
 
