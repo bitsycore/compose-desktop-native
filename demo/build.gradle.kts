@@ -10,13 +10,6 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
 }
 
-// Output dir for the generated Res accessors (OFFICIAL org.jetbrains.compose.resources
-// API — DrawableResource/readBytes) — wired into BOTH nativeMain and jvmMain and
-// produced by the generateComposeResAccessors task below. Native resolves the API
-// against the vendored :components-resources, JVM against the official Maven
-// artifact; both read the same relative paths (data.kres entries / classpath).
-val composeResGenDir = layout.buildDirectory.dir("generated/composeRes")
-
 // Native deps live in a gitignored, in-repo folder populated by the scripts in
 // scripts/build-sdl/ (build-all.sh, build-freetype.sh, …). Driven off rootDir so
 // it works regardless of where the repo is cloned.
@@ -86,23 +79,25 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            dependencies {
+                // The OFFICIAL resources runtime, at the plugin's own version —
+                // resolvable for jvm + metadata from Maven; the NATIVE targets
+                // substitute it for the vendored :components-resources below
+                // (the Maven artifact ships no mingwX64/linux klibs).
+                implementation(compose.components.resources)
+            }
+        }
         nativeMain {
             dependencies {
                 implementation(project(":window"))
                 implementation(project(":material3"))
                 implementation(project(":material-symbols"))
                 implementation(project(":navigation3-ui"))
-                implementation(project(":components-resources"))
                 implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             }
-            // Generated official-API Res accessors (see generateComposeResAccessors).
-            // Not in commonMain: its metadata can't resolve org.jetbrains.compose.resources
-            // (project module for native, Maven for JVM) — the shim actuals are the
-            // common-side boundary.
-            kotlin.srcDir(composeResGenDir)
         }
         jvmMain {
-            resources.srcDir(rootProject.file("demo/src/commonMain/composeResources"))
             dependencies {
                 implementation("org.jetbrains.compose.runtime:runtime:1.12.0-alpha03")
                 implementation("org.jetbrains.compose.foundation:foundation:1.12.0-alpha03")
@@ -115,11 +110,7 @@ kotlin {
                 implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
-                // The OFFICIAL resources runtime — same API the vendored
-                // :components-resources exposes to the native targets.
-                implementation("org.jetbrains.compose.components:components-resources:1.9.3")
             }
-            kotlin.srcDir(composeResGenDir)
         }
     }
 
@@ -138,14 +129,27 @@ compose.desktop {
     }
 }
 
-// The assets live at the OFFICIAL location (src/commonMain/composeResources) —
-// shared by the data.kres Zip task (native), the jvmMain resources srcDir and
-// the accessor generator — but the plugin's OWN resource pipeline must stay
-// off: it would auto-add the Maven components-resources dependency to
-// commonMain (unresolvable for mingwX64/linux — that's why the runtime is
-// vendored as :components-resources) and generate a colliding Res class.
+// The OFFICIAL resources pipeline runs as-is: assets at the convention
+// location (src/commonMain/composeResources), Res generated into commonMain,
+// JVM packaging handled by the plugin. The one port-specific piece is the
+// substitution below.
 compose.resources {
-    generateResClass = never
+    packageOfResClass = "demo.generated.resources"
+}
+
+// FULL-COMMONIZATION BRIDGE: commonMain declares the official Maven
+// components-resources (metadata + jvm resolve it), and every NATIVE target
+// configuration swaps that module for the vendored :components-resources —
+// same library version (the SET_REPO manifest pins the matching tag), so the
+// plugin-generated Res compiles once in commonMain and links everywhere.
+val vNativeTargetTokens = listOf("mingwX64", "linuxX64", "linuxArm64", "macosArm64")
+configurations.configureEach {
+    if (vNativeTargetTokens.any { name.contains(it, ignoreCase = true) }) {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("org.jetbrains.compose.components:components-resources"))
+                .using(project(":components-resources"))
+        }
+    }
 }
 
 // Variants × targets used by the bundling Copy tasks below. One Copy task per
@@ -156,74 +160,6 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // On Windows everything (SDL3 / SDL3_ttf / SDL3_image / FreeType + image codecs)
 // is linked statically into the .exe, so there are no runtime DLLs to bundle —
 // the distributable is just <app>.exe + data.kres.
-
-// ==================
-// MARK: Generate typed Res accessors from composeResources/
-// ==================
-// Scans composeResources/drawable + /files and emits extension accessors on
-// the library's Res object: Res.drawable.<name> (Painter) and Res.files.<name>
-// (the relative path string for Res.readBytes). This is the project's own
-// lightweight stand-in for the Compose Multiplatform resource codegen, which
-// can't be used here (its generated code is bound to the official resources
-// runtime + real Compose UI, which this repo deliberately re-implements).
-
-val generateComposeResAccessors = tasks.register("generateComposeResAccessors") {
-    description = "Generate official-API Res accessors for drawable/ + files/ in composeResources/"
-    val vSrcDir = composeResourcesDir.asFile
-    val vOutDir = composeResGenDir.get().asFile
-    inputs.dir(vSrcDir).withPropertyName("composeResources")
-    outputs.dir(vOutDir).withPropertyName("generatedAccessors")
-    doLast {
-        // Local so the config-cache doesn't capture script / project state.
-        fun idOf(inName: String): String {
-            val vSb = StringBuilder()
-            for (vCh in inName) vSb.append(if (vCh.isLetterOrDigit() || vCh == '_') vCh else '_')
-            val vId = vSb.toString().ifEmpty { "_" }
-            return if (vId.first().isDigit()) "_$vId" else vId
-        }
-
-        // Same shape the official Compose resources codegen emits (DrawableResource +
-        // ResourceItem with the file path; -1/-1 = whole file), so the accessors work
-        // against BOTH the vendored native library and the official JVM artifact.
-        val vSb = StringBuilder()
-        vSb.appendLine("// Generated by generateComposeResAccessors — do not edit.")
-        vSb.appendLine("@file:OptIn(org.jetbrains.compose.resources.InternalResourceApi::class)")
-        vSb.appendLine()
-        vSb.appendLine("package demo.generated.resources")
-        vSb.appendLine()
-        vSb.appendLine("import org.jetbrains.compose.resources.DrawableResource")
-        vSb.appendLine("import org.jetbrains.compose.resources.InternalResourceApi")
-        vSb.appendLine("import org.jetbrains.compose.resources.ResourceItem")
-        vSb.appendLine()
-        vSb.appendLine("object Res {")
-        vSb.appendLine("    object drawable {")
-        File(vSrcDir, "drawable").listFiles()?.filter { it.isFile }?.sortedBy { it.name }?.forEach { vFile ->
-            val vId = idOf(vFile.nameWithoutExtension)
-            vSb.appendLine(
-                "        val $vId: DrawableResource by lazy { DrawableResource(\"drawable:$vId\", " +
-                "setOf(ResourceItem(setOf(), \"drawable/${vFile.name}\", -1, -1))) }"
-            )
-        }
-        vSb.appendLine("    }")
-        vSb.appendLine()
-        vSb.appendLine("    object files {")
-        File(vSrcDir, "files").listFiles()?.filter { it.isFile }?.sortedBy { it.name }?.forEach { vFile ->
-            vSb.appendLine("        const val ${idOf(vFile.nameWithoutExtension)}: String = \"files/${vFile.name}\"")
-        }
-        vSb.appendLine("    }")
-        vSb.appendLine()
-        vSb.appendLine("    suspend fun readBytes(path: String): ByteArray =")
-        vSb.appendLine("        org.jetbrains.compose.resources.readResourceBytes(path)")
-        vSb.appendLine("}")
-        vOutDir.mkdirs()
-        File(vOutDir, "ComposeResAccessors.kt").writeText(vSb.toString())
-    }
-}
-
-// Generated source must exist before any Kotlin/Native compilation.
-tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
-    dependsOn(generateComposeResAccessors)
-}
 
 // ==================
 // MARK: Bundle composeResources next to each native executable
@@ -237,8 +173,7 @@ tasks.matching { it.name.startsWith("compileKotlin") }.configureEach {
 // hand the raw bytes to SDL3_image / SDL3_ttf / Skia without inflating anything
 // — readBytes is an fseek+fread per entry, not a whole-archive memory load.
 // Pass -PbundleDefaultFont=false to ship without the bundled Noto Sans; the text
-// renderers then fall back to a system font. The generated Res accessors (see
-// generateComposeResAccessors above) only scan the demo's resources.
+// renderers then fall back to a system font.
 
 val composeResourcesDir = layout.projectDirectory.dir("src/commonMain/composeResources")
 // :core downloads the variable Noto Sans default font into its build/fonts.
@@ -284,7 +219,11 @@ for (variant in variants) {
             archiveFileName.set("data.kres")
             destinationDirectory.set(outDir)
             entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) ZipEntryCompression.DEFLATED else ZipEntryCompression.STORED
-            from(composeResourcesDir)
+            // The official generated accessors carry the plugin's path scheme
+            // (composeResources/<packageOfResClass>/drawable/x.png) — store the
+            // data.kres entries under the same prefix so the vendored reader
+            // resolves them 1:1. Fonts below stay at font/ (project pipeline).
+            from(composeResourcesDir) { into("composeResources/demo.generated.resources") }
             // Default UI font (Noto Sans), downloaded by :core.
             if (bundleDefaultFont) {
                 from(notoSansFile) { into("font") }

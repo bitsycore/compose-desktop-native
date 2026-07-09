@@ -46,6 +46,8 @@ internal actual fun getSystemEnvironment(): ResourceEnvironment {
 	val vDark = SDL_GetSystemTheme() == SDL_SystemTheme.SDL_SYSTEM_THEME_DARK
 	return ResourceEnvironment(
 		language = LanguageQualifier(vLanguage),
+		// SDL locales carry language+country only — no script subtag.
+		script = ScriptQualifier(""),
 		region = RegionQualifier(vRegion),
 		theme = ThemeQualifier.selectByValue(isDark = vDark),
 		density = DensityQualifier.selectByDensity(1f),

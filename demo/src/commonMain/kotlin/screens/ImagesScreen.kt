@@ -11,10 +11,12 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.*
-import demo.shim.DemoDrawable
-import demo.shim.DemoFile
-import demo.shim.demoPainter
-import demo.shim.demoReadBytes
+import demo.generated.resources.Res
+import demo.generated.resources.compose_logo
+import demo.generated.resources.heart
+import demo.generated.resources.photo
+import demo.generated.resources.star
+import org.jetbrains.compose.resources.painterResource
 
 // ==================
 // MARK: Images / Resources screen
@@ -35,10 +37,10 @@ internal fun ImagesScreen() {
                 "(SDL3_image on Windows; Skia on macOS/Linux). SVG + Android XML are rasterised.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Top) {
-                LabeledImage("PNG · alpha", demoPainter(DemoDrawable.ComposeLogo))
-                LabeledImage("JPG", demoPainter(DemoDrawable.Photo))
-                LabeledImage("SVG", demoPainter(DemoDrawable.Star))
-                LabeledImage("Android XML", demoPainter(DemoDrawable.Heart))
+                LabeledImage("PNG · alpha", painterResource(Res.drawable.compose_logo))
+                LabeledImage("JPG", painterResource(Res.drawable.photo))
+                LabeledImage("SVG", painterResource(Res.drawable.star))
+                LabeledImage("Android XML", painterResource(Res.drawable.heart))
             }
         }
 
@@ -54,7 +56,7 @@ internal fun ImagesScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 for (vA in listOf(1f, 0.6f, 0.3f)) {
                     Image(
-                        painter = demoPainter(DemoDrawable.Star),
+                        painter = painterResource(Res.drawable.star),
                         contentDescription = "star at alpha $vA",
                         modifier = Modifier.size(48.dp),
                         alpha = vA,
@@ -63,8 +65,12 @@ internal fun ImagesScreen() {
             }
         }
 
-        Section("Raw bytes", "demoReadBytes(DemoFile.Notice) — no decoding, just the file") {
-            val vText = remember { demoReadBytes(DemoFile.Notice)?.decodeToString() ?: "(resource missing)" }
+        Section("Raw bytes", "Res.readBytes(\"files/notice.txt\") — no decoding, just the file") {
+            var vText by remember { mutableStateOf("(loading…)") }
+            LaunchedEffect(Unit) {
+                vText = runCatching { Res.readBytes("files/notice.txt").decodeToString() }
+                    .getOrElse { "(resource missing)" }
+            }
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = MaterialTheme.colorScheme.background,
@@ -118,7 +124,7 @@ private fun ScaledImage(label: String, scale: ContentScale) {
                 .clip(RoundedCornerShape(6.dp)),
         ) {
             Image(
-                painter = demoPainter(DemoDrawable.ComposeLogo),
+                painter = painterResource(Res.drawable.compose_logo),
                 contentDescription = label,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = scale,
