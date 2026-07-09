@@ -49,6 +49,11 @@ compose/
 utils/
 └── material-symbols/    → :material-symbols (codepoints + Outlined/Rounded/Sharp icon fonts)
 
+components/
+└── resources/library/    → :components-resources (vendored official compose resources runtime —
+                                              painterResource/stringResource/Res codegen; the Maven
+                                              artifact ships no mingwX64/linux klibs)
+
 navigation3/
 └── navigation3-ui/       → :navigation3-ui  (vendored NavDisplay + scene machinery — the one
                                               Navigation 3 layer without a K/N desktop artifact)
@@ -149,7 +154,9 @@ scripts/compose-fork/sync.sh                           # sync every module
 scripts/compose-fork/sync.sh compose/ui/compose-fork.txt   # one module
 ```
 
-Upstream ref pinned in `scripts/compose-fork/compose-ref.txt`.
+Upstream ref pinned in `scripts/compose-fork/compose-ref.txt`; manifests can
+pin additional upstream repos inline (`SET_REPO=<url>@<ref>` — the resources
+runtime vendors from the compose-multiplatform umbrella repo this way).
 
 See [CLAUDE.md](CLAUDE.md) for the full architecture, source-set hierarchy,
 vendoring rules, density flow (physical-pixel Option B), and per-area file

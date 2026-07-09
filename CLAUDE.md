@@ -63,6 +63,20 @@ utils/
                                                     (Outlined / Rounded / Sharp). Apps get one dep;
                                                     the consumer Zip task bundles only the fonts used.
 
+components/
+└── resources/library/               → :components-resources — the OFFICIAL Compose resources
+                                                    runtime (org.jetbrains.compose.components:
+                                                    components-resources), VENDORED from the
+                                                    compose-multiplatform UMBRELLA repo (the first
+                                                    SET_REPO manifest) because the Maven artifact has
+                                                    no mingwX64/linux klibs. Platform layer is project
+                                                    code: data.kres ResourceReader, pure-Kotlin
+                                                    DomXmlParser (upstream's is Darwin NSXMLParser),
+                                                    SDL3_image decode via the :ui EncodedImageDecoder
+                                                    hook, NamedFont registration, SDL locale/theme env.
+                                                    Apps' JVM targets keep the Maven artifact — the
+                                                    generated Res accessors work against BOTH.
+
 navigation3/
 └── navigation3-ui/                  → :navigation3-ui — androidx.navigation3.ui.* + scene machinery,
                                                     VENDORED verbatim from upstream (SET_ROOT manifest).
@@ -126,7 +140,10 @@ Every module that ships `androidx.compose.*` code carries a
 `<module>/compose-fork.txt` manifest. `scripts/compose-fork/sync.sh` walks all
 manifests and copies each selected file byte-for-byte from a pinned
 `JetBrains/compose-multiplatform-core` checkout (ref in
-`scripts/compose-fork/compose-ref.txt`) into
+`scripts/compose-fork/compose-ref.txt`; a manifest may pin a DIFFERENT
+upstream repo inline with `SET_REPO=<https-url>@<ref>` — e.g.
+:components-resources vendors from the compose-multiplatform umbrella repo,
+sparse-cloned to `../cmp-ref-<name>`) into
 `<module>/src/vendor/{common,native,skikoRenderer,sdlRenderer}/kotlin/`. The
 `src/vendor/` tree is **gitignored** — you don't check it in, you re-sync
 on demand.
@@ -494,6 +511,8 @@ Verified in-tree (api-exposed by `:ui` unless noted):
 - `androidx.navigationevent:navigationevent-compose` 1.1.2 — predictive-back
   event plumbing (BackHandler, NavDisplay gestures).
 - `androidx.collection:collection` — plain Maven dep, not a module.
+- NOT compatible (vendored instead): `components-resources` (no mingw/linux
+  klibs → `:components-resources`), `navigation3-ui` (same → `:navigation3-ui`).
 - Infra: `kotlinx-coroutines-core`, `atomicfu`, `okio`,
   `kotlinx-serialization`.
 
