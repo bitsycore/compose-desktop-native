@@ -1,17 +1,19 @@
 package com.compose.sdl
 
 import com.compose.sdl.renderer.skia.SkiaBridge
+import kotlin.experimental.ExperimentalNativeApi
 
 // ==================
 // MARK: Metal bridge factory (skia-only)
 // ==================
 
-/* Constructs the platform-specific Metal bridge, or null if Metal isn't
-   supported on this target. Linux returns null; macOS returns the real
-   thing. Internal — only used by this module's createRenderBackend. */
 internal expect fun makeMetalBridge(backend: SDL3Backend): SkiaBridge?
 
-/* What GpuMode.Auto resolves to when Skia is the active renderer: macOS →
-   Skia.Metal, Linux → Skia.OpenGL. Public — :window's preferredGpuMode
-   actual delegates here. */
-expect fun rendererPreferredGpuMode(): GpuMode
+fun rendererPreferredGpuMode(): GpuMode {
+    @OptIn(ExperimentalNativeApi::class)
+    return when (Platform.osFamily) {
+        OsFamily.MACOSX -> GpuMode.Skia.Metal
+        OsFamily.LINUX -> GpuMode.Skia.OpenGL
+        else -> GpuMode.Skia.OpenGL
+    }
+}
