@@ -3,7 +3,11 @@ package apidemo
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -20,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -269,66 +274,112 @@ internal fun HttpFlowView(
     inSoftWrap: Boolean = true,
 ) {
     val c = LocalAppColors.current
-    val vScroll = rememberScrollState()
+    val vState = rememberLazyListState()
+    // The body is highlighted ONCE, then sliced into BLOCKS of lines — one BasicText
+    // per block, NOT one per line. Far fewer nodes / selectables / paragraph set-ups
+    // churn through the viewport while scrolling (the smoothness win), and the
+    // O(total-spans) AnnotatedString.subSequence runs once per block at build time
+    // (memoised) instead of per visible line every frame. LazyColumn still virtualizes,
+    // so only the ~2-3 on-screen blocks are composed/measured — 12k lines stay cheap.
+    val vDark = isDarkBg(c.bg)
+    val vChunks = remember(inBody, inBodyFormat, vDark) {
+        if (inBody == null) emptyList()
+        else {
+            val vAnn = if (inBodyFormat == BodyFormat.RAW) AnnotatedString(inBody)
+                       else highlight(inBody, inBodyFormat, SyntaxPalette.forDark(vDark))
+            buildBodyChunks(inBody, vAnn, kLinesPerChunk)
+        }
+    }
+    val vTotalLines = remember(inBody) { if (inBody == null) 0 else inBody.count { it == '\n' } + 1 }
+    // No-wrap mode pans horizontally; every block shares this one scroll state so the
+    // whole body pans together (the gutter stays pinned — not scrolled).
+    val vHScroll = rememberScrollState()
+    val vGutterWidth = (vTotalLines.coerceAtLeast(1).toString().length * 7 + 4).dp
+    // Per-line styles hoisted once (not allocated per line per frame). The rows use
+    // BasicText with these fixed styles instead of material3 Text — no per-node
+    // LocalTextStyle merge / LocalContentColor read — which is the main scroll-
+    // smoothness win when thousands of line items churn through the viewport.
+    val vBodyStyle = remember(c.text) { TextStyle(color = c.text, fontSize = 12.sp, fontFamily = monoFontFamily) }
+    val vNumStyle = remember(c.dim) {
+        TextStyle(color = c.dim.copy(alpha = 0.45f), fontSize = 12.sp, fontFamily = monoFontFamily, textAlign = TextAlign.End)
+    }
+
     // contentAlignment pins the narrow scrollbar to the right edge; the
-    // fillMaxSize Column fills the rest (this project's Box has no BoxScope, so
+    // fillMaxSize content fills the rest (this project's Box has no BoxScope, so
     // there's no Modifier.align — alignment is via contentAlignment).
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(vScroll),
-        ) {
-        // Status line: collapse arrow + optional lock + status text.
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { inOnToggleCollapse() }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            MaterialSymbolsOutlined(
-                icon = if (inHeadersCollapsed) MaterialSymbols.ChevronRight else MaterialSymbols.ExpandMore,
-                tint = c.dim,
-                size = 16.dp,
-            )
-            Spacer(Modifier.width(6.dp))
-            if (inShowSecureLock) {
-                MaterialSymbolsOutlined(
-                    icon = MaterialSymbols.Lock,
-                    tint = Color(0xFF36B37E),  // green — TLS verified by OS
-                    size = 14.dp,
-                )
-                Spacer(Modifier.width(6.dp))
-            }
-            Text(inStatusLine, color = c.text, fontSize = 13.sp)
-        }
-        // Headers as a key/value table — only when not collapsed.
-        if (!inHeadersCollapsed && inHeaders.isNotEmpty()) {
-            HeaderTable(inHeaders, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
-        }
-        if (inBody != null || inIsImage) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = c.border)
-            if (inIsImage && inImagePainter != null) {
-                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Image(
-                        painter = inImagePainter,
-                        contentDescription = "Response image",
-                        contentScale = ContentScale.Fit
-                    )
+        // One SelectionContainer around the list: drag-select + Ctrl/Cmd+C work
+        // across the VISIBLE lines. Off-screen lines aren't composed, so a full-
+        // document drag-select can't reach them — the "Copy" button copies the
+        // entire body regardless (see the toolbar copy action).
+        SelectionContainer(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(state = vState, modifier = Modifier.fillMaxSize()) {
+                // Status line: collapse arrow + optional lock + status text.
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { inOnToggleCollapse() }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        MaterialSymbolsOutlined(
+                            icon = if (inHeadersCollapsed) MaterialSymbols.ChevronRight else MaterialSymbols.ExpandMore,
+                            tint = c.dim,
+                            size = 16.dp,
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        if (inShowSecureLock) {
+                            MaterialSymbolsOutlined(
+                                icon = MaterialSymbols.Lock,
+                                tint = Color(0xFF36B37E),  // green — TLS verified by OS
+                                size = 14.dp,
+                            )
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text(inStatusLine, color = c.text, fontSize = 13.sp)
+                    }
                 }
-            } else if (inBody != null) {
-                BodyView(
-                    inText = inBody,
-                    modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
-                    inFormat = inBodyFormat,
-                    inSoftWrap = inSoftWrap,
-                )
+                // Headers as a key/value table — only when not collapsed.
+                if (!inHeadersCollapsed && inHeaders.isNotEmpty()) {
+                    item {
+                        HeaderTable(inHeaders, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+                    }
+                }
+                if (inBody != null || inIsImage) {
+                    item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = c.border) }
+                    if (inIsImage && inImagePainter != null) {
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                Image(
+                                    painter = inImagePainter,
+                                    contentDescription = "Response image",
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+                    } else if (vChunks.isNotEmpty()) {
+                        // One BasicText per BLOCK of lines (not per line) — far fewer
+                        // nodes / selectables to churn while scrolling. contentType lets
+                        // LazyColumn recycle block slots.
+                        items(vChunks.size, contentType = { "chunk" }) { vCi ->
+                            BodyChunkRow(
+                                inChunk = vChunks[vCi],
+                                inSoftWrap = inSoftWrap,
+                                inGutterWidth = vGutterWidth,
+                                inHScroll = vHScroll,
+                                inBodyStyle = vBodyStyle,
+                                inNumStyle = vNumStyle,
+                            )
+                        }
+                    }
+                }
+                item { Spacer(Modifier.height(8.dp)) }
             }
-        }
-        Spacer(Modifier.height(8.dp))
         }
         // Overlay scrollbar on the right, themed for the dark panel.
         VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(vScroll),
+            adapter = rememberScrollbarAdapter(vState),
             modifier = Modifier.fillMaxHeight(),
             style = ScrollbarStyle(
                 minimalHeight = 24.dp,
@@ -340,6 +391,124 @@ internal fun HttpFlowView(
             ),
         )
     }
+}
+
+// How many source lines each body BasicText covers. A block is measured whole when
+// any of it is on screen, so keep it near a screenful; small enough to bound over-
+// measure at the viewport edges, large enough to slash node/selectable count.
+private const val kLinesPerChunk = 48
+
+/* One BLOCK of a read-only body: a right-aligned column of line numbers in the
+   gutter + the block's (syntax-coloured) text, each a single BasicText. Rendering
+   blocks (not one-BasicText-per-line) keeps the node / selectable / paragraph-set-up
+   count low as blocks scroll through the viewport. DisableSelection keeps the gutter
+   digits out of drag-select / copy; the gutter is pinned outside the shared h-scroll.
+
+   Gutter alignment under soft-wrap: the gutter starts as plain 1:1 numbers, then the
+   body's own onTextLayout tells us how many VISUAL rows each source line wrapped into,
+   and we pad the gutter with that many blank rows so number N still sits on line N's
+   first row. It reuses the body's layout (no extra measurement) and only recomputes on
+   (re)layout, not per frame. No-wrap mode is 1 row per line, so the plain gutter is exact. */
+@Composable
+private fun BodyChunkRow(
+    inChunk: BodyChunk,
+    inSoftWrap: Boolean,
+    inGutterWidth: androidx.compose.ui.unit.Dp,
+    inHScroll: ScrollState,
+    inBodyStyle: TextStyle,
+    inNumStyle: TextStyle,
+) {
+    val vPlain = remember(inChunk) {
+        buildString {
+            for (j in 0 until inChunk.lineCount) {
+                if (j > 0) append('\n')
+                append(inChunk.firstLine + j)
+            }
+        }
+    }
+    // Reset when the block OR the wrap mode changes (a stale padded gutter must not
+    // survive a switch back to no-wrap).
+    var vGutter by remember(inChunk, inSoftWrap) { mutableStateOf(vPlain) }
+    Row(modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp)) {
+        DisableSelection {
+            BasicText(text = vGutter, style = inNumStyle, softWrap = false, modifier = Modifier.width(inGutterWidth))
+        }
+        Spacer(Modifier.width(6.dp))
+        if (inSoftWrap) {
+            BasicText(
+                text = inChunk.body,
+                style = inBodyStyle,
+                softWrap = true,
+                modifier = Modifier.weight(1f),
+                onTextLayout = { layout ->
+                    val vLen = inChunk.body.length
+                    val vMaxOff = maxOf(0, vLen - 1)
+                    val vSb = StringBuilder()
+                    for (j in 0 until inChunk.lineCount) {
+                        if (j > 0) vSb.append('\n')
+                        vSb.append(inChunk.firstLine + j)
+                        if (vLen > 0) {
+                            val vStart = inChunk.lineStartsInBlock[j].coerceIn(0, vMaxOff)
+                            val vEnd = (if (j + 1 < inChunk.lineCount) inChunk.lineStartsInBlock[j + 1] - 1 else vMaxOff)
+                                .coerceIn(vStart, vMaxOff)
+                            val vRows = layout.getLineForOffset(vEnd) - layout.getLineForOffset(vStart) + 1
+                            repeat((vRows - 1).coerceAtLeast(0)) { vSb.append('\n') }
+                        }
+                    }
+                    val vNew = vSb.toString()
+                    if (vNew != vGutter) vGutter = vNew
+                },
+            )
+        } else {
+            // No-wrap: each source line is exactly one row, so the plain gutter is correct.
+            Box(modifier = Modifier.weight(1f).horizontalScroll(inHScroll)) {
+                BasicText(text = inChunk.body, style = inBodyStyle, softWrap = false)
+            }
+        }
+    }
+}
+
+/* A block of consecutive source lines: 1-based number of the first line, the line
+   count, each source line's start offset WITHIN the block text (to map a wrapped body
+   layout back to line numbers), and the highlighted block text. */
+private class BodyChunk(
+    val firstLine: Int,
+    val lineCount: Int,
+    val lineStartsInBlock: IntArray,
+    val body: AnnotatedString,
+)
+
+/* Slice a highlighted body into blocks of [inLinesPerChunk] lines. The O(total-spans)
+   subSequence runs once per block HERE (build time, memoised) instead of once per
+   visible line every frame — the difference between smooth and janky on a big body. */
+private fun buildBodyChunks(inText: String, inAnn: AnnotatedString, inLinesPerChunk: Int): List<BodyChunk> {
+    val vStarts = lineStartOffsets(inText)
+    val vN = vStarts.size
+    val vLen = inAnn.length
+    val vOut = ArrayList<BodyChunk>((vN + inLinesPerChunk - 1) / inLinesPerChunk)
+    var vLine = 0
+    while (vLine < vN) {
+        val vLast = minOf(vLine + inLinesPerChunk, vN)                       // exclusive
+        val vChunkStart = vStarts[vLine].coerceIn(0, vLen)
+        val vChunkEnd = (if (vLast < vN) vStarts[vLast] - 1 else vLen)       // drop the trailing '\n'
+            .coerceIn(vChunkStart, vLen)
+        val vBody = inAnn.subSequence(vChunkStart, vChunkEnd)
+        val vStartsInBlock = IntArray(vLast - vLine) { (vStarts[vLine + it] - vChunkStart).coerceAtLeast(0) }
+        vOut.add(BodyChunk(vLine + 1, vLast - vLine, vStartsInBlock, vBody))
+        vLine = vLast
+    }
+    return vOut
+}
+
+/* Offsets where each source line starts (line i spans [starts[i], starts[i+1]-1),
+   the -1 dropping the '\n'; the last line runs to the string end). One cheap O(n)
+   scan, memoised — replaces the old gutter pre-pass that ran measurer.wrap() on
+   every one of N lines on each width change (the other half of the freeze). */
+private fun lineStartOffsets(inText: String): IntArray {
+    val vStarts = ArrayList<Int>(64)
+    vStarts.add(0)
+    for (vI in inText.indices) if (inText[vI] == '\n') vStarts.add(vI + 1)
+    return vStarts.toIntArray()
 }
 
 /* Header table: each row is (key | value) where the key column has a

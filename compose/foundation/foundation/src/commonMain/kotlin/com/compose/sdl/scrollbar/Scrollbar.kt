@@ -2,6 +2,7 @@ package com.compose.sdl.scrollbar
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.hoverable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -107,6 +108,45 @@ private class ScrollStateScrollbarAdapter(private val state: ScrollState) : Scro
         // we are now (clamping at the scroll edges is the dispatchRawDelta
         // contract, so we don't have to coerce here).
         state.dispatchRawDelta((scrollOffset - state.value.toDouble()).toFloat())
+    }
+}
+
+/* Adapter for a virtualized LazyColumn / LazyRow. A lazy list only knows the
+   size of its VISIBLE items, so exact pixel geometry of off-screen content is
+   unknowable — we estimate it from the average visible item size × total item
+   count (the same approach as Compose Desktop). Accurate enough for a thumb
+   whose length/position track the scroll position; the estimate self-corrects
+   as items of different sizes scroll through the viewport. */
+@Composable
+fun rememberScrollbarAdapter(scrollState: LazyListState): ScrollbarAdapter =
+    remember(scrollState) { LazyListScrollbarAdapter(scrollState) }
+
+private class LazyListScrollbarAdapter(private val state: LazyListState) : ScrollbarAdapter {
+    // Mean main-axis size of the currently-visible items, in px (>= 1 to avoid /0).
+    private fun averageItemSize(): Double {
+        val vVisible = state.layoutInfo.visibleItemsInfo
+        if (vVisible.isEmpty()) return 0.0
+        val vSpan = (vVisible.last().offset + vVisible.last().size) - vVisible.first().offset
+        return (vSpan.toDouble() / vVisible.size).coerceAtLeast(1.0)
+    }
+
+    override val scrollOffset: Double
+        get() = averageItemSize() * state.firstVisibleItemIndex + state.firstVisibleItemScrollOffset
+
+    override val contentSize: Double
+        get() = averageItemSize() * state.layoutInfo.totalItemsCount
+
+    override val viewportSize: Double
+        get() = (state.layoutInfo.viewportEndOffset - state.layoutInfo.viewportStartOffset).toDouble()
+
+    override suspend fun scrollTo(scrollOffset: Double) {
+        val vAvg = averageItemSize()
+        if (vAvg <= 0.0) return
+        val vTarget = scrollOffset.coerceAtLeast(0.0)
+        val vTotal = state.layoutInfo.totalItemsCount
+        val vIndex = (vTarget / vAvg).toInt().coerceIn(0, (vTotal - 1).coerceAtLeast(0))
+        val vItemOffset = (vTarget - vIndex * vAvg).toInt().coerceAtLeast(0)
+        state.scrollToItem(vIndex, vItemOffset)
     }
 }
 
