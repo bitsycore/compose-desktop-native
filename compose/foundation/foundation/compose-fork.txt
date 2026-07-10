@@ -357,6 +357,7 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt -> src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextSelectionColors.kt
 #     | commonMain/kotlin/androidx/compose/foundation/text/selection/TextSelectionDelegate.kt -> src/vendor/common/kotlin/androidx/compose/foundation/text/selection/TextSelectionDelegate.kt
 !commonMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.kt
+!commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionLayout.kt
 
 macosMain/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.macos.kt -> src/vendor/native/kotlin/androidx/compose/foundation/text/selection/DefaultTextSelectionColors.native.kt
 
