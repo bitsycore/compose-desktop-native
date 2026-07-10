@@ -181,11 +181,15 @@ internal class SdlParagraph(
 	override fun isLineEllipsized(lineIndex: Int): Boolean = false
 
 	override fun getLineForOffset(offset: Int): Int {
+		// Bound by BOTH lineCount and the lineStarts length (they should match, but a
+		// caller may pass an offset at/after text end during selection) and clamp the
+		// result so it's always a valid index into the per-line arrays.
+		val vN = minOf(lineCount, lineStarts.size)
 		var vLine = 0
-		for (i in 0 until lineCount) {
+		for (i in 0 until vN) {
 			if (lineStarts[i] <= offset) vLine = i else break
 		}
-		return vLine
+		return vLine.coerceIn(0, (lineCount - 1).coerceAtLeast(0))
 	}
 
 	override fun getLineForVerticalPosition(vertical: Float): Int {
@@ -236,7 +240,7 @@ internal class SdlParagraph(
 	override fun getHorizontalPosition(offset: Int, usePrimaryDirection: Boolean): Float {
 		val vLine = getLineForOffset(offset)
 		val vAdv = advancesFor(vLine)
-		val vCol = (offset - lineStarts[vLine]).coerceIn(0, vAdv.size - 1)
+		val vCol = (offset - lineStarts.getOrElse(vLine) { 0 }).coerceIn(0, vAdv.size - 1)
 		return vAdv[vCol]
 	}
 
@@ -253,7 +257,7 @@ internal class SdlParagraph(
 			if (vAdv[vMid] < position.x) vLo = vMid + 1 else vHi = vMid
 		}
 		val vBest = if (vLo > 0 && (position.x - vAdv[vLo - 1]) <= (vAdv[vLo] - position.x)) vLo - 1 else vLo
-		return lineStarts[vLine] + vBest
+		return lineStarts.getOrElse(vLine) { 0 } + vBest
 	}
 
 	override fun getCursorRect(offset: Int): Rect {
@@ -310,14 +314,14 @@ internal class SdlParagraph(
 		val vFirstLine = getLineForOffset(vFrom)
 		val vLastLine = getLineForOffset(vTo).coerceAtMost(lineCount - 1)
 		for (vLine in vFirstLine..vLastLine) {
-			val vLineStart = lineStarts[vLine]
+			val vLineStart = lineStarts.getOrElse(vLine) { 0 }
 			val vLineEnd = vLineStart + (allLines.getOrElse(vLine) { "" }.length)
 			val vRangeStart = maxOf(vFrom, vLineStart)
 			val vRangeEnd = minOf(vTo, vLineEnd)
 			val vLeftPx = getHorizontalPosition(vRangeStart, true)
 			val vRightPx =
 				if (vRangeEnd < vLineEnd || vLine == vLastLine) getHorizontalPosition(vRangeEnd, true)
-				else lineWidths[vLine] // selection extends past newline → paint to line's end
+				else lineWidths.getOrElse(vLine) { 0f } // selection extends past newline → paint to line's end
 			if (vRightPx > vLeftPx) {
 				vPath.addRect(Rect(vLeftPx, getLineTop(vLine), vRightPx, getLineBottom(vLine)))
 			}
