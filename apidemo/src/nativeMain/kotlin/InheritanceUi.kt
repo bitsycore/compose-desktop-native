@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package apidemo
 
 import androidx.compose.foundation.background
@@ -8,7 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,7 +98,15 @@ internal fun SourceTag(inLabel: String, inPath: String) {
             Text(inLabel, color = c.accent, fontSize = 9.sp)
         }
     }
-    if (inPath.isBlank() || inPath == inLabel) vPill() else TooltipBox(text = inPath) { vPill() }
+    if (inPath.isBlank() || inPath == inLabel) {
+        vPill()
+    } else {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+            tooltip = { PlainTooltip { Text(inPath) } },
+            state = rememberTooltipState(),
+        ) { vPill() }
+    }
 }
 
 /* The tiny marker shown on an own value that shadows an inherited one — hover for
@@ -99,7 +114,11 @@ internal fun SourceTag(inLabel: String, inPath: String) {
 @Composable
 internal fun OverrideMark(inKey: String, inPath: String) {
     val c = LocalAppColors.current
-    TooltipBox(text = "Overrides “$inKey” from $inPath") {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text("Overrides “$inKey” from $inPath") } },
+        state = rememberTooltipState(),
+    ) {
         MaterialSymbolsOutlined(MaterialSymbols.ArrowUpward, contentDescription = "Overrides $inPath", tint = c.accent, size = 13.dp)
     }
 }

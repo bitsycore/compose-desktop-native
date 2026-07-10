@@ -347,35 +347,41 @@ internal fun HttpFlowView(
         SelectionContainer(state = vSelState, modifier = Modifier.fillMaxSize()) {
             LazyColumn(state = vState, modifier = Modifier.fillMaxSize()) {
                 // Status line: collapse arrow + optional lock + status text.
+                // DisableSelection opts the status + header rows out of the surrounding
+                // SelectionContainer, so Ctrl/Cmd+A and drag-select only touch the body.
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { inOnToggleCollapse() }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        MaterialSymbolsOutlined(
-                            icon = if (inHeadersCollapsed) MaterialSymbols.ChevronRight else MaterialSymbols.ExpandMore,
-                            tint = c.dim,
-                            size = 16.dp,
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        if (inShowSecureLock) {
+                    DisableSelection {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { inOnToggleCollapse() }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             MaterialSymbolsOutlined(
-                                icon = MaterialSymbols.Lock,
-                                tint = Color(0xFF36B37E),  // green — TLS verified by OS
-                                size = 14.dp,
+                                icon = if (inHeadersCollapsed) MaterialSymbols.ChevronRight else MaterialSymbols.ExpandMore,
+                                tint = c.dim,
+                                size = 16.dp,
                             )
                             Spacer(Modifier.width(6.dp))
+                            if (inShowSecureLock) {
+                                MaterialSymbolsOutlined(
+                                    icon = MaterialSymbols.Lock,
+                                    tint = Color(0xFF36B37E),  // green — TLS verified by OS
+                                    size = 14.dp,
+                                )
+                                Spacer(Modifier.width(6.dp))
+                            }
+                            Text(inStatusLine, color = c.text, fontSize = 13.sp)
                         }
-                        Text(inStatusLine, color = c.text, fontSize = 13.sp)
                     }
                 }
                 // Headers as a key/value table — only when not collapsed.
                 if (!inHeadersCollapsed && inHeaders.isNotEmpty()) {
                     item {
-                        HeaderTable(inHeaders, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+                        DisableSelection {
+                            HeaderTable(inHeaders, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+                        }
                     }
                 }
                 if (inBody != null || inIsImage) {

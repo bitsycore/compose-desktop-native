@@ -39,6 +39,7 @@ import com.compose.sdl.layout.y
 import androidx.compose.ui.platform.currentClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.outlined.MaterialSymbolsOutlined
@@ -54,9 +55,6 @@ import kotlinx.coroutines.delay
 internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -> Unit) {
     val c = LocalAppColors.current
     Dialog(onDismissRequest = inOnDismiss) {
-        // Width must stay within DialogDefaults.MaxWidth (560dp) or content
-        // overflows the dialog's click-swallow box onto the scrim — which would
-        // make clicks there dismiss the dialog and swallow hover.
         Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(540.dp)) {
             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

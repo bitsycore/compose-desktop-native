@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package apidemo
 
 import androidx.compose.foundation.background
@@ -11,7 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -243,7 +250,11 @@ internal fun SessionMenu(
                                 }
                                 // Reveal this session's folder — its own hover + tooltip so it
                                 // reads as a separate action from "open the session".
-                                TooltipBox(text = "Reveal in ${fileManagerName()}") {
+                                TooltipBox(
+                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                    tooltip = { PlainTooltip { Text("Reveal in ${fileManagerName()}") } },
+                                    state = rememberTooltipState(),
+                                ) {
                                     Box(
                                         modifier = Modifier.clip(RoundedCornerShape(6.dp))
                                             .background(

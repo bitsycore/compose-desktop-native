@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package apidemo
 
 import androidx.compose.foundation.background
@@ -126,7 +128,11 @@ internal fun UrlBar(
         // box, padding and size — so the bar doesn't shift.
         val vLockHoverSrc = remember { MutableInteractionSource() }
         val vLockHover by vLockHoverSrc.collectIsHoveredAsState()
-        TooltipBox(text = "Inspect TLS certificate chain") {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+            tooltip = { PlainTooltip { Text("Inspect TLS certificate chain") } },
+            state = rememberTooltipState(),
+        ) {
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(6.dp))
                     .background(if (vLockHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))

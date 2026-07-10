@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package apidemo
 
 import androidx.compose.foundation.*
@@ -8,7 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -192,7 +199,11 @@ internal fun HoverIconBtn(
         vHover   -> c.accent.copy(alpha = 0.18f)
         else     -> Color.Transparent
     }
-    TooltipBox(text = inTooltip) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(inTooltip) } },
+        state = rememberTooltipState(),
+    ) {
         Box(
             modifier = inModifier
                 .clip(RoundedCornerShape(6.dp))
@@ -217,7 +228,11 @@ internal fun TabSizeSelector() {
     val vHoverSrc = remember { MutableInteractionSource() }
     val vHover by vHoverSrc.collectIsHoveredAsState()
     val vSize = TextLayoutConfig.tabWidth
-    TooltipBox(text = "Editor tab size") {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text("Editor tab size") } },
+        state = rememberTooltipState(),
+    ) {
         Box {
             Row(
                 modifier = Modifier
