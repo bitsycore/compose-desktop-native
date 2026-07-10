@@ -135,7 +135,11 @@ private fun mapKey(inKk: SDL_KeyboardEvent, inType: KeyEventType): AppEvent.Key 
 	val vScancode = inKk.scancode.toInt()
 	val vMod = inKk.mod.toInt()
 	return AppEvent.Key(KeyEvent(
-		key = kKeyForScancode(vScancode),
+		// Letters resolve from the layout-aware KEYCODE, so a shortcut lands on the
+		// key the user actually sees: Ctrl+A is the 'A' key on AZERTY / QWERTZ, not
+		// the physical QWERTY-A position. Non-letters fall back to the positional
+		// scancode (arrows / F-keys / numpad / punctuation are layout-independent).
+		key = kKeyForKeycode(inKk.key.toInt()) ?: kKeyForScancode(vScancode),
 		type = inType,
 		// Deliberately 0: SDL keycodes are UNSHIFTED (lowercase only, no numpad
 		// digits, base layout chars) — deriving typed characters from them broke
@@ -156,6 +160,26 @@ private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
 	2 -> PointerButton.Tertiary
 	3 -> PointerButton.Secondary
 	else -> PointerButton.Primary
+}
+
+/* SDL_Keycode (layout-aware) → Key, for Latin LETTERS only. The keycode reflects
+   the active layout, so this maps to the letter the user perceives regardless of
+   the key's physical position — the fix for Ctrl+<letter> shortcuts on AZERTY /
+   QWERTZ. Uppercase is folded to lowercase (some SDL builds apply Shift to the
+   keycode). Returns null for non-letters, which the caller resolves positionally
+   via kKeyForScancode; non-Latin layouts also fall through to positional. */
+private fun kKeyForKeycode(inKeycode: Int): Key? {
+	val vLower = if (inKeycode in 'A'.code..'Z'.code) inKeycode + 32 else inKeycode
+	return when (vLower) {
+		'a'.code -> Key.A; 'b'.code -> Key.B; 'c'.code -> Key.C; 'd'.code -> Key.D
+		'e'.code -> Key.E; 'f'.code -> Key.F; 'g'.code -> Key.G; 'h'.code -> Key.H
+		'i'.code -> Key.I; 'j'.code -> Key.J; 'k'.code -> Key.K; 'l'.code -> Key.L
+		'm'.code -> Key.M; 'n'.code -> Key.N; 'o'.code -> Key.O; 'p'.code -> Key.P
+		'q'.code -> Key.Q; 'r'.code -> Key.R; 's'.code -> Key.S; 't'.code -> Key.T
+		'u'.code -> Key.U; 'v'.code -> Key.V; 'w'.code -> Key.W; 'x'.code -> Key.X
+		'y'.code -> Key.Y; 'z'.code -> Key.Z
+		else -> null
+	}
 }
 
 // ==================
