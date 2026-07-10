@@ -1,3 +1,0 @@
-# Pinned upstream ref for the vendored Compose files
-# Tag at this commit: v1.12.0-beta01+dev4324
-1be9d64ad12db0c79f44aedf9d9388e644c60871

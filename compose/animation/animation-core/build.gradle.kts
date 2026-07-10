@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // upstream. Renderer-agnostic (spring/tween specs, animatable, transition,
 // vector math). Split out of :core so :core stays about renderer+ui glue only.
 //
-// Provenance = animation-core/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
+// Provenance = animation-core/compose-fork.txt + scripts/compose-fork/compose.properties.
 // Never hand-edit files under animation-core/src/vendor/ — change the manifest and
 // re-run `bash scripts/compose-fork/sync.sh :animation-core`.
 //

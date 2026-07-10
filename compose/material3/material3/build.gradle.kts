@@ -2,7 +2,7 @@
 // androidx.compose.material3, into src/vendor/. Objective: eventually retire
 // the hand-written :material module in favour of this one.
 //
-// Provenance = material3/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
+// Provenance = material3/compose-fork.txt + scripts/compose-fork/compose.properties.
 // Never hand-edit files under material3/src/vendor/ — change the manifest and
 // re-run `bash scripts/compose-fork/sync.sh :material3`.
 //

@@ -1,4 +1,5 @@
-SET_ROOT=compose/material3/material3/src
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/material3/material3/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/material3/AlertDialog.kt -> src/vendor/common/kotlin/androidx/compose/material3/AlertDialog.kt

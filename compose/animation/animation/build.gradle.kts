@@ -2,7 +2,7 @@
 // upstream into src/vendor/. Split out of :foundation to mirror Compose
 // Multiplatform's module packaging.
 //
-// Provenance = animation/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
+// Provenance = animation/compose-fork.txt + scripts/compose-fork/compose.properties.
 // Never hand-edit files under src/vendor/ — change the manifest and re-run
 // `python scripts/compose-fork/sync.py compose/animation/animation`.
 //

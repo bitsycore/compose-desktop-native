@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // stays a distinct package from androidx.compose.foundation.*), only the Gradle
 // module boundary is coalesced.
 //
-// Provenance = foundation/compose-fork.txt + scripts/compose-fork/compose-ref.txt.
+// Provenance = foundation/compose-fork.txt + scripts/compose-fork/compose.properties.
 // Never hand-edit files under foundation/src/vendor/ — change the manifest and
 // re-run `bash scripts/compose-fork/sync.sh :foundation`.
 //

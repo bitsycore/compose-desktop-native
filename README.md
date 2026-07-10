@@ -154,7 +154,7 @@ scripts/compose-fork/sync.sh                           # sync every module
 scripts/compose-fork/sync.sh compose/ui/compose-fork.txt   # one module
 ```
 
-Upstream ref pinned in `scripts/compose-fork/compose-ref.txt`; manifests can
+Upstream ref pinned in `scripts/compose-fork/compose.properties`; manifests can
 pin additional upstream repos inline (`SET_REPO=<url>@<ref>` — the resources
 runtime vendors from the compose-multiplatform umbrella repo this way).
 

@@ -79,7 +79,7 @@ components/
 
 navigation3/
 └── navigation3-ui/                  → :navigation3-ui — androidx.navigation3.ui.* + scene machinery,
-                                                    VENDORED verbatim from upstream (SET_ROOT manifest).
+                                                    VENDORED verbatim from upstream (SET_FOLDER manifest).
                                                     Navigation 3's runtime layers (navigation3-runtime,
                                                     lifecycle-viewmodel-navigation3) are real Maven KMP
                                                     artifacts used as-is (see "Known Compatible" below);
@@ -137,28 +137,30 @@ install the popup / scaffold layer at the composition root).
 **Prefer vendoring verbatim from upstream Compose Multiplatform over hand-rolling anything.**
 
 Every module that ships `androidx.compose.*` code carries a
-`<module>/compose-fork.txt` manifest. `scripts/compose-fork/sync.sh` walks all
-manifests and copies each selected file byte-for-byte from a pinned
-`JetBrains/compose-multiplatform-core` checkout (ref in
-`scripts/compose-fork/compose-ref.txt`; a manifest may pin a DIFFERENT
-upstream repo inline with `SET_REPO=<https-url>@<ref>` — e.g.
-:components-resources vendors from the compose-multiplatform umbrella repo,
-sparse-cloned to `../cmp-ref-<name>`) into
+`<module>/compose-fork.txt` manifest. Each one declares its upstream repo +
+pinned ref up top with `SET_REPO=<https-url>@<ref>`, where `<ref>` is normally a
+`<VARNAME>` resolved from `scripts/compose-fork/compose.properties` — a
+`NAME=value` file that version-tags every pinned ref in ONE place (e.g.
+`COMPOSE_CORE_REF` for compose-multiplatform-core, `COMPOSE_REF` for the
+compose-multiplatform umbrella repo that `:components-resources` vendors from).
+There is no implicit default — `SET_REPO` is required. `scripts/compose-fork/sync.sh`
+walks all manifests and copies each selected file byte-for-byte from the pinned
+checkout (each distinct repo sparse-cloned to `../cmp-ref[-<name>]`) into
 `<module>/src/vendor/{common,native,skikoRenderer,sdlRenderer}/kotlin/`. The
 `src/vendor/` tree is **gitignored** — you don't check it in, you re-sync
 on demand.
 
-Manifests are **folder-style**: a `SET_ROOT=<module>/src` line sets an upstream
+Manifests are **folder-style**: a `SET_FOLDER=<module>/src` line sets an upstream
 base, then `<sourceSet>/kotlin/ -> src/vendor/<area>/kotlin/` grabs a whole
 source set (every `.kt` under it). `!<sourceSet>/kotlin/<pkg>/<File>.kt` refuses
 one file inside a grabbed folder — use it for files hand-vendored + edited under
 `src/{commonMain,…}` so the folder copy doesn't shadow them, or for upstream
 files the port doesn't want. A plain `<src> -> <dest>` still pins (or renames on
-copy) a single file. Re-declare `SET_ROOT` to draw from a second upstream module
+copy) a single file. Re-declare `SET_FOLDER` to draw from a second upstream module
 (`:ui` pulls from ui + ui-graphics + ui-text). Every sync re-annotates the
 manifest in place: commented `#     | src -> dest` lines under each folder
 directive list what it expands to, and a trailing `# >>> DIAGNOSTIC GAPS` block
-lists every upstream `.kt` under SET_ROOT that no directive selects (grouped by
+lists every upstream `.kt` under SET_FOLDER that no directive selects (grouped by
 source set) so new upstream files surface as comments to uncomment. That whole
 annotated tail is generated — never hand-edit it; edit only the directives up
 top and re-run sync.
@@ -360,7 +362,7 @@ scripts/compose-fork/format-manifest.py --discover ../cmp-ref \
     --manifest compose/ui/compose-fork.txt
 ```
 
-Upstream ref: `scripts/compose-fork/compose-ref.txt` — set to a specific commit
+Upstream ref: `scripts/compose-fork/compose.properties` — set to a specific commit
 of `JetBrains/compose-multiplatform-core`. Bump the ref → re-sync → let the
 build tell you what broke.
 

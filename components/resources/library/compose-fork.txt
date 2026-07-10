@@ -10,8 +10,8 @@
 #   vendor/skikoRenderer — upstream skikoMain Skia-bound files, verbatim
 # Re-sync: python scripts/compose-fork/sync.py components/resources/library
 
-SET_REPO=https://github.com/JetBrains/compose-multiplatform@v1.12.0-beta01
-SET_ROOT=components/resources/library/src
+SET_REPO=https://github.com/JetBrains/compose-multiplatform@<COMPOSE_REF>
+SET_FOLDER=components/resources/library/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/org/jetbrains/compose/resources/FontResources.kt -> src/vendor/common/kotlin/org/jetbrains/compose/resources/FontResources.kt

@@ -14,7 +14,7 @@ source. Only the tooling here and the per-module manifests are tracked:
 |-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `sync.sh`                         | Idempotent script that canonicalizes the selected manifest(s) then copies each active entry verbatim from the pinned upstream ref.                     |
 | `format-manifest.py`              | Canonicalizes a `compose-fork.txt` in place (see "Manifest layout"). Run by `sync.sh`; also runnable standalone.                                       |
-| `compose-ref.txt`                 | The pinned upstream commit the vendored files are synced from.                                                                                         |
+| `compose.properties`              | `NAME=value` variable declarations — the pinned upstream refs, tagged in one place. Manifests reference them as `<NAME>` in `SET_REPO=<url>@<NAME>`.     |
 | `README.md`                       | This file.                                                                                                                                             |
 | `../../<module>/compose-fork.txt` | Per-module manifest — lives **alongside the module's `build.gradle.kts`**. Today only `:core` has one; a future `:material3` module would add its own. |
 
@@ -56,12 +56,12 @@ adds any `.kt` **not already listed** as a commented candidate under its
 package section, with a best-guess dest (refine when you vendor it; only the
 upstream path is deduped, so curated entries keep their dests). `sync.sh` runs
 `--discover $CMP_REF` automatically after cloning per manifest, so a
-`compose-ref.txt` bump surfaces newly-added upstream files as candidates.
+`compose.properties` bump surfaces newly-added upstream files as candidates.
 Source sets mirrored: `commonMain`, `nonJvmMain`, `nativeMain`, `nonAndroidMain`,
 `skikoMain`. JVM / Android / JS / test are intentionally skipped.
 
 Because the copies are verbatim, provenance lives entirely in
-`<module>/compose-fork.txt` + `compose-ref.txt`. **Never hand-edit a file under
+`<module>/compose-fork.txt` + `compose.properties`. **Never hand-edit a file under
 `<module>/src/vendor/`** — change the manifest or the ref and re-run `sync.sh`
 instead. Hand-written glue (shims, `expect`/`actual` actuals, project-specific
 code) lives outside the vendor tree and IS committed.
@@ -73,7 +73,7 @@ you must populate `<module>/src/vendor/` once before building:
 
 ```bash
 # Clones/updates the sparse upstream checkout at $CMP_REF (default ../cmp-ref)
-# to the ref in compose-ref.txt, then copies every manifest entry verbatim.
+# to the ref in compose.properties, then copies every manifest entry verbatim.
 CMP_REF=../cmp-ref bash scripts/compose-fork/sync.sh
 ```
 
@@ -99,7 +99,7 @@ Argument resolution:
 | `foo`              | `foo/compose-fork.txt`     |
 | `path/to/file.txt` | that path                  |
 
-Re-run any time after editing a manifest or bumping `compose-ref.txt`.
+Re-run any time after editing a manifest or bumping `compose.properties`.
 The script is idempotent.
 
 ## Adding an upstream module
@@ -135,6 +135,7 @@ If you want to vendor a Compose module we don't yet cover (e.g. `material3`):
 
 ## Bumping the upstream ref
 
-Edit the commit SHA in `compose-ref.txt`, re-run `sync.sh`, then rebuild. A
+Edit the ref variable (e.g. `COMPOSE_CORE_REF`) in `compose.properties`, re-run
+`sync.sh`, then rebuild. A
 verbatim re-sync makes `git status` of a temporary tracked copy show exactly
 what upstream changed between refs.

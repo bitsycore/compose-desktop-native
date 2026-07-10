@@ -54,7 +54,7 @@ def header_for(module):
 	return [
 		'# Files vendored VERBATIM from JetBrains/compose-multiplatform-core into :{}.'.format(module),
 		'# Re-sync with: scripts/compose-fork/sync.sh :{}   (or `sync.sh` for every module).'.format(module),
-		'# Upstream ref pinned in scripts/compose-fork/compose-ref.txt.',
+		'# Upstream ref pinned in scripts/compose-fork/compose.properties.',
 		'#',
 		'# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>',
 		'# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =',

@@ -1,4 +1,5 @@
-SET_ROOT=compose/ui/ui-geometry/src
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/ui/ui-geometry/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/ui/geometry/CornerRadius.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/CornerRadius.kt
@@ -11,5 +12,5 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/ui/geometry/Size.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/Size.kt
 
 # >>> ---- DIAGNOSTIC GAPS ---- <<<<
-#   (none — every source set under SET_ROOT is vendored)
+#   (none — every source set under SET_FOLDER is vendored)
 # <<< ---- DIAGNOSTIC GAPS ---- >>>>
