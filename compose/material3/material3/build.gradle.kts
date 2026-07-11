@@ -37,6 +37,9 @@ kotlin {
 				// androidx.collection is used by material3 internals (MutableIntObjectMap, …).
 				// Already on the classpath via :core's runtime; declare here for clarity.
 				implementation("androidx.collection:collection:1.5.0")
+				// androidx.graphics.shapes.* — MaterialShapes (RoundedPolygon /
+				// Morph / CornerRounding) that WavyProgress / LoadingIndicator use.
+				implementation("androidx.graphics:graphics-shapes:1.1.0")
 				// kotlinx.datetime — DatePicker / TimePicker / CalendarModel.
 				implementation(libs.kotlinx.datetime)
 			}

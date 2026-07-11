@@ -253,13 +253,6 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/material3/tokens/VibrantMenuTokens.kt -> src/vendor/common/kotlin/androidx/compose/material3/tokens/VibrantMenuTokens.kt
 #     | commonMain/kotlin/androidx/compose/material3/tokens/XLargeIconButtonTokens.kt -> src/vendor/common/kotlin/androidx/compose/material3/tokens/XLargeIconButtonTokens.kt
 #     | commonMain/kotlin/androidx/compose/material3/tokens/XSmallIconButtonTokens.kt -> src/vendor/common/kotlin/androidx/compose/material3/tokens/XSmallIconButtonTokens.kt
-!commonMain/kotlin/androidx/compose/material3/LoadingIndicator.kt
-!commonMain/kotlin/androidx/compose/material3/MaterialShapes.kt
-!commonMain/kotlin/androidx/compose/material3/WavyProgressIndicator.kt
-!commonMain/kotlin/androidx/compose/material3/internal/CircularWavyProgressModifiers.kt
-!commonMain/kotlin/androidx/compose/material3/internal/LinearWavyProgressModifiers.kt
-!commonMain/kotlin/androidx/compose/material3/internal/ShapeUtil.kt
-!commonMain/kotlin/androidx/compose/material3/pulltorefresh/PullToRefresh.kt
 
 nativeMain/kotlin/androidx/compose/material3/internal/System.native.kt -> src/vendor/native/kotlin/androidx/compose/material3/internal/System.native.kt
 
