@@ -35,16 +35,20 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().all {
         val isMingw = name == "mingwX64"
-        val isLinuxX64 = name == "linuxX64"
+        val isMacos = name.startsWith("macos")
+        val isLinux = name.startsWith("linux")
         binaries.executable {
             disableNativeCache(
                 version = DisableCacheInKotlinVersion.`2_4_0`,
                 reason = "Weird undef symbole on macos"
             )
             entryPoint = "main"
-            // mingwX64 links SDL3 / SDL3_ttf / SDL3_image / FreeType + image
-            // codecs all statically into the .exe (clean app.exe + data.kres,
-            // no DLLs). macOS/Linux resolve via the .def's system -L paths.
+            // Every target links SDL3 / SDL3_ttf / SDL3_image / FreeType + image
+            // codecs STATICALLY into the binary (clean app + data.kres, no runtime
+            // DLL / dylib / .so alongside). The .a archives live in <repo>/libs/,
+            // populated by scripts/build-sdl/build-all.sh. The set of platform
+            // system libs each target pulls in matches SDL3's static-link
+            // requirements (see libs/SDL3/lib/pkgconfig/sdl3.pc after building).
             if (isMingw) linkerOpts(
                 "-L$vLibs/SDL3/lib",
                 "-L$vLibs/SDL3_ttf/lib",
@@ -68,11 +72,50 @@ kotlin {
                 // fail to link, since Kotlin/Native emits `main`.
                 "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
             )
-            // Linux (Skia/Skiko): Skiko's Skia is linked statically from the
-            // klib, but it references the system graphics stack — fontconfig
-            // (font matching), GL (Skia GL backend), X11 (windowing). Add them
-            // here; SDL3 resolves via sdl3.def's linkerOpts.linux_x64.
-            if (isLinuxX64) linkerOpts(
+            // macOS (ld64): no --start-group needed, no --gc-sections (dead-strip
+            // is on at -O), no --subsystem. Frameworks come from SDL3's static
+            // build (see sdl3.pc after build-sdl3.sh). UniformTypeIdentifiers +
+            // CoreHaptics are weak-linked to keep the binary loadable on older
+            // macOS where they don't exist.
+            if (isMacos) linkerOpts(
+                "-L$vLibs/SDL3/lib",
+                "-L$vLibs/SDL3_ttf/lib",
+                "-L$vLibs/SDL3_image/lib",
+                "-L$vLibs/FreeType/lib",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lz", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-framework", "CoreMedia",
+                "-framework", "CoreVideo",
+                "-framework", "Cocoa",
+                "-weak_framework", "UniformTypeIdentifiers",
+                "-framework", "IOKit",
+                "-framework", "ForceFeedback",
+                "-framework", "Carbon",
+                "-framework", "CoreAudio",
+                "-framework", "AudioToolbox",
+                "-framework", "AVFoundation",
+                "-framework", "Foundation",
+                "-framework", "GameController",
+                "-framework", "Metal",
+                "-framework", "QuartzCore",
+                "-weak_framework", "CoreHaptics",
+                "-lpthread", "-lm",
+            )
+            // Linux (GNU ld): same --start-group pattern as mingw for circular
+            // static deps. Skia (default renderer) also needs fontconfig + GL +
+            // X11. SDL3 pulls in pthread/dl/m/rt + wayland-client / X11 / xkbcommon
+            // at runtime (dynamic, since these are system libs).
+            if (isLinux) linkerOpts(
+                "-L$vLibs/SDL3/lib",
+                "-L$vLibs/SDL3_ttf/lib",
+                "-L$vLibs/SDL3_image/lib",
+                "-L$vLibs/FreeType/lib",
+                "-Wl,--start-group",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lz", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-Wl,--end-group",
+                "-lpthread", "-ldl", "-lm", "-lrt",
+                // Skia's static Skia references the system graphics stack.
                 "-lfontconfig", "-lGL", "-lX11",
             )
         }

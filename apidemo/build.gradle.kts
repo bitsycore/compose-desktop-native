@@ -27,7 +27,8 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().all {
         val isMingw = name == "mingwX64"
-        val isLinuxX64 = name == "linuxX64"
+        val isMacos = name.startsWith("macos")
+        val isLinux = name.startsWith("linux")
         val isApple = name.startsWith("macos") || name.startsWith("ios")
         binaries.executable {
             if (buildType == NativeBuildType.RELEASE) {
@@ -40,14 +41,15 @@ kotlin {
             }
 
             entryPoint = "apidemo.main"
+            // Every target links SDL3 / SDL3_ttf / SDL3_image / FreeType + image
+            // codecs STATICALLY (clean app + data.kres). Ktor's Curl engine
+            // brings its own bundled libcurl + TLS stack inside the klib.
             if (isMingw) linkerOpts(
                 "-L$vLibs/SDL3/lib",
                 "-L$vLibs/SDL3_ttf/lib",
                 "-L$vLibs/SDL3_image/lib",
                 "-L$vLibs/FreeType/lib",
-                // SDL3 / SDL3_ttf / SDL3_image / FreeType + image codecs are
-                // all linked statically into the .exe (clean app.exe + data.kres,
-                // no DLLs). --start-group resolves the circular static deps
+                // --start-group resolves the circular static deps
                 // (ttf<->freetype<->SDL3, image<->png/webp/zlib).
                 "-Wl,--start-group",
                 "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
@@ -68,9 +70,41 @@ kotlin {
                 // fail to link, since Kotlin/Native emits `main`.
                 "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
             )
-            // Linux (Skia/Skiko): system graphics stack Skia references.
-            // libcurl + OpenSSL come bundled (static) inside the Ktor Curl klib.
-            if (isLinuxX64) linkerOpts(
+            if (isMacos) linkerOpts(
+                "-L$vLibs/SDL3/lib",
+                "-L$vLibs/SDL3_ttf/lib",
+                "-L$vLibs/SDL3_image/lib",
+                "-L$vLibs/FreeType/lib",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lz", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-framework", "CoreMedia",
+                "-framework", "CoreVideo",
+                "-framework", "Cocoa",
+                "-weak_framework", "UniformTypeIdentifiers",
+                "-framework", "IOKit",
+                "-framework", "ForceFeedback",
+                "-framework", "Carbon",
+                "-framework", "CoreAudio",
+                "-framework", "AudioToolbox",
+                "-framework", "AVFoundation",
+                "-framework", "Foundation",
+                "-framework", "GameController",
+                "-framework", "Metal",
+                "-framework", "QuartzCore",
+                "-weak_framework", "CoreHaptics",
+                "-lpthread", "-lm",
+            )
+            if (isLinux) linkerOpts(
+                "-L$vLibs/SDL3/lib",
+                "-L$vLibs/SDL3_ttf/lib",
+                "-L$vLibs/SDL3_image/lib",
+                "-L$vLibs/FreeType/lib",
+                "-Wl,--start-group",
+                "-lSDL3_ttf", "-lSDL3_image", "-lSDL3", "-lfreetype",
+                "-lpng16", "-lz", "-lwebp", "-lwebpdemux", "-lwebpmux", "-lsharpyuv",
+                "-Wl,--end-group",
+                "-lpthread", "-ldl", "-lm", "-lrt",
+                // Skia (default renderer) references the system graphics stack.
                 "-lfontconfig", "-lGL", "-lX11",
             )
         }

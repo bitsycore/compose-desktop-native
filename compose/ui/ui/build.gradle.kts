@@ -31,30 +31,18 @@ plugins {
 // -Prenderer=sdl3 flips macOS/Linux targets onto sdlRendererMain (Skiko-free build).
 val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
 
-// Per-target host include rationale: cross-target cinterop indexing under
-// kotlin.mpp.enableCInteropCommonization asks Gradle to cinterop every
-// declared target so the shared nativeMain klib can be commonized. The .def
-// files pin per-target SDL3 / FreeType / SDL3_ttf / SDL3_image include paths
-// to the host's installed copies; we re-export the host's include as an
-// extra -I so foreign-target cinterop indexing finds headers via the host.
-// clang silently ignores -I dirs that don't exist, so this is safe.
-val vHostOs = System.getProperty("os.name")
-val vHostSdlInclude: String? = when {
-    vHostOs.startsWith("Mac")     -> "/opt/homebrew/include"
-    vHostOs == "Linux"            -> "/usr/include"
-    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/SDL3/include"
-    else                          -> null
-}
-val vHostFtInclude: String? = when {
-    vHostOs.startsWith("Mac")     -> "/opt/homebrew/include/freetype2"
-    vHostOs == "Linux"            -> "/usr/include/freetype2"
-    vHostOs.startsWith("Windows") -> "${rootDir.invariantSeparatorsPath}/libs/FreeType/include/freetype2"
-    else                          -> null
-}
-val vHostTtfInclude: String? =
-    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_ttf/include" else null
-val vHostImageInclude: String? =
-    if (vHostOs.startsWith("Windows")) "${rootDir.invariantSeparatorsPath}/libs/SDL3_image/include" else null
+// All targets pull headers from the in-repo static build tree at <repo>/libs,
+// populated by scripts/build-sdl/build-all.sh (or the per-library scripts).
+// Same paths on macOS / Linux / Windows — the .def files are pathless and
+// rely on these -I injections. Cross-target cinterop indexing under
+// kotlin.mpp.enableCInteropCommonization is fine: clang silently ignores -I
+// dirs that don't exist, and the libs/ tree only has headers for the host
+// that built them (they aren't cross-installed).
+val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
+val vHostSdlInclude: String   = "$vLibs/SDL3/include"
+val vHostFtInclude: String    = "$vLibs/FreeType/include/freetype2"
+val vHostTtfInclude: String   = "$vLibs/SDL3_ttf/include"
+val vHostImageInclude: String = "$vLibs/SDL3_image/include"
 
 // Renderer assignment per target. mingwX64 is always SDL3; macOS / Linux
 // default to Skia, switch to SDL3 under -Prenderer=sdl3.
@@ -103,29 +91,29 @@ kotlin {
             create("sdl3") {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
-                if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                extraOpts("-compiler-options", "-I$vHostSdlInclude")
             }
             if (vSdlRenderer) {
                create("sdl3_ttf") {
                     defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
                     packageName("sdl3_ttf")
                     extraOpts("-library", vSdl3Klib)
-                    if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                    if (vHostTtfInclude != null) extraOpts("-compiler-options", "-I$vHostTtfInclude")
+                    extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                    extraOpts("-compiler-options", "-I$vHostTtfInclude")
                 }
                 create("sdl3_image") {
                     defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
                     packageName("sdl3_image")
                     extraOpts("-library", vSdl3Klib)
-                    if (vHostSdlInclude != null) extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                    if (vHostImageInclude != null) extraOpts("-compiler-options", "-I$vHostImageInclude")
+                    extraOpts("-compiler-options", "-I$vHostSdlInclude")
+                    extraOpts("-compiler-options", "-I$vHostImageInclude")
                 }
                 // FreeType powers variable-font axis rendering (FILL / wght /
                 // GRAD / opsz) on Material Symbols icons in the SDL3 path.
                 create("freetype") {
                     defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
                     packageName("freetype")
-                    if (vHostFtInclude != null) extraOpts("-compiler-options", "-I$vHostFtInclude")
+                    extraOpts("-compiler-options", "-I$vHostFtInclude")
                 }
             }
         }

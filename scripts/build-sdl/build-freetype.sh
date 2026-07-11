@@ -1,39 +1,32 @@
 #!/usr/bin/env bash
-# Build a self-contained static FreeType for the Windows mingwX64 target and
-# install it into <repo>/libs/FreeType.
+# Build a self-contained static FreeType and install it into <repo>/libs/FreeType.
+# Runs on macOS, Linux, and Windows (Git Bash) — see _lib.sh for host handling.
 #
-# Optional dependencies (PNG, HarfBuzz, Brotli, BZip2, system zlib) are
+# Optional dependencies (PNG / HarfBuzz / Brotli / BZip2 / system zlib) are
 # DISABLED — only core + variable-font (MM / GX) support is kept, which is all
-# the SDL3 renderer needs for Material Symbols axes and variable Roboto. The
-# result is a static libfreetype.a with NO external/runtime DLLs that links
-# straight into the Kotlin/Native binary (the .def does `-lfreetype`).
+# the SDL3 renderer needs for Material Symbols axes and variable Roboto.
 #
-# Run from Git Bash on Windows. Requires: git, cmake, a mingw-w64 gcc in PATH
-# (e.g. `scoop install gcc`), plus curl + 7z (used to fetch ninja if absent).
-# Override the version with FREETYPE_TAG=VER-2-13-3 (default below).
+# The result is a static libfreetype.a with NO external DLLs / dylibs that
+# links straight into the Kotlin/Native binary (the freetype.def does
+# `-lfreetype`). Override the version with FREETYPE_TAG=VER-2-13-3 (default).
 set -euo pipefail
 
+TOOLS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./_lib.sh
+source "$TOOLS/_lib.sh"
+
+BUILD_SDL_HOST="$(detect_host)"
+setup_toolchain
+
 FT_TAG="${FREETYPE_TAG:-VER-2-13-3}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO="$(cd "$TOOLS/../.." && pwd)"
 LIBS="$REPO/libs"
 BUILD="$LIBS/.build/freetype"
 mkdir -p "$BUILD"
 
-# cmake (a Windows exe) wants Windows-style paths; cygpath -m gives C:/foo form.
-win() { cygpath -m "$1"; }
+NINJA="$(find_ninja "$BUILD")"
 
-# ninja: use one on PATH, else fetch the single-exe Windows build into BUILD/.
-if command -v ninja >/dev/null 2>&1; then
-	NINJA="ninja"
-else
-	echo ">> fetching ninja"
-	curl -fL -o "$BUILD/ninja.zip" \
-		https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip
-	( cd "$BUILD" && 7z x -y "$(cygpath -w "$BUILD/ninja.zip")" >/dev/null )
-	NINJA="$(win "$BUILD/ninja.exe")"
-fi
-
-# FreeType source (shallow clone of the requested tag).
+# Shallow clone of the requested tag; re-fetch only when missing.
 if [ ! -f "$BUILD/src/CMakeLists.txt" ]; then
 	echo ">> cloning FreeType $FT_TAG"
 	rm -rf "$BUILD/src"
@@ -41,17 +34,21 @@ if [ ! -f "$BUILD/src/CMakeLists.txt" ]; then
 fi
 
 echo ">> configuring (static, optional deps off)"
-cmake -S "$(win "$BUILD/src")" -B "$(win "$BUILD/out")" -G Ninja \
+# shellcheck disable=SC2046
+cmake -S "$(cmake_path "$BUILD/src")" -B "$(cmake_path "$BUILD/out")" -G Ninja \
 	-DCMAKE_MAKE_PROGRAM="$NINJA" \
-	-DCMAKE_C_COMPILER=gcc \
+	-DCMAKE_C_COMPILER="$CC" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=OFF \
+	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_PNG=ON -DFT_DISABLE_BROTLI=ON \
 	-DFT_DISABLE_BZIP2=ON -DFT_DISABLE_ZLIB=ON \
-	-DCMAKE_INSTALL_PREFIX="$(win "$LIBS/FreeType")"
+	-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -Os" \
+	$(extra_cmake_args) \
+	-DCMAKE_INSTALL_PREFIX="$(cmake_path "$LIBS/FreeType")"
 
 echo ">> building + installing"
-cmake --build "$(win "$BUILD/out")"
-cmake --install "$(win "$BUILD/out")"
+cmake --build "$(cmake_path "$BUILD/out")"
+cmake --install "$(cmake_path "$BUILD/out")"
 
-echo ">> done: $LIBS/FreeType  (static libfreetype.a, no runtime DLLs)"
+echo ">> done: $LIBS/FreeType (static libfreetype.a, no runtime deps)"
