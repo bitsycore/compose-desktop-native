@@ -1,6 +1,6 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 
-# ComposeNativeSDL3
+# Compose Desktop Native
 
 A Kotlin/Native port of **Compose Multiplatform** running on **SDL3** for
 windowing and input — **no JVM**. Compiles to native binaries for macOS
