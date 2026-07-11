@@ -1,6 +1,5 @@
 package androidx.compose.ui.platform
 
-import androidx.compose.ui.text.AnnotatedString
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
@@ -18,7 +17,6 @@ import kotlinx.cinterop.set
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.value
-import platform.posix.size_tVar
 import sdl3.SDL_GetClipboardData
 import sdl3.SDL_GetClipboardText
 import sdl3.SDL_HasClipboardData
@@ -28,23 +26,17 @@ import sdl3.SDL_SetClipboardText
 import sdl3.SDL_free
 
 // ==================
-// MARK: PlatformClipboard native actuals (SDL3-backed)
+// MARK: SDL3-backed Clipboard actual
 // ==================
 
-/*
- * Native (linux / macOS / windows via mingwX64) actuals for vendored
- * `androidx.compose.ui.platform.ClipboardManager.kt`'s expect classes +
- * `Clipboard.kt`'s interface. Everything flows through SDL3's clipboard
- * APIs (SDL_GetClipboardText / SDL_SetClipboardText / SDL_HasClipboardText).
- *
- * The OS clipboard exchanges plain text, so styled `AnnotatedString` /
- * `ClipEntry` payloads are flattened to `text` on set and rehydrated as
- * unstyled `AnnotatedString` / `ClipEntry.withPlainText` on get.
- *
- * Mirrors upstream's macosMain / iosMain / desktopMain actuals. Combined
- * here in one nativeMain file because we have one source set for
- * macOS / Linux / Windows.
- */
+/* Native actuals for the vendored ClipEntry / ClipMetadata / NativeClipboard
+   expect classes plus a Clipboard implementation over SDL3's clipboard
+   surface. Plain text flows through SDL_[GS]etClipboardText; PNG images
+   through SDL_[GS]etClipboardData("image/png") with a callback that serves
+   bytes on demand and a paired cleanup that frees them.
+
+   Combined in one file because macOS / Linux / mingwX64 all share this
+   source set — there's no meaningful per-target divergence. */
 
 // ============
 //  `expect class NativeClipboard` — no native handle on linux/windows.
@@ -149,8 +141,6 @@ private fun sdlWriteText(text: String) {
 	SDL_SetClipboardText(text)
 }
 
-private fun sdlHasImage(): Boolean = SDL_HasClipboardData(kImageMime)
-
 // Reads the current image/png clipboard entry into a fresh Kotlin ByteArray,
 // or null when no image is available. SDL_GetClipboardData returns a fresh
 // SDL_malloc'd buffer we must SDL_free; we memcpy into a Kotlin ByteArray so
@@ -214,50 +204,13 @@ private fun sdlWriteEntry(entry: ClipEntry?) {
 	if (vImage != null) sdlWriteImage(vImage) else sdlWriteText(entry.plainText.orEmpty())
 }
 
-// ============
-//  ClipboardManager actual (synchronous, AnnotatedString-typed)
-
-@Suppress("DEPRECATION")
-private class SDL3ClipboardManager : ClipboardManager {
-	override fun setText(annotatedString: AnnotatedString) = sdlWriteText(annotatedString.text)
-
-	override fun getText(): AnnotatedString? = sdlReadText()?.let { AnnotatedString(it) }
-
-	override fun hasText(): Boolean = !sdlReadText().isNullOrEmpty()
-
-	override fun getClip(): ClipEntry? = sdlReadEntry()
-
-	override fun setClip(clipEntry: ClipEntry?) { sdlWriteEntry(clipEntry) }
-
-	override val nativeClipboard: NativeClipboard get() = nativeClipboardSentinel
-}
-
-// ============
-//  Clipboard actual (suspend, ClipEntry-typed)
-
-private class SDL3Clipboard : Clipboard {
+// The SDL3-backed Clipboard implementation. Singleton because SDL's clipboard
+// is process-global — allocating a new one per Window() would only waste
+// memory. Consumed by :window when seeding LocalClipboard.
+private object SDL3Clipboard : Clipboard {
 	override suspend fun getClipEntry(): ClipEntry? = sdlReadEntry()
-
 	override suspend fun setClipEntry(clipEntry: ClipEntry?) { sdlWriteEntry(clipEntry) }
-
 	override val nativeClipboard: NativeClipboard get() = nativeClipboardSentinel
 }
 
-// ============
-//  Factories consumed by :window when seeding LocalClipboardManager /
-//  LocalClipboard on the composition. App code should reach the clipboard
-//  through those CompositionLocals inside composition, never through this
-//  file directly. Kept public (not `internal`) because :window is a
-//  separate Gradle module.
-//
-//  The instances are singletons: SDL_GetClipboardText / SDL_SetClipboardText
-//  are process-global, so allocating a new object per Window() would only
-//  waste memory.
-
-private val sharedClipboardManager: ClipboardManager = SDL3ClipboardManager()
-private val sharedClipboard: Clipboard = SDL3Clipboard()
-
-@Suppress("DEPRECATION")
-fun platformClipboardManager(): ClipboardManager = sharedClipboardManager
-
-fun platformClipboard(): Clipboard = sharedClipboard
+fun platformClipboard(): Clipboard = SDL3Clipboard

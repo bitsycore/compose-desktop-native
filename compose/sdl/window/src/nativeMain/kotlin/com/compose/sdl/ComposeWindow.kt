@@ -472,17 +472,11 @@ internal class WindowInstance(
 				androidx.compose.ui.platform.LocalTextToolbar provides host.textToolbar,
 				androidx.compose.ui.platform.LocalWindowInfo provides host.windowInfo,
 				androidx.compose.ui.platform.LocalSoftwareKeyboardController provides host.softwareKeyboardController,
-				@Suppress("DEPRECATION")
-				androidx.compose.ui.platform.LocalTextInputService provides host.textInputService,
-				@Suppress("DEPRECATION")
-				androidx.compose.ui.platform.LocalClipboardManager provides
-					androidx.compose.ui.platform.platformClipboardManager(),
 				androidx.compose.ui.platform.LocalClipboard provides
 					androidx.compose.ui.platform.platformClipboard(),
 				androidx.compose.ui.platform.LocalFontFamilyResolver provides
 					com.compose.sdl.text.font.projectFontFamilyResolver,
 				androidx.compose.ui.platform.LocalUriHandler provides vUriHandler,
-				androidx.compose.ui.platform.LocalAutofillTree provides host.autofillTree,
 				// Desktop windows have no system bars / notch / IME insets — the
 				// interface's all-zero defaults are exactly right.
 				androidx.compose.ui.platform.LocalPlatformWindowInsets provides

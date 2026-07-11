@@ -372,23 +372,12 @@ internal fun HttpFlowView(
         if (!vVisible) vScope.launch { vState.scrollToItem(vChunkItemOffset + vCi) }
     }
 
-    // Right-edge exclusion band for the overlaid VerticalScrollbar (8dp thick +
-    // hover pad). The scrollbar dispatches through the project's legacy pointer
-    // path (ComposeRootHost.onPointer → OnDragNode), which is INDEPENDENT of the
-    // Compose PointerInputEventProcessor my pointerInput listens on. Neither
-    // side sets isConsumed on the other's events, so a click on the scrollbar
-    // handle would otherwise sneak into my selection logic. Excluding this band
-    // in the hit-test is the reliable fix.
-    val vScrollbarBandPx = with(density) { 14.dp.toPx() }
-
     // Hit-test — turns a pointer position (outer Box local frame) into a global
     // character offset into inBody, or null if the pointer isn't over any chunk.
     // Clamps past-viewport pointers to the nearest visible chunk boundary so a
     // drag that overshoots still keeps extending toward that end.
     val vHitTest: (Offset) -> Int? = hit@{ inPos ->
         val vBody = inBody ?: return@hit null
-        val vVpW = vState.layoutInfo.viewportSize.width
-        if (vVpW > 0 && inPos.x > vVpW - vScrollbarBandPx) return@hit null
         val vInfos = vState.layoutInfo.visibleItemsInfo
             .filter { (it.key as? String)?.startsWith("chunk_") == true }
             .sortedBy { it.offset }

@@ -53,8 +53,8 @@ fun main(args: Array<String>) {
         runToggleTest()
         return
     }
-    // Verifies B6b key/text routing: a focused node receives injected SDL TEXT_INPUT
-    // (onTextInput) and KEY (onKeyEvent) events through the FocusOwner.
+    // Verifies key + text routing: a focused node receives injected SDL TEXT_INPUT
+    // and KEY events through the FocusOwner (BasicTextField's typed-events path).
     if (args.any { it == "--keytest" }) {
         runKeyTest()
         return
@@ -733,10 +733,10 @@ private fun runToggleTest() {
     }
 }
 
-/* Boots a window with a real project BasicTextField, clicks it to focus (focus-on-click via the
+/* Boots a window with a real BasicTextField, clicks it to focus (focus-on-click via the
    FocusOwner), then injects TEXT_INPUT ("A","B") and a Backspace key through the live SDL path.
    Asserts the field edits to "A" — proving click-to-focus + typing + editing keys route to the
-   focused field via B6b (host.dispatchTextInput / dispatchKeyEvent). */
+   focused field via ComposeRootHost.dispatchKeyEvent + the synthesised typed-key path. */
 private fun runKeyTest() {
     val vText = mutableStateOf("")
     nativeComposeWindow(
@@ -762,8 +762,8 @@ private fun runKeyTest() {
             }
         },
     ) {
-        // The exact regression path: a real project BasicTextField, focused by clicking it,
-        // receiving typed text (SDL TEXT_INPUT) + editing keys (Backspace) via B6b.
+        // The exact regression path: a real BasicTextField, focused by clicking it,
+        // receiving typed text (SDL TEXT_INPUT) + editing keys (Backspace).
         MaterialTheme(colorScheme = darkColorScheme()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 androidx.compose.foundation.text.BasicTextField(

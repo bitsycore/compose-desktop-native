@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.sp
 // ==================
 
 /* Demonstrates InteractionSource: a single source receives Press / Hover
-   events from the existing pressable / hoverable modifiers, and visual
-   feedback is wired off the source's state-backed booleans. Combined
-   with animateColorAsState for smooth transitions. */
+   events from clickable + hoverable, and visual feedback is wired off the
+   source's state-backed booleans (collectIsPressedAsState /
+   collectIsHoveredAsState) with animateColorAsState smoothing. */
 @Composable
 internal fun InteractionSourceScreen() {
 	val vPrimary = MaterialTheme.colorScheme.primary

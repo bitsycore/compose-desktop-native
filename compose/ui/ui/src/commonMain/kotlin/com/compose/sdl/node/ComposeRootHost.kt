@@ -90,13 +90,9 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	val windowInfo: androidx.compose.ui.platform.WindowInfo get() = fOwner.windowInfo
 	val softwareKeyboardController: androidx.compose.ui.platform.SoftwareKeyboardController
 		get() = fOwner.softwareKeyboardController
-	@Suppress("DEPRECATION")
-	val textInputService: androidx.compose.ui.text.input.TextInputService get() = fOwner.textInputService
-	@Suppress("DEPRECATION")
-	val autofillTree: androidx.compose.ui.autofill.AutofillTree get() = fOwner.autofillTree
 
 	// ==================
-	// MARK: Key / text input (B6b) — route to the focused node via the FocusOwner
+	// MARK: Key input — route to the focused node via the FocusOwner
 	// ==================
 
 	/* Routes a key event to the focused node's KeyInput chain (upstream onPreKeyEvent /

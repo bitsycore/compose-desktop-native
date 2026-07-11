@@ -30,22 +30,14 @@ import androidx.compose.ui.unit.dp
 // MARK: SplitPane
 // ==================
 
-/* Two-pane resizable split. Desktop staple. `initialFirstSize` seeds the
-   first pane's width (horizontal split) or height (vertical split); after
-   first layout it tracks the user's drag. `minFirstSize` / `minSecondSize`
-   prevent the divider from going off-screen — neither pane can shrink past
-   their minimum.
-
-   All internal sizing is in **pixels** to match the pixel-space layout tree
-   (Option-B density flow). `onSizeChanged` reports pixels; `onDrag` deltas
-   are pixels; `Modifier.width((px / density).dp)` converts back at the
-   Modifier boundary. Mixing dp and px in the same integer (as an earlier
-   version did) caused the divider to teleport between two positions on
-   Retina because each frame's reference and delta were in different units.
-
-   Not a mirror of any androidx API (Compose Multiplatform has a
-   ResizablePane in the experimental panes lib but it's not in the stable
-   surface), so it lives under com.compose.sdl.widgets. */
+/** Two-pane resizable split. `initialFirstSize` seeds the first pane's width
+ *  (horizontal split) or height (vertical split); after first layout it tracks
+ *  the user's drag. `minFirstSize` / `minSecondSize` clamp so neither pane can
+ *  shrink past its minimum.
+ *
+ *  Internal sizing is in **pixels** to match this port's pixel-space layout
+ *  tree (Option-B density flow). `Modifier.width((px / density).dp)` converts
+ *  back at the modifier boundary. */
 @Composable
 fun HorizontalSplitPane(
 	modifier: Modifier = Modifier,

@@ -31,13 +31,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.readResourceBytes
 
-// The compose-resources gradle plugin stores every asset in data.kres under
-// composeResources/<package>/<type>/<name>.<ext>, where <package> is the demo
-// module's generated resources package (demo.generated.resources — set by
-// build.gradle.kts, see compose.resources { publicResClass = true }). The
-// generated Res.drawable.<name> accessor knows this path but keeps it
-// internal; readResourceBytes is public but takes the full path, so the
-// constant below matches the plugin's layout verbatim.
+// Resources live in data.kres under composeResources/<pkg>/<type>/<name>.<ext>,
+// where <pkg> = demo.build.gradle.kts's `compose.resources.packageOfResClass`.
+// The generated Res.drawable.<name> accessor knows this path but its
+// ResourceItem.path is internal to :components-resources; readResourceBytes
+// is public but takes the raw path, hence the literal.
 private const val kLogoResourcePath = "composeResources/demo.generated.resources/drawable/compose_logo.png"
 
 // ==================

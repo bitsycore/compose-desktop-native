@@ -1,35 +1,12 @@
 package com.compose.sdl.graphics
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.util.fastCoerceIn
 
-// ==================
-// MARK: Non-official Color helpers (relocated)
-// ==================
+/** 8-bit channel accessors used by the SDL3 and Skia draw scopes to feed
+ *  colours into SDL_SetRenderDrawColor / SkPaint. Renderer-internal — not
+ *  part of any app-facing surface. */
 
-/* Project-only extensions on the upstream-vendored Color value class.
-   Previously lived in androidx.compose.ui.graphics; relocated here per
-   FIDELITY's "no upstream equivalent → com.compose.sdl.*" rule
-   so the androidx.* namespace stays a pure mirror.
-
-   The renderers (SkiaDrawScope, Sdl3DrawScope, FreeType*) import these as
-   com.compose.sdl.graphics.r8 etc. */
-
-// 8-bit channel accessors for the SDL3 renderer (0..255).
-val Color.r8: Int get() = (red * 255f).toInt().coerceIn(0, 255)
-val Color.g8: Int get() = (green * 255f).toInt().coerceIn(0, 255)
-val Color.b8: Int get() = (blue * 255f).toInt().coerceIn(0, 255)
-val Color.a8: Int get() = (alpha * 255f).toInt().coerceIn(0, 255)
-
-/* Linear blend toward an arbitrary color. amount=0 returns this; amount=1
-   returns the other color. Non-official — used for Material state-layer
-   overlays; official code uses lerp(...) / compositeOver(...). */
-fun Color.blend(other: Color, amount: Float): Color {
-	val a = amount.fastCoerceIn(0f, 1f)
-	return Color(
-		red + (other.red - red) * a,
-		green + (other.green - green) * a,
-		blue + (other.blue - blue) * a,
-		alpha + (other.alpha - alpha) * a,
-	)
-}
+internal val Color.r8: Int get() = (red * 255f).toInt().coerceIn(0, 255)
+internal val Color.g8: Int get() = (green * 255f).toInt().coerceIn(0, 255)
+internal val Color.b8: Int get() = (blue * 255f).toInt().coerceIn(0, 255)
+internal val Color.a8: Int get() = (alpha * 255f).toInt().coerceIn(0, 255)

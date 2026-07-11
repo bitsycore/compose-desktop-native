@@ -63,13 +63,12 @@ import kotlinx.coroutines.withContext
 // MARK: Request tab strip (open requests; drag a tab to reorder)
 // ==================
 
-/* The strip of open requests above the editor. Each tab carries a click handler
-   (select) and an onDrag handler (reorder). While dragging, the grabbed tab
-   floats — it lifts above its neighbours (zIndex), goes semi-transparent and
-   tracks the cursor (translate) — without the others shuffling; the reorder is
-   committed on drop, to the slot whose neighbours' centres the cursor passed.
-   Per-tab window-x/width are tracked for that hit-test; key(tab) keeps each
-   tab's LayoutNode stable so the captured drag node stays valid. */
+/* Strip of open requests above the editor. Each tab is clickable to select
+   and drag-reorderable. While dragging, the grabbed tab lifts (zIndex),
+   fades, and follows the cursor via a graphicsLayer translation — its
+   neighbours don't shuffle; the reorder commits on drop, to the slot whose
+   neighbours' centres the cursor passed. key(tab) keeps each tab's
+   LayoutNode stable so the drag session survives the reorder. */
 @Composable
 internal fun RequestTabStrip(
     inTabs: List<StripTab>,
