@@ -3,24 +3,46 @@ package androidx.compose.ui.draganddrop
 import androidx.compose.ui.geometry.Offset
 
 // ==================
-// MARK: DragAndDrop actuals — native no-op
+// MARK: DragAndDrop actuals — SDL3-backed
 // ==================
 
-/*
- Actuals for vendored DragAndDrop.kt. Mirrors upstream's macosMain actual —
- event / transfer-data classes are private-ctor placeholders today.
+/* Actuals for the vendored `DragAndDrop.kt` expect classes.
+ * Backed by SDL3's SDL_EVENT_DROP_* stream (file / text / begin / position /
+ * complete) — see Sdl3DragAndDropOwner + SDL3EventMapper for the pump side.
+ *
+ * DragAndDropTransferData carries the payload a drop into the window
+ * delivered: zero or more file paths (SDL_EVENT_DROP_FILE) plus an optional
+ * text blob (SDL_EVENT_DROP_TEXT). Both are exposed as public accessors so
+ * DragAndDropTarget.onDrop implementations can pick whichever field applies.
+ *
+ * DragAndDropEvent bundles a transfer with the drop's window-space position
+ * (in physical pixels — Option-B density flow, same coordinate frame as
+ * layout). `positionInRoot` is the internal expect the vendored routing
+ * reads to hit-test against target bounds.
+ *
+ * Both constructors are `internal` — apps never build these; SDL events do. */
 
- TODO: real cross-platform DnD via SDL3 — SDL_EVENT_DROP_FILE /
- SDL_EVENT_DROP_TEXT / SDL_EVENT_DROP_BEGIN / SDL_EVENT_DROP_COMPLETE can back
- both DragAndDropEvent (drop payload + position) and DragAndDropTransferData
- (source-side data). When wired, ComposeWindow's pollEvents feeds
- SDL_EVENT_DROP_* into a DND session and ComposeSceneDragAndDropNode-shape
- routing drives the vendored DragAndDropTarget nodes. See NODE_ENGINE_PORT.md.
-*/
+/** Payload delivered by a drop into the window. `text` is non-null when the
+ *  drop carried a text/plain fragment; `filePaths` is non-empty when files
+ *  were dropped. Both may be present when the OS advertises multiple flavours. */
+actual class DragAndDropTransferData internal constructor(
+    val filePaths: List<String>,
+    val text: String?,
+) {
+    val hasFiles: Boolean get() = filePaths.isNotEmpty()
+    val hasText: Boolean get() = text != null
 
-actual class DragAndDropEvent private constructor()
+    internal companion object {
+        internal val Empty = DragAndDropTransferData(emptyList(), null)
+    }
+}
 
-internal actual val DragAndDropEvent.positionInRoot: Offset
-	get() = Offset.Zero
+/** A single drag-and-drop event delivered to the composition. [transferData]
+ *  carries the payload; [position] is where the pointer sat in window pixels
+ *  when the event fired. */
+actual class DragAndDropEvent internal constructor(
+    val position: Offset,
+    val transferData: DragAndDropTransferData,
+)
 
-actual class DragAndDropTransferData private constructor()
+internal actual val DragAndDropEvent.positionInRoot: Offset get() = position

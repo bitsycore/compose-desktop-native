@@ -169,6 +169,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 					is AppEvent.MouseWheel -> runtime.windowFor(vEvent.windowId)?.onWheelEvent(vEvent)
 					is AppEvent.Key -> runtime.windowFor(vEvent.windowId)?.onKeyEvent(vEvent)
 					is AppEvent.TextInput -> runtime.windowFor(vEvent.windowId)?.onTextInputEvent(vEvent)
+					is AppEvent.Drop -> runtime.windowFor(vEvent.windowId)?.onDropEvent(vEvent)
 				}
 			}
 
@@ -601,6 +602,22 @@ internal class WindowInstance(
 		// (CoreTextField's isTypedEvent path and the state-based field's key
 		// handler) commit it.
 		dispatchTypedText(host, inEvent.text)
+	}
+
+	fun onDropEvent(inEvent: AppEvent.Drop) {
+		needsFrame = true
+		installGlobals()
+		// SDL fires drop coords in logical points at DPR-1; scale to the pixel
+		// space layout runs in (Option-B density flow) so hit-testing lands
+		// where the pointer is.
+		val vDpr = backend.pixelDensity
+		when (inEvent.phase) {
+			AppEvent.DropPhase.BEGIN -> host.onDropBegin()
+			AppEvent.DropPhase.POSITION -> host.onDropPosition(inEvent.x * vDpr, inEvent.y * vDpr)
+			AppEvent.DropPhase.FILE -> inEvent.data?.let { host.onDropFile(it) }
+			AppEvent.DropPhase.TEXT -> inEvent.data?.let { host.onDropText(it) }
+			AppEvent.DropPhase.COMPLETE -> host.onDropComplete()
+		}
 	}
 
 	fun onResizedEvent() {

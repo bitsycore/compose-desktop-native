@@ -3,6 +3,7 @@
 
 package com.compose.sdl.node.impl
 
+import com.compose.sdl.node.createPlatformDragAndDropManager
 import androidx.compose.ui.node.LayoutNode
 import androidx.compose.ui.node.LayoutNodeDrawScope
 import androidx.compose.ui.node.MeasureAndLayoutDelegate
@@ -321,16 +322,7 @@ internal class ComposeOwner(
 			vListener()
 		}
 	}
-	override val dragAndDropManager: DragAndDropManager = object : DragAndDropManager {
-		override val modifier = androidx.compose.ui.Modifier
-		override val isRequestDragAndDropTransferRequired: Boolean = false
-		override fun requestDragAndDropTransfer(
-			node: androidx.compose.ui.draganddrop.DragAndDropNode,
-			offset: androidx.compose.ui.geometry.Offset,
-		) {}
-		override fun registerTargetInterest(target: androidx.compose.ui.draganddrop.DragAndDropTarget) {}
-		override fun isInterestedTarget(target: androidx.compose.ui.draganddrop.DragAndDropTarget): Boolean = false
-	}
+	override val dragAndDropManager: DragAndDropManager = createPlatformDragAndDropManager()
 	override suspend fun textInputSession(
 		session: suspend PlatformTextInputSessionScope.() -> Nothing,
 	): Nothing {

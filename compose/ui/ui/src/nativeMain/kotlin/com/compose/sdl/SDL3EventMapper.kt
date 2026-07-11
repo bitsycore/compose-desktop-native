@@ -38,6 +38,18 @@ sealed class AppEvent {
 		val focused: Boolean? = null,
 		val visible: Boolean? = null,
 	) : AppEvent()
+	/* A drag-and-drop from another app hit the window. SDL fires these as a
+	   BEGIN → (FILE / TEXT)* + POSITION* → COMPLETE sequence; the loop
+	   forwards each to the window's Sdl3DragAndDropOwner via ComposeRootHost. */
+	data class Drop(
+		val windowId: UInt,
+		val phase: DropPhase,
+		val x: Float = 0f,
+		val y: Float = 0f,
+		val data: String? = null,
+	) : AppEvent()
+
+	enum class DropPhase { BEGIN, POSITION, FILE, TEXT, COMPLETE }
 }
 
 fun pollEvents(): List<AppEvent> {
@@ -126,6 +138,30 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 				windowId = mw.windowID,
 			)
 		}
+
+		// OS drag-and-drop into the window. SDL emits these as a session:
+		// BEGIN, then FILE and/or TEXT and/or POSITION events, then COMPLETE.
+		// x/y are window-local logical points (multiplied by DPR at dispatch);
+		// data is the file path / text, NULL for BEGIN / COMPLETE / POSITION.
+		SDL_EVENT_DROP_BEGIN -> AppEvent.Drop(e.drop.windowID, AppEvent.DropPhase.BEGIN)
+		SDL_EVENT_DROP_POSITION -> AppEvent.Drop(
+			windowId = e.drop.windowID,
+			phase = AppEvent.DropPhase.POSITION,
+			x = e.drop.x, y = e.drop.y,
+		)
+		SDL_EVENT_DROP_FILE -> AppEvent.Drop(
+			windowId = e.drop.windowID,
+			phase = AppEvent.DropPhase.FILE,
+			x = e.drop.x, y = e.drop.y,
+			data = e.drop.data?.toKString(),
+		)
+		SDL_EVENT_DROP_TEXT -> AppEvent.Drop(
+			windowId = e.drop.windowID,
+			phase = AppEvent.DropPhase.TEXT,
+			x = e.drop.x, y = e.drop.y,
+			data = e.drop.data?.toKString(),
+		)
+		SDL_EVENT_DROP_COMPLETE -> AppEvent.Drop(e.drop.windowID, AppEvent.DropPhase.COMPLETE)
 
 		else -> null
 	}

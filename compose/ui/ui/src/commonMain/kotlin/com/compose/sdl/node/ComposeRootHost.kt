@@ -37,10 +37,13 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	val applier: Applier<*> get() = fApplier
 
 	fun attach() {
-		// Install the focus root on the root LayoutNode (upstream AndroidComposeView does
-		// `.then(focusOwner.modifier)`). Without it the focus tree has no root, so requestFocus()
-		// can't establish a focus path (focus-on-click never sticks) and key dispatch crashes.
-		rootNode.modifier = fOwner.focusOwner.modifier
+		// Install the focus root + drag-and-drop root on the root LayoutNode
+		// (upstream AndroidComposeView does the same via
+		// `focusOwner.modifier.then(dragAndDropManager.modifier)`). Without the
+		// focus root the focus tree has no origin and requestFocus never
+		// sticks; without the DnD root the root DragAndDropNode never receives
+		// events from Sdl3DragAndDropOwner's dispatch calls.
+		rootNode.modifier = fOwner.focusOwner.modifier.then(fOwner.dragAndDropManager.modifier)
 		fOwner.attach()
 		// Turn on snapshot observation so writes to `mutableStateOf` (ScrollState.value,
 		// LazyList firstVisibleItemIndex, etc.) fire the appropriate invalidation
@@ -119,6 +122,20 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	fun onWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float, inUptime: Long) {
 		feedScrollToProcessor(fOwner, inX, inY, inDeltaX, inDeltaY, inUptime)
 	}
+
+	// ==================
+	// MARK: Drag-and-drop — feed SDL_EVENT_DROP_* into the tree
+	// ==================
+	//
+	// The :window loop maps SDL_EVENT_DROP_BEGIN / POSITION / FILE / TEXT /
+	// COMPLETE to these methods; Sdl3DragAndDropOwner accumulates the drop
+	// session and dispatches through the root DragAndDropNode on COMPLETE.
+
+	fun onDropBegin() = fOwner.dragAndDropManager.dropBegin()
+	fun onDropPosition(inX: Float, inY: Float) = fOwner.dragAndDropManager.dropPosition(inX, inY)
+	fun onDropFile(inPath: String) = fOwner.dragAndDropManager.dropFile(inPath)
+	fun onDropText(inText: String) = fOwner.dragAndDropManager.dropText(inText)
+	fun onDropComplete() = fOwner.dragAndDropManager.dropComplete()
 }
 
 // ==================
