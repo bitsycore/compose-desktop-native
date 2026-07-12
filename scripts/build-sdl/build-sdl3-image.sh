@@ -53,6 +53,14 @@ echo ">> fetching vendored codec submodules (zlib, libpng, libwebp)"
 git -C "$SRC" submodule update --init --depth 1 \
 	external/zlib external/libpng external/libwebp
 
+# Windows: libpng (vendored codec) also uses setjmp; see build-freetype.sh
+# for the USE_NO_MINGW_SETJMP_TWO_ARGS rationale. Applied here too so libpng
+# gets it via propagation to the vendored subproject build.
+CFLAGS_EXTRA="-ffunction-sections -fdata-sections -Os"
+if [ "$BUILD_SDL_HOST" = "windows" ]; then
+	CFLAGS_EXTRA="$CFLAGS_EXTRA -DUSE_NO_MINGW_SETJMP_TWO_ARGS=1"
+fi
+
 echo ">> configuring (static, vendored PNG/WEBP + stb JPG + built-in SVG; AVIF/TIF/JXL off)"
 rm -rf "$OUT"
 # shellcheck disable=SC2046
@@ -68,7 +76,7 @@ cmake -S "$(cmake_path "$SRC")" -B "$(cmake_path "$OUT")" -G Ninja \
 	-DSDLIMAGE_SAMPLES=OFF -DSDLIMAGE_TESTS=OFF -DSDLIMAGE_INSTALL=ON \
 	-DSDLIMAGE_PNG=ON -DSDLIMAGE_JPG=ON -DSDLIMAGE_WEBP=ON -DSDLIMAGE_SVG=ON \
 	-DSDLIMAGE_AVIF=OFF -DSDLIMAGE_TIF=OFF -DSDLIMAGE_JXL=OFF \
-	-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -Os" \
+	-DCMAKE_C_FLAGS="$CFLAGS_EXTRA" \
 	$(extra_cmake_args) \
 	-DCMAKE_INSTALL_PREFIX="$(cmake_path "$PREFIX")"
 

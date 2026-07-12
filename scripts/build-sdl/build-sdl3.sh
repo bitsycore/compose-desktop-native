@@ -58,6 +58,17 @@ if [ "$BUILD_SDL_HOST" = "windows" ]; then
 	WIN_ONLY="-DSDL_RENDER_D3D12=OFF -DSDL_GPU=OFF"
 fi
 
+# Linux-only extras: SDL3's CMake feature-detection sees glibc's memfd_create
+# and posix_spawn_file_actions_addchdir_np on modern hosts (>= 2.27 / 2.29),
+# but K/N's LLD sysroot for linuxX64 doesn't have them at final app link.
+# Pre-set the cache vars so check_symbol_exists honors our OFF value (it only
+# checks vars that aren't already cached) and SDL3 falls back to its portable
+# implementations.
+LINUX_ONLY=""
+if [ "$BUILD_SDL_HOST" = "linux" ]; then
+	LINUX_ONLY="-DHAVE_MEMFD_CREATE=0 -DHAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP=0"
+fi
+
 echo ">> configuring (static, size-sectioned)"
 rm -rf "$OUT"
 # shellcheck disable=SC2046
@@ -71,6 +82,7 @@ cmake -S "$(cmake_path "$SRC")" -B "$(cmake_path "$OUT")" -G Ninja \
 	-DSDL_TESTS=OFF -DSDL_TEST_LIBRARY=OFF -DSDL_EXAMPLES=OFF \
 	-DSDL_INSTALL_TESTS=OFF \
 	$WIN_ONLY \
+	$LINUX_ONLY \
 	-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -Os" \
 	-DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -Os" \
 	$(extra_cmake_args) \
