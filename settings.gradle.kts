@@ -14,6 +14,21 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        // Consumers of the published compose-desktop-native artifacts. GitHub
+        // Packages requires auth even for public reads — set gpr.user / gpr.token
+        // in ~/.gradle/gradle.properties, or export GITHUB_ACTOR / GITHUB_TOKEN.
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bitsycore/compose-desktop-native")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                    ?: providers.gradleProperty("gpr.user").orNull
+                    ?: ""
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: providers.gradleProperty("gpr.token").orNull
+                    ?: ""
+            }
+        }
     }
 }
 

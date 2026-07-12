@@ -45,8 +45,37 @@ allprojects {
 // missing on a given host is silently skipped by Gradle's task lookup.
 
 val kAppModules = setOf(":demo", ":apidemo")
+val kPublishedLibs = setOf(
+    ":ui", ":ui-util", ":ui-geometry", ":ui-unit", ":ui-backhandler",
+    ":animation-core", ":animation", ":animation-graphics",
+    ":foundation", ":foundation-layout",
+    ":material3", ":material-ripple",
+    ":window", ":material-symbols",
+    ":navigation3-ui", ":components-resources",
+)
+
+// -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
+// apps make for the published Maven coordinate. Library modules keep resolving
+// each other as `project(...)` — the substitution only fires at the
+// app→library boundary, so the swap validates end-to-end consumption of the
+// published klibs without touching the source of `implementation(project(...))`.
+// Version defaults to 0.1.0 (matches the git tag) but can be pinned via -PconsumeVersion=….
+val kUseGhPackages = (findProperty("useGithubPackages") as? String)?.toBoolean() == true
+val kConsumeVersion = (findProperty("consumeVersion") as? String) ?: "0.1.0"
 
 subprojects {
+    if (kUseGhPackages && path in kAppModules) {
+        configurations.configureEach {
+            resolutionStrategy.dependencySubstitution {
+                kPublishedLibs.forEach { modulePath ->
+                    val vArtifactId = modulePath.removePrefix(":")
+                    substitute(project(modulePath))
+                        .using(module("com.bitsycore.compose.sdl:$vArtifactId:$kConsumeVersion"))
+                        .because("-PuseGithubPackages=true")
+                }
+            }
+        }
+    }
     if (path in kAppModules) return@subprojects
     plugins.apply("maven-publish")
     afterEvaluate {
