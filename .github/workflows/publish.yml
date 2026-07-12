@@ -121,9 +121,27 @@ jobs:
         shell: bash
         run: bash scripts/compose-fork/sync.sh
 
+      # GitHub Packages sometimes returns 409 Conflict on a fresh upload when
+      # the same coordinate was recently deleted (soft-delete propagation).
+      # `--continue` lets Gradle finish the rest of the publish tasks past a
+      # single 409, and the outer retry re-runs the whole thing (Gradle skips
+      # already-uploaded artifacts). Two attempts is enough for the transient
+      # cases we've hit; the third pass falls through as a hard failure.
       - name: Publish to GitHub Packages
         shell: bash
-        run: ./gradlew ${{ matrix.tasks }} --no-daemon --stacktrace
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            echo "::group::Publish attempt $attempt"
+            if ./gradlew ${{ matrix.tasks }} --continue --no-daemon --stacktrace; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            [ $attempt -lt 3 ] && { echo "::warning::Publish attempt $attempt failed — sleeping 60s and retrying"; sleep 60; }
+          done
+          echo "::error::Publish failed after 3 attempts"
+          exit 1
 
       # Release binaries for the host target — the binary plus the data.kres
       # (bundled composeResources + fonts + subset icon-font). Each :demo /
