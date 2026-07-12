@@ -149,15 +149,15 @@ jobs:
           target_dir=$(echo "${{ matrix.target }}" | awk '{print tolower(substr($0,1,1)) substr($0,2)}')
           version="${GITHUB_REF_NAME#v}"
           mkdir -p dist
+          # Windows Git Bash has no `zip`; every runner has JDK 21 → use `jar cf`
+          # which writes a valid ZIP file. `-C dir file` = enter dir then add
+          # `file` at the archive root, so the archive stays flat like `zip -j`.
           for app in demo apidemo; do
             src="$app/build/bin/$target_dir/releaseExecutable"
             zip_path="$(pwd)/dist/$app-$version-$target_dir.zip"
-            (
-              cd "$src"
-              # -j strips paths so the archive is flat: <app>.<ext> + data.kres
-              # -9 = max compression
-              zip -9 -j "$zip_path" "$app.${{ matrix.exe_ext }}" data.kres
-            )
+            jar --create --no-manifest --file "$zip_path" \
+              -C "$src" "$app.${{ matrix.exe_ext }}" \
+              -C "$src" "data.kres"
           done
           ls -la dist/
 
