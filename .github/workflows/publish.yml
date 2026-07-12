@@ -1,0 +1,102 @@
+name: Publish
+
+# Only runs when a version tag is pushed (e.g. `git tag v1.2.3 && git push --tags`).
+# `github.ref_name` is passed to Gradle as PUBLISH_VERSION; the root build strips
+# the leading `v` before setting each subproject's `version`.
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Never overlap two publish runs for the same tag.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    strategy:
+      fail-fast: false
+      # Each host runs only the publish tasks Gradle actually generated for it.
+      # macOS also publishes the shared kotlinMultiplatform metadata module.
+      # No library module declares jvm() today — apps do their own JVM parity
+      # build against upstream Compose, so JVM isn't part of the publication.
+      matrix:
+        include:
+          - runner: macos-14
+            host: macos
+            tasks: >-
+              publishKotlinMultiplatformPublicationToGitHubPackagesRepository
+              publishMacosArm64PublicationToGitHubPackagesRepository
+          - runner: ubuntu-24.04
+            host: linux
+            tasks: >-
+              publishLinuxX64PublicationToGitHubPackagesRepository
+              publishLinuxArm64PublicationToGitHubPackagesRepository
+          - runner: windows-2022
+            host: windows
+            tasks: >-
+              publishMingwX64PublicationToGitHubPackagesRepository
+
+    runs-on: ${{ matrix.runner }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      PUBLISH_VERSION: ${{ github.ref_name }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # SDL3's Linux static build needs the host graphics / audio / input dev
+      # headers so its CMake configure can pick up wayland / X11 / ALSA / etc.
+      - name: Install Linux SDL build deps
+        if: matrix.host == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+            libxinerama-dev libxss-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libwayland-dev wayland-protocols \
+            libgl1-mesa-dev libegl1-mesa-dev \
+            libasound2-dev libpulse-dev libudev-dev \
+            libdbus-1-dev libibus-1.0-dev
+
+      # SDL3 >= 3.4 has a C++ GameInput backend; K/N's bundled mingw is C-only,
+      # so we need a system g++ on PATH. Chocolatey's mingw ships gcc+g++.
+      - name: Install Windows mingw-w64 (system g++ for SDL3's GameInput backend)
+        if: matrix.host == 'windows'
+        shell: pwsh
+        run: choco install mingw -y --no-progress
+
+      # Build static SDL3 / SDL3_ttf / SDL3_image / FreeType from
+      # scripts/build-sdl/build-sdl.properties. Cached against the manifest +
+      # scripts so version bumps invalidate cleanly.
+      - name: Cache libs/
+        id: cache-libs
+        uses: actions/cache@v4
+        with:
+          path: libs
+          key: sdl-libs-${{ matrix.host }}-${{ hashFiles('scripts/build-sdl/**') }}
+
+      - name: Build static SDL / TTF / image / FreeType
+        if: steps.cache-libs.outputs.cache-hit != 'true'
+        shell: bash
+        run: bash scripts/build-sdl/build-all.sh
+
+      - name: Publish to GitHub Packages
+        shell: bash
+        run: ./gradlew ${{ matrix.tasks }} --no-daemon --stacktrace

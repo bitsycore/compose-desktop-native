@@ -24,9 +24,59 @@ apiValidation {
 // metadata as its module ID (e.g. `com.bitsycore.compose.sdl:ui`) — keep it
 // stable, or a stale IC cache surfaces as "Unknown dependent library …" (see
 // the pitfall note in CLAUDE.md).
+//
+// Version is driven by PUBLISH_VERSION (set from the git tag in the publish
+// workflow, `v1.2.3` → `1.2.3`). Local dev / demo runs default to SNAPSHOT.
+val vPublishVersion = (System.getenv("PUBLISH_VERSION") ?: "0.0.0-SNAPSHOT").removePrefix("v")
 allprojects {
     group = "com.bitsycore.compose.sdl"
-    version = "0.0.0-SNAPSHOT"
+    version = vPublishVersion
+}
+
+// ==================
+// MARK: Publish to GitHub Packages
+// ==================
+// Every library module (everything except the two demo apps) auto-registers a
+// MavenPublication via the kotlin-multiplatform plugin — one per target + one
+// for the shared kotlinMultiplatform metadata. The CI publish workflow runs on
+// three hosts (macOS / Linux / Windows) and each invokes only the publication
+// tasks Gradle actually generated for its own targets, so the group of hosts
+// together cover every K/N target + the JVM + the metadata module. Anything
+// missing on a given host is silently skipped by Gradle's task lookup.
+
+val kAppModules = setOf(":demo", ":apidemo")
+
+subprojects {
+    if (path in kAppModules) return@subprojects
+    plugins.apply("maven-publish")
+    afterEvaluate {
+        extensions.configure<PublishingExtension> {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    val vRepo = System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"
+                    url = uri("https://maven.pkg.github.com/$vRepo")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+            publications.withType<MavenPublication>().configureEach {
+                pom {
+                    name.set("${rootProject.name} ${project.name}")
+                    description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) — ${project.name}")
+                    url.set("https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"}")
+                    licenses {
+                        license {
+                            name.set("MIT")
+                            url.set("https://opensource.org/licenses/MIT")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Whether the current host can build the mingwX64 target. Kotlin/Native can
