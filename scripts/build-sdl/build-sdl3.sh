@@ -98,6 +98,26 @@ rm -rf "$LIBS/SDL3"
 mkdir -p "$LIBS/SDL3"
 cp -R "$PREFIX/include" "$PREFIX/lib" "$LIBS/SDL3/"
 
+# Windows: mingw-w64's <setjmp.h> emits external references to
+# __intrinsic_setjmpex from any TU using setjmp() (freetype, libpng, ...).
+# K/N's LLD sysroot for mingwX64 doesn't provide this symbol and the LLD
+# built by K/N 2.4.0 doesn't accept --defsym as a linker workaround.
+# Compile a tiny stub that aliases the symbol to msvcrt's _setjmpex, and
+# append its object into libSDL3.a so the archive travels with everything
+# needed to link consumers.
+if [ "$BUILD_SDL_HOST" = "windows" ]; then
+	echo ">> baking __intrinsic_setjmpex alias stub into libSDL3.a"
+	cat > "$BUILD/mingw_setjmp_stub.c" <<'CSTUB'
+#include <setjmp.h>
+extern int __cdecl _setjmpex(jmp_buf _Buf, void *_Ctx);
+int __cdecl __intrinsic_setjmpex(jmp_buf _Buf, void *_Ctx) {
+	return _setjmpex(_Buf, _Ctx);
+}
+CSTUB
+	"$CC" -c -Os "$BUILD/mingw_setjmp_stub.c" -o "$BUILD/mingw_setjmp_stub.o"
+	ar rcs "$LIBS/SDL3/lib/libSDL3.a" "$BUILD/mingw_setjmp_stub.o"
+fi
+
 echo ">> done: $LIBS/SDL3  (static libSDL3.a, no shared lib)"
 echo ">> SDL3 static system libs (Libs.private):"
 sed -n 's/^Libs.private:/   /p' "$LIBS/SDL3/lib/pkgconfig/sdl3-static.pc" 2>/dev/null || true
