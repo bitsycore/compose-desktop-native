@@ -94,11 +94,12 @@ demo/                → :demo      — flagship showcase app (30+ screens) + th
                                     screens on stock JVM Compose Desktop (`./gradlew :demo:run`,
                                     MainJvmKt) — the parity reference; differences vs native = port bugs
 apidemo/             → :apidemo   — Postman-style REST API manager
-scripts/             → vendor-sync + python helper scripts (compose-fidelity/coverage,
-                      material-symbols generate/subset) + compose-fork/;
-                      scripts/build-sdl/ = Windows static-lib build scripts (bash)
+scripts/             → vendor-sync + python helper scripts (compose-coverage = API
+                      coverage/fidelity vs upstream, material-symbols generate/subset)
+                      + compose-fork/;
+                      scripts/build-sdl/ = static-lib build script (python)
 libs/                → gitignored per-host static SDL3 / SDL3_ttf / SDL3_image / FreeType
-                      output of scripts/build-sdl/build-*.sh on Windows
+                      output of scripts/build-sdl/build-all.py on Windows
 ```
 
 Module PATHS stay short (`:ui`, `:foundation`, `:window`, …) —
@@ -322,11 +323,12 @@ for SDL3_ttf.
 **Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image + FreeType):**
 these four libraries + image codecs are **linked statically into the
 executable** — no runtime DLLs, distributable is just `<app>.exe` +
-`data.kres`. They're not downloaded — `scripts/build-sdl/build-all.sh` (from Git
-Bash) builds them from source as static libs into a gitignored, in-repo `libs/`
-folder. Needs: git, cmake, mingw-w64 gcc/g++ on PATH, plus curl + python for
-ninja fetch. `scripts/build-sdl/build-all.sh` = `build-freetype.sh` → `build-sdl3.sh` →
-`build-sdl3-image.sh` → `build-sdl3-ttf.sh`.
+`data.kres`. They're not downloaded — `python scripts/build-sdl/build-all.py`
+(plain Python 3, no Git Bash needed) builds them from source as static libs
+into a gitignored, in-repo `libs/` folder. Needs: git, cmake, python 3,
+mingw-w64 gcc/g++ on PATH; ninja is fetched automatically when absent. Steps
+run in order freetype → sdl3 → sdl3-image → sdl3-ttf; pass step names to
+rebuild a subset (`python scripts/build-sdl/build-all.py sdl3-ttf`).
 
 ## Runtime bundling — data.kres
 

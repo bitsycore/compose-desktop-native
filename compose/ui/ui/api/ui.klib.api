@@ -1834,6 +1834,10 @@ abstract interface androidx.compose.ui/UiMediaScope { // androidx.compose.ui/UiM
     }
 }
 
+abstract interface com.compose.sdl.graphics/EncodedImageDecoder { // com.compose.sdl.graphics/EncodedImageDecoder|null[0]
+    abstract fun decode(kotlin/ByteArray): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/EncodedImageDecoder.decode|decode(kotlin.ByteArray){}[0]
+}
+
 abstract interface com.compose.sdl.graphics/NativePainterCanvas { // com.compose.sdl.graphics/NativePainterCanvas|null[0]
     abstract fun drawNativePainter(kotlin/String, com.compose.sdl.res/ResourceKind, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, androidx.compose.ui.layout/ContentScale, kotlin/Float) // com.compose.sdl.graphics/NativePainterCanvas.drawNativePainter|drawNativePainter(kotlin.String;com.compose.sdl.res.ResourceKind;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.layout.ContentScale;kotlin.Float){}[0]
 }
@@ -2522,9 +2526,23 @@ final class androidx.compose.ui.autofill/AutofillTree { // androidx.compose.ui.a
     final fun plusAssign(androidx.compose.ui.autofill/AutofillNode) // androidx.compose.ui.autofill/AutofillTree.plusAssign|plusAssign(androidx.compose.ui.autofill.AutofillNode){}[0]
 }
 
-final class androidx.compose.ui.draganddrop/DragAndDropEvent // androidx.compose.ui.draganddrop/DragAndDropEvent|null[0]
+final class androidx.compose.ui.draganddrop/DragAndDropEvent { // androidx.compose.ui.draganddrop/DragAndDropEvent|null[0]
+    final val position // androidx.compose.ui.draganddrop/DragAndDropEvent.position|{}position[0]
+        final fun <get-position>(): androidx.compose.ui.geometry/Offset // androidx.compose.ui.draganddrop/DragAndDropEvent.position.<get-position>|<get-position>(){}[0]
+    final val transferData // androidx.compose.ui.draganddrop/DragAndDropEvent.transferData|{}transferData[0]
+        final fun <get-transferData>(): androidx.compose.ui.draganddrop/DragAndDropTransferData // androidx.compose.ui.draganddrop/DragAndDropEvent.transferData.<get-transferData>|<get-transferData>(){}[0]
+}
 
-final class androidx.compose.ui.draganddrop/DragAndDropTransferData // androidx.compose.ui.draganddrop/DragAndDropTransferData|null[0]
+final class androidx.compose.ui.draganddrop/DragAndDropTransferData { // androidx.compose.ui.draganddrop/DragAndDropTransferData|null[0]
+    final val filePaths // androidx.compose.ui.draganddrop/DragAndDropTransferData.filePaths|{}filePaths[0]
+        final fun <get-filePaths>(): kotlin.collections/List<kotlin/String> // androidx.compose.ui.draganddrop/DragAndDropTransferData.filePaths.<get-filePaths>|<get-filePaths>(){}[0]
+    final val hasFiles // androidx.compose.ui.draganddrop/DragAndDropTransferData.hasFiles|{}hasFiles[0]
+        final fun <get-hasFiles>(): kotlin/Boolean // androidx.compose.ui.draganddrop/DragAndDropTransferData.hasFiles.<get-hasFiles>|<get-hasFiles>(){}[0]
+    final val hasText // androidx.compose.ui.draganddrop/DragAndDropTransferData.hasText|{}hasText[0]
+        final fun <get-hasText>(): kotlin/Boolean // androidx.compose.ui.draganddrop/DragAndDropTransferData.hasText.<get-hasText>|<get-hasText>(){}[0]
+    final val text // androidx.compose.ui.draganddrop/DragAndDropTransferData.text|{}text[0]
+        final fun <get-text>(): kotlin/String? // androidx.compose.ui.draganddrop/DragAndDropTransferData.text.<get-text>|<get-text>(){}[0]
+}
 
 final class androidx.compose.ui.draw/CacheDrawScope : androidx.compose.ui.unit/Density { // androidx.compose.ui.draw/CacheDrawScope|null[0]
     final val density // androidx.compose.ui.draw/CacheDrawScope.density|{}density[0]
@@ -3654,9 +3672,11 @@ final class androidx.compose.ui.platform/ClipEntry { // androidx.compose.ui.plat
     final val clipMetadata // androidx.compose.ui.platform/ClipEntry.clipMetadata|{}clipMetadata[0]
         final fun <get-clipMetadata>(): androidx.compose.ui.platform/ClipMetadata // androidx.compose.ui.platform/ClipEntry.clipMetadata.<get-clipMetadata>|<get-clipMetadata>(){}[0]
 
+    final fun getImage(): kotlin/ByteArray? // androidx.compose.ui.platform/ClipEntry.getImage|getImage(){}[0]
     final fun getPlainText(): kotlin/String? // androidx.compose.ui.platform/ClipEntry.getPlainText|getPlainText(){}[0]
 
     final object Companion { // androidx.compose.ui.platform/ClipEntry.Companion|null[0]
+        final fun withImage(kotlin/ByteArray): androidx.compose.ui.platform/ClipEntry // androidx.compose.ui.platform/ClipEntry.Companion.withImage|withImage(kotlin.ByteArray){}[0]
         final fun withPlainText(kotlin/String): androidx.compose.ui.platform/ClipEntry // androidx.compose.ui.platform/ClipEntry.Companion.withPlainText|withPlainText(kotlin.String){}[0]
     }
 }
@@ -5348,136 +5368,6 @@ final class com.compose.sdl.element/GraphicsLayerNode : androidx.compose.ui/Modi
         final fun <set-translationY>(kotlin/Float) // com.compose.sdl.element/GraphicsLayerNode.translationY.<set-translationY>|<set-translationY>(kotlin.Float){}[0]
 }
 
-final class com.compose.sdl.element/MiddleClickModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/MiddleClickNode> { // com.compose.sdl.element/MiddleClickModifier|null[0]
-    constructor <init>(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/MiddleClickModifier.<init>|<init>(kotlin.Function0<kotlin.Unit>){}[0]
-
-    final val onClick // com.compose.sdl.element/MiddleClickModifier.onClick|{}onClick[0]
-        final fun <get-onClick>(): kotlin/Function0<kotlin/Unit> // com.compose.sdl.element/MiddleClickModifier.onClick.<get-onClick>|<get-onClick>(){}[0]
-
-    final fun create(): com.compose.sdl.element/MiddleClickNode // com.compose.sdl.element/MiddleClickModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/MiddleClickModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/MiddleClickModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/MiddleClickNode) // com.compose.sdl.element/MiddleClickModifier.update|update(com.compose.sdl.element.MiddleClickNode){}[0]
-}
-
-final class com.compose.sdl.element/MiddleClickNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/MiddleClickNode|null[0]
-    constructor <init>(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/MiddleClickNode.<init>|<init>(kotlin.Function0<kotlin.Unit>){}[0]
-
-    final var onClick // com.compose.sdl.element/MiddleClickNode.onClick|{}onClick[0]
-        final fun <get-onClick>(): kotlin/Function0<kotlin/Unit> // com.compose.sdl.element/MiddleClickNode.onClick.<get-onClick>|<get-onClick>(){}[0]
-        final fun <set-onClick>(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/MiddleClickNode.onClick.<set-onClick>|<set-onClick>(kotlin.Function0<kotlin.Unit>){}[0]
-}
-
-final class com.compose.sdl.element/OnDragModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/OnDragNode> { // com.compose.sdl.element/OnDragModifier|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>, kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>, kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/OnDragModifier.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function0<kotlin.Unit>){}[0]
-
-    final val onDrag // com.compose.sdl.element/OnDragModifier.onDrag|{}onDrag[0]
-        final fun <get-onDrag>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnDragModifier.onDrag.<get-onDrag>|<get-onDrag>(){}[0]
-    final val onEnd // com.compose.sdl.element/OnDragModifier.onEnd|{}onEnd[0]
-        final fun <get-onEnd>(): kotlin/Function0<kotlin/Unit> // com.compose.sdl.element/OnDragModifier.onEnd.<get-onEnd>|<get-onEnd>(){}[0]
-    final val onStart // com.compose.sdl.element/OnDragModifier.onStart|{}onStart[0]
-        final fun <get-onStart>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnDragModifier.onStart.<get-onStart>|<get-onStart>(){}[0]
-
-    final fun create(): com.compose.sdl.element/OnDragNode // com.compose.sdl.element/OnDragModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/OnDragModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/OnDragModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/OnDragNode) // com.compose.sdl.element/OnDragModifier.update|update(com.compose.sdl.element.OnDragNode){}[0]
-}
-
-final class com.compose.sdl.element/OnDragNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/OnDragNode|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>, kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>, kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/OnDragNode.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function0<kotlin.Unit>){}[0]
-
-    final var onDrag // com.compose.sdl.element/OnDragNode.onDrag|{}onDrag[0]
-        final fun <get-onDrag>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnDragNode.onDrag.<get-onDrag>|<get-onDrag>(){}[0]
-        final fun <set-onDrag>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/OnDragNode.onDrag.<set-onDrag>|<set-onDrag>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-    final var onEnd // com.compose.sdl.element/OnDragNode.onEnd|{}onEnd[0]
-        final fun <get-onEnd>(): kotlin/Function0<kotlin/Unit> // com.compose.sdl.element/OnDragNode.onEnd.<get-onEnd>|<get-onEnd>(){}[0]
-        final fun <set-onEnd>(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.element/OnDragNode.onEnd.<set-onEnd>|<set-onEnd>(kotlin.Function0<kotlin.Unit>){}[0]
-    final var onStart // com.compose.sdl.element/OnDragNode.onStart|{}onStart[0]
-        final fun <get-onStart>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnDragNode.onStart.<get-onStart>|<get-onStart>(){}[0]
-        final fun <set-onStart>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/OnDragNode.onStart.<set-onStart>|<set-onStart>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-}
-
-final class com.compose.sdl.element/OnPressedModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/OnPressedNode> { // com.compose.sdl.element/OnPressedModifier|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/OnPressedModifier.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-
-    final val handler // com.compose.sdl.element/OnPressedModifier.handler|{}handler[0]
-        final fun <get-handler>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnPressedModifier.handler.<get-handler>|<get-handler>(){}[0]
-
-    final fun create(): com.compose.sdl.element/OnPressedNode // com.compose.sdl.element/OnPressedModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/OnPressedModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/OnPressedModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/OnPressedNode) // com.compose.sdl.element/OnPressedModifier.update|update(com.compose.sdl.element.OnPressedNode){}[0]
-}
-
-final class com.compose.sdl.element/OnPressedNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/OnPressedNode|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/OnPressedNode.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-
-    final var handler // com.compose.sdl.element/OnPressedNode.handler|{}handler[0]
-        final fun <get-handler>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/OnPressedNode.handler.<get-handler>|<get-handler>(){}[0]
-        final fun <set-handler>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/OnPressedNode.handler.<set-handler>|<set-handler>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-}
-
-final class com.compose.sdl.element/OnTextInputModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/OnTextInputNode> { // com.compose.sdl.element/OnTextInputModifier|null[0]
-    constructor <init>(kotlin/Function1<kotlin/String, kotlin/Unit>) // com.compose.sdl.element/OnTextInputModifier.<init>|<init>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
-
-    final val handler // com.compose.sdl.element/OnTextInputModifier.handler|{}handler[0]
-        final fun <get-handler>(): kotlin/Function1<kotlin/String, kotlin/Unit> // com.compose.sdl.element/OnTextInputModifier.handler.<get-handler>|<get-handler>(){}[0]
-
-    final fun create(): com.compose.sdl.element/OnTextInputNode // com.compose.sdl.element/OnTextInputModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/OnTextInputModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/OnTextInputModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/OnTextInputNode) // com.compose.sdl.element/OnTextInputModifier.update|update(com.compose.sdl.element.OnTextInputNode){}[0]
-}
-
-final class com.compose.sdl.element/OnTextInputNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/OnTextInputNode|null[0]
-    constructor <init>(kotlin/Function1<kotlin/String, kotlin/Unit>) // com.compose.sdl.element/OnTextInputNode.<init>|<init>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
-
-    final var handler // com.compose.sdl.element/OnTextInputNode.handler|{}handler[0]
-        final fun <get-handler>(): kotlin/Function1<kotlin/String, kotlin/Unit> // com.compose.sdl.element/OnTextInputNode.handler.<get-handler>|<get-handler>(){}[0]
-        final fun <set-handler>(kotlin/Function1<kotlin/String, kotlin/Unit>) // com.compose.sdl.element/OnTextInputNode.handler.<set-handler>|<set-handler>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
-}
-
-final class com.compose.sdl.element/PressableModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/PressableNode> { // com.compose.sdl.element/PressableModifier|null[0]
-    constructor <init>(kotlin/Function1<kotlin/Boolean, kotlin/Unit>) // com.compose.sdl.element/PressableModifier.<init>|<init>(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
-
-    final val onChange // com.compose.sdl.element/PressableModifier.onChange|{}onChange[0]
-        final fun <get-onChange>(): kotlin/Function1<kotlin/Boolean, kotlin/Unit> // com.compose.sdl.element/PressableModifier.onChange.<get-onChange>|<get-onChange>(){}[0]
-
-    final fun create(): com.compose.sdl.element/PressableNode // com.compose.sdl.element/PressableModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/PressableModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/PressableModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/PressableNode) // com.compose.sdl.element/PressableModifier.update|update(com.compose.sdl.element.PressableNode){}[0]
-}
-
-final class com.compose.sdl.element/PressableNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/PressableNode|null[0]
-    constructor <init>(kotlin/Function1<kotlin/Boolean, kotlin/Unit>) // com.compose.sdl.element/PressableNode.<init>|<init>(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
-
-    final var onChange // com.compose.sdl.element/PressableNode.onChange|{}onChange[0]
-        final fun <get-onChange>(): kotlin/Function1<kotlin/Boolean, kotlin/Unit> // com.compose.sdl.element/PressableNode.onChange.<get-onChange>|<get-onChange>(){}[0]
-        final fun <set-onChange>(kotlin/Function1<kotlin/Boolean, kotlin/Unit>) // com.compose.sdl.element/PressableNode.onChange.<set-onChange>|<set-onChange>(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
-}
-
-final class com.compose.sdl.element/SecondaryClickModifier : androidx.compose.ui.node/ModifierNodeElement<com.compose.sdl.element/SecondaryClickNode> { // com.compose.sdl.element/SecondaryClickModifier|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/SecondaryClickModifier.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-
-    final val onClick // com.compose.sdl.element/SecondaryClickModifier.onClick|{}onClick[0]
-        final fun <get-onClick>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/SecondaryClickModifier.onClick.<get-onClick>|<get-onClick>(){}[0]
-
-    final fun create(): com.compose.sdl.element/SecondaryClickNode // com.compose.sdl.element/SecondaryClickModifier.create|create(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.element/SecondaryClickModifier.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.element/SecondaryClickModifier.hashCode|hashCode(){}[0]
-    final fun update(com.compose.sdl.element/SecondaryClickNode) // com.compose.sdl.element/SecondaryClickModifier.update|update(com.compose.sdl.element.SecondaryClickNode){}[0]
-}
-
-final class com.compose.sdl.element/SecondaryClickNode : androidx.compose.ui/Modifier.Node { // com.compose.sdl.element/SecondaryClickNode|null[0]
-    constructor <init>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/SecondaryClickNode.<init>|<init>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-
-    final var onClick // com.compose.sdl.element/SecondaryClickNode.onClick|{}onClick[0]
-        final fun <get-onClick>(): kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> // com.compose.sdl.element/SecondaryClickNode.onClick.<get-onClick>|<get-onClick>(){}[0]
-        final fun <set-onClick>(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>) // com.compose.sdl.element/SecondaryClickNode.onClick.<set-onClick>|<set-onClick>(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-}
-
 final class com.compose.sdl.graphics/ProjectCanvas : androidx.compose.ui.graphics/Canvas { // com.compose.sdl.graphics/ProjectCanvas|null[0]
     constructor <init>() // com.compose.sdl.graphics/ProjectCanvas.<init>|<init>(){}[0]
 
@@ -5649,8 +5539,6 @@ final class com.compose.sdl.node/ComposeRootHost { // com.compose.sdl.node/Compo
 
     final val applier // com.compose.sdl.node/ComposeRootHost.applier|{}applier[0]
         final fun <get-applier>(): androidx.compose.runtime/Applier<*> // com.compose.sdl.node/ComposeRootHost.applier.<get-applier>|<get-applier>(){}[0]
-    final val autofillTree // com.compose.sdl.node/ComposeRootHost.autofillTree|{}autofillTree[0]
-        final fun <get-autofillTree>(): androidx.compose.ui.autofill/AutofillTree // com.compose.sdl.node/ComposeRootHost.autofillTree.<get-autofillTree>|<get-autofillTree>(){}[0]
     final val density // com.compose.sdl.node/ComposeRootHost.density|{}density[0]
         final fun <get-density>(): androidx.compose.ui.unit/Density // com.compose.sdl.node/ComposeRootHost.density.<get-density>|<get-density>(){}[0]
     final val focusManager // com.compose.sdl.node/ComposeRootHost.focusManager|{}focusManager[0]
@@ -5665,8 +5553,6 @@ final class com.compose.sdl.node/ComposeRootHost { // com.compose.sdl.node/Compo
         final fun <get-layoutDirection>(): androidx.compose.ui.unit/LayoutDirection // com.compose.sdl.node/ComposeRootHost.layoutDirection.<get-layoutDirection>|<get-layoutDirection>(){}[0]
     final val softwareKeyboardController // com.compose.sdl.node/ComposeRootHost.softwareKeyboardController|{}softwareKeyboardController[0]
         final fun <get-softwareKeyboardController>(): androidx.compose.ui.platform/SoftwareKeyboardController // com.compose.sdl.node/ComposeRootHost.softwareKeyboardController.<get-softwareKeyboardController>|<get-softwareKeyboardController>(){}[0]
-    final val textInputService // com.compose.sdl.node/ComposeRootHost.textInputService|{}textInputService[0]
-        final fun <get-textInputService>(): androidx.compose.ui.text.input/TextInputService // com.compose.sdl.node/ComposeRootHost.textInputService.<get-textInputService>|<get-textInputService>(){}[0]
     final val textToolbar // com.compose.sdl.node/ComposeRootHost.textToolbar|{}textToolbar[0]
         final fun <get-textToolbar>(): androidx.compose.ui.platform/TextToolbar // com.compose.sdl.node/ComposeRootHost.textToolbar.<get-textToolbar>|<get-textToolbar>(){}[0]
     final val viewConfiguration // com.compose.sdl.node/ComposeRootHost.viewConfiguration|{}viewConfiguration[0]
@@ -5676,9 +5562,12 @@ final class com.compose.sdl.node/ComposeRootHost { // com.compose.sdl.node/Compo
 
     final fun attach() // com.compose.sdl.node/ComposeRootHost.attach|attach(){}[0]
     final fun dispatchKeyEvent(androidx.compose.ui.input.key/KeyEvent): kotlin/Boolean // com.compose.sdl.node/ComposeRootHost.dispatchKeyEvent|dispatchKeyEvent(androidx.compose.ui.input.key.KeyEvent){}[0]
-    final fun dispatchTextInput(kotlin/String): kotlin/Boolean // com.compose.sdl.node/ComposeRootHost.dispatchTextInput|dispatchTextInput(kotlin.String){}[0]
     final fun measureAndLayout() // com.compose.sdl.node/ComposeRootHost.measureAndLayout|measureAndLayout(){}[0]
-    final fun onPointer(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int) // com.compose.sdl.node/ComposeRootHost.onPointer|onPointer(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+    final fun onDropBegin() // com.compose.sdl.node/ComposeRootHost.onDropBegin|onDropBegin(){}[0]
+    final fun onDropComplete() // com.compose.sdl.node/ComposeRootHost.onDropComplete|onDropComplete(){}[0]
+    final fun onDropFile(kotlin/String) // com.compose.sdl.node/ComposeRootHost.onDropFile|onDropFile(kotlin.String){}[0]
+    final fun onDropPosition(kotlin/Float, kotlin/Float) // com.compose.sdl.node/ComposeRootHost.onDropPosition|onDropPosition(kotlin.Float;kotlin.Float){}[0]
+    final fun onDropText(kotlin/String) // com.compose.sdl.node/ComposeRootHost.onDropText|onDropText(kotlin.String){}[0]
     final fun onPointerRaw(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/Long) // com.compose.sdl.node/ComposeRootHost.onPointerRaw|onPointerRaw(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.Long){}[0]
     final fun onWheel(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Long) // com.compose.sdl.node/ComposeRootHost.onWheel|onWheel(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long){}[0]
     final fun sendAnimationFrame(kotlin/Long) // com.compose.sdl.node/ComposeRootHost.sendAnimationFrame|sendAnimationFrame(kotlin.Long){}[0]
@@ -8387,6 +8276,45 @@ sealed class androidx.compose.ui.text.font/SystemFontFamily : androidx.compose.u
 sealed class androidx.compose.ui.text/TtsAnnotation : androidx.compose.ui.text/AnnotatedString.Annotation // androidx.compose.ui.text/TtsAnnotation|null[0]
 
 sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
+    final enum class DropPhase : kotlin/Enum<com.compose.sdl/AppEvent.DropPhase> { // com.compose.sdl/AppEvent.DropPhase|null[0]
+        enum entry BEGIN // com.compose.sdl/AppEvent.DropPhase.BEGIN|null[0]
+        enum entry COMPLETE // com.compose.sdl/AppEvent.DropPhase.COMPLETE|null[0]
+        enum entry FILE // com.compose.sdl/AppEvent.DropPhase.FILE|null[0]
+        enum entry POSITION // com.compose.sdl/AppEvent.DropPhase.POSITION|null[0]
+        enum entry TEXT // com.compose.sdl/AppEvent.DropPhase.TEXT|null[0]
+
+        final val entries // com.compose.sdl/AppEvent.DropPhase.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<com.compose.sdl/AppEvent.DropPhase> // com.compose.sdl/AppEvent.DropPhase.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): com.compose.sdl/AppEvent.DropPhase // com.compose.sdl/AppEvent.DropPhase.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<com.compose.sdl/AppEvent.DropPhase> // com.compose.sdl/AppEvent.DropPhase.values|values#static(){}[0]
+    }
+
+    final class Drop : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.Drop|null[0]
+        constructor <init>(kotlin/UInt, com.compose.sdl/AppEvent.DropPhase, kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ...) // com.compose.sdl/AppEvent.Drop.<init>|<init>(kotlin.UInt;com.compose.sdl.AppEvent.DropPhase;kotlin.Float;kotlin.Float;kotlin.String?){}[0]
+
+        final val data // com.compose.sdl/AppEvent.Drop.data|{}data[0]
+            final fun <get-data>(): kotlin/String? // com.compose.sdl/AppEvent.Drop.data.<get-data>|<get-data>(){}[0]
+        final val phase // com.compose.sdl/AppEvent.Drop.phase|{}phase[0]
+            final fun <get-phase>(): com.compose.sdl/AppEvent.DropPhase // com.compose.sdl/AppEvent.Drop.phase.<get-phase>|<get-phase>(){}[0]
+        final val windowId // com.compose.sdl/AppEvent.Drop.windowId|{}windowId[0]
+            final fun <get-windowId>(): kotlin/UInt // com.compose.sdl/AppEvent.Drop.windowId.<get-windowId>|<get-windowId>(){}[0]
+        final val x // com.compose.sdl/AppEvent.Drop.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // com.compose.sdl/AppEvent.Drop.x.<get-x>|<get-x>(){}[0]
+        final val y // com.compose.sdl/AppEvent.Drop.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // com.compose.sdl/AppEvent.Drop.y.<get-y>|<get-y>(){}[0]
+
+        final fun component1(): kotlin/UInt // com.compose.sdl/AppEvent.Drop.component1|component1(){}[0]
+        final fun component2(): com.compose.sdl/AppEvent.DropPhase // com.compose.sdl/AppEvent.Drop.component2|component2(){}[0]
+        final fun component3(): kotlin/Float // com.compose.sdl/AppEvent.Drop.component3|component3(){}[0]
+        final fun component4(): kotlin/Float // com.compose.sdl/AppEvent.Drop.component4|component4(){}[0]
+        final fun component5(): kotlin/String? // com.compose.sdl/AppEvent.Drop.component5|component5(){}[0]
+        final fun copy(kotlin/UInt = ..., com.compose.sdl/AppEvent.DropPhase = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ...): com.compose.sdl/AppEvent.Drop // com.compose.sdl/AppEvent.Drop.copy|copy(kotlin.UInt;com.compose.sdl.AppEvent.DropPhase;kotlin.Float;kotlin.Float;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl/AppEvent.Drop.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.compose.sdl/AppEvent.Drop.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.compose.sdl/AppEvent.Drop.toString|toString(){}[0]
+    }
+
     final class Key : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.Key|null[0]
         constructor <init>(androidx.compose.ui.input.key/KeyEvent, kotlin/UInt = ...) // com.compose.sdl/AppEvent.Key.<init>|<init>(androidx.compose.ui.input.key.KeyEvent;kotlin.UInt){}[0]
 
@@ -8471,6 +8399,25 @@ sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl/AppEvent.TextInput.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.compose.sdl/AppEvent.TextInput.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.compose.sdl/AppEvent.TextInput.toString|toString(){}[0]
+    }
+
+    final class WindowActivation : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.WindowActivation|null[0]
+        constructor <init>(kotlin/UInt = ..., kotlin/Boolean? = ..., kotlin/Boolean? = ...) // com.compose.sdl/AppEvent.WindowActivation.<init>|<init>(kotlin.UInt;kotlin.Boolean?;kotlin.Boolean?){}[0]
+
+        final val focused // com.compose.sdl/AppEvent.WindowActivation.focused|{}focused[0]
+            final fun <get-focused>(): kotlin/Boolean? // com.compose.sdl/AppEvent.WindowActivation.focused.<get-focused>|<get-focused>(){}[0]
+        final val visible // com.compose.sdl/AppEvent.WindowActivation.visible|{}visible[0]
+            final fun <get-visible>(): kotlin/Boolean? // com.compose.sdl/AppEvent.WindowActivation.visible.<get-visible>|<get-visible>(){}[0]
+        final val windowId // com.compose.sdl/AppEvent.WindowActivation.windowId|{}windowId[0]
+            final fun <get-windowId>(): kotlin/UInt // com.compose.sdl/AppEvent.WindowActivation.windowId.<get-windowId>|<get-windowId>(){}[0]
+
+        final fun component1(): kotlin/UInt // com.compose.sdl/AppEvent.WindowActivation.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean? // com.compose.sdl/AppEvent.WindowActivation.component2|component2(){}[0]
+        final fun component3(): kotlin/Boolean? // com.compose.sdl/AppEvent.WindowActivation.component3|component3(){}[0]
+        final fun copy(kotlin/UInt = ..., kotlin/Boolean? = ..., kotlin/Boolean? = ...): com.compose.sdl/AppEvent.WindowActivation // com.compose.sdl/AppEvent.WindowActivation.copy|copy(kotlin.UInt;kotlin.Boolean?;kotlin.Boolean?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl/AppEvent.WindowActivation.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.compose.sdl/AppEvent.WindowActivation.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.compose.sdl/AppEvent.WindowActivation.toString|toString(){}[0]
     }
 
     final class WindowClose : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.WindowClose|null[0]
@@ -9299,16 +9246,6 @@ final val androidx.compose.ui.platform/androidx_compose_ui_platform_InspectorVal
 final val androidx.compose.ui.platform/androidx_compose_ui_platform_PlatformWindowInsetsProviderNode$stableprop // androidx.compose.ui.platform/androidx_compose_ui_platform_PlatformWindowInsetsProviderNode$stableprop|#static{}androidx_compose_ui_platform_PlatformWindowInsetsProviderNode$stableprop[0]
 final val androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElement$stableprop // androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElement$stableprop|#static{}androidx_compose_ui_platform_ValueElement$stableprop[0]
 final val androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElementSequence$stableprop // androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElementSequence$stableprop|#static{}androidx_compose_ui_platform_ValueElementSequence$stableprop[0]
-final val androidx.compose.ui.platform/currentClipboard // androidx.compose.ui.platform/currentClipboard|{}currentClipboard[0]
-    final fun <get-currentClipboard>(): androidx.compose.ui.platform/ClipboardManager // androidx.compose.ui.platform/currentClipboard.<get-currentClipboard>|<get-currentClipboard>(){}[0]
-final val androidx.compose.ui.platform/defaultClipboard // androidx.compose.ui.platform/defaultClipboard|{}defaultClipboard[0]
-    final fun <get-defaultClipboard>(): androidx.compose.ui.platform/Clipboard // androidx.compose.ui.platform/defaultClipboard.<get-defaultClipboard>|<get-defaultClipboard>(){}[0]
-final val androidx.compose.ui.platform/defaultClipboardManager // androidx.compose.ui.platform/defaultClipboardManager|{}defaultClipboardManager[0]
-    final fun <get-defaultClipboardManager>(): androidx.compose.ui.platform/ClipboardManager // androidx.compose.ui.platform/defaultClipboardManager.<get-defaultClipboardManager>|<get-defaultClipboardManager>(){}[0]
-final val androidx.compose.ui.platform/platformClipboard // androidx.compose.ui.platform/platformClipboard|{}platformClipboard[0]
-    final fun <get-platformClipboard>(): androidx.compose.ui.platform/Clipboard // androidx.compose.ui.platform/platformClipboard.<get-platformClipboard>|<get-platformClipboard>(){}[0]
-final val androidx.compose.ui.platform/platformClipboardManager // androidx.compose.ui.platform/platformClipboardManager|{}platformClipboardManager[0]
-    final fun <get-platformClipboardManager>(): androidx.compose.ui.platform/ClipboardManager // androidx.compose.ui.platform/platformClipboardManager.<get-platformClipboardManager>|<get-platformClipboardManager>(){}[0]
 final val androidx.compose.ui.platform/safeContent // androidx.compose.ui.platform/safeContent|@androidx.compose.ui.platform.PlatformWindowInsets{}safeContent[0]
     final fun (androidx.compose.ui.platform/PlatformWindowInsets).<get-safeContent>(): androidx.compose.ui.platform/PlatformInsets // androidx.compose.ui.platform/safeContent.<get-safeContent>|<get-safeContent>@androidx.compose.ui.platform.PlatformWindowInsets(){}[0]
 final val androidx.compose.ui.platform/safeDrawing // androidx.compose.ui.platform/safeDrawing|@androidx.compose.ui.platform.PlatformWindowInsets{}safeDrawing[0]
@@ -9424,22 +9361,6 @@ final val com.compose.sdl.element/com_compose_sdl_element_ClipModifier$stablepro
 final val com.compose.sdl.element/com_compose_sdl_element_ClipNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_ClipNode$stableprop|#static{}com_compose_sdl_element_ClipNode$stableprop[0]
 final val com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerModifier$stableprop|#static{}com_compose_sdl_element_GraphicsLayerModifier$stableprop[0]
 final val com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerNode$stableprop|#static{}com_compose_sdl_element_GraphicsLayerNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_MiddleClickModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_MiddleClickModifier$stableprop|#static{}com_compose_sdl_element_MiddleClickModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_MiddleClickNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_MiddleClickNode$stableprop|#static{}com_compose_sdl_element_MiddleClickNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnDragModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnDragModifier$stableprop|#static{}com_compose_sdl_element_OnDragModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnDragNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnDragNode$stableprop|#static{}com_compose_sdl_element_OnDragNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnPressedModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnPressedModifier$stableprop|#static{}com_compose_sdl_element_OnPressedModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnPressedNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnPressedNode$stableprop|#static{}com_compose_sdl_element_OnPressedNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnTextInputModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnTextInputModifier$stableprop|#static{}com_compose_sdl_element_OnTextInputModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_OnTextInputNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_OnTextInputNode$stableprop|#static{}com_compose_sdl_element_OnTextInputNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_PressableModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_PressableModifier$stableprop|#static{}com_compose_sdl_element_PressableModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_PressableNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_PressableNode$stableprop|#static{}com_compose_sdl_element_PressableNode$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_SecondaryClickModifier$stableprop // com.compose.sdl.element/com_compose_sdl_element_SecondaryClickModifier$stableprop|#static{}com_compose_sdl_element_SecondaryClickModifier$stableprop[0]
-final val com.compose.sdl.element/com_compose_sdl_element_SecondaryClickNode$stableprop // com.compose.sdl.element/com_compose_sdl_element_SecondaryClickNode$stableprop|#static{}com_compose_sdl_element_SecondaryClickNode$stableprop[0]
-final val com.compose.sdl.graphics/a8 // com.compose.sdl.graphics/a8|@androidx.compose.ui.graphics.Color{}a8[0]
-    final fun (androidx.compose.ui.graphics/Color).<get-a8>(): kotlin/Int // com.compose.sdl.graphics/a8.<get-a8>|<get-a8>@androidx.compose.ui.graphics.Color(){}[0]
-final val com.compose.sdl.graphics/b8 // com.compose.sdl.graphics/b8|@androidx.compose.ui.graphics.Color{}b8[0]
-    final fun (androidx.compose.ui.graphics/Color).<get-b8>(): kotlin/Int // com.compose.sdl.graphics/b8.<get-b8>|<get-b8>@androidx.compose.ui.graphics.Color(){}[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop|#static{}com_compose_sdl_graphics_PathCommand_Close$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop|#static{}com_compose_sdl_graphics_PathCommand_CubicTo$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_LineTo$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_LineTo$stableprop|#static{}com_compose_sdl_graphics_PathCommand_LineTo$stableprop[0]
@@ -9450,8 +9371,6 @@ final val com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectImageBitmap$s
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPaint$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPaint$stableprop|#static{}com_compose_sdl_graphics_ProjectPaint$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPath$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPath$stableprop|#static{}com_compose_sdl_graphics_ProjectPath$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPathIterator$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPathIterator$stableprop|#static{}com_compose_sdl_graphics_ProjectPathIterator$stableprop[0]
-final val com.compose.sdl.graphics/g8 // com.compose.sdl.graphics/g8|@androidx.compose.ui.graphics.Color{}g8[0]
-    final fun (androidx.compose.ui.graphics/Color).<get-g8>(): kotlin/Int // com.compose.sdl.graphics/g8.<get-g8>|<get-g8>@androidx.compose.ui.graphics.Color(){}[0]
 final val com.compose.sdl.graphics/gradientCenter // com.compose.sdl.graphics/gradientCenter|@androidx.compose.ui.graphics.RadialGradient{}gradientCenter[0]
     final fun (androidx.compose.ui.graphics/RadialGradient).<get-gradientCenter>(): androidx.compose.ui.geometry/Offset // com.compose.sdl.graphics/gradientCenter.<get-gradientCenter>|<get-gradientCenter>@androidx.compose.ui.graphics.RadialGradient(){}[0]
 final val com.compose.sdl.graphics/gradientCenter // com.compose.sdl.graphics/gradientCenter|@androidx.compose.ui.graphics.SweepGradient{}gradientCenter[0]
@@ -9478,8 +9397,6 @@ final val com.compose.sdl.graphics/gradientTileMode // com.compose.sdl.graphics/
     final fun (androidx.compose.ui.graphics/LinearGradient).<get-gradientTileMode>(): androidx.compose.ui.graphics/TileMode // com.compose.sdl.graphics/gradientTileMode.<get-gradientTileMode>|<get-gradientTileMode>@androidx.compose.ui.graphics.LinearGradient(){}[0]
 final val com.compose.sdl.graphics/gradientTileMode // com.compose.sdl.graphics/gradientTileMode|@androidx.compose.ui.graphics.RadialGradient{}gradientTileMode[0]
     final fun (androidx.compose.ui.graphics/RadialGradient).<get-gradientTileMode>(): androidx.compose.ui.graphics/TileMode // com.compose.sdl.graphics/gradientTileMode.<get-gradientTileMode>|<get-gradientTileMode>@androidx.compose.ui.graphics.RadialGradient(){}[0]
-final val com.compose.sdl.graphics/r8 // com.compose.sdl.graphics/r8|@androidx.compose.ui.graphics.Color{}r8[0]
-    final fun (androidx.compose.ui.graphics/Color).<get-r8>(): kotlin/Int // com.compose.sdl.graphics/r8.<get-r8>|<get-r8>@androidx.compose.ui.graphics.Color(){}[0]
 final val com.compose.sdl.icons/com_compose_sdl_icons_IconFont$stableprop // com.compose.sdl.icons/com_compose_sdl_icons_IconFont$stableprop|#static{}com_compose_sdl_icons_IconFont$stableprop[0]
 final val com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop // com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop|#static{}com_compose_sdl_input_LegacyPointerEvent$stableprop[0]
 final val com.compose.sdl.layout/intOffset // com.compose.sdl.layout/intOffset|@androidx.compose.ui.layout.LayoutCoordinates{}intOffset[0]
@@ -9512,12 +9429,14 @@ final val com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stablepro
 final val com.compose.sdl/LocalComposeNativeWindow // com.compose.sdl/LocalComposeNativeWindow|{}LocalComposeNativeWindow[0]
     final fun <get-LocalComposeNativeWindow>(): androidx.compose.runtime/ProvidableCompositionLocal<com.compose.sdl/ComposeNativeWindow> // com.compose.sdl/LocalComposeNativeWindow.<get-LocalComposeNativeWindow>|<get-LocalComposeNativeWindow>(){}[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent$stableprop // com.compose.sdl/com_compose_sdl_AppEvent$stableprop|#static{}com_compose_sdl_AppEvent$stableprop[0]
+final val com.compose.sdl/com_compose_sdl_AppEvent_Drop$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_Drop$stableprop|#static{}com_compose_sdl_AppEvent_Drop$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_Key$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_Key$stableprop|#static{}com_compose_sdl_AppEvent_Key$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_MouseWheel$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_MouseWheel$stableprop|#static{}com_compose_sdl_AppEvent_MouseWheel$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_Pointer$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_Pointer$stableprop|#static{}com_compose_sdl_AppEvent_Pointer$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_Quit$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_Quit$stableprop|#static{}com_compose_sdl_AppEvent_Quit$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_RedrawNeeded$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_RedrawNeeded$stableprop|#static{}com_compose_sdl_AppEvent_RedrawNeeded$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_TextInput$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_TextInput$stableprop|#static{}com_compose_sdl_AppEvent_TextInput$stableprop[0]
+final val com.compose.sdl/com_compose_sdl_AppEvent_WindowActivation$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_WindowActivation$stableprop|#static{}com_compose_sdl_AppEvent_WindowActivation$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_WindowClose$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_WindowClose$stableprop|#static{}com_compose_sdl_AppEvent_WindowClose$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop // com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop|#static{}com_compose_sdl_AppEvent_WindowResized$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop // com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop|#static{}com_compose_sdl_ComposeNativeWindow$stableprop[0]
@@ -9655,6 +9574,8 @@ final var androidx.compose.ui/isDialogAnimationEnabled // androidx.compose.ui/is
 final var androidx.compose.ui/useLegacyRenderNodeLayers // androidx.compose.ui/useLegacyRenderNodeLayers|@androidx.compose.ui.ComposeUiFlags{}useLegacyRenderNodeLayers[0]
     final fun (androidx.compose.ui/ComposeUiFlags).<get-useLegacyRenderNodeLayers>(): kotlin/Boolean // androidx.compose.ui/useLegacyRenderNodeLayers.<get-useLegacyRenderNodeLayers>|<get-useLegacyRenderNodeLayers>@androidx.compose.ui.ComposeUiFlags(){}[0]
     final fun (androidx.compose.ui/ComposeUiFlags).<set-useLegacyRenderNodeLayers>(kotlin/Boolean) // androidx.compose.ui/useLegacyRenderNodeLayers.<set-useLegacyRenderNodeLayers>|<set-useLegacyRenderNodeLayers>@androidx.compose.ui.ComposeUiFlags(kotlin.Boolean){}[0]
+final var com.compose.sdl.graphics/encodedImageDecoder // com.compose.sdl.graphics/encodedImageDecoder|{}encodedImageDecoder[0]
+    final fun <get-encodedImageDecoder>(): com.compose.sdl.graphics/EncodedImageDecoder? // com.compose.sdl.graphics/encodedImageDecoder.<get-encodedImageDecoder>|<get-encodedImageDecoder>(){}[0]
 final var com.compose.sdl.res/currentImageLoader // com.compose.sdl.res/currentImageLoader|{}currentImageLoader[0]
     final fun <get-currentImageLoader>(): com.compose.sdl.res/ImageLoader // com.compose.sdl.res/currentImageLoader.<get-currentImageLoader>|<get-currentImageLoader>(){}[0]
     final fun <set-currentImageLoader>(com.compose.sdl.res/ImageLoader) // com.compose.sdl.res/currentImageLoader.<set-currentImageLoader>|<set-currentImageLoader>(com.compose.sdl.res.ImageLoader){}[0]
@@ -9703,9 +9624,6 @@ final fun (androidx.compose.ui.graphics/Canvas).androidx.compose.ui.graphics/sca
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/compositeOver(androidx.compose.ui.graphics/Color): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/compositeOver|compositeOver@androidx.compose.ui.graphics.Color(androidx.compose.ui.graphics.Color){}[0]
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/luminance(): kotlin/Float // androidx.compose.ui.graphics/luminance|luminance@androidx.compose.ui.graphics.Color(){}[0]
 final fun (androidx.compose.ui.graphics/Color).androidx.compose.ui.graphics/toArgb(): kotlin/Int // androidx.compose.ui.graphics/toArgb|toArgb@androidx.compose.ui.graphics.Color(){}[0]
-final fun (androidx.compose.ui.graphics/Color).com.compose.sdl.graphics/blend(androidx.compose.ui.graphics/Color, kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.sdl.graphics/blend|blend@androidx.compose.ui.graphics.Color(androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
-final fun (androidx.compose.ui.graphics/Color).com.compose.sdl.graphics/darken(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.sdl.graphics/darken|darken@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
-final fun (androidx.compose.ui.graphics/Color).com.compose.sdl.graphics/lighten(kotlin/Float): androidx.compose.ui.graphics/Color // com.compose.sdl.graphics/lighten|lighten@androidx.compose.ui.graphics.Color(kotlin.Float){}[0]
 final fun (androidx.compose.ui.graphics/ImageBitmap).androidx.compose.ui.graphics/toPixelMap(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/IntArray = ..., kotlin/Int = ..., kotlin/Int = ...): androidx.compose.ui.graphics/PixelMap // androidx.compose.ui.graphics/toPixelMap|toPixelMap@androidx.compose.ui.graphics.ImageBitmap(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.IntArray;kotlin.Int;kotlin.Int){}[0]
 final fun (androidx.compose.ui.graphics/Matrix).androidx.compose.ui.graphics/isIdentity(): kotlin/Boolean // androidx.compose.ui.graphics/isIdentity|isIdentity@androidx.compose.ui.graphics.Matrix(){}[0]
 final fun (androidx.compose.ui.graphics/Path).androidx.compose.ui.graphics/addOutline(androidx.compose.ui.graphics/Outline) // androidx.compose.ui.graphics/addOutline|addOutline@androidx.compose.ui.graphics.Path(androidx.compose.ui.graphics.Outline){}[0]
@@ -9908,12 +9826,6 @@ final fun (androidx.compose.ui/Modifier).androidx.compose.ui/preferredFrameRate(
 final fun (androidx.compose.ui/Modifier).androidx.compose.ui/preferredFrameRate(kotlin/Float): androidx.compose.ui/Modifier // androidx.compose.ui/preferredFrameRate|preferredFrameRate@androidx.compose.ui.Modifier(kotlin.Float){}[0]
 final fun (androidx.compose.ui/Modifier).androidx.compose.ui/sensitiveContent(kotlin/Boolean = ...): androidx.compose.ui/Modifier // androidx.compose.ui/sensitiveContent|sensitiveContent@androidx.compose.ui.Modifier(kotlin.Boolean){}[0]
 final fun (androidx.compose.ui/Modifier).androidx.compose.ui/zIndex(kotlin/Float): androidx.compose.ui/Modifier // androidx.compose.ui/zIndex|zIndex@androidx.compose.ui.Modifier(kotlin.Float){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/onDrag(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> = ..., kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit> = ..., kotlin/Function0<kotlin/Unit> = ...): androidx.compose.ui/Modifier // com.compose.sdl.modifier/onDrag|onDrag@androidx.compose.ui.Modifier(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>;kotlin.Function0<kotlin.Unit>){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/onMiddleClick(kotlin/Function0<kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.sdl.modifier/onMiddleClick|onMiddleClick@androidx.compose.ui.Modifier(kotlin.Function0<kotlin.Unit>){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/onPressed(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.sdl.modifier/onPressed|onPressed@androidx.compose.ui.Modifier(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/onSecondaryClick(kotlin/Function2<kotlin/Int, kotlin/Int, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.sdl.modifier/onSecondaryClick|onSecondaryClick@androidx.compose.ui.Modifier(kotlin.Function2<kotlin.Int,kotlin.Int,kotlin.Unit>){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/onTextInput(kotlin/Function1<kotlin/String, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.sdl.modifier/onTextInput|onTextInput@androidx.compose.ui.Modifier(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
-final fun (androidx.compose.ui/Modifier).com.compose.sdl.modifier/pressable(kotlin/Function1<kotlin/Boolean, kotlin/Unit>): androidx.compose.ui/Modifier // com.compose.sdl.modifier/pressable|pressable@androidx.compose.ui.Modifier(kotlin.Function1<kotlin.Boolean,kotlin.Unit>){}[0]
 final fun (kotlin.collections/List<androidx.compose.ui.graphics.vector/PathNode>).androidx.compose.ui.graphics.vector/toPath(androidx.compose.ui.graphics/Path = ...): androidx.compose.ui.graphics/Path // androidx.compose.ui.graphics.vector/toPath|toPath@kotlin.collections.List<androidx.compose.ui.graphics.vector.PathNode>(androidx.compose.ui.graphics.Path){}[0]
 final fun (kotlin/ByteArray).androidx.compose.ui.graphics/decodeToImageBitmap(): androidx.compose.ui.graphics/ImageBitmap // androidx.compose.ui.graphics/decodeToImageBitmap|decodeToImageBitmap@kotlin.ByteArray(){}[0]
 final fun (kotlin/CharSequence).androidx.compose.ui.text/substring(androidx.compose.ui.text/TextRange): kotlin/String // androidx.compose.ui.text/substring|substring@kotlin.CharSequence(androidx.compose.ui.text.TextRange){}[0]
@@ -10168,6 +10080,7 @@ final fun androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElement
 final fun androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElementSequence$stableprop_getter(): kotlin/Int // androidx.compose.ui.platform/androidx_compose_ui_platform_ValueElementSequence$stableprop_getter|androidx_compose_ui_platform_ValueElementSequence$stableprop_getter(){}[0]
 final fun androidx.compose.ui.platform/findComposeDefaultViewModelStoreOwner(androidx.compose.runtime/Composer?, kotlin/Int): androidx.lifecycle/ViewModelStoreOwner? // androidx.compose.ui.platform/findComposeDefaultViewModelStoreOwner|findComposeDefaultViewModelStoreOwner(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun androidx.compose.ui.platform/findDefaultNavigationEventDispatcherOwner(androidx.compose.runtime/Composer?, kotlin/Int): androidx.navigationevent/NavigationEventDispatcherOwner? // androidx.compose.ui.platform/findDefaultNavigationEventDispatcherOwner|findDefaultNavigationEventDispatcherOwner(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun androidx.compose.ui.platform/platformClipboard(): androidx.compose.ui.platform/Clipboard // androidx.compose.ui.platform/platformClipboard|platformClipboard(){}[0]
 final fun androidx.compose.ui.scene/androidx_compose_ui_scene_ComposeScenePointer$stableprop_getter(): kotlin/Int // androidx.compose.ui.scene/androidx_compose_ui_scene_ComposeScenePointer$stableprop_getter|androidx_compose_ui_scene_ComposeScenePointer$stableprop_getter(){}[0]
 final fun androidx.compose.ui.semantics/androidx_compose_ui_semantics_AccessibilityAction$stableprop_getter(): kotlin/Int // androidx.compose.ui.semantics/androidx_compose_ui_semantics_AccessibilityAction$stableprop_getter|androidx_compose_ui_semantics_AccessibilityAction$stableprop_getter(){}[0]
 final fun androidx.compose.ui.semantics/androidx_compose_ui_semantics_CollectionInfo$stableprop_getter(): kotlin/Int // androidx.compose.ui.semantics/androidx_compose_ui_semantics_CollectionInfo$stableprop_getter|androidx_compose_ui_semantics_CollectionInfo$stableprop_getter(){}[0]
@@ -10303,18 +10216,6 @@ final fun com.compose.sdl.element/com_compose_sdl_element_ClipModifier$stablepro
 final fun com.compose.sdl.element/com_compose_sdl_element_ClipNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_ClipNode$stableprop_getter|com_compose_sdl_element_ClipNode$stableprop_getter(){}[0]
 final fun com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerModifier$stableprop_getter|com_compose_sdl_element_GraphicsLayerModifier$stableprop_getter(){}[0]
 final fun com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_GraphicsLayerNode$stableprop_getter|com_compose_sdl_element_GraphicsLayerNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_MiddleClickModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_MiddleClickModifier$stableprop_getter|com_compose_sdl_element_MiddleClickModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_MiddleClickNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_MiddleClickNode$stableprop_getter|com_compose_sdl_element_MiddleClickNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnDragModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnDragModifier$stableprop_getter|com_compose_sdl_element_OnDragModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnDragNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnDragNode$stableprop_getter|com_compose_sdl_element_OnDragNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnPressedModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnPressedModifier$stableprop_getter|com_compose_sdl_element_OnPressedModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnPressedNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnPressedNode$stableprop_getter|com_compose_sdl_element_OnPressedNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnTextInputModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnTextInputModifier$stableprop_getter|com_compose_sdl_element_OnTextInputModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_OnTextInputNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_OnTextInputNode$stableprop_getter|com_compose_sdl_element_OnTextInputNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_PressableModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_PressableModifier$stableprop_getter|com_compose_sdl_element_PressableModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_PressableNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_PressableNode$stableprop_getter|com_compose_sdl_element_PressableNode$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_SecondaryClickModifier$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_SecondaryClickModifier$stableprop_getter|com_compose_sdl_element_SecondaryClickModifier$stableprop_getter(){}[0]
-final fun com.compose.sdl.element/com_compose_sdl_element_SecondaryClickNode$stableprop_getter(): kotlin/Int // com.compose.sdl.element/com_compose_sdl_element_SecondaryClickNode$stableprop_getter|com_compose_sdl_element_SecondaryClickNode$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop_getter|com_compose_sdl_graphics_PathCommand_Close$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter|com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_LineTo$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_LineTo$stableprop_getter|com_compose_sdl_graphics_PathCommand_LineTo$stableprop_getter(){}[0]
@@ -10325,6 +10226,7 @@ final fun com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectImageBitmap$s
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPaint$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPaint$stableprop_getter|com_compose_sdl_graphics_ProjectPaint$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPath$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPath$stableprop_getter|com_compose_sdl_graphics_ProjectPath$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPathIterator$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_ProjectPathIterator$stableprop_getter|com_compose_sdl_graphics_ProjectPathIterator$stableprop_getter(){}[0]
+final fun com.compose.sdl.graphics/decodeEncodedImageBitmap(kotlin/ByteArray): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/decodeEncodedImageBitmap|decodeEncodedImageBitmap(kotlin.ByteArray){}[0]
 final fun com.compose.sdl.icons/com_compose_sdl_icons_IconFont$stableprop_getter(): kotlin/Int // com.compose.sdl.icons/com_compose_sdl_icons_IconFont$stableprop_getter|com_compose_sdl_icons_IconFont$stableprop_getter(){}[0]
 final fun com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop_getter(): kotlin/Int // com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop_getter|com_compose_sdl_input_LegacyPointerEvent$stableprop_getter(){}[0]
 final fun com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter(): kotlin/Int // com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter|com_compose_sdl_node_ComposeRootHost$stableprop_getter(){}[0]
@@ -10358,12 +10260,14 @@ final fun com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stablepro
 final fun com.compose.sdl.window/createPopupHostState(): com.compose.sdl.window/PopupHostState // com.compose.sdl.window/createPopupHostState|createPopupHostState(){}[0]
 final fun com.compose.sdl/appDataDir(kotlin/String, kotlin/String): kotlin/String? // com.compose.sdl/appDataDir|appDataDir(kotlin.String;kotlin.String){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent$stableprop_getter|com_compose_sdl_AppEvent$stableprop_getter(){}[0]
+final fun com.compose.sdl/com_compose_sdl_AppEvent_Drop$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_Drop$stableprop_getter|com_compose_sdl_AppEvent_Drop$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_Key$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_Key$stableprop_getter|com_compose_sdl_AppEvent_Key$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_MouseWheel$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_MouseWheel$stableprop_getter|com_compose_sdl_AppEvent_MouseWheel$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_Pointer$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_Pointer$stableprop_getter|com_compose_sdl_AppEvent_Pointer$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_Quit$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_Quit$stableprop_getter|com_compose_sdl_AppEvent_Quit$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_RedrawNeeded$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_RedrawNeeded$stableprop_getter|com_compose_sdl_AppEvent_RedrawNeeded$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_TextInput$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_TextInput$stableprop_getter|com_compose_sdl_AppEvent_TextInput$stableprop_getter(){}[0]
+final fun com.compose.sdl/com_compose_sdl_AppEvent_WindowActivation$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_WindowActivation$stableprop_getter|com_compose_sdl_AppEvent_WindowActivation$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_WindowClose$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_WindowClose$stableprop_getter|com_compose_sdl_AppEvent_WindowClose$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop_getter|com_compose_sdl_AppEvent_WindowResized$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop_getter|com_compose_sdl_ComposeNativeWindow$stableprop_getter(){}[0]

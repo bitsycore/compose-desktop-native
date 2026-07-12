@@ -6,7 +6,7 @@ headerFilter = SDL3/**
 # archive location comes from :ui build.gradle.kts (-libraryPath) because
 # .def files can't reference $rootDir. The linker options below list the
 # system frameworks / libs SDL3's static build depends on (see the Libs
-# line in libs/SDL3/lib/pkgconfig/sdl3.pc after build-sdl3.sh runs) —
+# line in libs/SDL3/lib/pkgconfig/sdl3.pc after build-all.py runs) —
 # cinterop propagates them through the klib to the final app link.
 
 staticLibraries = libSDL3.a

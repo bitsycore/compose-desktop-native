@@ -137,8 +137,8 @@ implementation(project(":material-symbols"))  // icon-font composables (optional
   Maven).
 - **Linux:** `sudo apt install libsdl3-dev`.
 - **Windows:** SDL3, SDL3_ttf, SDL3_image and FreeType are built from source
-  as **static** libraries by `scripts/build-sdl/build-all.sh` into the gitignored
-  in-repo `libs/`, then linked into the executable — the Windows
+  as **static** libraries by `python scripts/build-sdl/build-all.py` into the
+  gitignored in-repo `libs/`, then linked into the executable — the Windows
   distributable is just `<app>.exe` + `data.kres`, no runtime DLLs.
 
 ## Vendoring

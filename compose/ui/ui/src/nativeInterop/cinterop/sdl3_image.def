@@ -5,6 +5,6 @@ depends = sdl3
 # libSDL3_image.a + its vendored codec archives (PNG/JPG built-in via stb,
 # WEBP, SVG built-in) are all baked into the cinterop klib. See sdl3.def —
 # the static archive location is injected via :ui build.gradle.kts
-# (-libraryPath). build-sdl3-image.sh normalises libzlibstatic.a → libz.a
-# on Windows so the same filename works everywhere.
+# (-libraryPath). build-all.py's sdl3-image step normalises libzlibstatic.a
+# → libz.a on Windows so the same filename works everywhere.
 staticLibraries = libSDL3_image.a libpng16.a libz.a libwebp.a libwebpdemux.a libwebpmux.a libsharpyuv.a

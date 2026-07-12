@@ -32,7 +32,7 @@ plugins {
 val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
 
 // All targets pull headers from the in-repo static build tree at <repo>/libs,
-// populated by scripts/build-sdl/build-all.sh (or the per-library scripts).
+// populated by scripts/build-sdl/build-all.py (optionally one library at a time).
 // Same paths on macOS / Linux / Windows — the .def files are pathless and
 // rely on these -I injections. Cross-target cinterop indexing under
 // kotlin.mpp.enableCInteropCommonization is fine: clang silently ignores -I
