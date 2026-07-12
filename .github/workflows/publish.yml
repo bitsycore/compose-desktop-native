@@ -167,21 +167,11 @@ jobs:
           target_dir=$(echo "${{ matrix.target }}" | awk '{print tolower(substr($0,1,1)) substr($0,2)}')
           version="${GITHUB_REF_NAME#v}"
           mkdir -p dist
-          # python zipfile is on every runner and does two things `jar` won't:
-          # preserves the source file's exec bit (so <app>.kexe stays runnable
-          # after macOS Archive Utility / Finder extract), and marks entries as
-          # Unix-origin so extractors read those bits. `jar` strips modes to
-          # 0644 which is why the previous release's binaries wouldn't launch.
           for app in demo apidemo; do
             src="$app/build/bin/$target_dir/releaseExecutable"
             zip_path="$(pwd)/dist/$app-$version-$target_dir.zip"
-            python3 -c "
-import sys, zipfile, os
-zip_path, *files = sys.argv[1:]
-with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-    for f in files:
-        z.write(f, os.path.basename(f))
-" "$zip_path" "$src/$app.${{ matrix.exe_ext }}" "$src/data.kres"
+            python3 -c 'import sys,os,zipfile; z=zipfile.ZipFile(sys.argv[1],"w",zipfile.ZIP_DEFLATED,compresslevel=9); [z.write(f,os.path.basename(f)) for f in sys.argv[2:]]; z.close()' \
+              "$zip_path" "$src/$app.${{ matrix.exe_ext }}" "$src/data.kres"
           done
           ls -la dist/
 
