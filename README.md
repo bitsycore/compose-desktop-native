@@ -47,7 +47,11 @@ compose/
                                               per-window Lifecycle/ViewModelStore/SavedState owners)
 
 utils/
-└── material-symbols/    → :material-symbols (codepoints + Outlined/Rounded/Sharp icon fonts)
+└── material-symbols/    → :material-symbols (Material Symbols: 4200+ codepoints + Outlined/Rounded/
+                                              Sharp composables with the variable-font axes as
+                                              parameters (FILL/wght/GRAD/opsz). Common API — native
+                                              draws via the port's icon-font engine, the jvm target
+                                              via Skiko, so shared app code uses it on both stacks)
 
 components/
 └── resources/library/    → :components-resources (vendored official compose resources runtime —
@@ -133,13 +137,31 @@ implementation(project(":material-symbols"))  // icon-font composables (optional
 
 ## Building
 
-- **macOS:** `brew install sdl3` (Skia is the default; Skiko klibs come from
-  Maven).
-- **Linux:** `sudo apt install libsdl3-dev`.
-- **Windows:** SDL3, SDL3_ttf, SDL3_image and FreeType are built from source
-  as **static** libraries by `python scripts/build-sdl/build-all.py` into the
-  gitignored in-repo `libs/`, then linked into the executable — the Windows
-  distributable is just `<app>.exe` + `data.kres`, no runtime DLLs.
+All four native dependencies — **SDL3**, **SDL3_ttf** (the in-house
+variable-font-axes fork), **SDL3_image** (+ vendored PNG/WEBP codecs) and
+**FreeType** — are built from source as **static** libraries by one script,
+on every OS, and linked straight into the executable. No `brew install`, no
+`apt install libsdl3-dev`, no runtime `.dll` / `.so` / `.dylib` next to the
+binary — a distributable is just `<app>` + `data.kres`.
+
+```bash
+python3 scripts/build-sdl/build-all.py            # freetype → sdl3 → sdl3-image → sdl3-ttf
+python3 scripts/build-sdl/build-all.py sdl3-ttf   # rebuild a subset
+```
+
+Library versions / URLs are pinned in `scripts/build-sdl/build-sdl.properties`;
+output lands in the gitignored in-repo `libs/`. Required on every host: `git`,
+`cmake`, Python 3 (`ninja` is fetched automatically when absent). Per host:
+
+- **macOS** — Xcode command line tools. Skia is the default renderer; Skiko
+  klibs come from Maven.
+- **Linux** — gcc/g++ plus the X11 / Wayland / audio dev headers SDL3's
+  configure detects (the exact apt list is in
+  `.github/workflows/publish.yml`).
+- **Windows** — a mingw-w64 g++ on PATH (the C side compiles with
+  Kotlin/Native's bundled mingw).
+
+Then build any app target — see the demo / apidemo commands above.
 
 ## Vendoring
 
@@ -157,6 +179,15 @@ scripts/compose-fork/sync.sh compose/ui/compose-fork.txt   # one module
 Upstream ref pinned in `scripts/compose-fork/compose.properties`; manifests can
 pin additional upstream repos inline (`SET_REPO=<url>@<ref>` — the resources
 runtime vendors from the compose-multiplatform umbrella repo this way).
+
+How much of upstream's public API the port actually covers is measured, not
+guessed — `scripts/compose-coverage.py` diffs this repo's klib ABI dumps
+against upstream's, per vendored module:
+
+```bash
+./gradlew apiDump && python3 scripts/compose-coverage.py   # per-module coverage tables
+python3 scripts/compose-coverage.py --missing ui-text      # list the exact uncovered decls
+```
 
 See [CLAUDE.md](CLAUDE.md) for the full architecture, source-set hierarchy,
 vendoring rules, density flow (physical-pixel Option B), and per-area file

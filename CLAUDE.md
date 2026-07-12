@@ -324,21 +324,21 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 
 ### System dependencies
 
-**macOS (default Skia build):** `brew install sdl3`. Only need `sdl3_ttf`
-if you set `-Prenderer=sdl3`. Skiko klibs come from Maven.
+SDL3 + SDL3_ttf + SDL3_image + FreeType (+ image codecs) are **built from
+source as static libraries on every OS** and linked straight into the
+executable — no brew/apt SDL packages, no runtime .dll/.so/.dylib;
+a distributable is `<app>` + `data.kres`. One script does it all:
+`python scripts/build-sdl/build-all.py` (plain Python 3, no Git Bash needed)
+builds into the gitignored, in-repo `libs/` folder. Versions/URLs pinned in
+`scripts/build-sdl/build-sdl.properties`. Steps run in order freetype → sdl3
+→ sdl3-image → sdl3-ttf; pass step names to rebuild a subset
+(`python scripts/build-sdl/build-all.py sdl3-ttf`).
 
-**Linux (default Skia build):** `sudo apt install libsdl3-dev`. Same caveat
-for SDL3_ttf.
-
-**Windows (mingwX64 — always uses SDL3 + SDL3_ttf + SDL3_image + FreeType):**
-these four libraries + image codecs are **linked statically into the
-executable** — no runtime DLLs, distributable is just `<app>.exe` +
-`data.kres`. They're not downloaded — `python scripts/build-sdl/build-all.py`
-(plain Python 3, no Git Bash needed) builds them from source as static libs
-into a gitignored, in-repo `libs/` folder. Needs: git, cmake, python 3,
-mingw-w64 gcc/g++ on PATH; ninja is fetched automatically when absent. Steps
-run in order freetype → sdl3 → sdl3-image → sdl3-ttf; pass step names to
-rebuild a subset (`python scripts/build-sdl/build-all.py sdl3-ttf`).
+Needs everywhere: git, cmake, python 3 (ninja fetched automatically). Per
+host: macOS = Xcode CLT (Skia default; Skiko klibs from Maven); Linux =
+gcc/g++ + the X11/Wayland/audio dev headers SDL3's configure detects (apt
+list in .github/workflows/publish.yml); Windows = mingw-w64 g++ on PATH
+(C compiles with K/N's bundled mingw).
 
 ## Runtime bundling — data.kres
 
