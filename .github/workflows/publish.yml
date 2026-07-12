@@ -62,6 +62,8 @@ jobs:
 
       # SDL3's Linux static build needs the host graphics / audio / input dev
       # headers so its CMake configure can pick up wayland / X11 / ALSA / etc.
+      # libxtst-dev is required whenever X11 is enabled (SDL3 gates XTEST behind
+      # a hard-error unless -DSDL_X11_XTEST=OFF is passed).
       - name: Install Linux SDL build deps
         if: matrix.host == 'linux'
         run: |
@@ -70,6 +72,7 @@ jobs:
             build-essential cmake pkg-config \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
             libxinerama-dev libxss-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libxtst-dev \
             libwayland-dev wayland-protocols \
             libgl1-mesa-dev libegl1-mesa-dev \
             libasound2-dev libpulse-dev libudev-dev \
@@ -96,6 +99,14 @@ jobs:
         if: steps.cache-libs.outputs.cache-hit != 'true'
         shell: bash
         run: bash scripts/build-sdl/build-all.sh
+
+      # src/vendor/ trees are gitignored — a fresh checkout has zero vendored
+      # androidx.compose.* files. Sync copies them in from the upstream refs
+      # pinned in scripts/compose-fork/compose.properties. Needs python3 + git;
+      # both are pre-installed on every runner.
+      - name: Sync vendored Compose code
+        shell: bash
+        run: bash scripts/compose-fork/sync.sh
 
       - name: Publish to GitHub Packages
         shell: bash
