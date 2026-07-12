@@ -21,28 +21,38 @@ jobs:
       # macOS also publishes the shared kotlinMultiplatform metadata module.
       # No library module declares jvm() today — apps do their own JVM parity
       # build against upstream Compose, so JVM isn't part of the publication.
+      # `target` is the Gradle K/N target token (Capitalised) — one per host,
+      # used for :demo / :apidemo linkReleaseExecutable<Target>. linuxArm64 is
+      # skipped for the app build because SDL3 static libs on the ubuntu runner
+      # are host-arch only; cross-compile would fail at link time.
       matrix:
         include:
           - runner: macos-14
             host: macos
+            target: MacosArm64
+            exe_ext: kexe
             tasks: >-
               publishKotlinMultiplatformPublicationToGitHubPackagesRepository
               publishMacosArm64PublicationToGitHubPackagesRepository
           - runner: ubuntu-24.04
             host: linux
+            target: LinuxX64
+            exe_ext: kexe
             tasks: >-
               publishLinuxX64PublicationToGitHubPackagesRepository
               publishLinuxArm64PublicationToGitHubPackagesRepository
           - runner: windows-2022
             host: windows
+            target: MingwX64
+            exe_ext: exe
             tasks: >-
               publishMingwX64PublicationToGitHubPackagesRepository
 
     runs-on: ${{ matrix.runner }}
 
     permissions:
-      contents: read
-      packages: write
+      contents: write   # attach release binaries to the tag's GitHub Release
+      packages: write   # publish Maven artifacts to GitHub Packages
 
     env:
       PUBLISH_VERSION: ${{ github.ref_name }}
@@ -111,3 +121,46 @@ jobs:
       - name: Publish to GitHub Packages
         shell: bash
         run: ./gradlew ${{ matrix.tasks }} --no-daemon --stacktrace
+
+      # Release binaries for the host target — the binary plus the data.kres
+      # (bundled composeResources + fonts + subset icon-font). Each :demo /
+      # :apidemo has its linkReleaseExecutable<Target> task wired to auto-run
+      # the matching copy<Variant>ComposeResources<Target> so data.kres is
+      # produced next to the .kexe / .exe. On Linux only linuxX64 is built —
+      # linuxArm64 is skipped since the SDL3 static libs on the ubuntu runner
+      # are host-arch (x64).
+      - name: Build demo + apidemo release binaries
+        shell: bash
+        run: |
+          ./gradlew \
+            ":demo:linkReleaseExecutable${{ matrix.target }}" \
+            ":apidemo:linkReleaseExecutable${{ matrix.target }}" \
+            --no-daemon --stacktrace
+
+      - name: Package demo + apidemo into zips
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Lower-case first letter — gradle target tokens are Capitalised but
+          # the build/bin dir uses the plain target name (macosArm64 etc).
+          target_dir=$(echo "${{ matrix.target }}" | awk '{print tolower(substr($0,1,1)) substr($0,2)}')
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for app in demo apidemo; do
+            src="$app/build/bin/$target_dir/releaseExecutable"
+            zip_path="$(pwd)/dist/$app-$version-$target_dir.zip"
+            (
+              cd "$src"
+              # -j strips paths so the archive is flat: <app>.<ext> + data.kres
+              # -9 = max compression
+              zip -9 -j "$zip_path" "$app.${{ matrix.exe_ext }}" data.kres
+            )
+          done
+          ls -la dist/
+
+      - name: Attach demo + apidemo zips to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: dist/*.zip
+          fail_on_unmatched_files: true
