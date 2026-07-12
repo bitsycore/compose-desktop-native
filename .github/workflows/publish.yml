@@ -34,7 +34,7 @@ jobs:
             tasks: >-
               publishKotlinMultiplatformPublicationToGitHubPackagesRepository
               publishMacosArm64PublicationToGitHubPackagesRepository
-          - runner: ubuntu-24.04
+          - runner: ubuntu-22.04
             host: linux
             target: LinuxX64
             exe_ext: kexe
