@@ -28,4 +28,4 @@ linkerOpts.mingw_x64 = \
 	-lole32 -loleaut32 -lversion -luuid -ladvapi32 \
 	-lsetupapi -lshell32 -ldinput8 \
 	-lmingwex \
-	-Wl,--defsym=__intrinsic_setjmpex=_setjmpex
+	-Wl,--defsym,__intrinsic_setjmpex=_setjmpex
