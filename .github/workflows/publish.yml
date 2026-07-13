@@ -99,23 +99,33 @@ jobs:
       # intrinsic K/N's LLD can't resolve is aliased to msvcrt's _setjmpex at
       # link time via --defsym in sdl3.def.
 
-      # Build static SDL3 / SDL3_ttf / SDL3_image / FreeType from
-      # scripts/build-sdl/build-sdl.properties. Cached against the manifest +
-      # scripts so version bumps invalidate cleanly.
-      # `cache_version` is a manual bump for when the toolchain (runner OS,
-      # compiler flavour, K/N sysroot expectations) changes without any
-      # scripts/build-sdl/ file changing. Increment to force a rebuild.
+      # Build the static native deps from scripts/build-sdl/build-sdl.properties.
+      # Only Windows ships the SDL3 renderer (no Skiko on mingw), so only it needs
+      # SDL3_ttf / SDL3_image / FreeType (SDL3_ttf text, SDL3_image decode, FreeType
+      # icon-axis rasterisation). macOS / Linux publish the Skia renderer — Skiko
+      # handles text / images / icons — so they only need base SDL3 for the main
+      # loop (windowing / input / audio / filesystem). Matches the cinterop guard
+      # in compose/ui/ui/build.gradle.kts, which skips those three cinterops on the
+      # Skia targets. Cached against the manifest + scripts so version bumps
+      # invalidate cleanly; bump the `v3` key when the toolchain (runner OS,
+      # compiler flavour, K/N sysroot) changes without a scripts/build-sdl/ edit.
       - name: Cache libs/
         id: cache-libs
         uses: actions/cache@v4
         with:
           path: libs
-          key: sdl-libs-v2-${{ matrix.host }}-${{ hashFiles('scripts/build-sdl/**') }}
+          key: sdl-libs-v3-${{ matrix.host }}-${{ hashFiles('scripts/build-sdl/**') }}
 
-      - name: Build static SDL / TTF / image / FreeType
+      # Windows: full SDL3 renderer stack. macOS / Linux (Skia): base SDL3 only.
+      - name: Build static native deps
         if: steps.cache-libs.outputs.cache-hit != 'true'
         shell: bash
-        run: python3 scripts/build-sdl/build-all.py
+        run: |
+          if [ "${{ matrix.host }}" = "windows" ]; then
+            python3 scripts/build-sdl/build-all.py
+          else
+            python3 scripts/build-sdl/build-all.py sdl3
+          fi
 
       # src/vendor/ trees are gitignored — a fresh checkout has zero vendored
       # androidx.compose.* files. Sync copies them in from the upstream refs
