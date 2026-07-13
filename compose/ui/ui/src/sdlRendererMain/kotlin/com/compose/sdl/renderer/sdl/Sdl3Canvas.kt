@@ -353,12 +353,19 @@ internal class Sdl3Canvas(
 		}
 		fScope.flush()
 		val vBbox = mapRectAABB(inRoundRect.left, inRoundRect.top, inRoundRect.right, inRoundRect.bottom)
+		// Clamp to the DEVICE half-box: the bbox is int-truncated, so a scaled
+		// radius can exceed it by a fraction — opposite corner cuts then overlap
+		// and leave flat spots at N/E/S/W (a circle read as an octagon).
+		val vHalfW = (vBbox[2] - vBbox[0]) / 2f
+		val vHalfH = (vBbox[3] - vBbox[1]) / 2f
+		fun deviceRadius(inR: CornerRadius) =
+			CornerRadius(minOf(inR.x * vScaleX, vHalfW), minOf(inR.y * vScaleY, vHalfH))
 		val vDeviceRound = RoundRect(
 			vBbox[0].toFloat(), vBbox[1].toFloat(), vBbox[2].toFloat(), vBbox[3].toFloat(),
-			topLeftCornerRadius = CornerRadius(inRoundRect.topLeftCornerRadius.x * vScaleX, inRoundRect.topLeftCornerRadius.y * vScaleY),
-			topRightCornerRadius = CornerRadius(inRoundRect.topRightCornerRadius.x * vScaleX, inRoundRect.topRightCornerRadius.y * vScaleY),
-			bottomRightCornerRadius = CornerRadius(inRoundRect.bottomRightCornerRadius.x * vScaleX, inRoundRect.bottomRightCornerRadius.y * vScaleY),
-			bottomLeftCornerRadius = CornerRadius(inRoundRect.bottomLeftCornerRadius.x * vScaleX, inRoundRect.bottomLeftCornerRadius.y * vScaleY),
+			topLeftCornerRadius = deviceRadius(inRoundRect.topLeftCornerRadius),
+			topRightCornerRadius = deviceRadius(inRoundRect.topRightCornerRadius),
+			bottomRightCornerRadius = deviceRadius(inRoundRect.bottomRightCornerRadius),
+			bottomLeftCornerRadius = deviceRadius(inRoundRect.bottomLeftCornerRadius),
 		)
 		val vRegion = intersect(fClip, vBbox)
 		// Nothing visible: keep behaviour of a normal clip (cull) without an
@@ -444,22 +451,24 @@ internal class Sdl3Canvas(
 	private fun zeroRoundRectCorners(inBbox: IntArray, inRoundRect: RoundRect) {
 		val vLeft = inBbox[0].toFloat(); val vTop = inBbox[1].toFloat()
 		val vRight = inBbox[2].toFloat(); val vBottom = inBbox[3].toFloat()
-		val vSeg = 12
 		val vTl = inRoundRect.topLeftCornerRadius
 		val vTr = inRoundRect.topRightCornerRadius
 		val vBr = inRoundRect.bottomRightCornerRadius
 		val vBl = inRoundRect.bottomLeftCornerRadius
-		// Upper bound: 4 corners × vSeg triangles × 3 vertices. Written straight
-		// into the native SDL_Vertex buffer — the old ArrayList<Float> staging
-		// boxed ~300 floats per clip layer per frame.
-		fun cornerCount(inR: androidx.compose.ui.geometry.CornerRadius): Int =
-			if (inR.x <= 0f || inR.y <= 0f) 0 else vSeg * 3
-		val vMax = cornerCount(vTl) + cornerCount(vTr) + cornerCount(vBr) + cornerCount(vBl)
-		if (vMax == 0) return
+		// Segments per quarter arc ~ every 4 device px along the arc, matching
+		// Sdl3DrawScope's density (~64/full circle at typical radii).
+		val vMaxR = maxOf(vTl.x, vTl.y, vTr.x, vTr.y, vBr.x, vBr.y, vBl.x, vBl.y)
+		val vSeg = ((vMaxR * 1.5708f) / 4f).toInt().coerceIn(8, 32)
+		fun cornerCount(inR: CornerRadius): Int = if (inR.x <= 0f || inR.y <= 0f) 0 else vSeg * 3
+		val vFanMax = cornerCount(vTl) + cornerCount(vTr) + cornerCount(vBr) + cornerCount(vBl)
+		if (vFanMax == 0) return
 		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
-		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_NONE)
 		memScoped {
-			val vBuf = allocArray<SDL_Vertex>(vMax)
+			// ============
+			//  Pass 1 — hard cut: zero everything outside each corner arc
+			//  (triangle fan from the corner apex, blend NONE writes RGBA 0).
+			SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_NONE)
+			val vBuf = allocArray<SDL_Vertex>(vFanMax)
 			var vIdx = 0
 			fun put(inX: Float, inY: Float) {
 				vBuf[vIdx].position.x = inX; vBuf[vIdx].position.y = inY
@@ -487,6 +496,51 @@ internal class Sdl3Canvas(
 			cutout(vRight, vBottom, vRight - vBr.x, vBottom - vBr.y, vBr.x, vBr.y, 0f)
 			cutout(vLeft, vBottom, vLeft + vBl.x, vBottom - vBl.y, vBl.x, vBl.y, 90f)
 			if (vIdx > 0) SDL_RenderGeometry(vRenderer, null, vBuf, vIdx, null, 0)
+
+			// ============
+			//  Pass 2 — feathered edge: a ~1.2px ring band straddling each arc
+			//  whose vertex alpha ramps 1 → 0 outward, drawn with a custom
+			//  "dst *= srcAlpha" blend. SDL_RenderGeometry has no antialiasing;
+			//  without this the mask boundary is a hard polygon edge while the
+			//  drawn shapes get Sdl3DrawScope's fringe AA (visibly rougher —
+			//  scaled-down circle clips read as low-poly).
+			val vMul = SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
+				SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
+			)
+			SDL_SetRenderDrawBlendMode(vRenderer, vMul)
+			val vFeather = 1.2f
+			val vBandMax = 4 * vSeg * 6
+			val vBand = allocArray<SDL_Vertex>(vBandMax)
+			var vBIdx = 0
+			fun putBand(inX: Float, inY: Float, inKeep: Float) {
+				vBand[vBIdx].position.x = inX; vBand[vBIdx].position.y = inY
+				vBand[vBIdx].color.r = 1f; vBand[vBIdx].color.g = 1f; vBand[vBIdx].color.b = 1f; vBand[vBIdx].color.a = inKeep
+				vBand[vBIdx].tex_coord.x = 0f; vBand[vBIdx].tex_coord.y = 0f
+				vBIdx++
+			}
+			fun feather(inCx: Float, inCy: Float, inRx: Float, inRy: Float, inStartDeg: Float) {
+				if (inRx <= 1f || inRy <= 1f) return
+				var vPrevInX = 0f; var vPrevInY = 0f; var vPrevOutX = 0f; var vPrevOutY = 0f
+				for (vI in 0..vSeg) {
+					val vAngle = ((inStartDeg + 90f * vI / vSeg) * (PI / 180.0)).toFloat()
+					val vCos = cos(vAngle); val vSin = sin(vAngle)
+					val vInX = inCx + (inRx - vFeather) * vCos
+					val vInY = inCy + (inRy - vFeather) * vSin
+					val vOutX = inCx + inRx * vCos
+					val vOutY = inCy + inRy * vSin
+					if (vI > 0) {
+						putBand(vPrevInX, vPrevInY, 1f); putBand(vPrevOutX, vPrevOutY, 0f); putBand(vInX, vInY, 1f)
+						putBand(vInX, vInY, 1f); putBand(vPrevOutX, vPrevOutY, 0f); putBand(vOutX, vOutY, 0f)
+					}
+					vPrevInX = vInX; vPrevInY = vInY; vPrevOutX = vOutX; vPrevOutY = vOutY
+				}
+			}
+			feather(vLeft + vTl.x, vTop + vTl.y, vTl.x, vTl.y, 180f)
+			feather(vRight - vTr.x, vTop + vTr.y, vTr.x, vTr.y, 270f)
+			feather(vRight - vBr.x, vBottom - vBr.y, vBr.x, vBr.y, 0f)
+			feather(vLeft + vBl.x, vBottom - vBl.y, vBl.x, vBl.y, 90f)
+			if (vBIdx > 0) SDL_RenderGeometry(vRenderer, null, vBand, vBIdx, null, 0)
 		}
 		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_BLEND)
 	}
@@ -729,15 +783,26 @@ internal class Sdl3Canvas(
 		// node's real box. The per-line path below centres within a lineHeight band
 		// (1.2 em for Material Symbols), taller than the size-clamped icon node,
 		// which pushed every icon ~0.1 em below centre.
+		// Device-space scale for GLYPHS: the pen position already maps through
+		// the affine, but font size and centering boxes must scale with it too
+		// or text inside a graphicsLayer(scale) renders at full size, off
+		// centre (JVM/Skia scales glyphs with the canvas). Wrap stays in LOCAL
+		// units below so line breaks match what layout measured.
+		val vTextScaleX = sqrt(fMa * fMa + fMb * fMb)
+		val vTextScaleY = sqrt(fMc * fMc + fMd * fMd)
+		val vDeviceFontPx =
+			if (vTextScaleY == 1f) inFontSizePx
+			else (inFontSizePx * vTextScaleY).toInt().coerceAtLeast(1)
+
 		if (inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
 			vTr.drawText(
 				inText = inText,
 				inX = mapX(inX, inY).toInt(),
 				inY = mapY(inX, inY).toInt(),
-				inBoxWidth = inBoxWidth.toInt(),
-				inBoxHeight = inBoxHeight.toInt(),
+				inBoxWidth = (inBoxWidth * vTextScaleX).toInt(),
+				inBoxHeight = (inBoxHeight * vTextScaleY).toInt(),
 				inColor = vColor,
-				inFontSize = inFontSizePx,
+				inFontSize = vDeviceFontPx,
 				inAlign = inTextAlign,
 				inFontFamily = inFontFamily,
 				inFontVariations = inFontVariations,
@@ -775,15 +840,15 @@ internal class Sdl3Canvas(
 			if (vLineY >= inY + inBoxHeight) break
 			vTr.drawText(
 				inText = vLine,
-				// Position maps through the affine (translate/scale reach the origin);
-				// glyph scaling/rotation isn't wired, so text in a rotated/scaled layer
-				// repositions but doesn't itself scale or rotate.
+				// Position maps through the affine; size/boxes switch to DEVICE
+				// units here (scaled by the affine's column norms) so glyphs
+				// scale with the layer. Rotation still only repositions.
 				inX = mapX(inX, vLineY).toInt(),
 				inY = mapY(inX, vLineY).toInt(),
-				inBoxWidth = inBoxWidth.toInt(),
-				inBoxHeight = vLineH.toInt(),
+				inBoxWidth = (inBoxWidth * vTextScaleX).toInt(),
+				inBoxHeight = (vLineH * vTextScaleY).toInt(),
 				inColor = vColor,
-				inFontSize = inFontSizePx,
+				inFontSize = vDeviceFontPx,
 				inAlign = inTextAlign,
 				inFontFamily = inFontFamily,
 				inFontVariations = inFontVariations,
