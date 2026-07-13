@@ -138,16 +138,65 @@ jobs:
         shell: bash
         run: bash scripts/compose-fork/sync.sh
 
-      # GitHub Packages sometimes returns 409 Conflict on a fresh upload when
-      # the same coordinate was recently deleted (soft-delete propagation).
-      # `--continue` lets Gradle finish the rest of the publish tasks past a
-      # single 409, and the outer retry re-runs the whole thing (Gradle skips
-      # already-uploaded artifacts). Two attempts is enough for the transient
-      # cases we've hit; the third pass falls through as a hard failure.
+      # GitHub Packages FORBIDS overwriting a file that already exists in a
+      # version, and maven-publish uploads each publication's files
+      # SEQUENTIALLY from the first one. So when an upload dies mid-publication
+      # (the v0.1.13 macOS run lost DNS mid-publish), a blind retry hits 409
+      # Conflict on the first already-uploaded file and aborts BEFORE reaching
+      # the missing tail files — the version is poisoned and can never
+      # complete. A 409 is therefore only benign when the publication had
+      # already completed; you can't tell from the 409 alone. The fix: between
+      # attempts, DELETE this host's package versions for the current release
+      # and re-upload from a clean slate. Each host owns DISJOINT package
+      # names (roots / -macosarm64 / -jvm / bridge on macOS, -mingwx64 on
+      # Windows, -linuxx64/-linuxarm64 on Linux), so parallel jobs never touch
+      # each other's uploads. Uses the run's GITHUB_TOKEN (packages: write);
+      # a 403 on delete just degrades to the old blind-retry behaviour.
       - name: Publish to GitHub Packages
         shell: bash
         run: |
           set -e
+          VER="${PUBLISH_VERSION#v}"
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          # Keep in sync with the module list in settings.gradle.kts.
+          MODULES="ui ui-util ui-geometry ui-unit ui-backhandler ui-tooling-preview animation animation-core animation-graphics foundation foundation-layout material3 material-ripple window material-symbols navigation3-ui components-resources"
+          case "${{ matrix.host }}" in
+            macos)   SUFFIXES="_ROOT_ -macosarm64" ;;
+            linux)   SUFFIXES="-linuxx64 -linuxarm64" ;;
+            windows) SUFFIXES="-mingwx64" ;;
+          esac
+          host_packages() {
+            for m in $MODULES; do
+              for s in $SUFFIXES; do
+                if [ "$s" = "_ROOT_" ]; then echo "com.bitsycore.compose.sdl.$m"; else echo "com.bitsycore.compose.sdl.$m$s"; fi
+              done
+            done
+            if [ "${{ matrix.host }}" = "macos" ]; then
+              echo "com.bitsycore.compose.sdl.material-symbols-jvm"
+              echo "com.bitsycore.compose.sdl.compose-desktop-native-bridge"
+              echo "com.bitsycore.compose-desktop-native.bridge.com.bitsycore.compose-desktop-native.bridge.gradle.plugin"
+            fi
+          }
+          cleanup_host_versions() {
+            echo "Deleting this host's partially-published $VER package versions"
+            host_packages | while read -r pkg; do
+              vid=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+                "https://api.github.com/users/$OWNER/packages/maven/$pkg/versions?per_page=100" \
+                | jq -r --arg v "$VER" '[.[]? | select(.name==$v) | .id] | first // empty')
+              [ -z "$vid" ] && continue
+              code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                "https://api.github.com/users/$OWNER/packages/maven/$pkg/versions/$vid")
+              if [ "$code" != "204" ]; then
+                # Deleting the LAST version of a package is refused (400) —
+                # a package new in this release: drop the whole package.
+                code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+                  -H "Authorization: Bearer $GITHUB_TOKEN" \
+                  "https://api.github.com/users/$OWNER/packages/maven/$pkg")
+              fi
+              echo "  $pkg@$VER -> HTTP $code"
+            done
+          }
           for attempt in 1 2 3; do
             echo "::group::Publish attempt $attempt"
             if ./gradlew ${{ matrix.tasks }} --continue --no-daemon --stacktrace; then
@@ -155,7 +204,11 @@ jobs:
               exit 0
             fi
             echo "::endgroup::"
-            [ $attempt -lt 3 ] && { echo "::warning::Publish attempt $attempt failed — sleeping 60s and retrying"; sleep 60; }
+            if [ $attempt -lt 3 ]; then
+              echo "::warning::Publish attempt $attempt failed — cleaning this host's $VER packages and retrying"
+              cleanup_host_versions || true
+              sleep 30
+            fi
           done
           echo "::error::Publish failed after 3 attempts"
           exit 1
