@@ -1,0 +1,23 @@
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/ui/ui-tooling-preview/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/AndroidUiMode.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/AndroidUiMode.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/Device.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Device.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/MultiPreviews.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/MultiPreviews.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/Preview.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Preview.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/PreviewParameter.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/PreviewParameter.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/PreviewWrapper.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/PreviewWrapper.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/Wallpaper.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/Wallpaper.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/datasource/CollectionPreviewParameterProvider.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/datasource/CollectionPreviewParameterProvider.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/datasource/LoremIpsum.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/datasource/LoremIpsum.kt
+#     | commonMain/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.kt -> src/vendor/common/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.kt
+
+nonJvmMain/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   desktopMain (1)
+#     | desktopMain/kotlin/androidx/compose/desktop/ui/tooling/preview/Preview.kt -> src/vendor/desktop/kotlin/androidx/compose/desktop/ui/tooling/preview/Preview.kt
+#   jvmAndAndroidMain (1)
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/tooling/preview/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

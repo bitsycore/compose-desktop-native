@@ -118,6 +118,9 @@ kotlin {
                 implementation("org.jetbrains.compose.ui:ui-unit:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-geometry:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-util:$vComposeJvmVersion")
+                // The common @Preview (androidx.compose.ui.tooling.preview) —
+                // IDE-only metadata; previews render through the jvm target.
+                implementation("org.jetbrains.compose.ui:ui-tooling-preview:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.foundation:foundation:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.foundation:foundation-layout:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.animation:animation:$vComposeJvmVersion")

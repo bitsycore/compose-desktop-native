@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.sp
 // MARK: Colors screen — Material palette swatches
 // ==================
 
+@Preview
 @Composable
 internal fun ColorsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

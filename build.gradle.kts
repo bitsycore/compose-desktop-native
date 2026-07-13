@@ -47,6 +47,7 @@ allprojects {
 val kAppModules = setOf(":demo", ":apidemo")
 val kPublishedLibs = setOf(
     ":ui", ":ui-util", ":ui-geometry", ":ui-unit", ":ui-backhandler",
+    ":ui-tooling-preview",
     ":animation-core", ":animation", ":animation-graphics",
     ":foundation", ":foundation-layout",
     ":material3", ":material-ripple",
@@ -128,6 +129,7 @@ allprojects {
                 substitute(module("org.jetbrains.compose.ui:ui-unit")).using(project(":ui-unit"))
                 substitute(module("org.jetbrains.compose.ui:ui-geometry")).using(project(":ui-geometry"))
                 substitute(module("org.jetbrains.compose.ui:ui-util")).using(project(":ui-util"))
+                substitute(module("org.jetbrains.compose.ui:ui-tooling-preview")).using(project(":ui-tooling-preview"))
                 substitute(module("org.jetbrains.compose.foundation:foundation")).using(project(":foundation"))
                 substitute(module("org.jetbrains.compose.foundation:foundation-layout")).using(project(":foundation-layout"))
                 substitute(module("org.jetbrains.compose.animation:animation")).using(project(":animation"))
