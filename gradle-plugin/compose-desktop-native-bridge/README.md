@@ -62,6 +62,27 @@ kotlin {
 The plugin can also be applied to a single module's `build.gradle.kts` instead
 of settings (it then bridges only that module's configurations).
 
+## composeResources — zero setup
+
+If the module also applies the official `org.jetbrains.compose` plugin, the
+bridge completes the resources story on the native desktop targets: it
+registers a `package<Variant>ComposeResources<Target>` task per native
+executable that bundles the Compose plugin's prepared resources into
+`data.kres` next to the binary (a STORED zip the port's runtime reads via
+SDL_GetBasePath). Files under `src/commonMain/composeResources/` + the
+generated `Res.*` accessors then work exactly like on every other platform —
+drawables, strings (`values/*.xml`), fonts, raw files:
+
+```kotlin
+commonMain.dependencies {
+    implementation("org.jetbrains.compose.components:components-resources:<cmp-version>")
+}
+```
+
+`compose.resources { packageOfResClass = … }` is honoured; source-set
+overrides follow the default hierarchy (a `mingwX64Main` resource beats a
+`commonMain` one).
+
 ## Notes
 
 - The substituted klib version defaults to the plugin's own version (both ship

@@ -16,6 +16,7 @@ plugins {
     `java-gradle-plugin`
 }
 
+
 gradlePlugin {
     plugins {
         create("composeDesktopNativeBridge") {
