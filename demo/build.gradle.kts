@@ -100,32 +100,53 @@ kotlin {
                 // Common API on both stacks (its native/jvm actuals pick the
                 // right rendering pipeline) — usable from shared screens.
                 implementation(project(":material-symbols"))
+
+                // Official Maven coords for everything the shared screens
+                // touch, so commonMain metadata (and the IDE's common
+                // analysis) resolve. Metadata + jvm resolve them from Maven;
+                // the NATIVE configurations substitute each for its port
+                // module (root build's FULL-COMMONIZATION BRIDGE). Every
+                // artifact must be declared DIRECTLY: transitives of a
+                // substituted module are invisible to the granular-metadata
+                // visibility check. The runtime is the official klib
+                // everywhere, never substituted (jvm configs force the +dev
+                // build above).
+                implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
+                implementation("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.ui:ui-graphics:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.ui:ui-text:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.ui:ui-unit:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.ui:ui-geometry:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.ui:ui-util:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.foundation:foundation:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.foundation:foundation-layout:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.animation:animation:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.animation:animation-core:$vComposeJvmVersion")
+                implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
+
+                // nav3 + lifecycle: real KMP Maven artifacts on every target
+                // (see "Known Compatible" in CLAUDE.md) — except navigation3-ui,
+                // which the bridge substitutes for the vendored :navigation3-ui
+                // on native.
+                implementation("androidx.navigation3:navigation3-runtime:1.1.4")
+                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.2.0-alpha02")
+                implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             }
         }
         nativeMain {
             dependencies {
                 implementation(project(":window"))
-                implementation(project(":material3"))
-                implementation(project(":navigation3-ui"))
-                implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             }
         }
         jvmMain {
             dependencies {
-                // The +dev build matching scripts/compose-fork's pinned
-                // COMPOSE_CORE_REF — byte-exact parity with the vendored
-                // sources, and (unlike the published beta01) its desktop
-                // loadTypeface applies Font.variationSettings, so the
-                // Material Symbols variable-font axes work on JVM.
-                implementation("org.jetbrains.compose.runtime:runtime:$vComposeJvmVersion")
-                implementation("org.jetbrains.compose.foundation:foundation:$vComposeJvmVersion")
-                implementation("org.jetbrains.compose.animation:animation:$vComposeJvmVersion")
-                implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
-                implementation("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
-
+                // The +dev builds matching scripts/compose-fork's pinned
+                // COMPOSE_CORE_REF come from the version forcing above —
+                // byte-exact parity with the vendored sources, and (unlike
+                // the published beta01) desktop loadTypeface applies
+                // Font.variationSettings, so the Material Symbols
+                // variable-font axes work on JVM.
                 implementation("androidx.navigation3:navigation3-runtime:1.2.0-alpha05")
-                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.2.0-alpha02")
-                implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
                 implementation(compose.desktop.currentOs)
             }
         }

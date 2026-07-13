@@ -121,12 +121,21 @@ allprojects {
         if (vNativeTargetTokens.any { name.contains(it, ignoreCase = true) }) {
             resolutionStrategy.dependencySubstitution {
                 substitute(module("org.jetbrains.compose.ui:ui")).using(project(":ui"))
-                // ui's split artifacts: ui-graphics is merged INTO :ui in the
-                // port; ui-unit has its own module.
+                // ui's split artifacts: ui-graphics + ui-text are merged INTO
+                // :ui in the port; ui-unit / ui-geometry have their own modules.
                 substitute(module("org.jetbrains.compose.ui:ui-graphics")).using(project(":ui"))
+                substitute(module("org.jetbrains.compose.ui:ui-text")).using(project(":ui"))
                 substitute(module("org.jetbrains.compose.ui:ui-unit")).using(project(":ui-unit"))
+                substitute(module("org.jetbrains.compose.ui:ui-geometry")).using(project(":ui-geometry"))
+                substitute(module("org.jetbrains.compose.ui:ui-util")).using(project(":ui-util"))
                 substitute(module("org.jetbrains.compose.foundation:foundation")).using(project(":foundation"))
+                substitute(module("org.jetbrains.compose.foundation:foundation-layout")).using(project(":foundation-layout"))
+                substitute(module("org.jetbrains.compose.animation:animation")).using(project(":animation"))
+                substitute(module("org.jetbrains.compose.animation:animation-core")).using(project(":animation-core"))
                 substitute(module("org.jetbrains.compose.material3:material3")).using(project(":material3"))
+                // navigation3-ui: the JB Maven artifact has no K/N desktop
+                // klibs — the port vendors it as :navigation3-ui.
+                substitute(module("org.jetbrains.androidx.navigation3:navigation3-ui")).using(project(":navigation3-ui"))
             }
         }
     }
