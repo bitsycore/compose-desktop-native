@@ -58,22 +58,6 @@ internal class SkiaImageCache {
 		}
 	}
 
-	/* SVGDOM → offscreen raster → Image. Falls back to a 100×100 canvas when
-	   the document declares no explicit width/height (the Android-vector path
-	   always supplies them). */
-	private fun rasterizeSvg(inBytes: ByteArray): Image? = runCatching {
-		val vDom = SVGDOM(Data.makeFromBytes(inBytes))
-		val vRoot = vDom.root
-		var vW = vRoot?.width?.value ?: 0f
-		var vH = vRoot?.height?.value ?: 0f
-		if (vW <= 0f) vW = 100f
-		if (vH <= 0f) vH = 100f
-		vDom.setContainerSize(vW, vH)
-		val vSurface = Surface.makeRasterN32Premul(vW.toInt().coerceAtLeast(1), vH.toInt().coerceAtLeast(1))
-		vDom.render(vSurface.canvas)
-		vSurface.makeImageSnapshot()
-	}.getOrNull()
-
 	// ==================
 	// MARK: Draw
 	// ==================
@@ -133,3 +117,23 @@ internal class SkiaImageCache {
 		fCache.clear()
 	}
 }
+
+// ==================
+// MARK: SVG rasterisation (shared with SkiaEncodedImageDecoder)
+// ==================
+
+/* SVGDOM → offscreen raster → Image. Falls back to a 100×100 canvas when
+   the document declares no explicit width/height (the Android-vector path
+   always supplies them). */
+internal fun rasterizeSvg(inBytes: ByteArray): Image? = runCatching {
+	val vDom = SVGDOM(Data.makeFromBytes(inBytes))
+	val vRoot = vDom.root
+	var vW = vRoot?.width?.value ?: 0f
+	var vH = vRoot?.height?.value ?: 0f
+	if (vW <= 0f) vW = 100f
+	if (vH <= 0f) vH = 100f
+	vDom.setContainerSize(vW, vH)
+	val vSurface = Surface.makeRasterN32Premul(vW.toInt().coerceAtLeast(1), vH.toInt().coerceAtLeast(1))
+	vDom.render(vSurface.canvas)
+	vSurface.makeImageSnapshot()
+}.getOrNull()

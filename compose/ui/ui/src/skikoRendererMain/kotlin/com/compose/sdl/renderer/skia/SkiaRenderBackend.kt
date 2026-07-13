@@ -33,6 +33,18 @@ internal class SkiaRenderBackend(
     private val fSkiaImageCache = SkiaImageCache()
     private var fCurrentCanvas: Canvas? = null
 
+    init {
+        // Encoded-image decode (painterResource / SVG in :components-resources).
+        // Registered at CONSTRUCTION, not first frame: the official resources
+        // pipeline decodes during COMPOSITION, which runs before beginFrame —
+        // and on Dispatchers.Default workers, which the CPU-raster Skia decoder
+        // tolerates. Without this the first painterResource on a Skia build
+        // dies with "Image decode failed" (issue #1).
+        if (com.compose.sdl.graphics.encodedImageDecoder == null) {
+            com.compose.sdl.graphics.encodedImageDecoder = SkiaEncodedImageDecoder()
+        }
+    }
+
     override val textMeasurer: TextMeasurer
         get() = fSkiaTextRenderer.textMeasurer
 

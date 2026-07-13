@@ -21,7 +21,7 @@ import com.compose.sdl.graphics.decodeEncodedImageBitmap
    drawables ship at a single density, so no decode-time rescale applies. */
 internal actual fun ByteArray.toImageBitmap(resourceDensity: Int, targetDensity: Int): ImageBitmap =
 	decodeEncodedImageBitmap(this)
-		?: error("Image decode failed — is the SDL renderer initialised before painterResource ran?")
+		?: error("Image decode failed — is the render backend initialised before painterResource ran?")
 
 /* SVG on SDL: SDL3_image rasterises SVG at its intrinsic size (IMG_LoadSVG),
    so the "element" is just the raw bytes and the painter is the rasterised
@@ -34,5 +34,5 @@ internal actual fun ByteArray.toSvgElement(): SvgElement = SvgElement(this)
 internal actual fun SvgElement.toSvgPainter(density: Density): Painter =
 	BitmapPainter(
 		decodeEncodedImageBitmap(bytes)
-			?: error("SVG rasterisation failed — is the SDL renderer initialised before painterResource ran?")
+			?: error("SVG rasterisation failed — is the render backend initialised before painterResource ran?")
 	)

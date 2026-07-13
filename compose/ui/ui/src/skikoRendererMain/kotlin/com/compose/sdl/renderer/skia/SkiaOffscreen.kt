@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.colorspace.ColorSpace
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import com.compose.sdl.graphics.EncodedImageDecoder
 import com.compose.sdl.graphics.OffscreenRenderer
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.Surface
@@ -84,5 +86,34 @@ internal class SkiaOffscreenRenderer(
 			fTextRenderer,
 			fImageCache,
 		)
+	}
+}
+
+// ==================
+// MARK: SkiaEncodedImageDecoder
+// ==================
+
+/* Encoded-image decode hook impl for the Skia renderer — the counterpart of
+   Sdl3EncodedImageDecoder, consumed by :components-resources' actuals
+   (painterResource / SVG). Raster formats go through Image.makeFromEncoded;
+   when that fails the bytes are retried as SVG through the same SVGDOM
+   rasterisation SkiaImageCache uses. Pure CPU raster (no GrContext), so it is
+   safe on the resources pipeline's Dispatchers.Default workers. */
+internal class SkiaEncodedImageDecoder : EncodedImageDecoder {
+
+	override fun decode(inBytes: ByteArray): ImageBitmap? {
+		if (inBytes.isEmpty()) return null
+		val vImg = runCatching { Image.makeFromEncoded(inBytes) }.getOrNull()
+			?: rasterizeSvg(inBytes)
+			?: return null
+		val vBmp = SkiaImageBitmap(
+			vImg.width, vImg.height,
+			config = ImageBitmapConfig.Argb8888,
+			hasAlpha = true,
+			colorSpace = ColorSpaces.Srgb,
+		)
+		vBmp.surface.canvas.drawImage(vImg, 0f, 0f)
+		vImg.close()
+		return vBmp
 	}
 }
