@@ -980,26 +980,25 @@ internal class Sdl3Canvas(
 		// node's real box. The per-line path below centres within a lineHeight band
 		// (1.2 em for Material Symbols), taller than the size-clamped icon node,
 		// which pushed every icon ~0.1 em below centre.
-		// Device-space scale for GLYPHS: the pen position already maps through
-		// the affine, but font size and centering boxes must scale with it too
-		// or text inside a graphicsLayer(scale) renders at full size, off
-		// centre (JVM/Skia scales glyphs with the canvas). Wrap stays in LOCAL
-		// units below so line breaks match what layout measured.
-		val vTextScaleX = sqrt(fMa * fMa + fMb * fMb)
-		val vTextScaleY = sqrt(fMc * fMc + fMd * fMd)
-		val vDeviceFontPx =
-			if (vTextScaleY == 1f) inFontSizePx
-			else (inFontSizePx * vTextScaleY).toInt().coerceAtLeast(1)
-
+		// Text is rasterised at its LOGICAL font size (stable glyph-texture cache
+		// + stable hinting) and blit 1:1 at the affine-mapped pen position; the
+		// layer's scale reaches position but NOT glyph size. Re-rasterising at a
+		// per-frame device size (an earlier attempt) made text under an animated
+		// layer scale — every Material popup/dropdown enter transition
+		// (Menu.kt scaleX/scaleY) — step through integer sizes with visible
+		// size/weight jumps, since SDL3_ttf re-hints at each size. Smoothly
+		// scaling glyphs would need blit-scaling a logical-size rasterisation
+		// (JVM/Skia GPU-scales the layer) — a future text-renderer enhancement;
+		// until then logical-size + no glyph scale is the stable choice.
 		if (inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
 			vTr.drawText(
 				inText = inText,
 				inX = mapX(inX, inY).toInt(),
 				inY = mapY(inX, inY).toInt(),
-				inBoxWidth = (inBoxWidth * vTextScaleX).toInt(),
-				inBoxHeight = (inBoxHeight * vTextScaleY).toInt(),
+				inBoxWidth = inBoxWidth.toInt(),
+				inBoxHeight = inBoxHeight.toInt(),
 				inColor = vColor,
-				inFontSize = vDeviceFontPx,
+				inFontSize = inFontSizePx,
 				inAlign = inTextAlign,
 				inFontFamily = inFontFamily,
 				inFontVariations = inFontVariations,
@@ -1042,10 +1041,10 @@ internal class Sdl3Canvas(
 				// scale with the layer. Rotation still only repositions.
 				inX = mapX(inX, vLineY).toInt(),
 				inY = mapY(inX, vLineY).toInt(),
-				inBoxWidth = (inBoxWidth * vTextScaleX).toInt(),
-				inBoxHeight = (vLineH * vTextScaleY).toInt(),
+				inBoxWidth = inBoxWidth.toInt(),
+				inBoxHeight = vLineH.toInt(),
 				inColor = vColor,
-				inFontSize = vDeviceFontPx,
+				inFontSize = inFontSizePx,
 				inAlign = inTextAlign,
 				inFontFamily = inFontFamily,
 				inFontVariations = inFontVariations,
