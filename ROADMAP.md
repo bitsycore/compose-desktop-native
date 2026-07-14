@@ -74,9 +74,10 @@ Ordered by likelihood of a user hitting them:
 
 ## 5. Permanent tooling
 
-- [ ] **Parity harness** — render the same screen native + JVM, screenshot,
-  pixel-diff with tolerance. Four of this week's six bugs were found this
-  way by hand.
+- [x] **Parity harness** — scripts/parity/: renders every :demo screen native +
+  JVM from the same commonMain composables, pixel-diffs, ranks by %differ,
+  emits per-screen diff heatmaps + side-by-side compares (pct in filename).
+  build/parity/ (gitignored). See scripts/parity/README.md.
 - [ ] Promote the press/hover automation rig (window-handle-relative input +
   screenshot) into `scripts/`.
 
