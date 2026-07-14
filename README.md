@@ -261,6 +261,24 @@ RESUMED, unfocused → STARTED, minimized → CREATED), `ViewModelStoreOwner`
 ViewModels scope per nav entry, per window, or anywhere in between — same
 semantics as Android.
 
+## Tooling
+
+Helper scripts live under `scripts/`; each has its own README with detail.
+
+| Tool | Use it to | More |
+|------|-----------|------|
+| `scripts/build-sdl/build-all.py` | build the static SDL3 / TTF / image / FreeType libs | see **Building** above |
+| `scripts/compose-fork/sync.sh` | re-sync the vendored upstream Compose sources | [README](scripts/compose-fork/README.md) |
+| `scripts/parity/parity.py` | diff every demo screen native-vs-JVM to catch render regressions | [README](scripts/parity/README.md) |
+| `scripts/probe/probe.py` | drive a native window (click/hover/hold) + screenshot it | [README](scripts/probe/README.md) |
+| `CDN_PROFILE=1 <app>` | print per-phase frame timings to find slow frames | — |
+| `python scripts/compose-coverage.py` | measure API coverage vs upstream (after `./gradlew apiDump`) | — |
+
+Building on the port from another project? Use the bridge plugin —
+[gradle-plugin/compose-desktop-native-bridge](gradle-plugin/compose-desktop-native-bridge/README.md).
+Contributor-facing detail (including how to read the parity `%differ`) is in
+[CLAUDE.md](CLAUDE.md#tooling--whats-available-and-when-to-reach-for-it).
+
 ## License
 
 [MIT](LICENSE.md).

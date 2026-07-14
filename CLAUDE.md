@@ -458,7 +458,46 @@ build tell you what broke.
   `Dialog` / `DropdownMenu` / `DropdownMenuItem` / `TooltipBox` (m3 doesn't
   ship drop-in equivalents for our anchor / scrim patterns).
 
-## Parity harness — native-vs-JVM screenshot diff
+## Tooling — what's available and when to reach for it
+
+Index of the repo's tooling. Each entry says when to use it and points at its
+own README for detail; the parity/profiler/probe entries are expanded below
+since they're newer.
+
+| Tool | Reach for it when | Detail |
+|------|-------------------|--------|
+| `python scripts/build-sdl/build-all.py` | building/refreshing the static SDL3/TTF/image/FreeType libs under `libs/` (once per host, or after bumping `build-sdl.properties`) | "Building" above |
+| `scripts/compose-fork/sync.sh` | re-syncing vendored upstream `androidx.compose.*` after a fresh checkout or a `compose.properties` ref bump; `format-manifest.py` to re-align a `compose-fork.txt` | "Vendor sync workflow" above + `scripts/compose-fork/README.md` |
+| `./gradlew apiDump && python scripts/compose-coverage.py` | measuring how much upstream public API the port actually covers, per module (`--missing <module>` lists uncovered decls) | "Vendoring" above |
+| `scripts/generate-material-symbols.py` / `subset-material-symbols.py` | regenerating the Material Symbols codepoints, or hb-subsetting bundled icon fonts to used glyphs (the latter runs automatically in app Zip tasks under `-PsubsetIcons`) | — |
+| **`scripts/parity/parity.py`** | after ANY renderer/layout change: catch a screen that visually diverged native-vs-JVM (missing content, wrong shape/colour, broken clip) | `scripts/parity/README.md` + below |
+| **`scripts/probe/probe.py`** | reproducing a specific interaction bug (click/hover/hold at a point) or grabbing one screen's pixels deterministically | `scripts/probe/README.md` + below |
+| **`CDN_PROFILE=1 <app>`** | finding where a slow frame goes (per-phase main-loop timings) before optimizing | below |
+| bridge plugin (`com.bitsycore.compose-desktop-native.bridge`) | consuming the published klibs from a third-party app | `gradle-plugin/compose-desktop-native-bridge/README.md` |
+| `demo --screen=<Name>` / `--screenshot=` / `--nav3test` / `--backtest` / `--multiwintest` | driving one screen headless, or the regression probes for nav3 / predictive-back / multi-window | `demo/src/nativeMain/kotlin/MainNative.kt` |
+
+Whole-project renderer-touching change → run **parity** (broad net). Chasing
+one reported interaction → **probe** (targeted). Slow → **profiler** first,
+optimize second. See `ROADMAP.md` for the renderer work these support.
+
+### Frame profiler — `CDN_PROFILE=1`
+
+Set the env var and run any native app; every ~2 s of rendered frames it prints
+avg/max ms per main-loop phase (`events` / `app` pump / `pump` per-window /
+`render`). Implemented in `ComposeWindow.kt` via SDL performance counters. Use
+it to confirm WHERE time goes before touching draw code — e.g. it showed
+`render` is ~32 ms of a 39 ms bubble-wrap frame, i.e. the renderer, not
+composition, is the bottleneck.
+
+### Interaction probe — `scripts/probe/`
+
+Launches a native app, sends **window-client-relative** input (click / hover /
+hold, fractional coords addressed by process name so it ignores window
+position/focus) and captures the client area via `PrintWindow` (works even
+when occluded). The packaged form of the rigs that reproduced the
+square-on-click and TLS-chain bugs. Windows-only. See its README.
+
+### Parity harness — native-vs-JVM screenshot diff (`scripts/parity/`)
 
 `:demo` renders the **same commonMain screens** on two stacks: native
 (SDL/Skia, Kotlin/Native) and a `jvm()` target on upstream Compose Desktop.
