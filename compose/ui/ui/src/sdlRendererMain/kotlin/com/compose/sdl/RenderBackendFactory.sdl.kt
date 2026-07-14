@@ -11,7 +11,7 @@ import com.compose.sdl.renderer.sdl.Sdl3RenderBackend
    renderer modules expose createRenderBackend / rendererPreferredGpuMode
    with identical signatures in this package, and the build includes exactly
    one of them per target. Rejects Skia.* since this module has no Skiko. */
-fun createRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
+actual fun createRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend? {
 	val vResolved = if (inGpu is GpuMode.Auto) rendererPreferredGpuMode() else inGpu
 	if (vResolved is GpuMode.Skia) {
 		error("$vResolved isn't available in this build — Skiko isn't linked. " +

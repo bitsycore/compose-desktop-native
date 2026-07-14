@@ -275,11 +275,15 @@ commonMain
                    attached to: mingwX64Main always; macOS/Linux when -Prenderer=sdl3.
 ```
 
-`createRenderBackend(…)` + `rendererPreferredGpuMode()` are declared identically
-in both `skikoRendererMain` and `sdlRendererMain`. `:window` calls them straight
-from `:ui` — no `expect`/`actual`, no factory layer — and the right impl
-resolves because **only one of the two renderer source sets is attached to a
-given target**. Under `-Prenderer=sdl3`, the `skikoRenderer*` source sets are
+`createRenderBackend(…)` + `rendererPreferredGpuMode()` are `expect`s in
+`:ui`'s nativeMain with `actual`s in BOTH `skikoRendererMain` and
+`sdlRendererMain` — unambiguous because **only one of the two renderer source
+sets is attached to a given target**. (They used to be plain duplicate
+declarations with no expect; that compiled per-target but shared nativeMain
+METADATA couldn't see them on a host whose targets span both renderers, which
+blocked the WINDOWS host from producing :window's KotlinMultiplatform
+publication — and Windows must publish the root modules, see the publish
+workflow.) Under `-Prenderer=sdl3`, the `skikoRenderer*` source sets are
 **not even created**, so Gradle has nothing to warn about and Skiko is never
 pulled in.
 
@@ -512,7 +516,10 @@ that should surface in tooling.
   'Color'` / `Cannot access class ...` in `compileCommonMainKotlinMetadata`,
   while per-target compilation is fine). Declare EVERY artifact the common
   code touches DIRECTLY (ui-graphics, ui-text, ui-unit, …) and give each its
-  own bridge rule. Note only the macOS publish job compiles common metadata —
+  own bridge rule. Note only the WINDOWS publish job compiles common metadata
+  (it owns the root KotlinMultiplatform publications — the only host that
+  declares every target, so only its .module files carry the full variant
+  table; macOS-published roots left v0.1.15 without mingwX64 variants) —
   test with `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging.
 - **`Path()` in commonMain returns different actuals per renderer** —
   the Skia renderer produces a `SkiaBackedPath` (wraps

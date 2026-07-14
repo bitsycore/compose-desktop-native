@@ -9,7 +9,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 internal expect fun makeMetalBridge(backend: SDL3Backend): SkiaBridge?
 
-fun rendererPreferredGpuMode(): GpuMode {
+actual fun rendererPreferredGpuMode(): GpuMode {
     @OptIn(ExperimentalNativeApi::class)
     return when (Platform.osFamily) {
         OsFamily.MACOSX -> GpuMode.Skia.Metal

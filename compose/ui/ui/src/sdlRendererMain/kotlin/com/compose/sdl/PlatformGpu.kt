@@ -6,7 +6,7 @@ import kotlin.experimental.ExperimentalNativeApi
 // MARK: SDL3 renderer per-OS default
 // ==================
 
-fun rendererPreferredGpuMode(): GpuMode {
+actual fun rendererPreferredGpuMode(): GpuMode {
     @OptIn(ExperimentalNativeApi::class)
     return when (Platform.osFamily) {
         OsFamily.MACOSX -> GpuMode.Sdl3.Metal

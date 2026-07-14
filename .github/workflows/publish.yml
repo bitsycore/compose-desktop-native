@@ -18,9 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       # Each host runs only the publish tasks Gradle actually generated for it.
-      # macOS also publishes the shared kotlinMultiplatform metadata module.
-      # No library module declares jvm() today — apps do their own JVM parity
-      # build against upstream Compose, so JVM isn't part of the publication.
+      # WINDOWS also publishes the shared kotlinMultiplatform metadata modules
+      # (see its matrix entry) + the jvm jar + the bridge plugin.
       # `target` is the Gradle K/N target token (Capitalised) — one per host,
       # used for :demo / :apidemo linkReleaseExecutable<Target>. linuxArm64 is
       # skipped for the app build because SDL3 static libs on the ubuntu runner
@@ -31,16 +30,8 @@ jobs:
             host: macos
             target: MacosArm64
             exe_ext: kexe
-            # jvm publication: only :material-symbols declares a jvm() target
-            # (its common API renders via upstream Compose on JVM) — publish
-            # its host-independent jar from the same host as the metadata.
-            # :compose-desktop-native-bridge (the consumer-side bridge Gradle plugin +
-            # its plugin marker) is host-independent too — same job.
             tasks: >-
-              publishKotlinMultiplatformPublicationToGitHubPackagesRepository
               publishMacosArm64PublicationToGitHubPackagesRepository
-              publishJvmPublicationToGitHubPackagesRepository
-              :compose-desktop-native-bridge:publishAllPublicationsToGitHubPackagesRepository
           - runner: ubuntu-22.04
             host: linux
             target: LinuxX64
@@ -52,8 +43,18 @@ jobs:
             host: windows
             target: MingwX64
             exe_ext: exe
+            # WINDOWS owns the root KotlinMultiplatform metadata modules: it is
+            # the ONLY host that declares every target (vHostSupportsMingw is
+            # host-gated), so only its generated .module files carry the full
+            # variant table — the macOS-published roots of v0.1.15 had NO
+            # mingwX64 variants and Windows consumers could not resolve them.
+            # The host-independent jvm jar (:material-symbols) and the bridge
+            # plugin ride along on the same job.
             tasks: >-
               publishMingwX64PublicationToGitHubPackagesRepository
+              publishKotlinMultiplatformPublicationToGitHubPackagesRepository
+              publishJvmPublicationToGitHubPackagesRepository
+              :compose-desktop-native-bridge:publishAllPublicationsToGitHubPackagesRepository
 
     runs-on: ${{ matrix.runner }}
 
@@ -148,8 +149,8 @@ jobs:
       # already completed; you can't tell from the 409 alone. The fix: between
       # attempts, DELETE this host's package versions for the current release
       # and re-upload from a clean slate. Each host owns DISJOINT package
-      # names (roots / -macosarm64 / -jvm / bridge on macOS, -mingwx64 on
-      # Windows, -linuxx64/-linuxarm64 on Linux), so parallel jobs never touch
+      # names (roots / -mingwx64 / -jvm / bridge on Windows, -macosarm64 on
+      # macOS, -linuxx64/-linuxarm64 on Linux), so parallel jobs never touch
       # each other's uploads. Uses the run's GITHUB_TOKEN (packages: write);
       # a 403 on delete just degrades to the old blind-retry behaviour.
       - name: Publish to GitHub Packages
@@ -161,9 +162,9 @@ jobs:
           # Keep in sync with the module list in settings.gradle.kts.
           MODULES="ui ui-util ui-geometry ui-unit ui-backhandler ui-tooling-preview animation animation-core animation-graphics foundation foundation-layout material3 material-ripple window material-symbols navigation3-ui components-resources"
           case "${{ matrix.host }}" in
-            macos)   SUFFIXES="_ROOT_ -macosarm64" ;;
+            macos)   SUFFIXES="-macosarm64" ;;
             linux)   SUFFIXES="-linuxx64 -linuxarm64" ;;
-            windows) SUFFIXES="-mingwx64" ;;
+            windows) SUFFIXES="_ROOT_ -mingwx64" ;;
           esac
           host_packages() {
             for m in $MODULES; do
@@ -171,7 +172,7 @@ jobs:
                 if [ "$s" = "_ROOT_" ]; then echo "com.bitsycore.compose.sdl.$m"; else echo "com.bitsycore.compose.sdl.$m$s"; fi
               done
             done
-            if [ "${{ matrix.host }}" = "macos" ]; then
+            if [ "${{ matrix.host }}" = "windows" ]; then
               echo "com.bitsycore.compose.sdl.material-symbols-jvm"
               echo "com.bitsycore.compose.sdl.compose-desktop-native-bridge"
               echo "com.bitsycore.compose-desktop-native.bridge.com.bitsycore.compose-desktop-native.bridge.gradle.plugin"
