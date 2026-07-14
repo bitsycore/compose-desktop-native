@@ -45,6 +45,13 @@ RSS; expect a plateau without GC sawtooth).
 - [ ] **Dirty-region rendering** — NEXT, promoted by profiling: the app
   re-tessellates the whole window on any invalidation. Accumulate damage from
   invalidated layers and scissor the redraw. Biggest lever for heavy scenes.
+  Evidence (CDN_PROFILE): the full demo is DRAW-bound — draw ~34ms cold /
+  ~14ms steady, present only ~1.3ms — because it re-tessellates the whole
+  always-present sidebar (30+ text rows + icons) every rendered frame. That
+  ~14ms caps it near 70 fps; apidemo's lighter chrome fits the 6.9ms budget
+  and reaches the 144 Hz vsync ceiling. The "70 ≈ 144/2" look is coincidence,
+  NOT a vsync-half artifact — both use vsync(1). Retained layers / dirty
+  regions would stop re-tessellating the static sidebar.
 - [ ] **Retained layer textures** — cache a layer's rendered output keyed by
   its draw content (RenderNode-style); static subtrees stop re-tessellating.
 - [ ] **Right-size clip scratch targets** (LOW — profiling showed masks aren't
