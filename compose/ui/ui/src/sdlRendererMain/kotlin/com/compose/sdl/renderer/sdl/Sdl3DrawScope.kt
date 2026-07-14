@@ -893,7 +893,13 @@ internal class Sdl3DrawScope(
 	// through the current affine so scale/rotate reach the GPU; the colour is
 	// sampled at the pre-transform point so a gradient rides its shape.
 	private fun writeVertex(inX: Float, inY: Float, inColor: ComposeColor, inAlphaScale: Float = 1f) {
-		if (fBatchCount >= kBatchCapacity) flush()
+		// Auto-flush ONLY at a triangle boundary: SDL_RenderGeometry renders
+		// floor(count/3) triangles and silently drops the tail, so flushing
+		// mid-triangle tears it AND misaligns every following triangle in the
+		// new batch (seen as ~350-degree pac-man circles and glitch shapes
+		// once a frame's geometry outgrew one batch - e.g. 84 unclipped
+		// drawBehind bubbles). kBatchCapacity is a multiple of 3.
+		if (fBatchCount >= kBatchCapacity && fBatchCount % 3 == 0) flush()
 		val vBase = fBatchCount * kFloatsPerVertex
 		fVertexData[vBase + 0] = fMa * inX + fMc * inY + fMe
 		fVertexData[vBase + 1] = fMb * inX + fMd * inY + fMf
@@ -914,11 +920,13 @@ private const val kAaFeather: Float = 1.0f
 private const val kAaHalf: Float = kAaFeather * 0.5f
 
 // ============
-//  Batch capacity — 8192 vertices = ~2730 triangles per submission. At
-//  64 segments per full circle that's room for ~21 full-circle filled
-//  shapes per Canvas{} before any flush. Bigger gives fewer GPU
-//  submissions; smaller saves RAM. ~128 KB at 16 bytes per SDL_Vertex.
-private const val kBatchCapacity: Int = 8192
+//  Batch capacity — 8190 vertices = 2730 triangles per submission (kept a
+//  MULTIPLE OF 3: the auto-flush in writeVertex only fires on triangle
+//  boundaries, so the cap must land on one). At 64 segments per full circle
+//  that's room for ~21 full-circle filled shapes per Canvas{} before any
+//  flush. Bigger gives fewer GPU submissions; smaller saves RAM. ~128 KB at
+//  16 bytes per SDL_Vertex.
+private const val kBatchCapacity: Int = 8190
 
 // Floats per SDL_Vertex: position(x,y) + color(r,g,b,a) + tex_coord(x,y), tightly
 // packed. Used to stage vertices in a Kotlin FloatArray and memcpy them across.
