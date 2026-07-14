@@ -64,8 +64,11 @@ RSS; expect a plateau without GC sawtooth).
 
 Ordered by likelihood of a user hitting them:
 
-- [ ] **Gradient brushes on SDL** — `Brush.linearGradient/radialGradient`
-  render solid; the per-vertex sampler infrastructure is half-present.
+- [x] **Gradient brushes on SDL** — samplers were already implemented; the real
+  bug was UNDER-SAMPLING: fills sampled only corners, so radial/sweep on a
+  rect/round-rect rendered FLAT (a square's corners are equidistant from centre
+  → identical t). Gradient fills now grid-mesh the interior (emitRectMesh);
+  radial/sweep match upstream. (Solid fills unchanged — one quad.)
 - [ ] **Layer rotation** — rotationZ repositions but content doesn't rotate
   (hit-testing too).
 - [ ] **Real `saveLayer` alpha on SDL** — overlapping content composites at

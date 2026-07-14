@@ -243,7 +243,10 @@ internal class Sdl3DrawScope(
 		val vB = vT + size.height
 		when (style) {
 			Fill -> {
-				emitQuad(vL, vT, vR, vT, vR, vB, vL, vB, vSampler)
+				// Gradient fills need interior samples (see emitRectMesh); solid
+				// fills are a single flat quad.
+				if (brush is SolidColor) emitQuad(vL, vT, vR, vT, vR, vB, vL, vB, vSampler)
+				else emitRectMesh(vL, vT, vR, vB, vSampler)
 				// Axis-aligned rects are pixel-crisp and need no AA. When the affine
 				// rotates/shears them, the edges become diagonal — feather each edge
 				// outward (normals in local space; the matrix orients them on screen).
@@ -524,20 +527,30 @@ internal class Sdl3DrawScope(
 		val vY = fOriginY + topLeft.y
 		val vW = size.width
 		val vH = size.height
+		// Gradient fills sample per-vertex, so the interior must be meshed
+		// (corner-only sampling renders radial/sweep flat — see emitRectMesh);
+		// solid fills stay single quads.
+		val vGrad = brush !is SolidColor
 		if (vR <= 0f) {
-			// Trivial: just two triangles.
-			emitQuad(vX, vY, vX + vW, vY, vX + vW, vY + vH, vX, vY + vH, vSampler)
+			if (vGrad) emitRectMesh(vX, vY, vX + vW, vY + vH, vSampler)
+			else emitQuad(vX, vY, vX + vW, vY, vX + vW, vY + vH, vX, vY + vH, vSampler)
 			return
 		}
 		// Body in 3 strips: middle (full width × inner height), top edge,
 		// bottom edge — plus the 4 corner arcs.
 		if (style == Fill) {
-			// Middle strip
-			emitQuad(vX, vY + vR, vX + vW, vY + vR, vX + vW, vY + vH - vR, vX, vY + vH - vR, vSampler)
-			// Top edge (between left+right corners)
-			emitQuad(vX + vR, vY, vX + vW - vR, vY, vX + vW - vR, vY + vR, vX + vR, vY + vR, vSampler)
-			// Bottom edge
-			emitQuad(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH - vR, vX + vW - vR, vY + vH, vX + vR, vY + vH, vSampler)
+			if (vGrad) {
+				emitRectMesh(vX, vY + vR, vX + vW, vY + vH - vR, vSampler)          // middle
+				emitRectMesh(vX + vR, vY, vX + vW - vR, vY + vR, vSampler)          // top edge
+				emitRectMesh(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH, vSampler) // bottom edge
+			} else {
+				// Middle strip
+				emitQuad(vX, vY + vR, vX + vW, vY + vR, vX + vW, vY + vH - vR, vX, vY + vH - vR, vSampler)
+				// Top edge (between left+right corners)
+				emitQuad(vX + vR, vY, vX + vW - vR, vY, vX + vW - vR, vY + vR, vX + vR, vY + vR, vSampler)
+				// Bottom edge
+				emitQuad(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH - vR, vX + vW - vR, vY + vH, vX + vR, vY + vH, vSampler)
+			}
 			// 4 corner fills — segment count adapts to the corner radius.
 			val vSeg = arcSegments(90f, vR)
 			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, false, vSeg, vSampler)
@@ -852,6 +865,34 @@ internal class Sdl3DrawScope(
 	) {
 		emitTri(ax, ay, bx, by, cx, cy, inSampler)
 		emitTri(ax, ay, cx, cy, dx, dy, inSampler)
+	}
+
+	// Axis-aligned rect subdivided into a grid, so a per-vertex sampler is
+	// evaluated across the INTERIOR, not just the 4 corners. Corner-only
+	// sampling renders radial/sweep gradients flat (a square's corners are all
+	// equidistant from its centre → identical t → solid fill) and clips
+	// non-uniform multi-stop linear ramps. SDL interpolates linearly within
+	// each cell, so ~16 cells/axis tracks the gradient curve closely. Solid
+	// fills never come here (they use emitQuad — one quad).
+	private fun emitRectMesh(
+		inL: Float, inT: Float, inR: Float, inB: Float, inSampler: Sampler,
+	) {
+		// ~one cell per 8 device px per axis (1..24), so thin edge strips stay
+		// cheap while large fills get enough interior samples for the gradient.
+		val vCols = (((inR - inL) / 8f).toInt()).coerceIn(1, 24)
+		val vRows = (((inB - inT) / 8f).toInt()).coerceIn(1, 24)
+		val vW = (inR - inL) / vCols
+		val vH = (inB - inT) / vRows
+		for (vRow in 0 until vRows) {
+			val vY0 = inT + vRow * vH
+			val vY1 = if (vRow == vRows - 1) inB else vY0 + vH
+			for (vCol in 0 until vCols) {
+				val vX0 = inL + vCol * vW
+				val vX1 = if (vCol == vCols - 1) inR else vX0 + vW
+				emitTri(vX0, vY0, vX1, vY0, vX1, vY1, inSampler)
+				emitTri(vX0, vY0, vX1, vY1, vX0, vY1, inSampler)
+			}
+		}
 	}
 
 	private fun emitTri(
