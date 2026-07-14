@@ -42,54 +42,8 @@ internal fun GraphicsLayerScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle(
 			"Modifier.graphicsLayer",
-			"2D transform (scale / rotation / translation) + alpha + optional cacheKey opt-in. " +
-				"When cacheKey is set, the renderer renders the subtree into an offscreen target once " +
-				"and reuses it while the key compares equal — change the key to invalidate.",
+			"2D transform (scale / rotation / translation) + alpha, applied to a subtree.",
 		)
-
-		Section(
-			"Cached subtree (cacheKey)",
-			"Identical to a fresh-drawn row visually, but the subtree is rendered once and reused while " +
-				"cacheKey doesn't change. Useful for static screens — no per-frame redraw of the chrome.",
-		) {
-			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-				for (vI in 0..3) {
-					Box(
-						modifier = Modifier
-							.size(64.dp)
-							.graphicsLayer(),
-					) {
-						Canvas(modifier = Modifier.size(64.dp)) {
-							drawCircle(color = vPrimary, radius = 22f, center = Offset(32f, 32f))
-							drawCircle(color = vSecondary, radius = 12f, center = Offset(32f, 32f))
-						}
-					}
-				}
-				Text("(cached)", color = vPrimary, fontSize = 12.sp)
-			}
-		}
-
-		Section("Combined (cache + rotation)", "Cached subtree blitted with live rotation around its centre.") {
-			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-				for (vI in 0..4) {
-					Box(
-						modifier = Modifier
-							.size(64.dp)
-							.graphicsLayer(
-								rotationZ = vSpin + vI * 30f,
-							),
-					) {
-						Canvas(modifier = Modifier.size(64.dp)) {
-							drawRect(
-								color = if (vI % 2 == 0) vPrimary else vSecondary,
-								topLeft = Offset(10f, 10f),
-								size = Size(44f, 44f),
-							)
-						}
-					}
-				}
-			}
-		}
 
 		Section("Rotation (live)", "Each tile holds the same shape rotated at multiples of the current spin angle.") {
 			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
