@@ -59,8 +59,26 @@ kotlin {
 }
 ```
 
-The plugin can also be applied to a single module's `build.gradle.kts` instead
-of settings (it then bridges only that module's configurations).
+### Settings-wide or per-module
+
+The plugin applies at either level:
+
+```kotlin
+// settings.gradle.kts — every module of the build
+plugins { id("com.bitsycore.compose-desktop-native.bridge") version "<v>" }
+```
+
+```kotlin
+// build.gradle.kts — this module only (compose-plugin style)
+plugins { id("com.bitsycore.compose-desktop-native.bridge") }
+```
+
+Note the difference between the two settings blocks: a
+`pluginManagement { plugins { id(...) version ... } }` entry only PINS the
+version (so module-level applications can omit it); the top-level
+`plugins { }` block in settings is what actually applies it build-wide.
+Rule of thumb: single app module → apply in the module; multi-module builds →
+apply once in settings.
 
 ## compose.desktop.native — the application block for native
 
