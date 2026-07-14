@@ -942,7 +942,11 @@ internal class Sdl3Canvas(
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 	) {
-		realizePendingClips()
+		// Small centred labels (a popped bubble's "pop") usually sit fully
+		// inside a rounded clip — gate on containment like other draws, with
+		// a 2px margin for glyph overhang / AA bleed, instead of paying a
+		// mask pass per text run.
+		admitDraw(inX - 2f, inY - 2f, inX + inBoxWidth + 2f, inY + inBoxHeight + 2f)
 		fScope.flush()
 		// Paragraph-level decoration bits forwarded to every wrapped line.
 		val vUnderline = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.Underline) == true
