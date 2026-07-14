@@ -141,6 +141,8 @@ internal class Sdl3DrawScope(
 			)
 		}
 		SDL_RenderGeometry(fRenderer.reinterpret(), null, fBatch, fBatchCount, null, 0)
+		com.compose.sdl.graphics.DrawStats.geometrySubmits++
+		com.compose.sdl.graphics.DrawStats.vertices += fBatchCount
 		fBatchCount = 0
 	}
 

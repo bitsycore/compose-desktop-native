@@ -330,12 +330,17 @@ internal object FrameProfiler {
 				val vAvg = (fSum[vName] ?: 0.0) / fFrames
 				"$vName=${(vAvg * 100).toInt() / 100.0}/${((fMax[vName] ?: 0.0) * 100).toInt() / 100.0}ms"
 			}
-			val vLine = "[profile] frames=$fFrames avg/max " + vParts.joinToString(" ") + "\n"
+			// Per-frame draw-work averages (see DrawStats): what's inside `draw`.
+			val vStats = com.compose.sdl.graphics.DrawStats
+			val vDraw = "geo=${vStats.geometrySubmits / fFrames} verts=${vStats.vertices / fFrames} " +
+				"masks=${vStats.maskRealizations / fFrames} text=${vStats.textDraws / fFrames} img=${vStats.imageBlits / fFrames}"
+			val vLine = "[profile] frames=$fFrames avg/max " + vParts.joinToString(" ") + " | per-frame " + vDraw + "\n"
 			val vFile = platform.posix.fopen(fPath, "a")
 			if (vFile != null) {
 				platform.posix.fputs(vLine, vFile)
 				platform.posix.fclose(vFile)
 			}
+			vStats.reset()
 			fSum.clear(); fMax.clear()
 			fFrames = 0
 			fLastPrintMs = vNowMs
@@ -345,6 +350,8 @@ internal object FrameProfiler {
 
 /* Trigger a Kotlin/Native GC so Cleaner-managed renderer resources release
    their native memory (see the main loop's native-memory nudge). */
+private val kForceRender: Boolean = platform.posix.getenv("CDN_FORCERENDER") != null
+
 @OptIn(kotlin.native.runtime.NativeRuntimeApi::class)
 private fun collectNativeGarbage() = kotlin.native.runtime.GC.collect()
 
@@ -745,7 +752,10 @@ internal class WindowInstance(
 	//  Frame pump
 
 	fun shouldRender(): Boolean =
-		needsFrame || (recomposer?.hasPendingWork == true) || onFrame != null
+		needsFrame || (recomposer?.hasPendingWork == true) || onFrame != null || kForceRender
+
+	// TEMP measurement: CDN_FORCERENDER=1 forces every frame to render so
+	// sustained steady-state timings can be measured on otherwise-idle screens.
 
 	fun renderFrame() {
 		val vRender = renderBackend ?: return

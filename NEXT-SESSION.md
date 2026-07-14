@@ -13,6 +13,28 @@ always-present sidebar (30+ text rows + icons) is re-tessellated each frame.
 
 Two open threads:
 
+### FINDING (updated) — the 70-vs-144 is NOT reproducible on a 75 Hz dev box
+
+Instrumented the draw phase (`DrawStats`: geo/verts/masks/text/img) + added
+`CDN_FORCERENDER=1`. Measured both apps forced-continuous:
+- demo:    draw ~3.7ms, geo=40,  verts=6582,  masks=0,  text=51
+- apidemo: draw ~2.9ms, geo=146, verts=18576, masks=74, text=174
+BOTH pinned at exactly 150 frames/2s = 75 fps with present ~9ms — i.e. the DEV
+DISPLAY is 75 Hz, so everything is present/vsync-bound here and the demo's draw
+is actually LIGHTER than apidemo's. The "demo is draw-bound" theory is WRONG on
+this hardware; the 70-vs-144 split is specific to the user's 144 Hz monitor and
+can't be reproduced/diagnosed from a 75 Hz box.
+
+NEXT STEP FOR THE USER (144 Hz machine): run both apps with
+`CDN_FORCERENDER=1 CDN_PROFILE=1` and share the `cdn_profile.log` lines. If demo
+shows present ~13ms (75 fps) while apidemo shows present ~7ms (144 fps) at
+similar draw times, it's a present/vsync-path difference (driver / swap
+interval / DWM), NOT draw cost — a different investigation than caching.
+
+The demo idles correctly when static (verified: 2 frames headless, even while
+hovering the sidebar), so there's NO spurious-continuous-render bug — thread A
+below is resolved as a non-issue.
+
 ### A. Why does the demo render CONTINUOUSLY? (investigate FIRST — likely cheaper)
 
 Headless the demo idled (2 frames); interactively you see a constant 70-71 fps,

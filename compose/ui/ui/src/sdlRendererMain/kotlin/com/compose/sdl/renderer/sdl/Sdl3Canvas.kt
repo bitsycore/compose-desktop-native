@@ -259,6 +259,7 @@ internal class Sdl3Canvas(
 			fClip = vRegion
 			applyClip()
 			clearRegion(vRegion)
+			com.compose.sdl.graphics.DrawStats.maskRealizations++
 			fClipLayers.addLast(OffscreenClip(vTarget, vPrevTarget, vPending.prevClip, vRegion, vPending.bbox, vPending.deviceRound))
 			// Attribute the realized mask to the save-frame that pushed the
 			// clip: inner frames entered since must NOT composite it on their
@@ -963,6 +964,7 @@ internal class Sdl3Canvas(
 		// a 2px margin for glyph overhang / AA bleed, instead of paying a
 		// mask pass per text run.
 		admitDraw(inX - 2f, inY - 2f, inX + inBoxWidth + 2f, inY + inBoxHeight + 2f)
+		com.compose.sdl.graphics.DrawStats.textDraws++
 		fScope.flush()
 		// Paragraph-level decoration bits forwarded to every wrapped line.
 		val vUnderline = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.Underline) == true
@@ -1115,6 +1117,7 @@ internal class Sdl3Canvas(
 	) {
 		realizePendingClips()
 		val vTex = (image as? SdlImageBitmap)?.texture ?: return
+		com.compose.sdl.graphics.DrawStats.imageBlits++
 		// Commit pending frame geometry and re-assert this canvas's target + clip
 		// (an offscreen render just borrowed the render target).
 		fScope.flush()
