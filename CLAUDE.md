@@ -458,6 +458,46 @@ build tell you what broke.
   `Dialog` / `DropdownMenu` / `DropdownMenuItem` / `TooltipBox` (m3 doesn't
   ship drop-in equivalents for our anchor / scrim patterns).
 
+## Parity harness — native-vs-JVM screenshot diff
+
+`:demo` renders the **same commonMain screens** on two stacks: native
+(SDL/Skia, Kotlin/Native) and a `jvm()` target on upstream Compose Desktop.
+`scripts/parity/parity.py` screenshots every screen on both and pixel-diffs
+them, so a screen that visually diverges is a **port regression** (missing
+content, wrong shape/colour, broken clip). Several past renderer regressions
+would have been caught here.
+
+```bash
+python scripts/parity/parity.py                 # all screens (builds first)
+python scripts/parity/parity.py Buttons Shapes  # a subset
+python scripts/parity/parity.py --no-build      # reuse the last renders
+```
+
+Mechanics: the JVM leg renders all screens headlessly via `ImageComposeScene`
+in ONE process (`:demo:run --args=--screenshot-all=<dir>`, wired in
+`MainJvm.kt`); the native leg launches the exe once per screen
+(`--screen=<Name> --screenshot=<x>.bmp`). Output lands in **`build/parity/`
+(gitignored)**: `<pct>_<Name>_diff.png` (amplified difference heatmap),
+`<pct>_<Name>_compare.png` (native ∣ jvm ∣ diff, side by side), and
+`report.txt` ranked worst-first. Windows-only for the native leg today; needs
+Pillow. See `scripts/parity/README.md`.
+
+**What the number means — read this before trusting it.** The `%differ` is the
+fraction of pixels whose per-channel difference exceeds a tolerance. It is NOT
+a pass/fail score and pixel-perfection is not the goal: the two stacks use
+different default fonts, so **every screen carries a steady baseline
+difference** — in the heatmap, text shows as a faint *doubled ghost* from
+slightly different line metrics/baselines. A healthy full sweep is a smooth
+gradient (~2% for a sparse screen like Counter, up to ~32% for a text-dense
+one like Tabs). Known SDL parity gaps also inflate specific screens
+predictably (Brushes ~23% — gradients render solid on SDL; Shadows / Canvas /
+GraphicsLayer — effect differences). **The signal is the RANKING and the
+delta from a screen's own history**, not the absolute value: a text-light
+screen suddenly reading 60%, or a screen jumping far above its neighbours, is
+the bug. In a `_diff.png`: ghosted/doubled text + dark shapes = normal font
+drift; a **solid bright block, or a shape present on only one side** = a real
+regression — open the `_compare.png` to see which stack is wrong.
+
 ## Conventions
 
 Kotlin standard style — plain `camelCase` for parameters, local variables,
