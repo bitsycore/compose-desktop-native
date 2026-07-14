@@ -62,6 +62,22 @@ kotlin {
 The plugin can also be applied to a single module's `build.gradle.kts` instead
 of settings (it then bridges only that module's configurations).
 
+## compose.desktop.native — the application block for native
+
+The native counterpart of `compose.desktop { application { mainClass } }`:
+
+```kotlin
+compose.desktop {
+    application { mainClass = "app.MainJvmKt" }   // upstream jvm
+    native { entryPoint = "app.main" }            // compose-desktop-native
+}
+```
+
+Declares an executable with that entry point on every Kotlin/Native desktop
+target — no `targets.withType<KotlinNativeTarget> { binaries.executable { … } }`
+boilerplate. Targets that already declare an executable are left untouched,
+so manual configuration (extra linker flags, custom build types) still wins.
+
 ## composeResources — zero setup
 
 If the module also applies the official `org.jetbrains.compose` plugin, the

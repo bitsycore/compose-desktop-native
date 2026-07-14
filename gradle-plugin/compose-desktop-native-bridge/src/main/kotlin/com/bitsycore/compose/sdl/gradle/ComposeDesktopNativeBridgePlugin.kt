@@ -80,6 +80,7 @@ class ComposeDesktopNativeBridgePlugin : Plugin<Any> {
 
 private fun installBridge(project: Project) {
 	installResourcePackaging(project)
+	installNativeApplicationDsl(project)
 	val version = project.providers.gradleProperty(versionProperty).orNull ?: pluginVersion
 	project.configurations.configureEach { configuration ->
 		if (nativeTargetTokens.any { configuration.name.contains(it, ignoreCase = true) }) {
