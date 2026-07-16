@@ -71,6 +71,12 @@ internal class Sdl3Canvas(
 	// Alpha8 mask) so the tint applied on blit colours it correctly.
 	private val fOffscreenTexture: COpaquePointer? = null,
 	private val fForceWhite: Boolean = false,
+	// Phase 4 capture mode: when set, this canvas RECORDS shape geometry into the list
+	// (via the scope's recordingSink) and touches NO GPU. Ops not yet capturable
+	// (text / image / clip / saveLayer / shadow) mark the list `unsupported` so the
+	// SdlDisplayListRenderNode falls back to a crisp block-replay for that leaf — so
+	// no un-captured op ever leaks to the screen. See SdlDisplayList.
+	private val fCaptureList: SdlDisplayList? = null,
 ) : Canvas,
 	com.compose.sdl.text.NativeTextCanvas,
 	com.compose.sdl.graphics.NativePainterCanvas,
@@ -82,6 +88,33 @@ internal class Sdl3Canvas(
 	// canvas hands it the current affine each draw (setMatrix) so scale / rotate /
 	// translate reach the vertices.
 	private val fScope = Sdl3DrawScope(fRenderer, 0f, 0f, fSize)
+
+	init {
+		// Capture mode routes the scope's geometry to the display list instead of the GPU.
+		if (fCaptureList != null) fScope.recordingSink = fCaptureList
+	}
+
+	// Capture-mode gate for ops we can't record yet: flag the list unsupported (the
+	// node will replay the block instead) and skip the GPU work. Returns true if the
+	// caller should return early. No-op (false) outside capture mode.
+	private fun captureUnsupported(): Boolean {
+		val list = fCaptureList ?: return false
+		list.unsupported = true
+		return true
+	}
+
+	// Replay a captured geometry-only display list into this (real) canvas under its
+	// CURRENT transform: sync the affine to the scope, then re-emit each layer-local
+	// batch through it. Used by SdlDisplayListRenderNode.drawInto.
+	internal fun replayGeometryList(list: SdlDisplayList) {
+		fScope.flush()
+		fScope.setMatrix(fMa, fMb, fMc, fMd, fMe, fMf)
+		for (i in list.batches.indices) {
+			val b = list.batches[i]
+			fScope.replayBatch(b.vertexData, b.vertexCount)
+		}
+		fScope.flush()
+	}
 
 	// Current user→screen affine (a,b,c,d,e,f): screen = (a*x+c*y+e, b*x+d*y+f).
 	// Accumulates Canvas.translate/scale/rotate/concat; identity + a translate is
@@ -364,6 +397,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
+		if (captureUnsupported()) return
 		// No real offscreen buffer — SDL3 lacks a portable render-target-in-a-batched-scope
 		// primitive here. Instead, multiplicatively propagate the layer's alpha through
 		// every enclosed primitive: each draw() reads `fAlpha` and multiplies against
@@ -395,6 +429,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun clipRect(left: Float, top: Float, right: Float, bottom: Float, clipOp: ClipOp) {
+		if (captureUnsupported()) return
 		if (clipOp == ClipOp.Difference) {
 			clipRectDifference(left, top, right, bottom)
 			return
@@ -435,6 +470,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun clipPath(path: ComposePath, clipOp: ClipOp) {
+		if (captureUnsupported()) return
 		// SDL has only rectangular render clipping; approximate a path clip by
 		// its bounding box (TODO: stencil/mask for non-rect clips).
 		val vB = pathBounds(path) ?: return
@@ -475,6 +511,7 @@ internal class Sdl3Canvas(
 	//  arbitrary paths keep the clipPath bbox fallback.
 
 	override fun clipRoundRect(inRoundRect: RoundRect) {
+		if (captureUnsupported()) return
 		// The mask is cut in DEVICE space (the bbox below goes through the
 		// affine), but the corner radii arrive in LOCAL user space — scale
 		// them by the affine too, or a graphicsLayer-scaled circle clip cuts
@@ -714,6 +751,7 @@ internal class Sdl3Canvas(
 		inAmbientColor: androidx.compose.ui.graphics.Color,
 		inSpotColor: androidx.compose.ui.graphics.Color,
 	) {
+		if (captureUnsupported()) return
 		realizePendingClips()
 		if (inElevationPx <= 0f) return
 
@@ -968,6 +1006,7 @@ internal class Sdl3Canvas(
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 	) {
+		if (captureUnsupported()) return
 		// Small centred labels (a popped bubble's "pop") usually sit fully
 		// inside a rounded clip — gate on containment like other draws, with
 		// a 2px margin for glyph overhang / AA bleed, instead of paying a
@@ -1081,6 +1120,7 @@ internal class Sdl3Canvas(
 		inContentScale: androidx.compose.ui.layout.ContentScale,
 		inAlpha: Float,
 	) {
+		if (captureUnsupported()) return
 		admitDraw(inX, inY, inX + inWidth, inY + inHeight)
 		fScope.flush()
 		// Map the origin through the affine and scale the size by the matrix's axis
@@ -1099,6 +1139,7 @@ internal class Sdl3Canvas(
 	//  Not-yet-wired ops (B5 image leaf / B6 layers). Accept-and-ignore.
 
 	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {
+		if (captureUnsupported()) return
 		val vBmp = image as? SdlImageBitmap ?: return
 		admitDraw(topLeftOffset.x, topLeftOffset.y, topLeftOffset.x + vBmp.width, topLeftOffset.y + vBmp.height)
 		drawImageRect(
@@ -1123,6 +1164,7 @@ internal class Sdl3Canvas(
 		dstSize: androidx.compose.ui.unit.IntSize,
 		paint: Paint,
 	) {
+		if (captureUnsupported()) return
 		realizePendingClips()
 		val vTex = (image as? SdlImageBitmap)?.texture ?: return
 		com.compose.sdl.graphics.DrawStats.imageBlits++

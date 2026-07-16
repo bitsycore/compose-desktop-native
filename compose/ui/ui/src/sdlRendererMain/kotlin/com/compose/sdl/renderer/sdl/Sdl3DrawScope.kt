@@ -947,6 +947,28 @@ internal class Sdl3DrawScope(
 		emitFringeQuad(x0, y0, x1, y1, x1 + inNx, y1 + inNy, x0 + inNx, y0 + inNy, inSampler)
 	}
 
+	// Phase 4 replay: re-emit a captured (layer-local) batch through the CURRENT CTM.
+	// The batch was recorded with an identity base CTM, so applying fMa..fMf here
+	// places it at the layer's transform. Colours/UVs pass through unchanged. Runs
+	// in NORMAL (non-recording) mode → the next flush() submits via SDL_RenderGeometry.
+	internal fun replayBatch(vd: FloatArray, count: Int) {
+		for (i in 0 until count) {
+			if (fBatchCount >= kBatchCapacity && fBatchCount % 3 == 0) flush()
+			val s = i * kFloatsPerVertex
+			val x = vd[s]; val y = vd[s + 1]
+			val base = fBatchCount * kFloatsPerVertex
+			fVertexData[base + 0] = fMa * x + fMc * y + fMe
+			fVertexData[base + 1] = fMb * x + fMd * y + fMf
+			fVertexData[base + 2] = vd[s + 2]
+			fVertexData[base + 3] = vd[s + 3]
+			fVertexData[base + 4] = vd[s + 4]
+			fVertexData[base + 5] = vd[s + 5]
+			fVertexData[base + 6] = vd[s + 6]
+			fVertexData[base + 7] = vd[s + 7]
+			fBatchCount++
+		}
+	}
+
 	// Stage one vertex into fVertexData (auto-flush when full). Position goes
 	// through the current affine so scale/rotate reach the GPU; the colour is
 	// sampled at the pre-transform point so a gradient rides its shape.
