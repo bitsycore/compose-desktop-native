@@ -5,11 +5,14 @@ Plan for converging this port's rendering onto upstream Compose/Skiko internals 
 upstream module boundaries (`:ui-graphics`, `:ui-text`) that are currently merged
 into `:ui`.
 
-The single living renderer doc — the forward plan up top, plus **Appendix A** (the
-retained-layer engine model + what already landed, consolidated from the retired
-`RENDERER_REFACTOR.md`). **Revised after a 3-agent tactical review and a 5-agent
-council** (strategy / architecture / build-CI / vendoring-sustainability / QA) — see
-§13 for the council synthesis; the corrections are folded in below.
+The renderer **study file** — rationale, decisions, and analysis. The forward plan up top,
+plus **Appendix A** (the retained-layer engine model + what already landed, consolidated
+from the retired `RENDERER_REFACTOR.md`). **Revised after a 3-agent tactical review and a
+5-agent council** (strategy / architecture / build-CI / vendoring-sustainability / QA) —
+see §13 for the council synthesis; the corrections are folded in below.
+
+> **The executable checklist is `RENDERER_TASKS.md`** — pure, ordered, checkbox tasks an
+> agent works through and marks progress on. This file is the "why"; that file is the "do".
 
 ---
 
@@ -80,13 +83,21 @@ makes B3 and Track A **optional polish**, not obligations.
 - **(G3) "It already works"** → cap at the shipped state, treat JVM as the Windows
   fidelity tier, **kill Track A's spike entirely**, and stop.
 
-**Recommendation (pending the maintainer's call):** a blend of **G1 + the two-tier
-framing** — do the *convergence that reduces future maintenance* (B2/B5) and the *local
-Mac-verify + drift guardrails that make it safe*, treat JVM as the documented Windows
-fidelity tier, cap B3
-to parity-ranked wins, and shelve Track A. Do **not** schedule B1 or the module split
-until a concrete need appears. This section is the one decision only the maintainer can
-make; everything below assumes it and should be re-ranked once it is fixed.
+**DECIDED (2026-07-16): G1 — upstream-tracking.** The goal is cheap future maintenance
+(track upstream with minimal per-bump reconciliation), not Windows pixel-parity or feature
+completeness. The locked priority order that follows:
+1. **B5 + B2 are the work** — vendor upstream's `GraphicsLayer`/engine so each
+   `compose.properties` bump re-syncs instead of being hand-reconciled. Justify/track B2 on
+   the **sync-tax** (hours per bump before vs after), not aesthetics.
+2. **Guardrails first / alongside:** the local Mac verify runbook (§5 Phase 0a) + the
+   manual-vendor drift tripwire (§8) — without them, convergence silently rots.
+3. **JVM is the documented Windows fidelity/feature tier** — so **B3 is capped** to cheap
+   parity-ranked wins (the SDL leg need not chase Skia; users who need 100% use JVM).
+4. **Track A shelved** — likely infeasible + breaks no-DLL, and under G1 its maintenance
+   payoff doesn't justify even the spike. Skip §3 unless idle curiosity (then only the
+   time-boxed kill-shot).
+5. **B1 + the module split: DEFERRED** until a concrete need appears (internal cleanliness /
+   publishing granularity, no G1 payoff yet).
 
 ---
 
