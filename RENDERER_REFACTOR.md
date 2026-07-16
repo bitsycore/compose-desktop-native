@@ -992,3 +992,24 @@ First increment landed, compiling, **zero behaviour change** (opt-in machinery o
    separate buffer). Behind `CDN_LAYERCACHE=geo`.
 3. Extend capture to **text glyph blits, image blits, clip** (the win + drops the
    defer cases), then re-sweep and flip the default.
+
+### 2026-07-16 — Phase 4 geo node WORKS (commit `b5008101`) — solves the flip-blocker
+
+Capture-mode canvas + `SdlDisplayListRenderNode` landed behind `CDN_LAYERCACHE=geo`.
+A capture pass records a leaf's tessellated geometry (layer-local, NO render target);
+`drawInto` re-emits it through the layer transform (`Sdl3DrawScope.replayBatch`).
+
+**Verified geo-vs-default:** Shapes / Text / Buttons / Pickers / Icons / Carousel /
+LazyColumn / Canvas / Path **all 0.000%** — including every screen the *texture* node
+failed (Pickers 13–17%→0, Carousel 4.4%→0, Icons 0.36%→0, Buttons 0.006%→0). **Pickers
+is now DETERMINISTIC** (run-vs-run 0.000%, vs the texture node's 0↔17% swing) — no
+texture state ⇒ no timing dependence, exactly the design goal. `nav3test` PASS. Only
+residual: GraphicsLayer **0.134%**, a *deterministic* sub-pixel AA-fringe diff on
+ROTATED squares (tessellate-then-rotate vs tessellate-rotated) — cosmetic, angled
+edges only; def-vs-def and geo-vs-geo are both 0.
+
+So the geo node is correct, deterministic, and crisp — it removes the robustness
+problem that blocked the flip. **BUT geometry-only so far:** text / image / clip / alpha
+leaves DEFER to a block-replay (correct, not yet cached), so today's perf win is limited
+to shape-only leaves. **Next: capture text glyph blits** (the bulk of static content →
+the real win), then image + clip, then re-sweep and **flip the default to `geo`**.
