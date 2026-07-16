@@ -175,7 +175,7 @@ NOT go through the canvas and is unaffected — but it and drawing share ONE `Sk
 instance (must stay coupled). Real gradients are a fidelity WIN: the port `SkiaCanvas` uses
 solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients (Brushes screen).
 
-- [~] **B6.1** Adopt upstream Skia GRAPHICS actuals on the skiko leg. Split
+- [x] **B6.1** Adopt upstream Skia GRAPHICS actuals on the skiko leg. Split
   `CanvasPaintActuals.native.kt` (which defines the port `Paint`/`Shader`/all gradient
   shaders/`ActualImageBitmap`/`createImageBitmap`/`ActualCanvas`/`NativeCanvas`/`NativePaint`)
   `nativeMain → sdlRendererMain`; un-refuse (flip `!` + re-sync) `SkiaBackedCanvas.skiko.kt`,
@@ -190,6 +190,13 @@ solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients 
   `.skiaCanvas`. (VENDOR-BASE header + drift tripwire required — it becomes a manual vendor.)
   *Done:* MAC-VERIFY green; Brushes parity IMPROVES (real gradients); text/icons/shadows/images
   unchanged. *blocked-by: P1.3 (done)*
+  *DONE (commit `7f5773fc`). Findings: (1) the port ALREADY had real gradient shaders (the
+  "solid-color fallback" header comment was stale) → Brushes unchanged, not improved. (2)
+  `SkiaImageAsset` also needed manual-vendoring — its `toBitmap`/`putBytesInto` expect+actual
+  collapse into one native source set here (flattened, bodies inlined). (3) `skiaLeafDrawer`
+  MUST be re-pointed per-frame in drawRoot (+ cleared on destroy), not set once in the ctor —
+  a ctor global dangled at a CLOSED window's destroyed renderer → multiwintest crash. Full
+  MAC-VERIFY ALL GREEN both legs; 56/57 parity byte-identical (Images fluctuates in noise).*
 - [ ] **B6.2** Now the canvas is `SkiaBackedCanvas`: un-refuse + vendor `SkiaGraphicsLayer.skiko
   .kt` + `SkiaGraphicsContext.skiko.kt` + `Blur.skiko.kt`; point the skiko `createGraphicsContext`
   actual (P1.3 seam) at `SkiaGraphicsContext`; provide upstream `actual class GraphicsLayer
@@ -434,3 +441,14 @@ solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients 
   SkiaGraphicsLayer/Context/Blur now the canvas is upstream, delete the transient skiko port
   cluster) → **B6.3** (optional upstream text, discards P3.1 on skiko — defer). Plan written to
   Phase 1B. Real gradients (Brushes) are a B6.1 fidelity win. Starting B6.1.
+- 2026-07-17 · **B6.1** · commit `7f5773fc` · Skia leg now draws through upstream
+  SkiaBackedCanvas + SkiaBackedPaint/Shader/ImageAsset/ImageBitmap. Split port graphics
+  actuals (CanvasPaintActuals + BlendMode) nativeMain→sdlRendererMain; manual-vendored
+  SkiaBackedCanvas (+ port NativeText/Painter/Shadow/Finishable contracts forwarding to a
+  global skiaLeafDrawer) and SkiaImageAsset (flattened toBitmap/putBytesInto); deleted the
+  port SkiaCanvas; offscreen + decode now upstream. Fixed a real multi-window crash (per-frame
+  skiaLeafDrawer, cleared on destroy) that a ctor-set global caused. MAC-VERIFY ALL GREEN both
+  legs (10/10 probes, parity PASS 56/57 byte-identical, perf below baseline, metadata + drift
+  + vendor-clean pass). **Unblocks B6.2 (= P1.4/P1.5/P1.6/P1.7 — vendor upstream
+  SkiaGraphicsLayer now the canvas is upstream).** Note: the port already had real gradients
+  (Brushes unchanged); the fidelity win is deferred to whatever upstream paint/shader adds.
