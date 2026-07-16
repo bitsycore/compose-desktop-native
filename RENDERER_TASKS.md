@@ -88,11 +88,17 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
 *The maintainability payoff — macOS/Linux run upstream's own layer/draw engine. Re-rated
 MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, §7.*
 
-- [ ] **P1.1** **skiko-version alignment check** (DoD gate): confirm `skiko:0.150.1` exposes
+- [x] **P1.1** **skiko-version alignment check** (DoD gate): confirm `skiko:0.150.1` exposes
   the `RenderNode`/`GraphicsContext` API the compose-core `beta01+dev4324` vendored files
   use; if not, bump `libs.versions.toml` skiko (or the compose ref) in lockstep. *Done:* a
   throwaway skiko-leg compile referencing `org.jetbrains.skiko.node.RenderNode` succeeds on
   the Mac. [§3/§7]  *blocked-by: P0.2*  — **blocks all of P1**
+  *Done (Mac): skiko:0.150.1 macosArm64 klib exports `package org.jetbrains.skiko.node`
+  with `RenderNode` + `RenderNodeContext` (constructor `RenderNode(ctx)`, `RenderNodeContext
+  (measureDrawBounds)`, `.setLightingInfo(...)`, `.close()` — the exact surface beta02's
+  SkiaGraphicsContext/SkiaGraphicsLayer use). Verified two ways: klib linkdata inspection +
+  a throwaway `skikoRendererMain` file compiling those references via `:ui:compileKotlin
+  MacosArm64` (BUILD SUCCESSFUL, then removed). NO skiko/compose-ref bump needed.*
 - [ ] **P1.2** Relocate the SDL node cluster `nativeMain → sdlRendererMain`:
   `GraphicsLayer.native.kt`, the `createNativeRenderNode` `expect` + SDL actual,
   `DeferredRenderNode`, `SdlDisplayList*`/`SdlRenderNode`. **Keep `GraphicsLayerOwnerLayer`
@@ -297,4 +303,11 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   build (demo+apidemo) → 5 probes each PASS → parity each → perf seeded. (4) Seeded parity
   keys `macosArm64/skia` + `macosArm64/sdl3` (57 each) and the perf baseline. SDL leg on Mac
   also ~2% median. **Unblocks P1.1 (blocked-by P0.2).**
+- 2026-07-16 · **P1.1** (skiko-version alignment gate) · no commit (probe was throwaway) ·
+  confirmed `skiko:0.150.1` exposes `org.jetbrains.skiko.node.{RenderNode,RenderNodeContext}`
+  — the API beta02's vendored `SkiaGraphicsContext.skiko.kt`/`SkiaGraphicsLayer.skiko.kt`
+  need. Klib linkdata shows `package_org.jetbrains.skiko.node` with both classes; a throwaway
+  `skikoRendererMain` file using `RenderNodeContext(measureDrawBounds=…)`, `RenderNode(ctx)`,
+  `.setLightingInfo(...)`, `.close()` compiled clean (`:ui:compileKotlinMacosArm64` SUCCESS)
+  then was removed. No skiko/compose-ref bump required. **Unblocks P1.2–P1.7.**
   Windows-only; Mac legs pend P0.2.
