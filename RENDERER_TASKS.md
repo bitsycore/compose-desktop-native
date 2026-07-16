@@ -113,13 +113,31 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   TRANSIENT copy of the cluster in skikoRendererMain (P1.6 deletes it). Verified: Skia+SDL
   per-target compile, `:ui:compileCommonMainKotlinMetadata` clean, full MAC-VERIFY ALL GREEN
   (10/10 probes, parity PASS both legs, perf within/below baseline).*
-- [ ] **P1.3** Fork `GraphicsContext` per-leg: replace the ad-hoc anonymous
+- [x] **P1.3** Fork `GraphicsContext` per-leg: replace the ad-hoc anonymous
   `ComposeOwner.graphicsContext` (`createProjectGraphicsLayer()`) with an `expect`/factory
   seam; SDL → the relocated project impl. *Done:* MAC-VERIFY green. [§4]  *blocked-by: P1.2*
+  *Done (commit `4a3d8e5c`): `createGraphicsContext()` = `internal expect` in nativeMain,
+  actual per renderer set; shared `ProjectGraphicsContext` class (nativeMain). Both legs
+  return it this step; skiko actual is TRANSIENT (P1.6 → vendored SkiaGraphicsContext). Full
+  MAC-VERIFY ALL GREEN.*
 - [ ] **P1.4** Un-refuse + vendor the skiko files into `skikoRendererMain` (flip the `!` in
   `compose-fork.txt`, re-sync): `SkiaGraphicsLayer.skiko.kt`, `SkiaGraphicsContext.skiko.kt`,
   `Matrices.skiko.kt`, `Blur.skiko.kt`. *Done:* `sync.py` brings them in; they compile. [§7]
   *blocked-by: P1.3*
+  **⚠ BLOCKER FOUND (2026-07-16, Mac) — the §7 vendoring closure is INCOMPLETE.**
+  Upstream `SkiaGraphicsLayer.skiko.kt` records into skiko `RenderNode` and hands its draw
+  block an upstream **`SkiaBackedCanvas`** (`renderNode.beginRecording().asComposeCanvas()
+  as SkiaBackedCanvas`, lines 343/347 @ beta02). `SkiaBackedCanvas` is REFUSED (manifest
+  line 518) because the port has its OWN `SkiaCanvas` (raw `org.jetbrains.skia.Canvas`
+  wrapper implementing `NativeTextCanvas`/`NativePainterCanvas`/`NativeShadowCanvas`) — the
+  entire Skia leaf-draw / text (`SkiaTextRenderer`) / painter / shadow pipeline is coded
+  against `SkiaCanvas`, NOT `SkiaBackedCanvas`. So "flip 4 `!`s and it compiles" is FALSE;
+  the real closure either (a) also adopts upstream's `SkiaBackedCanvas` + Paint/Shader/text
+  stack = the **shelved B6**, or (b) manual-vendors `SkiaGraphicsLayer` with an edit bridging
+  `beginRecording()`'s skia Canvas into the port `SkiaCanvas` — which makes it a NON-verbatim
+  manual vendor, eroding B2's whole sync-tax payoff (P1.8). The port uses skiko `RenderNode`
+  NOWHERE today (grep-confirmed). **Decision required before P1.4 proceeds — see log + the
+  three options below.** [§7]  *blocked-by: P1.3 (done); now blocked on a scope decision*
 - [ ] **P1.5** Reverse the `prepareLayerTransformationMatrix` rename — use upstream
   `Matrices.skiko` `prepareTransformationMatrix`; drop the `com.compose.sdl` copy on the Skia
   leg (SDL keeps its own). [§7]  *blocked-by: P1.4*
@@ -325,4 +343,26 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   port GraphicsLayer this step; dropped the `expect fun createNativeRenderNode` (factories
   now plain `internal fun`). Verified per-target (Skia+SDL) + metadata compile + full
   MAC-VERIFY ALL GREEN (perf actually a hair BELOW baseline both legs). Behaviour unchanged.
-  Windows-only; Mac legs pend P0.2.
+- 2026-07-16 · **P1.3** · commit `4a3d8e5c` · forked GraphicsContext behind
+  `createGraphicsContext()` (expect nativeMain, actual per renderer set; shared
+  `ProjectGraphicsContext`). Behaviour-neutral (both legs return the project context this
+  step). Compiles Skia+SDL+metadata; full MAC-VERIFY ALL GREEN.
+- 2026-07-16 · **P1.4 BLOCKER (investigation, no code)** · un-refusing upstream
+  `SkiaGraphicsLayer.skiko.kt` does NOT compile in isolation: it casts its recording canvas
+  to `SkiaBackedCanvas` (upstream's Canvas actual), which the port refuses in favour of its
+  own `SkiaCanvas`. The whole Skia draw/text pipeline binds `SkiaCanvas`. The §4/§7 "vendor
+  4 files verbatim" closure missed this. Three ways forward (a decision the maintainer owns,
+  since it changes B2's cost/benefit under G1):
+    **Option C (recommended) — wrap skiko RenderNode behind the port's `NativeRenderNode`.**
+      Back `NativeRenderNode.skia.kt` with skiko `RenderNode` (record the port draw block
+      into `beginRecording()`'s canvas wrapped as the port `SkiaCanvas`; replay via
+      `RenderNode.drawInto`). KEEP the port `GraphicsLayer` + `SkiaCanvas`. Gets the real
+      display-list node (record-once caching + skiko clip/shadow fidelity — the engine win)
+      with NO B6 entanglement and NO SkiaBackedCanvas. The port's ORIGINAL "Phase 2a"; drops
+      the "vendor upstream GraphicsLayer verbatim" sub-goal (and its P1.8 sync-tax claim).
+    **Option A — manual-vendor `SkiaGraphicsLayer` with a SkiaCanvas bridge edit.**
+      Non-verbatim → partial sync-tax; still needs textRenderer threading; keeps upstream's
+      `ChildLayerDependenciesTracker` (P2.2 says DON'T vendor it).
+    **Option B — full upstream Skia canvas adoption** (un-refuse `SkiaBackedCanvas` + Paint +
+      Shader + ImageAsset + upstream text): this IS the shelved B6. Largest; abandons the
+      port's SkiaCanvas/SkiaTextRenderer investment.
