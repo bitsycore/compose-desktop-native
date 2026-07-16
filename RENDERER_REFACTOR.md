@@ -730,3 +730,59 @@ report was two monitors, not a renderer bug).
   specified.
 
 Both are replaced by this file.
+
+---
+
+## 13. Progress journal
+
+Newest last. Each entry: what changed, how it was verified, what's next. Keep it
+factual — this is the running record of where the refactor actually is, separate
+from the plan above (which describes the intended end state).
+
+### 2026-07-15 — Phase 0 + Phase 1 structural flip (branch `renderer-refactor`)
+
+**Landed (SDL leg green; Skia leg mac/CI-only, not built here):**
+- **Phase 0 — `NativeRenderNode` seam.** `com.compose.sdl.graphics.NativeRenderNode`
+  interface + `NativeRenderNodeContext` + `createNativeRenderNode` `expect` in
+  `nativeMain`, `TODO()` stub actuals per renderer set. Surface mirrors skiko
+  `RenderNode`/`SkiaGraphicsLayer` (topLeft/size/pivot, transforms, shadow, clip
+  rect/rrect/path, layerPaint, beginRecording/endRecording/drawInto/close).
+  Additive; nothing constructed a node. *(commit `5a056630`)*
+- **Vendored `GraphicsLayerOwnerLayer`** into `nativeMain` (byte-exact from skiko,
+  `setLightingInfo` tail stripped) + `prepareLayerTransformationMatrix` lifted to a
+  distinct-named `nativeMain` helper (the one helper that was skikoRenderer-only).
+  Compiled unused first (zero behaviour risk). *(commit `86c97cba`)*
+- **Phase 1 flip — `createLayer` → `GraphicsLayerOwnerLayer`.** `ComposeOwner` now
+  implements `OwnedLayerManager` (dirtyLayers + `notifyLayerIsDirty` + `recycle` +
+  `voteFrameRate`); `invalidate()` → window `needsFrame` via a callback hook;
+  `renderRoot()` re-records dirty layers then walks the tree; `ComposeRootHost.drawRoot`
+  delegates to it and both backends call it instead of `rootNode.draw`. Moved
+  `ComposeOwner` + `ComposeRootHost` commonMain→nativeMain (they touch native-only
+  `OwnedLayerManager`/`GraphicsLayerOwnerLayer`; `:ui` commonMain only compiles to
+  native anyway); the `feed*Processor` expect/actual collapsed to plain native
+  funs. *(commit `bbaa0435`)*
+
+**Important caveat:** still backed by the existing lambda-replay `GraphicsLayer`, so
+this is **behaviour-preserving — no re-tessellation win yet**. The structure
+(dirty-gated `OwnedLayer` driven by the vendored `NodeCoordinator`) is in place; the
+caching payoff arrives only when `GraphicsLayer`'s storage swaps to `NativeRenderNode`.
+
+**Verified:** `:ui:compileKotlinMingwX64` green. Demo exe (built with the flip)
+renders correctly — `GraphicsLayer` (rotation/scale/alpha), `Buttons` (rounded/
+shape clip incl. circular FAB), `Shapes`/`Scroll`/`Text`/`Counter` non-blank
+(PIL-inspected + eyeballed the first two). Full `sync.py` run confirmed the manual
+vendoring is `!`-respected (`:ui`: 53 files excluded → manually vendored) and
+non-disruptive (post-sync `:ui` rebuild up-to-date in 4s).
+
+**Not yet verified:** hit-testing through the new layer *matrix* (`mapOffset`) — a
+`scripts/probe/` click pass on scaled/rotated interactive layers is the next check.
+
+**Gotcha (pre-existing on `main`, unrelated):** `:demo:compileKotlinMingwX64` fails
+on `ColorsScreen.kt` — `androidx.compose.ui.tooling.preview.Preview` unresolved on
+mingw (from commit `72e6f145`; only screen using `@Preview`). Temp-neutralize that
+import + annotation to build the demo exe for verification. Worth a separate fix.
+
+**Next:** implement `SdlRenderNode` (record → offscreen texture / cached-geometry
+display list; replay cached) and make `GraphicsLayer` a façade over
+`NativeRenderNode` — Phase 2, where the "stop re-tessellating" perf win lands. Then
+the hit-testing probe pass, then Skia-leg Phase 1 verification on mac/CI.
