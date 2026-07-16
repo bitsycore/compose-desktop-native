@@ -1,7 +1,11 @@
 package androidx.compose.ui.graphics.layer
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -9,92 +13,233 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.toSize
+import com.compose.sdl.graphics.NativeRenderNode
 
 // ==================
-// MARK: GraphicsLayer — native no-op actual
+// MARK: GraphicsLayer — façade over NativeRenderNode
 // ==================
 //
-// Upstream's skiko actual (SkiaGraphicsLayer.skiko.kt, 513L) uses Skia's
-// Picture/Canvas API for record + replay. We don't have skiko on the
-// SDL3 path and the Skia path doesn't route through GraphicsLayer yet
-// — the renderer's per-node draw does its own composition. So this
-// actual is a plain field bag with no rendering behavior: setters store
-// their values, getters return them, record/draw/toImageBitmap are
-// no-ops. Nothing in our pipeline constructs a GraphicsLayer yet.
+// DERIVED (copy + edit) from compose-multiplatform-core
+//   ui-graphics/src/skikoMain/.../graphics/layer/SkiaGraphicsLayer.skiko.kt.
+// The ONLY structural change vs upstream: the backing display-list node is our
+// renderer-agnostic `NativeRenderNode` instead of `org.jetbrains.skiko.node.RenderNode`,
+// so both renderers share this façade (Skia's node wraps the real skiko RenderNode;
+// SDL's node is SdlRenderNode). Every visual property is mirrored onto the node and
+// applied at replay, exactly like upstream. Trimmed vs upstream: outsets (blur
+// expansion) and ChildLayerDependenciesTracker (prompt child release — our children
+// release via NativeReleaseQueue/GC instead). See RENDERER_REFACTOR.md §4.
 
-@Suppress("PropertyName", "unused")
-actual class GraphicsLayer {
+@Suppress("PropertyName")
+actual class GraphicsLayer internal constructor(
+	private val renderNode: NativeRenderNode,
+) {
+
+	private var outlineDirty = true
+	private var roundRectOutlineTopLeft: Offset = Offset.Zero
+	private var roundRectOutlineSize: Size = Size.Unspecified
+	private var roundRectCornerRadius: Float = 0f
+	private var internalOutline: Outline? = null
+	private var outlinePath: Path? = null
 
 	actual var compositingStrategy: CompositingStrategy = CompositingStrategy.Auto
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.compositingStrategy = value
+			}
+		}
+
 	actual var topLeft: IntOffset = IntOffset.Zero
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.topLeft = value
+			}
+		}
+
 	actual var size: IntSize = IntSize.Zero
+		private set(value) {
+			if (field != value) {
+				field = value
+				renderNode.size = value
+				if (roundRectOutlineSize.isUnspecified) {
+					outlineDirty = true
+					configureOutlineAndClip()
+				}
+			}
+		}
+
 	actual var pivotOffset: Offset = Offset.Unspecified
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.pivot = value
+			}
+		}
+
 	actual var alpha: Float = 1f
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.alpha = value
+			}
+		}
+
 	actual var scaleX: Float = 1f
+		set(value) {
+			if (field != value) { field = value; renderNode.scaleX = value }
+		}
+
 	actual var scaleY: Float = 1f
+		set(value) {
+			if (field != value) { field = value; renderNode.scaleY = value }
+		}
+
 	actual var translationX: Float = 0f
+		set(value) {
+			if (field != value) { field = value; renderNode.translationX = value }
+		}
+
 	actual var translationY: Float = 0f
+		set(value) {
+			if (field != value) { field = value; renderNode.translationY = value }
+		}
+
 	actual var shadowElevation: Float = 0f
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.shadowElevation = value
+				outlineDirty = true
+				configureOutlineAndClip()
+			}
+		}
+
 	actual var ambientShadowColor: Color = Color.Black
+		set(value) {
+			if (field != value) { field = value; renderNode.ambientShadowColor = value }
+		}
+
 	actual var spotShadowColor: Color = Color.Black
+		set(value) {
+			if (field != value) { field = value; renderNode.spotShadowColor = value }
+		}
+
 	actual var blendMode: BlendMode = BlendMode.SrcOver
+		set(value) {
+			if (field != value) { field = value; renderNode.blendMode = value }
+		}
+
 	actual var colorFilter: ColorFilter? = null
+		set(value) {
+			if (field != value) { field = value; renderNode.colorFilter = value }
+		}
 
-	private var outlineField: Outline = Outline.Rectangle(androidx.compose.ui.geometry.Rect.Zero)
-	actual val outline: Outline get() = outlineField
+	actual val outline: Outline
+		get() {
+			val tmpOutline = internalOutline
+			val tmpPath = outlinePath
+			return if (tmpOutline != null) {
+				tmpOutline
+			} else if (tmpPath != null) {
+				Outline.Generic(tmpPath).also { internalOutline = it }
+			} else {
+				resolveOutlinePosition { outlineTopLeft, outlineSize ->
+					val left = outlineTopLeft.x
+					val top = outlineTopLeft.y
+					val right = left + outlineSize.width
+					val bottom = top + outlineSize.height
+					val cornerRadius = this.roundRectCornerRadius
+					if (cornerRadius > 0f) {
+						Outline.Rounded(RoundRect(left, top, right, bottom, CornerRadius(cornerRadius)))
+					} else {
+						Outline.Rectangle(Rect(left, top, right, bottom))
+					}
+				}.also { internalOutline = it }
+			}
+		}
 
-	actual fun setOutsets(left: Int, top: Int, right: Int, bottom: Int) { /* no-op */ }
-	actual fun setPathOutline(path: Path) { outlineField = Outline.Generic(path) }
-	actual fun setRoundRectOutline(topLeft: Offset, size: Size, cornerRadius: Float) {
-		outlineField = Outline.Rounded(
-			androidx.compose.ui.geometry.RoundRect(
-				left = topLeft.x, top = topLeft.y,
-				right = topLeft.x + size.width, bottom = topLeft.y + size.height,
-				cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius),
-			)
-		)
+	private fun resetOutlineParams() {
+		internalOutline = null
+		outlinePath = null
+		roundRectOutlineSize = Size.Unspecified
+		roundRectOutlineTopLeft = Offset.Zero
+		roundRectCornerRadius = 0f
+		outlineDirty = true
 	}
+
+	actual fun setPathOutline(path: Path) {
+		resetOutlineParams()
+		this.outlinePath = path
+		configureOutlineAndClip()
+	}
+
+	actual fun setRoundRectOutline(topLeft: Offset, size: Size, cornerRadius: Float) {
+		if (this.roundRectOutlineTopLeft != topLeft ||
+			this.roundRectOutlineSize != size ||
+			this.roundRectCornerRadius != cornerRadius ||
+			this.outlinePath != null
+		) {
+			resetOutlineParams()
+			this.roundRectOutlineTopLeft = topLeft
+			this.roundRectOutlineSize = size
+			this.roundRectCornerRadius = cornerRadius
+			configureOutlineAndClip()
+		}
+	}
+
 	actual fun setRectOutline(topLeft: Offset, size: Size) {
-		val effTopLeft = if (topLeft == Offset.Unspecified) Offset.Zero else topLeft
-		val effSize = if (size == Size.Unspecified) this.size.let { Size(it.width.toFloat(), it.height.toFloat()) } else size
-		outlineField = Outline.Rectangle(
-			androidx.compose.ui.geometry.Rect(
-				effTopLeft.x, effTopLeft.y,
-				effTopLeft.x + effSize.width, effTopLeft.y + effSize.height,
-			)
-		)
+		setRoundRectOutline(topLeft, size, 0f)
 	}
 
 	actual var rotationX: Float = 0f
+		set(value) {
+			if (field != value) { field = value; renderNode.rotationX = value }
+		}
+
 	actual var rotationY: Float = 0f
+		set(value) {
+			if (field != value) { field = value; renderNode.rotationY = value }
+		}
+
 	actual var rotationZ: Float = 0f
+		set(value) {
+			if (field != value) { field = value; renderNode.rotationZ = value }
+		}
+
 	actual var cameraDistance: Float = DefaultCameraDistance
+		set(value) {
+			if (field != value) { field = value; renderNode.cameraDistance = value }
+		}
+
 	actual var clip: Boolean = false
+		set(value) {
+			if (field != value) {
+				field = value
+				renderNode.clip = value
+				outlineDirty = true
+				configureOutlineAndClip()
+			}
+		}
+
 	actual var renderEffect: RenderEffect? = null
+		set(value) {
+			if (field != value) { field = value; renderNode.renderEffect = value }
+		}
+
 	actual var isReleased: Boolean = false
 		internal set
 
-	// ============
-	//  Record / draw — lambda replay
-	//
-	// Upstream's skiko actual records into a Skia Picture. This renderer is
-	// immediate-mode, so record() stores the draw lambda and draw() REPLAYS it
-	// with the layer's transform / alpha / clip applied. Same visual result as
-	// a display list as long as callers re-record on invalidation (they do —
-	// that's the GraphicsLayer contract). This is what makes GraphicsContext
-	// consumers render: SharedTransitionLayout's overlay, rememberGraphicsLayer.
-
-	private var recordedBlock: (DrawScope.() -> Unit)? = null
-	private var recordedDensity: Density = Density(1f)
-	private var recordedLayoutDirection: LayoutDirection = LayoutDirection.Ltr
-	private val drawScope = androidx.compose.ui.graphics.drawscope.CanvasDrawScope()
+	actual fun setOutsets(left: Int, top: Int, right: Int, bottom: Int) {
+		// Outsets (blur/shadow expansion) not modelled on this port — see header.
+	}
 
 	actual fun record(
 		density: Density,
@@ -102,60 +247,74 @@ actual class GraphicsLayer {
 		size: IntSize,
 		block: DrawScope.() -> Unit,
 	) {
-		recordedDensity = density
-		recordedLayoutDirection = layoutDirection
 		this.size = size
-		recordedBlock = block
+		renderNode.record(density, layoutDirection, size, block)
 	}
-
-	actual suspend fun toImageBitmap(): ImageBitmap =
-		throw NotImplementedError("GraphicsLayer.toImageBitmap not implemented on desktop")
 
 	internal actual fun draw(canvas: Canvas, parentLayer: GraphicsLayer?) {
 		if (isReleased) return
-		val vBlock = recordedBlock ?: return
-		canvas.save()
-		canvas.translate(topLeft.x.toFloat(), topLeft.y.toFloat())
-		// Transform about the pivot (defaults to the layer centre).
-		if (scaleX != 1f || scaleY != 1f || rotationZ != 0f || translationX != 0f || translationY != 0f) {
-			val vPivot =
-				if (pivotOffset == Offset.Unspecified) Offset(size.width / 2f, size.height / 2f)
-				else pivotOffset
-			canvas.translate(translationX + vPivot.x, translationY + vPivot.y)
-			if (scaleX != 1f || scaleY != 1f) canvas.scale(scaleX, scaleY)
-			if (rotationZ != 0f) canvas.rotate(rotationZ)
-			canvas.translate(-vPivot.x, -vPivot.y)
-		}
-		if (clip) {
-			// Rect/rounded outlines clip to their bounds (SDL clips are rects;
-			// rounded-corner exactness would need the offscreen mask path);
-			// generic outlines go through clipPath (bbox fallback on SDL).
-			when (val vOutline = outline) {
-				is Outline.Rectangle -> canvas.clipRect(vOutline.rect)
-				is Outline.Rounded -> canvas.clipRect(
-					androidx.compose.ui.geometry.Rect(
-						vOutline.roundRect.left, vOutline.roundRect.top,
-						vOutline.roundRect.right, vOutline.roundRect.bottom,
+		configureOutlineAndClip()
+		renderNode.drawInto(canvas)
+	}
+
+	@OptIn(androidx.compose.ui.InternalComposeUiApi::class)
+	private fun configureOutlineAndClip() {
+		if (!outlineDirty) return
+		val outlineIsNeeded = clip || shadowElevation > 0f
+		if (!outlineIsNeeded) {
+			renderNode.clip = false
+			renderNode.setClipPath(null)
+		} else {
+			renderNode.clip = clip
+			when (val tmpOutline = outline) {
+				is Outline.Rectangle -> renderNode.setClipRect(
+					tmpOutline.rect.left, tmpOutline.rect.top,
+					tmpOutline.rect.right, tmpOutline.rect.bottom,
+				)
+				is Outline.Rounded -> renderNode.setClipRRect(
+					tmpOutline.roundRect.left, tmpOutline.roundRect.top,
+					tmpOutline.roundRect.right, tmpOutline.roundRect.bottom,
+					floatArrayOf(
+						tmpOutline.roundRect.topLeftCornerRadius.x,
+						tmpOutline.roundRect.topLeftCornerRadius.y,
+						tmpOutline.roundRect.topRightCornerRadius.x,
+						tmpOutline.roundRect.topRightCornerRadius.y,
+						tmpOutline.roundRect.bottomRightCornerRadius.x,
+						tmpOutline.roundRect.bottomRightCornerRadius.y,
+						tmpOutline.roundRect.bottomLeftCornerRadius.x,
+						tmpOutline.roundRect.bottomLeftCornerRadius.y,
 					),
 				)
-				is Outline.Generic -> canvas.clipPath(vOutline.path)
+				is Outline.Generic -> renderNode.setClipPath(tmpOutline.path)
 			}
 		}
-		val vNeedsAlphaLayer = alpha < 1f
-		if (vNeedsAlphaLayer) {
-			canvas.saveLayer(
-				androidx.compose.ui.geometry.Rect(0f, 0f, size.width.toFloat(), size.height.toFloat()),
-				androidx.compose.ui.graphics.Paint().apply { this.alpha = this@GraphicsLayer.alpha },
-			)
+		outlineDirty = false
+	}
+
+	private inline fun <T> resolveOutlinePosition(block: (Offset, Size) -> T): T {
+		val layerSize = this.size.toSize()
+		val rRectTopLeft = roundRectOutlineTopLeft
+		val rRectSize = roundRectOutlineSize
+		val outlineSize = if (rRectSize.isUnspecified) layerSize else rRectSize
+		return block(rRectTopLeft, outlineSize)
+	}
+
+	internal fun release() {
+		if (!isReleased) {
+			isReleased = true
+			renderNode.close()
 		}
-		drawScope.draw(
-			recordedDensity,
-			recordedLayoutDirection,
-			canvas,
-			Size(size.width.toFloat(), size.height.toFloat()),
-			vBlock,
-		)
-		if (vNeedsAlphaLayer) canvas.restore()
-		canvas.restore()
+	}
+
+	// Mirrors upstream SkiaGraphicsLayer.toImageBitmap: render the layer into a fresh
+	// bitmap of its own size. The offscreen canvas is flushed via NativeFinishableCanvas
+	// (SDL batches geometry; the backing render-target texture must be committed before
+	// it's read) — Skia's finish() is a no-op.
+	actual suspend fun toImageBitmap(): ImageBitmap {
+		val bitmap = ImageBitmap(size.width, size.height)
+		val canvas = Canvas(bitmap)
+		draw(canvas, null)
+		(canvas as? com.compose.sdl.graphics.NativeFinishableCanvas)?.finish()
+		return bitmap
 	}
 }

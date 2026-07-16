@@ -75,7 +75,8 @@ internal class Sdl3Canvas(
 	com.compose.sdl.text.NativeTextCanvas,
 	com.compose.sdl.graphics.NativePainterCanvas,
 	com.compose.sdl.graphics.NativeShapeClipCanvas,
-	com.compose.sdl.graphics.NativeShadowCanvas {
+	com.compose.sdl.graphics.NativeShadowCanvas,
+	com.compose.sdl.graphics.NativeFinishableCanvas {
 
 	// The tessellating scope. It emits geometry in the canvas's user space; the
 	// canvas hands it the current affine each draw (setMatrix) so scale / rotate /
@@ -279,7 +280,7 @@ internal class Sdl3Canvas(
 
 	// Flushes any pending batched geometry to SDL, then frees the scope's
 	// native buffer + clears the SDL clip. Call once per frame after the draw.
-	fun finish() {
+	override fun finish() {
 		fPendingClips.clear()
 		fScope.release()
 		// Safety: an unbalanced save/restore must never leave the renderer pointed

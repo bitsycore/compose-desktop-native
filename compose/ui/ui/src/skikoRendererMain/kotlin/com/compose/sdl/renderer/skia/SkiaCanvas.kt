@@ -75,9 +75,10 @@ internal class SkiaCanvas(
 ) : Canvas,
 	com.compose.sdl.text.NativeTextCanvas,
 	com.compose.sdl.graphics.NativePainterCanvas,
-	com.compose.sdl.graphics.NativeShadowCanvas {
+	com.compose.sdl.graphics.NativeShadowCanvas,
+	com.compose.sdl.graphics.NativeFinishableCanvas {
 
-	fun finish() { /* Skia save/restore is balanced per call */ }
+	override fun finish() { /* Skia save/restore is balanced per call */ }
 
 	// ============
 	//  Drop shadow (NativeShadowCanvas) — a real Gaussian blur MaskFilter on

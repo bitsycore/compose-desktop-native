@@ -1,12 +1,13 @@
 package com.compose.sdl.graphics
 
 // ==================
-// MARK: createNativeRenderNode — SDL3 renderer actual (Phase 0 stub)
+// MARK: createNativeRenderNode — SDL3 renderer actual
 // ==================
 
-/* Phase 0 scaffold: the seam exists and resolves, but nothing constructs a
-   render node yet. The real SdlRenderNode (command-list display list + offscreen
-   texture for requiresLayer() layers) lands in Phase 2/4 — see
-   RENDERER_REFACTOR.md §4b. */
+/* Returns the shared, renderer-agnostic DeferredRenderNode (replay-the-block).
+   Phase 2b will swap this for an SDL caching node (offscreen texture /
+   cached-geometry display list) so replay stops re-tessellating — see
+   RENDERER_REFACTOR.md §4b. That swap is local to this actual; GraphicsLayer /
+   GraphicsLayerOwnerLayer don't change. */
 internal actual fun createNativeRenderNode(context: NativeRenderNodeContext): NativeRenderNode =
-	TODO("SdlRenderNode not implemented yet — RENDERER_REFACTOR.md Phase 2 (display list + offscreen)")
+	DeferredRenderNode()
