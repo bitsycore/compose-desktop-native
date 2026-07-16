@@ -28,13 +28,14 @@ import com.compose.sdl.graphics.NativeRenderNode
 //
 // DERIVED (copy + edit) from compose-multiplatform-core
 //   ui-graphics/src/skikoMain/.../graphics/layer/SkiaGraphicsLayer.skiko.kt.
+// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt @ 1be9d64ad12db0c79f44aedf9d9388e644c60871
 // The ONLY structural change vs upstream: the backing display-list node is our
 // renderer-agnostic `NativeRenderNode` instead of `org.jetbrains.skiko.node.RenderNode`,
 // so both renderers share this façade (Skia's node wraps the real skiko RenderNode;
 // SDL's node is SdlRenderNode). Every visual property is mirrored onto the node and
 // applied at replay, exactly like upstream. Trimmed vs upstream: outsets (blur
 // expansion) and ChildLayerDependenciesTracker (prompt child release — our children
-// release via NativeReleaseQueue/GC instead). See RENDERER_REFACTOR.md §4.
+// release via NativeReleaseQueue/GC instead). See RENDERER_CONVERGE.md §4 (B2).
 
 @Suppress("PropertyName")
 actual class GraphicsLayer internal constructor(

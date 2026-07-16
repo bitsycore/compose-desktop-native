@@ -16,13 +16,14 @@
 
 // MANUALLY VENDORED (NON-IDEMPOTENT) from compose-multiplatform-core:
 //   compose/ui/ui/src/skikoMain/.../node/GraphicsLayerOwnerLayer.skiko.kt
-//   (ref: scripts/compose-fork/compose.properties COMPOSE_CORE_REF).
+// VENDOR-BASE: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt @ 1be9d64ad12db0c79f44aedf9d9388e644c60871
 // Change vs upstream: dropped the trailing `SkiaGraphicsContext.setLightingInfo`
 // extension + LIGHT_* constants (skiko-only shadow lighting; our shadows go via
 // NativeShadowCanvas). The class body is unchanged — it is the real OwnedLayer
 // (dirty-gated record/replay over a per-renderer GraphicsLayer), replacing the
 // immediate-mode ProjectOwnedLayer. `!`-refused in compose-fork.txt; reconcile
-// upstream changes by hand. See RENDERER_REFACTOR.md §5.
+// upstream changes by hand (run scripts/compose-fork/check-vendor-drift.py at each
+// COMPOSE_CORE_REF bump). See RENDERER_CONVERGE.md Appendix A.
 package androidx.compose.ui.node
 
 import androidx.compose.ui.FrameRateCategory

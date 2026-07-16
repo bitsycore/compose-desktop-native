@@ -47,10 +47,12 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
   `render(nanos)`/`hasInvalidations`), retiring the fixed `--frames=6`; "disable animations"
   seed for never-settling screens. *Done:* Pickers native-vs-JVM stable across repeated
   runs. [§8]
-- [ ] **P0.6** Manual-vendor **drift tripwire**: add `// VENDOR-BASE: <upstream-path>@<ref>`
-  headers to `GraphicsLayer.native.kt`, `GraphicsLayerOwnerLayer.kt`, `NativeRenderNode.kt`
-  + a script that flags when the upstream origin changed since the recorded ref. *Done:* the
-  script reports clean today and flags a simulated upstream change. [§8/§9]
+- [x] **P0.6** Manual-vendor **drift tripwire**: `// VENDOR-BASE: <upstream-path>@<ref>`
+  headers + a script that flags when a manual vendor's recorded ref lags the current pin.
+  *Done:* `scripts/compose-fork/check-vendor-drift.py` reports clean today (exit 0) and a
+  simulated stale ref fails (exit 1). *(File-set corrected: `NativeRenderNode.kt` is a port
+  invention with no upstream base — annotated the real copy-edits instead: `GraphicsLayer
+  OwnerLayer.kt`, `GraphicsLayer.native.kt`, `LayerTransformationMatrix.kt`.)* [§8/§9]
 - [ ] **P0.7** **Vendor-clean** check target: `sync.py` on a clean checkout + diff
   `src/vendor/`; wire into the runbook. *Done:* passes clean; fails if a hand-edit leaks into
   `src/vendor/`. [§8]
@@ -136,3 +138,7 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   default) · verified on **Windows**: default mingw/SDL run intact (Buttons 16.47%, its
   normal font-drift baseline; `--gpu=sdl3` passed); macOS Skia + macOS SDL legs resolve to
   the right task/exe/gpu; bad target rejected. macOS/Linux end-to-end pending a Mac run.
+- 2026-07-16 · **P0.6** · vendor-drift tripwire (`check-vendor-drift.py` + `VENDOR-BASE:`
+  headers on the 3 renderer manual-vendors) · verified on **Windows**: clean run exit 0
+  (3 files match pin `1be9d64`), simulated stale ref exit 1; upstream clone auto-detected
+  for the deeper base..pin diff.
