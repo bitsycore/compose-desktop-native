@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Parity harness — render every demo screen on the NATIVE (SDL/Skia) stack and on
+Parity harness - render every demo screen on the NATIVE (SDL/Skia) stack and on
 the JVM upstream-Compose stack, then pixel-diff them per screen.
 
 The two stacks share the exact same commonMain screen composables, so a screen
 that suddenly diverges from its usual difference level is a PORT REGRESSION
 (missing content, wrong shape/colour, broken clip). Absolute pixel-perfection
-is NOT the goal — fonts differ between stacks, so text-heavy screens carry a
+is NOT the goal - fonts differ between stacks, so text-heavy screens carry a
 steady baseline difference. The signal is the RANKING: a screen that jumps from
 ~8% to ~60% different is the bug. Four of the renderer regressions this project
 hit would have surfaced here.
@@ -25,12 +25,12 @@ Outputs to build/parity/ (gitignored):
     report.txt                 ranked table
 The <pct> prefix is zero-padded so a plain file listing sorts worst-first.
 
-TARGET-AWARE (P0.1): the native leg runs on whatever host you invoke it from — Windows
+TARGET-AWARE (P0.1): the native leg runs on whatever host you invoke it from - Windows
 (mingwX64, always the SDL renderer), or macOS/Linux (default the Skia renderer, or the SDL
 renderer under --renderer=sdl3). macOS/Linux run BOTH renderers, so one Mac verifies both
 legs. Needs Pillow.
 """
-import subprocess, sys, os, shutil, platform
+import subprocess, sys, os, shutil, platform, json
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw
 
@@ -126,6 +126,28 @@ def side_by_side(native, jvm, diff, path):
     canvas.save(path)
 
 
+# P0.4 (RENDERER_CONVERGE.md §8): per-(target/renderer) golden baselines so parity GATES
+# (non-zero exit) instead of only ranking. A screen regresses if it exceeds its baseline by
+# more than max(ABS_MARGIN pts, baseline*REL_MARGIN) - tolerant of run-to-run AA jitter,
+# strict on a real jump. `--update-baselines` reseeds the current target/renderer.
+BASELINES = REPO / "scripts" / "parity" / "baselines.json"
+ABS_MARGIN = 3.0   # percentage points
+REL_MARGIN = 0.25  # +25% of the baseline
+
+
+def load_baselines() -> dict:
+    if BASELINES.exists():
+        try:
+            return json.loads(BASELINES.read_text(encoding="utf-8"))
+        except Exception:
+            print("parity: baselines.json unreadable - treating as empty", file=sys.stderr)
+    return {}
+
+
+def threshold(base: float) -> float:
+    return base + max(ABS_MARGIN, base * REL_MARGIN)
+
+
 def main():
     argv = [a for a in sys.argv[1:] if not a.startswith("--")]
     flags = [a for a in sys.argv[1:] if a.startswith("--")]
@@ -142,7 +164,13 @@ def main():
     gpu = next((f.split("=", 1)[1] for f in flags if f.startswith("--gpu=")),
                "sdl3" if renderer == "sdl3" else "")
     exe = native_exe(target)
+    update_baselines = "--update-baselines" in flags
+    baseline_key = f"{target}/{renderer}"
+    baselines = load_baselines()
+    base_for_key = baselines.get(baseline_key, {})
     print(f"parity: target={target} renderer={renderer} gpu={gpu or '(default)'} exe={exe}")
+    print(f"parity: baseline key '{baseline_key}' - {len(base_for_key)} screen(s) baselined"
+          f"{'  [--update-baselines: WILL RESEED]' if update_baselines else ''}")
 
     OUT.mkdir(parents=True, exist_ok=True)
     jvm_dir = OUT / "_jvm"
@@ -158,7 +186,7 @@ def main():
         jvm_dir.mkdir(parents=True)
         jvm_shots(jvm_dir)
 
-    # Screen set: the JVM run enumerates the full registry → use its PNGs as the
+    # Screen set: the JVM run enumerates the full registry -> use its PNGs as the
     # source of truth for names (native takes one exe launch each).
     names = sorted(p.stem for p in jvm_dir.glob("*.png"))
     if argv:
@@ -183,21 +211,53 @@ def main():
         native = Image.open(native_png).convert("RGB")
         jvm = Image.open(jvm_png).convert("RGB")
         pct, amp = diff_pair(native, jvm)
-        # Zero-padded pct prefix → worst-first in any file listing.
+        # Zero-padded pct prefix -> worst-first in any file listing.
         prefix = f"{pct:06.2f}"
         amp.save(OUT / f"{prefix}_{name}_diff.png")
         side_by_side(native, jvm, amp, OUT / f"{prefix}_{name}_compare.png")
         results.append((name, pct))
         print(f"  {name:28s} {pct:6.2f}% differing")
 
+    # --update-baselines: write the current run as the golden baseline for this key.
+    if update_baselines:
+        baselines[baseline_key] = {n: round(p, 2) for n, p in results if p is not None}
+        BASELINES.write_text(json.dumps(baselines, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"\nparity: reseeded {len(baselines[baseline_key])} baseline(s) for "
+              f"'{baseline_key}' -> {BASELINES}")
+        return 0
+
     results.sort(key=lambda r: (-1 if r[1] is None else r[1]), reverse=True)
-    lines = ["screen                        %differ", "-" * 40]
+    regressions = []
+    lines = [f"screen                        %differ   baseline   verdict  ({baseline_key})", "-" * 66]
     for name, pct in results:
-        lines.append(f"{name:28s}  {'NATIVE FAILED' if pct is None else f'{pct:6.2f}%'}")
+        base = base_for_key.get(name)
+        if pct is None:
+            verdict = "NATIVE FAILED"
+            regressions.append(name)
+            lines.append(f"{name:28s}  {'-':>7}   {base if base is None else f'{base:6.2f}%':>8}   {verdict}")
+            continue
+        if base is None:
+            verdict = "(no baseline)"
+        elif pct > threshold(base):
+            verdict = f"REGRESSION (+{pct - base:.2f})"
+            regressions.append(name)
+        else:
+            verdict = "ok"
+        base_s = "   -   " if base is None else f"{base:6.2f}%"
+        lines.append(f"{name:28s}  {pct:6.2f}%   {base_s:>8}   {verdict}")
     report = "\n".join(lines)
     (OUT / "report.txt").write_text(report + "\n", encoding="utf-8")
     print("\n" + report)
     print(f"\nDiff images + report in {OUT}")
+
+    if not base_for_key:
+        print(f"\nparity: NO baselines for '{baseline_key}' - not gating. "
+              f"Seed with:  python scripts/parity/parity.py --update-baselines")
+        return 0
+    if regressions:
+        print(f"\nparity: FAIL - {len(regressions)} regression(s): {', '.join(regressions)}")
+        return 1
+    print(f"\nparity: PASS - no screen exceeds its baseline (+{ABS_MARGIN}pts / +{REL_MARGIN:.0%}).")
     return 0
 
 

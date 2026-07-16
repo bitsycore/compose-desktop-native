@@ -45,9 +45,12 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
   Skia's) → text ghosts down the page, so the SDL-leg % barely moves (Buttons 16.5→17.1).
   The ~0% golden-master payoff is **Skia-leg (Mac) only** — pending a Mac run. Confirms the
   §1 "layout-engine delta". [§8]  *blocked-by: P0.1*
-- [ ] **P0.4** `parity.py`: per-screen golden baselines + tolerances (in-repo JSON) and
-  **exit non-zero** on breach or `NATIVE FAILED` (today it always exits 0). *Done:* a seeded
-  regression fails the run. [§8]  *blocked-by: P0.1*
+- [x] **P0.4** `parity.py`: per-screen golden baselines (`scripts/parity/baselines.json`,
+  keyed `target/renderer`) + `--update-baselines` seeder + **exit non-zero** on breach
+  (`> baseline + max(3pts, 25%)`) or `NATIVE FAILED`. *Done (Windows):* seeded 57 screens
+  for `mingwX64/sdl3`; PASS exit 0, simulated regression exit 1 (`REGRESSION (+16.07)`),
+  restore clean; output made ASCII-only (cp1252 console). *Re-seed after P0.5 (quiescence
+  changes captures) and add a `macosArm64/skia` key on the Mac.* [§8]  *blocked-by: P0.1*
 - [ ] **P0.5** Render-to-quiescence capture on both legs (native `hasInvalidations()`; JVM
   `render(nanos)`/`hasInvalidations`), retiring the fixed `--frames=6`; "disable animations"
   seed for never-settling screens. *Done:* Pickers native-vs-JVM stable across repeated
@@ -149,6 +152,10 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   for the deeper base..pin diff.
 - 2026-07-16 · **P0.3** · font-align JVM parity leg (stage + load NotoSans; M3 Typography +
   LocalTextStyle) · verified on **Windows**: staged to `demo/build/processedResources/jvm/
-  main/font/NotoSans.ttf`, loads + applies (no warning). SDL-leg % ~unchanged — text diff is
+  main/font/NotoSans.ttf`, loads + applies (no warning). SDL-leg % ~unchanged - text diff is
   metric-dominated (accumulating vertical line-height drift SDL3_ttf-vs-Skia), NOT typeface;
   ~0 golden-master is Skia-leg/Mac (pending). Finding logged in the task note.
+- 2026-07-16 · **P0.4** · parity.py is now a GATE (baselines.json keyed target/renderer,
+  --update-baselines, non-zero exit on >baseline+max(3pts,25%) or NATIVE FAILED) · verified
+  on **Windows**: full 57-screen `mingwX64/sdl3` baseline seeded; PASS exit 0, simulated
+  regression exit 1, restore clean; fixed cp1252 console crash (ASCII-only output).
