@@ -12,9 +12,12 @@ steady baseline difference. The signal is the RANKING: a screen that jumps from
 hit would have surfaced here.
 
 Usage (from repo root):
-    python scripts/parity/parity.py                 # all screens
+    python scripts/parity/parity.py                 # all screens, host's native target
     python scripts/parity/parity.py Buttons Shapes  # a subset
     python scripts/parity/parity.py --no-build      # reuse existing screenshots
+    python scripts/parity/parity.py --renderer=sdl3 # force the SDL leg (default on mingw;
+                                                    # on macOS/Linux this -Prenderer=sdl3 build)
+    python scripts/parity/parity.py --target=macosArm64   # cross/explicit native target
 
 Outputs to build/parity/ (gitignored):
     <pct>_<Name>_compare.png   native | jvm | amplified-diff, side by side
@@ -22,16 +25,42 @@ Outputs to build/parity/ (gitignored):
     report.txt                 ranked table
 The <pct> prefix is zero-padded so a plain file listing sorts worst-first.
 
-Windows-only for the native leg today (mingwX64 exe). Needs Pillow.
-Native uses the SDL renderer; pass --gpu to change.
+TARGET-AWARE (P0.1): the native leg runs on whatever host you invoke it from — Windows
+(mingwX64, always the SDL renderer), or macOS/Linux (default the Skia renderer, or the SDL
+renderer under --renderer=sdl3). macOS/Linux run BOTH renderers, so one Mac verifies both
+legs. Needs Pillow.
 """
-import subprocess, sys, os, shutil
+import subprocess, sys, os, shutil, platform
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw
 
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "build" / "parity"
-NATIVE_EXE = REPO / "demo" / "build" / "bin" / "mingwX64" / "debugExecutable" / "demo.exe"
+
+# native target -> (gradle link-task suffix, K/N executable filename).
+TARGETS = {
+    "mingwX64":   ("MingwX64",   "demo.exe"),
+    "macosArm64": ("MacosArm64", "demo.kexe"),
+    "macosX64":   ("MacosX64",   "demo.kexe"),
+    "linuxX64":   ("LinuxX64",   "demo.kexe"),
+    "linuxArm64": ("LinuxArm64", "demo.kexe"),
+}
+
+
+def host_target() -> str:
+    s, m = platform.system(), platform.machine().lower()
+    arm = m in ("arm64", "aarch64")
+    if s == "Windows": return "mingwX64"
+    if s == "Darwin":  return "macosArm64" if arm else "macosX64"
+    if s == "Linux":   return "linuxArm64" if arm else "linuxX64"
+    raise SystemExit(f"parity: unsupported host {s}/{m}")
+
+
+def native_exe(target: str) -> Path:
+    _, exe = TARGETS[target]
+    return REPO / "demo" / "build" / "bin" / target / "debugExecutable" / exe
+
+
 WIDTH, HEIGHT = 1000, 700
 # Per-channel tolerance: below this a pixel counts as "same" (JPEG-ish noise,
 # sub-pixel AA, font hinting). Tuned so unrelated screens sit well under it.
@@ -45,19 +74,27 @@ def run(cmd, **kw):
     return subprocess.run(cmd, cwd=REPO, **kw)
 
 
-def build():
-    run([GRADLEW, ":demo:linkDebugExecutableMingwX64", "--console=plain"], check=True)
+def build(target: str, renderer: str):
+    suffix, _ = TARGETS[target]
+    cmd = [GRADLEW, f":demo:linkDebugExecutable{suffix}", "--console=plain"]
+    # macOS/Linux pick the renderer at BUILD time via -Prenderer; mingw is always sdl3
+    # (no property needed, and omitting it keeps the default Windows invocation stable).
+    if renderer == "sdl3" and target != "mingwX64":
+        cmd.append("-Prenderer=sdl3")
+    run(cmd, check=True)
 
 
 def jvm_shots(dst: Path):
     run([GRADLEW, ":demo:run", f"--args=--screenshot-all={dst}", "--console=plain"], check=True)
 
 
-def native_shot(name: str, dst: Path, gpu: str):
+def native_shot(name: str, dst: Path, exe: Path, gpu: str):
     bmp = dst / f"{name}.bmp"
-    run([str(NATIVE_EXE), f"--screen={name}", f"--screenshot={bmp}",
-         f"--gpu={gpu}", f"--width={WIDTH}", f"--height={HEIGHT}"],
-        check=False, timeout=60)
+    cmd = [str(exe), f"--screen={name}", f"--screenshot={bmp}",
+           f"--width={WIDTH}", f"--height={HEIGHT}"]
+    if gpu:  # runtime driver within the renderer; omit to let the app pick its default
+        cmd.append(f"--gpu={gpu}")
+    run(cmd, check=False, timeout=60)
     if bmp.exists():
         Image.open(bmp).convert("RGB").save(dst / f"{name}.png")
         bmp.unlink()
@@ -93,7 +130,19 @@ def main():
     argv = [a for a in sys.argv[1:] if not a.startswith("--")]
     flags = [a for a in sys.argv[1:] if a.startswith("--")]
     no_build = "--no-build" in flags
-    gpu = next((f.split("=", 1)[1] for f in flags if f.startswith("--gpu=")), "sdl3")
+    target = next((f.split("=", 1)[1] for f in flags if f.startswith("--target=")), host_target())
+    if target not in TARGETS:
+        print(f"parity: unknown --target={target} (known: {', '.join(TARGETS)})", file=sys.stderr)
+        return 2
+    # Renderer: mingw is always SDL; macOS/Linux default to Skia unless --renderer=sdl3.
+    renderer = next((f.split("=", 1)[1] for f in flags if f.startswith("--renderer=")),
+                    "sdl3" if target == "mingwX64" else "skia")
+    # Runtime GPU driver: default "sdl3" for the SDL renderer; omit for Skia (app default,
+    # e.g. Metal on macOS). Explicit --gpu= always wins.
+    gpu = next((f.split("=", 1)[1] for f in flags if f.startswith("--gpu=")),
+               "sdl3" if renderer == "sdl3" else "")
+    exe = native_exe(target)
+    print(f"parity: target={target} renderer={renderer} gpu={gpu or '(default)'} exe={exe}")
 
     OUT.mkdir(parents=True, exist_ok=True)
     jvm_dir = OUT / "_jvm"
@@ -103,7 +152,7 @@ def main():
         old.unlink()
 
     if not no_build:
-        build()
+        build(target, renderer)
         if jvm_dir.exists():
             shutil.rmtree(jvm_dir)
         jvm_dir.mkdir(parents=True)
@@ -123,7 +172,7 @@ def main():
     for name in names:
         jvm_png = jvm_dir / f"{name}.png"
         if not no_build or not (OUT / f"{name}.native.png").exists():
-            native_shot(name, OUT, gpu)
+            native_shot(name, OUT, exe, gpu)
             src = OUT / f"{name}.png"
             if src.exists():
                 src.replace(OUT / f"{name}.native.png")

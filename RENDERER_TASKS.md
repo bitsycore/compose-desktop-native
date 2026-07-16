@@ -31,7 +31,7 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
 
 ## Phase 0 — Guardrails & harness (do FIRST — makes everything else trustworthy)
 
-- [ ] **P0.1** Make `scripts/parity/parity.py` target-aware (`macosArm64` default + a
+- [x] **P0.1** Make `scripts/parity/parity.py` target-aware (`macosArm64` default + a
   `-Prenderer=sdl3` variant), not hardcoded to the mingw exe — so the Mac runs parity for
   BOTH legs. *Done:* one flag switches leg; both produce a ranked report. [CONVERGE §5/§8]
 - [ ] **P0.2** Add a one-command **MAC-VERIFY runbook** (`scripts/verify-mac.sh` or a
@@ -132,4 +132,7 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
 
 ## PROGRESS LOG (append newest last: `YYYY-MM-DD · task · commit · verification`)
 
-- (none yet — plan authored 2026-07-16; goal G1 decided; no Phase-0 task started)
+- 2026-07-16 · **P0.1** · parity.py target-aware (`--target`/`--renderer`, host-inferred
+  default) · verified on **Windows**: default mingw/SDL run intact (Buttons 16.47%, its
+  normal font-drift baseline; `--gpu=sdl3` passed); macOS Skia + macOS SDL legs resolve to
+  the right task/exe/gpu; bad target rejected. macOS/Linux end-to-end pending a Mac run.
