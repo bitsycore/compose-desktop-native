@@ -53,6 +53,13 @@ import sdl3_ttf.TTF_StringToTag
 import sdl3.SDL_IOFromConstMem
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.Density
+import freetype.FT_Done_Face
+import freetype.FT_Done_FreeType
+import freetype.FT_FaceVar
+import freetype.FT_Init_FreeType
+import freetype.FT_Library
+import freetype.FT_LibraryVar
+import freetype.FT_New_Memory_Face
 
 // ==================
 // MARK: Sdl3TextRenderer (mingwX64 fallback)
@@ -199,6 +206,9 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         for ((vMem, _) in fFontMem.values) nativeHeap.free(vMem)
         fFontMem.clear()
         fMissingFamilies.clear()
+        fCellRatios.clear()
+        fMetricsLib?.let { FT_Done_FreeType(it) }
+        fMetricsLib = null
         fFreeTypeIcons.destroy()
         TTF_Quit()
     }
@@ -219,9 +229,63 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
         override fun lineHeight(inFontSize: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?): Float {
             val vFont = getFont(inFontFamily, inFontSize, inFontVariations) ?: return inFontSize * 1.3f
+            // Skia-aligned cell for TEXT fonts (P3.1): Skia scales the face's hhea
+            // metrics linearly and the paragraph rounds to nearest, while
+            // TTF_GetFontHeight reports the grid-fitted CEILED int — +1px at the M3
+            // body sizes (12, 14), accumulating ~1px per stacked label down every
+            // parity page. Icon families keep the TTF value: their glyph boxes were
+            // tuned against it and Skia never renders them.
+            if (inFontFamily == null || !IconFont.isIconFamily(inFontFamily)) {
+                cellRatios(inFontFamily)?.let { vRatios ->
+                    val vPhysical = (inFontSize * fDpr).coerceAtLeast(1f)
+                    return (kotlin.math.round(vRatios.cell * vPhysical) / fDpr).coerceAtLeast(1f)
+                }
+            }
             // TTF_GetFontHeight returns physical pixels (we opened the
             // font at fontSize * DPR). Convert back to logical.
             return (TTF_GetFontHeight(vFont.reinterpret()).toFloat() / fDpr).coerceAtLeast(1f)
+        }
+    }
+
+    // ============
+    //  Unrounded face metrics (P3.1) — read hhea ascender/descender/upem once per
+    //  family straight from the font bytes via a metrics-only FreeType library
+    //  (SDL3_ttf exposes only grid-fitted ints). Ratios are size-independent.
+    private var fMetricsLib: FT_Library? = null
+    private data class CellRatios(val cell: Float, val ascent: Float)
+    private val fCellRatios = mutableMapOf<String?, CellRatios?>()
+
+    private fun cellRatios(inFamily: String?): CellRatios? {
+        if (fCellRatios.containsKey(inFamily)) return fCellRatios[inFamily]
+        val vComputed = computeCellRatios(inFamily)
+        fCellRatios[inFamily] = vComputed
+        return vComputed
+    }
+
+    private fun computeCellRatios(inFamily: String?): CellRatios? {
+        // getFont() has already staged the family bytes into fFontMem (lineHeight
+        // calls it first); absent bytes = system-font fallback -> no ratios.
+        val vSlot = fFontMem[inFamily] ?: return null
+        if (fMetricsLib == null) {
+            memScoped {
+                val vLibPtr = alloc<FT_LibraryVar>()
+                if (FT_Init_FreeType(vLibPtr.ptr).toInt() == 0) fMetricsLib = vLibPtr.value
+            }
+        }
+        val vLib = fMetricsLib ?: return null
+        memScoped {
+            val vFacePtr = alloc<FT_FaceVar>()
+            val vErr = FT_New_Memory_Face(vLib, vSlot.first.reinterpret(), vSlot.second.convert(), 0, vFacePtr.ptr)
+            if (vErr.toInt() != 0 || vFacePtr.value == null) return null
+            val vFace = vFacePtr.value!!.pointed
+            val vUpem = vFace.units_per_EM.toFloat()
+            val vRatios =
+                if (vUpem > 0f) CellRatios(
+                    cell = (vFace.ascender - vFace.descender).toFloat() / vUpem,
+                    ascent = vFace.ascender.toFloat() / vUpem,
+                ) else null
+            FT_Done_Face(vFacePtr.value)
+            return vRatios
         }
     }
 

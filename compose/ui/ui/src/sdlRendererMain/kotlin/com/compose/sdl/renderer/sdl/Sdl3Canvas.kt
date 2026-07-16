@@ -1043,6 +1043,7 @@ internal class Sdl3Canvas(
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 		inLineHeightPx: Float,
+		inTrimFirstLine: Boolean,
 	) {
 		// Capture mode: icon-font glyphs (Material Symbols via FreeType) record as an
 		// IconRun — flush pending geometry first for z-order, then capture the box in
@@ -1118,11 +1119,13 @@ internal class Sdl3Canvas(
 		// right edge instead of wrapping when the sidebar was resized narrower.
 		val vWrapWidth = if (inSoftWrap && inBoxWidth > 0f) inBoxWidth.toInt() else Int.MAX_VALUE
 		val vWrapped = vRenderer.wrap(inText, inFontSizePx, vWrapWidth, inFontFamily, inFontVariations)
-		// Line stacking mirrors SdlParagraph's compat-trim model: the FIRST line keeps
-		// the tight font cell; every following line advances by the paragraph's
-		// TextStyle.lineHeight band (inLineHeightPx) when supplied, else the font cell.
+		// Line stacking mirrors SdlParagraph's per-mode model: compat trim (raw styles)
+		// keeps the FIRST line at the tight font cell; M3's Trim.None (inTrimFirstLine =
+		// false) makes every line the full band. Following lines always advance by the
+		// band (inLineHeightPx) when supplied, else the font cell.
 		val vFontCellH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
 		val vAdvance = if (inLineHeightPx > 0f) inLineHeightPx else vFontCellH
+		val vFirstLineH = if (inTrimFirstLine || inLineHeightPx <= 0f) vFontCellH else vAdvance
 		// Per-run fontSize spans make a line's box the TALLEST run cell on it —
 		// same styledLineCellHeight the paragraph measured with, so paint stacks
 		// lines exactly where layout put them.
@@ -1139,15 +1142,15 @@ internal class Sdl3Canvas(
 				if (vMetricSpans && inSpans != null) {
 					// Size spans can exceed the band, never shrink below it — the same
 					// max() the paragraph's lineHeights used, so paint tracks layout
-					// (first line keeps its tight cell — compat trim).
+					// (first line keeps its tight cell under compat trim).
 					kotlin.math.max(
 						com.compose.sdl.text.styledLineCellHeight(
 							vLine, vWrapped.lineStarts.getOrElse(vIdx) { 0 }, inSpans,
 							inFontSizePx, vTr.dpr, vRenderer, inFontFamily, inFontVariations,
 						),
-						if (vIdx == 0 || inLineHeightPx <= 0f) 0f else inLineHeightPx,
+						if ((vIdx == 0 && inTrimFirstLine) || inLineHeightPx <= 0f) 0f else inLineHeightPx,
 					)
-				} else if (vIdx == 0) vFontCellH else vAdvance
+				} else if (vIdx == 0) vFirstLineH else vAdvance
 			// Cull lines that would fall entirely below the box (softWrap keeps the
 			// natural line count; the box just clips at draw time).
 			if (vLineY >= inY + inBoxHeight) break

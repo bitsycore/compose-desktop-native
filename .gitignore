@@ -61,3 +61,6 @@ bin/
 ### Python ###
 __pycache__/
 *.pyc
+
+# Probe artifacts written to the repo root by demo --nav3test / --searchesctest / --dialoganimtest
+/*.bmp

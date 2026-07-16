@@ -17,6 +17,7 @@ import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -43,6 +44,10 @@ fun main(args: Array<String>) {
             width = args.intArg("--width", 1000),
             height = args.intArg("--height", 700),
         )
+        return
+    }
+    if (args.any { it == "--metrics" }) {
+        printParagraphMetrics()
         return
     }
     application {
@@ -139,6 +144,63 @@ private fun notoTypography(family: FontFamily): Typography {
         labelMedium = b.labelMedium.copy(fontFamily = family),
         labelSmall = b.labelSmall.copy(fontFamily = family),
     )
+}
+
+/* Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans — the same
+   font the native leg bundles). The JVM half of the metrics-alignment probe: MainNative's
+   `--metricsprobe` prints the same table from SdlParagraph; aligning the numbers kills
+   the accumulating vertical text drift in parity (P3.1). Runs inside a headless scene so
+   LocalFontFamilyResolver supplies the platform resolver. */
+@OptIn(ExperimentalComposeUiApi::class)
+private fun printParagraphMetrics() {
+    val scene = ImageComposeScene(100, 100, density = Density(1f)) {
+        val resolver = androidx.compose.ui.platform.LocalFontFamilyResolver.current
+        val density = Density(1f)
+        fun paragraph(text: String, size: Int, lineHeight: Int?, m3Style: Boolean): androidx.compose.ui.text.Paragraph =
+            androidx.compose.ui.text.Paragraph(
+                text = text,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = size.sp,
+                    lineHeight = lineHeight?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+                    fontFamily = notoSans,
+                    lineHeightStyle = if (m3Style) {
+                        androidx.compose.ui.text.style.LineHeightStyle(
+                            alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
+                            trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
+                        )
+                    } else null,
+                ),
+                constraints = androidx.compose.ui.unit.Constraints(maxWidth = 10_000),
+                density = density,
+                fontFamilyResolver = resolver,
+            )
+        // What the demo's Text actually resolves to on this leg — is lineHeightStyle set?
+        println("metrics: m3 bodyMedium = ${Typography().bodyMedium.fontSize}/${Typography().bodyMedium.lineHeight} lineHeightStyle=${Typography().bodyMedium.lineHeightStyle}")
+        for (size in listOf(11, 12, 14, 16, 22, 24)) {
+            val lh = size + 6
+            val cell = paragraph("Hg", size, null, false)
+            val one = paragraph("Hg", size, lh, false)
+            val three = paragraph("Hg\nHg\nHg", size, lh, false)
+            val oneM3 = paragraph("Hg", size, lh, true)
+            val threeM3 = paragraph("Hg\nHg\nHg", size, lh, true)
+            println(
+                "metrics: size=$size lh=$lh cell=${cell.height} " +
+                    "one=${one.height} three=${three.height} " +
+                    "base1=${one.firstBaseline} base3=${three.lastBaseline} " +
+                    "oneM3=${oneM3.height} threeM3=${threeM3.height} base1M3=${oneM3.firstBaseline}"
+            )
+        }
+        // The band-smaller-than-cell case (Counter's fontSize=48 under body lineHeight).
+        val big = paragraph("42", 48, 24, false)
+        val bigM3 = paragraph("42", 48, 24, true)
+        println("metrics: big48/lh24 raw=${big.height} base=${big.firstBaseline} m3=${bigM3.height} baseM3=${bigM3.firstBaseline}")
+        println("metrics: DONE")
+    }
+    try {
+        scene.render()
+    } finally {
+        scene.close()
+    }
 }
 
 /* Same wrapper as MainNative's --screen path — plus NotoSans font-alignment (P0.3) so the

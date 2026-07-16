@@ -135,24 +135,18 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   gradients / AA / blur / complex-script text). Do ONLY the ones that rank as real wins, each
   gated by a parity improvement. **Stop when the ranking flattens** — JVM is the fidelity
   tier for the rest. [§0.5.3, §4 (B3)]
-  **Ranked gap list (classified from the beta02 sweep's diff images):**
-  1. *(cross-cutting, dominates every text-bearing screen)* **vertical text-metric drift** —
-     two components: (a) `TextStyle.lineHeight` was IGNORED by SdlParagraph → ~1px/wrapped-line
-     accumulation inside multi-line paragraphs — **FIXED** (compat-trim model: first line keeps
-     the tight font cell, following lines advance by the style lineHeight; LazyExtra 30.00→27.74,
-     AnnotatedString 24.88→24.59, all 55 other screens byte-identical); (b) single-line label
-     cells: TTF's grid-fitted INTEGER font height vs Skia's fractional ascent+descent
-     (~0.9px/label, accumulates across stacked labels — the remaining Tabs/GridsExtra term).
-     NEXT candidate; needs fractional metrics from FreeType (unrounded hhea × size / upem)
-     through lineHeight()/cell math — riskier, fractional layout heights everywhere.
-  2. **Gradient colour ramps** (Brushes 22.3, Canvas bottom section) — gradients DO render
-     (CLAUDE.md's "solid" note is stale) but interpolation/gamma differs visibly, radial/sweep
-     worst. Real user-visible SDL gap.
-  3. **Shadow falloff** (Shadows 24.6) — stacked-ring approximation vs Gaussian; named in the
-     screen's own subtitle as a known engine difference. Improving = new blur primitive; weigh
-     against §0.5.3 cap.
-  *(Tabs/LazyExtra/GridsExtra/AnnotatedString/Images top ranks are (1); content is otherwise
-  identical. NOT gaps: Animation/Pickers — quiescence-era determinism handled those.)*
+  **RESOLVED: the whole "font-drift baseline" was line-metric drift.** Fixing the text
+  metrics (see log: lineHeight modes + JVM-matched font cells) collapsed the ranking from
+  a ~17% median to **~2%** — Tabs 33.3→1.8, GridsExtra 28.5→1.3, Shadows 24.6→1.5,
+  Brushes 22.3→2.2, Carousel 23.1→1.9, Animation 24.5→3.0. The previously-suspected
+  "gradient ramp" and "shadow falloff" gaps were ALSO mostly drift — both now sit in the
+  ~2% noise floor. **Post-fix ranking (what's actually left):**
+  1. Pickers 19.5 — TimeInput focus auto-scroll positioning differs between legs
+     (bring-into-view final offset); interaction-layout, not rendering.
+  2. Images 16.6 — image-specific (decode/scale/filtering); needs its own diff read.
+  3. Text 9.2 / AnnotatedString 8.1 / Search 5.3 — residual text features (letter-spacing,
+     span metrics, alignment details).
+  4. Everything else ≤ ~4.3% — the flattened tail; JVM is the fidelity tier for it (§0.5.3).
 
 ## Ongoing — vendoring cadence
 
@@ -222,6 +216,21 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   verified on **Windows**: full 57-screen parity PASS, LazyExtra 30.00→27.74 +
   AnnotatedString 24.88→24.59, other 55 screens byte-identical; paragraph/key/click/
   scroll/back probes PASS; baselines re-seeded.
+- 2026-07-16 · **P3.1 fix #2+#3 (the big one)** · SDL text metrics now match upstream
+  EXACTLY, collapsing parity from ~17% median to **~2%** (Tabs 33.3→1.8, GridsExtra
+  28.5→1.3, Shadows 24.6→1.5, Brushes 22.3→2.2 — the whole "font-drift baseline" was
+  metric drift, not typeface). Three pieces, each driven by a new metrics probe pair
+  (`demo --metricsprobe` native / `:demo:run --args=--metrics` JVM — prints matched
+  Paragraph-height tables): (1) font CELL = round(hhea_ratio × size) via a metrics-only
+  FreeType read of the face tables (SDL3_ttf only exposes grid-fitted CEILED ints: +1px
+  at the M3 body sizes 12/14) — icon families keep the TTF path; (2) lineHeight modes:
+  `lineHeightStyle=null` → compat trim (first line = tight cell), M3's `Trim.None` →
+  UNIFORM bands (every line exactly lineHeight, even compressing below the cell — probe:
+  22sp/28 → 28); (3) lineHeight < fontSize is IGNORED (probe: 48sp/24 → 65 cell; this
+  was the first uniform-band attempt's Counter regression). Native/JVM probe tables now
+  agree on all configs (one raw quirk left: JVM's 18.5px advance at 12sp/18 raw) ·
+  verified on **Windows**: full parity PASS all 57, 9/9 probes PASS, baselines re-seeded
+  at the collapsed levels. skiko-side mirrors compile-pend the Mac run.
 - 2026-07-16 · **P0.2 (in progress)** · authored `scripts/verify-mac.sh` (host-target
   detect, both legs: build → nav3/back/click/scroll/multiwin probes gated on PASS →
   parity per leg → LazyColumn/Tabs draw-ms spot-check vs self-seeded baseline, +20% gate;

@@ -263,6 +263,7 @@ internal class SkiaCanvas(
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 		inLineHeightPx: Float,
+		inTrimFirstLine: Boolean,
 	) {
 		val vUnderline = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.Underline) == true
 		val vLineThrough = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.LineThrough) == true
@@ -284,6 +285,7 @@ internal class SkiaCanvas(
 			inBaseUnderline = vUnderline,
 			inBaseLineThrough = vLineThrough,
 			inLineHeightPx = inLineHeightPx,
+			inTrimFirstLine = inTrimFirstLine,
 		)
 	}
 

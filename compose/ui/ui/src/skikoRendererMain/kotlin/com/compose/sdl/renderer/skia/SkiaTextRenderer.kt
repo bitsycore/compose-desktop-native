@@ -166,15 +166,19 @@ class SkiaTextRenderer {
         // The paragraph's per-line band (TextStyle.lineHeight) in px — stack lines at
         // the same advance layout used. <= 0 → font-metrics height (legacy callers).
         inLineHeightPx: Float = 0f,
+        // Compat-trim (raw styles): the first line keeps the tight font cell. False for
+        // M3's LineHeightStyle(Trim.None) — every line is the full band.
+        inTrimFirstLine: Boolean = true,
     ) {
         val vKey = TypefaceKey(inFontFamily, variationsKey(inFontVariations))
         val vBaseFont = getFont(vKey, inFontFamily, inFontVariations, inFontSize)
         val vBaseMetrics = vBaseFont.metrics
-        // Compat-trim stacking (mirrors SdlParagraph): the FIRST line keeps the tight
-        // font cell; following lines advance by the paragraph's TextStyle.lineHeight
-        // band when supplied (inLineHeightPx), else the font cell.
+        // Per-mode stacking (mirrors SdlParagraph): compat trim keeps the FIRST line at
+        // the tight font cell; M3's Trim.None makes every line the full band. Following
+        // lines advance by the band (inLineHeightPx) when supplied, else the font cell.
         val vFontCellH = (vBaseMetrics.descent - vBaseMetrics.ascent).coerceAtLeast(1f)
         val vBaseLineHeight = if (inLineHeightPx > 0f) inLineHeightPx else vFontCellH
+        val vFirstLineH = if (inTrimFirstLine || inLineHeightPx <= 0f) vFontCellH else vBaseLineHeight
         val vCapHeight = if (vBaseMetrics.capHeight > 0f) vBaseMetrics.capHeight
                          else inFontSize * 0.7f
 
@@ -198,8 +202,8 @@ class SkiaTextRenderer {
                 inCanvas.drawString(expandTabs(vLines[0]), vPenX, vBaseline, vBaseFont, vFastPaint)
             } else {
                 for ((vIdx, vLine) in vLines.withIndex()) {
-                    val vSlotH = if (vIdx == 0) vFontCellH else vBaseLineHeight
-                    val vSlotTop = inY + (if (vIdx == 0) 0f else vFontCellH + (vIdx - 1) * vBaseLineHeight)
+                    val vSlotH = if (vIdx == 0) vFirstLineH else vBaseLineHeight
+                    val vSlotTop = inY + (if (vIdx == 0) 0f else vFirstLineH + (vIdx - 1) * vBaseLineHeight)
                     if (vSlotTop + vSlotH < inViewTop || vSlotTop > inViewBottom) continue
                     val vBaseline = vSlotTop + (vSlotH + vCapHeight) / 2f
                     val vPenX = alignX(inX, inBoxWidth, estimateTextWidth(vLine, inFontSize, inFontFamily, inFontVariations).toFloat(), inAlign)
@@ -225,9 +229,9 @@ class SkiaTextRenderer {
                             vLine, vLineStart, inSpans, inFontSize, fDensity,
                             textMeasurer, inFontFamily, inFontVariations,
                         ),
-                        if (vIdx == 0 || inLineHeightPx <= 0f) 0f else inLineHeightPx,
+                        if ((vIdx == 0 && inTrimFirstLine) || inLineHeightPx <= 0f) 0f else inLineHeightPx,
                     ).coerceAtLeast(1f)
-                } else if (vIdx == 0) vFontCellH else vBaseLineHeight
+                } else if (vIdx == 0) vFirstLineH else vBaseLineHeight
             if (vLineY + vLineH < inViewTop || vLineY > inViewBottom) {
                 vLineY += vLineH
                 continue
