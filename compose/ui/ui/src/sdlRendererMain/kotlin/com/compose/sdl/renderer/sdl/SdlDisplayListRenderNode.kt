@@ -41,10 +41,12 @@ import com.compose.sdl.graphics.prepareLayerTransformationMatrix
  and with NO per-frame render-target state (so none of the texture node's timing-
  dependent nondeterminism). See RENDERER_REFACTOR.md §3/§13.
 
- First increment captures GEOMETRY only. A leaf whose block draws text / images / clip
- / saveLayer trips the capture list's `unsupported` flag and falls back to a crisp
- block-replay (== DeferredRenderNode) — so it's always correct, just not yet cached.
- Extending capture to those op types is the next step (widens the fast path + the win).
+ Captures tessellated geometry, plain + spanned text runs, and Material Symbols icon
+ glyphs. A leaf whose block draws something not-yet-capturable (image blits, saveLayer,
+ a rounded/generic layer clip, alpha/blend/colorFilter/renderEffect, span backgrounds)
+ — or that hosts a child layer — trips the capture list's `unsupported` flag / defer
+ path and falls back to a crisp block-replay (== DeferredRenderNode): always correct,
+ just not cached. Image capture is the next step to widen the fast path further.
 */
 internal class SdlDisplayListRenderNode : NativeRenderNode {
 

@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontVariation
  re-tessellating every frame (DeferredRenderNode) or round-tripping through an
  offscreen texture (SdlRenderNode: fixed-resolution soft + timing-nondeterministic).
 
- It is an ORDERED command stream (z-order preserved) mixing two command kinds, each
+ It is an ORDERED command stream (z-order preserved) mixing three command kinds, each
  chosen to avoid the expensive recompute the way upstream skiko's Picture + Skia
  caches do, adapted to SDL:
    * GeometryBatch — tessellated untextured triangles (layer-local). SDL has no path/
@@ -22,12 +22,15 @@ import androidx.compose.ui.text.font.FontVariation
      glyph-run into a Picture. Replay re-looks-up the run texture via the text
      renderer's own per-run LRU (our analog of Skia's glyph atlas); if the cache
      evicted it, the lookup re-rasterises — so it NEVER holds a dangling texture
-     pointer. Text captured in the PLAIN path only (single run, no spans); spanned /
-     decorated / icon / background text marks the list unsupported → block-replay.
+     pointer. Covers PLAIN text AND spanned text (one TextRun per styled run); only a
+     run with a SpanStyle.background still defers (the background fill isn't captured).
+   * IconRun — a Material Symbols glyph by PARAMETERS; replay re-draws via FreeTypeIcons'
+     own glyph cache (eviction-safe), same lifetime story as TextRun.
 
- `unsupported` trips on any op not yet capturable (image, clip, saveLayer, shadow,
- spanned/decorated text) so the node falls back to a crisp block-replay — nothing
- un-captured ever leaks to the GPU.
+ `unsupported` trips on any op not yet capturable (image blits, saveLayer, shadow, a
+ rounded/generic LAYER clip, alpha/blend/colorFilter/renderEffect, span backgrounds)
+ so the node falls back to a crisp block-replay — nothing un-captured ever leaks to
+ the GPU.
 */
 
 internal sealed class DisplayCommand
