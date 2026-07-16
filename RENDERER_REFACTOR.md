@@ -1197,3 +1197,25 @@ fringe.** Measured geo-vs-geo (determinism) and geo-vs-default at settled frames
 
 So the geo default is correct everywhere; the only deterministic pixel delta vs the old
 path is a <0.06% AA fringe on rotated shapes. Everything else was screenshot timing.
+
+### 2026-07-16 — Icon-font glyph capture landed (commit `c5945f1a`)
+
+Material Symbols icons (the FreeType glyph path) now record as an `IconRun` in the
+display list instead of tripping `unsupported`. This was the real blocker for the
+**icon + text list-item / nav-item** leaf — the single most common composite widget:
+the glyph deferred the whole leaf, so its text + geometry couldn't cache either. Now
+the whole row caches. Replay maps the (leaf-local) box through the layer affine and
+re-draws via `FreeTypeIcons`' own glyph LRU (eviction-safe), with the immediate path's
+SDL_ttf fallback preserved for a codepoint missing from the subset font.
+
+Wins: **Lists** text draws 24 → 14, **NavRails** 28 → 16 (`draw` 2.88 → 2.23 ms, −23%).
+Full 57-screen sweep clean (56 at 0.000% geo-vs-default; Pickers = settle-timing).
+nav3test PASS. Icon-only monolithic grids (Icons / MaterialSymbols — one big layer)
+still defer, which is layer granularity, not a capture gap.
+
+**Capture coverage now:** geometry, plain text, spanned text (no background), and
+icon-font glyphs. Remaining deferrals (all correct via block-replay): `SpanStyle`
+background fills, `drawImageRect`/`drawNativePainter` images, alpha<1 / blend /
+colorFilter / renderEffect layers, rounded/generic layer clips, saveLayer, and
+parent layers with child layers. Image capture is the next coverage step (unblocks
+photo/vector-image leaves); the rest are either rare or inherently per-frame dynamic.
