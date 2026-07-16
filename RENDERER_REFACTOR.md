@@ -944,8 +944,27 @@ deterministic), so the diffs below are real, not screenshot jitter.
 
 **Decision: keep caching flag-gated (`CDN_LAYERCACHE=1`), default stays
 `DeferredRenderNode`.** The sweep caught a real regression (Pickers) before it could
-ship — exactly why the flag + sweep exist. **Before flipping the default:** fix the
-scroll/oversized-container positioning bug (a leaf whose content or clip exceeds its
-`size`, or a scroll layer, must not texture-cache — extend the record-time bail like
-the image/child checks), then re-sweep to confirm all screens ≤ the sub-perceptual
-floor. The common static case (the perf win) remains verified + available via the flag.
+ship — exactly why the flag + sweep exist. The common static case (the perf win)
+remains verified + available via the flag.
+
+**Investigation (chasing the Pickers bug) — partial fix, deeper issue found:**
+- **Root cause #1 (fixed, commit `29856d9b`): `beginOffscreen` never cleared the
+  render target.** Fresh SDL target textures are zeroed (so static leaves were fine),
+  but the retained-layer texture is REUSED across re-records → an un-cleared re-record
+  ghosted prior content. That was the Pickers multi-frame instability (cached changed
+  16.8% frame 6→60 while default was stable). Clearing to transparent on begin fixed
+  it in controlled tests (Pickers → 0.000%).
+- **Root cause #2 (open): the texture-cache path is NONDETERMINISTIC on complex
+  screens.** Even isolated (no lingering processes, killed between runs), Pickers
+  cached-vs-default swings between 0% and ~17% across identical launches — a
+  timing-dependent correctness issue (frame-timing-dependent texture/dirty state).
+  Screenshot-diffing can't reliably pin it (the target itself is nondeterministic).
+- **Carousel: ~4.4% persistent** (stable across frames) — a separate, deterministic
+  carousel-specific diff, still unexplained.
+
+**Verdict:** the texture-cache approach is robust for static leaves but has a
+timing-dependent robustness problem on complex screens that more texture patching is
+unlikely to fully solve. **The path to flipping the default is Phase 4's
+cached-geometry display list** (no offscreen texture → no fixed-resolution round-trip,
+no per-frame texture state → no timing dependence), plus a deterministic verification
+harness (frame-locked, or the JVM parity leg) rather than free-running screenshots.
