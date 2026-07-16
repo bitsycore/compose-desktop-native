@@ -112,6 +112,14 @@ internal class Sdl3DrawScope(
 	internal fun setMatrix(a: Float, b: Float, c: Float, d: Float, e: Float, f: Float) {
 		fMa = a; fMb = b; fMc = c; fMd = d; fMe = e; fMf = f
 	}
+	// Current device affine (a,b,c,d,e,f) — screen = (a*x+c*y+e, b*x+d*y+f). Phase 4
+	// replay reads this to re-transform captured layer-local vertices.
+	internal fun currentDeviceMatrix(): FloatArray = floatArrayOf(fMa, fMb, fMc, fMd, fMe, fMf)
+
+	// Phase 4: when set, flush() CAPTURES the tessellated batch (layer-local, if this
+	// scope's base CTM is identity) instead of submitting to the GPU. null = normal
+	// immediate submit. See SdlDisplayList.
+	internal var recordingSink: GeometrySink? = null
 
 	// ============
 	//  Vertex batch — heap-allocated buffer of SDL_Vertex shared across
@@ -133,6 +141,13 @@ internal class Sdl3DrawScope(
 	   call mid-scope when the buffer fills up (no cross-triangle state). */
 	fun flush() {
 		if (fBatchCount == 0) return
+		val vSink = recordingSink
+		if (vSink != null) {
+			// Phase 4 recording: capture the batch (layer-local) instead of submitting.
+			vSink.captureGeometry(fVertexData, fBatchCount)
+			fBatchCount = 0
+			return
+		}
 		fVertexData.usePinned { vPinned ->
 			platform.posix.memcpy(
 				fBatch,
@@ -973,7 +988,7 @@ private const val kBatchCapacity: Int = 8190
 
 // Floats per SDL_Vertex: position(x,y) + color(r,g,b,a) + tex_coord(x,y), tightly
 // packed. Used to stage vertices in a Kotlin FloatArray and memcpy them across.
-private const val kFloatsPerVertex: Int = 8
+internal const val kFloatsPerVertex: Int = 8
 
 // ==================
 // MARK: Brush → per-vertex colour sampler
