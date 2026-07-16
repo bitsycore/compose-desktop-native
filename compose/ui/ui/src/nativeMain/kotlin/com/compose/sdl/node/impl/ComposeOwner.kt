@@ -206,17 +206,22 @@ internal class ComposeOwner(
 	}
 
 	override fun notifyLayerIsDirty(layer: OwnedLayer, isDirty: Boolean) {
-		if (isDirty) {
-			if (isDrawingContent) {
-				val list = postponedDirtyLayers
-					?: mutableListOf<OwnedLayer>().also { postponedDirtyLayers = it }
-				if (layer !in list) list.add(layer)
-			} else if (layer !in dirtyLayers) {
-				dirtyLayers.add(layer)
+		// Mirrors upstream OwnedLayerManagerImpl exactly. The CRITICAL detail: when a
+		// layer clears its dirty flag DURING drawing (updateDisplayList sets isDirty
+		// = false in the renderRoot loop), we must NOT remove it from dirtyLayers here
+		// — that would shrink the list mid-iteration (IndexOutOfBounds). renderRoot's
+		// dirtyLayers.clear() after the loop handles it instead.
+		if (!isDirty) {
+			if (!isDrawingContent) {
+				dirtyLayers.remove(layer)
+				postponedDirtyLayers?.remove(layer)
 			}
+		} else if (!isDrawingContent) {
+			dirtyLayers += layer
 		} else {
-			dirtyLayers.remove(layer)
-			postponedDirtyLayers?.remove(layer)
+			val postponed = postponedDirtyLayers
+				?: mutableListOf<OwnedLayer>().also { postponedDirtyLayers = it }
+			postponed += layer
 		}
 	}
 
@@ -234,11 +239,19 @@ internal class ComposeOwner(
 	// clean layers replay. Called once per frame by ComposeRootHost.drawRoot.
 	internal fun renderRoot(canvas: Canvas) {
 		isDrawingContent = true
+		// Re-record dirty layers BEFORE drawing (unlike Android, our draw forms the
+		// actual render-command sequence, so display lists must be current first).
+		// notifyLayerIsDirty(false) is a no-op while drawing, so the list can't shrink
+		// here; clear() below drops them all at once.
 		if (dirtyLayers.isNotEmpty()) {
-			for (i in dirtyLayers.indices) dirtyLayers[i].updateDisplayList()
-			dirtyLayers.clear()
+			for (i in 0 until dirtyLayers.size) {
+				dirtyLayers[i].updateDisplayList()
+			}
 		}
+		dirtyLayers.clear()
 		root.draw(canvas, null)
+		// Layers that invalidated themselves during draw were parked in postponed;
+		// roll them into next frame.
 		postponedDirtyLayers?.let {
 			dirtyLayers.addAll(it)
 			it.clear()
