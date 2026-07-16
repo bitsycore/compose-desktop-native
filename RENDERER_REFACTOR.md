@@ -1076,3 +1076,51 @@ stays `DeferredRenderNode`. **Before flipping:** fix the Carousel widget diff; a
 frame-locked/deterministic harness would also let Pickers be verified cleanly (its
 timing sensitivity defeats free-running screenshots). Image + clip capture would widen
 coverage further (both currently defer, correctly).
+
+### 2026-07-16 — Carousel fixed + DEFAULT FLIPPED to `geo` (commits `4371335b`, `bff6b484`)
+
+The Carousel blocker was a real bug in the geo node's fast path, now fixed. Root cause:
+the fast path (`replayDisplayList`) re-emits raw tessellated geometry via
+`SDL_RenderGeometry`, which the SDL canvas clips **only to a rectangle**
+(`SDL_SetRenderClipRect`). Its rounded-corner clip is a lazy offscreen mask realized
+from `drawRect`/`admitDraw` — a path `replayBatch` never goes through — so a
+**rounded / path LAYER clip went uncut on the fast path**. A carousel item is
+`Modifier.clip(morphingRoundedShape).background(colour)`: the colour fill (captured as
+geometry) overflowed the ignored rounded mask, so the card rendered as a square in the
+wrong silhouette (the deterministic 4.4% geo-vs-default diff, read as "carousel at a
+different horizontal position + a solid bottom element").
+
+Fix (`SdlDisplayListRenderNode.drawInto`): a **rectangular** layer clip is applied on
+the fast path (honoured by `SDL_RenderGeometry` via the clip rect, so cached geometry
+stays fast); a **rounded / generic** layer clip forces the block-replay (added to
+`needsCompositing`), which re-runs the block through `drawRect` and realizes the mask
+correctly — identical to `DeferredRenderNode`. Strictly more correct: leaves that were
+silently wrong are now right, and unclipped / rect-clipped leaves keep the fast path.
+
+**Pickers was never a render bug.** Default is deterministic at frame 6 (def-vs-def
+0.000%) but geo showed ~15% because geo's *faster* frames reach the fixed capture
+frame (`--frames=6`) with less elapsed wall-clock time, so a time-driven entry
+animation hasn't settled — the whole page is shifted a few px (identical content, hand
+still at "2"). Proof: at `--frames=200` (settled), **geo-vs-geo AND geo-vs-default are
+both 0.000%**. It's a screenshot-harness timing sensitivity, not the node.
+
+**Full 57-screen sweep, geo vs previous block-replay default, `--frames=6`:**
+55 screens **0.000%**; only `GraphicsLayer` 0.122% and `ModShortcuts` 0.095% nonzero —
+both the *same* sub-pixel AA fringe on **rotated** squares (the geo path rotates
+pre-tessellated local-space fringe vertices; the block-replay tessellates in device
+space — a <1px edge difference, deterministic, cosmetic; axis-aligned content is
+pixel-identical). Carousel and Pickers now 0.000%.
+
+**Flip done.** `createNativeRenderNode` (SDL) now defaults to `SdlDisplayListRenderNode`.
+Escape hatches: `CDN_LAYERCACHE=off|defer|0` → `DeferredRenderNode` (the previous
+default, kept as a fallback); `=1|texture` → `SdlRenderNode` (legacy texture cache).
+Verified: new-default(geo) vs `=off`(Deferred) reproduces the sweep exactly; `nav3test`
+PASS; profiler shows the win is now the DEFAULT — LazyColumn steady-state
+**draw 3.55 → 1.52ms (−57%)**, text draws 22 → 6, mask realizations 2 → 0. (Higher
+`present` on geo is just more vsync-block idle — the frame is vsync-capped either way;
+the 57% `draw` drop is real headroom for heavier screens / higher refresh.)
+
+Remaining on the SDL leg: extend capture to **image** and **rounded-clip** leaves so
+they cache too (both defer correctly today — correctness is not at stake, only extra
+fast-path coverage); shrink the rotated-edge AA delta if it's ever worth it. #4 the
+Skia leg (skiko `RenderNode`) is still mac/CI-only — can't build on Windows.
