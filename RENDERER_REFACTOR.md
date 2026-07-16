@@ -812,3 +812,43 @@ navigation layer-lifecycle all correct.
 
 **Next unchanged:** `SdlRenderNode` storage swap (the perf win), then Skia-leg
 verification on mac/CI.
+
+### 2026-07-16 — GraphicsLayer becomes a façade over NativeRenderNode
+
+Restructured to the upstream shape so the caching node can slot in cleanly:
+
+- **`GraphicsLayer.native` is now a copy-edit of `SkiaGraphicsLayer.skiko.kt`**
+  (commit `44e09aa8`): it mirrors every visual property onto a backing
+  `NativeRenderNode` and delegates `record`/`draw`, instead of the ad-hoc
+  lambda-replay. (Trimmed vs upstream: outsets, ChildLayerDependenciesTracker.)
+- **`NativeRenderNode`** reshaped to `record(block)` / `drawInto(canvas)` / `close()`
+  + the full skiko-RenderNode property surface.
+- **`DeferredRenderNode`** (nativeMain, renderer-agnostic) is the node both legs use
+  *today* — replay-the-block, **unifying the old `GraphicsLayer.native` lambda-replay
+  AND `ProjectOwnedLayer`'s transform/shadow/clip** in one place. Transform via
+  `prepareLayerTransformationMatrix` + `canvas.concat` (same matrix as hit-testing).
+- **`toImageBitmap` implemented** (was throwing): renders the layer into a fresh
+  `ImageBitmap`, flushed via new `NativeFinishableCanvas` (SDL must commit its
+  offscreen texture; Skia `finish()` is a no-op).
+
+Still **behaviour-preserving** — `DeferredRenderNode` re-tessellates on replay, so no
+perf win yet. Verified: `:ui` green; demo renders `GraphicsLayer` (rotation/scale/
+alpha byte-identical), `Buttons`/`Shapes` correct; `--nav3test` PASS.
+
+**Next — the actual perf win (the one remaining hard piece):** swap
+`createNativeRenderNode` to a caching node so `drawInto` stops re-tessellating.
+- **Skia leg (2a, mac/CI):** back it with skiko `org.jetbrains.skiko.node.RenderNode`
+  — near-verbatim `SkiaGraphicsLayer` internals (record into `beginRecording()`'s
+  canvas, `drawInto` replays). Needs a SkiaCanvas↔SkCanvas bridge + renderer
+  resources (text/image caches) reachable from the node — the context is created
+  resource-less today, so wire that (register on the backend like `offscreenRenderer`).
+- **SDL leg (2b, Windows):** offscreen-texture node (record → SdlImageBitmap via
+  `offscreenRenderer`, replay → transformed blit). **Design gotchas found:** (1) the
+  offscreen infra already save/restores nested render targets, but the *parent*
+  canvas's batched geometry must flush before a child switches target; (2) textures
+  bake children by-value, so — unlike skiko's by-reference `Picture` — a child
+  content change must re-bake ancestors: wire `invalidateParentLayer` propagation (a
+  documented divergence from upstream `GraphicsLayerOwnerLayer`, necessary for a
+  texture backend). Verify against `DeferredRenderNode` output (should be pixel-equal)
+  + profiler (draw drops on the static sidebar). Best done with the parity harness,
+  not just screenshots.
