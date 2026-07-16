@@ -94,7 +94,16 @@ internal class SdlDisplayListRenderNode : NativeRenderNode {
 	private val drawScope = CanvasDrawScope()
 
 	private var displayList: SdlDisplayList? = null
-	private var deferMode = false   // sticky: block drew a not-yet-capturable op
+	private var deferMode = false   // sticky: block drew a not-yet-capturable op / has a child layer
+	private var sawChild = false    // a child layer drew during this node's record
+
+	// Main-loop-thread stack of nodes currently recording. A child's drawInto (invoked
+	// while its parent's block runs) flags the parent as a non-leaf so the parent
+	// defers — nesting is by DEFER (children composite themselves on the parent's
+	// block-replay), avoiding by-value baking + GPU leaks into the capture pass.
+	private companion object {
+		val fRecordingStack = ArrayList<SdlDisplayListRenderNode>()
+	}
 
 	override fun record(
 		density: Density,
@@ -116,10 +125,16 @@ internal class SdlDisplayListRenderNode : NativeRenderNode {
 		// Capture at identity base CTM ⇒ layer-local geometry. No GPU touched.
 		val list = SdlDisplayList()
 		val capture = renderer.createCaptureCanvas(list, Size(w.toFloat(), h.toFloat()))
-		drawScope.draw(recordedDensity, recordedLayoutDirection, capture, Size(w.toFloat(), h.toFloat()), block)
-		capture.finish()
+		sawChild = false
+		fRecordingStack.add(this)
+		try {
+			drawScope.draw(recordedDensity, recordedLayoutDirection, capture, Size(w.toFloat(), h.toFloat()), block)
+		} finally {
+			fRecordingStack.removeAt(fRecordingStack.size - 1)
+			capture.finish()
+		}
 
-		if (list.unsupported) {
+		if (list.unsupported || sawChild) {
 			deferMode = true
 		} else {
 			displayList = list
@@ -128,6 +143,14 @@ internal class SdlDisplayListRenderNode : NativeRenderNode {
 
 	override fun drawInto(canvas: Canvas) {
 		val block = recordedBlock ?: return
+		// Drawn during a PARENT's record → flag the parent as a non-leaf and draw
+		// NOTHING now. The parent will defer to a block-replay that draws us normally;
+		// this prevents leaking our GPU ops into the target-less capture pass and
+		// avoids by-value child baking.
+		if (fRecordingStack.isNotEmpty()) {
+			fRecordingStack[fRecordingStack.size - 1].sawChild = true
+			return
+		}
 		val w = size.width.toFloat()
 		val h = size.height.toFloat()
 
@@ -167,9 +190,9 @@ internal class SdlDisplayListRenderNode : NativeRenderNode {
 			colorFilter != null || renderEffect != null
 
 		if (list != null && !needsCompositing && canvas is Sdl3Canvas && w > 0f && h > 0f) {
-			// GEO fast path: re-emit captured layer-local vertices through the current
-			// transform. Crisp at any scale/rotation, bit-exact, no texture.
-			canvas.replayGeometryList(list)
+			// GEO fast path: re-emit captured commands (geometry + text) through the
+			// current transform. Crisp at any scale/rotation, bit-exact, no texture.
+			canvas.replayDisplayList(list)
 		} else {
 			// Block-replay fallback (== DeferredRenderNode): clip + alpha + re-run block.
 			if (clip && w > 0f && h > 0f) applyClip(canvas)

@@ -176,6 +176,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     // Cap-and-clear (not LRU): lookups stay a single hash op on the hot measure
     // path, and re-measuring after a rare full clear is cheap.
     private data class WidthKey(val family: String?, val text: String, val fontSize: Int, val variations: String, val style: Int)
+    // Phase 4: when set, drawText CAPTURES a plain run (text + params) into the display
+    // list instead of blitting — eviction-safe (replay re-looks-up the cache). Set only
+    // for plain (no-span) text by Sdl3Canvas capture mode; spanned/icon text bails.
+    internal var runSink: TextRunSink? = null
+
     private val fWidthCache = mutableMapOf<WidthKey, Int>()
 
     /* Returns false if TTF couldn't init. */
@@ -422,6 +427,10 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         // blit each as its own texture at its prefix x. Tabs expand for both the
         // prefix measure and the texture so offsets and glyphs agree.
         if (inSpans != null) {
+            // Spanned runs (per-segment blits + backgrounds) aren't captured yet — in
+            // capture mode, bail so the leaf falls back to a crisp block-replay (no GPU
+            // op leaks). Plain text below IS captured.
+            runSink?.let { it.markUnsupported(); return }
             // O(spans + line length) style runs (colour + weight + italic +
             // background + decoration + size), instead of an O(chars × spans)
             // per-character scan.
@@ -544,12 +553,53 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         // round(v * dpr) / dpr keeps the blit 1:1, matching Skia's crispness.
         fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
 
+        val vSink = runSink
+        if (vSink != null) {
+            // Capture the plain run for eviction-safe retained replay — params, NOT the
+            // texture pointer (the LRU may evict it; replay re-looks-up). Snapped
+            // layer-local dst; replay maps the origin through the layer affine.
+            val vArgb = (inColor.a8 shl 24) or (inColor.r8 shl 16) or (inColor.g8 shl 8) or inColor.b8
+            vSink.captureTextRun(
+                inFontFamily, vText, inFontSize, inFontVariations, vBaseStyle,
+                snap(vPenX), snap(vPenY), vLogW, vLogH, vArgb,
+            )
+            return
+        }
         memScoped {
             val vDst = alloc<SDL_FRect>()
             vDst.x = snap(vPenX)
             vDst.y = snap(vPenY)
             vDst.w = vLogW
             vDst.h = vLogH
+            SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)
+        }
+    }
+
+    // Phase 4 replay: blit a captured plain run. Re-looks-up the run texture
+    // (eviction-safe — re-rasterises if the LRU dropped it), applies the tint, and
+    // blits at the given DEVICE origin (already mapped through the layer affine) at
+    // logical size (matching the immediate path: layer scale reaches position, not size).
+    internal fun blitRun(
+        inFontFamily: String?,
+        inText: String,
+        inFontSize: Int,
+        inFontVariations: List<FontVariation.Setting>?,
+        inStyle: Int,
+        inDeviceX: Float,
+        inDeviceY: Float,
+        inLogW: Float,
+        inLogH: Float,
+        inColor: ComposeColor,
+    ) {
+        val vRenderer = backend.renderer ?: return
+        val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inFontVariations, inStyle) ?: return
+        applyTint(vCached.tex, inColor)
+        memScoped {
+            val vDst = alloc<SDL_FRect>()
+            vDst.x = kotlin.math.round(inDeviceX * fDpr) / fDpr
+            vDst.y = kotlin.math.round(inDeviceY * fDpr) / fDpr
+            vDst.w = inLogW
+            vDst.h = inLogH
             SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)
         }
     }

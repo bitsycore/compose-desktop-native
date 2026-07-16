@@ -103,15 +103,35 @@ internal class Sdl3Canvas(
 		return true
 	}
 
-	// Replay a captured geometry-only display list into this (real) canvas under its
-	// CURRENT transform: sync the affine to the scope, then re-emit each layer-local
-	// batch through it. Used by SdlDisplayListRenderNode.drawInto.
-	internal fun replayGeometryList(list: SdlDisplayList) {
+	// Replay a captured display list into this (real) canvas under its CURRENT
+	// transform, in order (z-order preserved). Geometry batches re-emit their
+	// layer-local vertices through the affine; text runs flush pending geometry then
+	// re-look-up + blit at the transformed origin (glyph size stays logical). Used by
+	// SdlDisplayListRenderNode.drawInto.
+	internal fun replayDisplayList(list: SdlDisplayList) {
 		fScope.flush()
 		fScope.setMatrix(fMa, fMb, fMc, fMd, fMe, fMf)
-		for (i in list.batches.indices) {
-			val b = list.batches[i]
-			fScope.replayBatch(b.vertexData, b.vertexCount)
+		for (i in list.commands.indices) {
+			when (val cmd = list.commands[i]) {
+				is GeometryBatch -> fScope.replayBatch(cmd.vertexData, cmd.vertexCount)
+				is TextRun -> {
+					fScope.flush() // submit geometry before this run (z-order)
+					// Transform the run ORIGIN by the affine; keep glyph size logical
+					// (matches the immediate path: layer scale reaches position, not size).
+					fTextRenderer?.blitRun(
+						inFontFamily = cmd.fontFamily,
+						inText = cmd.text,
+						inFontSize = cmd.fontSizePx,
+						inFontVariations = cmd.variations,
+						inStyle = cmd.style,
+						inDeviceX = mapX(cmd.x, cmd.y),
+						inDeviceY = mapY(cmd.x, cmd.y),
+						inLogW = cmd.w,
+						inLogH = cmd.h,
+						inColor = androidx.compose.ui.graphics.Color(cmd.colorArgb),
+					)
+				}
+			}
 		}
 		fScope.flush()
 	}
@@ -1006,7 +1026,14 @@ internal class Sdl3Canvas(
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 	) {
-		if (captureUnsupported()) return
+		// Capture mode: icon families blit via a separate FreeType path not captured
+		// yet → defer that leaf. Plain/decorated text IS captured (runSink set below);
+		// spanned text bails inside Sdl3TextRenderer.drawText.
+		val vCaptureList = fCaptureList
+		if (vCaptureList != null && inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
+			vCaptureList.unsupported = true
+			return
+		}
 		// Small centred labels (a popped bubble's "pop") usually sit fully
 		// inside a rounded clip — gate on containment like other draws, with
 		// a 2px margin for glyph overhang / AA bleed, instead of paying a
@@ -1070,6 +1097,11 @@ internal class Sdl3Canvas(
 		// lines exactly where layout put them.
 		val vMetricSpans = com.compose.sdl.text.spansAffectMetrics(inSpans)
 
+		// Capture mode: route each plain line's run to the display list (spanned lines
+		// bail inside drawText via markUnsupported). Reset after the loop. No-op when
+		// not capturing (vCaptureList == null).
+		fTextRenderer?.runSink = vCaptureList
+
 		var vLineY = inY
 		for ((vIdx, vLine) in vWrapped.lines.withIndex()) {
 			val vLineH =
@@ -1104,6 +1136,7 @@ internal class Sdl3Canvas(
 			)
 			vLineY += vLineH
 		}
+		fTextRenderer?.runSink = null
 	}
 
 	// ============
