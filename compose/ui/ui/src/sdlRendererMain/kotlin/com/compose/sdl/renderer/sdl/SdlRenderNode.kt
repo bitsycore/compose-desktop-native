@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import com.compose.sdl.graphics.DrawStats
 import com.compose.sdl.graphics.NativeRenderNode
 import com.compose.sdl.graphics.NativeShadowCanvas
 import com.compose.sdl.graphics.NativeShapeClipCanvas
@@ -136,6 +137,15 @@ internal class SdlRenderNode : NativeRenderNode {
 		val target = renderer.createCanvas(bmp) ?: return
 
 		sawChildDuringRecord = false
+		// Watch for image/vector/icon blits: content with partial alpha (a decoded
+		// image, a tinted icon) does NOT round-trip bit-exact through the 8-bit
+		// premultiplied offscreen (the heart painterResource rendered visibly wrong),
+		// so a leaf that draws any image bails to the crisp block-replay. Text/shapes/
+		// solid fills bump other DrawStats counters and stay cached (pixel-equal).
+		// (A true bit-exact cache of such content is Phase 4's cached-geometry list,
+		// which has no texture round-trip.) Costs little: icons are blits, not
+		// tessellation — the big tessellation cost is text, which still caches.
+		val imgBlitsBefore = DrawStats.imageBlits
 		fRecordingStack.add(this)
 		try {
 			// Content is recorded at layer-local origin; the transform is applied at
@@ -147,9 +157,11 @@ internal class SdlRenderNode : NativeRenderNode {
 			fRecordingStack.removeAt(fRecordingStack.size - 1)
 			(target as? com.compose.sdl.graphics.NativeFinishableCanvas)?.finish()
 		}
+		val drewImage = DrawStats.imageBlits > imgBlitsBefore
 
-		if (sawChildDuringRecord) {
-			// Not a leaf — abandon caching for this node's lifetime.
+		if (sawChildDuringRecord || drewImage) {
+			// Not a cacheable leaf (has a child layer, or drew an image) — abandon
+			// caching for this node's lifetime and replay the block instead.
 			deferMode = true
 			releaseBitmap()
 		} else {
