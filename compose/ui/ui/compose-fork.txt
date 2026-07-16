@@ -757,11 +757,13 @@ skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt -> src/vendo
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt
-#   desktopMain (173)
+#   desktopMain (175)
 #     | desktopMain/kotlin/androidx/compose/ui/Actuals.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/Actuals.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ConfigureSwingGlobalsForCompose.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ConfigureSwingGlobalsForCompose.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/DesktopComposeUiFlags.skiko.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/DesktopComposeUiFlags.skiko.kt
+#     | desktopMain/kotlin/androidx/compose/ui/ProvideSystemTheme.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ProvideSystemTheme.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtDimension.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtDimension.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtEventFilter.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtEventFilter.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtEvents.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtEvents.desktop.kt

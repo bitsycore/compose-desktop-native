@@ -143,8 +143,10 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   `v1.12.0-beta01+dev4324` — verified to dereference to the exact previous hash `1be9d64…`
   and to exist on upstream's remote (`ls-remote`), so clone/fetch-by-name always works;
   the 3 `VENDOR-BASE` headers re-spelled to the tag so P0.6's ref-compare stays green.)* [§9]
-- [ ] **O.2** Write + follow the **ref-bump runbook**: bump → `sync.py` → build → DRIFT-CHECK
-  → MAC-VERIFY + WIN-SMOKE. Run it on each upstream bump. [§9]
+- [~] **O.2** Write + follow the **ref-bump runbook**: bump → `sync.py` → build → DRIFT-CHECK
+  → MAC-VERIFY + WIN-SMOKE. Run it on each upstream bump. [§9] *(First real bump executed:
+  beta01+dev4324 → **v1.12.0-beta02**, see log. Windows legs green end-to-end; the Mac legs
+  of MAC-VERIFY still pend P0.2's first Mac run.)*
 
 ## Deferred / shelved (NOT active — do not pick up without a new decision)
 
@@ -209,3 +211,13 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   tag dereferences to the exact old hash (`rev-parse ^{}`), exists on upstream's remote
   (`ls-remote`), full re-sync at the tag byte-identical (check-vendor-clean PASS, 1553
   files), check-vendor-drift PASS (3/3 base == pin).
+- 2026-07-16 · **O.2 (first bump)** · both pins → **v1.12.0-beta02** (user request):
+  COMPOSE_CORE_REF + COMPOSE_REF, catalog `compose=1.12.0-beta02`, JVM forcing
+  `1.12.0-beta02` / m3 `1.12.0-alpha03` (released pairs confirmed on Maven Central) ·
+  flow: sync (fixed a real sync.py bug the bump exposed: fetch-by-TAG only reached
+  FETCH_HEAD, checkout failed — now fetches `refs/tags/x:refs/tags/x` with FETCH_HEAD
+  fallback) → DRIFT-CHECK (3 manual vendors flagged; clone diff proved all 3 upstream
+  bases UNCHANGED base..pin → refs re-stamped) → builds green (demo+apidemo, native+jvm,
+  zero code fallout) → 8/8 probes PASS → full parity PASS vs the beta01-era baselines
+  with 56/57 screens at their EXACT % (only GraphicsLayer +0.01) → baselines re-seeded.
+  Windows-only; Mac legs pend P0.2.

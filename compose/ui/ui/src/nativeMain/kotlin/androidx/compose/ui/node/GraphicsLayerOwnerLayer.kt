@@ -16,7 +16,7 @@
 
 // MANUALLY VENDORED (NON-IDEMPOTENT) from compose-multiplatform-core:
 //   compose/ui/ui/src/skikoMain/.../node/GraphicsLayerOwnerLayer.skiko.kt
-// VENDOR-BASE: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt @ v1.12.0-beta01+dev4324
+// VENDOR-BASE: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt @ v1.12.0-beta02
 // Change vs upstream: dropped the trailing `SkiaGraphicsContext.setLightingInfo`
 // extension + LIGHT_* constants (skiko-only shadow lighting; our shadows go via
 // NativeShadowCanvas). The class body is unchanged — it is the real OwnedLayer

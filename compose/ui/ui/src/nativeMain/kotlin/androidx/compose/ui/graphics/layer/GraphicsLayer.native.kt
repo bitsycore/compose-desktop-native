@@ -28,7 +28,7 @@ import com.compose.sdl.graphics.NativeRenderNode
 //
 // DERIVED (copy + edit) from compose-multiplatform-core
 //   ui-graphics/src/skikoMain/.../graphics/layer/SkiaGraphicsLayer.skiko.kt.
-// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt @ v1.12.0-beta01+dev4324
+// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt @ v1.12.0-beta02
 // The ONLY structural change vs upstream: the backing display-list node is our
 // renderer-agnostic `NativeRenderNode` instead of `org.jetbrains.skiko.node.RenderNode`,
 // so both renderers share this façade (Skia's node wraps the real skiko RenderNode;

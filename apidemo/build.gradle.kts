@@ -20,8 +20,8 @@ val vHostSupportsMingw: Boolean by rootProject.extra
 // COMPOSE_CORE_REF (see scripts/compose-fork/compose.properties); mirrors
 // :demo's forcing (Gradle orders "+dev" BELOW the plain version, so the
 // plugin's beta01 would win conflict resolution without it).
-val vComposeJvmVersion = "1.12.0-beta01+dev4324"
-val vComposeM3JvmVersion = "1.12.0-alpha03+dev4324"
+val vComposeJvmVersion = "1.12.0-beta02"
+val vComposeM3JvmVersion = "1.12.0-alpha03"
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
