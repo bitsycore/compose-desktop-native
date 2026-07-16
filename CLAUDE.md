@@ -228,10 +228,23 @@ Two categories of code live in each module:
    NON-IDEMPOTENT.** Move it OUT of `src/vendor/` into the corresponding
    `src/{commonMain,nativeMain,…}` tree, add a header comment noting
    which upstream file it derived from and what changed, and comment
-   its line out of `compose-fork.txt`. Now it's a project file — the
-   next sync won't overwrite it, and future upstream changes to that
-   file need to be reconciled by hand. This is fine; do it when the
-   edit is small and the file is unlikely to churn upstream.
+   its line out of `compose-fork.txt`. **ALWAYS also add the
+   machine-readable provenance line** so the copy can be diffed against
+   its base and against later upstream versions:
+
+   ```
+   // VENDOR-BASE: <upstream-repo-relative-path> @ <pinned-tag>
+   // VENDOR-BASE(COMPOSE_REF): <path> @ <tag>     ← for umbrella-repo files
+   ```
+
+   `scripts/compose-fork/check-vendor-drift.py` reads these at every ref
+   bump: it flags any file whose recorded base lags the current pin and
+   (with the local clone) reports whether the upstream base ACTUALLY
+   changed base..pin — i.e. whether the copy needs hand-reconciling or
+   just a ref re-stamp. Now it's a project file — the next sync won't
+   overwrite it, and future upstream changes to that file need to be
+   reconciled by hand. This is fine; do it when the edit is small and
+   the file is unlikely to churn upstream.
 
 4. **Skiko-specific things go in `:ui/src/skikoRendererMain/`, with
    an SDL3 equivalent in `:ui/src/sdlRendererMain/`.** When upstream

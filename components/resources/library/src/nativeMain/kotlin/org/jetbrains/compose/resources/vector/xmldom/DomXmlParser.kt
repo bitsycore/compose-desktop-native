@@ -16,6 +16,8 @@ package org.jetbrains.compose.resources.vector.xmldom
    CDATA skipping, and the five predefined entities plus numeric character
    references. No DTD expansion, no processing-instruction handling beyond
    skipping — malformed input throws MalformedXMLException like upstream. */
+// VENDOR-BASE(COMPOSE_REF): components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt @ v1.12.0-beta02
+// (fresh REIMPL, not a copy-edit — the base ref marks the upstream API it tracks)
 
 internal fun parse(xml: String): Element {
 	val vParser = XmlDomParser(xml)

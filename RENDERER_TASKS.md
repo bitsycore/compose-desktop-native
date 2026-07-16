@@ -211,6 +211,18 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   tag dereferences to the exact old hash (`rev-parse ^{}`), exists on upstream's remote
   (`ls-remote`), full re-sync at the tag byte-identical (check-vendor-clean PASS, 1553
   files), check-vendor-drift PASS (3/3 base == pin).
+- 2026-07-16 · **P0.6 follow-up (user request)** · VENDOR-BASE provenance is now MANDATORY
+  for every manual vendor (CLAUDE.md vendoring rule 3 updated) and applied retroactively:
+  swept all manifests' `!` exclusions + derivation-marked project files; 4 more files
+  annotated (2× Synchronization.kt, SelectionLayout.kt, DomXmlParser.kt — each base
+  verified UNCHANGED beta01→beta02 in its clone before stamping `v1.12.0-beta02`);
+  `check-vendor-drift.py` extended with the `VENDOR-BASE(<VARNAME>):` form so
+  umbrella-repo files track COMPOSE_REF with their own clone, plus a path-exists guard
+  (rename at pin → "diff unavailable", not a silent "unchanged"). 7 files tracked, all
+  OK; simulated stale COMPOSE_REF ref exit 1 with the correct clone verdict.
+  (NavDisplay.native.kt turned out manifest-managed — upstream macos actual mapped by
+  the manifest, regenerated each sync — and NativeRenderNode.kt / ProjectPath.kt /
+  the demo compat files are port inventions with no upstream base: correctly unannotated.)
 - 2026-07-16 · **O.2 (first bump)** · both pins → **v1.12.0-beta02** (user request):
   COMPOSE_CORE_REF + COMPOSE_REF, catalog `compose=1.12.0-beta02`, JVM forcing
   `1.12.0-beta02` / m3 `1.12.0-alpha03` (released pairs confirmed on Maven Central) ·

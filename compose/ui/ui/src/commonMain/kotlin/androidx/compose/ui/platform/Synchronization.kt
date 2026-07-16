@@ -10,6 +10,7 @@
  * Line-for-line kept in sync; the entry in compose/ui/compose-fork.txt is
  * commented out so this file survives `scripts/compose-fork/sync.sh`.
  */
+// VENDOR-BASE: compose/ui/ui/src/commonMain/kotlin/androidx/compose/ui/platform/Synchronization.kt @ v1.12.0-beta02
 
 package androidx.compose.ui.platform
 
