@@ -303,21 +303,24 @@ blitter. The only way to *reuse* the Skia renderer is real Skia (Track A).
 ## 5. SEQUENCING (revised)
 
 **Council found no PR/push CI (only tag-triggered `publish.yml`), and `parity.py` is
-Windows/SDL-only — it cannot exercise the Skia leg where B2 lands.** The maintainer does
-NOT want GitHub CI (slow feedback for a solo project). Resolution: the gate is a **local
-macOS verify runbook**, run by the maintainer before committing B2/B5 — the Mac is a
-first-class Skia-leg target, so it gives the *same coverage* the "CI floor" was for, with
-a fast local loop. (Automated CI stays a later option if the project gains contributors.)
+hardcoded to the Windows/mingw exe.** The maintainer does NOT want GitHub CI (slow feedback
+for a solo project). Resolution: the gate is a **local Mac (or Linux) verify runbook** —
+and, crucially, **macOS/Linux run BOTH renderers**: the Skia leg by default AND the SDL leg
+under `-Prenderer=sdl3`. So the Mac is not just the "Skia box" — it is a **single machine
+that verifies both renderers**. Windows is then only needed for the *shipped mingw target
+binary*, the Windows-only `PrintWindow` probe, and the tag-time metadata publish.
 
 ```
-Phase 0a (HARD GATE,      • MAC VERIFY RUNBOOK (manual, on the maintainer's Mac — the machine
-  do FIRST, local)          that CAN build the Skia leg; Windows cannot). Before trusting B2/B5:
-                            - link the Skia leg: :demo/:apidemo runDebugExecutableMacosArm64
-                              (catches B2/B5/skiko-version compile breaks — invisible on Windows);
-                            - run the cross-platform self-tests there (--nav3test/--backtest/
-                              --clicktest/--scrolltest/--multiwintest — they live in nativeMain,
-                              so they exercise the Skia leg; gate on PASS/FAIL);
-                            - run parity + a perf spot-check.
+Phase 0a (HARD GATE,      • MAC/LINUX VERIFY RUNBOOK (manual — the machine that builds BOTH
+  do FIRST, local)          renderers; Windows builds only the mingw target). Before B2/B5:
+                            - Skia leg (default): :demo/:apidemo runDebugExecutableMacosArm64
+                              — catches B2/B5/skiko-version compile breaks invisible on Windows;
+                            - SDL leg on the SAME box: add -Prenderer=sdl3 — verifies the SDL
+                              renderer too, no Windows box needed for day-to-day SDL work;
+                            - cross-platform self-tests on BOTH legs (--nav3test/--backtest/
+                              --clicktest/--scrolltest/--multiwintest — live in nativeMain;
+                              gate on PASS/FAIL);
+                            - parity (both legs — needs parity.py made target-aware) + perf spot-check.
                           • Vendor-clean check (local script, on demand): re-run sync.py on a
                             clean checkout, diff the regenerated src/vendor/ (catches hand-edits
                             + stale clone). No CI needed — a pre-commit habit / Makefile target.
@@ -335,13 +338,17 @@ Phase 4 (deferred)        • Module split §6 — only when a consumer needs th
 Cross-cutting             • Multi-gate verification §8 on every rendering change.
 ```
 
-**Why the Mac suffices (no CI):** the risk the "CI floor" addressed is *Skia-leg breakage
-invisible from the Windows dev box*. macOS builds the Skia leg natively, so a local Mac run
-retires exactly that risk. The one thing macOS doesn't cover is the **common-metadata
-publication** (only the Windows publish job compiles it) — but that's a release/tag-time
-concern the maintainer already handles, and the module split (the main metadata risk) is
-deferred anyway. `linuxX64` differences are rare vs macOS Skia; check occasionally, not per
-change.
+**Why the Mac (or Linux) suffices as the ONE verify box (no CI):** macOS/Linux build the
+Skia leg natively AND run the SDL leg under `-Prenderer=sdl3`, so a local run retires the
+Skia-leg-invisible-on-Windows risk *and* covers SDL renderer work — one machine, both
+renderers. Windows is only needed for: (1) the **shipped mingw target** (the actual binary
+users get — final validation still wants a real Windows run before release); (2) the
+**Windows-only `PrintWindow` probe** (`scripts/probe/`); (3) the **common-metadata
+publication** (only the Windows publish job compiles it — a tag-time concern the maintainer
+already handles; the module split, the main metadata risk, is deferred anyway). Caveat:
+SDL-on-macOS is a faithful proxy for SDL-on-Windows for *renderer* correctness (same code;
+SDL3 abstracts the platform) but not for platform specifics (per-OS driver hints, system
+fonts) — so keep a Windows smoke run before shipping the mingw binary.
 
 Rationale: the Mac runbook makes B2 and the split *safe to attempt* without slow CI; B5
 pays off regardless of the spike; the kill-shot retires Track A's risk cheaply; B1 and the
@@ -444,10 +451,11 @@ Vendor these upstream `skikoMain` mechanics into the Skia leg / CDN-common; each
 tag-triggered `publish.yml`; there is no PR/push CI, no test source sets, and `parity.py`
 always exits 0 with no thresholds and hides crashes as an easily-missed `NATIVE FAILED`
 row. **The maintainer keeps verification LOCAL by choice (no slow CI)** — so the fixes
-below make the *local runbook* (§5 Phase 0a, run on Windows for SDL + the Mac for Skia)
-trustworthy: give the scripts real thresholds + non-zero exit so a bad run is obvious, not
-so a CI server catches it. The journal (A.4) proves screenshots missed a nav crash (the
-**probe** caught it) and gave false 13–17% settle-timing signals (Pickers).
+below make the *local runbook* trustworthy: give the scripts real thresholds + non-zero
+exit so a bad run is obvious. The primary box is the **Mac/Linux (it runs BOTH renderers —
+Skia by default, SDL under `-Prenderer=sdl3`)**; Windows is the pre-ship smoke for the
+mingw target + the `PrintWindow` probe. The journal (A.4) proves screenshots missed a nav
+crash (the **probe** caught it) and gave false 13–17% settle-timing signals (Pickers).
 
 - **`scripts/parity/parity.py`** (native-vs-JVM) — the primary *fidelity* net, but it needs
   three fixes to *certify* rather than *rank*: (1) **align fonts** — load the bundled
