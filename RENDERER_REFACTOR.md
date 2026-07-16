@@ -1011,5 +1011,29 @@ edges only; def-vs-def and geo-vs-geo are both 0.
 So the geo node is correct, deterministic, and crisp — it removes the robustness
 problem that blocked the flip. **BUT geometry-only so far:** text / image / clip / alpha
 leaves DEFER to a block-replay (correct, not yet cached), so today's perf win is limited
-to shape-only leaves. **Next: capture text glyph blits** (the bulk of static content →
-the real win), then image + clip, then re-sweep and **flip the default to `geo`**.
+to shape-only leaves.
+
+**Text capture — scoped, with a real lifetime constraint found (NOT trivial).** The
+next value increment is caching static text (the sidebar). Reading the text path
+(`Sdl3TextRenderer.drawText`, `Sdl3Canvas.drawNativeText`) surfaced the design:
+- Glyphs blit via `SDL_RenderTexture(renderer, glyphTex, null, dst)` at multiple GPU
+  points — plain glyph (`Sdl3TextRenderer:553`), spanned segment (`:512`), span
+  background fill (`:497`), plus decorations + the icon-family path. A safe capture
+  must handle/gate ALL of them (else an un-captured op leaks to the GPU during record).
+- **Ordering:** text and shapes interleave in a leaf → the display list must become a
+  single ORDERED command stream (`GeometryBatch | TexturedQuad`), replayed in order
+  (flush pending geometry before each textured blit), not two separate lists.
+- **Replay semantics:** transform the quad ORIGIN by the layer matrix but keep glyph
+  SIZE logical (matches today's "layer scale reaches text position, not glyph size");
+  re-apply the tint (`SDL_SetTextureColorMod`/`AlphaMod`) per blit (the cached texture's
+  colormod is shared/mutable).
+- **⚠ Lifetime constraint (the blocker to a naive impl):** capturing holds the
+  glyph-texture POINTER, but those textures live in the renderer's glyph CACHE — if it
+  evicts one, the captured pointer dangles (use-after-free on replay). Geometry capture
+  is safe (owned float copy); text is not without glyph-texture lifetime management
+  (pin/refcount captured glyphs, or invalidate the layer on eviction). This must be
+  designed, not hacked.
+
+So text capture is a focused sub-project (multi-point capture + ordered stream + tint +
+eviction-safe glyph lifetime). Then image + clip, re-sweep, and **flip the default to
+`geo`** (now unblocked on correctness/determinism by the geo node itself).
