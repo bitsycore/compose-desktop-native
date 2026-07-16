@@ -890,3 +890,37 @@ continuous): per-frame **verts 2958→1158 (−61%)**, text draws 22→6, draw 4
    scale/rotation, real compositing) and remove the opaque/untransformed restriction.
 4. **Skia leg (2a, mac/CI)** — back `NativeRenderNode` with skiko `RenderNode` (needs
    the SkiaCanvas↔SkCanvas bridge + renderer-resource wiring noted above).
+
+### 2026-07-16 — AA-fringe fix (#2 done); Phase 4 design (#3)
+
+**#2 done (commit `8081fc13`):** image/vector/icon-drawing leaves are excluded from
+the texture cache (detected via a `DrawStats.imageBlits` delta around the record
+block) and fall back to the crisp block-replay — partial-alpha content doesn't
+round-trip bit-exact through the 8-bit premultiplied offscreen. Result: the visibly-
+wrong `painterResource` heart is gone; **Icons 0.36%→0.014%, Text/LazyColumn/
+GraphicsLayer/Shapes 0.000%, Buttons 0.006%** (disabled semi-transparent fill).
+Costs ~no perf (icons are blits, not tessellation; text still caches). The sub-
+perceptual residual (≤0.014%, AA rounding on partial-alpha) is the inherent
+texture-round-trip floor — only #3 removes it.
+
+**#3 — Phase 4 cached-geometry display list — DESIGN (a major, standalone rework of
+the hottest code; not yet implemented).** Replace the per-leaf texture with a
+captured display list of the *tessellated geometry* `Sdl3DrawScope` already produces,
+replayed under the layer matrix. Buys crisp-under-transform + bit-exact + drops every
+fast-path restriction (transform/alpha/image/icon all cache).
+- **Capture point:** the submit choke — `SDL_RenderGeometry` (shape/text vertex
+  batches) and `SDL_RenderTexture` (image/icon blits). A recording `Sdl3Canvas` mode
+  stores each submit as a command `{ vertexArray copy, texture ref, blend, clip }`
+  instead of issuing it.
+- **Coordinate space:** record with an IDENTITY CTM (layer-local), so captured
+  vertices are pre-transform; replay applies the layer matrix to the cached positions
+  (cheap float-array transform) then submits. This is what keeps it crisp under any
+  transform (geometry re-transformed, never bilinear-resampled) — unlike the texture.
+- **Nesting:** a "draw child layer" is captured as a by-reference command (replay the
+  child node), like skiko's `Picture` — so nesting is by-reference, no leaf/parent
+  split and no staleness (removes the current cache-leaves-defer-parents heuristic).
+- **Memory:** one vertex-array copy per submit per dirty layer; re-recorded only on
+  invalidation (dirty-gated), so steady-state cost is just the transform+submit.
+- **Risk:** intrudes on `Sdl3DrawScope`'s native vertex buffers + `Sdl3Canvas`'s
+  clip/state machine. Verify against the current renderer with the parity harness
+  (not spot screenshots) + profiler. Sizeable focused effort — do it on its own.
