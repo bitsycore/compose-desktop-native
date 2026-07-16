@@ -968,3 +968,27 @@ unlikely to fully solve. **The path to flipping the default is Phase 4's
 cached-geometry display list** (no offscreen texture → no fixed-resolution round-trip,
 no per-frame texture state → no timing dependence), plus a deterministic verification
 harness (frame-locked, or the JVM parity leg) rather than free-running screenshots.
+
+### 2026-07-16 — Phase 4 STARTED: geometry recording foundation (commit `716a005d`)
+
+First increment landed, compiling, **zero behaviour change** (opt-in machinery only):
+- `SdlDisplayList` / `GeometryBatch` / `GeometrySink` — capture a layer's tessellated
+  untextured triangle batches in layer-local coords; an `unsupported` flag trips on a
+  not-yet-captured op so nothing leaks to the GPU.
+- `Sdl3DrawScope.flush()` routes to a `recordingSink` (capture) instead of
+  `SDL_RenderGeometry` when set; `currentDeviceMatrix()` exposes the CTM. **Key
+  property proven by the code:** `writeVertex` bakes the CTM, so recording with an
+  identity base CTM yields layer-local vertices → replay just re-applies the layer
+  matrix (crisp, bit-exact), and a capturing pass touches NO render target → none of
+  the texture-path timing nondeterminism.
+
+**Next increments (scoped):**
+1. **Capture-mode `Sdl3Canvas`** — a draw pass that sets the scope's `recordingSink`
+   + identity base CTM, and gates text/image/clip to mark `unsupported` (suppress, no
+   GPU) until they're captured.
+2. **`SdlDisplayListRenderNode`** — record (capture list; defer if unsupported) +
+   `drawInto` replay via a new `Sdl3DrawScope.replayBatch(...)` that re-emits captured
+   layer-local vertices through the target CTM (reusing the target's batch/flush — no
+   separate buffer). Behind `CDN_LAYERCACHE=geo`.
+3. Extend capture to **text glyph blits, image blits, clip** (the win + drops the
+   defer cases), then re-sweep and flip the default.
