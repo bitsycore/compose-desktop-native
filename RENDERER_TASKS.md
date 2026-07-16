@@ -138,6 +138,12 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   manual vendor, eroding B2's whole sync-tax payoff (P1.8). The port uses skiko `RenderNode`
   NOWHERE today (grep-confirmed). **Decision required before P1.4 proceeds — see log + the
   three options below.** [§7]  *blocked-by: P1.3 (done); now blocked on a scope decision*
+  **DECISION (2026-07-16, user): Option B — full upstream Skia canvas (=B6).** P1.4/P1.5/P1.6
+  are SUBSUMED by the new **Phase 1B (B6)** below — the skiko leg switches to upstream's
+  SkiaBackedCanvas so `SkiaGraphicsLayer` vendors cleanly. Deeper scoping (from a full draw-
+  dispatch map, 2026-07-16) below.
+- [-] **P1.5 / P1.6 — SUBSUMED by Phase 1B (B6).** Kept for the matrix-rename reversal (P1.5)
+  and the GraphicsLayer swap (P1.6), both now done as B6.2 once the canvas is upstream.
 - [ ] **P1.5** Reverse the `prepareLayerTransformationMatrix` rename — use upstream
   `Matrices.skiko` `prepareTransformationMatrix`; drop the `com.compose.sdl` copy on the Skia
   leg (SDL keeps its own). [§7]  *blocked-by: P1.4*
@@ -151,6 +157,55 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   it). *Done:* check runs green + fails on a deliberate API skew. [§8]  *blocked-by: P1.6*
 - [ ] **P1.8** (measure — the G1 justification) Quantify the **sync-tax**: reconcile a mock
   `compose.properties` bump before vs after B2, record hours-saved in the log. [§0.5]
+
+## Phase 1B — B6: full upstream Skia canvas (the enabler for B2, DECIDED 2026-07-16)
+
+*Why here: P1.4 proved the skiko leg can't vendor upstream `SkiaGraphicsLayer` while it draws
+through the port `SkiaCanvas`. User chose Option B — adopt upstream's Skia canvas so the layer
+vendors cleanly. A full draw-dispatch map (2026-07-16) established the real surface below.*
+
+**Scoping facts (from the dispatch map).** The composition draws text/images/shadows by casting
+the frame `Canvas` to project contracts — `NativeTextCanvas` (`SdlParagraph.paint` →
+`drawNativeText`), `NativePainterCanvas` (`ResourcePainter.onDraw`), `NativeShadowCanvas`
+(`DeferredRenderNode.draw`) — plus a `NativeFinishableCanvas` no-op. `NativeShapeClipCanvas` is
+SDL-only (Skia already falls back to `clipPath`, needs no bridge). Upstream `SkiaBackedCanvas`
+implements NONE of these; every cast is a defensive `as?` that silently no-ops → text/images/
+shadows go DARK on `SkiaBackedCanvas` unless bridged. Measurement (`currentTextMeasurer`) does
+NOT go through the canvas and is unaffected — but it and drawing share ONE `SkiaTextRenderer`
+instance (must stay coupled). Real gradients are a fidelity WIN: the port `SkiaCanvas` uses
+solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients (Brushes screen).
+
+- [~] **B6.1** Adopt upstream Skia GRAPHICS actuals on the skiko leg. Split
+  `CanvasPaintActuals.native.kt` (which defines the port `Paint`/`Shader`/all gradient
+  shaders/`ActualImageBitmap`/`createImageBitmap`/`ActualCanvas`/`NativeCanvas`/`NativePaint`)
+  `nativeMain → sdlRendererMain`; un-refuse (flip `!` + re-sync) `SkiaBackedCanvas.skiko.kt`,
+  `SkiaBackedPaint.skiko.kt`, `SkiaShader.skiko.kt`, `SkiaImageAsset.skiko.kt`,
+  `ImageBitmap.skiko.kt` into `skikoRendererMain` (they provide the SAME actuals, skia-typed;
+  disjoint targets → no clash). Route the frame + offscreen draw canvas (SkiaRenderBackend
+  `drawRoot`, SkiaOffscreen `createCanvas`) through `SkiaBackedCanvas`. **Bridge the 3 live
+  contracts**: keep the port `SkiaTextRenderer`/`SkiaImageCache`/shadow code, expose them via a
+  GLOBAL skiko draw-renderer (like the existing `offscreenRenderer`/`currentTextMeasurer`
+  globals) and MANUAL-VENDOR `SkiaBackedCanvas.skiko.kt` to also implement `NativeTextCanvas`/
+  `NativePainterCanvas`/`NativeShadowCanvas`/`NativeFinishableCanvas`, delegating via its own
+  `.skiaCanvas`. (VENDOR-BASE header + drift tripwire required — it becomes a manual vendor.)
+  *Done:* MAC-VERIFY green; Brushes parity IMPROVES (real gradients); text/icons/shadows/images
+  unchanged. *blocked-by: P1.3 (done)*
+- [ ] **B6.2** Now the canvas is `SkiaBackedCanvas`: un-refuse + vendor `SkiaGraphicsLayer.skiko
+  .kt` + `SkiaGraphicsContext.skiko.kt` + `Blur.skiko.kt`; point the skiko `createGraphicsContext`
+  actual (P1.3 seam) at `SkiaGraphicsContext`; provide upstream `actual class GraphicsLayer
+  (skiko.RenderNode)`; DELETE the transient skiko port cluster (GraphicsLayer.native.kt,
+  NativeRenderNode.kt, DeferredRenderNode.kt, NativeRenderNode.skia.kt, GraphicsLayerFactory,
+  GraphicsContextFactory.skia's ProjectGraphicsContext use). Reverse the
+  `prepareLayerTransformationMatrix` rename → upstream `Matrices.skiko` (this is P1.5). Do NOT
+  vendor `ChildLayerDependenciesTracker` (P2.2) — reconcile if `SkiaGraphicsLayer` hard-needs it.
+  *Done:* MAC-VERIFY Skia leg — parity holds ~golden-master, blur/RenderEffect improve (P2.3).
+  This IS P1.6 + P1.7 (the actual-API-parity invariant). *blocked-by: B6.1*
+- [-] **B6.3 (OPTIONAL, not decided)** Full upstream TEXT on the skiko leg (`SkiaParagraph` +
+  the ui-text skiko stack), retiring `SdlParagraph`/`SkiaTextRenderer` on skiko only. Would make
+  skiko text use the SAME skia paragraph engine as the JVM parity reference → could drive text
+  parity below the current ~2% (eliminates residual metric drift), but DISCARDS the P3.1 metric
+  work on the skiko leg and is a large separate subsystem (Paragraph actual becomes per-renderer:
+  skiko→SkiaParagraph, SDL→SdlParagraph). Decide AFTER B6.1/B6.2 land. Not in scope unless chosen.
 
 ## Phase 2 — B5: engine-convergence deltas
 
@@ -366,3 +421,16 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
     **Option B — full upstream Skia canvas adoption** (un-refuse `SkiaBackedCanvas` + Paint +
       Shader + ImageAsset + upstream text): this IS the shelved B6. Largest; abandons the
       port's SkiaCanvas/SkiaTextRenderer investment.
+- 2026-07-16 · **B6 DECISION + plan (user chose Option B)** · no code yet · mapped the full
+  skiko draw-dispatch (Explore agent): the frame canvas carries 4 project contracts
+  (`NativeTextCanvas`/`NativePainterCanvas`/`NativeShadowCanvas`/`NativeFinishableCanvas`);
+  `NativeShapeClipCanvas` is SDL-only (Skia falls back to clipPath). Upstream `SkiaBackedCanvas`
+  implements none → text/images/shadows would go dark unless bridged. Concluded clean "full
+  upstream canvas" cascades into text/painter/shadow (upstream `SkiaParagraph` is a whole
+  separate subsystem that discards P3.1). Staged B6 as **B6.1** (graphics actuals: split
+  `CanvasPaintActuals` per-renderer, un-refuse SkiaBackedCanvas/Paint/Shader/ImageAsset/
+  ImageBitmap, route frame+offscreen through SkiaBackedCanvas, bridge the 3 live contracts via a
+  global draw-renderer + a MANUAL-VENDOR of SkiaBackedCanvas) → **B6.2** (= P1.4/1.5/1.6/1.7: vendor
+  SkiaGraphicsLayer/Context/Blur now the canvas is upstream, delete the transient skiko port
+  cluster) → **B6.3** (optional upstream text, discards P3.1 on skiko — defer). Plan written to
+  Phase 1B. Real gradients (Brushes) are a B6.1 fidelity win. Starting B6.1.
