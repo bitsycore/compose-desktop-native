@@ -108,7 +108,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         // Expose the frame canvas so an offscreen render can flush it before borrowing
         // the render target (z-order).
         currentMainCanvas = vCanvas
-        inHost.rootNode.draw(vCanvas, null)
+        inHost.drawRoot(vCanvas)
         vCanvas.finish()
         currentMainCanvas = null
     }

@@ -9,6 +9,8 @@ import androidx.compose.ui.node.LayoutNodeDrawScope
 import androidx.compose.ui.node.MeasureAndLayoutDelegate
 import androidx.compose.ui.node.Owner
 import androidx.compose.ui.node.OwnedLayer
+import androidx.compose.ui.node.OwnedLayerManager
+import androidx.compose.ui.node.GraphicsLayerOwnerLayer
 import androidx.compose.ui.node.OwnerScope
 import androidx.compose.ui.node.OwnerSnapshotObserver
 import androidx.compose.ui.node.RootForTest
@@ -79,7 +81,7 @@ internal class ComposeOwner(
 	override val root: LayoutNode,
 	override val density: Density = Density(1f, 1f),
 	override val layoutDirection: LayoutDirection = LayoutDirection.Ltr,
-) : Owner {
+) : Owner, OwnedLayerManager {
 
 	// The vendored measure/layout state machine, rooted at [root].
 	private val fDelegate = MeasureAndLayoutDelegate(root)
@@ -176,7 +178,73 @@ internal class ComposeOwner(
 		drawBlock: (canvas: Canvas, parentLayer: GraphicsLayer?) -> Unit,
 		invalidateParentLayer: () -> Unit,
 		explicitLayer: GraphicsLayer?,
-	): OwnedLayer = ProjectOwnedLayer(drawBlock)
+	): OwnedLayer = GraphicsLayerOwnerLayer(
+		graphicsLayer = explicitLayer ?: graphicsContext.createGraphicsLayer(),
+		context = if (explicitLayer != null) null else graphicsContext,
+		layerManager = this,
+		drawBlock = drawBlock,
+		invalidateParentLayer = invalidateParentLayer,
+	)
+
+	// ============
+	//  OwnedLayerManager — retained-layer bookkeeping (mirrors upstream
+	//  OwnedLayerManagerImpl). dirtyLayers are re-recorded once per frame in
+	//  [renderRoot] before the tree is drawn; clean layers replay their cached
+	//  display list. invalidate() asks the window to schedule a frame.
+
+	private val dirtyLayers = mutableListOf<OwnedLayer>()
+	private var postponedDirtyLayers: MutableList<OwnedLayer>? = null
+	private var isDrawingContent = false
+
+	// Set by the window (via ComposeRootHost) to flag needsFrame; a layer whose
+	// content changed (OwnedLayer.invalidate) schedules a frame even when nothing
+	// else (recompose / relayout) is pending.
+	internal var onInvalidate: (() -> Unit)? = null
+
+	override fun invalidate() {
+		onInvalidate?.invoke()
+	}
+
+	override fun notifyLayerIsDirty(layer: OwnedLayer, isDirty: Boolean) {
+		if (isDirty) {
+			if (isDrawingContent) {
+				val list = postponedDirtyLayers
+					?: mutableListOf<OwnedLayer>().also { postponedDirtyLayers = it }
+				if (layer !in list) list.add(layer)
+			} else if (layer !in dirtyLayers) {
+				dirtyLayers.add(layer)
+			}
+		} else {
+			dirtyLayers.remove(layer)
+			postponedDirtyLayers?.remove(layer)
+		}
+	}
+
+	override fun recycle(layer: OwnedLayer): Boolean {
+		dirtyLayers.remove(layer)
+		postponedDirtyLayers?.remove(layer)
+		return false
+	}
+
+	// Both Owner and OwnedLayerManager declare voteFrameRate with a default, so an
+	// explicit override is required. We render at a fixed vsync cadence — no voting.
+	override fun voteFrameRate(frameRate: Float) {}
+
+	// Draw the tree: re-record dirty layers' display lists, then walk the root so
+	// clean layers replay. Called once per frame by ComposeRootHost.drawRoot.
+	internal fun renderRoot(canvas: Canvas) {
+		isDrawingContent = true
+		if (dirtyLayers.isNotEmpty()) {
+			for (i in dirtyLayers.indices) dirtyLayers[i].updateDisplayList()
+			dirtyLayers.clear()
+		}
+		root.draw(canvas, null)
+		postponedDirtyLayers?.let {
+			dirtyLayers.addAll(it)
+			it.clear()
+		}
+		isDrawingContent = false
+	}
 
 	// ============
 	//  No-op subsystems (focus / semantics / input / clipboard / text / …).

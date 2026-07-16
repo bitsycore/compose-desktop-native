@@ -546,6 +546,10 @@ internal class WindowInstance(
 
 		host = ComposeRootHost(inDensity = backend.pixelDensity)
 		host.attach()
+		// A layer whose content changed (OwnedLayer.invalidate) schedules a frame
+		// even when nothing else (recompose / relayout) is pending — retained layers
+		// need this so a draw-only state change still repaints.
+		host.setInvalidationCallback { needsFrame = true }
 		facade = ComposeNativeWindow(backend, gpuMode, initialTitle)
 		navigationEventOwner.navigationEventDispatcher.addInput(backNavigationInput)
 
