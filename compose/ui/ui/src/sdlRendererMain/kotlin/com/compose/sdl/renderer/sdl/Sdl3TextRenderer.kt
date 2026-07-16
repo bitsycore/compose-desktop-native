@@ -427,10 +427,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         // blit each as its own texture at its prefix x. Tabs expand for both the
         // prefix measure and the texture so offsets and glyphs agree.
         if (inSpans != null) {
-            // Spanned runs (per-segment blits + backgrounds) aren't captured yet — in
-            // capture mode, bail so the leaf falls back to a crisp block-replay (no GPU
-            // op leaks). Plain text below IS captured.
-            runSink?.let { it.markUnsupported(); return }
+            // Capture mode: record each styled run as its own TextRun command (like the
+            // plain path) — replay re-looks-up the per-run segment texture, eviction-safe.
+            // A run wanting a SpanStyle.background bails to block-replay (the background
+            // fill isn't a captured command yet); rare — highlight/selection spans.
+            val vCapture = runSink
             // O(spans + line length) style runs (colour + weight + italic +
             // background + decoration + size), instead of an O(chars × spans)
             // per-character scan.
@@ -450,6 +451,16 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 (if (inRun.italic) kStyleItalic else 0) or
                 (if (inRun.underline) kStyleUnderline else 0) or
                 (if (inRun.lineThrough) kStyleStrikethrough else 0)
+            // Background fills aren't a captured command yet — defer the whole leaf if
+            // any run wants one (rare: highlight/selection spans). Also keeps the
+            // background SDL_RenderFillRect below from firing during a capture pass.
+            if (vCapture != null) {
+                for (vRun in vRuns) {
+                    if (vRun.background != ComposeColor.Unspecified && vRun.background.alpha > 0f) {
+                        vCapture.markUnsupported(); return
+                    }
+                }
+            }
             // Line width = sum of each run's width at ITS style (for alignment).
             var vLineW = 0f
             for (vRun in vRuns) vLineW += measureWidth(runSeg(vRun), runPx(vRun), inFontFamily, runVars(vRun), runStyle(vRun)).toFloat()
@@ -508,17 +519,27 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 }
                 val vCachedSeg = getOrCreateTexture(inFontFamily, vSeg, vPx, vVars, vStyle)
                 if (vCachedSeg != null) {
-                    applyTint(vCachedSeg.tex, vRun.color)
                     val vLogW = vCachedSeg.w / fDpr
                     val vLogH = vCachedSeg.h / fDpr
                     val vPenY = vBaselineY - fontAscent(vPx, inFontFamily, vVars)
-                    memScoped {
-                        val vDst = alloc<SDL_FRect>()
-                        vDst.x = snap(vRunX)
-                        vDst.y = snap(vPenY)
-                        vDst.w = vLogW
-                        vDst.h = vLogH
-                        SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
+                    if (vCapture != null) {
+                        // Record params (not the texture pointer) — eviction-safe replay.
+                        val vArgb = (vRun.color.a8 shl 24) or (vRun.color.r8 shl 16) or
+                            (vRun.color.g8 shl 8) or vRun.color.b8
+                        vCapture.captureTextRun(
+                            inFontFamily, vSeg, vPx, vVars, vStyle,
+                            snap(vRunX), snap(vPenY), vLogW, vLogH, vArgb,
+                        )
+                    } else {
+                        applyTint(vCachedSeg.tex, vRun.color)
+                        memScoped {
+                            val vDst = alloc<SDL_FRect>()
+                            vDst.x = snap(vRunX)
+                            vDst.y = snap(vPenY)
+                            vDst.w = vLogW
+                            vDst.h = vLogH
+                            SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
+                        }
                     }
                 }
                 vRunX += vAdvance

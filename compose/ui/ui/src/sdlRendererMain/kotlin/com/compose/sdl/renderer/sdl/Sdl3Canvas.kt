@@ -1027,8 +1027,9 @@ internal class Sdl3Canvas(
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
 	) {
 		// Capture mode: icon families blit via a separate FreeType path not captured
-		// yet → defer that leaf. Plain/decorated text IS captured (runSink set below);
-		// spanned text bails inside Sdl3TextRenderer.drawText.
+		// yet → defer that leaf. Plain/decorated AND spanned text ARE captured (runSink
+		// set below; each styled run becomes a TextRun) — only a run with a
+		// SpanStyle.background still bails inside Sdl3TextRenderer.drawText.
 		val vCaptureList = fCaptureList
 		if (vCaptureList != null && inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
 			vCaptureList.unsupported = true
