@@ -100,8 +100,24 @@ def native_shot(name: str, dst: Path, exe: Path, gpu: str):
         bmp.unlink()
 
 
+def align_native(native: Image.Image, jvm: Image.Image) -> Image.Image:
+    """Normalise the native render to the JVM reference's dimensions.
+
+    The native leg draws at the machine's physical pixel density (2000x1400 on a
+    Retina Mac, DPR 2.0), while the JVM ImageComposeScene reference is fixed at
+    density 1.0 (1000x700). Both represent the SAME 1000x700-dp viewport, so a
+    proportional comparison must resize native down to the reference size rather
+    than crop it (a top-left crop would compare only a 2x-magnified quarter — the
+    old behaviour, invisible on Windows where both legs were already 1000x700).
+    A no-op when the sizes already match."""
+    if native.size != jvm.size:
+        return native.resize(jvm.size, Image.LANCZOS)
+    return native
+
+
 def diff_pair(native: Image.Image, jvm: Image.Image):
     """Return (percent_differing, amplified_diff_image)."""
+    native = align_native(native, jvm)
     w = min(native.width, jvm.width)
     h = min(native.height, jvm.height)
     a = native.crop((0, 0, w, h)).convert("RGB")
@@ -117,6 +133,7 @@ def diff_pair(native: Image.Image, jvm: Image.Image):
 
 
 def side_by_side(native, jvm, diff, path):
+    native = align_native(native, jvm)
     w = min(native.width, jvm.width)
     h = min(native.height, jvm.height)
     canvas = Image.new("RGB", (w * 3 + 20, h + 20), (16, 16, 16))
