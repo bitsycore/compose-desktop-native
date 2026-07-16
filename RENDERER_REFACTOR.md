@@ -1219,3 +1219,27 @@ background fills, `drawImageRect`/`drawNativePainter` images, alpha<1 / blend /
 colorFilter / renderEffect layers, rounded/generic layer clips, saveLayer, and
 parent layers with child layers. Image capture is the next coverage step (unblocks
 photo/vector-image leaves); the rest are either rare or inherently per-frame dynamic.
+
+### 2026-07-16 — Image capture: investigated, deferred (not shippable unverified here)
+
+Attempted `drawNativePainter` (resource-image) capture — it's the eviction-safe path
+(path-keyed `Sdl3ImageCache`, no held texture) and would unblock image+text leaves.
+Implemented + correct by construction (mirrors the immediate origin-map + axis-norm
+size scale). **Reverted it**, because no demo screen exercises `drawNativePainter`: the
+Images screen (and all others) use `org.jetbrains.compose.resources.painterResource`,
+which decodes to an ImageBitmap and blits via **`drawImageRect`** — the project's own
+`androidx.compose.ui.res` painter (the only `drawNativePainter` producer) is unused in
+the demo. So the capture branch couldn't be exercised by the sweep, and shipping
+unverifiable code in the now-default path isn't worth it.
+
+The path the demo actually uses, `drawImageRect`, still defers — and is the harder one
+to capture safely: it blits a raw `ImageBitmap.texture` whose lifetime is the bitmap's,
+not a re-lookupable key, plus `BlendModeColorFilter` tint + premultiplied blend. Worth
+doing supervised, with a demo screen that drives it (e.g. a scrolling thumbnail+text
+list) so the win + correctness can actually be measured. Until then image leaves defer
+(correct via block-replay) — and image blits are cheap anyway (no tessellation/shaping,
+the costs the cache was built to eliminate), so this is low on the ROI list.
+
+**Capture coverage shipped this session:** geometry, plain text, spanned text, icon-font
+glyphs — i.e. every EXPENSIVE (tessellate / shape / rasterise) op. The default `geo`
+node is verified clean across the 57-screen sweep and is the SDL default.
