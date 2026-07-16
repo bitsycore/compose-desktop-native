@@ -34,14 +34,14 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
 - [x] **P0.1** Make `scripts/parity/parity.py` target-aware (`macosArm64` default + a
   `-Prenderer=sdl3` variant), not hardcoded to the mingw exe — so the Mac runs parity for
   BOTH legs. *Done:* one flag switches leg; both produce a ranked report. [CONVERGE §5/§8]
-- [~] **P0.2** Add a one-command **MAC-VERIFY runbook** (`scripts/verify-mac.sh` or a
+- [x] **P0.2** Add a one-command **MAC-VERIFY runbook** (`scripts/verify-mac.sh` or a
   Makefile/Gradle task) chaining the MAC-VERIFY primitive; non-zero exit on any failure.
   *Done:* `verify-mac` builds both legs + runs self-tests + parity + perf spot-check. [§5]
-  *Status: script AUTHORED on Windows (`scripts/verify-mac.sh` — both legs: build → 5
-  probes → parity → CDN_PROFILE draw-ms gate vs a self-seeded `build/verify-mac/
-  perf-baseline.txt`, +20% margin); bash -n clean, parsing + awk gate unit-smoked. NOT yet
-  run end-to-end — needs the Mac. First Mac run seeds perf baselines + the parity
-  `macosArm64/{skia,sdl3}` baseline keys (P0.4 note).*
+  *Ran end-to-end GREEN on macOS arm64 (exit 0): drift-check (vendor-clean + provenance) →
+  both legs build (demo+apidemo) → 5 probes each (nav3/back/click/scroll/multiwin) →
+  parity each → perf seeded (skia LazyColumn 1.75ms/Tabs 2.19ms; sdl3 2.13/6.98). Seeded
+  the `macosArm64/{skia,sdl3}` parity keys + the perf baseline. First Mac run also surfaced
+  + fixed a real parity harness bug (HiDPI crop-vs-resize — see P0.3 note / log).*
 - [x] **P0.3** Font-align the JVM parity leg — load the bundled `NotoSans` in `MainJvm.kt`'s
   `ScreenHost` (stage it into jvm resources; apply via M3 Typography + `LocalTextStyle`).
   *Done (impl + load-verified on Windows):* resource staged, font loads + applies (no
@@ -56,7 +56,8 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
   for `mingwX64/sdl3`; PASS exit 0, simulated regression exit 1 (`REGRESSION (+16.07)`),
   restore clean; output made ASCII-only (cp1252 console). *Re-seeded post-P0.5 (only
   Pickers 20.02→19.49 and Remember moved — the rest were already settled at frame 6).
-  Still to add: a `macosArm64/skia` key on the Mac.* [§8]  *blocked-by: P0.1*
+  Now also seeded `macosArm64/skia` + `macosArm64/sdl3` (57 each) on the Mac — all three
+  keys gate.* [§8]  *blocked-by: P0.1*
 - [x] **P0.5** Render-to-quiescence capture on both legs (native `hasInvalidations()`; JVM
   `render(nanos)`/`hasInvalidations`), retiring the fixed `--frames=6`; "disable animations"
   seed for never-settling screens. *Done:* Pickers native-vs-JVM stable across repeated
@@ -192,6 +193,12 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   main/font/NotoSans.ttf`, loads + applies (no warning). SDL-leg % ~unchanged - text diff is
   metric-dominated (accumulating vertical line-height drift SDL3_ttf-vs-Skia), NOT typeface;
   ~0 golden-master is Skia-leg/Mac (pending). Finding logged in the task note.
+  **CONFIRMED on Mac (2026-07-16):** the Skia-leg golden-master lands — ~2% median (Buttons
+  1.96, Counter 0.65, LazyGrid 1.77). BUT the first Mac run first read 24-78% because of a
+  parity HARNESS bug, not the port: on Retina the native leg renders at physical density
+  (2000x1400) and `diff_pair` CROPPED the top-left min(w,h) instead of resizing to the JVM
+  density-1.0 reference (1000x700) — comparing a 2x-magnified quarter. `align_native()`
+  (LANCZOS resize, no-op at DPR 1.0) fixed it. The SDL leg on Mac lands at the same ~2%.
 - 2026-07-16 · **P0.4** · parity.py is now a GATE (baselines.json keyed target/renderer,
   --update-baselines, non-zero exit on >baseline+max(3pts,25%) or NATIVE FAILED) · verified
   on **Windows**: full 57-screen `mingwX64/sdl3` baseline seeded; PASS exit 0, simulated
@@ -277,4 +284,17 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   bases UNCHANGED base..pin → refs re-stamped) → builds green (demo+apidemo, native+jvm,
   zero code fallout) → 8/8 probes PASS → full parity PASS vs the beta01-era baselines
   with 56/57 screens at their EXACT % (only GraphicsLayer +0.01) → baselines re-seeded.
+  Windows-only; Mac legs pend P0.2.
+- 2026-07-16 · **FIRST MAC SESSION — P0.2 / P0.3 / P0.4 closed** · commits `5686e878`
+  (parity HiDPI align fix), `bb0b5a9a` (macosArm64/sdl3 baselines) · on macOS arm64:
+  (1) Skia leg builds clean — the P3.1 skiko-side text mirrors that "compile-pended the
+  Mac" all compile; demo runs on Metal (`SkiaMetalBridge drawable 2000x1400 @ 2.0`),
+  nav3test PASS. (2) Found + fixed the parity harness HiDPI bug (`diff_pair`/`side_by_side`
+  cropped instead of resizing the 2x native render → 24-78% false diffs; `align_native()`
+  LANCZOS-resizes native to the JVM density-1.0 size, no-op on Windows). Skia-leg parity
+  then collapsed to the predicted golden-master (~2% median, Buttons 1.96 / Counter 0.65 /
+  LazyGrid 1.77). (3) `verify-mac.sh` ran end-to-end GREEN (exit 0): drift-check → both legs
+  build (demo+apidemo) → 5 probes each PASS → parity each → perf seeded. (4) Seeded parity
+  keys `macosArm64/skia` + `macosArm64/sdl3` (57 each) and the perf baseline. SDL leg on Mac
+  also ~2% median. **Unblocks P1.1 (blocked-by P0.2).**
   Windows-only; Mac legs pend P0.2.
