@@ -376,9 +376,16 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   and to exist on upstream's remote (`ls-remote`), so clone/fetch-by-name always works;
   the 3 `VENDOR-BASE` headers re-spelled to the tag so P0.6's ref-compare stays green.)* [§9]
 - [~] **O.2** Write + follow the **ref-bump runbook**: bump → `sync.py` → build → DRIFT-CHECK
-  → MAC-VERIFY + WIN-SMOKE. Run it on each upstream bump. [§9] *(First real bump executed:
-  beta01+dev4324 → **v1.12.0-beta02**, see log. Windows legs green end-to-end; the Mac legs
-  of MAC-VERIFY still pend P0.2's first Mac run.)*
+  → MAC-VERIFY + WIN-SMOKE. Run it on each upstream bump. [§9] *(First bump: beta01+dev4324 →
+  **v1.12.0-beta02**. Second bump 2026-07-18: **v1.12.0-beta02 → v1.12.0-beta03+dev4483**
+  (commit `18286f68`) — post-B2/B6, the sync-tax win was REAL: all 9 manual vendors' upstream
+  bases UNCHANGED → ZERO reconciliation, just VENDOR-BASE re-stamps; full MAC-VERIFY GREEN both
+  legs. Vendored/native side only; JVM Maven forcing stayed beta02 (latest published) — a
+  documented skew. WIN-SMOKE still pending a Windows host.)*
+  **STABILIZATION (user plan): cut a stable `compose-desktop-native` when Compose 1.12.0 STABLE
+  ships** — re-pin both refs to the clean `v1.12.0` tag, bump the `vComposeJvmVersion` forcing
+  (demo/apidemo/material-symbols) to `1.12.0` to close the native-vs-JVM skew, run the runbook
+  (incl. WIN-SMOKE + a publish dry-run on Windows), then tag/release.
 
 ## Deferred / shelved (NOT active — do not pick up without a new decision)
 
@@ -669,3 +676,9 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   api-exposure + platform↔node re-categorization — bigger/uglier/more-divergent than the goal,
   cosmetic under G1. Recommendation: shelved. The RenderBackend.drawRoot decouple (step 1) is a
   genuine improvement and stays.
+- 2026-07-18 · **O.2 second bump** · commit `18286f68` · v1.12.0-beta02 → v1.12.0-beta03+dev4483
+  (no clean beta03 tag exists yet; not on Maven — latest durable ref). Vendored/native only,
+  JVM Maven stays beta02 (documented skew). DRIFT-CHECK: 9/9 manual vendors' bases UNCHANGED →
+  zero reconciliation (B2/B6 sync-tax win proven). Full MAC-VERIFY ALL GREEN both legs. WIN-SMOKE
+  pending Windows. STABILIZATION plan recorded (re-pin clean v1.12.0 + close JVM skew when 1.12.0
+  stable ships).
