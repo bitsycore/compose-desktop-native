@@ -25,7 +25,7 @@ private var fTertiaryDown = false
 /* Builds the internal PointerInputEvent (its constructor is native-only) from a single mouse
    pointer and drives the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release;
    inButton: 0=primary 1=secondary 2=tertiary. */
-internal actual fun feedPointerToProcessor(
+internal fun feedPointerToProcessor(
 	inOwner: ComposeOwner,
 	inType: Int,
 	inButton: Int,
@@ -82,7 +82,7 @@ internal actual fun feedPointerToProcessor(
    vendored Modifier.scrollable (MouseWheelScrollingLogic) consumes it. SDL wheel delta maps
    directly to scrollDelta (wheel-down = SDL deltaY<0 → content scrolls down); magnitude is scaled
    in Sdl3ScrollConfig (dp per notch). */
-internal actual fun feedScrollToProcessor(
+internal fun feedScrollToProcessor(
 	inOwner: ComposeOwner,
 	inX: Float,
 	inY: Float,

@@ -359,8 +359,14 @@ def ensure_clone(url, ref, sparse_dirs):
 		git(clone_dir, ['sparse-checkout', 'set', *sparse_dirs], quiet=True)
 	if git(clone_dir, ['checkout', '-q', ref], quiet=True, check=False).returncode != 0:
 		print('ref %s not present locally -- fetching' % ref)
-		git(clone_dir, ['fetch', 'origin', ref])
-		git(clone_dir, ['checkout', '-q', ref])
+		# Try as a TAG first, mapping it to a local tag ref -- a plain `fetch origin <tag>`
+		# only lands in FETCH_HEAD, so the checkout below would fail and every future sync
+		# would need the network again. Branches / bare SHAs fall back to the plain fetch.
+		if git(clone_dir, ['fetch', 'origin', 'refs/tags/%s:refs/tags/%s' % (ref, ref)],
+				quiet=True, check=False).returncode != 0:
+			git(clone_dir, ['fetch', 'origin', ref])
+		if git(clone_dir, ['checkout', '-q', ref], quiet=True, check=False).returncode != 0:
+			git(clone_dir, ['checkout', '-q', 'FETCH_HEAD'])
 	desc = subprocess.run(['git', '-C', clone_dir, 'describe', '--tags', '--always'],
 		capture_output=True, text=True).stdout.strip()
 	print('upstream %s @ %s' % (url.rstrip('/').split('/')[-1], desc))

@@ -25,6 +25,10 @@ import screens.ExtraWindows
 import utils.encodeBmpBgra32
 import utils.parseArgs
 import utils.writeFile
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.toKString
 
 // ==================
 // MARK: Entry point
@@ -95,6 +99,12 @@ fun main(args: Array<String>) {
         runParagraphTest()
         return
     }
+    // Prints Paragraph cell/line metrics for a size sweep — compare against the JVM
+    // leg's `--metrics` output to align the SDL text metrics with upstream (P3.1).
+    if (args.any { it == "--metricsprobe" }) {
+        runMetricsProbe()
+        return
+    }
     // Verifies the Dialog appearance animation (upstream Dialog.skiko.kt parity):
     // opens a real m3 AlertDialog via an injected click, dumps mid-animation and
     // settled screenshots — the mid shots must show the dialog fainter and lower.
@@ -117,12 +127,25 @@ fun main(args: Array<String>) {
         runNav3Test()
         return
     }
+    if (args.any { it == "--soaktest" }) {
+        runSoakTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
         append("ComposeDesktopNative Showcase")
         if (vCli.screen != null) append(" — ").append(vCli.screen)
         append(" [").append(vCli.gpu).append("]")
+    }
+
+    // Screenshot runs freeze infinite animations (rememberInfiniteTransition & co. cancel
+    // at their initial value) so every screen can reach quiescence, and step the frame
+    // clocks on VIRTUAL time (16.6ms/frame, like the JVM leg's render(nanos)) so animation
+    // races resolve identically every run — both must be set before the first window composes.
+    if (vCli.screenshot != null) {
+        com.compose.sdl.disableInfiniteAnimations = true
+        com.compose.sdl.useVirtualFrameTime = true
     }
 
     // Multi-window app shell: the showcase window plus any extra windows opened
@@ -136,14 +159,23 @@ fun main(args: Array<String>) {
         height = vCli.height,
         gpu = vCli.gpu,
         onFrame = if (vCli.screenshot != null) {
+            // P0.5 render-to-quiescence: capture once the window reports no pending
+            // invalidations for a few consecutive frames (entrance animations settled,
+            // async loads applied), or at the --frames cap as a safety net. Replaces
+            // the fixed frame-6 capture, whose mid-animation timing was run-dependent.
+            var vQuietFrames = 0
             { bridge, frameIndex ->
-                if (frameIndex == vCli.frames) {
+                vQuietFrames = if (com.compose.sdl.windowHasInvalidations()) 0 else vQuietFrames + 1
+                if (vQuietFrames >= 3 || frameIndex >= vCli.maxFrames) {
+                    if (frameIndex >= vCli.maxFrames) {
+                        println("Screenshot: quiescence not reached by frame $frameIndex - capturing anyway")
+                    }
                     val vSnap = bridge.snapshotBgra()
                     if (vSnap != null) {
                         val (vW, vH, vBgra) = vSnap
                         val vBmp = encodeBmpBgra32(vW, vH, vBgra)
                         writeFile(vCli.screenshot, vBmp)
-                        println("Wrote screenshot: ${vCli.screenshot} (${vW}x${vH})")
+                        println("Wrote screenshot: ${vCli.screenshot} (${vW}x${vH}, settled at frame $frameIndex)")
                     } else println("Screenshot snapshot was null")
                     false  // quit
                 } else true
@@ -447,6 +479,106 @@ private fun runSearchEscTest() {
    Crashes here (e.g. enableSavedStateHandles' INITIALIZED/CREATED contract) never
    reproduce under --screen, which composes during the initial CREATED composition.
    PASS = a screenshot gets written and the app exits cleanly. */
+/* P2.2 soak — cycle through EVERY registered screen kCycles times in ONE process,
+   disposing each via a changing key() so composition + layer (skiko RenderNode / SDL
+   node) allocate-and-release is exercised repeatedly. After each full cycle, GC then
+   record peak RSS (getrusage ru_maxrss). Peak RSS is monotonic, so after cycle 1 it
+   already reflects visiting every screen once; if there is NO leak it plateaus, if
+   there IS one it keeps climbing each cycle. PASS iff last-cycle peak stays within a
+   ceiling of the first-cycle peak. Runs on both renderer legs. */
+@OptIn(kotlin.native.runtime.NativeRuntimeApi::class, ExperimentalForeignApi::class)
+private fun runSoakTest() {
+    // Disable never-settling animations so RSS reflects composition/layer lifetime,
+    // not live animation-state churn (same seed the screenshot path uses).
+    com.compose.sdl.disableInfiniteAnimations = true
+    com.compose.sdl.useVirtualFrameTime = true
+    val vAll = allCategories().flatMap { it.screens }
+    // CDN_SOAK_SCREEN=<name> repeats ONE screen 40x/cycle (bisect a specific screen);
+    // default cycles through every screen.
+    val vTarget = platform.posix.getenv("CDN_SOAK_SCREEN")?.toKString()
+    val vScreens = if (vTarget != null) { val vS = vAll.first { it.name.equals(vTarget, ignoreCase = true) }; List(40) { vS } }
+        else vAll
+    val vIndex = mutableStateOf(0)
+    // CDN_SOAK_STATIC=1: mount ONE screen once, never remount — measure RSS every 120 frames.
+    // Isolates a per-FRAME leak (RSS climbs with no remounts) from a per-MOUNT leak.
+    val vStatic = platform.posix.getenv("CDN_SOAK_STATIC")?.toKString() == "1"
+    val kFramesPerScreen = if (vStatic) 120 else 3
+    val kCycles = platform.posix.getenv("CDN_SOAK_CYCLES")?.toKString()?.toIntOrNull() ?: 3
+    val vRssPerCycleMb = mutableListOf<Long>()
+    var vShown = 0
+
+    nativeComposeWindow(
+        title = "soaktest",
+        width = 1000,
+        height = 700,
+        onFrame = { _, vFrame ->
+            if (vFrame > 0 && vFrame % kFramesPerScreen == 0) {
+                if (vStatic) {
+                    // No remount — just pump frames on the one mounted screen.
+                    kotlin.native.runtime.GC.collect()
+                    vRssPerCycleMb.add(currentResidentMb())
+                    println("soaktest[static]: measure ${vRssPerCycleMb.size}: currentRSS=${vRssPerCycleMb.last()}MB")
+                } else {
+                    vShown++
+                    vIndex.value = vShown % vScreens.size
+                    if (vShown % vScreens.size == 0) {
+                        kotlin.native.runtime.GC.collect()
+                        vRssPerCycleMb.add(currentResidentMb())
+                        println("soaktest: cycle ${vRssPerCycleMb.size}: currentRSS=${vRssPerCycleMb.last()}MB")
+                    }
+                }
+            }
+            if (vRssPerCycleMb.size >= kCycles) {
+                val vFirst = vRssPerCycleMb.first()
+                val vLast = vRssPerCycleMb.last()
+                val vGrowth = vLast - vFirst
+                val vCeiling = maxOf(48L, vFirst / 4)  // 25% or 48MB, whichever larger
+                println("soaktest: currentRSS/cycle(MB)=$vRssPerCycleMb (${vScreens.size} screens x $kCycles cycles)")
+                if (vGrowth <= vCeiling) {
+                    println("soaktest: PASS (current RSS grew ${vGrowth}MB over cycles 1->$kCycles, within ${vCeiling}MB ceiling)")
+                } else {
+                    println("soaktest: FAIL (current RSS grew ${vGrowth}MB > ${vCeiling}MB ceiling — possible leak)")
+                }
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            val vScroll = rememberScrollState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .verticalScroll(vScroll)
+                    .padding(24.dp),
+            ) {
+                // key(vShown) forces a FULL dispose+recompose each advance (even when the
+                // target screen repeats) — the allocate/release churn we soak. Reading
+                // vIndex.value (a State) is what triggers the recomposition each mount.
+                key(vShown) {
+                    vScreens[vIndex.value].content()
+                }
+            }
+        }
+    }
+}
+
+/* CURRENT resident set (MB) via `ps` — unlike getrusage ru_maxrss (monotonic peak),
+   this can DROP after GC, so it distinguishes a true leak (ratchets up) from K/N
+   allocator high-water. Portable across macOS/Linux (`ps -o rss=` prints KB). */
+@OptIn(ExperimentalForeignApi::class)
+private fun currentResidentMb(): Long {
+    val vPid = platform.posix.getpid()
+    val vFp = platform.posix.popen("ps -o rss= -p $vPid", "r") ?: return -1
+    val vKb = memScoped {
+        val vBuf = allocArray<kotlinx.cinterop.ByteVar>(64)
+        val vLine = platform.posix.fgets(vBuf, 64, vFp)?.toKString()?.trim()
+        vLine?.toLongOrNull() ?: -1L
+    }
+    platform.posix.pclose(vFp)
+    return if (vKb < 0) -1 else vKb / 1024
+}
+
 private fun runNav3Test() {
     val vShow = mutableStateOf(false)
     nativeComposeWindow(
@@ -644,6 +776,65 @@ private fun runParagraphTest() {
                 println("paragraphtest: lineCount=${vP.lineCount} w=${vP.width} h=${vP.height} hpos(3)=$vHpos offBack=$vOffBack lineFor(30)=$vLine")
                 val vPass = vP.lineCount >= 2 && vP.height > 0f && vP.width > 0f && vOffBack in 2..4
                 println(if (vPass) "paragraphtest: PASS (real width-wrapped Paragraph via SdlParagraph)" else "paragraphtest: FAIL")
+                false
+            } else true
+        },
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {}
+    }
+}
+
+/* Prints paragraph metrics (single-line cell, lineHeight-styled single + triple line,
+   first baseline) for a font-size sweep at density 1 — the native half of the
+   metrics-alignment probe. Mirror of MainJvm's `--metrics`; both must print the same
+   numbers for the parity text drift to vanish. */
+private fun runMetricsProbe() {
+    fun paragraph(inText: String, inSize: Int, inLineHeight: Int?, inM3Style: Boolean): androidx.compose.ui.text.Paragraph =
+        androidx.compose.ui.text.Paragraph(
+            text = inText,
+            style = androidx.compose.ui.text.TextStyle(
+                fontSize = inSize.sp,
+                lineHeight = inLineHeight?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+                lineHeightStyle = if (inM3Style) {
+                    androidx.compose.ui.text.style.LineHeightStyle(
+                        alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
+                        trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.None,
+                    )
+                } else null,
+            ),
+            constraints = androidx.compose.ui.unit.Constraints(maxWidth = 10_000),
+            density = androidx.compose.ui.unit.Density(1f),
+            fontFamilyResolver = androidx.compose.ui.text.font.createFontFamilyResolver(),
+            overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+        )
+    nativeComposeWindow(
+        title = "metricsprobe",
+        width = 300,
+        height = 200,
+        onFrame = { _, frameIndex ->
+            if (frameIndex == 10) {
+                for (vSize in listOf(11, 12, 14, 16, 22, 24)) {
+                    val vLh = vSize + 6
+                    val vCell = paragraph("Hg", vSize, null, false)
+                    val vOne = paragraph("Hg", vSize, vLh, false)
+                    val vThree = paragraph("Hg\nHg\nHg", vSize, vLh, false)
+                    val vOneM3 = paragraph("Hg", vSize, vLh, true)
+                    val vThreeM3 = paragraph("Hg\nHg\nHg", vSize, vLh, true)
+                    println(
+                        "metrics: size=$vSize lh=$vLh cell=${vCell.height} " +
+                            "one=${vOne.height} three=${vThree.height} " +
+                            "base1=${vOne.firstBaseline} base3=${vThree.lastBaseline} " +
+                            "oneM3=${vOneM3.height} threeM3=${vThreeM3.height} base1M3=${vOneM3.firstBaseline}"
+                    )
+                }
+                for ((vS, vL) in listOf(24 to 24, 24 to 25, 32 to 24, 16 to 16)) {
+                    val vB = paragraph("Hg", vS, vL, true)
+                    println("metrics: boundary $vS/$vL m3=${vB.height} base=${vB.firstBaseline}")
+                }
+                val vBig = paragraph("42", 48, 24, false)
+                val vBigM3 = paragraph("42", 48, 24, true)
+                println("metrics: big48/lh24 raw=${vBig.height} base=${vBig.firstBaseline} m3=${vBigM3.height} baseM3=${vBigM3.firstBaseline}")
+                println("metricsprobe: DONE")
                 false
             } else true
         },

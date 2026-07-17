@@ -18,6 +18,7 @@
 
 // MANUAL VENDOR of upstream compose/foundation/foundation/src/commonMain/kotlin/
 // androidx/compose/foundation/text/selection/SelectionLayout.kt.
+// VENDOR-BASE: compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/text/selection/SelectionLayout.kt @ v1.12.0-beta03+dev4483
 //
 // Change vs upstream: MultiSelectionLayout.crossStatus and slotToIndex clamp their
 // infoList index to the valid range. Upstream assumes that if the drag position never

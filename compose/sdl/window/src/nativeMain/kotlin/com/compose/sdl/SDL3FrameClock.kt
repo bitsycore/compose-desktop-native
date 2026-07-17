@@ -26,7 +26,12 @@ internal class SDL3FrameClock : MonotonicFrameClock {
 	override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R =
 		broadcast.withFrameNanos(onFrame)
 
-	fun sendFrame() {
-		broadcast.sendFrame(SDL_GetTicksNS().toLong())
+	fun sendFrame(inNanos: Long = SDL_GetTicksNS().toLong()) {
+		broadcast.sendFrame(inNanos)
 	}
+
+	// Coroutines (recomposer / composition animations) currently suspended in withFrameNanos
+	// awaiting the next sendFrame — the "an animation is still running" half of the window's
+	// quiescence signal (see WindowInstance.hasInvalidations).
+	val hasAwaiters: Boolean get() = broadcast.hasAwaiters
 }

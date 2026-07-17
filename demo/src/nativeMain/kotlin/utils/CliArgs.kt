@@ -13,9 +13,10 @@ import com.compose.sdl.GpuMode
          sdl3.opengl | sdl3.metal | sdl3.vulkan |
          sdl3.d3d11 | sdl3.d3d12                 (default: auto)
    --screen=Buttons | TextField | ...            (default: full app w/ sidebar)
-   --screenshot=path.bmp                         capture after frames and quit
+   --screenshot=path.bmp                         capture at quiescence and quit
    --width=W  --height=H                         (default 1000 / 700)
-   --frames=N                                    screenshot delay in frames
+   --frames=N                                    quiescence cap: capture at frame N even if
+                                                 the screen never settles (default 300)
 
    Names match the Screen registry entries (case-insensitive). */
 internal data class CliArgs(
@@ -24,7 +25,7 @@ internal data class CliArgs(
     val screenshot: String? = null,
     val width: Int = 1000,
     val height: Int = 700,
-    val frames: Int = 6,
+    val maxFrames: Int = 300,
 )
 
 /* Translates the --gpu= string to the right GpuMode sealed instance.
@@ -62,7 +63,7 @@ internal fun parseArgs(argv: Array<String>): CliArgs {
             "screenshot" -> vArgs.copy(screenshot = value)
             "width"      -> vArgs.copy(width = value.toIntOrNull() ?: vArgs.width)
             "height"     -> vArgs.copy(height = value.toIntOrNull() ?: vArgs.height)
-            "frames"     -> vArgs.copy(frames = value.toIntOrNull() ?: vArgs.frames)
+            "frames"     -> vArgs.copy(maxFrames = value.toIntOrNull() ?: vArgs.maxFrames)
             else -> vArgs
         }
     }

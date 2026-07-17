@@ -53,6 +53,13 @@ import sdl3_ttf.TTF_StringToTag
 import sdl3.SDL_IOFromConstMem
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.Density
+import freetype.FT_Done_Face
+import freetype.FT_Done_FreeType
+import freetype.FT_FaceVar
+import freetype.FT_Init_FreeType
+import freetype.FT_Library
+import freetype.FT_LibraryVar
+import freetype.FT_New_Memory_Face
 
 // ==================
 // MARK: Sdl3TextRenderer (mingwX64 fallback)
@@ -176,6 +183,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     // Cap-and-clear (not LRU): lookups stay a single hash op on the hot measure
     // path, and re-measuring after a rare full clear is cheap.
     private data class WidthKey(val family: String?, val text: String, val fontSize: Int, val variations: String, val style: Int)
+    // Phase 4: when set, drawText CAPTURES a plain run (text + params) into the display
+    // list instead of blitting — eviction-safe (replay re-looks-up the cache). Set only
+    // for plain (no-span) text by Sdl3Canvas capture mode; spanned/icon text bails.
+    internal var runSink: TextRunSink? = null
+
     private val fWidthCache = mutableMapOf<WidthKey, Int>()
 
     /* Returns false if TTF couldn't init. */
@@ -194,6 +206,9 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         for ((vMem, _) in fFontMem.values) nativeHeap.free(vMem)
         fFontMem.clear()
         fMissingFamilies.clear()
+        fCellRatios.clear()
+        fMetricsLib?.let { FT_Done_FreeType(it) }
+        fMetricsLib = null
         fFreeTypeIcons.destroy()
         TTF_Quit()
     }
@@ -214,9 +229,63 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
         override fun lineHeight(inFontSize: Int, inFontFamily: String?, inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?): Float {
             val vFont = getFont(inFontFamily, inFontSize, inFontVariations) ?: return inFontSize * 1.3f
+            // Skia-aligned cell for TEXT fonts (P3.1): Skia scales the face's hhea
+            // metrics linearly and the paragraph rounds to nearest, while
+            // TTF_GetFontHeight reports the grid-fitted CEILED int — +1px at the M3
+            // body sizes (12, 14), accumulating ~1px per stacked label down every
+            // parity page. Icon families keep the TTF value: their glyph boxes were
+            // tuned against it and Skia never renders them.
+            if (inFontFamily == null || !IconFont.isIconFamily(inFontFamily)) {
+                cellRatios(inFontFamily)?.let { vRatios ->
+                    val vPhysical = (inFontSize * fDpr).coerceAtLeast(1f)
+                    return (kotlin.math.round(vRatios.cell * vPhysical) / fDpr).coerceAtLeast(1f)
+                }
+            }
             // TTF_GetFontHeight returns physical pixels (we opened the
             // font at fontSize * DPR). Convert back to logical.
             return (TTF_GetFontHeight(vFont.reinterpret()).toFloat() / fDpr).coerceAtLeast(1f)
+        }
+    }
+
+    // ============
+    //  Unrounded face metrics (P3.1) — read hhea ascender/descender/upem once per
+    //  family straight from the font bytes via a metrics-only FreeType library
+    //  (SDL3_ttf exposes only grid-fitted ints). Ratios are size-independent.
+    private var fMetricsLib: FT_Library? = null
+    private data class CellRatios(val cell: Float, val ascent: Float)
+    private val fCellRatios = mutableMapOf<String?, CellRatios?>()
+
+    private fun cellRatios(inFamily: String?): CellRatios? {
+        if (fCellRatios.containsKey(inFamily)) return fCellRatios[inFamily]
+        val vComputed = computeCellRatios(inFamily)
+        fCellRatios[inFamily] = vComputed
+        return vComputed
+    }
+
+    private fun computeCellRatios(inFamily: String?): CellRatios? {
+        // getFont() has already staged the family bytes into fFontMem (lineHeight
+        // calls it first); absent bytes = system-font fallback -> no ratios.
+        val vSlot = fFontMem[inFamily] ?: return null
+        if (fMetricsLib == null) {
+            memScoped {
+                val vLibPtr = alloc<FT_LibraryVar>()
+                if (FT_Init_FreeType(vLibPtr.ptr).toInt() == 0) fMetricsLib = vLibPtr.value
+            }
+        }
+        val vLib = fMetricsLib ?: return null
+        memScoped {
+            val vFacePtr = alloc<FT_FaceVar>()
+            val vErr = FT_New_Memory_Face(vLib, vSlot.first.reinterpret(), vSlot.second.convert(), 0, vFacePtr.ptr)
+            if (vErr.toInt() != 0 || vFacePtr.value == null) return null
+            val vFace = vFacePtr.value!!.pointed
+            val vUpem = vFace.units_per_EM.toFloat()
+            val vRatios =
+                if (vUpem > 0f) CellRatios(
+                    cell = (vFace.ascender - vFace.descender).toFloat() / vUpem,
+                    ascent = vFace.ascender.toFloat() / vUpem,
+                ) else null
+            FT_Done_Face(vFacePtr.value)
+            return vRatios
         }
     }
 
@@ -422,6 +491,11 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         // blit each as its own texture at its prefix x. Tabs expand for both the
         // prefix measure and the texture so offsets and glyphs agree.
         if (inSpans != null) {
+            // Capture mode: record each styled run as its own TextRun command (like the
+            // plain path) — replay re-looks-up the per-run segment texture, eviction-safe.
+            // A run wanting a SpanStyle.background bails to block-replay (the background
+            // fill isn't a captured command yet); rare — highlight/selection spans.
+            val vCapture = runSink
             // O(spans + line length) style runs (colour + weight + italic +
             // background + decoration + size), instead of an O(chars × spans)
             // per-character scan.
@@ -441,6 +515,16 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 (if (inRun.italic) kStyleItalic else 0) or
                 (if (inRun.underline) kStyleUnderline else 0) or
                 (if (inRun.lineThrough) kStyleStrikethrough else 0)
+            // Background fills aren't a captured command yet — defer the whole leaf if
+            // any run wants one (rare: highlight/selection spans). Also keeps the
+            // background SDL_RenderFillRect below from firing during a capture pass.
+            if (vCapture != null) {
+                for (vRun in vRuns) {
+                    if (vRun.background != ComposeColor.Unspecified && vRun.background.alpha > 0f) {
+                        vCapture.markUnsupported(); return
+                    }
+                }
+            }
             // Line width = sum of each run's width at ITS style (for alignment).
             var vLineW = 0f
             for (vRun in vRuns) vLineW += measureWidth(runSeg(vRun), runPx(vRun), inFontFamily, runVars(vRun), runStyle(vRun)).toFloat()
@@ -499,17 +583,27 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
                 }
                 val vCachedSeg = getOrCreateTexture(inFontFamily, vSeg, vPx, vVars, vStyle)
                 if (vCachedSeg != null) {
-                    applyTint(vCachedSeg.tex, vRun.color)
                     val vLogW = vCachedSeg.w / fDpr
                     val vLogH = vCachedSeg.h / fDpr
                     val vPenY = vBaselineY - fontAscent(vPx, inFontFamily, vVars)
-                    memScoped {
-                        val vDst = alloc<SDL_FRect>()
-                        vDst.x = snap(vRunX)
-                        vDst.y = snap(vPenY)
-                        vDst.w = vLogW
-                        vDst.h = vLogH
-                        SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
+                    if (vCapture != null) {
+                        // Record params (not the texture pointer) — eviction-safe replay.
+                        val vArgb = (vRun.color.a8 shl 24) or (vRun.color.r8 shl 16) or
+                            (vRun.color.g8 shl 8) or vRun.color.b8
+                        vCapture.captureTextRun(
+                            inFontFamily, vSeg, vPx, vVars, vStyle,
+                            snap(vRunX), snap(vPenY), vLogW, vLogH, vArgb,
+                        )
+                    } else {
+                        applyTint(vCachedSeg.tex, vRun.color)
+                        memScoped {
+                            val vDst = alloc<SDL_FRect>()
+                            vDst.x = snap(vRunX)
+                            vDst.y = snap(vPenY)
+                            vDst.w = vLogW
+                            vDst.h = vLogH
+                            SDL_RenderTexture(vRenderer.reinterpret(), vCachedSeg.tex.reinterpret(), null, vDst.ptr)
+                        }
                     }
                 }
                 vRunX += vAdvance
@@ -544,10 +638,97 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         // round(v * dpr) / dpr keeps the blit 1:1, matching Skia's crispness.
         fun snap(inV: Float): Float = kotlin.math.round(inV * fDpr) / fDpr
 
+        val vSink = runSink
+        if (vSink != null) {
+            // Capture the plain run for eviction-safe retained replay — params, NOT the
+            // texture pointer (the LRU may evict it; replay re-looks-up). Snapped
+            // layer-local dst; replay maps the origin through the layer affine.
+            val vArgb = (inColor.a8 shl 24) or (inColor.r8 shl 16) or (inColor.g8 shl 8) or inColor.b8
+            vSink.captureTextRun(
+                inFontFamily, vText, inFontSize, inFontVariations, vBaseStyle,
+                snap(vPenX), snap(vPenY), vLogW, vLogH, vArgb,
+            )
+            return
+        }
         memScoped {
             val vDst = alloc<SDL_FRect>()
             vDst.x = snap(vPenX)
             vDst.y = snap(vPenY)
+            vDst.w = vLogW
+            vDst.h = vLogH
+            SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)
+        }
+    }
+
+    // Phase 4 replay: blit a captured plain run. Re-looks-up the run texture
+    // (eviction-safe — re-rasterises if the LRU dropped it), applies the tint, and
+    // blits at the given DEVICE origin (already mapped through the layer affine) at
+    // logical size (matching the immediate path: layer scale reaches position, not size).
+    internal fun blitRun(
+        inFontFamily: String?,
+        inText: String,
+        inFontSize: Int,
+        inFontVariations: List<FontVariation.Setting>?,
+        inStyle: Int,
+        inDeviceX: Float,
+        inDeviceY: Float,
+        inLogW: Float,
+        inLogH: Float,
+        inColor: ComposeColor,
+    ) {
+        val vRenderer = backend.renderer ?: return
+        val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inFontVariations, inStyle) ?: return
+        applyTint(vCached.tex, inColor)
+        memScoped {
+            val vDst = alloc<SDL_FRect>()
+            vDst.x = kotlin.math.round(inDeviceX * fDpr) / fDpr
+            vDst.y = kotlin.math.round(inDeviceY * fDpr) / fDpr
+            vDst.w = inLogW
+            vDst.h = inLogH
+            SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)
+        }
+    }
+
+    /* Phase 4 replay: re-draw a captured icon glyph. Mirrors drawNativeText's icon
+       branch — FreeType glyph first (its own cache re-rasterises on eviction), then the
+       SDL_ttf fallback for a codepoint the FreeType path can't draw (rare: a glyph
+       absent from the subset font). Box origin is DEVICE (already mapped through the
+       layer affine); the glyph centres in the logical box. */
+    internal fun blitIconRun(
+        inFontFamily: String,
+        inText: String,
+        inFontSize: Int,
+        inFontVariations: List<FontVariation.Setting>?,
+        inDeviceBoxX: Float,
+        inDeviceBoxY: Float,
+        inBoxW: Float,
+        inBoxH: Float,
+        inColor: ComposeColor,
+    ) {
+        val vRenderer = backend.renderer ?: return
+        val vDrew = fFreeTypeIcons.drawGlyph(
+            inSdlRenderer = vRenderer,
+            inFamily = inFontFamily,
+            inCodepoint = inText.codePointAtSafe(0),
+            inPixelSize = inFontSize,
+            inColor = inColor,
+            inVariations = inFontVariations ?: emptyList(),
+            inBoxX = inDeviceBoxX.toInt(),
+            inBoxY = inDeviceBoxY.toInt(),
+            inBoxW = inBoxW.toInt(),
+            inBoxH = inBoxH.toInt(),
+            inDpr = fDpr,
+        )
+        if (vDrew) return
+        // SDL_ttf fallback — render the codepoint as a normal glyph, centred in the box.
+        val vCached = getOrCreateTexture(inFontFamily, inText, inFontSize, inFontVariations, 0) ?: return
+        applyTint(vCached.tex, inColor)
+        val vLogW = vCached.w / fDpr
+        val vLogH = vCached.h / fDpr
+        memScoped {
+            val vDst = alloc<SDL_FRect>()
+            vDst.x = kotlin.math.round((inDeviceBoxX + (inBoxW - vLogW) / 2f) * fDpr) / fDpr
+            vDst.y = kotlin.math.round((inDeviceBoxY + (inBoxH - vLogH) / 2f) * fDpr) / fDpr
             vDst.w = vLogW
             vDst.h = vLogH
             SDL_RenderTexture(vRenderer.reinterpret(), vCached.tex.reinterpret(), null, vDst.ptr)

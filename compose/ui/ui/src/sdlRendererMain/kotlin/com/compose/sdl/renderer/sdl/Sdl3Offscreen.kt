@@ -157,6 +157,12 @@ internal class Sdl3OffscreenRenderer(
 			fForceWhite = vBmp.config == ImageBitmapConfig.Alpha8,
 		)
 	}
+
+	// Phase 4: a capture canvas records shape geometry into [list] and touches NO GPU
+	// (text/image/clip mark the list unsupported). Used by SdlDisplayListRenderNode to
+	// record a leaf's layer-local geometry. No render target — no timing nondeterminism.
+	internal fun createCaptureCanvas(list: SdlDisplayList, size: Size): Sdl3Canvas =
+		Sdl3Canvas(fRenderer, size, fTextRenderer, fCaptureList = list)
 }
 
 // ==================

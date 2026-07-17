@@ -38,6 +38,7 @@ import sdl3.SDL_Delay
 import sdl3.SDL_GetPerformanceCounter
 import sdl3.SDL_GetPerformanceFrequency
 import sdl3.SDL_GetTicks
+import sdl3.SDL_GetTicksNS
 import sdl3.SDL_Quit
 import sdl3.SDL_SetWindowTitle
 import sdl3.SDL_WaitEventTimeout
@@ -144,7 +145,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 
 		appComposition.setContent { appScope.content() }
 		// Compose the initial Window() declarations before entering the loop.
-		appClock.sendFrame()
+		appClock.sendFrame(frameClockNanos())
 		yield()
 
 		// ============
@@ -153,6 +154,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 		var vRenderedSinceGc = false
 		while (!runtime.exitRequested) {
 			FrameProfiler.mark()
+			// One virtual 16.6ms tick per loop iteration (no-op unless useVirtualFrameTime) —
+			// all windows' clocks share the same timestamp this iteration.
+			advanceVirtualFrame()
 			Snapshot.sendApplyNotifications()
 
 			// ============
@@ -185,7 +189,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			// ============
 			//  App composition pump — Window()s may appear / disappear here.
 			Snapshot.sendApplyNotifications()
-			appClock.sendFrame()
+			appClock.sendFrame(frameClockNanos())
 			yield()
 			runtime.reapDestroyed()
 
@@ -209,10 +213,10 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			val vAppPending = appRecomposer.hasPendingWork
 			for (vW in runtime.windows.toList()) {
 				vW.installGlobals()
-				vW.host.sendAnimationFrame(SDL_GetTicks().toLong() * 1_000_000L)
+				vW.host.sendAnimationFrame(animationClockNanos())
 				mainDispatcher.drainPending()
 				Snapshot.sendApplyNotifications()
-				vW.frameClock.sendFrame()
+				vW.frameClock.sendFrame(frameClockNanos())
 				yield()
 				FrameProfiler.phase("pump")
 				if (vW.shouldRender()) {
@@ -351,6 +355,57 @@ internal object FrameProfiler {
 /* Trigger a Kotlin/Native GC so Cleaner-managed renderer resources release
    their native memory (see the main loop's native-memory nudge). */
 private val kForceRender: Boolean = platform.posix.getenv("CDN_FORCERENDER") != null
+
+// ==================
+// MARK: Probe / screenshot support (render-to-quiescence)
+// ==================
+
+/* Set BEFORE nativeComposeApp/nativeComposeWindow: every window's composition then runs
+   under an InfiniteAnimationPolicy that CANCELS infinite animations, so
+   rememberInfiniteTransition & co. freeze at their initial value — the same mechanism
+   upstream's test rules use. Screenshot/parity runs enable it so looping screens can
+   reach quiescence and capture deterministically. */
+var disableInfiniteAnimations: Boolean = false
+
+/* The cancelling policy: a coroutine that ends in CancellationException counts as
+   cancelled (not failed), so only the animation coroutine stops — nothing propagates. */
+private object CancelInfiniteAnimationsPolicy : androidx.compose.ui.platform.InfiniteAnimationPolicy {
+	override suspend fun <R> onInfiniteOperation(block: suspend () -> R): R =
+		throw CancellationException("infinite animations are disabled (disableInfiniteAnimations)")
+}
+
+/* Set BEFORE nativeComposeApp/nativeComposeWindow: the composition + animation frame
+   clocks advance a VIRTUAL 16.6ms per main-loop iteration instead of reading SDL's
+   real-time ticks — the native mirror of the JVM parity leg's render(nanos) stepping.
+   Animations then progress by exact per-frame deltas, so anything time-raced (e.g. a
+   bring-into-view scroll interrupted mid-flight) resolves identically on every run and
+   screenshots become deterministic. Input timestamps and FPS stay on real time. */
+var useVirtualFrameTime: Boolean = false
+
+private var virtualFrameNanos = 0L
+
+private fun advanceVirtualFrame() {
+	if (useVirtualFrameTime) virtualFrameNanos += 16_666_667L
+}
+
+// Timestamp for the composition frame clocks (recomposer + withFrameNanos animations).
+private fun frameClockNanos(): Long =
+	if (useVirtualFrameTime) virtualFrameNanos else SDL_GetTicksNS().toLong()
+
+// Timestamp for the owner's node-animation clock — real path keeps the pre-existing
+// ms-resolution SDL_GetTicks base so non-screenshot behaviour is bit-for-bit unchanged.
+private fun animationClockNanos(): Long =
+	if (useVirtualFrameTime) virtualFrameNanos else SDL_GetTicks().toLong() * 1_000_000L
+
+// The window currently inside renderFrame — the loop is single-threaded, so a plain
+// var is enough for onFrame probes to address "the window I'm being called for".
+private var renderingWindow: WindowInstance? = null
+
+/* From inside an onFrame callback: true while the just-rendered window still has pending
+   work (recomposition, layout/draw invalidation, or an animation awaiting the next frame).
+   Screenshot probes capture once this stays false for a few consecutive frames instead of
+   at a fixed frame count. Outside onFrame it answers false. */
+fun windowHasInvalidations(): Boolean = renderingWindow?.hasInvalidations() ?: false
 
 @OptIn(kotlin.native.runtime.NativeRuntimeApi::class)
 private fun collectNativeGarbage() = kotlin.native.runtime.GC.collect()
@@ -546,6 +601,10 @@ internal class WindowInstance(
 
 		host = ComposeRootHost(inDensity = backend.pixelDensity)
 		host.attach()
+		// A layer whose content changed (OwnedLayer.invalidate) schedules a frame
+		// even when nothing else (recompose / relayout) is pending — retained layers
+		// need this so a draw-only state change still repaints.
+		host.setInvalidationCallback { needsFrame = true }
 		facade = ComposeNativeWindow(backend, gpuMode, initialTitle)
 		navigationEventOwner.navigationEventDispatcher.addInput(backNavigationInput)
 
@@ -554,7 +613,11 @@ internal class WindowInstance(
 		// setContent below).
 		installGlobals()
 
-		val vRecomposer = Recomposer(inScope.coroutineContext + frameClock)
+		// Effect context for this window's composition — the screenshot flag injects the
+		// infinite-animation-cancelling policy (see disableInfiniteAnimations above).
+		var vEffectContext = inScope.coroutineContext + frameClock
+		if (disableInfiniteAnimations) vEffectContext += CancelInfiniteAnimationsPolicy
+		val vRecomposer = Recomposer(vEffectContext)
 		recomposer = vRecomposer
 		recomposeJob = inScope.launch(frameClock) { vRecomposer.runRecomposeAndApplyChanges() }
 		val vComposition = Composition(host.applier, vRecomposer)
@@ -755,6 +818,14 @@ internal class WindowInstance(
 	fun shouldRender(): Boolean =
 		needsFrame || (recomposer?.hasPendingWork == true) || onFrame != null || kForceRender
 
+	/* True while this window still has pending work: a state/layout/draw invalidation
+	   (needsFrame), recomposer work, or a composition/node animation awaiting the next
+	   frame. Sampled by windowHasInvalidations() from onFrame probes — the quiescence
+	   signal for render-to-settle screenshot capture. */
+	fun hasInvalidations(): Boolean =
+		needsFrame || recomposer?.hasPendingWork == true ||
+			frameClock.hasAwaiters || host.hasAnimationAwaiters()
+
 	// TEMP measurement: CDN_FORCERENDER=1 forces every frame to render so
 	// sustained steady-state timings can be measured on otherwise-idle screens.
 
@@ -775,10 +846,13 @@ internal class WindowInstance(
 		}
 
 		vRender.beginFrame(1f)
-		vRender.drawRoot(host)
-		if (onFrame != null && !onFrame.invoke(vRender, frameIndex)) {
+		vRender.drawRoot { canvas -> host.drawRoot(canvas) }
+		if (onFrame != null) {
+			renderingWindow = this
+			val vContinue = onFrame.invoke(vRender, frameIndex)
+			renderingWindow = null
 			// Probe consumers end the app when their scenario completes.
-			facade.close()
+			if (!vContinue) facade.close()
 		}
 		FrameProfiler.phase("  draw")
 		vRender.endFrame()

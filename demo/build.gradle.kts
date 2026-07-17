@@ -13,15 +13,15 @@ plugins {
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
-// JVM parity target's Compose version — the dev build matching the pinned
+// JVM parity target's Compose version — the Maven build matching the pinned
 // COMPOSE_CORE_REF (see scripts/compose-fork/compose.properties). material3
-// rides its OWN release train: same +dev build number, different base
-// version. Gradle orders "+dev" qualifiers BELOW the plain version, so
-// currentOs's beta01 would win conflict resolution — force the core-repo
-// groups on every jvm configuration. Umbrella-repo groups (desktop,
-// components) are NOT forced: their dev numbering differs.
-val vComposeJvmVersion = "1.12.0-beta01+dev4324"
-val vComposeM3JvmVersion = "1.12.0-alpha03+dev4324"
+// rides its OWN release train (different base version). Forcing keeps the
+// core-repo groups locked to the pin on every jvm configuration even when
+// the umbrella plugin's own version would win conflict resolution (essential
+// for "+dev" pins, which Gradle orders BELOW the plain version). Umbrella-repo
+// groups (desktop, components) are NOT forced: their versioning differs.
+val vComposeJvmVersion = "1.12.0-beta02"
+val vComposeM3JvmVersion = "1.12.0-alpha03"
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
@@ -309,4 +309,10 @@ tasks.named<ProcessResources>("jvmProcessResources") {
         from(vFontFile) { into("font") }
         dependsOn(vDownloadTask)
     }
+    // P0.3 (RENDERER_CONVERGE.md §8): stage the SAME default font the native leg bundles
+    // (data.kres font/NotoSans.ttf) onto the JVM classpath, so the parity harness's JVM leg
+    // renders text with NotoSans too — collapsing the font-drift baseline to (near) just
+    // rasterizer AA. MainJvm loads it from /font/NotoSans.ttf.
+    from(notoSansFile) { into("font") }
+    dependsOn(":ui:downloadNotoFonts")
 }

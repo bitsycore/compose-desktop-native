@@ -514,14 +514,14 @@ skikoMain/kotlin/ -> src/vendor/skikoRenderer/kotlin/
 #     | skikoMain/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/SkiaVertexMode.skiko.kt
 #     | skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt
 #     | skikoMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/ImageBitmap.skiko.kt
+# B6.1 (2026-07-16): un-refused — skiko leg adopts upstream graphics actuals.
+# SkiaBackedCanvas is then MANUAL-VENDORED (moved to src/skikoRendererMain, re-refused
+# below) to also implement the port Native* draw contracts. See RENDERER_TASKS.md B6.1.
+# B6.2: un-refused — skiko leg adopts upstream GraphicsLayer/GraphicsContext (real
+# skiko RenderNode) now the canvas is SkiaBackedCanvas. See RENDERER_TASKS.md B6.2.
 !skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedPaint.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.skiko.kt
+# B6.1: MANUAL-VENDORED (flattened toBitmap/putBytesInto expect-actuals — see the file).
 !skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/SkiaShader.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt
 
 SET_FOLDER=compose/ui/ui-text/src
 
@@ -757,11 +757,13 @@ skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt -> src/vendo
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt
-#   desktopMain (173)
+#   desktopMain (175)
 #     | desktopMain/kotlin/androidx/compose/ui/Actuals.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/Actuals.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ConfigureSwingGlobalsForCompose.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ConfigureSwingGlobalsForCompose.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/DesktopComposeUiFlags.skiko.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/DesktopComposeUiFlags.skiko.kt
+#     | desktopMain/kotlin/androidx/compose/ui/ProvideSystemTheme.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ProvideSystemTheme.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtDimension.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtDimension.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtEventFilter.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtEventFilter.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/awt/AwtEvents.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/awt/AwtEvents.desktop.kt
@@ -1092,7 +1094,7 @@ skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt -> src/vendo
 #     | wasmJsMain/kotlin/androidx/compose/ui/Actuals.wasm.kt -> src/vendor/wasmJs/kotlin/androidx/compose/ui/Actuals.wasm.kt
 #     | wasmJsMain/kotlin/androidx/compose/ui/internal/System.wasm.kt -> src/vendor/wasmJs/kotlin/androidx/compose/ui/internal/System.wasm.kt
 #     | wasmJsMain/kotlin/androidx/compose/ui/platform/PlatformClipboard.wasm.kt -> src/vendor/wasmJs/kotlin/androidx/compose/ui/platform/PlatformClipboard.wasm.kt
-#   webMain (39)
+#   webMain (40)
 #     | webMain/kotlin/androidx/compose/ui/dom/Events.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/dom/Events.web.kt
 #     | webMain/kotlin/androidx/compose/ui/draganddrop/DragAndDrop.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/draganddrop/DragAndDrop.web.kt
 #     | webMain/kotlin/androidx/compose/ui/draganddrop/DragAndDropTransferData.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/draganddrop/DragAndDropTransferData.web.kt
@@ -1129,6 +1131,7 @@ skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt -> src/vendo
 #     | webMain/kotlin/androidx/compose/ui/window/ComposeViewportConfiguration.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/ComposeViewportConfiguration.web.kt
 #     | webMain/kotlin/androidx/compose/ui/window/ComposeWindow.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/ComposeWindow.web.kt
 #     | webMain/kotlin/androidx/compose/ui/window/ComposeWindowInternal.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/ComposeWindowInternal.web.kt
+#     | webMain/kotlin/androidx/compose/ui/window/RootScrollObserver.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/RootScrollObserver.kt
 #     | webMain/kotlin/androidx/compose/ui/window/SystemThemeObserver.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/SystemThemeObserver.web.kt
 #     | webMain/kotlin/androidx/compose/ui/window/WebCompositionLocals.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/WebCompositionLocals.kt
 #     | webMain/kotlin/androidx/compose/ui/window/WebTextInputSession.kt -> src/vendor/web/kotlin/androidx/compose/ui/window/WebTextInputSession.kt

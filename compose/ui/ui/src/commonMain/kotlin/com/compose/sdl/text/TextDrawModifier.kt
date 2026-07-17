@@ -44,6 +44,14 @@ interface NativeTextCanvas {
 		// (underline / line-through). Per-run overrides ride in via inSpans.
 		inBaseItalic: Boolean = false,
 		inTextDecoration: TextDecoration? = null,
+		// The paragraph's per-line band height in px (TextStyle.lineHeight when the
+		// style specifies one — SdlParagraph passes it so glyph rows stack exactly
+		// where layout put the line boxes). <= 0 → derive from font metrics (legacy
+		// behaviour; icon callers and TextDrawNode don't pass it).
+		inLineHeightPx: Float = 0f,
+		// Compat-trim (raw styles): the FIRST line keeps the tight font cell. False
+		// for M3's LineHeightStyle(Trim.None) — every line is the full band.
+		inTrimFirstLine: Boolean = true,
 	)
 }
 

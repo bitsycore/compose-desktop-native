@@ -9,6 +9,8 @@ import androidx.compose.ui.node.LayoutNodeDrawScope
 import androidx.compose.ui.node.MeasureAndLayoutDelegate
 import androidx.compose.ui.node.Owner
 import androidx.compose.ui.node.OwnedLayer
+import androidx.compose.ui.node.OwnedLayerManager
+import androidx.compose.ui.node.GraphicsLayerOwnerLayer
 import androidx.compose.ui.node.OwnerScope
 import androidx.compose.ui.node.OwnerSnapshotObserver
 import androidx.compose.ui.node.RootForTest
@@ -79,7 +81,7 @@ internal class ComposeOwner(
 	override val root: LayoutNode,
 	override val density: Density = Density(1f, 1f),
 	override val layoutDirection: LayoutDirection = LayoutDirection.Ltr,
-) : Owner {
+) : Owner, OwnedLayerManager {
 
 	// The vendored measure/layout state machine, rooted at [root].
 	private val fDelegate = MeasureAndLayoutDelegate(root)
@@ -151,6 +153,11 @@ internal class ComposeOwner(
 
 	override fun onDetach(node: LayoutNode) {
 		fDelegate.onNodeDetached(node)
+		// Drop the detached node's read-observation scopes, exactly as upstream
+		// RootNodeOwner.onDetach does. Without this, every disposed node's measure/
+		// layout/draw observation scopes accumulate in the snapshot observer forever
+		// — the baseline composition-machinery leak the P2.2 soak caught.
+		snapshotObserver.clear(node)
 	}
 
 	override fun registerOnLayoutCompletedListener(listener: Owner.OnLayoutCompletedListener) {
@@ -176,7 +183,86 @@ internal class ComposeOwner(
 		drawBlock: (canvas: Canvas, parentLayer: GraphicsLayer?) -> Unit,
 		invalidateParentLayer: () -> Unit,
 		explicitLayer: GraphicsLayer?,
-	): OwnedLayer = ProjectOwnedLayer(drawBlock)
+	): OwnedLayer = GraphicsLayerOwnerLayer(
+		graphicsLayer = explicitLayer ?: graphicsContext.createGraphicsLayer(),
+		context = if (explicitLayer != null) null else graphicsContext,
+		layerManager = this,
+		drawBlock = drawBlock,
+		invalidateParentLayer = invalidateParentLayer,
+	)
+
+	// ============
+	//  OwnedLayerManager — retained-layer bookkeeping (mirrors upstream
+	//  OwnedLayerManagerImpl). dirtyLayers are re-recorded once per frame in
+	//  [renderRoot] before the tree is drawn; clean layers replay their cached
+	//  display list. invalidate() asks the window to schedule a frame.
+
+	private val dirtyLayers = mutableListOf<OwnedLayer>()
+	private var postponedDirtyLayers: MutableList<OwnedLayer>? = null
+	private var isDrawingContent = false
+
+	// Set by the window (via ComposeRootHost) to flag needsFrame; a layer whose
+	// content changed (OwnedLayer.invalidate) schedules a frame even when nothing
+	// else (recompose / relayout) is pending.
+	internal var onInvalidate: (() -> Unit)? = null
+
+	override fun invalidate() {
+		onInvalidate?.invoke()
+	}
+
+	override fun notifyLayerIsDirty(layer: OwnedLayer, isDirty: Boolean) {
+		// Mirrors upstream OwnedLayerManagerImpl exactly. The CRITICAL detail: when a
+		// layer clears its dirty flag DURING drawing (updateDisplayList sets isDirty
+		// = false in the renderRoot loop), we must NOT remove it from dirtyLayers here
+		// — that would shrink the list mid-iteration (IndexOutOfBounds). renderRoot's
+		// dirtyLayers.clear() after the loop handles it instead.
+		if (!isDirty) {
+			if (!isDrawingContent) {
+				dirtyLayers.remove(layer)
+				postponedDirtyLayers?.remove(layer)
+			}
+		} else if (!isDrawingContent) {
+			dirtyLayers += layer
+		} else {
+			val postponed = postponedDirtyLayers
+				?: mutableListOf<OwnedLayer>().also { postponedDirtyLayers = it }
+			postponed += layer
+		}
+	}
+
+	override fun recycle(layer: OwnedLayer): Boolean {
+		dirtyLayers.remove(layer)
+		postponedDirtyLayers?.remove(layer)
+		return false
+	}
+
+	// Both Owner and OwnedLayerManager declare voteFrameRate with a default, so an
+	// explicit override is required. We render at a fixed vsync cadence — no voting.
+	override fun voteFrameRate(frameRate: Float) {}
+
+	// Draw the tree: re-record dirty layers' display lists, then walk the root so
+	// clean layers replay. Called once per frame by ComposeRootHost.drawRoot.
+	internal fun renderRoot(canvas: Canvas) {
+		isDrawingContent = true
+		// Re-record dirty layers BEFORE drawing (unlike Android, our draw forms the
+		// actual render-command sequence, so display lists must be current first).
+		// notifyLayerIsDirty(false) is a no-op while drawing, so the list can't shrink
+		// here; clear() below drops them all at once.
+		if (dirtyLayers.isNotEmpty()) {
+			for (i in 0 until dirtyLayers.size) {
+				dirtyLayers[i].updateDisplayList()
+			}
+		}
+		dirtyLayers.clear()
+		root.draw(canvas, null)
+		// Layers that invalidated themselves during draw were parked in postponed;
+		// roll them into next frame.
+		postponedDirtyLayers?.let {
+			dirtyLayers.addAll(it)
+			it.clear()
+		}
+		isDrawingContent = false
+	}
 
 	// ============
 	//  No-op subsystems (focus / semantics / input / clipboard / text / …).
@@ -216,17 +302,12 @@ internal class ComposeOwner(
 			containsControls: Boolean,
 		): Long = originalTimeoutMillis
 	}
-	// GraphicsLayer here is the project record/replay actual (see
-	// GraphicsLayer.native.kt) — SharedTransitionLayout overlays and
-	// rememberGraphicsLayer() create layers through this context. The
-	// expect class hides its constructor/release from commonMain, hence
-	// the project factory hops.
-	override val graphicsContext: GraphicsContext = object : GraphicsContext {
-		override fun createGraphicsLayer(): GraphicsLayer =
-			com.compose.sdl.graphics.createProjectGraphicsLayer()
-		override fun releaseGraphicsLayer(layer: GraphicsLayer) =
-			com.compose.sdl.graphics.releaseProjectGraphicsLayer(layer)
-	}
+	// Created behind a per-renderer factory seam (B2 / P1.3): SDL uses the project
+	// record/replay GraphicsContext; the Skia leg swaps in upstream's SkiaGraphicsContext
+	// at P1.6. SharedTransitionLayout overlays and rememberGraphicsLayer() create layers
+	// through this context. See com/compose/sdl/graphics/GraphicsContextFactory.kt.
+	override val graphicsContext: GraphicsContext =
+		com.compose.sdl.graphics.createGraphicsContext()
 	override val textToolbar: TextToolbar = object : TextToolbar {
 		override val status: androidx.compose.ui.platform.TextToolbarStatus
 			get() = androidx.compose.ui.platform.TextToolbarStatus.Hidden

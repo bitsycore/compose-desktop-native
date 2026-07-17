@@ -6,6 +6,7 @@
  * compose/ui/compose-fork.txt is commented out so this file survives
  * `scripts/compose-fork/sync.sh`.
  */
+// VENDOR-BASE: compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt @ v1.12.0-beta03+dev4483
 
 package androidx.compose.ui.text.platform
 

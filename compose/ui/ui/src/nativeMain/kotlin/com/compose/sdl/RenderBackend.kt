@@ -31,11 +31,13 @@ interface RenderBackend {
        so it maps 1:1 onto the pixel back buffer. */
     fun beginFrame(inDpr: Float)
 
-    /* Draw the upstream LayoutNode tree owned by [inHost] through the vendored
-       coordinator / DrawModifierNode pipeline (LayoutNode.draw → CanvasDrawScope
-       → the platform Canvas backend). Default no-op — the Skia backend will
-       override once SkiaCanvas lands (see NODE_ENGINE_PORT.md Phase 9). */
-    fun drawRoot(inHost: com.compose.sdl.node.ComposeRootHost) {}
+    /* Build this frame's platform Canvas and hand it to [inDraw], which walks the
+       composition (host.drawRoot(canvas)) through the vendored coordinator /
+       DrawModifierNode pipeline. Taking a (Canvas)->Unit instead of the host keeps
+       RenderBackend + its implementations independent of the node/host layer — the
+       decoupling that lets the renderers live in :ui-graphics (no ui-graphics→ui
+       cycle). Default no-op. */
+    fun drawRoot(inDraw: (canvas: androidx.compose.ui.graphics.Canvas) -> Unit) {}
 
     /* Flush + present whatever was just drawn. */
     fun endFrame()

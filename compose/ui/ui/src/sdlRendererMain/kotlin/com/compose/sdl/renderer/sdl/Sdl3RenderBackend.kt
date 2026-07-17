@@ -88,7 +88,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
     // Paint the upstream LayoutNode tree through the vendored pipeline.
     // inHost.rootNode.draw → NodeCoordinator.draw → DrawModifierNode → CanvasDrawScope
     // → Sdl3Canvas → SDL_RenderGeometry.
-    override fun drawRoot(inHost: com.compose.sdl.node.ComposeRootHost) {
+    override fun drawRoot(inDraw: (androidx.compose.ui.graphics.Canvas) -> Unit) {
         val vRenderer = backend.renderer ?: return
         val vClipTargets = fClipTargets ?: Sdl3ClipTargets(vRenderer).also { fClipTargets = it }
         val vShadowCache = fShadowCache ?: Sdl3ShadowCache(vRenderer).also { fShadowCache = it }
@@ -108,7 +108,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         // Expose the frame canvas so an offscreen render can flush it before borrowing
         // the render target (z-order).
         currentMainCanvas = vCanvas
-        inHost.rootNode.draw(vCanvas, null)
+        inDraw(vCanvas)
         vCanvas.finish()
         currentMainCanvas = null
     }

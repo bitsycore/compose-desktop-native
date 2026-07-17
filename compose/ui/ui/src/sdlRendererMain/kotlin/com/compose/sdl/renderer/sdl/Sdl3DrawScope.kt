@@ -112,6 +112,14 @@ internal class Sdl3DrawScope(
 	internal fun setMatrix(a: Float, b: Float, c: Float, d: Float, e: Float, f: Float) {
 		fMa = a; fMb = b; fMc = c; fMd = d; fMe = e; fMf = f
 	}
+	// Current device affine (a,b,c,d,e,f) — screen = (a*x+c*y+e, b*x+d*y+f). Phase 4
+	// replay reads this to re-transform captured layer-local vertices.
+	internal fun currentDeviceMatrix(): FloatArray = floatArrayOf(fMa, fMb, fMc, fMd, fMe, fMf)
+
+	// Phase 4: when set, flush() CAPTURES the tessellated batch (layer-local, if this
+	// scope's base CTM is identity) instead of submitting to the GPU. null = normal
+	// immediate submit. See SdlDisplayList.
+	internal var recordingSink: GeometrySink? = null
 
 	// ============
 	//  Vertex batch — heap-allocated buffer of SDL_Vertex shared across
@@ -133,6 +141,13 @@ internal class Sdl3DrawScope(
 	   call mid-scope when the buffer fills up (no cross-triangle state). */
 	fun flush() {
 		if (fBatchCount == 0) return
+		val vSink = recordingSink
+		if (vSink != null) {
+			// Phase 4 recording: capture the batch (layer-local) instead of submitting.
+			vSink.captureGeometry(fVertexData, fBatchCount)
+			fBatchCount = 0
+			return
+		}
 		fVertexData.usePinned { vPinned ->
 			platform.posix.memcpy(
 				fBatch,
@@ -932,6 +947,28 @@ internal class Sdl3DrawScope(
 		emitFringeQuad(x0, y0, x1, y1, x1 + inNx, y1 + inNy, x0 + inNx, y0 + inNy, inSampler)
 	}
 
+	// Phase 4 replay: re-emit a captured (layer-local) batch through the CURRENT CTM.
+	// The batch was recorded with an identity base CTM, so applying fMa..fMf here
+	// places it at the layer's transform. Colours/UVs pass through unchanged. Runs
+	// in NORMAL (non-recording) mode → the next flush() submits via SDL_RenderGeometry.
+	internal fun replayBatch(vd: FloatArray, count: Int) {
+		for (i in 0 until count) {
+			if (fBatchCount >= kBatchCapacity && fBatchCount % 3 == 0) flush()
+			val s = i * kFloatsPerVertex
+			val x = vd[s]; val y = vd[s + 1]
+			val base = fBatchCount * kFloatsPerVertex
+			fVertexData[base + 0] = fMa * x + fMc * y + fMe
+			fVertexData[base + 1] = fMb * x + fMd * y + fMf
+			fVertexData[base + 2] = vd[s + 2]
+			fVertexData[base + 3] = vd[s + 3]
+			fVertexData[base + 4] = vd[s + 4]
+			fVertexData[base + 5] = vd[s + 5]
+			fVertexData[base + 6] = vd[s + 6]
+			fVertexData[base + 7] = vd[s + 7]
+			fBatchCount++
+		}
+	}
+
 	// Stage one vertex into fVertexData (auto-flush when full). Position goes
 	// through the current affine so scale/rotate reach the GPU; the colour is
 	// sampled at the pre-transform point so a gradient rides its shape.
@@ -973,7 +1010,7 @@ private const val kBatchCapacity: Int = 8190
 
 // Floats per SDL_Vertex: position(x,y) + color(r,g,b,a) + tex_coord(x,y), tightly
 // packed. Used to stage vertices in a Kotlin FloatArray and memcpy them across.
-private const val kFloatsPerVertex: Int = 8
+internal const val kFloatsPerVertex: Int = 8
 
 // ==================
 // MARK: Brush → per-vertex colour sampler

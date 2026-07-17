@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.compose.sdl.graphics.a8
 import com.compose.sdl.graphics.b8
 import com.compose.sdl.graphics.g8
 import com.compose.sdl.graphics.r8
@@ -71,16 +72,86 @@ internal class Sdl3Canvas(
 	// Alpha8 mask) so the tint applied on blit colours it correctly.
 	private val fOffscreenTexture: COpaquePointer? = null,
 	private val fForceWhite: Boolean = false,
+	// Phase 4 capture mode: when set, this canvas RECORDS shape geometry into the list
+	// (via the scope's recordingSink) and touches NO GPU. Ops not yet capturable
+	// (text / image / clip / saveLayer / shadow) mark the list `unsupported` so the
+	// SdlDisplayListRenderNode falls back to a crisp block-replay for that leaf — so
+	// no un-captured op ever leaks to the screen. See SdlDisplayList.
+	private val fCaptureList: SdlDisplayList? = null,
 ) : Canvas,
 	com.compose.sdl.text.NativeTextCanvas,
 	com.compose.sdl.graphics.NativePainterCanvas,
 	com.compose.sdl.graphics.NativeShapeClipCanvas,
-	com.compose.sdl.graphics.NativeShadowCanvas {
+	com.compose.sdl.graphics.NativeShadowCanvas,
+	com.compose.sdl.graphics.NativeFinishableCanvas {
 
 	// The tessellating scope. It emits geometry in the canvas's user space; the
 	// canvas hands it the current affine each draw (setMatrix) so scale / rotate /
 	// translate reach the vertices.
 	private val fScope = Sdl3DrawScope(fRenderer, 0f, 0f, fSize)
+
+	init {
+		// Capture mode routes the scope's geometry to the display list instead of the GPU.
+		if (fCaptureList != null) fScope.recordingSink = fCaptureList
+	}
+
+	// Capture-mode gate for ops we can't record yet: flag the list unsupported (the
+	// node will replay the block instead) and skip the GPU work. Returns true if the
+	// caller should return early. No-op (false) outside capture mode.
+	private fun captureUnsupported(): Boolean {
+		val list = fCaptureList ?: return false
+		list.unsupported = true
+		return true
+	}
+
+	// Replay a captured display list into this (real) canvas under its CURRENT
+	// transform, in order (z-order preserved). Geometry batches re-emit their
+	// layer-local vertices through the affine; text runs flush pending geometry then
+	// re-look-up + blit at the transformed origin (glyph size stays logical). Used by
+	// SdlDisplayListRenderNode.drawInto.
+	internal fun replayDisplayList(list: SdlDisplayList) {
+		fScope.flush()
+		fScope.setMatrix(fMa, fMb, fMc, fMd, fMe, fMf)
+		for (i in list.commands.indices) {
+			when (val cmd = list.commands[i]) {
+				is GeometryBatch -> fScope.replayBatch(cmd.vertexData, cmd.vertexCount)
+				is TextRun -> {
+					fScope.flush() // submit geometry before this run (z-order)
+					// Transform the run ORIGIN by the affine; keep glyph size logical
+					// (matches the immediate path: layer scale reaches position, not size).
+					fTextRenderer?.blitRun(
+						inFontFamily = cmd.fontFamily,
+						inText = cmd.text,
+						inFontSize = cmd.fontSizePx,
+						inFontVariations = cmd.variations,
+						inStyle = cmd.style,
+						inDeviceX = mapX(cmd.x, cmd.y),
+						inDeviceY = mapY(cmd.x, cmd.y),
+						inLogW = cmd.w,
+						inLogH = cmd.h,
+						inColor = androidx.compose.ui.graphics.Color(cmd.colorArgb),
+					)
+				}
+				is IconRun -> {
+					fScope.flush() // submit geometry before this glyph (z-order)
+					// Map the box origin through the affine; box size stays logical (the
+					// glyph centres in it — layer scale reaches position, not glyph size).
+					fTextRenderer?.blitIconRun(
+						inFontFamily = cmd.fontFamily,
+						inText = cmd.text,
+						inFontSize = cmd.fontSizePx,
+						inFontVariations = cmd.variations,
+						inDeviceBoxX = mapX(cmd.boxX, cmd.boxY),
+						inDeviceBoxY = mapY(cmd.boxX, cmd.boxY),
+						inBoxW = cmd.boxW,
+						inBoxH = cmd.boxH,
+						inColor = androidx.compose.ui.graphics.Color(cmd.colorArgb),
+					)
+				}
+			}
+		}
+		fScope.flush()
+	}
 
 	// Current user→screen affine (a,b,c,d,e,f): screen = (a*x+c*y+e, b*x+d*y+f).
 	// Accumulates Canvas.translate/scale/rotate/concat; identity + a translate is
@@ -279,7 +350,7 @@ internal class Sdl3Canvas(
 
 	// Flushes any pending batched geometry to SDL, then frees the scope's
 	// native buffer + clears the SDL clip. Call once per frame after the draw.
-	fun finish() {
+	override fun finish() {
 		fPendingClips.clear()
 		fScope.release()
 		// Safety: an unbalanced save/restore must never leave the renderer pointed
@@ -343,6 +414,14 @@ internal class Sdl3Canvas(
 		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
 		fSavedOffscreenTarget = SDL_GetRenderTarget(vRenderer)
 		SDL_SetRenderTarget(vRenderer, vTex.reinterpret())
+		// Clear to transparent. Render-target textures aren't auto-cleared, and a
+		// retained-layer texture (SdlRenderNode) is REUSED across re-records — without
+		// this, a re-record ghosts the previous content, which showed up as multi-frame
+		// instability on churny screens (Pickers). Fresh textures happen to be zeroed
+		// so static leaves were fine, but reuse needs an explicit clear. RenderClear
+		// fills with the draw colour ignoring blend, so (0,0,0,0) = transparent.
+		SDL_SetRenderDrawColor(vRenderer, 0u, 0u, 0u, 0u)
+		SDL_RenderClear(vRenderer)
 		fClip = null
 		SDL_SetRenderClipRect(vRenderer, null)
 	}
@@ -355,6 +434,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
+		if (captureUnsupported()) return
 		// No real offscreen buffer — SDL3 lacks a portable render-target-in-a-batched-scope
 		// primitive here. Instead, multiplicatively propagate the layer's alpha through
 		// every enclosed primitive: each draw() reads `fAlpha` and multiplies against
@@ -386,6 +466,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun clipRect(left: Float, top: Float, right: Float, bottom: Float, clipOp: ClipOp) {
+		if (captureUnsupported()) return
 		if (clipOp == ClipOp.Difference) {
 			clipRectDifference(left, top, right, bottom)
 			return
@@ -426,6 +507,7 @@ internal class Sdl3Canvas(
 	}
 
 	override fun clipPath(path: ComposePath, clipOp: ClipOp) {
+		if (captureUnsupported()) return
 		// SDL has only rectangular render clipping; approximate a path clip by
 		// its bounding box (TODO: stencil/mask for non-rect clips).
 		val vB = pathBounds(path) ?: return
@@ -466,6 +548,7 @@ internal class Sdl3Canvas(
 	//  arbitrary paths keep the clipPath bbox fallback.
 
 	override fun clipRoundRect(inRoundRect: RoundRect) {
+		if (captureUnsupported()) return
 		// The mask is cut in DEVICE space (the bbox below goes through the
 		// affine), but the corner radii arrive in LOCAL user space — scale
 		// them by the affine too, or a graphicsLayer-scaled circle clip cuts
@@ -705,6 +788,7 @@ internal class Sdl3Canvas(
 		inAmbientColor: androidx.compose.ui.graphics.Color,
 		inSpotColor: androidx.compose.ui.graphics.Color,
 	) {
+		if (captureUnsupported()) return
 		realizePendingClips()
 		if (inElevationPx <= 0f) return
 
@@ -958,7 +1042,26 @@ internal class Sdl3Canvas(
 		inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?,
 		inBaseItalic: Boolean,
 		inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
+		inLineHeightPx: Float,
+		inTrimFirstLine: Boolean,
 	) {
+		// Capture mode: icon-font glyphs (Material Symbols via FreeType) record as an
+		// IconRun — flush pending geometry first for z-order, then capture the box in
+		// LAYER-LOCAL device coords (replay maps it through the layer affine + re-draws
+		// via FreeTypeIcons' cache). Plain/decorated AND spanned text ARE captured too
+		// (runSink set below; each styled run becomes a TextRun) — only a run with a
+		// SpanStyle.background still bails inside Sdl3TextRenderer.drawText.
+		val vCaptureList = fCaptureList
+		if (vCaptureList != null && inFontFamily != null && IconFont.isIconFamily(inFontFamily)) {
+			fScope.flush()
+			val vIconColor = if (fAlpha >= 1f) inColor else inColor.copy(alpha = inColor.alpha * fAlpha)
+			val vArgb = (vIconColor.a8 shl 24) or (vIconColor.r8 shl 16) or (vIconColor.g8 shl 8) or vIconColor.b8
+			vCaptureList.captureIconRun(
+				inFontFamily, inText, inFontSizePx, inFontVariations,
+				mapX(inX, inY), mapY(inX, inY), inBoxWidth, inBoxHeight, vArgb,
+			)
+			return
+		}
 		// Small centred labels (a popped bubble's "pop") usually sit fully
 		// inside a rounded clip — gate on containment like other draws, with
 		// a 2px margin for glyph overhang / AA bleed, instead of paying a
@@ -1016,21 +1119,38 @@ internal class Sdl3Canvas(
 		// right edge instead of wrapping when the sidebar was resized narrower.
 		val vWrapWidth = if (inSoftWrap && inBoxWidth > 0f) inBoxWidth.toInt() else Int.MAX_VALUE
 		val vWrapped = vRenderer.wrap(inText, inFontSizePx, vWrapWidth, inFontFamily, inFontVariations)
-		val vBaseLineH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
+		// Line stacking mirrors SdlParagraph's per-mode model: compat trim (raw styles)
+		// keeps the FIRST line at the tight font cell; M3's Trim.None (inTrimFirstLine =
+		// false) makes every line the full band. Following lines always advance by the
+		// band (inLineHeightPx) when supplied, else the font cell.
+		val vFontCellH = vRenderer.lineHeight(inFontSizePx, inFontFamily, inFontVariations)
+		val vAdvance = if (inLineHeightPx > 0f) inLineHeightPx else vFontCellH
+		val vFirstLineH = if (inTrimFirstLine || inLineHeightPx <= 0f) vFontCellH else vAdvance
 		// Per-run fontSize spans make a line's box the TALLEST run cell on it —
 		// same styledLineCellHeight the paragraph measured with, so paint stacks
 		// lines exactly where layout put them.
 		val vMetricSpans = com.compose.sdl.text.spansAffectMetrics(inSpans)
 
+		// Capture mode: route each plain line's run to the display list (spanned lines
+		// bail inside drawText via markUnsupported). Reset after the loop. No-op when
+		// not capturing (vCaptureList == null).
+		fTextRenderer?.runSink = vCaptureList
+
 		var vLineY = inY
 		for ((vIdx, vLine) in vWrapped.lines.withIndex()) {
 			val vLineH =
 				if (vMetricSpans && inSpans != null) {
-					com.compose.sdl.text.styledLineCellHeight(
-						vLine, vWrapped.lineStarts.getOrElse(vIdx) { 0 }, inSpans,
-						inFontSizePx, vTr.dpr, vRenderer, inFontFamily, inFontVariations,
+					// Size spans can exceed the band, never shrink below it — the same
+					// max() the paragraph's lineHeights used, so paint tracks layout
+					// (first line keeps its tight cell under compat trim).
+					kotlin.math.max(
+						com.compose.sdl.text.styledLineCellHeight(
+							vLine, vWrapped.lineStarts.getOrElse(vIdx) { 0 }, inSpans,
+							inFontSizePx, vTr.dpr, vRenderer, inFontFamily, inFontVariations,
+						),
+						if ((vIdx == 0 && inTrimFirstLine) || inLineHeightPx <= 0f) 0f else inLineHeightPx,
 					)
-				} else vBaseLineH
+				} else if (vIdx == 0) vFirstLineH else vAdvance
 			// Cull lines that would fall entirely below the box (softWrap keeps the
 			// natural line count; the box just clips at draw time).
 			if (vLineY >= inY + inBoxHeight) break
@@ -1056,6 +1176,7 @@ internal class Sdl3Canvas(
 			)
 			vLineY += vLineH
 		}
+		fTextRenderer?.runSink = null
 	}
 
 	// ============
@@ -1072,6 +1193,7 @@ internal class Sdl3Canvas(
 		inContentScale: androidx.compose.ui.layout.ContentScale,
 		inAlpha: Float,
 	) {
+		if (captureUnsupported()) return
 		admitDraw(inX, inY, inX + inWidth, inY + inHeight)
 		fScope.flush()
 		// Map the origin through the affine and scale the size by the matrix's axis
@@ -1090,6 +1212,7 @@ internal class Sdl3Canvas(
 	//  Not-yet-wired ops (B5 image leaf / B6 layers). Accept-and-ignore.
 
 	override fun drawImage(image: ImageBitmap, topLeftOffset: Offset, paint: Paint) {
+		if (captureUnsupported()) return
 		val vBmp = image as? SdlImageBitmap ?: return
 		admitDraw(topLeftOffset.x, topLeftOffset.y, topLeftOffset.x + vBmp.width, topLeftOffset.y + vBmp.height)
 		drawImageRect(
@@ -1114,6 +1237,7 @@ internal class Sdl3Canvas(
 		dstSize: androidx.compose.ui.unit.IntSize,
 		paint: Paint,
 	) {
+		if (captureUnsupported()) return
 		realizePendingClips()
 		val vTex = (image as? SdlImageBitmap)?.texture ?: return
 		com.compose.sdl.graphics.DrawStats.imageBlits++

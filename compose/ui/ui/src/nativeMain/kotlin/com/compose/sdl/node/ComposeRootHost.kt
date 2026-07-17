@@ -65,12 +65,36 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		fOwner.animationFrameClock.sendFrame(inNanos)
 	}
 
+	// True while a node-level animation (scroll fling, node Animatable) awaits the next
+	// animation frame — the node half of the window's quiescence signal (render-to-quiescence
+	// screenshot capture asks the window whether ANY work is still pending).
+	fun hasAnimationAwaiters(): Boolean = fOwner.animationFrameClock.hasAwaiters
+
 	fun measureAndLayout() {
 		// Flush deferred end-of-apply work (focus invalidation etc.) before measuring, so
 		// requestFocus() from composition OR from a pointer event this frame takes effect —
 		// e.g. focus-on-click, which schedules a focus invalidation during event dispatch.
 		fOwner.onEndApplyChanges()
 		fOwner.measureAndLayout()
+		// Drop snapshot observations whose scope is no longer valid (detached nodes,
+		// destroyed layers, disposed draw scopes). Upstream RootNodeOwner does this after
+		// the measure pass; without it, every disposed subtree's measure/layout/DRAW
+		// observation scopes linger in the OwnerSnapshotObserver forever — each pins its
+		// observed object graph (a leak the P2.2 soak caught on ripple/indication draws).
+		fOwner.snapshotObserver.clearInvalidObservations()
+	}
+
+	// Draw the composed tree into [canvas] — re-records dirty layers, then walks
+	// the root so clean layers replay their cached content. Backends call this
+	// instead of rootNode.draw so retained-layer bookkeeping runs each frame.
+	fun drawRoot(canvas: androidx.compose.ui.graphics.Canvas) {
+		fOwner.renderRoot(canvas)
+	}
+
+	// The window wires this to set needsFrame — a layer whose content changed
+	// (OwnedLayer.invalidate) schedules a frame even with nothing else pending.
+	fun setInvalidationCallback(callback: () -> Unit) {
+		fOwner.onInvalidate = callback
 	}
 
 	// The owner's FocusOwner IS a FocusManager — the window provides it as LocalFocusManager.
@@ -138,29 +162,8 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	fun onDropComplete() = fOwner.dragAndDropManager.dropComplete()
 }
 
-// ==================
-// MARK: pointer-event bridge (nativeMain builds the internal PointerInputEvent)
-// ==================
-
-/* The internal `expect PointerInputEvent` exposes no commonMain constructor, so the
-   build+dispatch is a nativeMain actual. Constructs a single-pointer event and feeds it
-   to the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release. */
-internal expect fun feedPointerToProcessor(
-	inOwner: com.compose.sdl.node.impl.ComposeOwner,
-	inType: Int,
-	inButton: Int,
-	inUptime: Long,
-	inX: Float,
-	inY: Float,
-)
-
-/* Builds a Scroll-type PointerInputEvent (scrollDelta) and drives the processor, so the vendored
-   Modifier.scrollable's MouseWheelScrollingLogic handles the wheel. nativeMain-only (ctor is native). */
-internal expect fun feedScrollToProcessor(
-	inOwner: com.compose.sdl.node.impl.ComposeOwner,
-	inX: Float,
-	inY: Float,
-	inDeltaX: Float,
-	inDeltaY: Float,
-	inUptime: Long,
-)
+// NOTE: feedPointerToProcessor / feedScrollToProcessor are plain nativeMain
+// functions in PointerEventBridge.native.kt. This facade moved from commonMain to
+// nativeMain (it now constructs the native retained-layer OwnedLayer via
+// ComposeOwner), so the former expect/actual split collapsed to a single native
+// definition — see RENDERER_REFACTOR.md §5.

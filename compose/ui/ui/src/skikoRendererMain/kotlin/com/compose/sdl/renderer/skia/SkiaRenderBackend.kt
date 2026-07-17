@@ -5,6 +5,7 @@ import com.compose.sdl.res.ImageLoader
 import com.compose.sdl.res.ResourceKind
 import com.compose.sdl.text.TextMeasurer
 import com.compose.sdl.*
+import androidx.compose.ui.graphics.asComposeCanvas
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color as SkColor
 
@@ -19,10 +20,10 @@ import org.jetbrains.skia.Color as SkColor
    AUTO is resolved at the call site (ComposeWindow); this class only
    sees concrete modes.
 
-   NOTE: Phase 9 pivoted rendering to the upstream engine via drawRoot(host).
-   A real SkiaCanvas : androidx.compose.ui.graphics.Canvas actual is TODO —
-   until then the Skia path compiles but paints nothing (drawRoot inherits
-   the RenderBackend default no-op). */
+   B6.1: the composition draws through upstream's SkiaBackedCanvas (real
+   paint/shader/gradients). The port's text engine (SkiaTextRenderer) +
+   resource-image cache (SkiaImageCache) + elevation shadows ride behind it
+   via skiaLeafDrawer + the SkiaBackedCanvas manual-vendor. */
 internal class SkiaRenderBackend(
     private val sdl: SDL3Backend,
     private val gpuMode: GpuMode,
@@ -44,6 +45,15 @@ internal class SkiaRenderBackend(
             com.compose.sdl.graphics.encodedImageDecoder = SkiaEncodedImageDecoder()
         }
     }
+
+    // B6.1: the Skia leg draws through upstream SkiaBackedCanvas; its port draw
+    // contracts (text/painter/shadow) forward to the port renderers via this global
+    // drawer. It is per-WINDOW state (each window has its own text renderer + image
+    // cache), so it must be re-pointed at THIS backend before every frame — exactly
+    // like ComposeWindow.installGlobals() does for currentTextMeasurer. Setting it
+    // once in the ctor left it dangling at a CLOSED window's (destroyed) renderer
+    // after a multi-window teardown → crash on the surviving window's next frame.
+    private val fLeafDrawer = SkiaLeafDrawer(fSkiaTextRenderer, fSkiaImageCache)
 
     override val textMeasurer: TextMeasurer
         get() = fSkiaTextRenderer.textMeasurer
@@ -69,10 +79,8 @@ internal class SkiaRenderBackend(
     override fun beginFrame(inDpr: Float) {
         val canvas = fBridge.canvas
         // Clear the surface to Material dark. Without this the Metal back
-        // buffer shows uninitialized GPU memory (pink) since Sdl3Renderer.draw
-        // no longer runs and drawRoot is a no-op inherited default until
-        // SkiaCanvas lands. Clearing before scale so it covers the whole
-        // physical target.
+        // buffer shows uninitialized GPU memory (pink). Clearing before scale
+        // so it covers the whole physical target.
         canvas.clear(SkColor.makeARGB(0xFF, 0x12, 0x12, 0x12))
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
@@ -86,19 +94,17 @@ internal class SkiaRenderBackend(
         fCurrentCanvas = canvas
     }
 
-    override fun drawRoot(inHost: com.compose.sdl.node.ComposeRootHost) {
+    override fun drawRoot(inDraw: (androidx.compose.ui.graphics.Canvas) -> Unit) {
         val canvas = fCurrentCanvas ?: return
-        // Register the offscreen (ImageBitmap) render path so the vendored
-        // VectorPainter / DrawCache pipeline — hence material3's ImageVector
-        // icons — renders. Idempotent.
-        if (com.compose.sdl.graphics.offscreenRenderer == null) {
-            com.compose.sdl.graphics.offscreenRenderer =
-                SkiaOffscreenRenderer(fSkiaTextRenderer, fSkiaImageCache)
-        }
-        val vSize = androidx.compose.ui.geometry.Size(sdl.pixelWidth.toFloat(), sdl.pixelHeight.toFloat())
-        val vCanvas = SkiaCanvas(canvas, vSize, fSkiaTextRenderer, fSkiaImageCache)
-        inHost.rootNode.draw(vCanvas, null)
-        vCanvas.finish()
+        // Point the leaf-draw global at THIS window's renderers before drawing.
+        skiaLeafDrawer = fLeafDrawer
+        // Wrap the live skia canvas as upstream's SkiaBackedCanvas (real gradients/
+        // paint/shader). Its port draw contracts forward to skiaLeafDrawer. The
+        // ImageBitmap-backed offscreen (VectorPainter / DrawCache) now goes through
+        // upstream's own ActualCanvas, so no project offscreenRenderer registration.
+        val vCanvas = canvas.asComposeCanvas()
+        inDraw(vCanvas)
+        (vCanvas as? com.compose.sdl.graphics.NativeFinishableCanvas)?.finish()
     }
 
     override fun endFrame() {
@@ -110,6 +116,9 @@ internal class SkiaRenderBackend(
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? = fBridge.snapshotBgra()
 
     override fun destroy() {
+        // Drop the global if it still points at this (about-to-be-destroyed) backend,
+        // so a stray draw before the next window's drawRoot can't hit freed renderers.
+        if (skiaLeafDrawer === fLeafDrawer) skiaLeafDrawer = null
         fSkiaImageCache.destroy()
         fSkiaTextRenderer.destroy()
         fBridge.destroy()

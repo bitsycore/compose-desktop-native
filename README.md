@@ -94,7 +94,8 @@ upstream Compose Desktop unchanged, so any visual or behavioural difference
 against the native build is a porting bug, not a demo artifact.
 
 CLI: `--gpu=…`, `--screen=<Name>` (one screen, no sidebar),
-`--screenshot=out.bmp --frames=N`, `--width=W --height=H`.
+`--screenshot=out.bmp` (captures at quiescence; `--frames=N` caps the wait),
+`--width=W --height=H`.
 
 ## apidemo — API Manager
 

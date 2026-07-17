@@ -47,8 +47,8 @@ val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 // material3 rides its own release train (same +dev build, different base).
 // Gradle orders "+dev" BELOW the plain version, so force the core-repo
 // groups on jvm configurations (mirrors :demo's forcing).
-val vComposeJvmVersion = "1.12.0-beta01+dev4324"
-val vComposeM3JvmVersion = "1.12.0-alpha03+dev4324"
+val vComposeJvmVersion = "1.12.0-beta02"
+val vComposeM3JvmVersion = "1.12.0-alpha03"
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
