@@ -26,14 +26,9 @@ import utils.encodeBmpBgra32
 import utils.parseArgs
 import utils.writeFile
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
-import platform.posix.RUSAGE_SELF
-import platform.posix.getrusage
-import platform.posix.rusage
 
 // ==================
 // MARK: Entry point
@@ -498,13 +493,11 @@ private fun runSoakTest() {
     com.compose.sdl.disableInfiniteAnimations = true
     com.compose.sdl.useVirtualFrameTime = true
     val vAll = allCategories().flatMap { it.screens }
-    // CDN_SOAK_SCREEN=<name> bisects: repeat ONE screen 40x/cycle (trivial screen leaking =>
-    // composition/machinery leak; only heavy screens leaking => content, e.g. image cache).
+    // CDN_SOAK_SCREEN=<name> repeats ONE screen 40x/cycle (bisect a specific screen);
+    // default cycles through every screen.
     val vTarget = platform.posix.getenv("CDN_SOAK_SCREEN")?.toKString()
-    val vScreens = if (vTarget != null) {
-        val vS = vAll.first { it.name.equals(vTarget, ignoreCase = true) }
-        List(40) { vS }
-    } else vAll
+    val vScreens = if (vTarget != null) { val vS = vAll.first { it.name.equals(vTarget, ignoreCase = true) }; List(40) { vS } }
+        else vAll
     val vIndex = mutableStateOf(0)
     // CDN_SOAK_STATIC=1: mount ONE screen once, never remount — measure RSS every 120 frames.
     // Isolates a per-FRAME leak (RSS climbs with no remounts) from a per-MOUNT leak.
@@ -560,22 +553,14 @@ private fun runSoakTest() {
                     .padding(24.dp),
             ) {
                 // key(vShown) forces a FULL dispose+recompose each advance (even when the
-                // target screen repeats) — the allocate/release churn we soak.
-                key(vShown) { vScreens[vIndex.value].content() }
+                // target screen repeats) — the allocate/release churn we soak. Reading
+                // vIndex.value (a State) is what triggers the recomposition each mount.
+                key(vShown) {
+                    vScreens[vIndex.value].content()
+                }
             }
         }
     }
-}
-
-/* Current process peak RSS in MB. ru_maxrss units differ by OS (macOS: bytes,
-   Linux: kilobytes); a Compose app's RSS makes the two ranges non-overlapping, so
-   a magnitude check disambiguates (bytes value >> any sane KB value). */
-@OptIn(ExperimentalForeignApi::class)
-private fun currentMaxRssMb(): Long = memScoped {
-    val vUsage = alloc<rusage>()
-    getrusage(RUSAGE_SELF, vUsage.ptr)
-    val vRaw = vUsage.ru_maxrss.toLong()
-    if (vRaw > 10_000_000L) vRaw / (1024 * 1024) else vRaw / 1024  // bytes(macOS) : KB(linux)
 }
 
 /* CURRENT resident set (MB) via `ps` — unlike getrusage ru_maxrss (monotonic peak),

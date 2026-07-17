@@ -76,6 +76,12 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		// e.g. focus-on-click, which schedules a focus invalidation during event dispatch.
 		fOwner.onEndApplyChanges()
 		fOwner.measureAndLayout()
+		// Drop snapshot observations whose scope is no longer valid (detached nodes,
+		// destroyed layers, disposed draw scopes). Upstream RootNodeOwner does this after
+		// the measure pass; without it, every disposed subtree's measure/layout/DRAW
+		// observation scopes linger in the OwnerSnapshotObserver forever — each pins its
+		// observed object graph (a leak the P2.2 soak caught on ripple/indication draws).
+		fOwner.snapshotObserver.clearInvalidObservations()
 	}
 
 	// Draw the composed tree into [canvas] — re-records dirty layers, then walks
