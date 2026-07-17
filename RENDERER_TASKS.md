@@ -386,28 +386,29 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   no-DLL; maintenance payoff doesn't justify the spike). [§0.5.4, §3]
 - [-] **B1** — SDL-only node-dedup base (`AbstractNativeRenderNode` in `sdlRendererMain`).
   Deferred; cleanup on the newly-default hot path, no G1 payoff yet. [§4 (B1)]
-- [~] **Module split** — extract `:ui-graphics` / `:ui-text` from `:ui` (UN-SHELVED 2026-07-17,
-  user decision). [§6] **Finding: §6 UNDER-scoped it as "pure relocation" — it also needs
-  DECOUPLING.** The port's render backends (→ `:ui-graphics`) referenced `ComposeRootHost`
-  (stays `:ui`) while `:ui` node code references `Canvas` (`:ui-graphics`) → a `ui↔ui-graphics`
-  CYCLE. Plus a cinterop-boundary tangle: `SDL3Backend` (windowing) shares the `sdl3` cinterop
-  with the graphics/text rasterizers, so all cinterop-users must co-locate in `:ui-graphics`.
-  Staged plan (DAG: `ui-graphics→ui-unit`; `ui-text→ui-graphics`; `ui→both`):
-    1. **DONE (commit `c71febbb`)** — decouple `RenderBackend.drawRoot(host)` →
-       `drawRoot((Canvas)->Unit)` so backends + RenderBackend don't reference node/host
-       (breaks the cycle). Verified both legs + parity.
-    2. Create `:ui-graphics` module (settings.gradle + build.gradle: 4 cinterops + the
-       `depends=sdl3 -library` wiring + `-Prenderer` conditional source sets + compilerOptions
-       `-Xexpect-actual-classes`); move graphics primitives (Canvas/Paint/Path/Shader/
-       GraphicsLayer/GraphicsContext + SkiaBacked*/Sdl* + the vendored skiko graphics) +
-       RenderBackend + both backends + text/image rasterizers + SDL3Backend + the
-       `com.compose.sdl.{text,graphics,res}` interface seams; split the vendor manifest.
-    3. Create `:ui-text` module; move `Paragraph`/`ParagraphIntrinsics` (expect + SdlParagraph +
-       factories); widen the text seam to public in `:ui-graphics`.
-    4. Fan-out: `settings.gradle.kts`; `publish.yml` `MODULES=`/`SUFFIXES`; **bridge-plugin
-       substitution rules add `ui-graphics`+`ui-text` → project modules** (or consumers break);
-       verify `:ui:compileCommonMainKotlinMetadata` (the Windows-publish trap).
-  Cosmetic under G1 (no user benefit) — large staged build surgery; each stage MAC-VERIFY-gated.
+- [-] **Module split** — extract `:ui-graphics` / `:ui-text` from `:ui`. **RE-SHELVED
+  2026-07-18: §6's plan is INFEASIBLE as specified (two blockers found during execution).**
+  §6 framed it "pure relocation churn"; it is not.
+  **BLOCKER 1 (resolved, KEPT) — `ui↔ui-graphics` cycle:** the render backends (→ `:ui-graphics`)
+  referenced `ComposeRootHost` (`:ui`) while `:ui` references `Canvas` (`:ui-graphics`). Fixed by
+  step 1 (commit `c71febbb`: `RenderBackend.drawRoot` → `(Canvas)->Unit`) — a real improvement,
+  kept regardless of the split.
+  **BLOCKER 2 (hard, unresolved) — the `sdl3` cinterop is a SHARED SUBSTRATE.** Verified: 11
+  cinterop-using files on the graphics side (→ ui-graphics) AND **12 on the platform/windowing/
+  node/resources side that STAYS in `:ui`** (`PlatformClipboard`, `SDL3Backend`, `ResourceIO`,
+  `FileDialog`, `SDL3EventMapper`, `ComposeNativeWindow`, `AppStorage`, `OpenExternal`,
+  `ComposeRootHost`, …). K/N cannot cleanly share a cinterop klib across a module boundary —
+  **this is literally why it was all merged into `:ui` (§6's own "Why merged today")**, and §6's
+  "keep all cinterops in :ui-graphics" ignored that `:ui` itself needs `sdl3`. No clean placement:
+  sdl3-in-ui-graphics starves `:ui`'s platform layer; sdl3-in-ui re-creates the cycle. The 4
+  cinterops are interdependent (`sdl3_ttf/_image depends=sdl3`, sibling `-library` gotcha) so
+  they can't be split apart either.
+  **What it would ACTUALLY take (NOT §6's split):** a NEW non-upstream base module (e.g.
+  `:ui-cinterop`) holding all 4 cinterops with cross-module `api` exposure of `sdl3.*` types
+  (K/N-fragile), depended on by BOTH `:ui` and `:ui-graphics`, PLUS re-categorizing the tangled
+  platform↔node bridges. Bigger, uglier, MORE upstream-divergent than the "match upstream
+  artifacts" goal — and still **cosmetic under G1 (zero user benefit)**. **Leave shelved;** the
+  step-1 decouple is the only keeper. [§6]
 - [-] **B6** — make Skia-leg text truly upstream (skiko `SkiaParagraph` + `SkiaBackedCanvas`).
   Optional; only if the text-metrics parity delta proves worth it. [§1, §7]
 
@@ -657,3 +658,14 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   Canvas). Verified both legs + metadata + probes + parity. Remaining: create :ui-graphics (move
   graphics + cinterops + backends + rasterizers + seams), then :ui-text (Paragraph), then the
   bridge/publish/consumer fan-out. Large staged build surgery, cosmetic under G1.
+- 2026-07-18 · **Module split RE-SHELVED (infeasible as specified)** · step 1 kept (`c71febbb`) ·
+  execution of step 2 found a HARD blocker §6 missed: the `sdl3` cinterop is a shared substrate
+  used by BOTH the graphics side (11 files → ui-graphics) AND the platform/windowing/node/
+  resources side that stays in `:ui` (12 files: PlatformClipboard, SDL3Backend, ResourceIO,
+  FileDialog, events, ComposeRootHost, …). K/N can't cleanly share a cinterop klib across a
+  module boundary (the reason it was all merged). §6's "keep cinterops in ui-graphics" starves
+  `:ui`; the reverse re-creates the cycle; the 4 cinterops are interdependent so can't split.
+  A real split would need a NEW non-upstream `:ui-cinterop` base module + cross-module cinterop
+  api-exposure + platform↔node re-categorization — bigger/uglier/more-divergent than the goal,
+  cosmetic under G1. Recommendation: shelved. The RenderBackend.drawRoot decouple (step 1) is a
+  genuine improvement and stays.
