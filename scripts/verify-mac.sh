@@ -105,6 +105,15 @@ run_leg() { # $1=skia|sdl3
 	note "[$leg] parity ($leg leg)"
 	python3 scripts/parity/parity.py --renderer="$leg" || fail "[$leg] parity"
 
+	# P2.2 memory soak: cycle every screen x6, assert current RSS doesn't ratchet up
+	# (regression guard for the snapshot-observation / dispose leak fixed in c59caf72).
+	note "[$leg] soak (memory)"
+	out=$(CDN_SOAK_CYCLES=6 "$DEMO_EXE" --soaktest 2>&1 | tail -5)
+	if ! echo "$out" | grep -q "soaktest: PASS"; then
+		echo "$out"
+		fail "[$leg] soak"
+	fi
+
 	perf_check "$leg" LazyColumn
 	perf_check "$leg" Tabs
 }

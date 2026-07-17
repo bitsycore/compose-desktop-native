@@ -21,7 +21,7 @@ Windows pixel-parity). See `RENDERER_CONVERGE.md` §0.5.
 - **MAC-VERIFY** (macOS or Linux — runs BOTH renderers): `:demo`/`:apidemo`
   `runDebugExecutableMacosArm64` (Skia leg, default) **and** the same with `-Prenderer=sdl3`
   (SDL leg); run `--nav3test --backtest --clicktest --scrolltest --multiwintest` on both and
-  gate on PASS/FAIL; run `scripts/parity/parity.py`; a `CDN_PROFILE=1 CDN_FORCERENDER=1`
+  gate on PASS/FAIL; run `scripts/parity/parity.py`; run the `--soaktest` memory gate; a `CDN_PROFILE=1 CDN_FORCERENDER=1`
   `draw`-ms spot-check on LazyColumn/Tabs (fail on >~20% regression vs the pre-change run).
 - **WIN-SMOKE** (Windows, pre-ship only): link the mingwX64 target + run `scripts/probe/`.
 - **DRIFT-CHECK**: re-run `sync.py` on a clean checkout + diff `src/vendor/`; run the
@@ -293,7 +293,7 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
     RTL text becomes a requirement; under G1 neither is. Vendor-on-skiko when needed.
   • **D6 (Focusability/PlatformVelocityTracker): SKIP — negligible.** 2 tiny byte-equal files;
     vendoring them saves nothing meaningful.
-- [~] **P2.2** Lifetime model + soak test. *Superseded note:* B6.2 made the skiko leg use
+- [x] **P2.2** Lifetime model + soak test — **leak FIXED (commit `c59caf72`).** *Superseded note:* B6.2 made the skiko leg use
   upstream `SkiaGraphicsLayer` WITH `ChildLayerDependenciesTracker` (it was already vendored);
   SDL keeps the port GC/release-queue. So "keep shared GC/release-queue on both legs; do NOT
   vendor the tracker" holds for SDL but NOT skiko (upstream's layer inherently uses it).
@@ -303,7 +303,8 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   animations disabled (not animation churn); the layer release path is wired, so it's deeper
   (composition/snapshot on both legs + SDL texture retention). **NOT yet passing → P2.2 stays
   open.** Needs a dedicated heap-profiled leak hunt (RSS alone can't pinpoint it). Kept as a
-  standalone diagnostic, NOT wired into verify-mac's gate until fixed. [§7/§8]
+  standalone diagnostic, NOT wired into verify-mac's gate until fixed. [§7/§8] *(Now FIXED +
+  WIRED as a verify-mac gate — see the FIXED note below + the MAC-VERIFY primitive.)*
   *Leak HUNT done (commit `c1fabc5b`) — characterized, not yet fixed:* layers CLEAN (live
   OwnerLayer counter flat while RSS climbed → destroy/release runs); NOT GC-lag (Counter x10
   linear 114→176MB, no plateau); NOT animation churn; bisected to a BASELINE composition-
@@ -312,6 +313,19 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   suspects (need heap tooling): composition/snapshot observation retention + DrawCache/vector
   offscreen bitmap lifetime. `CDN_SOAK_SCREEN=<name>` added for single-screen bisection. A
   precise FIX is a dedicated focused session — P2.2 stays open.
+  **FIXED (2026-07-17, commit `c59caf72`) — ROOT CAUSE: the port never called
+  `OwnerSnapshotObserver.clearInvalidObservations()`.** Upstream RootNodeOwner runs it after
+  every measure pass; without it, snapshot read-observations for scopes invalidated on dispose
+  (detached nodes, destroyed layers, disposed DRAW scopes) lingered forever, each pinning its
+  observed object graph via a K/N `ExternalRCRef` → the K/N-heap leak (vmmap Memory Tag 246).
+  Most visible on ripple/indication draws (Button reads animatedAlpha/colors in draw; that
+  layer draw-scope observation was never swept → pinned the whole button subtree). FIX:
+  `ComposeRootHost.measureAndLayout()` sweeps `clearInvalidObservations()` after layout (+ the
+  earlier onDetach `snapshotObserver.clear(node)`). Soak now PASSES: all-63-screens 260→458MB
+  (was FAIL) → 238→240MB; Counter/Images/LazyGrid all flat. Hunt method: exact live-counters
+  (ruled out layers/RenderNodes/nodes), static-mode (ruled out per-frame), `leaks` (no malloc
+  leak → referenced), `heap`/`vmmap` (isolated to K/N heap + ExternalRCRef), component
+  bisection (isolated to ripple indication). MAC-VERIFY ALL GREEN, perf unchanged.
   *Focused leak-fix session (2026-07-17, commit `7189433e`):* FIXED one confirmed contributor —
   `ComposeOwner.onDetach` now calls `snapshotObserver.clear(node)` (upstream RootNodeOwner does;
   the port omitted it → detached nodes' observation scopes grew unbounded). Small RSS impact but
@@ -610,3 +624,11 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   scales with node count; NOT layers/RenderNodes/nodes/observation-scopes/GrContext-budget/
   per-frame). Root cause is native-or-referenced growth needing a skia-aware heap profiler to
   pin — P2.2 stays open with a deterministic reproducer (`--soaktest`).
+- 2026-07-17 · **P2.2 leak FIXED** · commit `c59caf72` · root cause: the port never swept
+  `OwnerSnapshotObserver.clearInvalidObservations()` (upstream RootNodeOwner does, after each
+  measure). Detached scopes' snapshot observations lingered, pinning object graphs via K/N
+  ExternalRCRefs → the K/N-heap leak. Fix: sweep it in ComposeRootHost.measureAndLayout().
+  Soak: all-63-screens 260→458MB (FAIL) → 238→240MB (PASS); Counter/Images/LazyGrid flat.
+  Found by exact live-counters + static-mode + macOS leaks/heap/vmmap + component bisection
+  (→ ripple indication draw observations). MAC-VERIFY ALL GREEN, perf unchanged. **Soak now
+  WIRED into verify-mac.sh as a per-leg gate** (regression guard). Phase 2 (B5) COMPLETE.
