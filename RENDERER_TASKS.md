@@ -312,6 +312,20 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   suspects (need heap tooling): composition/snapshot observation retention + DrawCache/vector
   offscreen bitmap lifetime. `CDN_SOAK_SCREEN=<name>` added for single-screen bisection. A
   precise FIX is a dedicated focused session — P2.2 stays open.
+  *Focused leak-fix session (2026-07-17, commit `7189433e`):* FIXED one confirmed contributor —
+  `ComposeOwner.onDetach` now calls `snapshotObserver.clear(node)` (upstream RootNodeOwner does;
+  the port omitted it → detached nodes' observation scopes grew unbounded). Small RSS impact but
+  a real correctness fix; MAC-VERIFY ALL GREEN. Deepened diagnostics: soak now uses CURRENT RSS
+  (via `ps`, drops after GC — the correct metric vs monotonic peak) + `CDN_SOAK_STATIC=1`
+  (isolates per-frame). Exhaustive ruling-out with EXACT counters + macOS `leaks`:
+  the residual leak is REAL + LINEAR (~141KB/mount Counter, x25 no plateau), REFERENCED (macOS
+  `leaks` = 0 malloc leaks in our code → not orphaned, held by something), survives GC, per-MOUNT
+  (static flat), and NOT: layers/RenderNodes (live counts flat), LayoutNodes (attach/detach
+  balanced), the skia GrContext cache budget (linear, not plateau), or observation scopes (the
+  fix barely moved it). It scales with node count (Counter 141KB vs Images ~550KB/mount). Prime
+  remaining suspect: native skia/text objects (measure-time) referenced by a growing structure —
+  needs a **skia-aware heap profiler** (K/N ships none; `leaks` can't see referenced growth) to
+  pin. P2.2 stays open for that follow-up; the soak reproduces it deterministically.
 - [x] **P2.3 — DONE via B6.2.** Outsets/blur-bounds expansion + `renderEffect` are now handled by
   upstream `SkiaGraphicsLayer` (real `setOutsets` used in draw bounds + `renderEffect`→
   `skiaImageFilter`; `Blur.skiko` vendored). The port's `setOutsets` was a no-op. No demo screen
@@ -588,3 +602,11 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   RootNodeOwner blocker is outdated) but poor ROI + high blast radius (shadows already parity);
   D3 depends on D2; D4/D5 gated on a11y/complex-text roadmap; D6 negligible. Net: Phase 2's
   clean wins are spent (P2.1 audit + P2.3-via-B6.2); the only substantive open item is the leak.
+- 2026-07-17 · **P2.2 focused leak-fix session** · commit `7189433e` · FIXED one confirmed
+  contributor: `ComposeOwner.onDetach` now clears the detached node's snapshot observations
+  (`snapshotObserver.clear(node)`, matching upstream RootNodeOwner) — MAC-VERIFY ALL GREEN both
+  legs. Deepened the soak (current RSS via `ps`; CDN_SOAK_STATIC). Exhaustively characterized the
+  RESIDUAL leak (real, linear ~141KB/mount, referenced per macOS `leaks`, survives GC, per-mount,
+  scales with node count; NOT layers/RenderNodes/nodes/observation-scopes/GrContext-budget/
+  per-frame). Root cause is native-or-referenced growth needing a skia-aware heap profiler to
+  pin — P2.2 stays open with a deterministic reproducer (`--soaktest`).
