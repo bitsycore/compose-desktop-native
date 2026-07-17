@@ -386,9 +386,28 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   no-DLL; maintenance payoff doesn't justify the spike). [§0.5.4, §3]
 - [-] **B1** — SDL-only node-dedup base (`AbstractNativeRenderNode` in `sdlRendererMain`).
   Deferred; cleanup on the newly-default hot path, no G1 payoff yet. [§4 (B1)]
-- [-] **Module split** — extract `:ui-graphics` / `:ui-text` from `:ui`. Deferred until a
-  consumer needs the publishing granularity (relocation churn + bridge-substitution fan-out,
-  no user benefit yet). [§6]
+- [~] **Module split** — extract `:ui-graphics` / `:ui-text` from `:ui` (UN-SHELVED 2026-07-17,
+  user decision). [§6] **Finding: §6 UNDER-scoped it as "pure relocation" — it also needs
+  DECOUPLING.** The port's render backends (→ `:ui-graphics`) referenced `ComposeRootHost`
+  (stays `:ui`) while `:ui` node code references `Canvas` (`:ui-graphics`) → a `ui↔ui-graphics`
+  CYCLE. Plus a cinterop-boundary tangle: `SDL3Backend` (windowing) shares the `sdl3` cinterop
+  with the graphics/text rasterizers, so all cinterop-users must co-locate in `:ui-graphics`.
+  Staged plan (DAG: `ui-graphics→ui-unit`; `ui-text→ui-graphics`; `ui→both`):
+    1. **DONE (commit `c71febbb`)** — decouple `RenderBackend.drawRoot(host)` →
+       `drawRoot((Canvas)->Unit)` so backends + RenderBackend don't reference node/host
+       (breaks the cycle). Verified both legs + parity.
+    2. Create `:ui-graphics` module (settings.gradle + build.gradle: 4 cinterops + the
+       `depends=sdl3 -library` wiring + `-Prenderer` conditional source sets + compilerOptions
+       `-Xexpect-actual-classes`); move graphics primitives (Canvas/Paint/Path/Shader/
+       GraphicsLayer/GraphicsContext + SkiaBacked*/Sdl* + the vendored skiko graphics) +
+       RenderBackend + both backends + text/image rasterizers + SDL3Backend + the
+       `com.compose.sdl.{text,graphics,res}` interface seams; split the vendor manifest.
+    3. Create `:ui-text` module; move `Paragraph`/`ParagraphIntrinsics` (expect + SdlParagraph +
+       factories); widen the text seam to public in `:ui-graphics`.
+    4. Fan-out: `settings.gradle.kts`; `publish.yml` `MODULES=`/`SUFFIXES`; **bridge-plugin
+       substitution rules add `ui-graphics`+`ui-text` → project modules** (or consumers break);
+       verify `:ui:compileCommonMainKotlinMetadata` (the Windows-publish trap).
+  Cosmetic under G1 (no user benefit) — large staged build surgery; each stage MAC-VERIFY-gated.
 - [-] **B6** — make Skia-leg text truly upstream (skiko `SkiaParagraph` + `SkiaBackedCanvas`).
   Optional; only if the text-metrics parity delta proves worth it. [§1, §7]
 
@@ -632,3 +651,9 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   Found by exact live-counters + static-mode + macOS leaks/heap/vmmap + component bisection
   (→ ripple indication draw observations). MAC-VERIFY ALL GREEN, perf unchanged. **Soak now
   WIRED into verify-mac.sh as a per-leg gate** (regression guard). Phase 2 (B5) COMPLETE.
+- 2026-07-17 · **Module split UN-SHELVED (user) — step 1 done** · commit `c71febbb` · decoupled
+  RenderBackend.drawRoot from ComposeRootHost (takes (Canvas)->Unit) — breaks the ui↔ui-graphics
+  cycle that §6's "pure relocation" framing missed (backends referenced the host; :ui references
+  Canvas). Verified both legs + metadata + probes + parity. Remaining: create :ui-graphics (move
+  graphics + cinterops + backends + rasterizers + seams), then :ui-text (Paragraph), then the
+  bridge/publish/consumer fan-out. Large staged build surgery, cosmetic under G1.
