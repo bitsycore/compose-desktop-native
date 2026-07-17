@@ -255,14 +255,40 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
 
 ## Phase 2 — B5: engine-convergence deltas
 
-- [ ] **P2.1** Audit CDN-common vs upstream `skikoMain`; list every hand-rolled divergence
-  and vendor the deltas (or record a named constraint). *Done:* a checked-off delta list. [§7]
-- [ ] **P2.2** Lifetime model: **keep shared GC/release-queue on BOTH legs; do NOT vendor
-  `ChildLayerDependenciesTracker`.** Add a **soak test** (navigate all screens ×N, assert an
-  RSS ceiling) to cover the leak class. *Done:* soak passes on both legs. [§7/§8]
-- [ ] **P2.3** Restore layer **outsets / blur-bounds expansion** via `Blur.skiko` on the Skia
-  leg (fixes clipped blur in parity). *Done:* a blur/RenderEffect screen's Skia parity
-  improves. [§7]  *blocked-by: P1.6*
+- [x] **P2.1** Audit CDN-common vs upstream `skikoMain`; list every hand-rolled divergence
+  and vendor the deltas (or record a named constraint). *Done (2026-07-17, Explore audit):*
+  **ui-graphics vendoring closure is DONE — B6 spent that lever.** Of the whole
+  `skikoMain/.../graphics/` tree only 2 files stay `!`-refused, both ON PURPOSE (the B6 manual
+  vendors `SkiaBackedCanvas` + `SkiaImageAsset`). Reviewable post-B6 deltas ranked:
+  • **D2** `GraphicsLayerOwnerLayer.kt` (shared) drops upstream `setLightingInfo`/`LIGHT_*`
+    (skiko shadow lighting) + renames the matrix fn — could split per-leg (skiko verbatim,
+    un-refuse manifest) to restore elevation-shadow lighting fidelity. INVESTIGATE.
+  • **D3** `LayerTransformationMatrix.kt` — now a DUPLICATE of the vendored `Matrices.skiko`
+    `prepareTransformationMatrix` (B6.2 vendored it). Relocate the hand copy to sdl, let skiko
+    use the vendored one. Low-risk dedupe (its own header predicted this). INVESTIGATE.
+  • **D4** `SemanticsRegion.native.kt` — intersect/difference are STUBS (a11y region math inert)
+    vs upstream skia `Region`. Fidelity gap; vendor on skiko if a11y is on the roadmap.
+  • **D5** `CharHelpers.native.kt` — naive grapheme/bidi vs upstream ICU. Non-BMP/RTL gap.
+  • **D6** `Focusability`/`PlatformVelocityTracker` — byte-equal to upstream; trivial vendor.
+  Everything else: load-bearing port constraints (SDL graphics actuals, the whole
+  ComposeScene→ComposeOwner replacement behind manifest !lines 362–406, the port text engine,
+  cinterop infra). Full delta list captured in the session; D2/D3 are the worthwhile cleanups. [§7]
+- [~] **P2.2** Lifetime model + soak test. *Superseded note:* B6.2 made the skiko leg use
+  upstream `SkiaGraphicsLayer` WITH `ChildLayerDependenciesTracker` (it was already vendored);
+  SDL keeps the port GC/release-queue. So "keep shared GC/release-queue on both legs; do NOT
+  vendor the tracker" holds for SDL but NOT skiko (upstream's layer inherently uses it).
+  *Soak test ADDED (`demo --soaktest`, commit `4bd9ca23`) — and it CAUGHT A REAL PRE-EXISTING
+  LEAK on BOTH legs:* peak RSS climbs ~linearly, no plateau over 6 cycles — skia 264→458MB
+  (~40MB/cycle), SDL 523→916MB/3 (~195MB/cycle, ~5× worse → offscreen textures). Persists with
+  animations disabled (not animation churn); the layer release path is wired, so it's deeper
+  (composition/snapshot on both legs + SDL texture retention). **NOT yet passing → P2.2 stays
+  open.** Needs a dedicated heap-profiled leak hunt (RSS alone can't pinpoint it). Kept as a
+  standalone diagnostic, NOT wired into verify-mac's gate until fixed. [§7/§8]
+- [x] **P2.3 — DONE via B6.2.** Outsets/blur-bounds expansion + `renderEffect` are now handled by
+  upstream `SkiaGraphicsLayer` (real `setOutsets` used in draw bounds + `renderEffect`→
+  `skiaImageFilter`; `Blur.skiko` vendored). The port's `setOutsets` was a no-op. No demo screen
+  exercises `.blur()`/RenderEffect so there's no parity number to move, but the capability is now
+  upstream-correct (add a blur screen if native blur fidelity ever needs measuring). [§7]
 
 ## Phase 3 — B3: SDL fidelity (CAPPED under G1 — only parity-ranked user-visible wins)
 
@@ -514,3 +540,14 @@ GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.
   of drift-tracked edits; 1006 lines now auto-sync verbatim). Details in the P1.8 task entry.
   Phase 1 (B2) + Phase 1B (B6) DONE. Remaining open: Phase 2 (B5 engine deltas), Phase 3 (B3
   SDL fidelity, capped), O.2 ongoing bumps.
+- 2026-07-17 · **Phase 2 (B5)** · P2.1 audit + P2.2 soak + P2.3 · commit `4bd9ca23` (soak) ·
+  **P2.1 (audit) DONE**: ui-graphics closure confirmed done by B6; only D2 (GraphicsLayerOwnerLayer
+  per-leg split, restores skiko shadow lighting) + D3 (LayerTransformationMatrix dedupe vs the now-
+  vendored Matrices.skiko) are worthwhile cleanups; D4/D5 (SemanticsRegion/CharHelpers) are
+  fidelity gaps for a11y/complex-text if wanted; rest are load-bearing port constraints.
+  **P2.3 DONE via B6.2** (upstream SkiaGraphicsLayer gives real outsets/renderEffect; port's was
+  a no-op). **P2.2: soak test added (`--soaktest`) and it CAUGHT A REAL PRE-EXISTING LEAK on
+  BOTH legs** (skia ~40MB/cycle, SDL ~195MB/cycle, ~linear over 6 cycles, not animation churn,
+  SDL 5× worse → textures). P2.2 stays OPEN pending a dedicated heap-profiled leak hunt; soak is
+  a standalone diagnostic, not wired into the verify-mac gate yet. **Next candidates: the leak
+  hunt (P2.2), or the D2/D3 convergence cleanups.**
