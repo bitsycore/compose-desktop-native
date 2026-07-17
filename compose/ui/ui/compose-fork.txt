@@ -517,10 +517,9 @@ skikoMain/kotlin/ -> src/vendor/skikoRenderer/kotlin/
 # B6.1 (2026-07-16): un-refused — skiko leg adopts upstream graphics actuals.
 # SkiaBackedCanvas is then MANUAL-VENDORED (moved to src/skikoRendererMain, re-refused
 # below) to also implement the port Native* draw contracts. See RENDERER_TASKS.md B6.1.
+# B6.2: un-refused — skiko leg adopts upstream GraphicsLayer/GraphicsContext (real
+# skiko RenderNode) now the canvas is SkiaBackedCanvas. See RENDERER_TASKS.md B6.2.
 !skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/SkiaGraphicsContext.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/layer/SkiaGraphicsLayer.skiko.kt
-!skikoMain/kotlin/androidx/compose/ui/graphics/shadow/Blur.skiko.kt
 # B6.1: MANUAL-VENDORED (flattened toBitmap/putBytesInto expect-actuals — see the file).
 !skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt
 

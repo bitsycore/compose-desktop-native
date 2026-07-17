@@ -1,13 +1,13 @@
 package com.compose.sdl.graphics
 
 import androidx.compose.ui.graphics.GraphicsContext
+import androidx.compose.ui.graphics.SkiaGraphicsContext
 
 // ==================
-// MARK: createGraphicsContext — Skia renderer (transient, pre-P1.6)
+// MARK: createGraphicsContext — Skia renderer actual (B6.2)
 // ==================
 
-/* TRANSIENT: returns the project GraphicsContext so the Skia leg keeps the port
-   GraphicsLayer while behaviour is unchanged. P1.6 replaces this with the vendored
-   upstream SkiaGraphicsContext (which owns a skiko RenderNodeContext) and deletes the
-   skiko-side port cluster. See RENDERER_TASKS.md P1.3/P1.6 + RENDERER_CONVERGE.md §4. */
-internal actual fun createGraphicsContext(): GraphicsContext = ProjectGraphicsContext()
+/* The Skia leg uses upstream's SkiaGraphicsContext, which owns a skiko
+   RenderNodeContext and creates upstream GraphicsLayer(skiko.RenderNode) instances.
+   See RENDERER_TASKS.md B6.2 + RENDERER_CONVERGE.md §4 (B2). */
+internal actual fun createGraphicsContext(): GraphicsContext = SkiaGraphicsContext()
