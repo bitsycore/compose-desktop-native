@@ -157,8 +157,19 @@ MODERATE (a source-set migration, not a file-flip). See CONVERGE §4 (B2), §6, 
   `expect class GraphicsLayer` API; it's in the MAC-VERIFY runbook (verify-mac step) and in
   every per-leg compile. A skew fails the metadata compile. *(Kept as an ongoing invariant,
   not a one-off check.)*
-- [ ] **P1.8** (measure — the G1 justification) Quantify the **sync-tax**: reconcile a mock
-  `compose.properties` bump before vs after B2, record hours-saved in the log. [§0.5]
+- [x] **P1.8** (measure — the G1 justification) Quantify the **sync-tax**. *Done (2026-07-17,
+  grounded in the actual B2 diff + the O.2 beta01→beta02 bump):* B2 cut the hand-maintained
+  upstream-tracking surface on the skiko rendering path **~8.5×**. BEFORE: ~1240 lines of
+  hand-rolled skiko rendering (`SkiaCanvas` 508, `GraphicsLayer.native` 321, the port node
+  cluster `DeferredRenderNode`/`NativeRenderNode`/`.skia` ~344, `SkiaImageBitmap` ~65) — every
+  upstream Canvas/GraphicsLayer semantic change had to be hand-reconciled. AFTER: 1006 lines
+  (`SkiaGraphicsLayer` 515 + `SkiaGraphicsContext` 78 + `Blur` 40 + `SkiaBackedPaint` 174 +
+  `SkiaShader` 175 + `ImageBitmap` 24) auto-sync VERBATIM on a ref bump (zero reconciliation);
+  the hand-reconciled surface shrinks to ~145 lines of edits across 2 drift-tracked manual
+  vendors (`SkiaBackedCanvas` Native* tail, `SkiaImageAsset` 2 inlined funcs), which
+  `check-vendor-drift.py` (P0.6) flags precisely on a bump. Bonus: fidelity is now INHERITED
+  from upstream's engine (real display-list caching, correct clip/shadow) instead of
+  hand-approximated — the O.2 bump proved the verbatim re-sync path works end-to-end. [§0.5]
 
 ## Phase 1B — B6: full upstream Skia canvas (the enabler for B2, DECIDED 2026-07-16)
 
@@ -220,12 +231,27 @@ solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients 
   (transparent swap). PERF WIN: skia draw 1.75ms→0.2ms (skiko RenderNode display-list cache).
   P1.5 rename-reversal N/A: prepareLayerTransformationMatrix stays shared (GraphicsLayerOwnerLayer
   hit-test needs it on both legs); skiko DRAW uses upstream's matrix internally and agrees.*
-- [-] **B6.3 (OPTIONAL, not decided)** Full upstream TEXT on the skiko leg (`SkiaParagraph` +
-  the ui-text skiko stack), retiring `SdlParagraph`/`SkiaTextRenderer` on skiko only. Would make
-  skiko text use the SAME skia paragraph engine as the JVM parity reference → could drive text
-  parity below the current ~2% (eliminates residual metric drift), but DISCARDS the P3.1 metric
-  work on the skiko leg and is a large separate subsystem (Paragraph actual becomes per-renderer:
-  skiko→SkiaParagraph, SDL→SdlParagraph). Decide AFTER B6.1/B6.2 land. Not in scope unless chosen.
+- [-] **B6.3 — DECIDED: SKIP (2026-07-17, user).** Full upstream TEXT on the skiko leg is NOT
+  worth it under G1. A full subsystem map (Explore agent, 2026-07-17) showed it is NOT a canvas-
+  style swap but a **font-subsystem replacement with two coexisting identity models**:
+  • The port uses a name→bytes `IconFont` registry + a no-op `FontFamilyResolver` + renderer-
+    owned typeface resolution; upstream `SkiaParagraph` needs `PlatformFont`/`LoadedFont` in a
+    real `FontCache`/`FontCollection` resolved by `FontFamilyResolverImpl(SkiaFontLoader)`.
+  • The shared ICON path (`IconText`/`TextDrawNode`/`currentTextMeasurer`/`drawNativeText`,
+    foundation commonMain) is used on BOTH legs → the port text model can't be removed, it must
+    COEXIST with upstream on the skiko leg.
+  • Cost: re-vendor ~13 dropped skiko files + split ~10 shared actuals per-renderer (the
+    `Paragraph` interface itself is expect/actual) + a `data.kres`→`FontCache` bridge; NO green
+    intermediate (atomic, multi-session, long font-debug tail); DISCARDS P3.1.
+  • ROI: LOW. On the skiko leg text MEASUREMENT already uses skiko `Font` metrics
+    (`currentTextMeasurer`→`SkiaTextRenderer`) — that's how P3.1 hit ~2%. `SkiaParagraph` would
+    mainly add ICU line-breaking/bidi/complex-shaping + exact wrapping, a modest gain for the
+    demo's Latin text, and under G1 the JVM leg is the fidelity tier anyway.
+  Left as the port's permanent text architecture. Revisit only if complex-script/bidi fidelity
+  on the NATIVE skiko leg becomes a hard requirement.
+
+**B2 CONVERGENCE COMPLETE (2026-07-17):** the skiko leg runs upstream's own Canvas (B6.1) +
+GraphicsLayer/GraphicsContext (B6.2) verbatim. Text stays the port's engine (B6.3 skipped).
 
 ## Phase 2 — B5: engine-convergence deltas
 
@@ -476,3 +502,15 @@ solid-color brush fallback; `SkiaBackedCanvas`+`SkiaShader` draw true gradients 
   (10/10 probes, parity layer-screens byte-stable = transparent swap, drift+vendor-clean pass).
   **PERF WIN: skia draw 1.75ms→0.2ms** (skiko RenderNode record-once/replay display-list
   cache). Baselines re-seeded. B6.3 (upstream text) remains optional/deferred.
+- 2026-07-17 · **B6.3 DECISION: SKIP** (user) · no code · full subsystem map (Explore agent)
+  showed upstream text is a font-subsystem replacement with two coexisting identity models
+  (port name→bytes IconFont + no-op resolver vs upstream PlatformFont/FontCache/FontCollection),
+  ~13 dropped skiko files to re-vendor + ~10 shared actuals to split, a data.kres→FontCache
+  bridge, no green intermediate, discards P3.1 — for a modest gain (skiko metrics already used
+  via currentTextMeasurer→SkiaTextRenderer; JVM is the G1 fidelity tier). Skipped; port text
+  engine is permanent. **B2 CONVERGENCE COMPLETE** (B6.1 canvas + B6.2 layer).
+- 2026-07-17 · **P1.8** (sync-tax, the G1 justification) · no code, measurement · B2 cut the
+  hand-maintained skiko upstream-tracking surface ~8.5× (~1240 hand-rolled lines → ~145 lines
+  of drift-tracked edits; 1006 lines now auto-sync verbatim). Details in the P1.8 task entry.
+  Phase 1 (B2) + Phase 1B (B6) DONE. Remaining open: Phase 2 (B5 engine deltas), Phase 3 (B3
+  SDL fidelity, capped), O.2 ongoing bumps.
