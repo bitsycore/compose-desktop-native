@@ -21,7 +21,7 @@
 // the port text engine (SkiaTextRenderer, P3.1 metrics) + resource-image cache + elevation
 // shadows keep working on the Skia leg, which now draws through THIS canvas instead of the
 // retired project SkiaCanvas. Bridged methods forward to `skiaLeafDrawer` using
-// `internalSkiaCanvas`. See RENDERER_TASKS.md B6.1 + RENDERER_CONVERGE.md section 4.
+// `internalSkiaCanvas`. See RENDERER.md (B6.1, section 4).
 
 package androidx.compose.ui.graphics
 

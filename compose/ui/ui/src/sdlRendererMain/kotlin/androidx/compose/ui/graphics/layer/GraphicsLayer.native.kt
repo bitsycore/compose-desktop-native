@@ -35,7 +35,7 @@ import com.compose.sdl.graphics.NativeRenderNode
 // SDL's node is SdlRenderNode). Every visual property is mirrored onto the node and
 // applied at replay, exactly like upstream. Trimmed vs upstream: outsets (blur
 // expansion) and ChildLayerDependenciesTracker (prompt child release — our children
-// release via NativeReleaseQueue/GC instead). See RENDERER_CONVERGE.md §4 (B2).
+// release via NativeReleaseQueue/GC instead). See RENDERER.md §4 (B2).
 
 @Suppress("PropertyName")
 actual class GraphicsLayer internal constructor(

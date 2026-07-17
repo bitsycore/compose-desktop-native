@@ -110,7 +110,7 @@ private fun screenshotAllScreens(outDir: File, width: Int, height: Int) {
     }
 }
 
-// P0.3 (RENDERER_CONVERGE.md §8): the SAME default font the native leg bundles
+// P0.3 (RENDERER.md §8): the SAME default font the native leg bundles
 // (font/NotoSans.ttf, staged onto the JVM classpath by jvmProcessResources). Loading it
 // into the parity JVM leg collapses the font-drift baseline to (near) just rasterizer AA —
 // so the parity % measures real divergence, not "different default typeface". Null (→ no

@@ -22,7 +22,7 @@
 // ByteArray.putBytesInto into expect (here) + actual (skikoExcludingWebMain / nativeMain).
 // Those collapse into the same skikoRenderer source set here, which is illegal, so the two
 // bodies are inlined (impls from Actuals.skikoExcludingWeb.kt + NativeImageAsset.native.kt).
-// Everything else is byte-for-byte upstream. See RENDERER_TASKS.md B6.1.
+// Everything else is byte-for-byte upstream. See RENDERER.md B6.1.
 
 package androidx.compose.ui.graphics
 

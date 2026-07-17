@@ -10,7 +10,7 @@ import kotlin.math.abs
 // distinct name so it is visible to GraphicsLayerOwnerLayer (also nativeMain);
 // the upstream `prepareTransformationMatrix` stays skikoRenderer-only in the
 // vendored Matrices.skiko.kt and would not be visible up here. Distinct name
-// avoids clashing with that copy on the Skia leg. (RENDERER_CONVERGE.md P1.5 will
+// avoids clashing with that copy on the Skia leg. (RENDERER.md P1.5 will
 // reverse this rename once B2 vendors Matrices.skiko onto the Skia leg.)
 // VENDOR-BASE: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/graphics/Matrices.skiko.kt @ v1.12.0-beta03+dev4483
 

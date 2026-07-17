@@ -39,7 +39,7 @@ import com.compose.sdl.graphics.prepareLayerTransformationMatrix
  those cached vertices through the layer transform — crisp under ANY transform
  (vertices re-transformed, not a resampled texture), bit-exact (no texture round-trip),
  and with NO per-frame render-target state (so none of the texture node's timing-
- dependent nondeterminism). See RENDERER_REFACTOR.md §3/§13.
+ dependent nondeterminism). See RENDERER.md §3/§13.
 
  Captures tessellated geometry, plain + spanned text runs, and Material Symbols icon
  glyphs. A leaf whose block draws something not-yet-capturable (image blits, saveLayer,

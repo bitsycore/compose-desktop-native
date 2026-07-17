@@ -166,4 +166,4 @@ class ComposeRootHost(inDensity: Float = 1f) {
 // functions in PointerEventBridge.native.kt. This facade moved from commonMain to
 // nativeMain (it now constructs the native retained-layer OwnedLayer via
 // ComposeOwner), so the former expect/actual split collapsed to a single native
-// definition — see RENDERER_REFACTOR.md §5.
+// definition — see RENDERER.md §5.

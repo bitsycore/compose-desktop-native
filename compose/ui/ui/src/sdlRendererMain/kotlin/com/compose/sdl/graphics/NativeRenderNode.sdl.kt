@@ -15,7 +15,7 @@ import kotlinx.cinterop.toKString
    render-target state, deterministic. A full 57-screen geo-vs-block-replay sweep is
    clean (55 at 0.000%; GraphicsLayer/ModShortcuts <0.13% cosmetic rotated-edge AA)
    and the former Carousel/Pickers diffs are gone, so it graduates from opt-in to
-   default. See RENDERER_REFACTOR.md §4b/§13.
+   default. See RENDERER.md §4b/§13.
 
    Escape hatches (env override):
      off / defer / 0  → DeferredRenderNode  (replay the block every frame; no caching —

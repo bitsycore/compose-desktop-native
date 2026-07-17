@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontVariation
 // ==================
 
 /*
- Phase 4 (RENDERER_REFACTOR.md §3/§13). A display list is a layer's drawing captured
+ Phase 4 (RENDERER.md §3/§13). A display list is a layer's drawing captured
  ONCE in layer-local space and replayed under the layer transform — instead of
  re-tessellating every frame (DeferredRenderNode) or round-tripping through an
  offscreen texture (SdlRenderNode: fixed-resolution soft + timing-nondeterministic).

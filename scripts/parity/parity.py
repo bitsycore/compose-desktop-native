@@ -143,7 +143,7 @@ def side_by_side(native, jvm, diff, path):
     canvas.save(path)
 
 
-# P0.4 (RENDERER_CONVERGE.md §8): per-(target/renderer) golden baselines so parity GATES
+# P0.4 (RENDERER.md §8): per-(target/renderer) golden baselines so parity GATES
 # (non-zero exit) instead of only ranking. A screen regresses if it exceeds its baseline by
 # more than max(ABS_MARGIN pts, baseline*REL_MARGIN) - tolerant of run-to-run AA jitter,
 # strict on a real jump. `--update-baselines` reseeds the current target/renderer.

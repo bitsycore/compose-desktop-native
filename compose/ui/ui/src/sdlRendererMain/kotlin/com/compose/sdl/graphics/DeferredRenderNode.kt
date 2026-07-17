@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.LayoutDirection
  replay) comes from swapping the per-renderer createNativeRenderNode actual to a
  caching node — skiko RenderNode (a real display list) on Skia, an offscreen /
  cached-geometry display list on SDL — WITHOUT touching GraphicsLayer. See
- RENDERER_REFACTOR.md §4 (Phase 2 = that swap).
+ RENDERER.md §4 (Phase 2 = that swap).
 
  Transform is applied via [prepareLayerTransformationMatrix] + canvas.concat, the
  SAME matrix GraphicsLayerOwnerLayer uses for hit-testing (mapOffset), so draw and

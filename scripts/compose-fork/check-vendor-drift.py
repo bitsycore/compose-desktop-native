@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vendor-drift tripwire (RENDERER_CONVERGE.md P0.6 / §8).
+Vendor-drift tripwire (RENDERER.md P0.6 / §8).
 
 Manually-vendored files (copy-edited from upstream, NON-IDEMPOTENT) carry a
 machine-readable provenance line near their header:
@@ -22,7 +22,7 @@ core repo, ../cmp-ref-compose-multiplatform for COMPOSE_REF), it runs
 between the recorded base and the current pin — turning "might be stale" into
 "did / didn't change".
 
-Run at each pin bump (see RENDERER_CONVERGE.md §9 ref-bump runbook).
+Run at each pin bump (see RENDERER.md §9 ref-bump runbook).
 No third-party deps; Windows / macOS / Linux.
 """
 import re, sys, subprocess

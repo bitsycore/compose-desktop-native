@@ -309,7 +309,7 @@ tasks.named<ProcessResources>("jvmProcessResources") {
         from(vFontFile) { into("font") }
         dependsOn(vDownloadTask)
     }
-    // P0.3 (RENDERER_CONVERGE.md §8): stage the SAME default font the native leg bundles
+    // P0.3 (RENDERER.md §8): stage the SAME default font the native leg bundles
     // (data.kres font/NotoSans.ttf) onto the JVM classpath, so the parity harness's JVM leg
     // renders text with NotoSans too — collapsing the font-drift baseline to (near) just
     // rasterizer AA. MainJvm loads it from /font/NotoSans.ttf.

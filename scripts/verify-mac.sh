@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAC-VERIFY runbook (P0.2, RENDERER_TASKS.md) - the one-command gate for renderer work.
+# MAC-VERIFY runbook (P0.2, RENDERER.md) - the one-command gate for renderer work.
 #
 # Runs on macOS or Linux and exercises BOTH renderers:
 #   0. DRIFT-CHECK: vendor-clean (sync.py + diff src/vendor, P0.7) + manual-vendor

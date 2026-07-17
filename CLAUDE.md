@@ -3,6 +3,19 @@
 Guidance for Claude Code working in this repository. This is the primary
 context — read it first, then look at the files it points to.
 
+## Documentation map
+
+- [README.md](README.md) — public overview + quickstart (bridge plugin,
+  `nativeComposeWindow`, sample apps).
+- [RENDERER.md](RENDERER.md) — the rendering layer: architecture, the retained-
+  layer engine, convergence decisions, learnings, and open work. Read it before
+  touching any renderer, graphics-actual, or layer-engine code.
+- [TOOLING.md](TOOLING.md) — build/vendor/verify scripts and workflows
+  (build-sdl, sync + drift checks, parity, probe, profiler, coverage,
+  verify-mac) + the version map and the ref-bump / release runbooks.
+- This file — architecture, module layout, vendoring rules, source-set
+  hierarchy, density flow, conventions, and common pitfalls.
+
 ## What this project is
 
 **ComposeNativeSDL3** — a Kotlin/Native port of Compose Multiplatform running
@@ -367,19 +380,10 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 
 SDL3 + SDL3_ttf + SDL3_image + FreeType (+ image codecs) are **built from
 source as static libraries on every OS** and linked straight into the
-executable — no brew/apt SDL packages, no runtime .dll/.so/.dylib;
-a distributable is `<app>` + `data.kres`. One script does it all:
-`python scripts/build-sdl/build-all.py` (plain Python 3, no Git Bash needed)
-builds into the gitignored, in-repo `libs/` folder. Versions/URLs pinned in
-`scripts/build-sdl/build-sdl.properties`. Steps run in order freetype → sdl3
-→ sdl3-image → sdl3-ttf; pass step names to rebuild a subset
-(`python scripts/build-sdl/build-all.py sdl3-ttf`).
-
-Needs everywhere: git, cmake, python 3 (ninja fetched automatically). Per
-host: macOS = Xcode CLT (Skia default; Skiko klibs from Maven); Linux =
-gcc/g++ + the X11/Wayland/audio dev headers SDL3's configure detects (apt
-list in .github/workflows/publish.yml); Windows = mingw-w64 g++ on PATH
-(C compiles with K/N's bundled mingw).
+executable — no brew/apt SDL packages, no runtime .dll/.so/.dylib; a
+distributable is `<app>` + `data.kres`. Build them once per host with
+`python scripts/build-sdl/build-all.py`. Per-host toolchain requirements and
+the step breakdown are in [TOOLING.md](TOOLING.md#native-libraries).
 
 ## Runtime bundling — data.kres
 
@@ -405,19 +409,13 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 ```bash
 # Sync every module's compose-fork.txt against the pinned upstream ref.
 scripts/compose-fork/sync.sh
-
-# Sync one module by direct manifest path (module names use ':' → '/' → skip
-# 'compose/' prefix — nested modules like compose/sdl/window pass the full path).
-scripts/compose-fork/sync.sh compose/ui/compose-fork.txt
-
-# Re-format a manifest (align columns, group by upstream folder).
-scripts/compose-fork/format-manifest.py --discover ../cmp-ref \
-    --manifest compose/ui/compose-fork.txt
 ```
 
-Upstream ref: `scripts/compose-fork/compose.properties` — set to a specific commit
+Upstream ref: `scripts/compose-fork/compose.properties` — set to a durable tag
 of `JetBrains/compose-multiplatform-core`. Bump the ref → re-sync → let the
-build tell you what broke.
+build tell you what broke. Per-module sync, manifest re-formatting, and the
+drift / vendor-clean guardrails are in
+[TOOLING.md](TOOLING.md#vendoring-upstream-compose).
 
 ## Key files by area — start here when you need to find something
 
@@ -471,95 +469,20 @@ build tell you what broke.
   `Dialog` / `DropdownMenu` / `DropdownMenuItem` / `TooltipBox` (m3 doesn't
   ship drop-in equivalents for our anchor / scrim patterns).
 
-## Tooling — what's available and when to reach for it
+## Tooling
 
-Index of the repo's tooling. Each entry says when to use it and points at its
-own README for detail; the parity/profiler/probe entries are expanded below
-since they're newer.
+The full tooling reference is [TOOLING.md](TOOLING.md): the static-lib build,
+vendor sync + drift/clean guardrails, API coverage, the `verify-mac` runbook,
+the native-vs-JVM parity harness, the interaction probe, and the frame
+profiler. Quick rules of thumb:
 
-| Tool | Reach for it when | Detail |
-|------|-------------------|--------|
-| `python scripts/build-sdl/build-all.py` | building/refreshing the static SDL3/TTF/image/FreeType libs under `libs/` (once per host, or after bumping `build-sdl.properties`) | "Building" above |
-| `scripts/compose-fork/sync.sh` | re-syncing vendored upstream `androidx.compose.*` after a fresh checkout or a `compose.properties` ref bump; `format-manifest.py` to re-align a `compose-fork.txt` | "Vendor sync workflow" above + `scripts/compose-fork/README.md` |
-| `./gradlew apiDump && python scripts/compose-coverage.py` | measuring how much upstream public API the port actually covers, per module (`--missing <module>` lists uncovered decls) | "Vendoring" above |
-| `scripts/generate-material-symbols.py` / `subset-material-symbols.py` | regenerating the Material Symbols codepoints, or hb-subsetting bundled icon fonts to used glyphs (the latter runs automatically in app Zip tasks under `-PsubsetIcons`) | — |
-| **`scripts/parity/parity.py`** | after ANY renderer/layout change: catch a screen that visually diverged native-vs-JVM (missing content, wrong shape/colour, broken clip) | `scripts/parity/README.md` + below |
-| **`scripts/probe/probe.py`** | reproducing a specific interaction bug (click/hover/hold at a point) or grabbing one screen's pixels deterministically | `scripts/probe/README.md` + below |
-| **`CDN_PROFILE=1 <app>`** | finding where a slow frame goes (per-phase main-loop timings) before optimizing | below |
-| bridge plugin (`com.bitsycore.compose-desktop-native.bridge`) | consuming the published klibs from a third-party app | `gradle-plugin/compose-desktop-native-bridge/README.md` |
-| `demo --screen=<Name>` / `--screenshot=` / `--nav3test` / `--backtest` / `--multiwintest` | driving one screen headless, or the regression probes for nav3 / predictive-back / multi-window | `demo/src/nativeMain/kotlin/MainNative.kt` |
+- Whole-project renderer/layout change → run **parity** (`scripts/parity/parity.py`),
+  the broad net.
+- Chasing one reported interaction → run the **probe** (`scripts/probe/`), targeted.
+- Slow frame → **profiler** first (`CDN_PROFILE=1`), optimize second.
+- Any renderer change → the **`verify-mac`** runbook gates both legs before commit.
 
-Whole-project renderer-touching change → run **parity** (broad net). Chasing
-one reported interaction → **probe** (targeted). Slow → **profiler** first,
-optimize second. See `RENDERER_REFACTOR.md` for the renderer work these support.
-
-### Frame profiler — `CDN_PROFILE=1`
-
-Set the env var (`CDN_PROFILE=1`, or `=<path>` for a specific file) and run any
-native app; every ~2 s of rendered frames it writes avg/max ms per main-loop
-phase (`events` / `app` pump / `pump` per-window / `render`) to a FILE
-(`cdn_profile.log` by default — works for GUI-subsystem apps like the demo that
-have no console). The line also carries render SUB-phases (`layout` / `draw` /
-`present`) and per-frame DRAW COUNTERS from `DrawStats` (`geo` =
-SDL_RenderGeometry submits, `verts`, `masks` = rounded-clip offscreen passes,
-`text`, `img` blits) — so you can see WHAT `draw` is doing, not just that it's
-slow. `CDN_FORCERENDER=1` renders every frame (bypasses idle-skip) so
-steady-state timings can be read on otherwise-idle static screens.
-
-**Caveat learned the hard way:** `present` is vsync-blocking, so every timing is
-capped by the DISPLAY refresh of the machine running the app. A 75 Hz dev
-display makes every app look "75 fps, present-bound" no matter what — so profile
-on the TARGET refresh rate before concluding anything about a frame-rate gap
-(the demo-70 / apidemo-144 report could not be reproduced on a 75 Hz box, where
-both pinned at 75 fps and the demo's `draw` was actually the lighter of the two).
-
-### Interaction probe — `scripts/probe/`
-
-Launches a native app, sends **window-client-relative** input (click / hover /
-hold, fractional coords addressed by process name so it ignores window
-position/focus) and captures the client area via `PrintWindow` (works even
-when occluded). The packaged form of the rigs that reproduced the
-square-on-click and TLS-chain bugs. Windows-only. See its README.
-
-### Parity harness — native-vs-JVM screenshot diff (`scripts/parity/`)
-
-`:demo` renders the **same commonMain screens** on two stacks: native
-(SDL/Skia, Kotlin/Native) and a `jvm()` target on upstream Compose Desktop.
-`scripts/parity/parity.py` screenshots every screen on both and pixel-diffs
-them, so a screen that visually diverges is a **port regression** (missing
-content, wrong shape/colour, broken clip). Several past renderer regressions
-would have been caught here.
-
-```bash
-python scripts/parity/parity.py                 # all screens (builds first)
-python scripts/parity/parity.py Buttons Shapes  # a subset
-python scripts/parity/parity.py --no-build      # reuse the last renders
-```
-
-Mechanics: the JVM leg renders all screens headlessly via `ImageComposeScene`
-in ONE process (`:demo:run --args=--screenshot-all=<dir>`, wired in
-`MainJvm.kt`); the native leg launches the exe once per screen
-(`--screen=<Name> --screenshot=<x>.bmp`). Output lands in **`build/parity/`
-(gitignored)**: `<pct>_<Name>_diff.png` (amplified difference heatmap),
-`<pct>_<Name>_compare.png` (native ∣ jvm ∣ diff, side by side), and
-`report.txt` ranked worst-first. Windows-only for the native leg today; needs
-Pillow. See `scripts/parity/README.md`.
-
-**What the number means — read this before trusting it.** The `%differ` is the
-fraction of pixels whose per-channel difference exceeds a tolerance. It is NOT
-a pass/fail score and pixel-perfection is not the goal: the two stacks use
-different default fonts, so **every screen carries a steady baseline
-difference** — in the heatmap, text shows as a faint *doubled ghost* from
-slightly different line metrics/baselines. A healthy full sweep is a smooth
-gradient (~2% for a sparse screen like Counter, up to ~32% for a text-dense
-one like Tabs). Known SDL parity gaps also inflate specific screens
-predictably (Brushes ~23% — gradients render solid on SDL; Shadows / Canvas /
-GraphicsLayer — effect differences). **The signal is the RANKING and the
-delta from a screen's own history**, not the absolute value: a text-light
-screen suddenly reading 60%, or a screen jumping far above its neighbours, is
-the bug. In a `_diff.png`: ghosted/doubled text + dark shapes = normal font
-drift; a **solid bright block, or a shape present on only one side** = a real
-regression — open the `_compare.png` to see which stack is wrong.
+See [RENDERER.md](RENDERER.md) for the renderer work these support.
 
 ## Conventions
 

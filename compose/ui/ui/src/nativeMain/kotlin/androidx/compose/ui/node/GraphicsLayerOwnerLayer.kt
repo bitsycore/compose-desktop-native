@@ -23,7 +23,7 @@
 // (dirty-gated record/replay over a per-renderer GraphicsLayer), replacing the
 // immediate-mode ProjectOwnedLayer. `!`-refused in compose-fork.txt; reconcile
 // upstream changes by hand (run scripts/compose-fork/check-vendor-drift.py at each
-// COMPOSE_CORE_REF bump). See RENDERER_CONVERGE.md Appendix A.
+// COMPOSE_CORE_REF bump). See RENDERER.md Appendix A.
 package androidx.compose.ui.node
 
 import androidx.compose.ui.FrameRateCategory

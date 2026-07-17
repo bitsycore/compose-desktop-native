@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Vendor-clean check (P0.7, RENDERER_TASKS.md) - fails if src/vendor/ has drifted from
+# Vendor-clean check (P0.7, RENDERER.md) - fails if src/vendor/ has drifted from
 # what the pinned upstream refs produce.
 #
 # src/vendor/ is REGENERATED OUTPUT (gitignored): nothing hand-made may live there. A

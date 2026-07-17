@@ -52,7 +52,7 @@ import com.compose.sdl.graphics.prepareLayerTransformationMatrix
  block (children composite their own live textures, so no staleness). If it didn't
  → it's a leaf → keep the texture and just blit it henceforth. Leaves (text runs,
  icons, shapes — the bulk of static content like the sidebar) stop re-tessellating;
- parents cheaply re-composite. See RENDERER_REFACTOR.md §4b / §13.
+ parents cheaply re-composite. See RENDERER.md §4b / §13.
 */
 internal class SdlRenderNode : NativeRenderNode {
 
