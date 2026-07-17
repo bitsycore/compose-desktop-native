@@ -153,6 +153,11 @@ internal class ComposeOwner(
 
 	override fun onDetach(node: LayoutNode) {
 		fDelegate.onNodeDetached(node)
+		// Drop the detached node's read-observation scopes, exactly as upstream
+		// RootNodeOwner.onDetach does. Without this, every disposed node's measure/
+		// layout/draw observation scopes accumulate in the snapshot observer forever
+		// — the baseline composition-machinery leak the P2.2 soak caught.
+		snapshotObserver.clear(node)
 	}
 
 	override fun registerOnLayoutCompletedListener(listener: Owner.OnLayoutCompletedListener) {

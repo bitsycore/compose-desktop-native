@@ -27,6 +27,7 @@ import utils.parseArgs
 import utils.writeFile
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
@@ -505,7 +506,10 @@ private fun runSoakTest() {
         List(40) { vS }
     } else vAll
     val vIndex = mutableStateOf(0)
-    val kFramesPerScreen = 3
+    // CDN_SOAK_STATIC=1: mount ONE screen once, never remount — measure RSS every 120 frames.
+    // Isolates a per-FRAME leak (RSS climbs with no remounts) from a per-MOUNT leak.
+    val vStatic = platform.posix.getenv("CDN_SOAK_STATIC")?.toKString() == "1"
+    val kFramesPerScreen = if (vStatic) 120 else 3
     val kCycles = platform.posix.getenv("CDN_SOAK_CYCLES")?.toKString()?.toIntOrNull() ?: 3
     val vRssPerCycleMb = mutableListOf<Long>()
     var vShown = 0
@@ -516,12 +520,19 @@ private fun runSoakTest() {
         height = 700,
         onFrame = { _, vFrame ->
             if (vFrame > 0 && vFrame % kFramesPerScreen == 0) {
-                vShown++
-                vIndex.value = vShown % vScreens.size
-                if (vShown % vScreens.size == 0) {
+                if (vStatic) {
+                    // No remount — just pump frames on the one mounted screen.
                     kotlin.native.runtime.GC.collect()
-                    vRssPerCycleMb.add(currentMaxRssMb())
-                    println("soaktest: cycle ${vRssPerCycleMb.size}: peakRSS=${vRssPerCycleMb.last()}MB")
+                    vRssPerCycleMb.add(currentResidentMb())
+                    println("soaktest[static]: measure ${vRssPerCycleMb.size}: currentRSS=${vRssPerCycleMb.last()}MB")
+                } else {
+                    vShown++
+                    vIndex.value = vShown % vScreens.size
+                    if (vShown % vScreens.size == 0) {
+                        kotlin.native.runtime.GC.collect()
+                        vRssPerCycleMb.add(currentResidentMb())
+                        println("soaktest: cycle ${vRssPerCycleMb.size}: currentRSS=${vRssPerCycleMb.last()}MB")
+                    }
                 }
             }
             if (vRssPerCycleMb.size >= kCycles) {
@@ -529,11 +540,11 @@ private fun runSoakTest() {
                 val vLast = vRssPerCycleMb.last()
                 val vGrowth = vLast - vFirst
                 val vCeiling = maxOf(48L, vFirst / 4)  // 25% or 48MB, whichever larger
-                println("soaktest: peakRSS/cycle(MB)=$vRssPerCycleMb (${vScreens.size} screens x $kCycles cycles)")
+                println("soaktest: currentRSS/cycle(MB)=$vRssPerCycleMb (${vScreens.size} screens x $kCycles cycles)")
                 if (vGrowth <= vCeiling) {
-                    println("soaktest: PASS (peak RSS grew ${vGrowth}MB over cycles 1->$kCycles, within ${vCeiling}MB ceiling)")
+                    println("soaktest: PASS (current RSS grew ${vGrowth}MB over cycles 1->$kCycles, within ${vCeiling}MB ceiling)")
                 } else {
-                    println("soaktest: FAIL (peak RSS grew ${vGrowth}MB > ${vCeiling}MB ceiling — possible leak)")
+                    println("soaktest: FAIL (current RSS grew ${vGrowth}MB > ${vCeiling}MB ceiling — possible leak)")
                 }
                 false
             } else true
@@ -565,6 +576,22 @@ private fun currentMaxRssMb(): Long = memScoped {
     getrusage(RUSAGE_SELF, vUsage.ptr)
     val vRaw = vUsage.ru_maxrss.toLong()
     if (vRaw > 10_000_000L) vRaw / (1024 * 1024) else vRaw / 1024  // bytes(macOS) : KB(linux)
+}
+
+/* CURRENT resident set (MB) via `ps` — unlike getrusage ru_maxrss (monotonic peak),
+   this can DROP after GC, so it distinguishes a true leak (ratchets up) from K/N
+   allocator high-water. Portable across macOS/Linux (`ps -o rss=` prints KB). */
+@OptIn(ExperimentalForeignApi::class)
+private fun currentResidentMb(): Long {
+    val vPid = platform.posix.getpid()
+    val vFp = platform.posix.popen("ps -o rss= -p $vPid", "r") ?: return -1
+    val vKb = memScoped {
+        val vBuf = allocArray<kotlinx.cinterop.ByteVar>(64)
+        val vLine = platform.posix.fgets(vBuf, 64, vFp)?.toKString()?.trim()
+        vLine?.toLongOrNull() ?: -1L
+    }
+    platform.posix.pclose(vFp)
+    return if (vKb < 0) -1 else vKb / 1024
 }
 
 private fun runNav3Test() {
