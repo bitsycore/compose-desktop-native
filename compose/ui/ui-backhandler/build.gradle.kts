@@ -13,7 +13,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				api("org.jetbrains.compose.runtime:runtime:1.11.1")
+				api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
 				api("androidx.navigationevent:navigationevent-compose:1.1.2")
 				api(project(":ui-util"))
 				implementation(libs.kotlinx.coroutines.core)

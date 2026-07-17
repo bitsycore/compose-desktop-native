@@ -20,8 +20,8 @@ val vHostSupportsMingw: Boolean by rootProject.extra
 // COMPOSE_CORE_REF (see scripts/compose-fork/compose.properties); mirrors
 // :demo's forcing (Gradle orders "+dev" BELOW the plain version, so the
 // plugin's beta01 would win conflict resolution without it).
-val vComposeJvmVersion = "1.12.0-beta02"
-val vComposeM3JvmVersion = "1.12.0-alpha03"
+val vComposeJvmVersion = libs.versions.compose.get()
+val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
@@ -106,7 +106,7 @@ kotlin {
                 // invisible to the granular-metadata visibility check. The
                 // runtime is the official klib everywhere, never substituted
                 // (jvm configs force the +dev build above).
-                implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
+                implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 implementation("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-graphics:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-text:$vComposeJvmVersion")

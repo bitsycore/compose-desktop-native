@@ -31,16 +31,30 @@ gradlePlugin {
 }
 
 // The plugin defaults the substitution version to ITS OWN version (plugin and
-// klibs ship from the same tag), read at runtime from this generated resource.
+// klibs ship from the same tag) and also ADVERTISES the official Compose
+// Multiplatform versions the port tracks, so consumers declare the matching
+// coords without reading compose.properties by hand. Both are read at runtime
+// from this generated resource, sourced from the version catalog (single truth).
 val vVersionDir = layout.buildDirectory.dir("generated/bridge-version")
 val vGenerateVersion = tasks.register("generateBridgeVersionResource") {
     val vVersion = project.version.toString()
+    val vCompose = libs.versions.compose.get()
+    val vComposeMaterial3 = libs.versions.composeMaterial3.get()
+    val vComposeRuntime = libs.versions.composeRuntime.get()
     val vOut = vVersionDir.get().file("com/bitsycore/compose/sdl/gradle/bridge-version.properties").asFile
     inputs.property("version", vVersion)
+    inputs.property("compose", vCompose)
+    inputs.property("composeMaterial3", vComposeMaterial3)
+    inputs.property("composeRuntime", vComposeRuntime)
     outputs.dir(vVersionDir)
     doLast {
         vOut.parentFile.mkdirs()
-        vOut.writeText("version=$vVersion\n")
+        vOut.writeText(
+            "version=$vVersion\n" +
+                "compose=$vCompose\n" +
+                "composeMaterial3=$vComposeMaterial3\n" +
+                "composeRuntime=$vComposeRuntime\n"
+        )
     }
 }
 sourceSets["main"].resources.srcDir(vVersionDir)

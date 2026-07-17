@@ -85,15 +85,20 @@ coordinates, and the plugin swaps in the port's klibs on native desktop targets
 while android, jvm, iOS, and wasm keep resolving the official artifacts.
 
 ```kotlin
-// settings.gradle.kts
-plugins { id("com.bitsycore.compose-desktop-native.bridge") version "<release>" }
-
 // build.gradle.kts, official coordinates everywhere
+plugins {
+    kotlin("multiplatform")
+    id("org.jetbrains.compose")
+    id("com.bitsycore.compose-desktop-native.bridge") version "<release>"
+}
+
 commonMain.dependencies {
-    implementation("org.jetbrains.compose.runtime:runtime:<runtime-version>")
-    implementation("org.jetbrains.compose.ui:ui:<cmp-version>")
-    implementation("org.jetbrains.compose.foundation:foundation:<cmp-version>")
-    implementation("org.jetbrains.compose.material3:material3:<cmp-m3-version>")
+    // The plugin exposes the exact Compose versions the port tracks, so you
+    // never hand-match them (material3 is versioned separately upstream).
+    implementation("org.jetbrains.compose.runtime:runtime:${composeDesktopNative.composeRuntime}")
+    implementation("org.jetbrains.compose.ui:ui:${composeDesktopNative.compose}")
+    implementation("org.jetbrains.compose.foundation:foundation:${composeDesktopNative.compose}")
+    implementation("org.jetbrains.compose.material3:material3:${composeDesktopNative.composeMaterial3}")
 }
 ```
 

@@ -47,8 +47,8 @@ val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 // material3 rides its own release train (same +dev build, different base).
 // Gradle orders "+dev" BELOW the plain version, so force the core-repo
 // groups on jvm configurations (mirrors :demo's forcing).
-val vComposeJvmVersion = "1.12.0-beta02"
-val vComposeM3JvmVersion = "1.12.0-alpha03"
+val vComposeJvmVersion = libs.versions.compose.get()
+val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
@@ -79,7 +79,7 @@ kotlin {
         commonMain.dependencies {
             // The official runtime klibs — the SAME artifact/version the port
             // itself uses (:ui pins it); resolves for metadata, jvm AND native.
-            api("org.jetbrains.compose.runtime:runtime:1.11.1")
+            api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
             // Official Maven coordinates for the API surface (Modifier / Color
             // / Dp / material3's LocalContentColor). Metadata + jvm resolve
             // them from Maven; NATIVE configurations substitute them for

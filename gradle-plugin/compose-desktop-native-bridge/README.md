@@ -45,19 +45,34 @@ dependencyResolutionManagement {
 ```
 
 ```kotlin
-// module build.gradle.kts — official coords, everywhere
+// module build.gradle.kts — official coords, everywhere.
+// Applying the plugin HERE exposes the `composeDesktopNative` extension, which
+// reports the exact Compose versions the port tracks, so you never hand-match
+// them against compose.properties.
+plugins {
+    kotlin("multiplatform")
+    id("org.jetbrains.compose")
+    id("com.bitsycore.compose-desktop-native.bridge")
+}
+
 kotlin {
     macosArm64(); linuxX64(); mingwX64()   // + jvm()/android()/ios if you like
     sourceSets {
         commonMain.dependencies {
-            implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
-            implementation("org.jetbrains.compose.ui:ui:<cmp-version>")
-            implementation("org.jetbrains.compose.foundation:foundation:<cmp-version>")
-            implementation("org.jetbrains.compose.material3:material3:<cmp-m3-version>")
+            implementation("org.jetbrains.compose.runtime:runtime:${composeDesktopNative.composeRuntime}")
+            implementation("org.jetbrains.compose.ui:ui:${composeDesktopNative.compose}")
+            implementation("org.jetbrains.compose.foundation:foundation:${composeDesktopNative.compose}")
+            implementation("org.jetbrains.compose.material3:material3:${composeDesktopNative.composeMaterial3}")
         }
     }
 }
 ```
+
+`composeDesktopNative` exposes four read-only values: `compose` (ui /
+foundation / animation / material), `composeMaterial3` (versioned separately
+upstream), `composeRuntime`, and `version` (the port klib version being
+substituted). You can still write literal versions if you prefer; the extension
+just removes the drift.
 
 ### Settings-wide or per-module
 
@@ -79,6 +94,16 @@ version (so module-level applications can omit it); the top-level
 `plugins { }` block in settings is what actually applies it build-wide.
 Rule of thumb: single app module → apply in the module; multi-module builds →
 apply once in settings.
+
+When applied from settings, the type-safe `composeDesktopNative` accessor is not
+generated in the module scripts. The same values are still available through
+project extra properties:
+
+```kotlin
+val compose = project.extra["composeDesktopNative.compose"] as String
+val material3 = project.extra["composeDesktopNative.composeMaterial3"] as String
+val runtime = project.extra["composeDesktopNative.composeRuntime"] as String
+```
 
 ## compose.desktop.native — the application block for native
 
@@ -122,10 +147,12 @@ overrides follow the default hierarchy (a `mingwX64Main` resource beats a
 - The substituted klib version defaults to the plugin's own version (both ship
   from the same tag). Override with `composeDesktopNative.version=<x>` in
   `gradle.properties` when mixing releases.
-- Match `<cmp-version>` to the CMP release the port's vendored sources track
-  (see `scripts/compose-fork/compose.properties` at the release tag) —
-  substitution replaces whatever version you request on native, but your
-  jvm/android targets resolve the official artifacts at the version you write.
+- Use `composeDesktopNative.compose` / `.composeMaterial3` / `.composeRuntime`
+  (above) for the official coords rather than hardcoding a version. Substitution
+  replaces the requested version on native, but your jvm/android targets resolve
+  the official artifacts at the version you write, so matching what the port
+  tracks keeps every target on the same API. The values come straight from the
+  release the plugin shipped with; no need to read `compose.properties` by hand.
 - Requires Gradle 8.8+ when applied in settings (`gradle.lifecycle.beforeProject`).
 - App windowing/main-loop (`com.bitsycore.compose.sdl:window`) and the icon
   font module (`material-symbols`) are the port's own APIs — depend on them

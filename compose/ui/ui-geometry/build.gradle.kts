@@ -13,7 +13,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				api("org.jetbrains.compose.runtime:runtime:1.11.1")
+				api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
 				api(project(":ui-util"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")

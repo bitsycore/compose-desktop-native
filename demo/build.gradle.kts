@@ -20,8 +20,8 @@ val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 // the umbrella plugin's own version would win conflict resolution (essential
 // for "+dev" pins, which Gradle orders BELOW the plain version). Umbrella-repo
 // groups (desktop, components) are NOT forced: their versioning differs.
-val vComposeJvmVersion = "1.12.0-beta02"
-val vComposeM3JvmVersion = "1.12.0-alpha03"
+val vComposeJvmVersion = libs.versions.compose.get()
+val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
 val vComposeJvmForced = mapOf(
     "org.jetbrains.compose.runtime" to vComposeJvmVersion,
     "org.jetbrains.compose.ui" to vComposeJvmVersion,
@@ -111,7 +111,7 @@ kotlin {
                 // visibility check. The runtime is the official klib
                 // everywhere, never substituted (jvm configs force the +dev
                 // build above).
-                implementation("org.jetbrains.compose.runtime:runtime:1.11.1")
+                implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 implementation("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-graphics:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-text:$vComposeJvmVersion")
