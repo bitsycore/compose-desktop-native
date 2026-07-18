@@ -131,6 +131,10 @@ fun main(args: Array<String>) {
         runSoakTest()
         return
     }
+    if (args.any { it == "--localetest" }) {
+        runLocaleTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -568,6 +572,47 @@ private fun runSoakTest() {
    monotonic peak. posix reads it from `ps`; mingw has no `ps`/popen and returns
    -1 (the soak gate runs on macOS/Linux — see scripts/verify-mac.sh). */
 internal expect fun currentResidentMb(): Long
+
+/* --localetest: prints Locale.current / LocaleList.current (should reflect the OS
+   preferred locales via SDL) and screenshots an M3 DatePicker, whose headline and
+   navigation labels are M3-translated by Locale.current. Run under a forced locale,
+   e.g. `demo.kexe --localetest -AppleLanguages "(fr-FR)"` on macOS. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+private fun runLocaleTest() {
+    nativeComposeWindow(
+        title = "localetest",
+        width = 420,
+        height = 560,
+        onFrame = { vBridge, vFrame ->
+            when (vFrame) {
+                2 -> {
+                    val vCur = androidx.compose.ui.text.intl.Locale.current
+                    val vList = androidx.compose.ui.text.intl.LocaleList.current
+                    println("localetest: Locale.current=${vCur.toLanguageTag()}")
+                    println("localetest: LocaleList.current=[${vList.localeList.joinToString { it.toLanguageTag() }}]")
+                    true
+                }
+                40 -> {
+                    val vSnap = vBridge.snapshotBgra()
+                    if (vSnap != null) {
+                        val (vW, vH, vBgra) = vSnap
+                        writeFile("localetest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                        println("localetest: wrote localetest.bmp (${vW}x${vH})")
+                    } else println("localetest: FAIL (no snapshot)")
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.material3.Surface(modifier = Modifier.fillMaxSize()) {
+                val vState = androidx.compose.material3.rememberDatePickerState()
+                androidx.compose.material3.DatePicker(state = vState)
+            }
+        }
+    }
+}
 
 private fun runNav3Test() {
     val vShow = mutableStateOf(false)

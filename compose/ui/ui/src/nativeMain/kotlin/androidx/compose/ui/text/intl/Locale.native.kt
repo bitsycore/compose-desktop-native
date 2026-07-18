@@ -14,6 +14,10 @@ import androidx.compose.runtime.Immutable
  * APIs that only need to roundtrip the tag — no actual locale-aware
  * collation / character direction is wired through yet.
  *
+ * `Locale.current` reads the OS preferred locale via SDL (see
+ * com.compose.sdl.text.systemPreferredLocaleTags), which is what keys Material
+ * 3 string translation selection; it falls back to en-US before SDL init.
+ *
  * If/when proper RTL detection is needed, plug a `Locale.isRtl()` actual
  * (which is a separate expect on skikoMain — we leave that one
  * deferred since we don't render RTL text yet either).
@@ -50,8 +54,11 @@ actual class Locale actual constructor(languageTag: String) {
 	actual override fun toString(): String = tag
 
 	actual companion object {
-		actual val current: Locale get() = DefaultLocale
+		actual val current: Locale get() = systemCurrentLocale()
 	}
 }
 
-private val DefaultLocale = Locale("en-US")
+// The OS's most-preferred locale (SDL); en-US before SDL init or on a host that
+// reports none. Cheap: the tag list is cached after the first non-empty read.
+private fun systemCurrentLocale(): Locale =
+	com.compose.sdl.text.systemPreferredLocaleTags().firstOrNull()?.let(::Locale) ?: Locale("en-US")

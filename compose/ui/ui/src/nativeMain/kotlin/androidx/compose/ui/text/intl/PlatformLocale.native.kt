@@ -5,15 +5,20 @@ package androidx.compose.ui.text.intl
 // ==================
 
 /*
- * Returns a `PlatformLocaleDelegate` whose `current` is a single-entry
- * `LocaleList("en-US")`. We have no platform-specific locale source on
- * linux/windows, and macOS doesn't need NSLocale wiring until the
- * renderer cares about locale-aware text layout.
+ * Returns a `PlatformLocaleDelegate` whose `current` is the OS preferred-locale
+ * list, ordered by preference, from SDL (see
+ * com.compose.sdl.text.systemPreferredLocaleTags). Falls back to a single-entry
+ * `LocaleList("en-US")` before SDL init or on a host that reports none.
  *
- * Skiko's actual upstream walks `org.jetbrains.skiko.Locale.current` —
- * we stay platform-free here for portability and simplicity.
+ * Skiko's actual upstream walks `org.jetbrains.skiko.Locale.current`; we go
+ * through SDL so the same read serves every native leg (macOS/linux/windows).
  */
 internal actual fun createPlatformLocaleDelegate(): PlatformLocaleDelegate =
 	object : PlatformLocaleDelegate {
-		override val current: LocaleList = LocaleList(listOf(Locale("en-US")))
+		override val current: LocaleList
+			get() {
+				val tags = com.compose.sdl.text.systemPreferredLocaleTags()
+				return if (tags.isEmpty()) LocaleList(listOf(Locale("en-US")))
+				else LocaleList(tags.map(::Locale))
+			}
 	}

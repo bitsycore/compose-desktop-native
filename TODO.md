@@ -29,8 +29,9 @@ here.
 
 The cross-cutting items to weigh first (all detailed below):
 
-1. **Locale is hardcoded to `en-US`** (section E). One fix unlocks the 40+
-   vendored Material 3 translations. Cheapest high-value win in this file.
+1. ~~Locale hardcoded to `en-US`~~ **DONE** (section E) — `Locale.current` /
+   `LocaleList.current` now read the OS preferred locales via SDL, unlocking the
+   40+ Material 3 translations. The date/number-format tail (needs CLDR) remains.
 2. **No IME / text composition** (section B). Only committed Latin text works;
    CJK, dead keys, and accented input do not.
 3. **No cursor changes** (section D). The OS cursor never becomes an I-beam over
@@ -82,15 +83,23 @@ The OS cursor never changes. No SDL cursor API is called anywhere in the port.
 
 ## E. Locale and internationalization
 
-System-locale plumbing already exists in exactly one place:
-`components/resources/.../ResourceEnvironment.native.kt:38` reads
-`SDL_GetPreferredLocales()` for resource-qualifier resolution. Every other i18n
-consumer ignores it and hardcodes English. Wiring `Locale.current` to that same
-call is the flagship cheap win.
+**DONE — `Locale.current` / `LocaleList.current` now read the OS preferred
+locales via SDL.** A shared reader (`com.compose.sdl.text.systemPreferredLocaleTags`,
+backed by `SDL_GetPreferredLocales()`, cached after first non-empty read) feeds
+both actuals. This is what keys Material 3 string translation, so all 40+
+vendored `material3/internal/l10n/*.kt` tables now resolve. Verified with the
+`demo --localetest` probe: `-AppleLanguages "(fr-FR)"` renders the DatePicker
+headline as "Sélectionner une date"; `(de-DE, fr-FR, en)` returns the full
+ordered `LocaleList` (`de-DE` first). en-US fallback before SDL init.
 
-- `compose/ui/ui/src/nativeMain/.../text/intl/Locale.native.kt:57` · `DefaultLocale` is a fixed `Locale("en-US")`, so `Locale.current` can never change. This one value keys Material 3 string translation selection, stranding the 40+ vendored `material3/internal/l10n/*.kt` tables (they are present and reachable by tag, but the key is always en-US). Fix by querying `SDL_GetPreferredLocales()` (already bound in the `sdl3` cinterop). **Blocker; fixing it transitively localizes all of Material 3.**
-- `compose/ui/ui/src/nativeMain/.../text/intl/PlatformLocale.native.kt:18` · `createPlatformLocaleDelegate().current` hardcodes `LocaleList(listOf(Locale("en-US")))`; should reflect the full ordered preferred-locale list SDL returns (the resources module currently reads only `[0]`). **Blocker.**
-- `compose/material3/.../CalendarLocale.native.kt:20` · locale-agnostic stub: `toString()` fixed `"en"`, single shared instance, `equals` treats all instances as equal. A separate type from `ui.text.intl.Locale`, so it needs its own wiring so `CalendarModel`/`PlatformDateFormat` can vary by locale. **Blocker (DatePicker/TimePicker).**
+- [x] `Locale.native.kt` · `Locale.current` reads the OS locale (first preferred), en-US fallback. **Done.**
+- [x] `PlatformLocale.native.kt` · `createPlatformLocaleDelegate().current` returns the full ordered `LocaleList` from SDL. **Done.**
+
+The rest of section E is the i18n **tail** that needs locale-aware DATA
+(month/weekday names, date/number patterns), which Kotlin/Native has no ICU for.
+It is NOT unlocked by the SDL wiring above:
+
+- `compose/material3/.../CalendarLocale.native.kt:20` · locale-agnostic stub: `toString()` fixed `"en"`, single shared instance, `equals` treats all instances as equal. A separate type from `ui.text.intl.Locale`; needs its own wiring so `CalendarModel`/`PlatformDateFormat` can vary by locale. Inert until `PlatformDateFormat` below is localized. **Nice-to-have (DatePicker/TimePicker).**
 - `compose/material3/.../internal/PlatformDateFormat.native.kt` · multiple hardcodes:
   - `:27` `weekdayNames` hardcoded English full/short names (DatePicker shows English day initials regardless of locale). **Blocker.**
   - `:32` `formatWithPattern`/`formatWithSkeleton` ignore the pattern/skeleton and always emit ISO `yyyy-MM-dd`. **Blocker.**
