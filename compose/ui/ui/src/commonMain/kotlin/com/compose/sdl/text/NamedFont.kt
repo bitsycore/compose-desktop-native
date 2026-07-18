@@ -55,11 +55,17 @@ fun namedFontFamily(
 ): FontFamily = FontFamily(NamedFont(name, weight, style))
 
 /**
- * Extract the project name from a `FontFamily` if it was built via [namedFontFamily].
- * Returns `null` for `FontFamily.Default`, `SansSerif`, `LoadedFontFamily`, or any
- * `FontListFontFamily` whose first font isn't a [NamedFont].
+ * Extract the renderer font-registry name for a `FontFamily`:
+ *   * a [namedFontFamily] (`FontListFontFamily` whose first font is a [NamedFont]) → its name;
+ *   * a generic `FontFamily.Monospace` / `Serif` / `Cursive` → `"generic:<name>"`, which the
+ *     renderer resolves to the bundled generic font (registerGenericFonts), falling back to the
+ *     default font when that generic isn't bundled;
+ *   * everything else (`Default`, `SansSerif`, `LoadedFontFamily`, resource-backed lists) → `null`
+ *     (the default font).
  */
-fun FontFamily?.projectFontName(): String? =
-	(this as? FontListFontFamily)
-		?.firstOrNull()
-		?.let { (it as? NamedFont)?.name }
+fun FontFamily?.projectFontName(): String? = when (this) {
+	is FontListFontFamily -> (firstOrNull() as? NamedFont)?.name
+	is androidx.compose.ui.text.font.GenericFontFamily ->
+		if (name == "sans-serif") null else "generic:$name"
+	else -> null
+}

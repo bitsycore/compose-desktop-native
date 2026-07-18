@@ -162,6 +162,10 @@ fun main(args: Array<String>) {
         runTileModeTest()
         return
     }
+    if (args.any { it == "--fonttest" }) {
+        runFontTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -761,6 +765,39 @@ private fun runImageBytesTest() {
             } else true
         },
     ) {}
+}
+
+/* --fonttest: same sample in FontFamily.Default (sans) and FontFamily.Monospace.
+   Monospace used to collapse to the default sans; now it renders NotoSansMono
+   (bundled because this source references FontFamily.Monospace). */
+private fun runFontTest() {
+    nativeComposeWindow(
+        title = "fonttest",
+        width = 560,
+        height = 220,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 10) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("fonttest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("fonttest: wrote fonttest.bmp (${vW}x${vH})")
+                }
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Column(Modifier.fillMaxSize().background(Color(0xFF202020)).padding(20.dp)) {
+                val vSample = "Illegal1 lIO0 {}=>"
+                Text(vSample, color = Color.White, fontSize = 30.sp)
+                Text(
+                    vSample, color = Color.Cyan, fontSize = 30.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                )
+            }
+        }
+    }
 }
 
 /* --tilemodetest: three rows filled with a narrow red->blue linear gradient using

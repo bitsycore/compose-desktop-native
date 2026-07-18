@@ -729,6 +729,9 @@ internal class WindowInstance(
 		currentImageLoader = vRender.imageLoader
 		com.compose.sdl.text.currentViewportWidth = backend.pixelWidth
 		com.compose.sdl.text.currentViewportHeight = backend.pixelHeight
+		// Register bundled generic fonts (FontFamily.Monospace → NotoSansMono) once
+		// data.kres is loadable; idempotent, no-op if the font isn't bundled.
+		com.compose.sdl.text.registerGenericFonts()
 	}
 
 	// ============

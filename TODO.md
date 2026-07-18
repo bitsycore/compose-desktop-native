@@ -50,9 +50,10 @@ The cross-cutting items to weigh first (all detailed below):
    menu, upstream TODO CMP-7819).
 2. **Accessibility is entirely absent** (section A). Decide whether stable
    requires any screen-reader support at all.
-3. **Standard `Font(...)` / resource-font loading is a no-op** (section D). Only
-   pre-registered named fonts render. A blocker only if apps use the standard
-   font APIs.
+3. Fonts (section D): compose-resources `Font(Res.font.x)` works on both legs, and
+   `FontFamily.Monospace` now renders NotoSansMono. Remaining: `Serif`/`Cursive`
+   generics (no bundled font) and the androidx `Font(bytes)`/`PlatformFontLoader`
+   path. Nice-to-have, not a blocker.
 
 ---
 
@@ -94,9 +95,22 @@ calendar/clock/number prefs). These require a bundled CLDR subset or a K/N i18n 
 
 ## D. Font resolution
 
-- `compose/ui/ui/src/nativeMain/.../text/font/FontFamilyResolver.native.kt:32` · `SdlPlatformFontLoader.loadBlocking`/`awaitLoad` are NOP (return `Unit`); font bytes for `ResourceFont` / `Font(bytes)` / `LoadedFontFamily` are never loaded. Only pre-registered `NamedFont` names reach the renderer. **Blocker if the app uses standard `Font(...)` / resource-font APIs; otherwise nice-to-have.**
-- `compose/ui/ui/src/nativeMain/.../text/font/FontFamilyResolver.native.kt:38` · `PlatformFontFamilyTypefaceAdapter.resolve` returns `TypefaceResult.Immutable(Unit)`; any code reading the resolved typeface gets `Unit` (the renderer bypasses this via name lookup, so usually harmless). **Nice-to-have.**
-- `compose/ui/ui/src/commonMain/.../text/NamedFont.kt:62` · `FontFamily.projectFontName` resolves only a `FontListFontFamily` whose first font is a `NamedFont`; returns `null` for `Serif`/`SansSerif`/`Monospace`/`Cursive`/`Default`, `LoadedFontFamily`, and resource-backed families, so all of those collapse to the single default font (no serif/mono/cursive distinction). **Nice-to-have.**
+**Custom fonts via compose-resources work.** `org.jetbrains.compose.resources.Font(Res.font.x)`
+loads the bytes and registers them with the project font registry (IconFont → NamedFont)
+on both renderer legs (`FontResources.sdl.kt`, shared by the skiko leg via a srcDir
+alias), so the standard CMP way to bundle a font renders correctly.
+
+- [x] **`FontFamily.Monospace` DONE** — `NamedFont.projectFontName` maps generic families to
+  `"generic:<name>"`; `com.compose.sdl.text.registerGenericFonts` (called from
+  `installGlobals`) registers the bundled NotoSansMono under `generic:monospace`. The demo
+  Zip task bundles the font only when the app references `FontFamily.Monospace` (mirrors the
+  Material Symbols scan). Falls back to the default sans if not bundled. Verified
+  `demo --fonttest` on both legs.
+- `FontFamily.Serif` / `FontFamily.Cursive` still collapse to the default sans — no bundled
+  serif/cursive font yet (`downloadNotoFonts` fetches Sans + SansMono only). Register one under
+  `generic:serif` / `generic:cursive` the same way to enable them. **Nice-to-have.**
+- `compose/ui/ui/src/nativeMain/.../text/font/FontFamilyResolver.native.kt:32` · `SdlPlatformFontLoader.loadBlocking`/`awaitLoad` are NOP; the androidx `PlatformFontLoader` path (`ResourceFont` / `Font(bytes)` / `LoadedFontFamily`) doesn't load. Use the working compose-resources `Font()` instead. **Nice-to-have.**
+- `compose/ui/ui/src/nativeMain/.../text/font/FontFamilyResolver.native.kt:38` · `PlatformFontFamilyTypefaceAdapter.resolve` returns `TypefaceResult.Immutable(Unit)` (the renderer resolves by name, so harmless). **Nice-to-have.**
 - `compose/ui/ui/src/nativeMain/.../text/font/FontFamilyResolver.native.kt:69` · deprecated `createFontFamilyResolver(fontResourceLoader)` ignores the supplied loader. **Cosmetic.**
 
 ## E. Text rendering details

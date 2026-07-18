@@ -222,7 +222,18 @@ val composeResourcesDir = layout.projectDirectory.dir("src/commonMain/composeRes
 // depend on the download task by path so ordering doesn't rely on :core being
 // configured first.
 val notoSansFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSans.ttf")
+val notoSansMonoFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSansMono.ttf")
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
+
+// Bundle NotoSansMono (backs FontFamily.Monospace) only if the app uses it —
+// mirrors the Material Symbols per-style scan so apps that never render monospace
+// don't pay for the font bytes.
+val usesMonospace: Boolean = run {
+    val vSrcRoot = layout.projectDirectory.dir("src").asFile
+    vSrcRoot.exists() && vSrcRoot.walk().any {
+        it.isFile && it.extension == "kt" && Regex("\\bFontFamily\\.Monospace\\b").containsMatchIn(it.readText())
+    }
+}
 
 // Which Material Symbols style(s) this app uses = which style call sites appear
 // in its Kotlin sources. `MaterialSymbolsOutlined(...)` -> outlined font,
@@ -268,6 +279,10 @@ for (variant in variants) {
             // Default UI font (Noto Sans), downloaded by :core.
             if (bundleDefaultFont) {
                 from(notoSansFile) { into("font") }
+                dependsOn(":ui:downloadNotoFonts")
+            }
+            if (usesMonospace) {
+                from(notoSansMonoFile) { into("font") }
                 dependsOn(":ui:downloadNotoFonts")
             }
             // Pull each USED style's downloaded .ttf into the font/ entry.
