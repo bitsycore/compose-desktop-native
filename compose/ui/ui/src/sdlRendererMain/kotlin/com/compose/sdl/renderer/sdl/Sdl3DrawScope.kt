@@ -104,6 +104,11 @@ internal class Sdl3DrawScope(
 	internal val originX: Float get() = fOriginX
 	internal val originY: Float get() = fOriginY
 
+	// Paint colorFilter applied to every sampled colour for the current draw.
+	// Sdl3Canvas sets this around each geometry emit (withBlend); null = no filter.
+	// tint / colorMatrix / lighting run per-vertex through samplerFor.
+	internal var activeColorFilter: ColorFilter? = null
+
 	// User→screen affine (a,b,c,d,e,f): screen = (a*x+c*y+e, b*x+d*y+f). The
 	// canvas sets this per draw so graphicsLayer translate / scale / rotate apply
 	// to every emitted vertex. Identity by default; positions are otherwise the
@@ -1233,24 +1238,100 @@ private fun Sdl3DrawScope.samplerFor(
 	inBrush: Brush,
 	inShapeSize: Size,
 	inAlpha: Float,
-): Sampler = when (inBrush) {
-	is SolidColor -> {
-		val vC = inBrush.value.withAlphaScaled(inAlpha)
-		val vS: Sampler = { _, _ -> vC }
-		vS
+): Sampler {
+	val vBase: Sampler = when (inBrush) {
+		is SolidColor -> {
+			val vC = inBrush.value.withAlphaScaled(inAlpha)
+			Sampler { _, _ -> vC }
+		}
+		is LinearGradient -> linearSampler(inBrush, inShapeSize, inAlpha)
+		is RadialGradient -> radialSampler(inBrush, inShapeSize, inAlpha)
+		is SweepGradient -> sweepSampler(inBrush, inShapeSize, inAlpha)
+		is androidx.compose.ui.graphics.ShaderBrush -> {
+			// Vendored upstream Brush.kt adds a generic `ShaderBrush` abstract
+			// base. No SDL3-side bridge for arbitrary shaders; degrade to a
+			// neutral white-alpha fill so the call surface compiles. The four
+			// concrete brushes above bypass this branch already.
+			val vC = androidx.compose.ui.graphics.Color.White.withAlphaScaled(inAlpha)
+			Sampler { _, _ -> vC }
+		}
 	}
-	is LinearGradient -> linearSampler(inBrush, inShapeSize, inAlpha)
-	is RadialGradient -> radialSampler(inBrush, inShapeSize, inAlpha)
-	is SweepGradient -> sweepSampler(inBrush, inShapeSize, inAlpha)
-	is androidx.compose.ui.graphics.ShaderBrush -> {
-		// Vendored upstream Brush.kt adds a generic `ShaderBrush` abstract
-		// base. No SDL3-side bridge for arbitrary shaders; degrade to a
-		// neutral white-alpha fill so the call surface compiles. The four
-		// concrete brushes above bypass this branch already.
-		val vC = androidx.compose.ui.graphics.Color.White.withAlphaScaled(inAlpha)
-		val vS: Sampler = { _, _ -> vC }
-		vS
+	val vFilter = activeColorFilter ?: return vBase
+	return Sampler { x, y -> applyColorFilter(vBase.sample(x, y), vFilter) }
+}
+
+// ==================
+// MARK: ColorFilter
+// ==================
+
+/* Applies a Compose ColorFilter to one sampled colour. Runs per vertex on the
+   tessellated geometry, so tint / colorMatrix / lighting reach every shape the
+   SDL renderer draws (SolidColor and gradients alike). Image blits keep their
+   own texture-colour-mod tint path in Sdl3Canvas. */
+private fun applyColorFilter(inColor: ComposeColor, inFilter: ColorFilter): ComposeColor =
+	when (inFilter) {
+		is androidx.compose.ui.graphics.BlendModeColorFilter ->
+			applyTint(inColor, inFilter.color, inFilter.blendMode)
+		is androidx.compose.ui.graphics.ColorMatrixColorFilter ->
+			applyColorMatrix(inColor, inFilter.copyColorMatrix())
+		is androidx.compose.ui.graphics.LightingColorFilter -> {
+			// result = src * multiply + add, per channel, alpha preserved.
+			val vM = inFilter.multiply; val vA = inFilter.add
+			ComposeColor(
+				(inColor.red * vM.red + vA.red).coerceIn(0f, 1f),
+				(inColor.green * vM.green + vA.green).coerceIn(0f, 1f),
+				(inColor.blue * vM.blue + vA.blue).coerceIn(0f, 1f),
+				inColor.alpha,
+			)
+		}
+		else -> inColor
 	}
+
+/* The ColorFilter.tint contract composites the tint as SOURCE over the drawn
+   pixel as DESTINATION under [inMode] (default SrcIn = recolour, keep coverage).
+   SDL has no per-pixel blender here, so we evaluate the separable formula in
+   software for the modes UI actually uses; anything else defaults to SrcIn. */
+private fun applyTint(inDst: ComposeColor, inTint: ComposeColor, inMode: BlendMode): ComposeColor {
+	val s = inTint; val d = inDst
+	return when (inMode) {
+		BlendMode.SrcIn -> ComposeColor(s.red, s.green, s.blue, s.alpha * d.alpha)
+		BlendMode.Src -> s
+		BlendMode.Modulate -> ComposeColor(s.red * d.red, s.green * d.green, s.blue * d.blue, s.alpha * d.alpha)
+		BlendMode.Plus -> ComposeColor(
+			(s.red + d.red).coerceAtMost(1f), (s.green + d.green).coerceAtMost(1f),
+			(s.blue + d.blue).coerceAtMost(1f), (s.alpha + d.alpha).coerceAtMost(1f),
+		)
+		BlendMode.SrcOver -> {
+			val vOa = s.alpha + d.alpha * (1f - s.alpha)
+			if (vOa <= 1e-4f) ComposeColor.Transparent
+			else ComposeColor(
+				(s.red * s.alpha + d.red * d.alpha * (1f - s.alpha)) / vOa,
+				(s.green * s.alpha + d.green * d.alpha * (1f - s.alpha)) / vOa,
+				(s.blue * s.alpha + d.blue * d.alpha * (1f - s.alpha)) / vOa,
+				vOa,
+			)
+		}
+		else -> ComposeColor(s.red, s.green, s.blue, s.alpha * d.alpha) // default: SrcIn
+	}
+}
+
+/* 4x5 colour-matrix transform. ColorMatrix operates on channels in [0, 255]
+   with the fifth column an offset in the same scale (see ColorMatrix.kt), so we
+   scale up, apply, clamp, and scale back to Compose's [0, 1] Color. */
+private fun applyColorMatrix(inColor: ComposeColor, inMatrix: androidx.compose.ui.graphics.ColorMatrix): ComposeColor {
+	val v = inMatrix.values
+	val r = inColor.red * 255f; val g = inColor.green * 255f
+	val b = inColor.blue * 255f; val a = inColor.alpha * 255f
+	val vR = v[0] * r + v[1] * g + v[2] * b + v[3] * a + v[4]
+	val vG = v[5] * r + v[6] * g + v[7] * b + v[8] * a + v[9]
+	val vB = v[10] * r + v[11] * g + v[12] * b + v[13] * a + v[14]
+	val vA = v[15] * r + v[16] * g + v[17] * b + v[18] * a + v[19]
+	return ComposeColor(
+		(vR / 255f).coerceIn(0f, 1f),
+		(vG / 255f).coerceIn(0f, 1f),
+		(vB / 255f).coerceIn(0f, 1f),
+		(vA / 255f).coerceIn(0f, 1f),
+	)
 }
 
 @OptIn(ExperimentalForeignApi::class)

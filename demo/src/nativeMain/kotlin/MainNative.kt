@@ -183,6 +183,10 @@ fun main(args: Array<String>) {
         runJoinTest()
         return
     }
+    if (args.any { it == "--filtertest" }) {
+        runFilterTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -960,6 +964,51 @@ private fun runBlendTest() {
                 // Modulate: white over a gradient-ish grey scales it down.
                 drawRect(Color(0xFF808080), topLeft = off(40f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f))
                 drawRect(Color(0xFFC00000), topLeft = off(80f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f), blendMode = androidx.compose.ui.graphics.BlendMode.Modulate)
+            }
+        }
+    }
+}
+
+/* --filtertest: exercises ColorFilter on shapes on the SDL leg - grayscale
+   ColorMatrix, tint (SrcIn), and lighting - which used to be inert. Top row is
+   a red->green->blue gradient with no filter (reference) then grayscaled. */
+private fun runFilterTest() {
+    nativeComposeWindow(
+        title = "filtertest",
+        width = 440,
+        height = 300,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 12) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("filtertest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("filtertest: wrote filtertest.bmp (${vW}x${vH})")
+                } else println("filtertest: FAIL (no snapshot)")
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().background(Color(0xFF202020))) {
+                fun off(x: Float, y: Float) = androidx.compose.ui.geometry.Offset(x, y)
+                fun sz(w: Float, h: Float) = androidx.compose.ui.geometry.Size(w, h)
+                val vGrad = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                    listOf(Color.Red, Color.Green, Color.Blue), startX = 20f, endX = 420f,
+                )
+                val vGray = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+                    androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) })
+                // Reference gradient, then the same gradient desaturated to grayscale.
+                drawRect(vGrad, topLeft = off(20f, 20f), size = sz(400f, 50f))
+                drawRect(vGrad, topLeft = off(20f, 80f), size = sz(400f, 50f), colorFilter = vGray)
+                // Solid red tinted blue (SrcIn) -> blue block.
+                drawRect(Color.Red, topLeft = off(20f, 150f), size = sz(120f, 60f),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.Blue))
+                // Solid red grayscaled -> gray block (luminance of red).
+                drawRect(Color.Red, topLeft = off(160f, 150f), size = sz(120f, 60f), colorFilter = vGray)
+                // Gray brightened via lighting (add).
+                drawRect(Color(0xFF808080), topLeft = off(300f, 150f), size = sz(120f, 60f),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.lighting(Color.White, Color(0x40404040)))
             }
         }
     }

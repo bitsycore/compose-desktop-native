@@ -932,21 +932,27 @@ internal class Sdl3Canvas(
 	}
 
 	/* Runs [inEmit] (which emits geometry into the batch) under [inPaint]'s blend
-	   mode. SrcOver (and unsupported modes) stay on the normal batched path. A
-	   supported non-default mode flushes the pending batch, sets the SDL blend, emits
-	   + flushes THIS draw, then restores alpha blend — and, in capture mode, defers to
-	   block-replay (captured geometry replays with the default blend, so it can't carry
-	   a per-op blend). */
+	   mode AND colorFilter. SrcOver (and unsupported modes) stay on the normal
+	   batched path. A supported non-default mode flushes the pending batch, sets
+	   the SDL blend, emits + flushes THIS draw, then restores alpha blend — and, in
+	   capture mode, defers to block-replay (captured geometry replays with the
+	   default blend, so it can't carry a per-op blend). The paint's colorFilter is
+	   applied per-vertex by the draw scope's sampler for the duration of [inEmit]. */
 	private inline fun withBlend(inPaint: Paint, inEmit: () -> Unit) {
-		val vBlend = sdlBlendFor(inPaint.blendMode)
-		if (vBlend == SDL_BLENDMODE_BLEND) { inEmit(); return }
-		if (captureUnsupported()) return
-		fScope.flush()
-		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
-		SDL_SetRenderDrawBlendMode(vRenderer, vBlend)
-		inEmit()
-		fScope.flush()
-		SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_BLEND)
+		fScope.activeColorFilter = inPaint.colorFilter
+		try {
+			val vBlend = sdlBlendFor(inPaint.blendMode)
+			if (vBlend == SDL_BLENDMODE_BLEND) { inEmit(); return }
+			if (captureUnsupported()) return
+			fScope.flush()
+			val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
+			SDL_SetRenderDrawBlendMode(vRenderer, vBlend)
+			inEmit()
+			fScope.flush()
+			SDL_SetRenderDrawBlendMode(vRenderer, SDL_BLENDMODE_BLEND)
+		} finally {
+			fScope.activeColorFilter = null
+		}
 	}
 
 	override fun drawRect(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
