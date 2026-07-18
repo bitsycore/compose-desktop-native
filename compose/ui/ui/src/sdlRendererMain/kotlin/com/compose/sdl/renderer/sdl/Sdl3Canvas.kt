@@ -1300,8 +1300,35 @@ internal class Sdl3Canvas(
 			}
 		}
 	}
-	override fun drawPoints(pointMode: PointMode, points: List<Offset>, paint: Paint) {}
-	override fun drawRawPoints(pointMode: PointMode, points: FloatArray, paint: Paint) {}
+	override fun drawPoints(pointMode: PointMode, points: List<Offset>, paint: Paint) {
+		realizePendingClips()
+		val vBrush = brushFor(paint)
+		val vAlpha = (paint.alpha * fAlpha).coerceIn(0f, 1f)
+		val vW = paint.strokeWidth.coerceAtLeast(1f)
+		val vScope = prep()
+		when (pointMode) {
+			// Each point = a filled strokeWidth square (SDL has no point primitive with size).
+			PointMode.Points -> for (vP in points)
+				vScope.rectCore(vBrush, Offset(vP.x - vW / 2f, vP.y - vW / 2f), Size(vW, vW), vAlpha, androidx.compose.ui.graphics.drawscope.Fill)
+			// Disconnected segments: (0,1) (2,3) …
+			PointMode.Lines -> {
+				var vI = 0
+				while (vI + 1 < points.size) {
+					vScope.lineCoreDashed(vBrush, points[vI], points[vI + 1], vW, paint.strokeCap, vAlpha, paint.pathEffect)
+					vI += 2
+				}
+			}
+			// Connected polyline: (0,1) (1,2) …
+			PointMode.Polygon -> for (vI in 0 until points.size - 1)
+				vScope.lineCoreDashed(vBrush, points[vI], points[vI + 1], vW, paint.strokeCap, vAlpha, paint.pathEffect)
+		}
+	}
+	override fun drawRawPoints(pointMode: PointMode, points: FloatArray, paint: Paint) {
+		val vList = ArrayList<Offset>(points.size / 2)
+		var vI = 0
+		while (vI + 1 < points.size) { vList.add(Offset(points[vI], points[vI + 1])); vI += 2 }
+		drawPoints(pointMode, vList, paint)
+	}
 	override fun drawVertices(vertices: Vertices, blendMode: BlendMode, paint: Paint) {}
 	override fun enableZ() {}
 	override fun disableZ() {}

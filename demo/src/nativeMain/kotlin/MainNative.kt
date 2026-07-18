@@ -171,6 +171,10 @@ fun main(args: Array<String>) {
         runRotImgTest()
         return
     }
+    if (args.any { it == "--pointstest" }) {
+        runPointsTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -877,6 +881,39 @@ private fun runDashTest() {
                     addRect(androidx.compose.ui.geometry.Rect(40f, 150f, size.width - 40f, size.height - 20f))
                 }
                 drawPath(vPath, Color.Yellow, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f, pathEffect = vDash))
+            }
+        }
+    }
+}
+
+/* --pointstest: drawPoints in all three PointModes (Points / Lines / Polygon).
+   These were no-ops on the SDL leg (charts/scatter rendered nothing); now they draw. */
+private fun runPointsTest() {
+    nativeComposeWindow(
+        title = "pointstest",
+        width = 420,
+        height = 320,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 10) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("pointstest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("pointstest: wrote pointstest.bmp (${vW}x${vH})")
+                }
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().background(Color(0xFF202020))) {
+                fun off(x: Float, y: Float) = androidx.compose.ui.geometry.Offset(x, y)
+                val vPoints = (0..8).map { off(40f + it * 42f, 70f) }
+                drawPoints(vPoints, androidx.compose.ui.graphics.PointMode.Points, Color.Cyan, strokeWidth = 12f)
+                val vLines = (0..7).map { off(40f + it * 48f, 160f + (it % 2) * 46f) }
+                drawPoints(vLines, androidx.compose.ui.graphics.PointMode.Lines, Color.Yellow, strokeWidth = 5f)
+                val vPoly = (0..8).map { off(40f + it * 42f, 260f + kotlin.math.sin(it.toFloat()) * 24f) }
+                drawPoints(vPoly, androidx.compose.ui.graphics.PointMode.Polygon, Color.Magenta, strokeWidth = 5f)
             }
         }
     }
