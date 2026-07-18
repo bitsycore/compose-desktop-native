@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -147,6 +148,10 @@ fun main(args: Array<String>) {
     }
     if (args.any { it == "--imetest" }) {
         runImeTest()
+        return
+    }
+    if (args.any { it == "--imagebytestest" }) {
+        runImageBytesTest()
         return
     }
 
@@ -724,6 +729,46 @@ private fun runImeTest() {
             }
         }
     }
+}
+
+/* --imagebytestest: decodes an in-memory 2x2 BMP via ByteArray.decodeToImageBitmap()
+   (routes to createImageBitmap(bytes)). On the SDL leg this used to throw
+   UnsupportedOperationException; now it decodes through SDL3_image. Needs a window
+   so the render backend installs the encoded-image decoder. */
+private fun runImageBytesTest() {
+    nativeComposeWindow(
+        title = "imagebytestest",
+        width = 200,
+        height = 200,
+        onFrame = { _, vFrame ->
+            if (vFrame >= 2) {
+                try {
+                    val vBitmap = tinyRedBmp().decodeToImageBitmap()
+                    println("imagebytestest: decoded ${vBitmap.width}x${vBitmap.height}")
+                    println(if (vBitmap.width == 2 && vBitmap.height == 2) "imagebytestest: PASS" else "imagebytestest: FAIL (wrong size)")
+                } catch (e: Throwable) {
+                    println("imagebytestest: FAIL (${e::class.simpleName}: ${e.message})")
+                }
+                false
+            } else true
+        },
+    ) {}
+}
+
+// A minimal 2x2 24bpp red BMP (no compression) — valid input for SDL3_image.
+private fun tinyRedBmp(): ByteArray {
+    fun le16(v: Int) = byteArrayOf((v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte())
+    fun le32(v: Int) = byteArrayOf(
+        (v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte(),
+        ((v shr 16) and 0xFF).toByte(), ((v shr 24) and 0xFF).toByte(),
+    )
+    val vPixel = byteArrayOf(0, 0, 0xFF.toByte())          // BGR red
+    val vRow = vPixel + vPixel + byteArrayOf(0, 0)          // 2px + 2 pad = 8 bytes (4-byte aligned)
+    val vPixels = vRow + vRow                               // 2 rows = 16 bytes
+    val vFileHeader = byteArrayOf('B'.code.toByte(), 'M'.code.toByte()) + le32(70) + le32(0) + le32(54)
+    val vDib = le32(40) + le32(2) + le32(2) + le16(1) + le16(24) + le32(0) + le32(16) +
+        le32(2835) + le32(2835) + le32(0) + le32(0)
+    return vFileHeader + vDib + vPixels
 }
 
 private fun runNav3Test() {

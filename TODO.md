@@ -35,6 +35,9 @@ here.
   via SDL (I-beam over text, hand over links).
 - **WindowInfo** (`bad23073`) — `isWindowFocused` + `containerSize` / `containerDpSize`
   report real values (were hardcoded `true` / `Zero`).
+- **ImageBitmap from bytes** (SDL leg) — `ByteArray.decodeToImageBitmap()` /
+  `createImageBitmap(bytes)` decodes via SDL3_image; was
+  `UnsupportedOperationException`. Verified `demo --imagebytestest` on both legs.
 
 ---
 
@@ -137,7 +140,3 @@ priority under G1. Listed because SDL is the shipped Windows renderer.
 - `compose/ui/ui/src/sdlRendererMain/.../renderer/sdl/Sdl3Canvas.kt:1276` · `drawPoints`/`drawRawPoints`/`drawVertices` are NOP; point-mode drawing and custom vertex meshes render nothing. **Nice-to-have.**
 - Images under a rotated layer are not rotated (`SDL_RenderTexture` is axis-aligned, `Sdl3Canvas.kt:1264`); stroked non-square ovals stroke as a circular ring (`Sdl3DrawScope.kt:527`); `SdlImageBitmap.readPixels` is a no-op (`Sdl3Offscreen.kt:117`). **Cosmetic / nice-to-have.**
 - Drop shadow is approximated (9-slice / stacked rings, not a gaussian blur; ambient vs spot largely collapsed) at `Sdl3Canvas.kt:785`; AA is a ~1px geometry fringe rather than analytic coverage. **Cosmetic.**
-
-## I. GraphicsLayer / image
-
-- `compose/ui/ui/src/sdlRendererMain/.../graphics/CanvasPaintActuals.native.kt:151` · `createImageBitmap(bytes)` throws `UnsupportedOperationException`. (`GraphicsLayer.toImageBitmap` and `snapshotBgra` do work on both renderers.) **Nice-to-have.**

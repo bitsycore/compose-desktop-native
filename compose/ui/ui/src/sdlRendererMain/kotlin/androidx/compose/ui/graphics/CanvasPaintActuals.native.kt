@@ -147,8 +147,13 @@ internal actual fun ActualImageBitmap(
 		?.createImageBitmap(width, height, config, hasAlpha, colorSpace)
 		?: ProjectImageBitmap(width, height, config, hasAlpha, colorSpace)
 
+// ByteArray.decodeToImageBitmap() -> decode encoded image bytes (png/jpg/bmp/gif/
+// webp) via SDL3_image, the same decoder Res.painter uses (Sdl3EncodedImageDecoder).
 internal actual fun createImageBitmap(bytes: ByteArray): ImageBitmap =
-	throw UnsupportedOperationException("ImageBitmap from bytes not supported; use Res.painter")
+	com.compose.sdl.graphics.decodeEncodedImageBitmap(bytes)
+		?: throw IllegalArgumentException(
+			"createImageBitmap: could not decode ${bytes.size} bytes as an image (png/jpg/bmp/gif/webp)",
+		)
 
 // ============
 //  Canvas — typealias matching skiko pattern.
