@@ -127,7 +127,7 @@ These affect only the SDL leg. On macOS/Linux the Skia leg implements them
 correctly, and JVM is the documented Windows fidelity tier, so these are lower
 priority under G1. Listed because SDL is the shipped Windows renderer.
 
-- `compose/ui/ui/src/sdlRendererMain/.../graphics/PathEffect.sdl.kt:15` · `dash`/`corner`/`chain`/`stamped` path effects are all NOP; dashed/dotted strokes render solid. **Nice-to-have.**
+- `compose/ui/ui/src/sdlRendererMain/.../graphics/PathEffect.sdl.kt` · **DASH DONE** — `dashPathEffect` now carries its pattern and `Sdl3DrawScope.dashPolyline` splits stroked geometry into dashes for `drawLine` and `drawPath(Stroke)` (paint `pathEffect` threaded through `Sdl3Canvas.drawLine`/`styleFor`). Verified `demo --dashtest`. `corner`/`chain`/`stamped` remain NOP. **Nice-to-have.**
 - `compose/ui/ui/src/sdlRendererMain/.../graphics/RenderEffect.sdl.kt:16` · `RenderEffect.isSupported()` is `false`; `Modifier.blur()` and `graphicsLayer{renderEffect=...}` do nothing. `compose/ui/ui/src/sdlRendererMain/.../graphics/shadow/Blur.native.kt:33` · `Paint.setBlurFilter` NOP. **Nice-to-have (Windows visual parity).**
 - Gradients render real ramps, but `TileMode` is dropped: `t` is clamped, so `Repeated`/`Mirror`/`Decal` all behave as `Clamp` (`Sdl3DrawScope.kt:1070` samplers; `CanvasPaintActuals.native.kt:66`). **Nice-to-have.**
 - `compose/ui/ui/src/sdlRendererMain/.../graphics/CanvasPaintActuals.native.kt:106` · `ActualImageShader`/`ActualCompositeShader` are stubs; image/composite `ShaderBrush` degrades to solid fill (white/black). **Nice-to-have.**

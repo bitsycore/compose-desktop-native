@@ -234,9 +234,21 @@ internal class Sdl3DrawScope(
 		pathCore(path, SolidColor(color), alpha, style)
 
 	override fun drawLine(brush: Brush, start: Offset, end: Offset, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) =
-		lineCore(brush, start, end, strokeWidth, cap, alpha)
+		lineCoreDashed(brush, start, end, strokeWidth, cap, alpha, pathEffect)
 	override fun drawLine(color: ComposeColor, start: Offset, end: Offset, strokeWidth: Float, cap: StrokeCap, pathEffect: PathEffect?, alpha: Float, colorFilter: ColorFilter?, blendMode: BlendMode) =
-		lineCore(SolidColor(color), start, end, strokeWidth, cap, alpha)
+		lineCoreDashed(SolidColor(color), start, end, strokeWidth, cap, alpha, pathEffect)
+
+	// A single line, split into dashes when [inEffect] is a DashPathEffect.
+	internal fun lineCoreDashed(inBrush: Brush, inStart: Offset, inEnd: Offset, inWidth: Float, inCap: StrokeCap, inAlpha: Float, inEffect: PathEffect?) {
+		val vDash = inEffect as? androidx.compose.ui.graphics.DashPathEffect
+		if (vDash == null) {
+			lineCore(inBrush, inStart, inEnd, inWidth, inCap, inAlpha)
+			return
+		}
+		for (vRun in dashPolyline(listOf(inStart.x to inStart.y, inEnd.x to inEnd.y), vDash.intervals, vDash.phase)) {
+			lineCore(inBrush, Offset(vRun.first().first, vRun.first().second), Offset(vRun.last().first, vRun.last().second), inWidth, inCap, inAlpha)
+		}
+	}
 
 	override fun drawImage(image: ImageBitmap, topLeft: Offset, alpha: Float, style: DrawStyle, colorFilter: ColorFilter?, blendMode: BlendMode) {}
 	@Deprecated("Use the overload that takes a FilterQuality", level = DeprecationLevel.HIDDEN)
@@ -377,7 +389,14 @@ internal class Sdl3DrawScope(
 				}
 				for (vSub in linearisePath(path)) fanFill(vSub, vSampler)
 			}
-			is Stroke -> for (vSub in linearisePath(path)) strokePolyline(vSub, style.width, vSampler)
+			is Stroke -> {
+				val vDash = style.pathEffect as? androidx.compose.ui.graphics.DashPathEffect
+				for (vSub in linearisePath(path)) {
+					if (vDash != null) {
+						for (vRun in dashPolyline(vSub, vDash.intervals, vDash.phase)) strokePolyline(vRun, style.width, vSampler)
+					} else strokePolyline(vSub, style.width, vSampler)
+				}
+			}
 		}
 	}
 
@@ -741,6 +760,64 @@ internal class Sdl3DrawScope(
 			if (vMidToCx * vNx + vMidToCy * vNy < 0f) { vNx = -vNx; vNy = -vNy }
 			emitEdgeFringe(x0, y0, x1, y1, vNx * kAaFeather, vNy * kAaFeather, inSampler)
 		}
+	}
+
+	/* Splits a polyline into the "on" runs of a DashPathEffect pattern (SDL3 has no
+	   path-effect pipeline). [inIntervals] is on/off run lengths (Skia doubles an odd
+	   list); [inPhase] offsets the start into the pattern. Each returned run is a
+	   sub-polyline to stroke; the gaps are skipped. */
+	private fun dashPolyline(
+		inPts: List<Pair<Float, Float>>,
+		inIntervals: FloatArray,
+		inPhase: Float,
+	): List<List<Pair<Float, Float>>> {
+		if (inPts.size < 2) return listOf(inPts)
+		val vIv = if (inIntervals.size % 2 == 0) inIntervals else inIntervals + inIntervals
+		val vPeriod = vIv.sum()
+		if (vPeriod <= 0f) return listOf(inPts)
+
+		// Walk the phase to find the starting dash index + remaining length.
+		var vIdx = 0
+		var vRem = vIv[0]
+		var vSkip = ((inPhase % vPeriod) + vPeriod) % vPeriod
+		while (vSkip > 0f) {
+			if (vSkip < vRem) { vRem -= vSkip; vSkip = 0f }
+			else { vSkip -= vRem; vIdx = (vIdx + 1) % vIv.size; vRem = vIv[vIdx] }
+		}
+		var vOn = vIdx % 2 == 0
+
+		val vResult = ArrayList<List<Pair<Float, Float>>>()
+		var vRun = ArrayList<Pair<Float, Float>>()
+		if (vOn) vRun.add(inPts[0])
+		for (i in 0 until inPts.size - 1) {
+			var vx = inPts[i].first; var vy = inPts[i].second
+			val vEndX = inPts[i + 1].first; val vEndY = inPts[i + 1].second
+			var vLeft = sqrt((vEndX - vx) * (vEndX - vx) + (vEndY - vy) * (vEndY - vy))
+			if (vLeft <= 0f) continue
+			val vDx = (vEndX - vx) / vLeft; val vDy = (vEndY - vy) / vLeft
+			var vGuard = 0
+			while (vLeft > 1e-4f && vGuard++ < 200000) {
+				val vStep = min(vRem, vLeft)
+				val vNx = vx + vDx * vStep; val vNy = vy + vDy * vStep
+				if (vOn) {
+					if (vRun.isEmpty()) vRun.add(vx to vy)
+					vRun.add(vNx to vNy)
+				}
+				vx = vNx; vy = vNy
+				vLeft -= vStep
+				vRem -= vStep
+				if (vRem <= 1e-4f) {
+					if (vOn && vRun.size >= 2) vResult.add(vRun)
+					vRun = ArrayList()
+					vIdx = (vIdx + 1) % vIv.size
+					vRem = vIv[vIdx]
+					vOn = !vOn
+					if (vOn) vRun.add(vx to vy)
+				}
+			}
+		}
+		if (vOn && vRun.size >= 2) vResult.add(vRun)
+		return vResult
 	}
 
 	private fun strokePolyline(inPolyline: List<Pair<Float, Float>>, inWidth: Float, inSampler: Sampler) {

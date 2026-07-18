@@ -916,7 +916,8 @@ internal class Sdl3Canvas(
 		else inPaint.shader?.brush ?: SolidColor(inPaint.color)
 
 	private fun styleFor(inPaint: Paint): DrawStyle =
-		if (inPaint.style == PaintingStyle.Stroke) Stroke(inPaint.strokeWidth, cap = inPaint.strokeCap)
+		if (inPaint.style == PaintingStyle.Stroke)
+			Stroke(inPaint.strokeWidth, cap = inPaint.strokeCap, pathEffect = inPaint.pathEffect)
 		else Fill
 
 	override fun drawRect(left: Float, top: Float, right: Float, bottom: Float, paint: Paint) {
@@ -1014,7 +1015,7 @@ internal class Sdl3Canvas(
 
 	override fun drawLine(p1: Offset, p2: Offset, paint: Paint) {
 		realizePendingClips()
-		prep().lineCore(brushFor(paint), p1, p2, paint.strokeWidth, paint.strokeCap, (paint.alpha * fAlpha))
+		prep().lineCoreDashed(brushFor(paint), p1, p2, paint.strokeWidth, paint.strokeCap, (paint.alpha * fAlpha), paint.pathEffect)
 	}
 
 	override fun drawPath(path: ComposePath, paint: Paint) {

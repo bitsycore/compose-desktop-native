@@ -154,6 +154,10 @@ fun main(args: Array<String>) {
         runImageBytesTest()
         return
     }
+    if (args.any { it == "--dashtest" }) {
+        runDashTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -753,6 +757,39 @@ private fun runImageBytesTest() {
             } else true
         },
     ) {}
+}
+
+/* --dashtest: draws dashed lines + a dashed stroked rect on a Canvas and
+   screenshots. On the SDL leg these used to render solid; now they dash. */
+private fun runDashTest() {
+    nativeComposeWindow(
+        title = "dashtest",
+        width = 400,
+        height = 300,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 20) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("dashtest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("dashtest: wrote dashtest.bmp (${vW}x${vH})")
+                } else println("dashtest: FAIL (no snapshot)")
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().background(Color(0xFF202020))) {
+                val vDash = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(22f, 12f), 0f)
+                drawLine(Color.White, androidx.compose.ui.geometry.Offset(20f, 50f), androidx.compose.ui.geometry.Offset(size.width - 20f, 50f), strokeWidth = 6f, pathEffect = vDash)
+                drawLine(Color.Cyan, androidx.compose.ui.geometry.Offset(20f, 110f), androidx.compose.ui.geometry.Offset(size.width - 20f, 260f), strokeWidth = 6f, pathEffect = vDash)
+                val vPath = androidx.compose.ui.graphics.Path().apply {
+                    addRect(androidx.compose.ui.geometry.Rect(40f, 150f, size.width - 40f, size.height - 20f))
+                }
+                drawPath(vPath, Color.Yellow, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f, pathEffect = vDash))
+            }
+        }
+    }
 }
 
 // A minimal 2x2 24bpp red BMP (no compression) — valid input for SDL3_image.
