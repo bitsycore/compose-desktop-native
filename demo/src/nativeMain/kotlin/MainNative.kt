@@ -158,6 +158,10 @@ fun main(args: Array<String>) {
         runDashTest()
         return
     }
+    if (args.any { it == "--tilemodetest" }) {
+        runTileModeTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -757,6 +761,50 @@ private fun runImageBytesTest() {
             } else true
         },
     ) {}
+}
+
+/* --tilemodetest: three rows filled with a narrow red->blue linear gradient using
+   TileMode Repeated / Mirror / Decal. On the SDL leg TileMode was dropped (all
+   clamped); now they tile / reflect / cut off (transparent) respectively. */
+private fun runTileModeTest() {
+    nativeComposeWindow(
+        title = "tilemodetest",
+        width = 400,
+        height = 320,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 20) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("tilemodetest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("tilemodetest: wrote tilemodetest.bmp (${vW}x${vH})")
+                }
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Column(Modifier.fillMaxSize().background(Color(0xFF102030))) {
+                val vColors = listOf(Color.Red, Color.Blue)
+                for (vMode in listOf(
+                    androidx.compose.ui.graphics.TileMode.Repeated,
+                    androidx.compose.ui.graphics.TileMode.Mirror,
+                    androidx.compose.ui.graphics.TileMode.Decal,
+                )) {
+                    Box(
+                        Modifier.fillMaxWidth().height(96.dp).padding(8.dp).background(
+                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = vColors,
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(70f, 0f),
+                                tileMode = vMode,
+                            ),
+                        ),
+                    )
+                }
+            }
+        }
+    }
 }
 
 /* --dashtest: draws dashed lines + a dashed stroked rect on a Canvas and

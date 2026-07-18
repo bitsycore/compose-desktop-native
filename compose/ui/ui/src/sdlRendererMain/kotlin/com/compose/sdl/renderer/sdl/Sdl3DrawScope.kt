@@ -9,6 +9,7 @@ import com.compose.sdl.graphics.g8
 import com.compose.sdl.graphics.b8
 import com.compose.sdl.graphics.a8
 import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.RadialGradient
 import com.compose.sdl.graphics.PathCommand
@@ -1142,10 +1143,11 @@ private fun Sdl3DrawScope.linearSampler(inB: LinearGradient, inSize: Size, inAlp
 	val vLen2 = vDx * vDx + vDy * vDy
 	val vColors = inB.gradientColors
 	val vStops = inB.gradientStops ?: uniformStops(vColors.size)
+	val vMode = inB.gradientTileMode
 	return { x, y ->
-		val vT = if (vLen2 < 1e-6f) 0f
-		         else (((x - vSx) * vDx + (y - vSy) * vDy) / vLen2).coerceIn(0f, 1f)
-		sampleColors(vColors, vStops, vT).withAlphaScaled(inAlpha)
+		val vRaw = if (vLen2 < 1e-6f) 0f else ((x - vSx) * vDx + (y - vSy) * vDy) / vLen2
+		if (vMode == TileMode.Decal && (vRaw < 0f || vRaw > 1f)) ComposeColor.Transparent
+		else sampleColors(vColors, vStops, tileT(vRaw, vMode)).withAlphaScaled(inAlpha)
 	}
 }
 
@@ -1156,11 +1158,12 @@ private fun Sdl3DrawScope.radialSampler(inB: RadialGradient, inSize: Size, inAlp
 	val vR = if (inB.gradientRadius.isFinite()) inB.gradientRadius else (inSize.minDimension / 2f)
 	val vColors = inB.gradientColors
 	val vStops = inB.gradientStops ?: uniformStops(vColors.size)
+	val vMode = inB.gradientTileMode
 	return { x, y ->
 		val vDx = x - vCx; val vDy = y - vCy
-		val vT = if (vR < 1e-6f) 0f
-		         else (sqrt(vDx * vDx + vDy * vDy) / vR).coerceIn(0f, 1f)
-		sampleColors(vColors, vStops, vT).withAlphaScaled(inAlpha)
+		val vRaw = if (vR < 1e-6f) 0f else sqrt(vDx * vDx + vDy * vDy) / vR
+		if (vMode == TileMode.Decal && (vRaw < 0f || vRaw > 1f)) ComposeColor.Transparent
+		else sampleColors(vColors, vStops, tileT(vRaw, vMode)).withAlphaScaled(inAlpha)
 	}
 }
 
@@ -1185,6 +1188,15 @@ private fun Sdl3DrawScope.sweepSampler(inB: SweepGradient, inSize: Size, inAlpha
    before reading stops in those cases. */
 private fun uniformStops(inCount: Int): List<Float> =
 	if (inCount < 2) emptyList() else List(inCount) { it / (inCount - 1f) }
+
+/* Apply a gradient TileMode to a raw position t (0..1 is inside the gradient).
+   Clamp holds the edge colour; Repeated wraps; Mirror reflects each period. Decal
+   (transparent outside 0..1) is handled by the sampler, so it clamps here. */
+private fun tileT(inT: Float, inMode: TileMode): Float = when (inMode) {
+	TileMode.Repeated -> { var m = inT % 1f; if (m < 0f) m += 1f; m }
+	TileMode.Mirror -> { var m = inT % 2f; if (m < 0f) m += 2f; if (m > 1f) 2f - m else m }
+	else -> inT.coerceIn(0f, 1f)
+}
 
 /* Sample the colour at position [0..1] along the gradient. */
 private fun sampleColors(
