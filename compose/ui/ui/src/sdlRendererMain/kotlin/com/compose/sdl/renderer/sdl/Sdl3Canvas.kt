@@ -1262,16 +1262,42 @@ internal class Sdl3Canvas(
 
 		val vDl = dstOffset.x.toFloat(); val vDt = dstOffset.y.toFloat()
 		val vDr = vDl + dstSize.width; val vDb = vDt + dstSize.height
-		val vX0 = mapX(vDl, vDt); val vX1 = mapX(vDr, vDb)
-		val vY0 = mapY(vDl, vDt); val vY1 = mapY(vDr, vDb)
+		// Axis-aligned (no rotation/shear) → the cheap SDL_RenderTexture blit. Under a
+		// rotated/sheared layer, map the 4 corners and submit a textured quad so the
+		// image follows the full affine instead of collapsing to its AABB.
+		val vRotated = kotlin.math.abs(fMb) > 1e-4f || kotlin.math.abs(fMc) > 1e-4f
 		memScoped {
 			val vSrc = alloc<SDL_FRect>()
 			vSrc.x = srcOffset.x.toFloat(); vSrc.y = srcOffset.y.toFloat()
 			vSrc.w = srcSize.width.toFloat(); vSrc.h = srcSize.height.toFloat()
-			val vDst = alloc<SDL_FRect>()
-			vDst.x = min(vX0, vX1); vDst.y = min(vY0, vY1)
-			vDst.w = kotlin.math.abs(vX1 - vX0); vDst.h = kotlin.math.abs(vY1 - vY0)
-			SDL_RenderTexture(vRenderer, vTex.reinterpret(), vSrc.ptr, vDst.ptr)
+			if (!vRotated) {
+				val vX0 = mapX(vDl, vDt); val vX1 = mapX(vDr, vDb)
+				val vY0 = mapY(vDl, vDt); val vY1 = mapY(vDr, vDb)
+				val vDst = alloc<SDL_FRect>()
+				vDst.x = min(vX0, vX1); vDst.y = min(vY0, vY1)
+				vDst.w = kotlin.math.abs(vX1 - vX0); vDst.h = kotlin.math.abs(vY1 - vY0)
+				SDL_RenderTexture(vRenderer, vTex.reinterpret(), vSrc.ptr, vDst.ptr)
+			} else {
+				val vTexW = image.width.toFloat().coerceAtLeast(1f)
+				val vTexH = image.height.toFloat().coerceAtLeast(1f)
+				val vU = floatArrayOf(srcOffset.x / vTexW, (srcOffset.x + srcSize.width) / vTexW,
+					(srcOffset.x + srcSize.width) / vTexW, srcOffset.x / vTexW)
+				val vV = floatArrayOf(srcOffset.y / vTexH, srcOffset.y / vTexH,
+					(srcOffset.y + srcSize.height) / vTexH, (srcOffset.y + srcSize.height) / vTexH)
+				val vCx = floatArrayOf(vDl, vDr, vDr, vDl)
+				val vCy = floatArrayOf(vDt, vDt, vDb, vDb)
+				val vVerts = allocArray<SDL_Vertex>(4)
+				for (i in 0 until 4) {
+					vVerts[i].position.x = mapX(vCx[i], vCy[i])
+					vVerts[i].position.y = mapY(vCx[i], vCy[i])
+					// White vertex colour — tint/alpha already applied as the texture colour-mod above.
+					vVerts[i].color.r = 1f; vVerts[i].color.g = 1f; vVerts[i].color.b = 1f; vVerts[i].color.a = 1f
+					vVerts[i].tex_coord.x = vU[i]; vVerts[i].tex_coord.y = vV[i]
+				}
+				val vInd = allocArray<IntVar>(6)
+				vInd[0] = 0; vInd[1] = 1; vInd[2] = 2; vInd[3] = 0; vInd[4] = 2; vInd[5] = 3
+				SDL_RenderGeometry(vRenderer, vTex.reinterpret(), vVerts, 4, vInd, 6)
+			}
 		}
 	}
 	override fun drawPoints(pointMode: PointMode, points: List<Offset>, paint: Paint) {}

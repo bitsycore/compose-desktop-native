@@ -14,6 +14,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -164,6 +165,10 @@ fun main(args: Array<String>) {
     }
     if (args.any { it == "--fonttest" }) {
         runFontTest()
+        return
+    }
+    if (args.any { it == "--rotimgtest" }) {
+        runRotImgTest()
         return
     }
 
@@ -875,6 +880,63 @@ private fun runDashTest() {
             }
         }
     }
+}
+
+/* --rotimgtest: a two-colour image (top red / bottom blue) rotated 30 via
+   graphicsLayer. On the SDL leg images used to stay axis-aligned (SDL_RenderTexture);
+   now the rotated layer produces a tilted image via a textured SDL_RenderGeometry quad. */
+private fun runRotImgTest() {
+    nativeComposeWindow(
+        title = "rotimgtest",
+        width = 300,
+        height = 300,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 12) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("rotimgtest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("rotimgtest: wrote rotimgtest.bmp (${vW}x${vH})")
+                }
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Box(
+                Modifier.fillMaxSize().background(Color(0xFF303030)),
+                contentAlignment = Alignment.Center,
+            ) {
+                val vImg = twoColorBmp().decodeToImageBitmap()
+                androidx.compose.foundation.Image(
+                    bitmap = vImg,
+                    contentDescription = null,
+                    modifier = Modifier.size(150.dp, 90.dp).graphicsLayer(rotationZ = 30f),
+                )
+            }
+        }
+    }
+}
+
+// A 16x12 BMP: top half red, bottom half blue (bottom-up rows) — asymmetric so
+// rotation is visible.
+private fun twoColorBmp(): ByteArray {
+    fun le16(v: Int) = byteArrayOf((v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte())
+    fun le32(v: Int) = byteArrayOf(
+        (v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte(),
+        ((v shr 16) and 0xFF).toByte(), ((v shr 24) and 0xFF).toByte(),
+    )
+    val vW = 16; val vH = 12
+    val vBlue = byteArrayOf(0xFF.toByte(), 0, 0); val vRed = byteArrayOf(0, 0, 0xFF.toByte())
+    var vPixels = ByteArray(0)
+    for (vRow in 0 until vH) {                 // BMP is bottom-up → low rows are the bottom
+        val vColor = if (vRow < vH / 2) vBlue else vRed
+        repeat(vW) { vPixels += vColor }
+    }
+    val vFileHeader = byteArrayOf('B'.code.toByte(), 'M'.code.toByte()) + le32(54 + vPixels.size) + le32(0) + le32(54)
+    val vDib = le32(40) + le32(vW) + le32(vH) + le16(1) + le16(24) + le32(0) + le32(vPixels.size) +
+        le32(2835) + le32(2835) + le32(0) + le32(0)
+    return vFileHeader + vDib + vPixels
 }
 
 // A minimal 2x2 24bpp red BMP (no compression) — valid input for SDL3_image.
