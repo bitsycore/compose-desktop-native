@@ -118,6 +118,17 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	val softwareKeyboardController: androidx.compose.ui.platform.SoftwareKeyboardController
 		get() = fOwner.softwareKeyboardController
 
+	// PointerIconService and its composition local are :ui-internal, so ComposeWindow
+	// can't provide the local directly. This wrapper seeds it from the owner so
+	// Modifier.pointerHoverIcon reaches pointerIconService (which applies the SDL cursor).
+	@androidx.compose.runtime.Composable
+	fun ProvidePointerIconService(content: @androidx.compose.runtime.Composable () -> Unit) {
+		androidx.compose.runtime.CompositionLocalProvider(
+			androidx.compose.ui.platform.LocalPointerIconService provides fOwner.pointerIconService,
+			content = content,
+		)
+	}
+
 	// ==================
 	// MARK: Key input — route to the focused node via the FocusOwner
 	// ==================

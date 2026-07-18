@@ -95,6 +95,8 @@ internal class ComposeOwner(
 	// [this] is the PositionCalculator (Owner : PositionCalculator).
 	internal fun processPointerInput(inEvent: androidx.compose.ui.input.pointer.PointerInputEvent): Boolean {
 		val vResult = fPointerProcessor.process(inEvent, this)
+		// Apply the cursor the hover pipeline just set for this event (deduped in SdlCursors).
+		com.compose.sdl.SdlCursors.apply(fPointerIcon)
 		return vResult.dispatchedToAPointerInputModifier
 	}
 
@@ -330,10 +332,15 @@ internal class ComposeOwner(
 			override fun show() = Unit
 			override fun hide() = Unit
 		}
+	// Desired hover cursor, set by the vendored HoverIconModifierNode
+	// (Modifier.pointerHoverIcon) and applied via SDL in processPointerInput. null = default.
+	private var fPointerIcon: androidx.compose.ui.input.pointer.PointerIcon =
+		androidx.compose.ui.input.pointer.PointerIcon.Default
 	override val pointerIconService: PointerIconService = object : PointerIconService {
-		override fun getIcon(): androidx.compose.ui.input.pointer.PointerIcon =
-			androidx.compose.ui.input.pointer.PointerIcon.Default
-		override fun setIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {}
+		override fun getIcon(): androidx.compose.ui.input.pointer.PointerIcon = fPointerIcon
+		override fun setIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {
+			fPointerIcon = value ?: androidx.compose.ui.input.pointer.PointerIcon.Default
+		}
 		override fun getStylusHoverIcon(): androidx.compose.ui.input.pointer.PointerIcon? = null
 		override fun setStylusHoverIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {}
 	}

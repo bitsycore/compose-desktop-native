@@ -34,8 +34,8 @@ The cross-cutting items to weigh first (all detailed below):
    40+ Material 3 translations. The date/number-format tail (needs CLDR) remains.
 2. **No IME / text composition** (section B). Only committed Latin text works;
    CJK, dead keys, and accented input do not.
-3. **No cursor changes** (section D). The OS cursor never becomes an I-beam over
-   text or a hand over clickables.
+3. ~~No cursor changes~~ **DONE** (section D) — `Modifier.pointerHoverIcon` now
+   drives the OS cursor via SDL (I-beam over text, hand over links).
 4. **No copy/paste context menu** (section C). Keyboard copy works; there is no
    right-click or selection toolbar.
 5. **Accessibility is entirely absent** (section A). Decide whether stable
@@ -76,10 +76,23 @@ Composition (preedit) does not.
 
 ## D. Pointer / cursor icons
 
-The OS cursor never changes. No SDL cursor API is called anywhere in the port.
+**DONE — `Modifier.pointerHoverIcon` now changes the OS cursor via SDL.** The
+four canonical `PointerIcon`s map by identity to `SDL_SYSTEM_CURSOR_*`
+(`com.compose.sdl.SdlCursors`, cached + deduped); the owner's
+`pointerIconService` tracks the hover pipeline's desired icon and applies it
+after each pointer event; `ComposeRootHost.ProvidePointerIconService` seeds the
+`:ui`-internal `LocalPointerIconService` that the vendored `HoverIconModifierNode`
+reads (it defaulted to `null`, so `setIcon` was never called). Verified with
+`demo --cursortest`: background=DEFAULT, `pointerHoverIcon(Text)`=TEXT,
+`pointerHoverIcon(Hand)`=POINTER.
 
-- `compose/ui/ui/src/nativeMain/.../node/impl/ComposeOwner.kt:333` · `pointerIconService.getIcon()` always returns `Default`; `setIcon()` body is empty. This is the hook `Modifier.pointerHoverIcon` drives, so hover cursor changes are swallowed. Should store the requested icon and call `SDL_SetCursor`. **Blocker for UX.**
-- `compose/ui/ui/src/nativeMain/.../input/pointer/PointerIcon.native.kt:18` · `pointerIconDefault|Crosshair|Text|Hand` are inert marker objects carrying only a name; nothing maps them to `SDL_SYSTEM_CURSOR_*`. Needs `SDL_CreateSystemCursor` + `SDL_SetCursor` (and cursor caching in the `:window` loop). **Blocker (paired with above).**
+- [x] `PointerIcon.native.kt` + `SdlCursors.kt` · identity map to SDL system cursors, `SDL_SetCursor`. **Done.**
+- [x] `ComposeOwner.pointerIconService` · stores the desired icon, applies it via SDL after hover processing. **Done.**
+- [x] `LocalPointerIconService` seeded at the composition root. **Done.**
+
+Remaining (minor): only the four canonical cursors are mapped; custom image
+cursors (`PointerIcon(image)`) aren't in the common expect and fall back to the
+default arrow. Stylus hover icons stay unset (desktop has no stylus). **Cosmetic.**
 
 ## E. Locale and internationalization
 

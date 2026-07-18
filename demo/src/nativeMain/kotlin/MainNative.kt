@@ -10,6 +10,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -133,6 +135,10 @@ fun main(args: Array<String>) {
     }
     if (args.any { it == "--localetest" }) {
         runLocaleTest()
+        return
+    }
+    if (args.any { it == "--cursortest" }) {
+        runCursorTest()
         return
     }
 
@@ -609,6 +615,42 @@ private fun runLocaleTest() {
             androidx.compose.material3.Surface(modifier = Modifier.fillMaxSize()) {
                 val vState = androidx.compose.material3.rememberDatePickerState()
                 androidx.compose.material3.DatePicker(state = vState)
+            }
+        }
+    }
+}
+
+/* --cursortest: injects hover moves over pointerHoverIcon(Text) / (Hand) regions
+   and a bare background, printing the applied SDL system cursor after each. Proves
+   PointerIcon -> SDL_SetCursor end-to-end through the live hover pipeline. */
+private fun runCursorTest() {
+    var vBg = "?"; var vText = "?"; var vHand = "?"
+    nativeComposeWindow(
+        title = "cursortest",
+        width = 400,
+        height = 400,
+        onFrame = { _, vFrame ->
+            when (vFrame) {
+                10 -> { com.compose.sdl.injectMouseEvent(0, 200f, 300f); true } // background (below both boxes)
+                14 -> { vBg = com.compose.sdl.appliedCursorName(); true }
+                20 -> { com.compose.sdl.injectMouseEvent(0, 200f, 50f); true }  // Text box
+                24 -> { vText = com.compose.sdl.appliedCursorName(); true }
+                30 -> { com.compose.sdl.injectMouseEvent(0, 200f, 150f); true } // Hand box
+                34 -> {
+                    vHand = com.compose.sdl.appliedCursorName()
+                    println("cursortest: background=$vBg text=$vText hand=$vHand")
+                    val vOk = vBg.endsWith("DEFAULT") && vText.endsWith("TEXT") && vHand.endsWith("POINTER")
+                    println(if (vOk) "cursortest: PASS" else "cursortest: FAIL")
+                    false
+                }
+                else -> true
+            }
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                Box(Modifier.fillMaxWidth().height(100.dp).pointerHoverIcon(PointerIcon.Text))
+                Box(Modifier.fillMaxWidth().height(100.dp).pointerHoverIcon(PointerIcon.Hand))
             }
         }
     }

@@ -1,18 +1,16 @@
 package androidx.compose.ui.input.pointer
 
 // ==================
-// MARK: PointerIcon actuals — SDL3 cursor placeholders
+// MARK: PointerIcon actuals — SDL3 cursors
 // ==================
 
 /*
  Actuals for vendored PointerIcon.kt. Each of the four canonical icons is a
- distinct marker object today; the runtime path in ComposeWindow can switch
- on identity to call SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_*))
- when the pointer icon service is wired up.
-
- TODO: install a real PointerIconService on the ComposeOwner that maps these
- icons to SDL_SYSTEM_CURSOR_* and calls SDL_SetCursor on hover — desktop-first
- cursor management via SDL3 stays in nativeMain so both renderers share it.
+ distinct marker object; com.compose.sdl.SdlCursors maps them BY IDENTITY to
+ SDL_SYSTEM_CURSOR_*, and ComposeOwner's pointerIconService applies the cursor
+ via SDL_SetCursor after each hover-processed pointer event. Lives in nativeMain
+ so both renderer legs share it (SDL is the platform layer); a custom marker
+ icon that isn't one of these four maps to the default arrow.
 */
 
 private class SdlCursor(@Suppress("unused") val name: String) : PointerIcon

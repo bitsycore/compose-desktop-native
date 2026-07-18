@@ -688,12 +688,16 @@ internal class WindowInstance(
 						}
 					},
 			) {
-				Box(modifier = Modifier.fillMaxSize()) {
-					// Read through the holder so Window() recompositions with a
-					// new content lambda propagate into this composition.
-					val vContent = contentHolder()
-					with(vWindowScope) { vContent() }
-					PopupLayer(vPopupHost)
+				// Seed the :ui-internal LocalPointerIconService so Modifier.pointerHoverIcon
+				// drives the SDL cursor (the local + service type can't cross the module boundary).
+				host.ProvidePointerIconService {
+					Box(modifier = Modifier.fillMaxSize()) {
+						// Read through the holder so Window() recompositions with a
+						// new content lambda propagate into this composition.
+						val vContent = contentHolder()
+						with(vWindowScope) { vContent() }
+						PopupLayer(vPopupHost)
+					}
 				}
 			}
 		}
