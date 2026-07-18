@@ -354,13 +354,24 @@ internal class Sdl3DrawScope(
 		when (style) {
 			Fill -> emitFilledArc(vCx, vCy, vRx, vRy, startAngle, sweepAngle, useCenter, vSeg, vSampler)
 			is Stroke -> {
-				val vR = (vRx + vRy) / 2f
-				val vOuter = vR + style.width / 2f
-				val vInner = (vR - style.width / 2f).coerceAtLeast(0f)
-				emitStrokedArc(vCx, vCy, vInner, vOuter, startAngle, sweepAngle, vSeg, vSampler)
-				if (style.cap == StrokeCap.Round && sweepAngle < 360f) {
-					emitRoundCap(vCx, vCy, vR, style.width / 2f, startAngle, vSampler)
-					emitRoundCap(vCx, vCy, vR, style.width / 2f, startAngle + sweepAngle, vSampler)
+				val vHalf = style.width / 2f
+				if (kotlin.math.abs(vRx - vRy) > 0.5f) {
+					// True ellipse: offset each sample along the ellipse's outward normal
+					// (a circular ring here would be visibly too fat/thin on the long axis).
+					emitStrokedEllipticArc(vCx, vCy, vRx, vRy, vHalf, startAngle, sweepAngle, vSeg, vSampler)
+					if (style.cap == StrokeCap.Round && sweepAngle < 360f) {
+						emitRoundCapEllipse(vCx, vCy, vRx, vRy, vHalf, startAngle, vSampler)
+						emitRoundCapEllipse(vCx, vCy, vRx, vRy, vHalf, startAngle + sweepAngle, vSampler)
+					}
+				} else {
+					val vR = (vRx + vRy) / 2f
+					val vOuter = vR + vHalf
+					val vInner = (vR - vHalf).coerceAtLeast(0f)
+					emitStrokedArc(vCx, vCy, vInner, vOuter, startAngle, sweepAngle, vSeg, vSampler)
+					if (style.cap == StrokeCap.Round && sweepAngle < 360f) {
+						emitRoundCap(vCx, vCy, vR, vHalf, startAngle, vSampler)
+						emitRoundCap(vCx, vCy, vR, vHalf, startAngle + sweepAngle, vSampler)
+					}
 				}
 			}
 		}
@@ -548,10 +559,15 @@ internal class Sdl3DrawScope(
 		when (style) {
 			Fill -> emitFilledArc(vCx, vCy, vRx, vRy, 0f, 360f, true, arcSegments(360f, max(vRx, vRy)), vSampler)
 			is Stroke -> {
-				// Approximate oval stroke as ring between r - w/2 and r + w/2
-				// using the smaller axis as the radius reference.
-				val vR = kotlin.math.min(vRx, vRy)
-				emitStrokedArc(vCx, vCy, vR - style.width / 2f, vR + style.width / 2f, 0f, 360f, arcSegments(360f, vR + style.width / 2f), vSampler)
+				val vHalf = style.width / 2f
+				val vSeg = arcSegments(360f, max(vRx, vRy) + vHalf)
+				if (kotlin.math.abs(vRx - vRy) > 0.5f) {
+					// True ellipse: stroke band follows the ellipse normal (no averaged radius).
+					emitStrokedEllipticArc(vCx, vCy, vRx, vRy, vHalf, 0f, 360f, vSeg, vSampler)
+				} else {
+					val vR = kotlin.math.min(vRx, vRy)
+					emitStrokedArc(vCx, vCy, vR - vHalf, vR + vHalf, 0f, 360f, vSeg, vSampler)
+				}
 			}
 		}
 	}
@@ -1067,6 +1083,61 @@ internal class Sdl3DrawScope(
 				inSampler,
 			)
 		}
+	}
+
+	/* Stroked ELLIPTIC arc — the stroke band follows the ellipse's outward normal
+	   at each angle sample instead of a fixed radius, so a non-square oval strokes
+	   as a true elliptical ring (a circular ring would bulge on the short axis).
+	   Reduces to emitStrokedArc when rx == ry. Same solid-band + AA-fringe scheme. */
+	private fun emitStrokedEllipticArc(
+		inCx: Float, inCy: Float, inRx: Float, inRy: Float, inHalfW: Float,
+		inStartDeg: Float, inSweepDeg: Float, inSegments: Int, inSampler: Sampler,
+	) {
+		val vStart = inStartDeg * (PI / 180.0).toFloat()
+		val vStep = (inSweepDeg * (PI / 180.0).toFloat()) / inSegments
+		val vSolid = (inHalfW - kAaHalf).coerceAtLeast(0f)
+		val vEdge = inHalfW + kAaHalf
+		val vHasBand = vSolid > 0f
+		var vPrev = ellipseNormalPoint(inCx, inCy, inRx, inRy, vStart)
+		for (i in 0 until inSegments) {
+			val vCur = ellipseNormalPoint(inCx, inCy, inRx, inRy, vStart + (i + 1) * vStep)
+			// centreline ± normal * distance, for solid (band) and edge (fringe) offsets
+			val aoX = vPrev[0] + vPrev[2] * vSolid; val aoY = vPrev[1] + vPrev[3] * vSolid
+			val boX = vCur[0] + vCur[2] * vSolid;   val boY = vCur[1] + vCur[3] * vSolid
+			val aiX = vPrev[0] - vPrev[2] * vSolid; val aiY = vPrev[1] - vPrev[3] * vSolid
+			val biX = vCur[0] - vCur[2] * vSolid;   val biY = vCur[1] - vCur[3] * vSolid
+			val aeX = vPrev[0] + vPrev[2] * vEdge;  val aeY = vPrev[1] + vPrev[3] * vEdge
+			val beX = vCur[0] + vCur[2] * vEdge;    val beY = vCur[1] + vCur[3] * vEdge
+			val afX = vPrev[0] - vPrev[2] * vEdge;  val afY = vPrev[1] - vPrev[3] * vEdge
+			val bfX = vCur[0] - vCur[2] * vEdge;    val bfY = vCur[1] - vCur[3] * vEdge
+			if (vHasBand) emitQuad(aoX, aoY, boX, boY, biX, biY, aiX, aiY, inSampler)
+			emitFringeQuad(aoX, aoY, boX, boY, beX, beY, aeX, aeY, inSampler) // outer fade
+			emitFringeQuad(aiX, aiY, biX, biY, bfX, bfY, afX, afY, inSampler) // inner fade
+			vPrev = vCur
+		}
+	}
+
+	/* Point on the ellipse at angle [inA] plus its unit OUTWARD normal, as
+	   [bx, by, nx, ny]. The normal of (x/rx)²+(y/ry)²=1 is (cosθ/rx, sinθ/ry). */
+	private fun ellipseNormalPoint(inCx: Float, inCy: Float, inRx: Float, inRy: Float, inA: Float): FloatArray {
+		val vCa = cos(inA); val vSa = sin(inA)
+		val vBx = inCx + inRx * vCa; val vBy = inCy + inRy * vSa
+		var vNx = if (inRx > 1e-6f) vCa / inRx else vCa
+		var vNy = if (inRy > 1e-6f) vSa / inRy else vSa
+		val vNl = sqrt(vNx * vNx + vNy * vNy)
+		if (vNl > 1e-6f) { vNx /= vNl; vNy /= vNl }
+		return floatArrayOf(vBx, vBy, vNx, vNy)
+	}
+
+	/* Round cap for an elliptic stroked arc: a disc of the half-stroke radius
+	   centred on the centreline ellipse at [inAngleDeg]. */
+	private fun emitRoundCapEllipse(
+		inCx: Float, inCy: Float, inRx: Float, inRy: Float, inCapRadius: Float,
+		inAngleDeg: Float, inSampler: Sampler,
+	) {
+		val vRad = inAngleDeg * (PI / 180.0).toFloat()
+		val vPx = inCx + inRx * cos(vRad); val vPy = inCy + inRy * sin(vRad)
+		emitFilledArc(vPx, vPy, inCapRadius, inCapRadius, 0f, 360f, true, arcSegments(360f, inCapRadius), inSampler)
 	}
 
 	private fun emitRoundCap(

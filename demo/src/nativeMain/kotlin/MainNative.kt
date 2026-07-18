@@ -187,6 +187,10 @@ fun main(args: Array<String>) {
         runFilterTest()
         return
     }
+    if (args.any { it == "--ovaltest" }) {
+        runOvalTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -964,6 +968,44 @@ private fun runBlendTest() {
                 // Modulate: white over a gradient-ish grey scales it down.
                 drawRect(Color(0xFF808080), topLeft = off(40f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f))
                 drawRect(Color(0xFFC00000), topLeft = off(80f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f), blendMode = androidx.compose.ui.graphics.BlendMode.Modulate)
+            }
+        }
+    }
+}
+
+/* --ovaltest: stroked non-square ovals + an elliptical arc. On the SDL leg these
+   used to stroke as a circular ring (averaged radius), bulging on the short axis;
+   now the band follows the true ellipse normal. */
+private fun runOvalTest() {
+    nativeComposeWindow(
+        title = "ovaltest",
+        width = 420,
+        height = 320,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 12) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("ovaltest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("ovaltest: wrote ovaltest.bmp (${vW}x${vH})")
+                } else println("ovaltest: FAIL (no snapshot)")
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().background(Color(0xFF202020))) {
+                fun off(x: Float, y: Float) = androidx.compose.ui.geometry.Offset(x, y)
+                fun sz(w: Float, h: Float) = androidx.compose.ui.geometry.Size(w, h)
+                val vStroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 10f)
+                // Wide ellipse (rx >> ry) stroked - the interesting case.
+                drawOval(Color.Cyan, topLeft = off(20f, 20f), size = sz(360f, 90f), style = vStroke)
+                // Tall ellipse stroked.
+                drawOval(Color.Yellow, topLeft = off(30f, 130f), size = sz(90f, 160f), style = vStroke)
+                // Elliptical arc (half sweep), round-capped.
+                drawArc(Color.Magenta, startAngle = 20f, sweepAngle = 200f, useCenter = false,
+                    topLeft = off(160f, 140f), size = sz(220f, 140f),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 12f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
             }
         }
     }
