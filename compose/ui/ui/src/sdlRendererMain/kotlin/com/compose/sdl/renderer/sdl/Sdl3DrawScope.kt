@@ -566,7 +566,7 @@ internal class Sdl3DrawScope(
 					emitStrokedEllipticArc(vCx, vCy, vRx, vRy, vHalf, 0f, 360f, vSeg, vSampler)
 				} else {
 					val vR = kotlin.math.min(vRx, vRy)
-					emitStrokedArc(vCx, vCy, vR - vHalf, vR + vHalf, 0f, 360f, vSeg, vSampler)
+					emitStrokedArc(vCx, vCy, (vR - vHalf).coerceAtLeast(0f), vR + vHalf, 0f, 360f, vSeg, vSampler)
 				}
 			}
 		}
@@ -581,7 +581,9 @@ internal class Sdl3DrawScope(
 		style: DrawStyle,
 	) {
 		val vSampler = samplerFor(brush, size, alpha)
-		val vR = cornerRadius.coerceIn(0f, kotlin.math.min(size.width, size.height) / 2f)
+		// coerceAtLeast(0f) on the upper bound guards an inverted rect (right<left or
+		// bottom<top → negative size): coerceIn(0f, negative) throws on an empty range.
+		val vR = cornerRadius.coerceIn(0f, (kotlin.math.min(size.width, size.height) / 2f).coerceAtLeast(0f))
 		val vX = fOriginX + topLeft.x
 		val vY = fOriginY + topLeft.y
 		val vW = size.width
@@ -610,12 +612,13 @@ internal class Sdl3DrawScope(
 				// Bottom edge
 				emitQuad(vX + vR, vY + vH - vR, vX + vW - vR, vY + vH - vR, vX + vW - vR, vY + vH, vX + vR, vY + vH, vSampler)
 			}
-			// 4 corner fills — segment count adapts to the corner radius.
+			// 4 corner fills — quarter-disc SECTORS (fan from the corner centre), so
+			// useCenter=true (segment fill would cut the corner off along the chord).
 			val vSeg = arcSegments(90f, vR)
-			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, false, vSeg, vSampler)
-			emitFilledArc(vX + vW - vR,     vY + vR,         vR, vR, 270f,  90f, false, vSeg, vSampler)
-			emitFilledArc(vX + vW - vR,     vY + vH - vR,    vR, vR,   0f,  90f, false, vSeg, vSampler)
-			emitFilledArc(vX + vR,          vY + vH - vR,    vR, vR,  90f,  90f, false, vSeg, vSampler)
+			emitFilledArc(vX + vR,          vY + vR,         vR, vR, 180f,  90f, true, vSeg, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vR,         vR, vR, 270f,  90f, true, vSeg, vSampler)
+			emitFilledArc(vX + vW - vR,     vY + vH - vR,    vR, vR,   0f,  90f, true, vSeg, vSampler)
+			emitFilledArc(vX + vR,          vY + vH - vR,    vR, vR,  90f,  90f, true, vSeg, vSampler)
 			// Under rotation/shear the four outer straight edges become diagonal —
 			// feather them (corners already AA via the arcs). Axis-aligned: skip.
 			if (fMb != 0f || fMc != 0f) {
@@ -632,10 +635,12 @@ internal class Sdl3DrawScope(
 			lineCore(brush, Offset(topLeft.x + vW - cornerRadius, topLeft.y + vH), Offset(topLeft.x + cornerRadius, topLeft.y + vH), vSw, StrokeCap.Butt, alpha)
 			lineCore(brush, Offset(topLeft.x, topLeft.y + vH - cornerRadius), Offset(topLeft.x, topLeft.y + cornerRadius), vSw, StrokeCap.Butt, alpha)
 			val vSeg = arcSegments(90f, vR + vSw / 2f)
-			emitStrokedArc(vX + vR,      vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 180f, 90f, vSeg, vSampler)
-			emitStrokedArc(vX + vW - vR, vY + vR,      vR - vSw / 2f, vR + vSw / 2f, 270f, 90f, vSeg, vSampler)
-			emitStrokedArc(vX + vW - vR, vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,   0f, 90f, vSeg, vSampler)
-			emitStrokedArc(vX + vR,      vY + vH - vR, vR - vSw / 2f, vR + vSw / 2f,  90f, 90f, vSeg, vSampler)
+			val vInner = (vR - vSw / 2f).coerceAtLeast(0f) // stroke wider than the corner radius would pass a negative inner radius
+			val vOuter = vR + vSw / 2f
+			emitStrokedArc(vX + vR,      vY + vR,      vInner, vOuter, 180f, 90f, vSeg, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vR,      vInner, vOuter, 270f, 90f, vSeg, vSampler)
+			emitStrokedArc(vX + vW - vR, vY + vH - vR, vInner, vOuter,   0f, 90f, vSeg, vSampler)
+			emitStrokedArc(vX + vR,      vY + vH - vR, vInner, vOuter,  90f, 90f, vSeg, vSampler)
 		}
 	}
 
@@ -1018,13 +1023,18 @@ internal class Sdl3DrawScope(
 		val vRyIn = (inRy - kAaHalf).coerceAtLeast(0f)
 		val vRxOut = inRx + kAaHalf
 		val vRyOut = inRy + kAaHalf
+		// useCenter=true fans from the arc centre (a pie SECTOR); useCenter=false fans
+		// from the first perimeter point, so the fill is the circular SEGMENT bounded by
+		// the arc and its chord (upstream drawArc semantics).
+		val vAnchorX = if (inUseCenter) inCx else inCx + vRxIn * cos(vStartRad)
+		val vAnchorY = if (inUseCenter) inCy else inCy + vRyIn * sin(vStartRad)
 		for (i in 0 until inSegments) {
 			val vA = vStartRad + i * vStep
 			val vB = vStartRad + (i + 1) * vStep
 			val vCa = cos(vA); val vSa = sin(vA)
 			val vCb = cos(vB); val vSb = sin(vB)
-			// Solid fan wedge to the inset radius.
-			emitTri(inCx, inCy, inCx + vRxIn * vCa, inCy + vRyIn * vSa, inCx + vRxIn * vCb, inCy + vRyIn * vSb, inSampler)
+			// Solid fan wedge to the inset radius (from centre or the chord anchor).
+			emitTri(vAnchorX, vAnchorY, inCx + vRxIn * vCa, inCy + vRyIn * vSa, inCx + vRxIn * vCb, inCy + vRyIn * vSb, inSampler)
 			// AA fringe along the curved outer edge.
 			emitFringeQuad(
 				inCx + vRxIn * vCa, inCy + vRyIn * vSa,
@@ -1328,35 +1338,53 @@ private fun Sdl3DrawScope.samplerFor(
 		}
 	}
 	val vFilter = activeColorFilter ?: return vBase
-	return Sampler { x, y -> applyColorFilter(vBase.sample(x, y), vFilter) }
+	// Resolve the filter to a per-colour transform ONCE (not per vertex): a
+	// ColorMatrix filter's copyColorMatrix() allocates a 20-float array, which would
+	// otherwise run for every emitted vertex of a filtered draw.
+	val vTransform = colorFilterTransform(vFilter)
+	return Sampler { x, y -> vTransform(vBase.sample(x, y)) }
+}
+
+/* Resolves a ColorFilter into a reusable (Color) -> Color transform, hoisting any
+   one-time cost (matrix copy, param unpacking) out of the per-vertex sample loop. */
+private fun colorFilterTransform(inFilter: ColorFilter): (ComposeColor) -> ComposeColor {
+	// Each branch binds a typed local for the transform, then returns it — a bare
+	// trailing `{ … }` at a function-typed position parses as a discarded statement.
+	return when (inFilter) {
+		is androidx.compose.ui.graphics.BlendModeColorFilter -> {
+			val vColor = inFilter.color; val vMode = inFilter.blendMode
+			val vFn: (ComposeColor) -> ComposeColor = { applyTint(it, vColor, vMode) }
+			vFn
+		}
+		is androidx.compose.ui.graphics.ColorMatrixColorFilter -> {
+			val vMatrix = inFilter.copyColorMatrix()
+			val vFn: (ComposeColor) -> ComposeColor = { applyColorMatrix(it, vMatrix) }
+			vFn
+		}
+		is androidx.compose.ui.graphics.LightingColorFilter -> {
+			val vM = inFilter.multiply; val vA = inFilter.add
+			val vFn: (ComposeColor) -> ComposeColor = {
+				ComposeColor(
+					(it.red * vM.red + vA.red).coerceIn(0f, 1f),
+					(it.green * vM.green + vA.green).coerceIn(0f, 1f),
+					(it.blue * vM.blue + vA.blue).coerceIn(0f, 1f),
+					it.alpha,
+				)
+			}
+			vFn
+		}
+		else -> { { it } }
+	}
 }
 
 // ==================
 // MARK: ColorFilter
 // ==================
 
-/* Applies a Compose ColorFilter to one sampled colour. Runs per vertex on the
-   tessellated geometry, so tint / colorMatrix / lighting reach every shape the
-   SDL renderer draws (SolidColor and gradients alike). Image blits keep their
-   own texture-colour-mod tint path in Sdl3Canvas. */
-private fun applyColorFilter(inColor: ComposeColor, inFilter: ColorFilter): ComposeColor =
-	when (inFilter) {
-		is androidx.compose.ui.graphics.BlendModeColorFilter ->
-			applyTint(inColor, inFilter.color, inFilter.blendMode)
-		is androidx.compose.ui.graphics.ColorMatrixColorFilter ->
-			applyColorMatrix(inColor, inFilter.copyColorMatrix())
-		is androidx.compose.ui.graphics.LightingColorFilter -> {
-			// result = src * multiply + add, per channel, alpha preserved.
-			val vM = inFilter.multiply; val vA = inFilter.add
-			ComposeColor(
-				(inColor.red * vM.red + vA.red).coerceIn(0f, 1f),
-				(inColor.green * vM.green + vA.green).coerceIn(0f, 1f),
-				(inColor.blue * vM.blue + vA.blue).coerceIn(0f, 1f),
-				inColor.alpha,
-			)
-		}
-		else -> inColor
-	}
+// Per-colour transforms below run on the tessellated geometry (via the sampler in
+// colorFilterTransform), so tint / colorMatrix / lighting reach every shape the SDL
+// renderer draws (SolidColor and gradients alike). Image blits keep their own
+// texture-colour-mod tint path in Sdl3Canvas.
 
 /* The ColorFilter.tint contract composites the tint as SOURCE over the drawn
    pixel as DESTINATION under [inMode] (default SrcIn = recolour, keep coverage).

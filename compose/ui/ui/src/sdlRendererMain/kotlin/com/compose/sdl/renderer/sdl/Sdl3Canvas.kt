@@ -434,6 +434,11 @@ internal class Sdl3Canvas(
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
+		// Push the save frame FIRST so the caller's matching restore() stays balanced
+		// even in capture mode (where the layer is unsupported and we return early);
+		// otherwise restore() pops the PARENT frame and desyncs matrix/clip/alpha for
+		// the rest of the capture.
+		save()
 		if (captureUnsupported()) return
 		// No real offscreen buffer — SDL3 lacks a portable render-target-in-a-batched-scope
 		// primitive here. Instead, multiplicatively propagate the layer's alpha through
@@ -442,7 +447,6 @@ internal class Sdl3Canvas(
 		// content (the common case for a `Modifier.graphicsLayer(alpha=…)` wrapping a
 		// simple widget); overlapping shapes composite at the paint level rather than
 		// at the layer level, which can produce slight visual differences from Skia.
-		save()
 		fAlpha *= paint.alpha
 	}
 
@@ -927,7 +931,11 @@ internal class Sdl3Canvas(
 		BlendMode.Plus -> SDL_BLENDMODE_ADD
 		BlendMode.Modulate -> SDL_BLENDMODE_MOD
 		BlendMode.Multiply -> SDL_BLENDMODE_MUL
-		BlendMode.Src -> SDL_BLENDMODE_NONE
+		// Src maps to normal alpha blend, NOT SDL_BLENDMODE_NONE: our tessellated
+		// shapes carry an alpha-0 AA fringe, and NONE writes it verbatim — punching a
+		// transparent moat into an offscreen target and a hard un-antialiased edge on
+		// the window. SrcOver of an opaque fill is visually identical to Src for the
+		// solid core, and keeps the fringe.
 		else -> SDL_BLENDMODE_BLEND
 	}
 
@@ -1003,12 +1011,20 @@ internal class Sdl3Canvas(
 				}
 			}
 			if (vOutersContain) {
-				prep().roundRectCore(
-					brushFor(inPaint),
-					Offset(vLr.left, vLr.top), Size(vLr.width, vLr.height),
-					vLr.topLeftCornerRadius.x,
-					(inPaint.alpha * fAlpha), Fill,
-				)
+				// This cover-fill bypasses withBlend (blend is guarded to SrcOver above),
+				// so set the paint's colorFilter for the draw ourselves — otherwise a
+				// filtered fill covering a pending clip would render unfiltered.
+				fScope.activeColorFilter = inPaint.colorFilter
+				try {
+					prep().roundRectCore(
+						brushFor(inPaint),
+						Offset(vLr.left, vLr.top), Size(vLr.width, vLr.height),
+						vLr.topLeftCornerRadius.x,
+						(inPaint.alpha * fAlpha), Fill,
+					)
+				} finally {
+					fScope.activeColorFilter = null
+				}
 				return true
 			}
 		}

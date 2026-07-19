@@ -191,6 +191,10 @@ fun main(args: Array<String>) {
         runOvalTest()
         return
     }
+    if (args.any { it == "--arctest" }) {
+        runArcTest()
+        return
+    }
 
     val vCli = parseArgs(args)
     val vTitle = buildString {
@@ -968,6 +972,43 @@ private fun runBlendTest() {
                 // Modulate: white over a gradient-ish grey scales it down.
                 drawRect(Color(0xFF808080), topLeft = off(40f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f))
                 drawRect(Color(0xFFC00000), topLeft = off(80f, 230f), size = androidx.compose.ui.geometry.Size(160f, 60f), blendMode = androidx.compose.ui.graphics.BlendMode.Modulate)
+            }
+        }
+    }
+}
+
+/* --arctest: a filled rounded rect (corners must stay quarter-disc SECTORS) plus a
+   filled arc drawn with useCenter=true (pie) and useCenter=false (segment/chord).
+   Guards the emitFilledArc useCenter fix + the rounded-rect corner regression. */
+private fun runArcTest() {
+    nativeComposeWindow(
+        title = "arctest",
+        width = 440,
+        height = 260,
+        onFrame = { vBridge, vFrame ->
+            if (vFrame >= 12) {
+                val vSnap = vBridge.snapshotBgra()
+                if (vSnap != null) {
+                    val (vW, vH, vBgra) = vSnap
+                    writeFile("arctest.bmp", encodeBmpBgra32(vW, vH, vBgra))
+                    println("arctest: wrote arctest.bmp (${vW}x${vH})")
+                } else println("arctest: FAIL (no snapshot)")
+                false
+            } else true
+        },
+    ) {
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().background(Color(0xFF202020))) {
+                fun off(x: Float, y: Float) = androidx.compose.ui.geometry.Offset(x, y)
+                fun sz(w: Float, h: Float) = androidx.compose.ui.geometry.Size(w, h)
+                // Filled rounded rect — corners must be full quarter-discs (sectors).
+                drawRoundRect(Color.Cyan, topLeft = off(20f, 20f), size = sz(180f, 120f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(40f, 40f))
+                // Filled pie sector (useCenter=true) vs segment (useCenter=false).
+                drawArc(Color.Yellow, startAngle = 200f, sweepAngle = 140f, useCenter = true,
+                    topLeft = off(230f, 20f), size = sz(90f, 90f))
+                drawArc(Color.Magenta, startAngle = 200f, sweepAngle = 140f, useCenter = false,
+                    topLeft = off(330f, 20f), size = sz(90f, 90f))
             }
         }
     }
