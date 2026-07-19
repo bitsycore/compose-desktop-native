@@ -25,6 +25,8 @@ here.
 
 ## Completed
 
+Platform / cross-cutting:
+
 - **Locale / i18n** (`5d03711f`) — `Locale.current` / `LocaleList.current` read the
   OS locale via SDL, unlocking the 40+ Material 3 translations. The date/number
   format tail remains (section C).
@@ -38,6 +40,24 @@ here.
 - **ImageBitmap from bytes** (SDL leg) — `ByteArray.decodeToImageBitmap()` /
   `createImageBitmap(bytes)` decodes via SDL3_image; was
   `UnsupportedOperationException`. Verified `demo --imagebytestest` on both legs.
+- **`FontFamily.Monospace`** — generic families map to `"generic:<name>"`;
+  `registerGenericFonts` registers bundled NotoSansMono under `generic:monospace`
+  (bundled only when the app references it). Verified `demo --fonttest`.
+
+SDL renderer fidelity (all verified against the Skia leg via `demo --<name>test`):
+
+- **DashPathEffect** (`--dashtest`), **gradient TileMode** repeat/mirror/decal
+  (`--tilemodetest`), **drawPoints/drawRawPoints** Points/Lines/Polygon
+  (`--pointstest`), **rotated images** via textured `SDL_RenderGeometry`
+  (`--rotimgtest`).
+- **BlendMode** (`774271eb`, `--blendtest`) — Plus/Modulate/Multiply/Src via SDL
+  hardware blend (`withBlend`); other separable modes fall back to SrcOver.
+- **Stroke joins + Square cap** (`3518521c`, `--jointest`) — miter/bevel/round
+  (`emitJoin`) + round/square end caps (`emitCap`), pixel-identical to Skia.
+- **ColorFilter on shapes** (`169a51f0`, `--filtertest`) — tint / colorMatrix
+  (grayscale/saturation) / lighting per-vertex; pixel-exact vs Skia.
+- **Stroked elliptical ovals** (`efaf20d9`, `--ovaltest`) — true ellipse band, not
+  a circular ring on the averaged radius.
 
 ---
 
@@ -100,12 +120,6 @@ loads the bytes and registers them with the project font registry (IconFont → 
 on both renderer legs (`FontResources.sdl.kt`, shared by the skiko leg via a srcDir
 alias), so the standard CMP way to bundle a font renders correctly.
 
-- [x] **`FontFamily.Monospace` DONE** — `NamedFont.projectFontName` maps generic families to
-  `"generic:<name>"`; `com.compose.sdl.text.registerGenericFonts` (called from
-  `installGlobals`) registers the bundled NotoSansMono under `generic:monospace`. The demo
-  Zip task bundles the font only when the app references `FontFamily.Monospace` (mirrors the
-  Material Symbols scan). Falls back to the default sans if not bundled. Verified
-  `demo --fonttest` on both legs.
 - `FontFamily.Serif` / `FontFamily.Cursive` still collapse to the default sans — no bundled
   serif/cursive font yet (`downloadNotoFonts` fetches Sans + SansMono only). Register one under
   `generic:serif` / `generic:cursive` the same way to enable them. **Nice-to-have.**
@@ -139,22 +153,23 @@ Drop INTO the window (files + text) is fully wired and works. Drag OUT does not.
 
 These affect only the SDL leg. On macOS/Linux the Skia leg implements them
 correctly, and JVM is the documented Windows fidelity tier, so these are lower
-priority under G1. Listed because SDL is the shipped Windows renderer.
+priority under G1. Listed because SDL is the shipped Windows renderer. (Several
+SDL fidelity gaps are now closed — see **Completed** above.)
 
-- `compose/ui/ui/src/sdlRendererMain/.../graphics/PathEffect.sdl.kt` · **DASH DONE** — `dashPathEffect` now carries its pattern and `Sdl3DrawScope.dashPolyline` splits stroked geometry into dashes for `drawLine` and `drawPath(Stroke)` (paint `pathEffect` threaded through `Sdl3Canvas.drawLine`/`styleFor`). Verified `demo --dashtest`. `corner`/`chain`/`stamped` remain NOP. **Nice-to-have.**
-- `compose/ui/ui/src/sdlRendererMain/.../graphics/RenderEffect.sdl.kt:16` · `RenderEffect.isSupported()` is `false`; `Modifier.blur()` and `graphicsLayer{renderEffect=...}` do nothing. `compose/ui/ui/src/sdlRendererMain/.../graphics/shadow/Blur.native.kt:33` · `Paint.setBlurFilter` NOP. **Nice-to-have (Windows visual parity).**
-- **DONE** — gradient `TileMode` now honoured: `Sdl3DrawScope`'s linear/radial samplers apply `Repeated` (wrap), `Mirror` (reflect), `Decal` (transparent outside), `Clamp` unchanged (`tileT` + `gradientTileMode`). Verified `demo --tilemodetest`. **Nice-to-have.**
-- `compose/ui/ui/src/sdlRendererMain/.../graphics/CanvasPaintActuals.native.kt:106` · `ActualImageShader`/`ActualCompositeShader` are stubs; image/composite `ShaderBrush` degrades to solid fill (white/black). **Nice-to-have.**
-- **ColorFilter on shapes DONE** — `Sdl3DrawScope.applyColorFilter` runs the paint's `ColorFilter` per-vertex through the sampler: `tint` (SrcIn/Src/Modulate/Plus/SrcOver), `colorMatrix` (full 4×5 in 0..255 scale — grayscale/saturation), and `lighting` (src×multiply+add). `Sdl3Canvas.withBlend` sets `activeColorFilter` around each geometry emit; `NativeColorFilter` now round-trips the `ColorMatrix`. Verified `demo --filtertest` — pixel-identical to the Skia leg (tint→blue, red→(54,54,54) grayscale, lighting→(192,192,192)). Covers `ImageVector` icon tinting (drawn via paths). Remaining: filters on IMAGE blits still only honor `BlendModeColorFilter` tint (`Sdl3Canvas.kt:1281`) — a ColorMatrix on a bitmap needs per-pixel work; and capture-mode (`graphicsLayer`) block-replay drops the filter. **Nice-to-have.**
-- **BlendMode DONE (SDL-native modes)** — `Sdl3Canvas.withBlend` maps the paint's `BlendMode` to the SDL render blend mode around each geometry emit: `Plus`→`ADD`, `Modulate`→`MOD`, `Multiply`→`MUL`, `Src`→`NONE`, everything else→`BLEND` (SrcOver). Verified `demo --blendtest` (Plus overlaps brighten to white, Modulate scales down; matches the Skia leg). Note SDL only exposes those four hardware blend modes, so `Screen`/`Overlay`/`Darken`/the separable PDF modes still fall back to SrcOver. Also note `Multiply` diverges from the Skia leg **because the Skia leg is wrong here** (it renders opaque cyan×yellow as blue, impossible from the multiply formula) — the SDL result `(0,255,0)` green is the correct one; the Skia `MULTIPLY` anomaly is tracked separately below. `BlendMode.isSupported()` still returns `true` for all modes. **Nice-to-have.**
-- `compose/ui/ui/src/sdlRendererMain/.../renderer/sdl/Sdl3Canvas.kt:436` · `saveLayer` has no offscreen buffer; layer alpha is multiplied into each primitive, so overlapping content double-composites (wrong group opacity) and the layer paint's colorFilter/blendMode/renderEffect are dropped. **Nice-to-have (blocker for correct group-alpha over overlapping content).**
-- `compose/ui/ui/src/sdlRendererMain/.../renderer/sdl/Sdl3Canvas.kt:509` · `clipPath` degrades an arbitrary path to its bounding box; rotated/sheared `clipRect` collapses to an AABB. Non-rect clips leak. (Rounded/difference clips are real, with feathered AA.) **Nice-to-have.**
-- **Stroke joins + Square cap DONE** — `strokePolyline` now fills the convex corner wedge at every interior vertex (and the seam of a closed contour) via `emitJoin`: `Miter` extends the outer edges to their apex (bevel fallback past `Stroke.miter`), `Bevel` chamfers, `Round` caps with a disc. `emitCap` adds round/square end caps on open polylines and `lineCore` projects `StrokeCap.Square` half a width past each endpoint. Verified `demo --jointest` (pixel-identical to the Skia leg for all three joins + Butt vs Square). **Nice-to-have / cosmetic.**
-- `PathFillType` (NonZero vs EvenOdd) is mostly ignored beyond a 2-contour border case; interior holes and self-intersections are not cut out, and concave fills self-overlap (`Sdl3DrawScope.kt:366,717`). **Nice-to-have.**
-- **`drawPoints`/`drawRawPoints` DONE** — Points mode draws filled strokeWidth squares, Lines/Polygon modes draw segments (via the scope's rect/line primitives). Verified `demo --pointstest`. `drawVertices` (custom vertex meshes) still NOP. **Nice-to-have.**
-- **Rotated images DONE** — under a rotated/sheared layer, `drawImageRect` maps all 4 corners and submits a textured `SDL_RenderGeometry` quad (axis-aligned keeps the fast `SDL_RenderTexture`). Verified `demo --rotimgtest`. `SdlImageBitmap.readPixels` is still a no-op (`Sdl3Offscreen.kt:117`). **Cosmetic / nice-to-have.**
-- **Stroked elliptical ovals DONE** — `ovalCore`/`arcCore` stroke a non-square oval as a true ellipse (band offset along the ellipse normal via `emitStrokedEllipticArc`) instead of a circular ring on the averaged/min radius; round caps land on the ellipse endpoint. Reduces to the circular path when `rx≈ry`. Verified `demo --ovaltest` (matches the Skia leg). **Cosmetic / nice-to-have.**
-- Drop shadow is approximated (9-slice / stacked rings, not a gaussian blur; ambient vs spot largely collapsed) at `Sdl3Canvas.kt:785`; AA is a ~1px geometry fringe rather than analytic coverage. **Cosmetic.**
+The biggest remaining value here is the **offscreen-layer work** (blur + real
+`saveLayer`); the two are the same infrastructure and warrant a dedicated pass
+with the full parity + verify-mac gate, not a probe.
+
+- **Blur / RenderEffect** — `compose/ui/ui/src/sdlRendererMain/.../graphics/RenderEffect.sdl.kt:16` `RenderEffect.isSupported()` is `false`; `Modifier.blur()` and `graphicsLayer{renderEffect=...}` do nothing; `.../graphics/shadow/Blur.native.kt:33` `Paint.setBlurFilter` NOP. Needs an offscreen render target + a blur pass (box-blur infra already exists in `Sdl3ShadowCache`). **Nice-to-have (Windows visual parity).**
+- **`saveLayer` has no offscreen buffer** — `Sdl3Canvas.kt:436`: layer alpha is multiplied into each primitive, so overlapping content double-composites (wrong group opacity) and the layer paint's colorFilter/blendMode/renderEffect are dropped. Same offscreen infra as blur. **Nice-to-have (blocker for correct group-alpha over overlapping content).**
+- **`clipPath` degrades to a bounding box** — `Sdl3Canvas.kt:509`: an arbitrary path clip collapses to its AABB; a rotated/sheared `clipRect` also collapses to an AABB, so non-rect clips leak. (Rounded/difference clips are real, with feathered AA.) **Nice-to-have.**
+- **`ActualImageShader` / `ActualCompositeShader` are stubs** — `CanvasPaintActuals.native.kt:106`: an image/composite `ShaderBrush` degrades to a solid white/black fill (the tessellator emits per-vertex colours, not UVs). **Nice-to-have.**
+- **`PathFillType` (NonZero vs EvenOdd)** — mostly ignored beyond the 2-contour border-ring case; interior holes and self-intersections are not cut out, and concave fills self-overlap (fan triangulation) (`Sdl3DrawScope.kt:366,717`). Needs a scanline/tessellation fill. **Nice-to-have.**
+- **`drawVertices`** (custom vertex meshes) is still a NOP in the DrawScope. **Nice-to-have.**
+- **ColorFilter/blur on IMAGE blits** — image blits honor only `BlendModeColorFilter` tint (`Sdl3Canvas.kt:1281`); a `ColorMatrix`/lighting filter or blur on a bitmap needs per-pixel work. Capture-mode (`graphicsLayer`) block-replay also drops the shape colorFilter. **Nice-to-have.**
+- **`SdlImageBitmap.readPixels` is a no-op** (`Sdl3Offscreen.kt:117`) — can't read back an offscreen-rendered bitmap. **Cosmetic / nice-to-have.**
+- **Drop shadow is approximated** (`Sdl3Canvas.kt:785`) — 9-slice / stacked rings, not a true gaussian; ambient vs spot largely collapsed; AA is a ~1px geometry fringe, not analytic coverage. **Cosmetic.**
+- `DashPathEffect` `corner`/`chain`/`stamped` variants remain NOP (only the interval dash is implemented). **Cosmetic.**
 
 ## I. Skia renderer (macOS/Linux default) anomalies
 
@@ -169,3 +184,34 @@ here. This one surfaced while adding SDL BlendMode parity (`demo --blendtest`):
   specific to `MULTIPLY` (likely a Metal-backend / premultiply interaction in
   the graphics-layer flatten, not the `BlendMode.toSkia()` map, which is
   correct). Needs isolating on the Skia draw path. **Nice-to-have (Skia leg).**
+
+## J. Needs further review (2026-07 bug audit)
+
+An audit (3 parallel passes over the renderer, recent SDL features, and the
+text/input/event actuals) surfaced these. The clear, contained bugs were fixed
+in the same pass (see below); the items here are left open because they are
+either invasive, risky, or a cosmetic-AA judgement call.
+
+Fixed in the audit (for reference, not open work): the `roundRectCore`
+inverted-rect crash; `drawArc(useCenter=false)` now fills the segment (was always
+a pie sector); `BlendMode.Src` no longer punches the AA fringe out via
+`SDL_BLENDMODE_NONE`; the cover-fill fast-path no longer drops the paint's
+`colorFilter`; `saveLayer` in capture mode keeps the save/restore stack balanced;
+stroked oval / round-rect inner radius is clamped ≥ 0; the per-vertex
+`ColorMatrix` copy is hoisted out of the sample loop; `Locale.region` no longer
+returns the language for a single-subtag tag; and a `MOUSE_LEAVE` now clears
+hover so a widget doesn't stay highlighted after the cursor exits.
+
+Open — platform / input:
+
+- **Pointer coords are truncated to Int before DPR scaling** (`SDL3EventMapper.kt` ~78-97, `LegacyPointerEvent.kt` x/y are `Int`, consumed in `ComposeWindow.kt:756`). On a 2× display a click at logical (100.9, 50.4) becomes physical (200,100) instead of (~201,~100), so hit-testing / caret placement quantizes to 2-physical-px steps near glyph boundaries. Fix means widening the pointer event to `Float` through the pipeline — invasive, hence deferred. **Review.**
+- **A window created unfocused is still promoted to RESUMED** (`ComposeWindow.kt:575-576, 713-719`). `windowFocused`/`windowVisible` default `true`, so a second `Window {}` opened while another holds focus (or one opened minimized) reports `RESUMED` until SDL later delivers a focus/minimize event. Should query `SDL_GetWindowFlags` at creation. **Review.**
+- **IME text-input area is only pushed on the first `TEXT_EDITING`** (`ComposeWindow.kt:803`; `updateImeArea()` not called on focus gain / first `StartTextInput` / caret move). The first candidate popup can appear at (0,0) before correcting. The rect math itself is correct. **Review.**
+- **`Snapshot.sendApplyNotifications()` is called synchronously inside the global write observer** (`ComposeWindow.kt:143-146`). Compose Desktop's `GlobalSnapshotManager` deliberately defers it to a separate dispatch; calling it per-write is redundant (the main loop already calls it each frame) and risks re-entrancy during snapshot application. Verify against the runtime's guard before changing — behaviour-sensitive. **Review (risky).**
+
+Open — SDL renderer (cosmetic AA / draw-time):
+
+- **Stroke joins are not antialiased and reach ~0.5px past the band** (`Sdl3DrawScope.kt` `emitJoin`). The segment band feathers to `halfW − kAaHalf` solid + fringe, but joins fill solid to full `halfW` with a hard edge, so corners read as slightly darker/crisper nubs — visible on thin or translucent strokes. Needs feathered join geometry. **Review (cosmetic).**
+- **Round join over-draws the stroke body** (`Sdl3DrawScope.kt` `emitJoin`, `StrokeJoin.Round`): a full disc overlaps the adjacent segments, so a semi-transparent stroke double-blends darker at each corner. Fill only the convex wedge. **Review (cosmetic).**
+- **Text / icon draws ignore the draw-time `colorFilter`** — `activeColorFilter` is consulted only by the tessellation sampler; glyph/icon runs blit through the text renderer with a pre-resolved colour, so a `BlendModeColorFilter` tint applied at draw time to a `Text`/icon node isn't honored (acceptable if callers pre-fold the tint into the glyph colour). **Review.**
+- **Rounded-clip containment ignores stroke half-width** (`Sdl3Canvas.kt` `admitDraw`/`tryDrawRectUnderPendingClips`): a stroked shape whose fill-box is inside a pending rounded clip but whose stroke pokes past it skips mask realization, so the stroke's outer half is bounded only by the AABB, not the rounded outline. Marginal (only bites at the exact clip boundary). **Review.**
