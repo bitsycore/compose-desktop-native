@@ -178,6 +178,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 					is AppEvent.RedrawNeeded -> runtime.windowFor(vEvent.windowId)?.let { it.needsFrame = true }
 					is AppEvent.WindowActivation -> runtime.windowFor(vEvent.windowId)?.onActivationEvent(vEvent)
 					is AppEvent.Pointer -> runtime.windowFor(vEvent.windowId)?.onPointerEvent(vEvent)
+					is AppEvent.PointerExit -> runtime.windowFor(vEvent.windowId)?.onPointerExit()
 					is AppEvent.MouseWheel -> runtime.windowFor(vEvent.windowId)?.onWheelEvent(vEvent)
 					is AppEvent.Key -> runtime.windowFor(vEvent.windowId)?.onKeyEvent(vEvent)
 					is AppEvent.TextInput -> runtime.windowFor(vEvent.windowId)?.onTextInputEvent(vEvent)
@@ -762,6 +763,17 @@ internal class WindowInstance(
 		lastMouseX = vPx
 		lastMouseY = vPy
 		hasMousePos = true
+	}
+
+	/* Pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). Stop the per-frame
+	   synthetic hover re-dispatch and fire one Exit at the last position so a
+	   hovered widget clears its highlight instead of sticking forever. */
+	fun onPointerExit() {
+		needsFrame = true
+		if (hasMousePos) {
+			host.onPointerRaw(lastMouseX, lastMouseY, 3, 0, SDL_GetTicks().toLong())
+		}
+		hasMousePos = false
 	}
 
 	fun onWheelEvent(inEvent: AppEvent.MouseWheel) {

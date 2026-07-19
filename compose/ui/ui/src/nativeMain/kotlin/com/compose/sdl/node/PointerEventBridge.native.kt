@@ -23,7 +23,7 @@ private var fSecondaryDown = false
 private var fTertiaryDown = false
 
 /* Builds the internal PointerInputEvent (its constructor is native-only) from a single mouse
-   pointer and drives the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release;
+   pointer and drives the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release 3=Exit;
    inButton: 0=primary 1=secondary 2=tertiary. */
 internal fun feedPointerToProcessor(
 	inOwner: ComposeOwner,
@@ -60,13 +60,14 @@ internal fun feedPointerToProcessor(
 		down = fPrimaryDown || fSecondaryDown || fTertiaryDown,
 		pressure = 1f,
 		type = PointerType.Mouse,
-		activeHover = inType == 0,
+		activeHover = inType == 0, // Exit (3) also reports no active hover
 		scaleGestureFactor = 1f,
 		panGestureOffset = Offset.Zero,
 	)
 	val vType = when (inType) {
 		1 -> PointerEventType.Press
 		2 -> PointerEventType.Release
+		3 -> PointerEventType.Exit
 		else -> PointerEventType.Move
 	}
 	inOwner.processPointerInput(

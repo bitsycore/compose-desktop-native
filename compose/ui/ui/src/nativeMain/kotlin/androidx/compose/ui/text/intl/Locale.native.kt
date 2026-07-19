@@ -29,7 +29,10 @@ actual class Locale actual constructor(languageTag: String) {
 
 	actual val language: String get() = parts.getOrNull(0) ?: ""
 	actual val script: String get() = parts.getOrNull(1)?.takeIf { it.length == 4 } ?: ""
-	actual val region: String get() = parts.lastOrNull()?.takeIf { it.length == 2 || it.length == 3 } ?: ""
+	// Region is a subtag AFTER the language (2-letter alpha or 3-digit UN M.49);
+	// drop(1) so a single-subtag tag ("en") or a 3-letter language ("fil") doesn't
+	// report itself as the region.
+	actual val region: String get() = parts.drop(1).lastOrNull { it.length == 2 || it.length == 3 } ?: ""
 
 	private val tag: String = buildString {
 		val vLang = language

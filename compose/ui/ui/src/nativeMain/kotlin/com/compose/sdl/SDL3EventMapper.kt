@@ -24,6 +24,10 @@ sealed class AppEvent {
 	   cleared, so it's dispatched even when blank (unlike committed TextInput). */
 	data class TextEditing(val text: String, val windowId: UInt = 0u) : AppEvent()
 	data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float, val windowId: UInt = 0u) : AppEvent()
+	/* The pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). The loop clears
+	   the window's hover state so a widget doesn't stay highlighted after the cursor
+	   exits (SDL then sends no motion, so nothing else would clear it). */
+	data class PointerExit(val windowId: UInt = 0u) : AppEvent()
 	data class WindowResized(val windowId: UInt = 0u) : AppEvent()
 	/* The user asked THIS window to close (OS close button). The loop routes it
 	   through the window's close-interception then its onCloseRequest. */
@@ -125,6 +129,9 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_WINDOW_RESTORED -> AppEvent.WindowActivation(e.window.windowID, visible = true)
 		SDL_EVENT_WINDOW_HIDDEN,
 		SDL_EVENT_WINDOW_MINIMIZED -> AppEvent.WindowActivation(e.window.windowID, visible = false)
+
+		// Pointer left the window — clear hover (SDL sends no further motion).
+		SDL_EVENT_WINDOW_MOUSE_LEAVE -> AppEvent.PointerExit(e.window.windowID)
 
 		SDL_EVENT_TEXT_INPUT -> {
 			val vText = e.text.text?.toKString().orEmpty()
