@@ -908,6 +908,14 @@ internal class WindowInstance(
 		backend.updateWindowSize()
 		vRender.ensureSize(backend.pixelWidth, backend.pixelHeight)
 		host.setConstraints(backend.pixelWidth, backend.pixelHeight)
+		// Deliver any state written by this iteration's frame-clock continuations
+		// (withFrameNanos animations — notably smooth wheel scrolling) BEFORE we lay
+		// out. Those writes happen in the per-window pump's sendFrame()/yield(), which
+		// is AFTER the loop's last sendApplyNotifications() — so without this the
+		// relayout they trigger wasn't registered until the next frame, and the frame
+		// drew last frame's positions. That one-frame trail read as "the clip is a
+		// frame late" when scrolling (content briefly drawn past the viewport edge).
+		Snapshot.sendApplyNotifications()
 		host.measureAndLayout()
 		FrameProfiler.phase("  layout")
 
