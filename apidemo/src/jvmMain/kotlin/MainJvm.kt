@@ -14,10 +14,10 @@ import androidx.compose.ui.window.rememberWindowState
 // org.jetbrains.compose. Client-certificate (mTLS) features are native-only
 // (they drive the bundled libcurl); the jvm actuals report that instead.
 fun main() = application {
-    // Voltic window icon — the background-less mark (mirrors the native window
-    // icon). Staged onto the classpath at icon/ by jvmProcessResources.
+    // Voltic window icon (mirrors the native window icon). Staged onto the
+    // classpath at icon/ by jvmProcessResources.
     val vIcon = remember {
-        BitmapPainter(useResource("icon/voltic-mark-256.png") { loadImageBitmap(it) })
+        BitmapPainter(useResource("icon/voltic-icon-256.png") { loadImageBitmap(it) })
     }
     Window(
         // The shared App installs a persist-then-close hook (InstallWindowHooks).

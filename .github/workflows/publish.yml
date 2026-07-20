@@ -215,10 +215,11 @@ jobs:
           exit 1
 
       # Release binaries for the host target — the binary plus the data.kres
-      # (bundled composeResources + fonts + subset icon-font). Each :demo /
-      # :apidemo has its linkReleaseExecutable<Target> task wired to auto-run
-      # the matching copy<Variant>ComposeResources<Target> so data.kres is
-      # produced next to the .kexe / .exe. On Linux only linuxX64 is built —
+      # (bundled composeResources + fonts + subset icon-font). Each app's
+      # linkReleaseExecutable<Target> auto-runs its data.kres zip task —
+      # :demo's own copy<Variant>ComposeResources<Target>, :apidemo's
+      # bridge-plugin package<Variant>ComposeResources<Target> — so data.kres
+      # is produced next to the .kexe / .exe. On Linux only linuxX64 is built —
       # linuxArm64 is skipped since the SDL3 static libs on the ubuntu runner
       # are host-arch (x64).
       - name: Build demo + apidemo release binaries

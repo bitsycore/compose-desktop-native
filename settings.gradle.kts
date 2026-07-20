@@ -5,6 +5,11 @@ pluginManagement {
         gradlePluginPortal()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
+    // The consumer-side bridge plugin, built from source as an INCLUDED build
+    // (it cannot be a subproject: a plugins { id(...) } block can only resolve
+    // plugins from repositories or included builds). :apidemo applies it —
+    // dogfooding the exact packaging / icon pipeline third-party apps get.
+    includeBuild("gradle-plugin/compose-desktop-native-bridge")
 }
 
 @Suppress("UnstableApiUsage")
@@ -64,7 +69,6 @@ include(":window")
 include(":material-symbols")
 include(":navigation3-ui")
 include(":components-resources")
-include(":compose-desktop-native-bridge")
 project(":ui").projectDir = file("compose/ui/ui")
 project(":ui-util").projectDir = file("compose/ui/ui-util")
 project(":ui-geometry").projectDir = file("compose/ui/ui-geometry")
@@ -82,7 +86,6 @@ project(":window").projectDir = file("compose/sdl/window")
 project(":material-symbols").projectDir = file("utils/material-symbols")
 project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")
 project(":components-resources").projectDir = file("components/resources/library")
-project(":compose-desktop-native-bridge").projectDir = file("gradle-plugin/compose-desktop-native-bridge")
 
 // Demo App testing foundation, animation, ui and material3
 include(":demo")

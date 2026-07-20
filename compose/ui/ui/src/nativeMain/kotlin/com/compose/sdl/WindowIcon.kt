@@ -15,8 +15,8 @@ import sdl3.SDL_Surface
 // The runtime window / taskbar icon is built entirely from CORE SDL — no
 // SDL3_image or Skia decode — so it works identically on every renderer and
 // every target (core `sdl3` is linked on all of them; the image decoders are
-// not). Icons are bundled as pre-decoded RGBA blobs (produced by
-// scripts/make-app-icon.py "rgba" mode): an 8-byte little-endian header
+// not). Icons are bundled as pre-decoded RGBA blobs (produced by the bridge
+// plugin's icon {} packaging or scripts/make-app-icon.py): an 8-byte little-endian header
 // [width u32][height u32] followed by width*height*4 straight-alpha RGBA bytes —
 // the exact memory layout of SDL_PIXELFORMAT_RGBA32, so filling the surface is a
 // per-row memcpy with no conversion.

@@ -10,7 +10,8 @@ package com.compose.sdl
  * (and it is non-empty), otherwise [light].
  *
  * Each list holds data.kres resource paths of PRE-DECODED `.rgba` icon blobs
- * (produced by `scripts/make-app-icon.py rgba`, i.e. an 8-byte
+ * (produced by the bridge plugin's `icon { }` packaging, or by
+ * `scripts/make-app-icon.py rgba` — i.e. an 8-byte
  * `[width u32-le][height u32-le]` header + straight-alpha RGBA pixels). List
  * one path per size you bundle; the largest becomes the base and the rest are
  * attached as alternate resolutions SDL chooses from (title bar vs taskbar vs

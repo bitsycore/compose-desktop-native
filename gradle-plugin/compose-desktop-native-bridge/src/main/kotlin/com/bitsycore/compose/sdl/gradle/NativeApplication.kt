@@ -69,9 +69,10 @@ abstract class NativeIconSpec {
  * Declares an executable with the given entry point on every Kotlin/Native
  * DESKTOP target (mingwX64 / linuxX64 / linuxArm64 / macosArm64) — replacing
  * the hand-written `targets.withType<KotlinNativeTarget> { binaries.executable
- * { entryPoint = … } }` block. Targets that already declare an executable are
- * left untouched, so manual configuration (extra linker flags, custom build
- * types) still wins.
+ * { entryPoint = … } }` block. Hand-declared executables keep everything they
+ * configure (linker flags, build types); [entryPoint] only fills in where the
+ * executable didn't set one, so the DSL composes with a manual
+ * `binaries.executable { }` block.
  */
 abstract class ComposeDesktopNativeExtension {
 	/** Entry point (`package.functionName`) for the native executables. */
@@ -101,6 +102,7 @@ internal fun installNativeApplicationDsl(project: Project) {
 			val nativeExt = desktopExt.extensions.create("native", ComposeDesktopNativeExtension::class.java)
 			project.afterEvaluate {
 				configureNativeExecutables(it, nativeExt)
+				injectWindowsIconLinkerOpts(it, nativeExt)
 				installAppIcon(it, nativeExt)
 			}
 		}
@@ -121,31 +123,60 @@ private fun configureNativeExecutables(project: Project, ext: ComposeDesktopNati
 		val family = konanTarget.javaClass.getMethod("getFamily").invoke(konanTarget)
 		if ((family as Enum<*>).name !in desktopKonanFamilies) continue
 		val binaries = target.javaClass.getMethod("getBinaries").invoke(target)
-		// Respect manual configuration: skip targets that already have an
-		// executable (matching by the binary class, not the name suffix).
-		val existing = (binaries as Iterable<*>).any { it != null && it.javaClass.simpleName == "Executable" }
-		if (existing) continue
-		val executableMethod = binaries.javaClass.methods.first {
-			it.name == "executable" && it.parameterCount == 1 && Action::class.java.isAssignableFrom(it.parameterTypes[0])
-		}
-		// On mingw, also link the windres icon-resource object into the .exe (its
-		// path is fixed; the object is produced by compileComposeNativeIconResource,
-		// wired as a link dependency in installAppIcon).
-		val isMingw = (family as Enum<*>).name == "MINGW"
-		val iconObjPath = if (isMingw && wantsWindowsIconEmbed(ext)) appIconObjectFile(project).absolutePath else null
-		executableMethod.invoke(binaries, Action<Any> { binary ->
-			binary.javaClass.getMethod("setEntryPoint", String::class.java).invoke(binary, entryPoint)
-			if (iconObjPath != null) {
-				try {
-					// linkerOpts(vararg String) compiles to linkerOpts(String[]).
-					binary.javaClass.getMethod("linkerOpts", Array<String>::class.java)
-						.invoke(binary, arrayOf(iconObjPath))
-				} catch (t: Throwable) {
-					project.logger.warn(
-						"compose-desktop-native: couldn't add the Windows icon linker option " +
-							"reflectively (${t.message}); the .exe icon won't be embedded.")
+		val existing = (binaries as Iterable<*>).filterNotNull()
+			.filter { it.javaClass.simpleName == "Executable" }
+		if (existing.isEmpty()) {
+			val executableMethod = binaries.javaClass.methods.first {
+				it.name == "executable" && it.parameterCount == 1 && Action::class.java.isAssignableFrom(it.parameterTypes[0])
+			}
+			executableMethod.invoke(binaries, Action<Any> { binary ->
+				binary.javaClass.getMethod("setEntryPoint", String::class.java).invoke(binary, entryPoint)
+			})
+		} else {
+			// Hand-declared executables (e.g. a binaries.executable {} block kept
+			// for custom linker flags): fill in the entry point where unset, keep
+			// everything else as declared.
+			for (binary in existing) {
+				val current = binary.javaClass.getMethod("getEntryPoint").invoke(binary)
+				if (current == null) {
+					binary.javaClass.getMethod("setEntryPoint", String::class.java).invoke(binary, entryPoint)
 				}
 			}
-		})
+		}
+	}
+}
+
+/* Adds the windres icon-resource object (produced by
+   compileComposeNativeIconResource, wired as a link dependency in
+   installAppIcon) to the linker options of EVERY mingw executable — the ones
+   `native { entryPoint }` just created AND hand-configured
+   `binaries.executable { }` ones, so apps that declare their own executables
+   for custom linker flags still get the .exe icon. Runs in afterEvaluate,
+   after configureNativeExecutables materialised the plugin's executables. */
+private fun injectWindowsIconLinkerOpts(project: Project, ext: ComposeDesktopNativeExtension) {
+	if (!wantsWindowsIconEmbed(ext)) return
+	val kotlinExt = project.extensions.findByName("kotlin") ?: return
+	@Suppress("UNCHECKED_CAST")
+	val targets = kotlinExt.javaClass.getMethod("getTargets").invoke(kotlinExt) as NamedDomainObjectCollection<Any>
+	val iconObjPath = appIconObjectFile(project).absolutePath
+	for (target in targets) {
+		val platformType = target.javaClass.getMethod("getPlatformType").invoke(target)
+		if (platformType.toString() != "native") continue
+		val konanTarget = target.javaClass.getMethod("getKonanTarget").invoke(target)
+		val family = konanTarget.javaClass.getMethod("getFamily").invoke(konanTarget)
+		if ((family as Enum<*>).name != "MINGW") continue
+		val binaries = target.javaClass.getMethod("getBinaries").invoke(target)
+		for (binary in binaries as Iterable<*>) {
+			if (binary == null || binary.javaClass.simpleName != "Executable") continue
+			try {
+				// linkerOpts(vararg String) compiles to linkerOpts(String[]).
+				binary.javaClass.getMethod("linkerOpts", Array<String>::class.java)
+					.invoke(binary, arrayOf(iconObjPath))
+			} catch (t: Throwable) {
+				project.logger.warn(
+					"compose-desktop-native: couldn't add the Windows icon linker option " +
+						"reflectively (${t.message}); the .exe icon won't be embedded.")
+			}
+		}
 	}
 }

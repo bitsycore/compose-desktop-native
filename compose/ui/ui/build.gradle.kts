@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import java.net.URI
 
 // :core — the renderer-agnostic Compose base + both renderer pipelines.
 //
@@ -251,32 +250,5 @@ kotlin {
             "-opt-in=androidx.compose.ui.InternalComposeUiApi",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"
         )
-    }
-}
-
-// ==================
-// MARK: Default + monospace fonts (Google Noto, downloaded at build time)
-// ==================
-
-val notoSansFont = layout.buildDirectory.file("fonts/NotoSans.ttf")
-val notoSansMonoFont = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
-
-val downloadNotoFonts = tasks.register("downloadNotoFonts") {
-    description = "Download Google NotoSans and NotoSansMono variable fonts to build/fonts/ for use in SDL3 text rendering"
-    val vDownloads = listOf(
-        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
-            to notoSansFont.get().asFile,
-        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf"
-            to notoSansMonoFont.get().asFile,
-    )
-    outputs.files(vDownloads.map { it.second })
-    doLast {
-        for ((vUrl, vOut) in vDownloads) {
-            if (vOut.exists() && vOut.length() > 0) continue
-            vOut.parentFile.mkdirs()
-            println("Downloading $vUrl")
-            URI(vUrl).toURL().openStream().use { vIn -> vOut.outputStream().use { vIn.copyTo(it) } }
-            println("Saved ${vOut.length() / 1024} KiB to $vOut")
-        }
     }
 }

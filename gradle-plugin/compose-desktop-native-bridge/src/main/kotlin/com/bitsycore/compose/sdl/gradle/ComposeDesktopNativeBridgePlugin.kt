@@ -45,6 +45,15 @@ private const val portGroup = "com.bitsycore.compose.sdl"
 /** Gradle property overriding the substitution version (default: the plugin's own). */
 private const val versionProperty = "composeDesktopNative.version"
 
+/**
+ * Gradle property ("false") disabling the dependency substitution while keeping
+ * the rest of the plugin (data.kres packaging, app icon, `compose.desktop.native`
+ * DSL). For builds that already provide the port modules another way — the port
+ * repo itself sets it: its root build substitutes the official coords to
+ * PROJECT modules, and the published klibs don't exist for dev versions.
+ */
+private const val substitutionProperty = "composeDesktopNative.substitution"
+
 // ==================
 // MARK: composeDesktopNative { } — version info exposed to the consumer
 // ==================
@@ -145,6 +154,9 @@ private fun installBridge(project: Project) {
 		extra["composeDesktopNative.composeMaterial3"] = bridgeProperty("composeMaterial3")
 		extra["composeDesktopNative.composeRuntime"] = bridgeProperty("composeRuntime")
 	}
+
+	val substitutionEnabled = project.providers.gradleProperty(substitutionProperty).orNull?.toBoolean() ?: true
+	if (!substitutionEnabled) return
 
 	project.configurations.configureEach { configuration ->
 		if (nativeTargetTokens.any { configuration.name.contains(it, ignoreCase = true) }) {

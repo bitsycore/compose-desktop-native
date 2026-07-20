@@ -1,4 +1,4 @@
-// :compose-desktop-native-bridge — the CONSUMER-side bridge, published as a Gradle plugin.
+// compose-desktop-native-bridge — the CONSUMER-side bridge, published as a Gradle plugin.
 //
 // Dependency-substitution rules cannot travel inside a Maven artifact (they
 // are always configured in the consuming build), so the FULL-COMMONIZATION
@@ -9,11 +9,53 @@
 // macosArm64) swaps them for the published com.bitsycore.compose.sdl klibs —
 // the official artifacts keep serving every platform CMP already supports.
 //
-// Published by the macOS publish job (host-independent jar):
+// This is an INCLUDED build (pluginManagement.includeBuild in the repo's
+// settings.gradle.kts), not a subproject — :apidemo applies the plugin from
+// source. The root build's allprojects/subprojects blocks don't reach it, so
+// coordinates + publishing are declared here.
+//
+// Published by the WINDOWS publish job (host-independent jar):
 //   :compose-desktop-native-bridge:publishAllPublicationsToGitHubPackagesRepository
+// (composite task addressing — the leading path segment is the included
+// build's name).
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `java-gradle-plugin`
+    `maven-publish`
+}
+
+// Same coordinate scheme as the root build: version is driven by
+// PUBLISH_VERSION (the git tag, `v1.2.3` → `1.2.3`); local dev = SNAPSHOT.
+group = "com.bitsycore.compose.sdl"
+version = (System.getenv("PUBLISH_VERSION") ?: "0.0.0-SNAPSHOT").removePrefix("v")
+
+// Mirrors the root build's GitHub Packages publishing block (which no longer
+// reaches this module now that it's an included build).
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            val vRepo = System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"
+            url = uri("https://maven.pkg.github.com/$vRepo")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name.set("ComposeDesktopNative ${project.name}")
+            description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) — ${project.name}")
+            url.set("https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"}")
+            licenses {
+                license {
+                    name.set("MIT")
+                    url.set("https://opensource.org/licenses/MIT")
+                }
+            }
+        }
+    }
 }
 
 

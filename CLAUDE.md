@@ -132,16 +132,31 @@ apidemo/             → :apidemo   — Postman-style REST API manager. MULTIPLA
                                     expect/actual seams (compat/Compat.kt — native actuals delegate
                                     to com.compose.sdl, jvm actuals use AWT + upstream desktop).
                                     mTLS / TLS-chain inspection stays native-only (bundled libcurl).
+                                    DOGFOODS the bridge plugin: data.kres packaging + app icon come
+                                    from compose.desktop.native {}; only the font pipeline (Noto +
+                                    Material Symbols subsetting) stays custom in its build file.
 gradle-plugin/
-└── compose-desktop-native-bridge/ → :compose-desktop-native-bridge — the CONSUMER-side bridge as a
-                                    published Gradle plugin (id com.bitsycore.compose-desktop-native
-                                    .bridge, applies to Settings or Project): substitution rules
-                                    can't ship inside Maven artifacts, so third-party apps apply the
-                                    plugin, declare OFFICIAL CMP coords in commonMain, and native
-                                    configurations swap in the published com.bitsycore.compose.sdl
-                                    klibs. Substituted version defaults to the plugin's own
-                                    (override: composeDesktopNative.version property). Published by
-                                    the macOS publish job.
+└── compose-desktop-native-bridge/ → the CONSUMER-side bridge as a published Gradle plugin
+                                    (id com.bitsycore.compose-desktop-native.bridge, applies to
+                                    Settings or Project). An INCLUDED build (pluginManagement.
+                                    includeBuild in settings.gradle.kts), NOT a subproject — a
+                                    plugins{} block can only resolve plugins from repositories or
+                                    included builds; :apidemo applies it from source (dogfooding:
+                                    its data.kres packaging + app icon run through the plugin).
+                                    Three halves: (1) substitution — third-party apps declare
+                                    OFFICIAL CMP coords in commonMain and native configurations
+                                    swap in the published com.bitsycore.compose.sdl klibs
+                                    (version defaults to the plugin's own; override:
+                                    composeDesktopNative.version property; disable:
+                                    composeDesktopNative.substitution=false — set repo-wide in
+                                    gradle.properties since the root build's FULL-COMMONIZATION
+                                    BRIDGE substitutes to project modules in-repo); (2) data.kres
+                                    packaging (package<Variant>ComposeResources<Target> per native
+                                    executable, honours -PcompressResources); (3) the
+                                    compose.desktop.native { entryPoint / icon {} } DSL (.rgba
+                                    runtime icons + windres .exe embed — injected into
+                                    hand-declared executables too). Published by the WINDOWS
+                                    publish job.
 scripts/             → vendor-sync + python helper scripts (compose-coverage = API
                       coverage/fidelity vs upstream, material-symbols generate/subset)
                       + compose-fork/;
@@ -393,9 +408,10 @@ Every app ships `<app>.exe` + `data.kres` (a STORED zip alongside the
 executable, loaded via `SDL_GetBasePath()`). Contents:
 
 - App drawables + files under `composeResources/{drawable,files}/`
-- `font/NotoSans.ttf` — the default variable font, downloaded once by
-  `:ui:downloadNotoFonts` into `compose/ui/build/fonts/`. Pass
-  `-PbundleDefaultFont=false` to skip.
+- `font/NotoSans.ttf` — the default variable font. Bundling it is the APP's
+  job: each app registers its own `downloadNotoFonts` task (into
+  `<app>/build/fonts/`); the library ships no download task. Pass
+  `-PbundleDefaultFont=false` to skip (demo).
 - `font/NotoSansMono.ttf` — mono body font (apidemo only)
 - Material Symbols fonts for the styles the app **actually uses** — the
   Zip task scans the app's Kotlin sources for `MaterialSymbolsOutlined` /

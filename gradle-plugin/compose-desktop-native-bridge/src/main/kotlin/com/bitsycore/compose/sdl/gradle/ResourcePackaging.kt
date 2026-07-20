@@ -80,9 +80,13 @@ private fun registerDataKresTasks(project: Project) {
 						"bin/${target.replaceFirstChar { it.lowercase() }}/${variant.replaceFirstChar { it.lowercase() }}Executable"
 					)
 				)
-				// STORED: the runtime's reader hands raw bytes straight to the
-				// decoders — an entry is one fseek+fread, never inflated.
-				task.entryCompression = ZipEntryCompression.STORED
+				// STORED by default: the runtime's reader hands raw bytes straight
+				// to the decoders — an entry is one fseek+fread. -PcompressResources=true
+				// switches to DEFLATED for a smaller distributable (the reader also
+				// inflates raw-deflate entries, via the system zlib, at a small
+				// read-time cost).
+				val compress = project.providers.gradleProperty("compressResources").orNull?.toBoolean() ?: false
+				task.entryCompression = if (compress) ZipEntryCompression.DEFLATED else ZipEntryCompression.STORED
 				task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 				val resPackage = project.resolveResourcePackage()
 				val prepareNames = sourceSets

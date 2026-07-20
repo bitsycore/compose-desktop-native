@@ -118,8 +118,9 @@ compose.desktop {
 
 Declares an executable with that entry point on every Kotlin/Native desktop
 target — no `targets.withType<KotlinNativeTarget> { binaries.executable { … } }`
-boilerplate. Targets that already declare an executable are left untouched,
-so manual configuration (extra linker flags, custom build types) still wins.
+boilerplate. If you declare your own `binaries.executable { }` (e.g. for extra
+linker flags), it keeps everything it configures; `entryPoint` only fills in
+where the executable didn't set one, so the two compose.
 
 ### App icon
 
@@ -164,9 +165,9 @@ The plugin (no Python / native tooling needed — pure-Kotlin codec):
   `exeIcon` is unset), compiles it with `windres` (mingw-w64 binutils), and links
   it into the `.exe` so Explorer and the pinned taskbar show it. Set
   `embedWindowsIcon.set(false)` to skip this (e.g. if `windres` isn't installed).
-  This only affects the manually un-configured executable the plugin creates via
-  `native { }`; if you declare your own `binaries.executable { }`, add the
-  resource object yourself.
+  The resource object is linked into every mingw executable — the one the plugin
+  creates via `native { entryPoint }` and hand-declared
+  `binaries.executable { }` ones alike.
 
 The runtime window icon and the `.exe` icon can differ: point `light` at a
 background-less mark (looks right in the taskbar) and `exeIcon` at the full
@@ -194,11 +195,19 @@ commonMain.dependencies {
 overrides follow the default hierarchy (a `mingwX64Main` resource beats a
 `commonMain` one).
 
+`data.kres` entries are STORED by default (the runtime reads an entry with one
+fseek+fread). Pass `-PcompressResources=true` (or set it in `gradle.properties`)
+to DEFLATE them for a smaller distributable — the runtime inflates on read.
+
 ## Notes
 
 - The substituted klib version defaults to the plugin's own version (both ship
   from the same tag). Override with `composeDesktopNative.version=<x>` in
   `gradle.properties` when mixing releases.
+- `composeDesktopNative.substitution=false` disables the substitution half while
+  keeping the packaging / icon / `compose.desktop.native` DSL — for builds that
+  already provide the port modules another way (the port repo itself uses this:
+  its root build substitutes the official coords to project modules).
 - Use `composeDesktopNative.compose` / `.composeMaterial3` / `.composeRuntime`
   (above) for the official coords rather than hardcoding a version. Substitution
   replaces the requested version on native, but your jvm/android targets resolve

@@ -3,6 +3,7 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.DisableCacheInKotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCacheApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -13,30 +14,11 @@ plugins {
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
-// JVM parity target's Compose version — the Maven build matching the pinned
-// COMPOSE_CORE_REF (see scripts/compose-fork/compose.properties). material3
-// rides its OWN release train (different base version). Forcing keeps the
-// core-repo groups locked to the pin on every jvm configuration even when
-// the umbrella plugin's own version would win conflict resolution (essential
-// for "+dev" pins, which Gradle orders BELOW the plain version). Umbrella-repo
-// groups (desktop, components) are NOT forced: their versioning differs.
+// Compose versions for the shared coords. The jvm-parity forcing (locking the
+// jvm configurations to this pin, essential for "+dev" builds) lives in the
+// root build — kComposeJvmForced, applied to all app modules.
 val vComposeJvmVersion = libs.versions.compose.get()
 val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
-val vComposeJvmForced = mapOf(
-    "org.jetbrains.compose.runtime" to vComposeJvmVersion,
-    "org.jetbrains.compose.ui" to vComposeJvmVersion,
-    "org.jetbrains.compose.foundation" to vComposeJvmVersion,
-    "org.jetbrains.compose.animation" to vComposeJvmVersion,
-    "org.jetbrains.compose.material" to vComposeJvmVersion,
-    "org.jetbrains.compose.material3" to vComposeM3JvmVersion,
-)
-configurations.configureEach {
-    if (name.startsWith("jvm")) {
-        resolutionStrategy.eachDependency {
-            vComposeJvmForced[requested.group]?.let { useVersion(it) }
-        }
-    }
-}
 
 kotlin {
     jvm()
@@ -208,8 +190,8 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // Two roots merge into a single archive <exe>/data.kres, loaded at
 // runtime via SDL_GetBasePath() + "data.kres":
 //   - the demo's own assets (drawable/, files/), and
-//   - the library's default font (font/NotoSans.ttf, variable wght/wdth),
-//     downloaded by :core, that the text renderers load at startup.
+//   - the default font (font/NotoSans.ttf, variable wght/wdth), downloaded by
+//     this app's downloadNotoFonts task, that the text renderers load at startup.
 // Entries are STORED (no compression) so the ZIP reader in ResourceIO.kt can
 // hand the raw bytes to SDL3_image / SDL3_ttf / Skia without inflating anything
 // — readBytes is an fseek+fread per entry, not a whole-archive memory load.
@@ -217,12 +199,27 @@ val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
 // renderers then fall back to a system font.
 
 val composeResourcesDir = layout.projectDirectory.dir("src/commonMain/composeResources")
-// :core downloads the variable Noto Sans default font into its build/fonts.
-// Reference it by layout (a lazy provider, no evaluation of :core needed) and
-// depend on the download task by path so ordering doesn't rely on :core being
-// configured first.
-val notoSansFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSans.ttf")
-val notoSansMonoFile = rootProject.project(":ui").layout.buildDirectory.file("fonts/NotoSansMono.ttf")
+// Bundling the default font is the app's job (the library ships no download task).
+val notoSansFile = layout.buildDirectory.file("fonts/NotoSans.ttf")
+val notoSansMonoFile = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
+val downloadNotoFonts = tasks.register("downloadNotoFonts") {
+    description = "Download the Google Noto variable fonts (Sans + SansMono) to build/fonts/."
+    val vDownloads = listOf(
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
+            to notoSansFile.get().asFile,
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf"
+            to notoSansMonoFile.get().asFile,
+    )
+    outputs.files(vDownloads.map { it.second })
+    doLast {
+        for ((vUrl, vOut) in vDownloads) {
+            if (vOut.exists() && vOut.length() > 0) continue
+            vOut.parentFile.mkdirs()
+            println("Downloading $vUrl")
+            URI(vUrl).toURL().openStream().use { vIn -> vOut.outputStream().use { vIn.copyTo(it) } }
+        }
+    }
+}
 val bundleDefaultFont = (findProperty("bundleDefaultFont") as? String)?.toBoolean() ?: true
 
 // Bundle NotoSansMono (backs FontFamily.Monospace) only if the app uses it —
@@ -279,11 +276,11 @@ for (variant in variants) {
             // Default UI font (Noto Sans), downloaded by :core.
             if (bundleDefaultFont) {
                 from(notoSansFile) { into("font") }
-                dependsOn(":ui:downloadNotoFonts")
+                dependsOn(downloadNotoFonts)
             }
             if (usesMonospace) {
                 from(notoSansMonoFile) { into("font") }
-                dependsOn(":ui:downloadNotoFonts")
+                dependsOn(downloadNotoFonts)
             }
             // Pull each USED style's downloaded .ttf into the font/ entry.
             // `:material-symbols` module exposes per-style extras named
@@ -329,5 +326,5 @@ tasks.named<ProcessResources>("jvmProcessResources") {
     // renders text with NotoSans too — collapsing the font-drift baseline to (near) just
     // rasterizer AA. MainJvm loads it from /font/NotoSans.ttf.
     from(notoSansFile) { into("font") }
-    dependsOn(":ui:downloadNotoFonts")
+    dependsOn(downloadNotoFonts)
 }

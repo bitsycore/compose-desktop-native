@@ -18,8 +18,9 @@ plugins {
 // surface worth tracking, so skip them.
 apiValidation {
     klib { enabled = true }
-    // compose-desktop-native-bridge is a plain JVM Gradle plugin — no klib ABI to track.
-    ignoredProjects.addAll(listOf("demo", "apidemo", "compose-desktop-native-bridge"))
+    // (compose-desktop-native-bridge is an INCLUDED build, not a subproject —
+    // out of BCV's reach by construction.)
+    ignoredProjects.addAll(listOf("demo", "apidemo"))
 }
 
 // Project coordinates. `group` is baked into every module's Kotlin/Native klib
@@ -66,6 +67,20 @@ val kPublishedLibs = setOf(
 val kUseGhPackages = (findProperty("useGithubPackages") as? String)?.toBoolean() == true
 val kConsumeVersion = (findProperty("consumeVersion") as? String) ?: "0.1.0"
 
+// JVM-PARITY VERSION PIN (app modules): force the org.jetbrains.compose groups
+// on every jvm configuration to the catalog pin matching COMPOSE_CORE_REF.
+// Gradle orders "+dev" BELOW the plain version, so whenever the pin is a dev
+// build the umbrella plugin's published artifacts would win conflict resolution
+// and silently break byte-exact parity with the vendored sources.
+val kComposeJvmForced = mapOf(
+    "org.jetbrains.compose.runtime" to libs.versions.compose.get(),
+    "org.jetbrains.compose.ui" to libs.versions.compose.get(),
+    "org.jetbrains.compose.foundation" to libs.versions.compose.get(),
+    "org.jetbrains.compose.animation" to libs.versions.compose.get(),
+    "org.jetbrains.compose.material" to libs.versions.compose.get(),
+    "org.jetbrains.compose.material3" to libs.versions.composeMaterial3.get(),
+)
+
 subprojects {
     if (kUseGhPackages && path in kAppModules) {
         configurations.configureEach {
@@ -79,7 +94,16 @@ subprojects {
             }
         }
     }
-    if (path in kAppModules) return@subprojects
+    if (path in kAppModules) {
+        configurations.configureEach {
+            if (name.startsWith("jvm")) {
+                resolutionStrategy.eachDependency {
+                    kComposeJvmForced[requested.group]?.let { useVersion(it) }
+                }
+            }
+        }
+        return@subprojects
+    }
     plugins.apply("maven-publish")
     afterEvaluate {
         extensions.configure<PublishingExtension> {

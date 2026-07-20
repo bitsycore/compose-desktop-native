@@ -1,140 +1,59 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-
-// :apidemo — a Postman-style REST API manager built on the compose-desktop-native
-// stack. Uses Ktor with the Curl engine on every desktop target (bundled
-// libcurl: Schannel on Windows, OpenSSL on macOS/Linux),
-// kotlinx.serialization for the savable "packs", and okio for file I/O.
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
+    id("com.bitsycore.compose-desktop-native.bridge")
 }
 
-// Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
-
-// JVM parity target's Compose version — the dev build matching the pinned
-// COMPOSE_CORE_REF (see scripts/compose-fork/compose.properties); mirrors
-// :demo's forcing (Gradle orders "+dev" BELOW the plain version, so the
-// plugin's beta01 would win conflict resolution without it).
-val vComposeJvmVersion = libs.versions.compose.get()
-val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
-val vComposeJvmForced = mapOf(
-    "org.jetbrains.compose.runtime" to vComposeJvmVersion,
-    "org.jetbrains.compose.ui" to vComposeJvmVersion,
-    "org.jetbrains.compose.foundation" to vComposeJvmVersion,
-    "org.jetbrains.compose.animation" to vComposeJvmVersion,
-    "org.jetbrains.compose.material" to vComposeJvmVersion,
-    "org.jetbrains.compose.material3" to vComposeM3JvmVersion,
-)
-configurations.configureEach {
-    if (name.startsWith("jvm")) {
-        resolutionStrategy.eachDependency {
-            vComposeJvmForced[requested.group]?.let { useVersion(it) }
-        }
-    }
-}
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 // ==================
-// MARK: App icon (voltic) — config
+// MARK: Targets
 // ==================
-// Source PNGs live in apidemo/icons/. scripts/make-app-icon.py turns them into:
-//   - .rgba blobs bundled into data.kres → the RUNTIME window/taskbar icon
-//     (theme-aware SDL_SetWindowIcon), works on every target;
-//   - a multi-size .ico compiled by windres and linked into the mingw .exe →
-//     the Explorer / pinned-taskbar icon (Windows only).
-// -PembedWindowsIcon=false skips only the .exe embed (e.g. if windres is absent).
-val embedWindowsIcon = (findProperty("embedWindowsIcon") as? String)?.toBoolean() ?: true
-val appIconDir = layout.projectDirectory.dir("icons")
-val appIconBuildDir = layout.buildDirectory.dir("appicon")
-val appIconObject = appIconBuildDir.map { it.file("app_icon.o") }
-val makeIconScript = rootProject.layout.projectDirectory.file("scripts/make-app-icon.py")
-// Runtime window/taskbar icon: the background-less "mark" (a transparent purple
-// bolt) at two sizes (largest = base, smaller = alternate). The mark is
-// theme-neutral — it reads on both light and dark taskbars — so there is no
-// separate dark variant (the pack ships none).
-val appIconRuntimePngs = listOf("voltic-mark-32", "voltic-mark-128")
-// Windows .exe icon (Explorer / pinned taskbar): the full branded icon WITH its
-// background — stays legible on a white file-listing, unlike a bare mark.
-val appIconExePngs = listOf(16, 32, 48, 64, 128, 256).map { "voltic-icon-$it" }
 
 kotlin {
     jvm()
 
-    linuxArm64()
-    linuxX64()
-    macosArm64()
-    if (vHostSupportsMingw) mingwX64()
+    buildList {
+        add(linuxArm64())
+        add(linuxX64())
+        add(macosArm64())
+        if (vHostSupportsMingw) add(mingwX64())
+    }.forEach {
+        it.binaries {
+            executable {
+                when {
+                    target.name == "mingwX64" -> linkerOpts(
+                        // crypt32: client-cert (mTLS) import into the Windows cert store.
+                        "-lcrypt32",
+                        "-Wl,--gc-sections", "-Wl,-s",
+                        // GUI subsystem (no console window), keeping the C `main` entry.
+                        "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
+                    )
 
-    applyDefaultHierarchyTemplate()
-
-    targets.withType<KotlinNativeTarget>().all {
-        val isMingw = name == "mingwX64"
-        val isLinux = name.startsWith("linux")
-        val isApple = name.startsWith("macos") || name.startsWith("ios")
-        binaries.executable {
-            if (buildType == NativeBuildType.RELEASE) {
-                // --gc-sections is a GNU ld/lld flag; Apple's ld64 rejects it
-                // (it dead-strips at -O anyway). Only pass it on GNU-ld targets.
-                if (!isApple) linkerOpts("-Wl,--gc-sections")
-                compilerOptions {
-                    freeCompilerArgs.add("-opt")
+                    target.name.startsWith("linux") -> linkerOpts(
+                        "-L/usr/lib/x86_64-linux-gnu", "-L/usr/lib/aarch64-linux-gnu",
+                        "-lfontconfig", "-lGL", "-lX11",
+                    )
                 }
             }
-
-            entryPoint = "apidemo.main"
-            // SDL3 + SDL3_ttf + SDL3_image + FreeType + image codecs come from
-            // :ui's cinterop klibs (staticLibraries directive in each .def); the
-            // system libs they need are in sdl3.def's linkerOpts.<target>. Only
-            // shell-level flags and app-specific extras (crypt32 for mTLS) live
-            // here. Ktor's Curl engine bundles its own libcurl + TLS stack.
-            if (isMingw) {
-                linkerOpts(
-                    // crypt32: client-cert (mTLS) import into the Windows cert store
-                    // (CertOpenStore / PFXImportCertStore / CertAddCertificateContextToStore…).
-                    "-lcrypt32",
-                    // Code-shrink: drop unused sections and strip symbols.
-                    "-Wl,--gc-sections", "-Wl,-s",
-                    // GUI subsystem so launching the .exe pops no console window.
-                    // Keep the standard C `main` entry — ld would otherwise default
-                    // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
-                    // fail to link, since Kotlin/Native emits `main`.
-                    "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
-                )
-                // Embed the app-icon resource object (windres output) — gives the
-                // .exe its Explorer / pinned-taskbar icon. The object is produced
-                // by compileWindowsIconResource, wired as a link dependency below.
-                if (embedWindowsIcon) linkerOpts(appIconObject.get().asFile.absolutePath)
-            }
-            // Skia (default renderer) references the system graphics stack.
-            // K/N's LLD sysroot on linuxX64 doesn't include the host's multi-arch
-            // dir, so add the -L for both x86_64 and aarch64 (harmless if either
-            // is absent — LLD skips missing dirs).
-            if (isLinux) linkerOpts(
-                "-L/usr/lib/x86_64-linux-gnu", "-L/usr/lib/aarch64-linux-gnu",
-                "-lfontconfig", "-lGL", "-lX11",
-            )
         }
     }
+
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         commonMain {
             dependencies {
-                // Common API on both stacks — usable from shared code.
-                implementation(project(":material-symbols"))
+                val vComposeJvmVersion = libs.versions.compose.get()
+                val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
 
-                // Official Maven coords for everything the shared UI touches,
-                // so commonMain metadata (and the IDE's common analysis)
-                // resolve. Metadata + jvm resolve them from Maven; the NATIVE
-                // configurations substitute each for its port module (root
-                // build's FULL-COMMONIZATION BRIDGE). Every artifact must be
-                // declared DIRECTLY: transitives of a substituted module are
-                // invisible to the granular-metadata visibility check. The
-                // runtime is the official klib everywhere, never substituted
-                // (jvm configs force the +dev build above).
+                // Official Maven coords for everything the shared UI touches; native
+                // configurations substitute them for the port modules automatically
+                // (root bridge in-repo, the bridge plugin for consumers).
                 implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 implementation("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.ui:ui-graphics:$vComposeJvmVersion")
@@ -148,6 +67,9 @@ kotlin {
                 implementation("org.jetbrains.compose.animation:animation-core:$vComposeJvmVersion")
                 implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
 
+                // Common Material Symbols Utility
+                implementation(project(":material-symbols"))
+
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
@@ -159,27 +81,14 @@ kotlin {
         }
         nativeMain {
             dependencies {
-                // The SDL window shell + main loop (native-only).
                 implementation(project(":window"))
-                // Single HTTP engine on every native target: Ktor's Curl
-                // engine. It bundles a static libcurl per target (Schannel on
-                // Windows, OpenSSL on macOS/Linux) embedded in its cinterop
-                // klib — no runtime DLL, one copy. Curl everywhere (not
-                // WinHttp/Darwin) so the client-certificate (mTLS) path —
-                // which calls the same bundled libcurl directly, since Ktor's
-                // engines expose no client-cert API — shares the exact same
-                // TLS stack as ordinary requests.
                 implementation(libs.ktor.client.curl)
             }
         }
         jvmMain {
             dependencies {
-                // Upstream Compose Desktop — the parity stack.
                 implementation(compose.desktop.currentOs)
-                // Coroutine-based engine on JVM; native targets keep Curl.
                 implementation(libs.ktor.client.cio)
-                // Dispatchers.Main provider on desktop JVM (must match
-                // kotlinx-coroutines-core's version — the catalog pins both).
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
@@ -197,38 +106,58 @@ compose.desktop {
     }
 }
 
-// SDL3 / SDL3_ttf / SDL3_image / FreeType are linked statically into the
-// executable (see the mingw linkerOpts above), so there are no runtime DLLs to
-// bundle — the distributable is just <app>.exe + data.kres.
-val variants = listOf("debug", "release")
+compose.desktop.native {
+    entryPoint = "apidemo.main"
+    icon {
+        // Window/taskbar icon → icon/<name>.rgba in data.kres (paths in Main.kt).
+        light.from(
+            layout.projectDirectory.file("icons/voltic-icon-32.png"),
+            layout.projectDirectory.file("icons/voltic-icon-128.png"),
+        )
+        dark.from(
+            layout.projectDirectory.file("icons/voltic-icon-dark-32.png"),
+            layout.projectDirectory.file("icons/voltic-icon-dark-128.png"),
+        )
+        // .exe (Explorer): the full branded icon with background.
+        exeIcon.from(listOf(16, 32, 48, 64, 128, 256).map {
+            layout.projectDirectory.file("icons/voltic-icon-$it.png")
+        })
+        embedWindowsIcon = providers.gradleProperty("embedWindowsIcon").map { it.toBoolean() }
+    }
+}
 
 // ==================
-// MARK: Bundle the default font (data.kres) next to each native executable
+// MARK: Fonts → data.kres + JVM classpath
 // ==================
-// Default UI font (Noto Sans) + monospace body font (Noto Sans Mono) are
-// downloaded by :core and exposed through these generic "extra" handles (the
-// same handshake the :material-symbols:* modules use). The renderers load
-// NotoSans (variable) as the default; apidemo registers NotoSansMono (variable)
-// with IconFont under "noto-mono" for the body editor.
-val nativeTargets = listOf("macosArm64", "linuxX64", "linuxArm64", "mingwX64")
-// :core downloads the variable Noto fonts into its build/fonts. Reference them
-// by layout (lazy providers, no evaluation of :core needed) and depend on the
-// download task by path so ordering doesn't rely on :core being configured first.
-val coreBuildDir = rootProject.project(":ui").layout.buildDirectory
-val notoSansFile = coreBuildDir.file("fonts/NotoSans.ttf")
-val notoMonoFile = coreBuildDir.file("fonts/NotoSansMono.ttf")
 
-// Which Material Symbols style(s) this app uses = which style call sites appear
-// in its Kotlin sources. `MaterialSymbolsOutlined(...)` → outlined font,
-// `MaterialSymbolsRounded(...)` → rounded, `MaterialSymbolsSharp(...)` → sharp.
-// The Zip task below downloads + bundles ONLY the fonts a style actually
-// referenced — an app that only ever calls MaterialSymbolsOutlined never pays
-// for Rounded/Sharp .ttf bytes (each is ~600KB uncompressed).
+val notoSansFile = layout.buildDirectory.file("fonts/NotoSans.ttf")
+val notoMonoFile = layout.buildDirectory.file("fonts/NotoSansMono.ttf")
+val downloadNotoFonts = tasks.register("downloadNotoFonts") {
+    description = "Download the Google Noto variable fonts (Sans + SansMono) to build/fonts/."
+    val vDownloads = listOf(
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
+            to notoSansFile.get().asFile,
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf"
+            to notoMonoFile.get().asFile,
+    )
+    outputs.files(vDownloads.map { it.second })
+    doLast {
+        for ((vUrl, vOut) in vDownloads) {
+            if (vOut.exists() && vOut.length() > 0) continue
+            vOut.parentFile.mkdirs()
+            println("Downloading $vUrl")
+            URI(vUrl).toURL().openStream().use { vIn -> vOut.outputStream().use { vIn.copyTo(it) } }
+        }
+    }
+}
+
+// A style's font is bundled only when its call sites appear in the sources.
 val kAllStyles = listOf(
     "Outlined" to Regex("\\bMaterialSymbolsOutlined\\b"),
     "Rounded"  to Regex("\\bMaterialSymbolsRounded\\b"),
     "Sharp"    to Regex("\\bMaterialSymbolsSharp\\b"),
 )
+
 fun detectUsedStyles(): List<String> {
     val vSrcRoot = layout.projectDirectory.dir("src").asFile
     val vUsed = mutableSetOf<String>()
@@ -243,17 +172,6 @@ fun detectUsedStyles(): List<String> {
 }
 val vUsedStyles: List<String> = detectUsedStyles()
 
-// ==================
-// MARK: Material Symbols subsetting (-PsubsetIcons=true)
-// ==================
-// scripts/subset-material-symbols.py scans this module's Kotlin sources for
-// MaterialSymbols.<Name> references and writes build/icons/usage-codepoint.txt.
-// When -PsubsetIcons=true is passed, each icon-font module's downloaded TTF
-// is hb-subset'd against that file and the Zip below bundles the trimmed
-// font instead of the full one — typically 80-95% smaller.
-//
-// Needs: python3 + hb-subset on PATH (brew install harfbuzz /
-// apt install harfbuzz-utils).
 val subsetIcons = (findProperty("subsetIcons") as? String)?.toBoolean() ?: false
 val iconsBuildDir = layout.buildDirectory.dir("icons")
 
@@ -274,15 +192,14 @@ val findMaterialSymbolsUsage = tasks.register<Exec>("findMaterialSymbolsUsage") 
     )
 }
 
-/* Register `subsetMaterialSymbols<Style>` for a style — hb-subsets the style's
-   downloaded TTF (owned by :material-symbols) to only the codepoints in
-   usage-codepoint.txt and writes the output under this app's build/icons/ dir. */
+/* hb-subset a style's downloaded TTF (owned by :material-symbols) to the
+   codepoints in usage-codepoint.txt, into this app's build/icons/. */
 fun registerSubsetTask(inStyle: String): TaskProvider<*> {
     val vSymbolsProject = rootProject.project(":material-symbols")
     return tasks.register("subsetMaterialSymbols$inStyle") {
         description = "hb-subset the $inStyle Material Symbols font to icons actually used."
         @Suppress("UNCHECKED_CAST")
-        val vInputProvider = vSymbolsProject.extra["iconFontFile$inStyle"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+        val vInputProvider = vSymbolsProject.extra["iconFontFile$inStyle"] as Provider<RegularFile>
         val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$inStyle"] as TaskProvider<*>
         val vOut = iconsBuildDir.get().file("MaterialSymbols$inStyle.subset.ttf").asFile
         val vUsage = iconsBuildDir.get().file("usage-codepoint.txt").asFile
@@ -301,11 +218,8 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
             vOut.parentFile.mkdirs()
             val vInputFile = vInputProvider.get().asFile
             val vBefore = vInputFile.length()
-            // ProcessBuilder rather than project.exec — the latter isn't
-            // available inside doLast on Gradle 9 (only ExecOperations via
-            // an injected service is, which would mean a buildSrc plugin).
-            // hb-subset (HarfBuzz) is optional: if it isn't on PATH — common on
-            // Windows — bundle the full font instead of failing the build.
+            // ProcessBuilder: project.exec isn't usable inside doLast on Gradle 9.
+            // hb-subset is optional — without it, bundle the full font.
             val vProc = try {
                 ProcessBuilder(
                     "hb-subset",
@@ -313,7 +227,7 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
                     "-o", vOut.absolutePath,
                     "--unicodes=$vUnicodes",
                 ).redirectErrorStream(true).start()
-            } catch (e: java.io.IOException) {
+            } catch (_: java.io.IOException) {
                 vInputFile.copyTo(vOut, overwrite = true)
                 logger.warn("[subset $inStyle] hb-subset not found on PATH — bundling the full font " +
                     "(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
@@ -330,151 +244,47 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
     }
 }
 
-// Pre-create subset tasks per USED style when enabled; the Zip below uses
-// them as the font source. Built outside the variant×target loop so each
-// style is subset once and reused across all bundle variants.
+// One subset task per used style, shared by all variant×target archives.
 val subsetTasksByStyle: Map<String, TaskProvider<*>> =
     if (subsetIcons) vUsedStyles.associateWith { registerSubsetTask(it) } else emptyMap()
 
-// ==================
-// MARK: App icon (voltic) — build tasks
-// ==================
-
-// Decode the icon PNGs to raw .rgba blobs for the runtime window icon (bundled
-// into data.kres under icon/ by the Zip below, read with core SDL at runtime).
-val generateAppIconRgba = tasks.register<Exec>("generateAppIconRgba") {
-    description = "Decode voltic icon PNGs to .rgba blobs for the runtime window icon."
-    val vOutDir = appIconBuildDir.get().dir("rgba").asFile
-    val vPngs = appIconRuntimePngs.map { appIconDir.file("$it.png").asFile }
-    inputs.files(vPngs)
-    inputs.file(makeIconScript)
-    outputs.dir(vOutDir)
-    // Purge stale blobs first so a changed icon set doesn't leave orphans the
-    // Zip would still bundle (Exec doesn't clean its output dir).
-    doFirst { vOutDir.deleteRecursively() }
-    commandLine(buildList {
-        add("python3"); add(makeIconScript.asFile.absolutePath)
-        add("rgba"); add("--out-dir"); add(vOutDir.absolutePath)
-        vPngs.forEach { add(it.absolutePath) }
-    })
-}
-
-// Assemble the multi-size Windows .ico (+ compile it to a COFF object via
-// windres) for the .exe icon. Windows-only — registered only when the mingw
-// target exists and the embed isn't disabled.
-val compileWindowsIconResource: TaskProvider<*>? =
-    if (vHostSupportsMingw && embedWindowsIcon) {
-        val vGenerateIco = tasks.register<Exec>("generateAppIconIco") {
-            description = "Assemble the multi-size Windows .ico from voltic icon PNGs."
-            val vOut = appIconBuildDir.get().file("voltic.ico").asFile
-            val vPngs = appIconExePngs.map { appIconDir.file("$it.png").asFile }
-            inputs.files(vPngs)
-            inputs.file(makeIconScript)
-            outputs.file(vOut)
-            commandLine(buildList {
-                add("python3"); add(makeIconScript.asFile.absolutePath)
-                add("ico"); add("--out"); add(vOut.absolutePath)
-                vPngs.forEach { add(it.absolutePath) }
-            })
-        }
-        tasks.register("compileWindowsIconResource") {
-            description = "Compile voltic.ico to a COFF resource object (windres) for the .exe icon."
-            val vIco = appIconBuildDir.get().file("voltic.ico").asFile
-            val vRc = appIconBuildDir.get().file("app_icon.rc").asFile
-            val vObj = appIconObject.get().asFile
-            inputs.file(vIco)
-            outputs.file(vObj)
-            dependsOn(vGenerateIco)
-            doLast {
-                // ID 1, type ICON — Explorer shows the lowest-id group icon.
-                vRc.writeText("1 ICON \"voltic.ico\"\n")
-                // ProcessBuilder (not project.exec — unavailable in doLast on
-                // Gradle 9). -I so the bare "voltic.ico" in the .rc resolves;
-                // -O coff emits an object the mingw LLD linker consumes directly.
-                val vProc = ProcessBuilder(
-                    "windres", "-I", vIco.parentFile.absolutePath,
-                    "-O", "coff", vRc.absolutePath, vObj.absolutePath,
-                ).redirectErrorStream(true).start()
-                val vOutput = vProc.inputStream.bufferedReader().readText()
-                val vCode = vProc.waitFor()
-                if (vCode != 0) throw GradleException(
-                    "windres failed (exit $vCode):\n$vOutput\n" +
-                    "Install mingw-w64 binutils (provides windres) or pass -PembedWindowsIcon=false.")
-            }
-        }
-    } else null
-
-// Wire the resource object into the mingw executable link (and run) tasks so it
-// exists before the linker references its path (added via linkerOpts above).
-compileWindowsIconResource?.let { vIconTask ->
-    for (variant in variants) {
-        val variantCap = variant.replaceFirstChar { it.uppercase() }
-        listOf("link${variantCap}ExecutableMingwX64", "run${variantCap}ExecutableMingwX64").forEach { taskName ->
-            tasks.matching { it.name == taskName }.configureEach { dependsOn(vIconTask) }
-        }
-    }
-}
-
-for (variant in variants) {
-    for (target in nativeTargets) {
-        val variantCap = variant.replaceFirstChar { it.uppercase() }
-        val targetCap = target.replaceFirstChar { it.uppercase() }
-        val outDir = layout.buildDirectory.dir("bin/$target/${variant}Executable")
-        val copyTask = tasks.register<Zip>("copy${variantCap}ComposeResources${targetCap}") {
-            archiveFileName.set("data.kres")
-            destinationDirectory.set(outDir)
-            entryCompression = if ((findProperty("compressResources") as? String)?.toBoolean() == true) org.gradle.api.tasks.bundling.ZipEntryCompression.DEFLATED else org.gradle.api.tasks.bundling.ZipEntryCompression.STORED
-            from(notoSansFile) { into("font") }
-            from(notoMonoFile) { into("font") }
-            dependsOn(":ui:downloadNotoFonts")
-            // Runtime window/taskbar icon blobs → icon/*.rgba (theme-aware).
-            from(generateAppIconRgba) { into("icon") }
-            dependsOn(generateAppIconRgba)
-            val vSymbolsProject = rootProject.project(":material-symbols")
-            for (vStyle in vUsedStyles) {
-                @Suppress("UNCHECKED_CAST")
-                val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
-                val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
-                val vSubsetTask = subsetTasksByStyle[vStyle]
-                if (vSubsetTask != null) {
-                    // Trimmed font: depend on the subset task and bundle its output
-                    // with the original filename so the runtime IconFont registration
-                    // doesn't need to know the bundle was subset.
-                    val vOriginalName = vFontFile.get().asFile.name
-                    from(vSubsetTask.get().outputs.files) {
-                        into("font")
-                        rename { vOriginalName }
-                    }
-                    dependsOn(vSubsetTask)
-                } else {
-                    from(vFontFile) { into("font") }
-                }
-                dependsOn(vDownloadTask)
-            }
-        }
-        listOf("link${variantCap}Executable${targetCap}", "run${variantCap}Executable${targetCap}").forEach { taskName ->
-            tasks.matching { it.name == taskName }.configureEach { dependsOn(copyTask) }
-        }
-    }
-}
-
-// ==================
-// MARK: Stage fonts onto the JVM classpath
-// ==================
-// The JVM analog of the data.kres font/ entries: :material-symbols' JVM actual
-// loads each style's font from the classpath at font/<Style>.ttf, and the
-// jvm Fonts actual loads the mono body font at font/NotoSansMono.ttf.
-tasks.named<ProcessResources>("jvmProcessResources") {
+// Fonts ride in every data.kres zip the plugin registers (matching{} is lazy —
+// the package* tasks appear in the plugin's afterEvaluate).
+tasks.withType<Zip>().matching { it.name.startsWith("package") && it.name.contains("ComposeResources") }.configureEach {
+    from(notoSansFile) { into("font") }
     from(notoMonoFile) { into("font") }
-    dependsOn(":ui:downloadNotoFonts")
-    // App icon for the JVM parity window (the mark, loaded from the classpath in
-    // MainJvm). Cosmetic — the parity harness compares the rendered canvas, not
-    // window chrome.
-    from(appIconDir.file("voltic-mark-256.png")) { into("icon") }
+    dependsOn(downloadNotoFonts)
     val vSymbolsProject = rootProject.project(":material-symbols")
     for (vStyle in vUsedStyles) {
         @Suppress("UNCHECKED_CAST")
-        val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>
+        val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as Provider<RegularFile>
+        val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
+        val vSubsetTask = subsetTasksByStyle[vStyle]
+        if (vSubsetTask != null) {
+            // Subset output keeps the original filename — runtime registration unchanged.
+            val vOriginalName = vFontFile.get().asFile.name
+            from(vSubsetTask.get().outputs.files) {
+                into("font")
+                rename { vOriginalName }
+            }
+            dependsOn(vSubsetTask)
+        } else {
+            from(vFontFile) { into("font") }
+        }
+        dependsOn(vDownloadTask)
+    }
+}
+
+// JVM analog of the data.kres font/ entries, loaded from the classpath.
+tasks.named<ProcessResources>("jvmProcessResources") {
+    from(notoMonoFile) { into("font") }
+    dependsOn(downloadNotoFonts)
+    // Parity-window icon (cosmetic — the harness compares the canvas, not chrome).
+    from(layout.projectDirectory.file("icons/voltic-icon-256.png")) { into("icon") }
+    val vSymbolsProject = rootProject.project(":material-symbols")
+    for (vStyle in vUsedStyles) {
+        @Suppress("UNCHECKED_CAST")
+        val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as Provider<RegularFile>
         val vDownloadTask = vSymbolsProject.extra["iconFontDownloadTask$vStyle"] as TaskProvider<*>
         from(vFontFile) { into("font") }
         dependsOn(vDownloadTask)
