@@ -132,6 +132,7 @@ compose.desktop {
         icon {
             light.from("icons/app-32.png", "icons/app-128.png")
             dark.from("icons/app-dark-32.png", "icons/app-dark-128.png") // optional
+            // exeIcon.from("icons/app-16.png", …, "icons/app-256.png")  // optional
             // resourceDir.set("icon")        // data.kres subfolder (default)
             // embedWindowsIcon.set(true)     // embed the .exe icon (default)
         }
@@ -159,12 +160,18 @@ The plugin (no Python / native tooling needed — pure-Kotlin codec):
   become alternate resolutions SDL picks from (title bar / taskbar / Alt-Tab).
   The runtime icon uses core SDL only, so it works on every target.
 
-- on **Windows**, assembles a multi-size `.ico` from the `light` PNGs, compiles
-  it with `windres` (mingw-w64 binutils), and links it into the `.exe` so
-  Explorer and the pinned taskbar show it. Set `embedWindowsIcon.set(false)` to
-  skip this (e.g. if `windres` isn't installed). This only affects the manually
-  un-configured executable the plugin creates via `native { }`; if you declare
-  your own `binaries.executable { }`, add the resource object yourself.
+- on **Windows**, assembles a multi-size `.ico` from `exeIcon` (or `light` when
+  `exeIcon` is unset), compiles it with `windres` (mingw-w64 binutils), and links
+  it into the `.exe` so Explorer and the pinned taskbar show it. Set
+  `embedWindowsIcon.set(false)` to skip this (e.g. if `windres` isn't installed).
+  This only affects the manually un-configured executable the plugin creates via
+  `native { }`; if you declare your own `binaries.executable { }`, add the
+  resource object yourself.
+
+The runtime window icon and the `.exe` icon can differ: point `light` at a
+background-less mark (looks right in the taskbar) and `exeIcon` at the full
+branded icon with a background (stays legible in Explorer) — the same split
+apidemo uses.
 
 ## composeResources — zero setup
 

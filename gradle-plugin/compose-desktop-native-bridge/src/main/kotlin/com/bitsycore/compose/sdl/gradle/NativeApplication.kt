@@ -20,6 +20,7 @@ import org.gradle.api.tasks.Nested
  * icon {
  *     light.from("icons/app-32.png", "icons/app-128.png")
  *     dark.from("icons/app-dark-32.png", "icons/app-dark-128.png") // optional
+ *     // exeIcon.from("icons/app-16.png", …, "icons/app-256.png")  // optional
  *     // resourceDir.set("icon")          // data.kres subfolder (default)
  *     // embedWindowsIcon.set(true)       // embed the .exe icon (default)
  * }
@@ -29,18 +30,26 @@ import org.gradle.api.tasks.Nested
  * `nativeComposeWindow(icon = AppWindowIcon(light = listOf("icon/app-128.rgba",
  * "icon/app-32.rgba"), dark = listOf("icon/app-dark-128.rgba", …)))` — the paths
  * are `<resourceDir>/<pngBaseName>.rgba`.
+ *
+ * The runtime window icon and the Windows `.exe` icon can differ: point [light]
+ * at a transparent mark (looks right in the taskbar) and [exeIcon] at the full
+ * branded icon with a background (stays legible in Explorer).
  */
 abstract class NativeIconSpec {
-	/** PNG files for the light window / .exe icon (any sizes; largest = base). */
+	/** PNG files for the light window icon (any sizes; largest = base). */
 	abstract val light: ConfigurableFileCollection
 
 	/** PNG files for the dark window icon (falls back to [light] when empty). */
 	abstract val dark: ConfigurableFileCollection
 
+	/** PNG files for the Windows `.exe` icon (Explorer / pinned taskbar). Falls
+	    back to [light] when empty — set it to use a different icon there. */
+	abstract val exeIcon: ConfigurableFileCollection
+
 	/** data.kres subfolder the `.rgba` blobs land in. Default `"icon"`. */
 	abstract val resourceDir: Property<String>
 
-	/** Embed the Windows `.exe` icon from [light] via windres. Default `true`. */
+	/** Embed the Windows `.exe` icon via windres. Default `true`. */
 	abstract val embedWindowsIcon: Property<Boolean>
 }
 

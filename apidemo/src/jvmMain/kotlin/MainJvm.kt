@@ -1,6 +1,5 @@
 package apidemo
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
@@ -15,12 +14,10 @@ import androidx.compose.ui.window.rememberWindowState
 // org.jetbrains.compose. Client-certificate (mTLS) features are native-only
 // (they drive the bundled libcurl); the jvm actuals report that instead.
 fun main() = application {
-    // Voltic icon, matched to the OS theme (mirrors the native window icon).
-    // Staged onto the classpath at icon/ by jvmProcessResources.
-    val vDark = isSystemInDarkTheme()
-    val vIcon = remember(vDark) {
-        val vPath = if (vDark) "icon/voltic-icon-dark-256.png" else "icon/voltic-icon-256.png"
-        BitmapPainter(useResource(vPath) { loadImageBitmap(it) })
+    // Voltic window icon — the background-less mark (mirrors the native window
+    // icon). Staged onto the classpath at icon/ by jvmProcessResources.
+    val vIcon = remember {
+        BitmapPainter(useResource("icon/voltic-mark-256.png") { loadImageBitmap(it) })
     }
     Window(
         // The shared App installs a persist-then-close hook (InstallWindowHooks).

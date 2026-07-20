@@ -52,12 +52,13 @@ val appIconDir = layout.projectDirectory.dir("icons")
 val appIconBuildDir = layout.buildDirectory.dir("appicon")
 val appIconObject = appIconBuildDir.map { it.file("app_icon.o") }
 val makeIconScript = rootProject.layout.projectDirectory.file("scripts/make-app-icon.py")
-// Runtime icon: light + dark, two sizes each (largest = base, smaller = alternate).
-val appIconRuntimePngs = listOf(
-    "voltic-icon-32", "voltic-icon-128",
-    "voltic-icon-dark-32", "voltic-icon-dark-128",
-)
-// Windows .exe icon: the full ladder of sizes Explorer picks from.
+// Runtime window/taskbar icon: the background-less "mark" (a transparent purple
+// bolt) at two sizes (largest = base, smaller = alternate). The mark is
+// theme-neutral — it reads on both light and dark taskbars — so there is no
+// separate dark variant (the pack ships none).
+val appIconRuntimePngs = listOf("voltic-mark-32", "voltic-mark-128")
+// Windows .exe icon (Explorer / pinned taskbar): the full branded icon WITH its
+// background — stays legible on a white file-listing, unlike a bare mark.
 val appIconExePngs = listOf(16, 32, 48, 64, 128, 256).map { "voltic-icon-$it" }
 
 kotlin {
@@ -348,6 +349,9 @@ val generateAppIconRgba = tasks.register<Exec>("generateAppIconRgba") {
     inputs.files(vPngs)
     inputs.file(makeIconScript)
     outputs.dir(vOutDir)
+    // Purge stale blobs first so a changed icon set doesn't leave orphans the
+    // Zip would still bundle (Exec doesn't clean its output dir).
+    doFirst { vOutDir.deleteRecursively() }
     commandLine(buildList {
         add("python3"); add(makeIconScript.asFile.absolutePath)
         add("rgba"); add("--out-dir"); add(vOutDir.absolutePath)
@@ -463,11 +467,10 @@ for (variant in variants) {
 tasks.named<ProcessResources>("jvmProcessResources") {
     from(notoMonoFile) { into("font") }
     dependsOn(":ui:downloadNotoFonts")
-    // App icon for the JVM parity window (loaded from the classpath in MainJvm,
-    // picked via isSystemInDarkTheme()). Cosmetic — the parity harness compares
-    // the rendered canvas, not window chrome.
-    from(appIconDir.file("voltic-icon-256.png")) { into("icon") }
-    from(appIconDir.file("voltic-icon-dark-256.png")) { into("icon") }
+    // App icon for the JVM parity window (the mark, loaded from the classpath in
+    // MainJvm). Cosmetic — the parity harness compares the rendered canvas, not
+    // window chrome.
+    from(appIconDir.file("voltic-mark-256.png")) { into("icon") }
     val vSymbolsProject = rootProject.project(":material-symbols")
     for (vStyle in vUsedStyles) {
         @Suppress("UNCHECKED_CAST")

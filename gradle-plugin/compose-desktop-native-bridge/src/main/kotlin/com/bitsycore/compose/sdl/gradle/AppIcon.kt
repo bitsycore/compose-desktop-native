@@ -77,8 +77,9 @@ internal fun installAppIcon(inProject: Project, inExt: ComposeDesktopNativeExten
 		val vIco = File(appIconWorkDir(inProject), "app_icon.ico")
 		val vIcoTask = inProject.tasks.register("generateComposeNativeIco", GenerateIcoTask::class.java) { task ->
 			task.description = "Assemble the multi-size Windows .ico from the app-icon PNGs."
-			// The .exe icon is theme-agnostic — use the light set.
-			task.pngs.from(inExt.icon.light)
+			// The .exe icon is theme-agnostic: the dedicated exeIcon set if given,
+			// otherwise the light window set.
+			task.pngs.from(if (!inExt.icon.exeIcon.isEmpty) inExt.icon.exeIcon else inExt.icon.light)
 			task.icoFile.set(vIco)
 		}
 		val vObj = appIconObjectFile(inProject)
@@ -112,6 +113,8 @@ abstract class GenerateRgbaIconsTask : DefaultTask() {
 	@TaskAction
 	fun run() {
 		val vDir = outputDir.get().asFile
+		// Purge stale blobs so a changed icon set leaves no orphans in data.kres.
+		vDir.deleteRecursively()
 		vDir.mkdirs()
 		for (vPng in pngs.files.distinct()) {
 			val (vW, vH, vRgba) = IconCodec.decodePngToRgba(vPng.readBytes())
