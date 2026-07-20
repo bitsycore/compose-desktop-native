@@ -3,11 +3,46 @@ package com.bitsycore.compose.sdl.gradle
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Nested
 
 // ==================
 // MARK: compose.desktop.native { } — the native counterpart of application { }
 // ==================
+
+/**
+ * The window / taskbar (and, on Windows, the .exe) icon for the app, declared
+ * as PNG files. See [installAppIcon] for what the plugin does with them.
+ *
+ * ```kotlin
+ * icon {
+ *     light.from("icons/app-32.png", "icons/app-128.png")
+ *     dark.from("icons/app-dark-32.png", "icons/app-dark-128.png") // optional
+ *     // resourceDir.set("icon")          // data.kres subfolder (default)
+ *     // embedWindowsIcon.set(true)       // embed the .exe icon (default)
+ * }
+ * ```
+ *
+ * At runtime the app selects the bundled blobs itself:
+ * `nativeComposeWindow(icon = AppWindowIcon(light = listOf("icon/app-128.rgba",
+ * "icon/app-32.rgba"), dark = listOf("icon/app-dark-128.rgba", …)))` — the paths
+ * are `<resourceDir>/<pngBaseName>.rgba`.
+ */
+abstract class NativeIconSpec {
+	/** PNG files for the light window / .exe icon (any sizes; largest = base). */
+	abstract val light: ConfigurableFileCollection
+
+	/** PNG files for the dark window icon (falls back to [light] when empty). */
+	abstract val dark: ConfigurableFileCollection
+
+	/** data.kres subfolder the `.rgba` blobs land in. Default `"icon"`. */
+	abstract val resourceDir: Property<String>
+
+	/** Embed the Windows `.exe` icon from [light] via windres. Default `true`. */
+	abstract val embedWindowsIcon: Property<Boolean>
+}
 
 /**
  * The native desktop analog of `compose.desktop { application { mainClass } }`:
@@ -15,7 +50,10 @@ import org.gradle.api.plugins.ExtensionAware
  * ```kotlin
  * compose.desktop {
  *     application { mainClass = "bubblewrap.MainJvmKt" }   // jvm (upstream)
- *     native { entryPoint = "bubblewrap.main" }            // this port
+ *     native {                                             // this port
+ *         entryPoint = "bubblewrap.main"
+ *         icon { light.from("icons/app-128.png") }         // optional
+ *     }
  * }
  * ```
  *
@@ -29,6 +67,15 @@ import org.gradle.api.plugins.ExtensionAware
 abstract class ComposeDesktopNativeExtension {
 	/** Entry point (`package.functionName`) for the native executables. */
 	var entryPoint: String? = null
+
+	/** App-icon config (see [NativeIconSpec]); no-op unless [NativeIconSpec.light] is set. */
+	@get:Nested
+	abstract val icon: NativeIconSpec
+
+	/** Configure the app icon: `icon { light.from(...) }`. */
+	fun icon(action: Action<NativeIconSpec>) {
+		action.execute(icon)
+	}
 }
 
 /* Grafts the `native` extension onto the Compose plugin's `desktop` extension
@@ -43,7 +90,10 @@ internal fun installNativeApplicationDsl(project: Project) {
 			val desktopExt = composeExt.extensions.findByName("desktop") as? ExtensionAware ?: return@withPlugin
 			if (desktopExt.extensions.findByName("native") != null) return@withPlugin
 			val nativeExt = desktopExt.extensions.create("native", ComposeDesktopNativeExtension::class.java)
-			project.afterEvaluate { configureNativeExecutables(it, nativeExt) }
+			project.afterEvaluate {
+				configureNativeExecutables(it, nativeExt)
+				installAppIcon(it, nativeExt)
+			}
 		}
 	}
 }
@@ -69,8 +119,24 @@ private fun configureNativeExecutables(project: Project, ext: ComposeDesktopNati
 		val executableMethod = binaries.javaClass.methods.first {
 			it.name == "executable" && it.parameterCount == 1 && Action::class.java.isAssignableFrom(it.parameterTypes[0])
 		}
+		// On mingw, also link the windres icon-resource object into the .exe (its
+		// path is fixed; the object is produced by compileComposeNativeIconResource,
+		// wired as a link dependency in installAppIcon).
+		val isMingw = (family as Enum<*>).name == "MINGW"
+		val iconObjPath = if (isMingw && wantsWindowsIconEmbed(ext)) appIconObjectFile(project).absolutePath else null
 		executableMethod.invoke(binaries, Action<Any> { binary ->
 			binary.javaClass.getMethod("setEntryPoint", String::class.java).invoke(binary, entryPoint)
+			if (iconObjPath != null) {
+				try {
+					// linkerOpts(vararg String) compiles to linkerOpts(String[]).
+					binary.javaClass.getMethod("linkerOpts", Array<String>::class.java)
+						.invoke(binary, arrayOf(iconObjPath))
+				} catch (t: Throwable) {
+					project.logger.warn(
+						"compose-desktop-native: couldn't add the Windows icon linker option " +
+							"reflectively (${t.message}); the .exe icon won't be embedded.")
+				}
+			}
 		})
 	}
 }

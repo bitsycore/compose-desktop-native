@@ -89,6 +89,7 @@ fun ApplicationScope.Window(
 	width: Int = 800,
 	height: Int = 600,
 	gpu: GpuMode = GpuMode.Auto,
+	icon: AppWindowIcon? = null,
 	onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
 	content: @Composable ComposeWindowScope.() -> Unit,
 ) {
@@ -102,6 +103,7 @@ fun ApplicationScope.Window(
 			inWidth = width,
 			inHeight = height,
 			inGpu = gpu,
+			inIcon = icon,
 			inOnFrame = onFrame,
 			// The window composition reads the holder each recomposition, so
 			// updated content lambdas propagate without recreating the window.
@@ -176,6 +178,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 					is AppEvent.WindowClose -> runtime.windowFor(vEvent.windowId)?.requestClose()
 					is AppEvent.WindowResized -> runtime.windowFor(vEvent.windowId)?.onResizedEvent()
 					is AppEvent.RedrawNeeded -> runtime.windowFor(vEvent.windowId)?.let { it.needsFrame = true }
+					is AppEvent.SystemThemeChanged -> for (vW in runtime.windows) vW.onSystemThemeChanged()
 					is AppEvent.WindowActivation -> runtime.windowFor(vEvent.windowId)?.onActivationEvent(vEvent)
 					is AppEvent.Pointer -> runtime.windowFor(vEvent.windowId)?.onPointerEvent(vEvent)
 					is AppEvent.PointerExit -> runtime.windowFor(vEvent.windowId)?.onPointerExit()
@@ -421,6 +424,7 @@ fun nativeComposeWindow(
 	width: Int = 800,
 	height: Int = 600,
 	gpu: GpuMode = GpuMode.Auto,
+	icon: AppWindowIcon? = null,
 	onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
 	content: @Composable ComposeWindowScope.() -> Unit,
 ) {
@@ -431,6 +435,7 @@ fun nativeComposeWindow(
 			width = width,
 			height = height,
 			gpu = gpu,
+			icon = icon,
 			onFrame = onFrame,
 			content = content,
 		)
@@ -469,10 +474,11 @@ internal class AppRuntime {
 		inWidth: Int,
 		inHeight: Int,
 		inGpu: GpuMode,
+		inIcon: AppWindowIcon?,
 		inOnFrame: ((RenderBackend, Int) -> Boolean)?,
 		inContent: () -> (@Composable ComposeWindowScope.() -> Unit),
 	): WindowInstance {
-		val vWindow = WindowInstance(inTitle, inWidth, inHeight, inGpu, inOnFrame, inContent)
+		val vWindow = WindowInstance(inTitle, inWidth, inHeight, inGpu, inIcon, inOnFrame, inContent)
 		// A Window() was declared either way — the "exit when the last window
 		// is gone" rule must also fire when every declared window failed to
 		// initialise (otherwise the loop would spin forever with none).
@@ -517,11 +523,16 @@ internal class WindowInstance(
 	inWidth: Int,
 	inHeight: Int,
 	inGpu: GpuMode,
+	inIcon: AppWindowIcon?,
 	private val onFrame: ((RenderBackend, Int) -> Boolean)?,
 	private val contentHolder: () -> (@Composable ComposeWindowScope.() -> Unit),
 ) {
 	private val gpuMode = if (inGpu is GpuMode.Auto) rendererPreferredGpuMode() else inGpu
-	val backend = SDL3Backend(initialTitle, inWidth, inHeight, gpuMode = gpuMode)
+	val backend = SDL3Backend(
+		initialTitle, inWidth, inHeight, gpuMode = gpuMode,
+		iconLightResourcePaths = inIcon?.light ?: emptyList(),
+		iconDarkResourcePaths = inIcon?.dark ?: emptyList(),
+	)
 	private var renderBackend: RenderBackend? = null
 	lateinit var host: ComposeRootHost
 		private set
@@ -854,6 +865,12 @@ internal class WindowInstance(
 		needsFrame = true
 		backend.updateWindowSize()
 		facade.onResized()
+	}
+
+	/* OS light/dark theme changed — re-pick the theme-appropriate window icon
+	   (no-op if this window has no icon configured or the choice is unchanged). */
+	fun onSystemThemeChanged() {
+		backend.applyThemeIcon()
 	}
 
 	/* OS close button / app-level Quit: honour the veto handler, then hand the

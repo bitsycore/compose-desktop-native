@@ -38,6 +38,28 @@ configurations.configureEach {
     }
 }
 
+// ==================
+// MARK: App icon (voltic) — config
+// ==================
+// Source PNGs live in apidemo/icons/. scripts/make-app-icon.py turns them into:
+//   - .rgba blobs bundled into data.kres → the RUNTIME window/taskbar icon
+//     (theme-aware SDL_SetWindowIcon), works on every target;
+//   - a multi-size .ico compiled by windres and linked into the mingw .exe →
+//     the Explorer / pinned-taskbar icon (Windows only).
+// -PembedWindowsIcon=false skips only the .exe embed (e.g. if windres is absent).
+val embedWindowsIcon = (findProperty("embedWindowsIcon") as? String)?.toBoolean() ?: true
+val appIconDir = layout.projectDirectory.dir("icons")
+val appIconBuildDir = layout.buildDirectory.dir("appicon")
+val appIconObject = appIconBuildDir.map { it.file("app_icon.o") }
+val makeIconScript = rootProject.layout.projectDirectory.file("scripts/make-app-icon.py")
+// Runtime icon: light + dark, two sizes each (largest = base, smaller = alternate).
+val appIconRuntimePngs = listOf(
+    "voltic-icon-32", "voltic-icon-128",
+    "voltic-icon-dark-32", "voltic-icon-dark-128",
+)
+// Windows .exe icon: the full ladder of sizes Explorer picks from.
+val appIconExePngs = listOf(16, 32, 48, 64, 128, 256).map { "voltic-icon-$it" }
+
 kotlin {
     jvm()
 
@@ -68,18 +90,24 @@ kotlin {
             // system libs they need are in sdl3.def's linkerOpts.<target>. Only
             // shell-level flags and app-specific extras (crypt32 for mTLS) live
             // here. Ktor's Curl engine bundles its own libcurl + TLS stack.
-            if (isMingw) linkerOpts(
-                // crypt32: client-cert (mTLS) import into the Windows cert store
-                // (CertOpenStore / PFXImportCertStore / CertAddCertificateContextToStore…).
-                "-lcrypt32",
-                // Code-shrink: drop unused sections and strip symbols.
-                "-Wl,--gc-sections", "-Wl,-s",
-                // GUI subsystem so launching the .exe pops no console window.
-                // Keep the standard C `main` entry — ld would otherwise default
-                // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
-                // fail to link, since Kotlin/Native emits `main`.
-                "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
-            )
+            if (isMingw) {
+                linkerOpts(
+                    // crypt32: client-cert (mTLS) import into the Windows cert store
+                    // (CertOpenStore / PFXImportCertStore / CertAddCertificateContextToStore…).
+                    "-lcrypt32",
+                    // Code-shrink: drop unused sections and strip symbols.
+                    "-Wl,--gc-sections", "-Wl,-s",
+                    // GUI subsystem so launching the .exe pops no console window.
+                    // Keep the standard C `main` entry — ld would otherwise default
+                    // a GUI-subsystem PE to WinMainCRTStartup (needs WinMain) and
+                    // fail to link, since Kotlin/Native emits `main`.
+                    "-Wl,--subsystem,windows", "-Wl,-e,mainCRTStartup",
+                )
+                // Embed the app-icon resource object (windres output) — gives the
+                // .exe its Explorer / pinned-taskbar icon. The object is produced
+                // by compileWindowsIconResource, wired as a link dependency below.
+                if (embedWindowsIcon) linkerOpts(appIconObject.get().asFile.absolutePath)
+            }
             // Skia (default renderer) references the system graphics stack.
             // K/N's LLD sysroot on linuxX64 doesn't include the host's multi-arch
             // dir, so add the -L for both x86_64 and aarch64 (harmless if either
@@ -307,6 +335,82 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
 val subsetTasksByStyle: Map<String, TaskProvider<*>> =
     if (subsetIcons) vUsedStyles.associateWith { registerSubsetTask(it) } else emptyMap()
 
+// ==================
+// MARK: App icon (voltic) — build tasks
+// ==================
+
+// Decode the icon PNGs to raw .rgba blobs for the runtime window icon (bundled
+// into data.kres under icon/ by the Zip below, read with core SDL at runtime).
+val generateAppIconRgba = tasks.register<Exec>("generateAppIconRgba") {
+    description = "Decode voltic icon PNGs to .rgba blobs for the runtime window icon."
+    val vOutDir = appIconBuildDir.get().dir("rgba").asFile
+    val vPngs = appIconRuntimePngs.map { appIconDir.file("$it.png").asFile }
+    inputs.files(vPngs)
+    inputs.file(makeIconScript)
+    outputs.dir(vOutDir)
+    commandLine(buildList {
+        add("python3"); add(makeIconScript.asFile.absolutePath)
+        add("rgba"); add("--out-dir"); add(vOutDir.absolutePath)
+        vPngs.forEach { add(it.absolutePath) }
+    })
+}
+
+// Assemble the multi-size Windows .ico (+ compile it to a COFF object via
+// windres) for the .exe icon. Windows-only — registered only when the mingw
+// target exists and the embed isn't disabled.
+val compileWindowsIconResource: TaskProvider<*>? =
+    if (vHostSupportsMingw && embedWindowsIcon) {
+        val vGenerateIco = tasks.register<Exec>("generateAppIconIco") {
+            description = "Assemble the multi-size Windows .ico from voltic icon PNGs."
+            val vOut = appIconBuildDir.get().file("voltic.ico").asFile
+            val vPngs = appIconExePngs.map { appIconDir.file("$it.png").asFile }
+            inputs.files(vPngs)
+            inputs.file(makeIconScript)
+            outputs.file(vOut)
+            commandLine(buildList {
+                add("python3"); add(makeIconScript.asFile.absolutePath)
+                add("ico"); add("--out"); add(vOut.absolutePath)
+                vPngs.forEach { add(it.absolutePath) }
+            })
+        }
+        tasks.register("compileWindowsIconResource") {
+            description = "Compile voltic.ico to a COFF resource object (windres) for the .exe icon."
+            val vIco = appIconBuildDir.get().file("voltic.ico").asFile
+            val vRc = appIconBuildDir.get().file("app_icon.rc").asFile
+            val vObj = appIconObject.get().asFile
+            inputs.file(vIco)
+            outputs.file(vObj)
+            dependsOn(vGenerateIco)
+            doLast {
+                // ID 1, type ICON — Explorer shows the lowest-id group icon.
+                vRc.writeText("1 ICON \"voltic.ico\"\n")
+                // ProcessBuilder (not project.exec — unavailable in doLast on
+                // Gradle 9). -I so the bare "voltic.ico" in the .rc resolves;
+                // -O coff emits an object the mingw LLD linker consumes directly.
+                val vProc = ProcessBuilder(
+                    "windres", "-I", vIco.parentFile.absolutePath,
+                    "-O", "coff", vRc.absolutePath, vObj.absolutePath,
+                ).redirectErrorStream(true).start()
+                val vOutput = vProc.inputStream.bufferedReader().readText()
+                val vCode = vProc.waitFor()
+                if (vCode != 0) throw GradleException(
+                    "windres failed (exit $vCode):\n$vOutput\n" +
+                    "Install mingw-w64 binutils (provides windres) or pass -PembedWindowsIcon=false.")
+            }
+        }
+    } else null
+
+// Wire the resource object into the mingw executable link (and run) tasks so it
+// exists before the linker references its path (added via linkerOpts above).
+compileWindowsIconResource?.let { vIconTask ->
+    for (variant in variants) {
+        val variantCap = variant.replaceFirstChar { it.uppercase() }
+        listOf("link${variantCap}ExecutableMingwX64", "run${variantCap}ExecutableMingwX64").forEach { taskName ->
+            tasks.matching { it.name == taskName }.configureEach { dependsOn(vIconTask) }
+        }
+    }
+}
+
 for (variant in variants) {
     for (target in nativeTargets) {
         val variantCap = variant.replaceFirstChar { it.uppercase() }
@@ -319,6 +423,9 @@ for (variant in variants) {
             from(notoSansFile) { into("font") }
             from(notoMonoFile) { into("font") }
             dependsOn(":ui:downloadNotoFonts")
+            // Runtime window/taskbar icon blobs → icon/*.rgba (theme-aware).
+            from(generateAppIconRgba) { into("icon") }
+            dependsOn(generateAppIconRgba)
             val vSymbolsProject = rootProject.project(":material-symbols")
             for (vStyle in vUsedStyles) {
                 @Suppress("UNCHECKED_CAST")
@@ -356,6 +463,11 @@ for (variant in variants) {
 tasks.named<ProcessResources>("jvmProcessResources") {
     from(notoMonoFile) { into("font") }
     dependsOn(":ui:downloadNotoFonts")
+    // App icon for the JVM parity window (loaded from the classpath in MainJvm,
+    // picked via isSystemInDarkTheme()). Cosmetic — the parity harness compares
+    // the rendered canvas, not window chrome.
+    from(appIconDir.file("voltic-icon-256.png")) { into("icon") }
+    from(appIconDir.file("voltic-icon-dark-256.png")) { into("icon") }
     val vSymbolsProject = rootProject.project(":material-symbols")
     for (vStyle in vUsedStyles) {
         @Suppress("UNCHECKED_CAST")

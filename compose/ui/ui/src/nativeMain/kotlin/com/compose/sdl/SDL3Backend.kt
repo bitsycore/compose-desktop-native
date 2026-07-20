@@ -12,12 +12,21 @@ class SDL3Backend(
     private val width: Int = 800,
     private val height: Int = 600,
     val gpuMode: GpuMode = GpuMode.Software,
+    // Resource paths (inside data.kres) of the pre-decoded .rgba icon blobs.
+    // The first-listed size is irrelevant — the largest becomes the base and
+    // the rest become alternate resolutions. Dark set falls back to light.
+    private val iconLightResourcePaths: List<String> = emptyList(),
+    private val iconDarkResourcePaths: List<String> = emptyList(),
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
             "SDL3Backend received GpuMode.Auto — resolve via preferredGpuMode() first"
         }
     }
+
+    // The icon set currently applied ("light"/"dark" + paths), so a redundant
+    // re-apply (e.g. a spurious theme-changed event) is skipped.
+    private var appliedIconKey: String? = null
 
     var window: COpaquePointer? = null; private set
     var renderer: COpaquePointer? = null; private set
@@ -110,7 +119,45 @@ class SDL3Backend(
 
         SDL_StartTextInput(window?.reinterpret())
 
+        // Window / taskbar icon, matched to the current OS theme.
+        applyThemeIcon()
+
         return true
+    }
+
+    /* Applies the theme-appropriate window icon via SDL_SetWindowIcon: the dark
+       set when the OS is in dark mode and a dark set was supplied, otherwise the
+       light set. No-op when no icon paths were configured or the current choice
+       is already applied — so it is safe to call at init and again on every
+       SDL_EVENT_SYSTEM_THEME_CHANGED. */
+    fun applyThemeIcon() {
+        val vWindow = window ?: return
+        val vDark = systemPrefersDarkTheme() && iconDarkResourcePaths.isNotEmpty()
+        val vPaths = if (vDark) iconDarkResourcePaths else iconLightResourcePaths
+        if (vPaths.isEmpty()) return
+        val vKey = (if (vDark) "dark" else "light") + ":" + vPaths.joinToString(",")
+        if (vKey == appliedIconKey) return
+
+        val vSurfaces = vPaths.mapNotNull { vPath ->
+            loadComposeResourceBytes(vPath)?.let { iconSurfaceFromRgbaBlob(it) }
+        }
+        if (vSurfaces.isEmpty()) return
+
+        // Largest surface is the base; the rest become alternate resolutions SDL
+        // picks from per requested size (title bar vs taskbar vs Alt-Tab).
+        val vBase = vSurfaces.maxByOrNull { it.pointed.w } ?: vSurfaces.first()
+        for (vSurf in vSurfaces) {
+            if (vSurf != vBase) {
+                // AddSurfaceAlternateImage takes its OWN reference, so drop ours
+                // immediately — the base keeps the alternate alive until it (and
+                // thus the icon SDL copied) is destroyed.
+                SDL_AddSurfaceAlternateImage(vBase, vSurf)
+                SDL_DestroySurface(vSurf)
+            }
+        }
+        SDL_SetWindowIcon(vWindow.reinterpret(), vBase)
+        SDL_DestroySurface(vBase)
+        appliedIconKey = vKey
     }
 
     /* Stable SDL identifier of this backend's window — events carry it, so the

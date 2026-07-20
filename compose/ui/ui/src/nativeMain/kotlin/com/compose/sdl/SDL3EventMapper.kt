@@ -36,6 +36,9 @@ sealed class AppEvent {
 	   regain). The render-on-demand main loop uses it to force a frame even
 	   though no state changed. */
 	data class RedrawNeeded(val windowId: UInt = 0u) : AppEvent()
+	/* The OS light/dark theme changed (SDL_EVENT_SYSTEM_THEME_CHANGED) — app
+	   level, no window id. The loop re-applies each window's theme-aware icon. */
+	data object SystemThemeChanged : AppEvent()
 	/* Focus / visibility transitions driving the window's Lifecycle (Compose
 	   Desktop mapping: focused → RESUMED, visible unfocused → STARTED,
 	   hidden / minimised → CREATED). Null = "this event doesn't change it".
@@ -119,6 +122,9 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		// frame after these even though no Compose state changed.
 		SDL_EVENT_WINDOW_EXPOSED,
 		SDL_EVENT_WINDOW_MAXIMIZED -> AppEvent.RedrawNeeded(e.window.windowID)
+
+		// OS light/dark theme flip → re-pick the theme-aware window icon.
+		SDL_EVENT_SYSTEM_THEME_CHANGED -> AppEvent.SystemThemeChanged
 
 		// Focus / visibility → the window's Lifecycle state (the loop also
 		// treats these as redraw triggers, preserving the old RedrawNeeded

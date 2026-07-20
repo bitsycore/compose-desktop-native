@@ -121,6 +121,51 @@ target — no `targets.withType<KotlinNativeTarget> { binaries.executable { … 
 boilerplate. Targets that already declare an executable are left untouched,
 so manual configuration (extra linker flags, custom build types) still wins.
 
+### App icon
+
+Declare the app icon inside `native { }` as PNG files:
+
+```kotlin
+compose.desktop {
+    native {
+        entryPoint = "app.main"
+        icon {
+            light.from("icons/app-32.png", "icons/app-128.png")
+            dark.from("icons/app-dark-32.png", "icons/app-dark-128.png") // optional
+            // resourceDir.set("icon")        // data.kres subfolder (default)
+            // embedWindowsIcon.set(true)     // embed the .exe icon (default)
+        }
+    }
+}
+```
+
+The plugin (no Python / native tooling needed — pure-Kotlin codec):
+
+- decodes each PNG to a raw RGBA blob and bundles it into `data.kres` under
+  `<resourceDir>/<pngBaseName>.rgba`. Your app selects it at runtime, matched
+  to the OS light/dark theme:
+
+  ```kotlin
+  nativeComposeWindow(
+      title = "My App",
+      icon = AppWindowIcon(
+          light = listOf("icon/app-128.rgba", "icon/app-32.rgba"),
+          dark  = listOf("icon/app-dark-128.rgba", "icon/app-dark-32.rgba"),
+      ),
+  ) { App() }
+  ```
+
+  List one path per size you supply — the largest becomes the base and the rest
+  become alternate resolutions SDL picks from (title bar / taskbar / Alt-Tab).
+  The runtime icon uses core SDL only, so it works on every target.
+
+- on **Windows**, assembles a multi-size `.ico` from the `light` PNGs, compiles
+  it with `windres` (mingw-w64 binutils), and links it into the `.exe` so
+  Explorer and the pinned taskbar show it. Set `embedWindowsIcon.set(false)` to
+  skip this (e.g. if `windres` isn't installed). This only affects the manually
+  un-configured executable the plugin creates via `native { }`; if you declare
+  your own `binaries.executable { }`, add the resource object yourself.
+
 ## composeResources — zero setup
 
 If the module also applies the official `org.jetbrains.compose` plugin, the
