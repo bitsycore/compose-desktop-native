@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,29 +24,42 @@ import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 // ==================
 // MARK: TLS certificate-chain dialog + cert cards
 // ==================
 
 /** Dialog showing the server's TLS certificate chain (one card per cert, plus a
-   Copy PEM action). Fetched on demand by the lock button in the URL bar. */
+Copy PEM action). Fetched on demand by the lock button in the URL bar. */
 @Composable
 internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -> Unit) {
     val c = LocalAppColors.current
     Dialog(onDismissRequest = inOnDismiss) {
         Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(540.dp)) {
             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     MaterialSymbolsOutlined(MaterialSymbols.Lock, tint = c.accent, size = 20.dp)
                     Text("TLS certificate chain", color = c.text, fontSize = 16.sp)
                 }
                 val vCerts = inChain?.certs.orEmpty()
                 when {
                     inChain == null -> Text("Probing…", color = c.dim, fontSize = 13.sp)
-                    vCerts.isEmpty() -> Text(inChain.error ?: "No chain reported.", color = VolticTheme.extended.warning, fontSize = 13.sp)
+                    vCerts.isEmpty() -> Text(
+                        inChain.error ?: "No chain reported.",
+                        color = VolticTheme.extended.warning,
+                        fontSize = 13.sp
+                    )
+
                     else -> {
-                        Text("${vCerts.size} certificate(s) presented by ${hostOf(inUrl)}", color = c.dim, fontSize = 12.sp)
+                        Text(
+                            "${vCerts.size} certificate(s) presented by ${hostOf(inUrl)}",
+                            color = c.dim,
+                            fontSize = 12.sp
+                        )
                         Column(
                             modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -55,7 +67,10 @@ internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         val vChainPem = vCerts.mapNotNull { certField(it.fields, "Cert") }.joinToString("\n")
                         if (vChainPem.isNotEmpty()) CopyButton(vChainPem, "Copy chain")
                         OutlinedButton(onClick = inOnDismiss) { Text("Close", color = c.text) }
@@ -67,9 +82,9 @@ internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -
 }
 
 /** One certificate's summary card (subject / issuer / validity). Server-presented
-   certs get a solid border; derived ones (issuer pulled from the OS store, or a
-   name-only placeholder) get an accent-coloured border + a label. A self-signed
-   cert shows "Self-signed" in green instead of repeating its issuer. */
+certs get a solid border; derived ones (issuer pulled from the OS store, or a
+name-only placeholder) get an accent-coloured border + a label. A self-signed
+cert shows "Self-signed" in green instead of repeating its issuer. */
 @Composable
 internal fun CertCard(inIndex: Int, inCert: ChainCert) {
     val c = LocalAppColors.current
@@ -86,14 +101,22 @@ internal fun CertCard(inIndex: Int, inCert: ChainCert) {
     Column(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
             .background(c.field.copy(alpha = if (inCert.fromServer) 1f else 0.4f), RoundedCornerShape(8.dp))
-            .border(if (inCert.fromServer) 1.dp else 1.5.dp, if (inCert.fromServer) c.border else c.accent, RoundedCornerShape(8.dp))
+            .border(
+                if (inCert.fromServer) 1.dp else 1.5.dp,
+                if (inCert.fromServer) c.border else c.accent,
+                RoundedCornerShape(8.dp)
+            )
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         val vTitle = vSubject?.let { cnOf(it) } ?: if (inIndex == 0) "Leaf certificate" else "Issuer #$inIndex"
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(vTitle, color = c.accent, fontSize = 12.sp, modifier = Modifier.weight(1f))
-            if (!inCert.fromServer) Text(if (vPem != null) "from OS store" else "not presented", color = c.dim, fontSize = 10.sp)
+            if (!inCert.fromServer) Text(
+                if (vPem != null) "from OS store" else "not presented",
+                color = c.dim,
+                fontSize = 10.sp
+            )
             if (vPem != null) CopyButton(vPem)
         }
         vSubject?.let { CertLine("Subject", it) }
@@ -116,9 +139,9 @@ internal fun CertCard(inIndex: Int, inCert: ChainCert) {
 internal val kSelfSignedColor = Color(0xFF3FB950L)
 
 /** Copy button — rounded, hover overlay, real click that copies inText and shows
-   a green check. Icon-only (per cert) flashes a small floating "Copied" bubble
-   for 2s; the labelled variant (Copy chain) flips its label to "Copied" instead.
-   Uses a non-catching Popup so it never dismisses the dialog or eats clicks. */
+a green check. Icon-only (per cert) flashes a small floating "Copied" bubble
+for 2s; the labelled variant (Copy chain) flips its label to "Copied" instead.
+Uses a non-catching Popup so it never dismisses the dialog or eats clicks. */
 @Composable
 internal fun CopyButton(inText: String, inLabel: String? = null) {
     val c = LocalAppColors.current
@@ -130,7 +153,11 @@ internal fun CopyButton(inText: String, inLabel: String? = null) {
     var vHeight by remember { mutableStateOf(0) }
     val vClipboard = LocalClipboard.current
     val vScope = rememberCoroutineScope()
-    LaunchedEffect(vCopied) { if (vCopied) { delay(2000); vCopied = false } }
+    LaunchedEffect(vCopied) {
+        if (vCopied) {
+            delay(2000.milliseconds); vCopied = false
+        }
+    }
     Row(
         modifier = Modifier
             .onGloballyPositioned { vX = it.x; vY = it.y }
@@ -152,7 +179,11 @@ internal fun CopyButton(inText: String, inLabel: String? = null) {
             tint = if (vCopied) kSelfSignedColor else c.dim,
             size = 15.dp,
         )
-        if (inLabel != null) Text(if (vCopied) "Copied" else inLabel, color = if (vCopied) kSelfSignedColor else c.text, fontSize = 12.sp)
+        if (inLabel != null) Text(
+            if (vCopied) "Copied" else inLabel,
+            color = if (vCopied) kSelfSignedColor else c.text,
+            fontSize = 12.sp
+        )
     }
     // Icon-only: float a tiny "Copied" bubble (non-catching popup → no dismiss).
     if (vCopied && inLabel == null) {
@@ -180,13 +211,13 @@ internal fun certField(inFields: List<Pair<String, String>>, inName: String): St
     inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
 
 /** The CN= value out of a distinguished-name string. Handles every
-   format the platform backends emit:
-     "CN=R3, O=Let's Encrypt, C=US"        (Windows CertGetNameStringA)
-     "/C=US/O=Let's Encrypt/CN=R3"          (OpenSSL X509_NAME_oneline)
-     "CN = R3, O = Let's Encrypt, C = US"   (OpenSSL X509_NAME_print_ex
-                                             default, with spaces — what
-                                             libcurl on macOS emits)
-   Null when there's no CN. */
+format the platform backends emit:
+"CN=R3, O=Let's Encrypt, C=US"        (Windows CertGetNameStringA)
+"/C=US/O=Let's Encrypt/CN=R3"          (OpenSSL X509_NAME_oneline)
+"CN = R3, O = Let's Encrypt, C = US"   (OpenSSL X509_NAME_print_ex
+default, with spaces — what
+libcurl on macOS emits)
+Null when there's no CN. */
 internal fun cnOf(inDn: String): String? {
     val vMatch = Regex("""(?i)\bCN\s*=\s*([^,/]+)""").find(inDn) ?: return null
     return vMatch.groupValues[1].trim().ifBlank { null }

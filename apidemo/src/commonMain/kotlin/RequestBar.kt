@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package apidemo
 
@@ -39,7 +39,11 @@ internal fun OptionsMenu(
     var vOpen by remember { mutableStateOf(false) }
     Box {
         IconBtn(MaterialSymbols.Settings, "Options") { vOpen = true }
-        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, modifier = Modifier.widthIn(min = 200.dp)) {
+        DropdownMenu(
+            expanded = vOpen,
+            onDismissRequest = { vOpen = false },
+            modifier = Modifier.widthIn(min = 200.dp)
+        ) {
             DropdownMenuItem(text = {
                 Text("Dark mode", color = if (inDark) c.accent else c.text, fontSize = 13.sp)
             }, onClick = { if (!inDark) inOnToggleTheme(); vOpen = false })
@@ -58,8 +62,16 @@ internal fun OptionsMenu(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Box(modifier = Modifier.size(12.dp).clip(RoundedCornerShape(3.dp)).background(vPal.scheme.light.primary))
-                        Text(vPal.label, color = if (vSel) c.accent else c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier.size(12.dp).clip(RoundedCornerShape(3.dp))
+                                .background(vPal.scheme.light.primary)
+                        )
+                        Text(
+                            vPal.label,
+                            color = if (vSel) c.accent else c.text,
+                            fontSize = 13.sp,
+                            modifier = Modifier.weight(1f)
+                        )
                         if (vSel) MaterialSymbolsOutlined(MaterialSymbols.Check, tint = c.accent, size = 16.dp)
                     }
                 }, onClick = { inOnPalette(vPal); vOpen = false })
@@ -77,7 +89,7 @@ internal fun OptionsMenu(
 // ==================
 
 /** Panel 2 — one unified bar: a method dropdown (coloured label + unfold arrows),
-   a borderless URL field that melts into the bar, and Send (or Cancel). */
+a borderless URL field that melts into the bar, and Send (or Cancel). */
 @Composable
 internal fun UrlBar(
     inReq: ApiRequest,
@@ -119,16 +131,18 @@ internal fun UrlBar(
         // Borderless URL field — no box, so it reads as part of the bar.
         Box(
             modifier = Modifier.weight(1f).alpha(if (inReadOnly) 0.55f else 1f).onKeyEvent { ev ->
-                if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) { inOnSend(); true } else false
+                if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) {
+                    inOnSend(); true
+                } else false
             },
         ) {
             if (inReq.url.isEmpty()) Text("https://example.com/path", color = c.dim, fontSize = 14.sp)
             androidx.compose.runtime.CompositionLocalProvider(
                 androidx.compose.foundation.text.selection.LocalTextSelectionColors provides
-                    androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = c.accent,
-                        backgroundColor = c.accent.copy(alpha = 0.35f),
-                    ),
+                        androidx.compose.foundation.text.selection.TextSelectionColors(
+                            handleColor = c.accent,
+                            backgroundColor = c.accent.copy(alpha = 0.35f),
+                        ),
             ) {
                 BasicTextField(
                     value = inReq.url,
@@ -153,7 +167,10 @@ internal fun UrlBar(
         ) {
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(6.dp))
-                    .background(if (vLockHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
+                    .background(
+                        if (vLockHover) c.accent.copy(alpha = 0.18f) else Color.Transparent,
+                        RoundedCornerShape(6.dp)
+                    )
                     .hoverable(vLockHoverSrc)
                     .clickable(onClick = inOnInspectChain)
                     .padding(6.dp),
@@ -161,8 +178,10 @@ internal fun UrlBar(
                 if (inChainLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), color = c.accent, strokeWidth = 2.dp)
                 } else {
-                    MaterialSymbolsOutlined(MaterialSymbols.Lock, contentDescription = "Inspect TLS chain",
-                        tint = if (vLockHover) c.accent else c.dim, size = 18.dp)
+                    MaterialSymbolsOutlined(
+                        MaterialSymbols.Lock, contentDescription = "Inspect TLS chain",
+                        tint = if (vLockHover) c.accent else c.dim, size = 18.dp
+                    )
                 }
             }
         }
@@ -171,7 +190,10 @@ internal fun UrlBar(
         // so the bar never changes height when toggling — Cancel is just red.
         if (inLoading) Button(
             onClick = inOnCancel,
-            colors = ButtonDefaults.buttonColors(containerColor = methodColor(ReqMethod.DELETE), contentColor = Color.White),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = methodColor(ReqMethod.DELETE),
+                contentColor = Color.White
+            ),
         ) { BtnContent(MaterialSymbols.Stop, "Cancel", Color.White) }
         else Button(onClick = inOnSend) { BtnContent(MaterialSymbols.Send, "Send", c.onAccent) }
     }

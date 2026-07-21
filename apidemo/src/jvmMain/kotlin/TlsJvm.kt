@@ -8,19 +8,19 @@ package apidemo
 // the limitation instead of half-implementing it over JSSE.
 
 private const val kNativeOnly =
-	"Client-certificate (mTLS) features need the native build — they drive the bundled libcurl directly."
+    "Client-certificate (mTLS) features need the native build — they drive the bundled libcurl directly."
 
 actual fun inspectTlsChain(inReq: ApiRequest): TlsChain = TlsChain(emptyList(), kNativeOnly)
 
 actual fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse = ApiResponse(
-	ok = false,
-	status = 0,
-	statusText = "",
-	timeMs = 0,
-	sizeBytes = 0,
-	headers = emptyList(),
-	body = "",
-	error = kNativeOnly,
+    ok = false,
+    status = 0,
+    statusText = "",
+    timeMs = 0,
+    sizeBytes = 0,
+    headers = emptyList(),
+    body = "",
+    error = kNativeOnly,
 )
 
 actual fun sweepTempClientCerts() {}

@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,8 +41,15 @@ internal fun App() {
     val vFirst = !vInitial.launched || vInitial.packs.isEmpty()
     val vBoot = remember {
         if (vFirst) defaultSession()
-        else Session(packs = vInitial.packs, root = vInitial.root, globalEnv = vInitial.globalEnv,
-            globalHeaders = vInitial.globalHeaders, globalParams = vInitial.globalParams, globalCert = vInitial.globalCert, activePack = vInitial.activePack)
+        else Session(
+            packs = vInitial.packs,
+            root = vInitial.root,
+            globalEnv = vInitial.globalEnv,
+            globalHeaders = vInitial.globalHeaders,
+            globalParams = vInitial.globalParams,
+            globalCert = vInitial.globalCert,
+            activePack = vInitial.activePack
+        )
     }
     val vPacks = remember {
         mutableStateListOf<PackState>().apply {
@@ -68,8 +74,12 @@ internal fun App() {
     // out of vPacks so pack indices / persistence stay untouched; active when
     // vActivePackRef === vRoot.
     var vRoot by remember {
-        mutableStateOf(PackState(vBoot.root ?: Pack(isRoot = true, name = "", requests = emptyList()),
-            null, false, if (vFirst) emptyList() else vInitial.rootOpenTabs))
+        mutableStateOf(
+            PackState(
+                vBoot.root ?: Pack(isRoot = true, name = "", requests = emptyList()),
+                null, false, if (vFirst) emptyList() else vInitial.rootOpenTabs
+            )
+        )
     }
     val vHistory = remember { mutableStateListOf<HistoryEntry>() }
     val vTreeDrag = remember { TreeDrag() }   // shared cross-pack drag state for the sidebar tree
@@ -78,7 +88,7 @@ internal fun App() {
     // The active pack/scope as a reference (a top-level pack, a sub-pack, or the
     // loose root) — a reference (not an index) so sub-packs can be active.
     var vActivePackRef by remember {
-        mutableStateOf<PackState?>(
+        mutableStateOf(
             vBoot.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0)).let { vIdx ->
                 if (vPacks.getOrNull(vIdx)?.openTabs?.isNotEmpty() == true) vIdx
                 else vPacks.indexOfFirst { it.openTabs.isNotEmpty() }.takeIf { it >= 0 } ?: vIdx
@@ -106,21 +116,30 @@ internal fun App() {
     var vSessionActive by remember { mutableStateOf(false) }   // and it's the active main-panel tab
 
     fun activePack(): PackState? = vActivePackRef
+
     // Top-level index of a pack for persistence (-1 = loose root, sub-pack, or none).
     fun packIndex(inP: PackState?): Int = if (inP == null || inP === vRoot) -1 else vPacks.indexOf(inP)
-    fun selectPack(inP: PackState) { vActivePackRef = inP; vReqMsg = null }
+    fun selectPack(inP: PackState) {
+        vActivePackRef = inP; vReqMsg = null
+    }
+
     // The scope chain from the outermost pack down to inP (root excluded). Used to
     // resolve inheritance: Session → outer pack → … → inner pack, innermost wins.
     fun scopeChain(inP: PackState?): List<PackState> {
         val vChain = ArrayList<PackState>()
         var vCur = inP
-        while (vCur != null && vCur !== vRoot) { vChain.add(vCur); vCur = vCur.parent }
+        while (vCur != null && vCur !== vRoot) {
+            vChain.add(vCur); vCur = vCur.parent
+        }
         return vChain.asReversed()
     }
+
     // Variables a request sees: session, then each enclosing pack (inner overrides).
     fun effective(inP: PackState): List<KeyVal> = vGlobalEnv.toList() + scopeChain(inP).flatMap { it.variables }
+
     // …plus the request's own variables (innermost — they win over everything above).
     fun effectiveReqVars(inReq: ApiRequest, inP: PackState): List<KeyVal> = effective(inP) + inReq.variables
+
     // Query params a request inherits: session, then each enclosing pack (inner wins by key).
     fun inheritedParams(inP: PackState?): List<KeyVal> {
         val vOut = LinkedHashMap<String, KeyVal>()
@@ -128,6 +147,7 @@ internal fun App() {
         scopeChain(inP).forEach { vP -> vP.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = it } }
         return vOut.values.toList()
     }
+
     // The query params actually sent: inherited, then the request's own override by key.
     fun effectiveParams(inReq: ApiRequest, inP: PackState?): List<KeyVal> {
         val vOut = LinkedHashMap<String, KeyVal>()
@@ -135,13 +155,17 @@ internal fun App() {
         inReq.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = it }
         return vOut.values.toList()
     }
+
     // Headers a request inherits: session, then each enclosing pack (inner wins by key).
     fun inheritedHeaders(inP: PackState?): List<KeyVal> {
         val vOut = LinkedHashMap<String, KeyVal>()
         vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
-        scopeChain(inP).forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it } }
+        scopeChain(inP).forEach { vP ->
+            vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
+        }
         return vOut.values.toList()
     }
+
     // The headers actually sent: inherited, then the request's own override by key.
     fun effectiveHeaders(inReq: ApiRequest, inP: PackState?): List<KeyVal> {
         val vOut = LinkedHashMap<String, KeyVal>()
@@ -149,11 +173,13 @@ internal fun App() {
         inReq.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = it }
         return vOut.values.toList()
     }
+
     // Client cert a request inherits: nearest enclosing pack that sets one, else session.
     fun inheritedCert(inP: PackState?): CertConfig? {
         scopeChain(inP).asReversed().forEach { if (it.cert?.isSet == true) return it.cert }
         return vSessionCert?.takeIf { it.isSet }
     }
+
     // The cert actually used: the request's own if set, else the inherited one.
     fun effectiveCert(inReq: ApiRequest, inP: PackState?): CertConfig? =
         if (inReq.hasClientCert) inReq.certConfig() else inheritedCert(inP)
@@ -169,29 +195,45 @@ internal fun App() {
     fun scopePath(inP: PackState): String {
         val vParts = ArrayList<String>()
         var vCur: PackState? = inP
-        while (vCur != null && vCur !== vRoot) { vParts.add(0, vCur.name.ifBlank { "Pack" }); vCur = vCur.parent }
+        while (vCur != null && vCur !== vRoot) {
+            vParts.add(0, vCur.name.ifBlank { "Pack" }); vCur = vCur.parent
+        }
         return vParts.joinToString(" / ")
     }
+
     fun sourcedVars(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // vars are case-sensitive ({{name}})
         vGlobalEnv.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session", "Session") }
-        inChain.forEach { vP -> vP.variables.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) } }
+        inChain.forEach { vP ->
+            vP.variables.filter { it.key.isNotBlank() }
+                .forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) }
+        }
         return vOut.values.toList()
     }
+
     fun sourcedHeaders(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // headers are case-insensitive
-        vSessionHeaders.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Session", "Session") }
-        inChain.forEach { vP -> vP.headers.filter { it.key.isNotBlank() }.forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Pack", scopePath(vP)) } }
+        vSessionHeaders.filter { it.key.isNotBlank() }
+            .forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Session", "Session") }
+        inChain.forEach { vP ->
+            vP.headers.filter { it.key.isNotBlank() }
+                .forEach { vOut[it.key.lowercase()] = InheritedKv(it, "Pack", scopePath(vP)) }
+        }
         return vOut.values.toList()
     }
+
     fun sourcedParams(inChain: List<PackState>): List<InheritedKv> {
         val vOut = LinkedHashMap<String, InheritedKv>()   // query keys are case-sensitive
         vSessionParams.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Session", "Session") }
-        inChain.forEach { vP -> vP.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) } }
+        inChain.forEach { vP ->
+            vP.params.filter { it.key.isNotBlank() }.forEach { vOut[it.key] = InheritedKv(it, "Pack", scopePath(vP)) }
+        }
         return vOut.values.toList()
     }
+
     fun sourcedCert(inChain: List<PackState>): InheritedCert? {
-        inChain.asReversed().forEach { vP -> vP.cert?.takeIf { it.isSet }?.let { return InheritedCert(it, "Pack", scopePath(vP)) } }
+        inChain.asReversed()
+            .forEach { vP -> vP.cert?.takeIf { it.isSet }?.let { return InheritedCert(it, "Pack", scopePath(vP)) } }
         return vSessionCert?.takeIf { it.isSet }?.let { InheritedCert(it, "Session", "Session") }
     }
 
@@ -203,42 +245,53 @@ internal fun App() {
         // Open-tab state — persisted in app state only, not in the session file.
         val vOpen = vPacks.map { vP -> vP.openTabs.mapNotNull { vRs -> vP.requests.indexOf(vRs).takeIf { it >= 0 } } }
         val vActiveReq = vActivePackRef?.let { it.requests.indexOf(it.active) } ?: -1
-        saveAppState(AppState(
-            launched = true,
-            dark = vDark,
-            theme = vPalette.id,
-            globalEnv = vGE,
-            globalHeaders = vSessionHeaders.toList(),
-            globalParams = vSessionParams.toList(),
-            globalCert = vSessionCert,
-            packs = vSaved,
-            root = vRootPack,
-            rootOpenTabs = vRootTabs,
-            activePack = packIndex(vActivePackRef),
-            currentSession = vSessionPath,
-            recentSessions = vRecent.toList(),
-            openTabs = vOpen,
-            activeReq = vActiveReq,
-        ))
+        saveAppState(
+            AppState(
+                launched = true,
+                dark = vDark,
+                theme = vPalette.id,
+                globalEnv = vGE,
+                globalHeaders = vSessionHeaders.toList(),
+                globalParams = vSessionParams.toList(),
+                globalCert = vSessionCert,
+                packs = vSaved,
+                root = vRootPack,
+                rootOpenTabs = vRootTabs,
+                activePack = packIndex(vActivePackRef),
+                currentSession = vSessionPath,
+                recentSessions = vRecent.toList(),
+                openTabs = vOpen,
+                activeReq = vActiveReq,
+            )
+        )
         // A session opened from / saved to a file auto-saves back to it on every
         // change — once it has a file, it's always in sync (best-effort). The
         // Session has no open-tab fields, so the file never carries them.
-        vSessionPath?.let { exportSession(Session(packs = vSaved, root = vRootPack, globalEnv = vGE,
-            globalHeaders = vSessionHeaders.toList(), globalParams = vSessionParams.toList(), globalCert = vSessionCert, activePack = packIndex(vActivePackRef)), it) }
-    }
-
-    // ============
-    //  Request actions (operate on the active pack, read live)
-    // Tabs are shown unified across all packs, so these act on the pack that
-    // owns the request (not just the active one) and keep focus on a pack that
-    // still has open tabs.
-    fun packOf(inRs: ReqState): PackState? = vPacks.firstOrNull { vQ -> vQ.requests.any { it === inRs } }
-    fun ensureFocusHasTabs() {
-        if (activePack()?.active == null) {
-            val vNext = (if (vRoot.openTabs.isNotEmpty()) vRoot else null) ?: vPacks.firstOrNull { it.openTabs.isNotEmpty() }
-            if (vNext != null) { vActivePackRef = vNext; vNext.active = vNext.openTabs.firstOrNull() }
+        vSessionPath?.let {
+            exportSession(
+                Session(
+                    packs = vSaved,
+                    root = vRootPack,
+                    globalEnv = vGE,
+                    globalHeaders = vSessionHeaders.toList(),
+                    globalParams = vSessionParams.toList(),
+                    globalCert = vSessionCert,
+                    activePack = packIndex(vActivePackRef)
+                ), it
+            )
         }
     }
+
+    fun ensureFocusHasTabs() {
+        if (activePack()?.active == null) {
+            val vNext =
+                (if (vRoot.openTabs.isNotEmpty()) vRoot else null) ?: vPacks.firstOrNull { it.openTabs.isNotEmpty() }
+            if (vNext != null) {
+                vActivePackRef = vNext; vNext.active = vNext.openTabs.firstOrNull()
+            }
+        }
+    }
+
     // The unified tab strip, flattened across packs: each pack contributes its
     // env tab (if open) followed by its request tabs.
     fun stripTabs(): List<StripTab> = buildList {
@@ -251,8 +304,15 @@ internal fun App() {
         }
         vPacks.forEach { addPack(it) }
     }
-    fun openSessionTab() { vSessionTabOpen = true; vSessionActive = true; vEnvActive = false; vReqMsg = null }
-    fun closeSessionTab() { vSessionTabOpen = false; vSessionActive = false }
+
+    fun openSessionTab() {
+        vSessionTabOpen = true; vSessionActive = true; vEnvActive = false; vReqMsg = null
+    }
+
+    fun closeSessionTab() {
+        vSessionTabOpen = false; vSessionActive = false
+    }
+
     // Open a request in a specific pack's context (a linked copy shares the
     // source's ReqState objects, so the pack must be passed — packOf would
     // resolve to the source, not the linked copy).
@@ -261,20 +321,24 @@ internal fun App() {
         vActivePackRef = inPack; inPack.active = inRs
         vEnvActive = false; vSessionActive = false; vReqMsg = null
     }
+
     fun openEnv(inP: PackState) {
         vActivePackRef = inP
         inP.envOpen = true; vEnvActive = true; vSessionActive = false; vReqMsg = null
     }
+
     fun closeTab(inRs: ReqState, inPack: PackState) {
         val vIdx = inPack.openTabs.indexOf(inRs)
         inPack.openTabs.remove(inRs)
         if (inPack.active === inRs) inPack.active = inPack.openTabs.getOrNull(vIdx) ?: inPack.openTabs.lastOrNull()
         if (!vEnvActive) ensureFocusHasTabs()
     }
+
     fun closeEnv(inP: PackState) {
         inP.envOpen = false
         if (vEnvActive && activePack() === inP) vEnvActive = false   // fall back to the active request
     }
+
     // Close every tab except inTab (a request, a pack-env, or the session tab).
     fun closeOthers(inTab: StripTab) {
         vRoot.openTabs.removeAll { it !== inTab.req }
@@ -291,16 +355,21 @@ internal fun App() {
             val vKeep = inTab.pack
             if (vKeep != null) {
                 vActivePackRef = vKeep
-                if (inTab.req != null) { vKeep.active = inTab.req; vEnvActive = false }
-                else { vKeep.envOpen = true; vEnvActive = true }
+                if (inTab.req != null) {
+                    vKeep.active = inTab.req; vEnvActive = false
+                } else {
+                    vKeep.envOpen = true; vEnvActive = true
+                }
             }
         }
     }
+
     fun closeAllTabs() {
         vRoot.openTabs.clear(); vRoot.active = null
         vPacks.forEach { it.openTabs.clear(); it.active = null; it.envOpen = false }
         vEnvActive = false; vSessionTabOpen = false; vSessionActive = false
     }
+
     // inFrom / inTo index into the unified strip; only request tabs reorder, and
     // the move is clamped to the dragged tab's own pack so it can't jump packs.
     fun reorderTabs(inFrom: Int, inTo: Int) {
@@ -316,29 +385,34 @@ internal fun App() {
         val vToL = (inTo - vReqStart).coerceIn(0, (vP.openTabs.size - 1).coerceAtLeast(0))
         if (vFromL >= 0 && vFromL != vToL) vP.openTabs.add(vToL, vP.openTabs.removeAt(vFromL))
     }
+
     fun edit(inT: (ApiRequest) -> ApiRequest) {
         val vP = activePack() ?: return
         if (vP.isLinked) return                 // linked copies are read-only; edit the source
         val vRs = vP.active ?: return
         vRs.req = inT(vRs.req); vP.dirty = true
     }
+
     fun newRequest() {
         val vP = activePack() ?: return
         val vRs = ReqState(ApiRequest(name = "Request ${vP.requests.size + 1}"))
         vP.requests.add(vRs); vP.openTabs.add(vRs); vP.active = vRs; vP.dirty = true; vReqMsg = null; vSideTab = 0
     }
+
     // A loose request at the session root (no pack — inherits session settings only).
     fun newLooseRequest() {
         val vRs = ReqState(ApiRequest(name = "Request ${vRoot.requests.size + 1}"))
         vRoot.requests.add(vRs); vRoot.openTabs.add(vRs); vRoot.active = vRs
         vActivePackRef = vRoot; vEnvActive = false; vSessionActive = false; vReqMsg = null; vSideTab = 0; persist()
     }
+
     fun duplicate(inRs: ReqState) {
         val vP = activePack() ?: return
         val vAt = (vP.requests.indexOf(inRs) + 1).coerceIn(0, vP.requests.size)
         val vCopy = ReqState(inRs.req.copy(name = "${inRs.req.name} copy"))
         vP.requests.add(vAt, vCopy); vP.openTabs.add(vCopy); vP.active = vCopy; vP.dirty = true; vReqMsg = null
     }
+
     fun deleteRequest(inRs: ReqState) {
         val vP = activePack() ?: return
         inRs.job?.cancel()
@@ -347,10 +421,12 @@ internal fun App() {
         if (vP.active === inRs) vP.active = vP.openTabs.lastOrNull()
         vP.dirty = true
     }
+
     fun renameRequest(inRs: ReqState, inName: String) {
         val vP = activePack() ?: return
         inRs.req = inRs.req.copy(name = inName); vP.dirty = true
     }
+
     fun send(inRs: ReqState) {
         if (inRs.loading) return
         val vP = activePack() ?: return
@@ -380,7 +456,11 @@ internal fun App() {
             }
         }
     }
-    fun cancel(inRs: ReqState) { inRs.job?.cancel(); inRs.job = null; inRs.loading = false }
+
+    fun cancel(inRs: ReqState) {
+        inRs.job?.cancel(); inRs.job = null; inRs.loading = false
+    }
+
     // Probe the URL's TLS chain (libcurl handshake) and show it in a dialog.
     fun inspectChain(inRs: ReqState) {
         if (inRs.chainLoading) return
@@ -393,7 +473,9 @@ internal fun App() {
             try {
                 val vChain = withContext(Dispatchers.Default) { inspectTlsChain(vSend) }
                 inRs.tlsChain = vChain; inRs.showChain = true
-            } finally { inRs.chainLoading = false }
+            } finally {
+                inRs.chainLoading = false
+            }
         }
     }
 
@@ -405,6 +487,7 @@ internal fun App() {
         vP.requests.firstOrNull()?.let { vP.openTabs.add(it); vP.active = it }   // open its request if any
         persist()
     }
+
     fun openPackFile() {
         showOpenFileDialog { vPath ->
             if (vPath != null) importPack(vPath).fold(
@@ -416,23 +499,31 @@ internal fun App() {
             )
         }
     }
+
     fun saveAsPack() {
         val vP = activePack() ?: return
         showSaveFileDialog("${vP.name}.json") { vPath ->
             if (vPath != null) {
                 val vErr = exportPack(vP.toPack(), vPath)
-                if (vErr == null) { vP.path = vPath; vP.dirty = false; vReqMsg = "Exported."; persist() }
-                else vReqMsg = "Export failed: $vErr"
+                if (vErr == null) {
+                    vP.path = vPath; vP.dirty = false; vReqMsg = "Exported."; persist()
+                } else vReqMsg = "Export failed: $vErr"
             }
         }
     }
+
     fun savePack() {
         val vP = activePack() ?: return
         val vPath = vP.path
-        if (vPath == null) { saveAsPack(); return }
+        if (vPath == null) {
+            saveAsPack(); return
+        }
         val vErr = exportPack(vP.toPack(), vPath)
-        if (vErr == null) { vP.dirty = false; vReqMsg = "Exported."; persist() } else vReqMsg = "Export failed: $vErr"
+        if (vErr == null) {
+            vP.dirty = false; vReqMsg = "Exported."; persist()
+        } else vReqMsg = "Export failed: $vErr"
     }
+
     // Remove a pack from its parent (a sub-pack) or from the top level.
     fun removePack(inP: PackState) {
         val vPar = inP.parent
@@ -440,6 +531,7 @@ internal fun App() {
         if (vActivePackRef === inP) vActivePackRef = vPar ?: vPacks.firstOrNull()
         vReqMsg = null; persist()
     }
+
     // A new empty sub-pack inside inParent.
     fun newSubPack(inParent: PackState) {
         val vSub = PackState(Pack(name = "Sub-pack ${inParent.subPacks.size + 1}"), null, false)
@@ -447,26 +539,33 @@ internal fun App() {
         inParent.subPacks.add(vSub); inParent.expanded = true
         vActivePackRef = vSub; vEnvActive = false; vSessionActive = false; vReqMsg = null; persist()
     }
+
     fun duplicatePack(inP: PackState) {
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
         val vNew = PackState(inP.toPack().copy(name = "${inP.name} copy", id = "", linkedTo = null), null, true)
         vPacks.add(vAt, vNew); vActivePackRef = vNew; vReqMsg = null; persist()
     }
+
     // A linked copy mirrors inP's requests read-only but gets its own (copied)
     // variables / headers / cert — for running the same calls against another env.
     fun createLinkedPack(inP: PackState) {
         val vSource = inP.linkedSource ?: inP   // link to the real source, never to another link
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
-        val vNew = PackState(Pack(
-            name = "${vSource.name} (linked)", requests = emptyList(),
-            variables = vSource.variables.toList(), color = vSource.color,
-            headers = vSource.headers.toList(), cert = vSource.cert, linkedTo = vSource.id,
-        ), null, true)
+        val vNew = PackState(
+            Pack(
+                name = "${vSource.name} (linked)", requests = emptyList(),
+                variables = vSource.variables.toList(), color = vSource.color,
+                headers = vSource.headers.toList(), cert = vSource.cert, linkedTo = vSource.id,
+            ), null, true
+        )
         vNew.linkedSource = vSource
         vPacks.add(vAt, vNew); vActivePackRef = vNew; vReqMsg = null; persist()
     }
+
     fun renamePack(inP: PackState, inName: String) {
-        if (inName.isNotBlank()) { inP.name = inName.trim(); inP.dirty = true; persist() }
+        if (inName.isNotBlank()) {
+            inP.name = inName.trim(); inP.dirty = true; persist()
+        }
     }
 
     // ============
@@ -474,9 +573,12 @@ internal fun App() {
     // True when inMaybe is inRoot itself or nested anywhere beneath it.
     fun inSubtree(inMaybe: PackState, inRoot: PackState): Boolean {
         var vCur: PackState? = inMaybe
-        while (vCur != null) { if (vCur === inRoot) return true; vCur = vCur.parent }
+        while (vCur != null) {
+            if (vCur === inRoot) return true; vCur = vCur.parent
+        }
         return false
     }
+
     // Move inRs out of inFrom into inTo at inIndex. inIndex counts inTo's rows
     // *excluding* the dragged request (so for a same-pack reorder it is already an
     // index into the post-removal list — no shift needed; resolveReqDrop produces
@@ -496,9 +598,12 @@ internal fun App() {
         if (vWasOpen && inRs !in inTo.openTabs) inTo.openTabs.add(inRs)
         inFrom.dirty = true; inTo.dirty = true
         inTo.expanded = true
-        if (vWasActive || vWasOpen) { vActivePackRef = inTo; inTo.active = inRs; vEnvActive = false; vSessionActive = false }
+        if (vWasActive || vWasOpen) {
+            vActivePackRef = inTo; inTo.active = inRs; vEnvActive = false; vSessionActive = false
+        }
         vReqMsg = null; persist()
     }
+
     // Reparent inPack under inNewParent (null = top level) at sibling index inIndex.
     fun movePack(inPack: PackState, inNewParent: PackState?, inIndex: Int) {
         if (inNewParent != null && inSubtree(inNewParent, inPack)) return   // no cycles
@@ -531,9 +636,16 @@ internal fun App() {
             if (inP.isLinked) return
             val vTops = inP.requests.mapNotNull { vTreeDrag.rowTop[it] }
             val vBots = inP.requests.mapNotNull { rowBottom(it) }
-            val vTop: Int; val vBot: Int
+            val vTop: Int
+            val vBot: Int
             if (inHeaderless) {
-                if (vTops.isEmpty()) { vTreeDrag.headTop[inP]?.let { vTop = it; vBot = it + (vTreeDrag.headH[inP] ?: 0); vRegions.add(Triple(inP, vTop, vBot)) }; return }
+                if (vTops.isEmpty()) {
+                    vTreeDrag.headTop[inP]?.let {
+                        vTop = it; vBot = it + (vTreeDrag.headH[inP] ?: 0); vRegions.add(
+                        Triple(inP, vTop, vBot)
+                    )
+                    }; return
+                }
                 vTop = vTops.min(); vBot = vBots.max()
             } else {
                 val vHt = vTreeDrag.headTop[inP] ?: return
@@ -542,15 +654,23 @@ internal fun App() {
             }
             vRegions.add(Triple(inP, vTop, vBot))
         }
+
         fun walk(inP: PackState) {
             addRegion(inP, false)
             if (inP.expanded) inP.subPacks.forEach { walk(it) }
         }
         addRegion(vRoot, true)
         vPacks.forEach { walk(it) }
-        if (vRegions.isEmpty()) { vTreeDrag.dropPack = null; vTreeDrag.dropIndex = -1; return }
+        if (vRegions.isEmpty()) {
+            vTreeDrag.dropPack = null; vTreeDrag.dropIndex = -1; return
+        }
         val vTarget = vRegions.firstOrNull { inCursorY >= it.second && inCursorY < it.third }?.first
-            ?: vRegions.minByOrNull { kotlin.math.min(kotlin.math.abs(inCursorY - it.second), kotlin.math.abs(inCursorY - it.third)) }!!.first
+            ?: vRegions.minByOrNull {
+                kotlin.math.min(
+                    kotlin.math.abs(inCursorY - it.second),
+                    kotlin.math.abs(inCursorY - it.third)
+                )
+            }!!.first
         var vCount = 0
         vTarget.requests.forEach { vRs ->
             if (vRs !== vDrag) {
@@ -560,31 +680,62 @@ internal fun App() {
         }
         vTreeDrag.dropPack = vTarget; vTreeDrag.dropIndex = vCount
     }
+
     // Resolve where the dragged pack would land. The header the cursor is over (or
     // nearest) decides it: top third → before it, bottom third → after it (sibling
     // inserts), middle third → nest inside it as a child.
     fun resolvePackDrop(inCursorY: Int) {
         val vDrag = vTreeDrag.dragPack ?: return
+
         // Rendered headers (top, height, parent, sibling list), skipping the dragged subtree.
-        data class HEntry(val pack: PackState, val top: Int, val h: Int, val parent: PackState?, val sibs: List<PackState>)
+        data class HEntry(
+            val pack: PackState,
+            val top: Int,
+            val h: Int,
+            val parent: PackState?,
+            val sibs: List<PackState>
+        )
+
         val vEntries = ArrayList<HEntry>()
         fun walk(inP: PackState, inSibs: List<PackState>) {
             if (!inSubtree(inP, vDrag)) {
-                vTreeDrag.headTop[inP]?.let { vEntries.add(HEntry(inP, it, vTreeDrag.headH[inP] ?: 0, inP.parent, inSibs)) }
+                vTreeDrag.headTop[inP]?.let {
+                    vEntries.add(
+                        HEntry(
+                            inP,
+                            it,
+                            vTreeDrag.headH[inP] ?: 0,
+                            inP.parent,
+                            inSibs
+                        )
+                    )
+                }
             }
             if (inP.expanded) inP.subPacks.forEach { walk(it, inP.subPacks) }
         }
         vPacks.forEach { walk(it, vPacks) }
-        fun before(inE: HEntry) { vTreeDrag.dropInto = null; vTreeDrag.dropParent = inE.parent; vTreeDrag.dropSibIndex = inE.sibs.indexOf(inE.pack) }
-        fun after(inE: HEntry) { vTreeDrag.dropInto = null; vTreeDrag.dropParent = inE.parent; vTreeDrag.dropSibIndex = inE.sibs.indexOf(inE.pack) + 1 }
-        if (vEntries.isEmpty()) { vTreeDrag.dropInto = null; vTreeDrag.dropParent = null; vTreeDrag.dropSibIndex = 0; return }
+        fun before(inE: HEntry) {
+            vTreeDrag.dropInto = null; vTreeDrag.dropParent = inE.parent; vTreeDrag.dropSibIndex =
+                inE.sibs.indexOf(inE.pack)
+        }
+
+        fun after(inE: HEntry) {
+            vTreeDrag.dropInto = null; vTreeDrag.dropParent = inE.parent; vTreeDrag.dropSibIndex =
+                inE.sibs.indexOf(inE.pack) + 1
+        }
+        if (vEntries.isEmpty()) {
+            vTreeDrag.dropInto = null; vTreeDrag.dropParent = null; vTreeDrag.dropSibIndex = 0; return
+        }
         val vHit = vEntries.firstOrNull { inCursorY >= it.top && inCursorY < it.top + it.h }
         if (vHit != null) {
             val vFrac = if (vHit.h > 0) (inCursorY - vHit.top).toFloat() / vHit.h else 0.5f
             when {
                 vFrac < 0.30f -> before(vHit)
                 vFrac > 0.70f -> after(vHit)
-                !vHit.pack.isLinked -> { vTreeDrag.dropInto = vHit.pack; vTreeDrag.dropParent = null; vTreeDrag.dropSibIndex = -1 }
+                !vHit.pack.isLinked -> {
+                    vTreeDrag.dropInto = vHit.pack; vTreeDrag.dropParent = null; vTreeDrag.dropSibIndex = -1
+                }
+
                 else -> after(vHit)
             }
         } else {
@@ -592,13 +743,22 @@ internal fun App() {
             if (inCursorY < vNear.top + vNear.h / 2) before(vNear) else after(vNear)
         }
     }
+
     // Commit the resolved request / pack drop, then clear the drag. A press that
     // never passed the slop (engaged == false) is a click, not a drop — skip it.
     fun reqDropEnd() {
-        val vRs = vTreeDrag.dragReq; val vFrom = vTreeDrag.dragReqOwner; val vTo = vTreeDrag.dropPack
-        if (vTreeDrag.engaged && vRs != null && vFrom != null && vTo != null && vTreeDrag.dropIndex >= 0) moveRequest(vRs, vFrom, vTo, vTreeDrag.dropIndex)
+        val vRs = vTreeDrag.dragReq
+        val vFrom = vTreeDrag.dragReqOwner
+        val vTo = vTreeDrag.dropPack
+        if (vTreeDrag.engaged && vRs != null && vFrom != null && vTo != null && vTreeDrag.dropIndex >= 0) moveRequest(
+            vRs,
+            vFrom,
+            vTo,
+            vTreeDrag.dropIndex
+        )
         vTreeDrag.clear()
     }
+
     fun packDropEnd() {
         val vP = vTreeDrag.dragPack
         if (vTreeDrag.engaged && vP != null) {
@@ -615,22 +775,32 @@ internal fun App() {
         vRecent.remove(inPath); vRecent.add(0, inPath)
         while (vRecent.size > 8) vRecent.removeAt(vRecent.size - 1)
     }
+
     fun saveSessionTo(inPath: String) {
         vSessionPath = inPath; rememberRecent(inPath); persist()   // persist() writes the file
     }
+
     fun saveSessionAs(inThen: () -> Unit = {}) {
-        showSaveFileDialog("session.json") { vPath -> if (vPath != null) { saveSessionTo(vPath); inThen() } }
+        showSaveFileDialog("session.json") { vPath ->
+            if (vPath != null) {
+                saveSessionTo(vPath); inThen()
+            }
+        }
     }
+
     // First save (no file yet) prompts for a location; afterwards the session
     // auto-saves on every change, so Ctrl+S just flushes via persist().
     fun saveSession() {
         if (vSessionPath == null) saveSessionAs() else persist()
     }
+
     fun loadSession(inSession: Session, inPath: String?) {
         vPacks.clear()
         inSession.packs.forEach { vPacks.add(PackState(it.pack, it.path, it.dirty)) }
         inSession.packs.forEachIndexed { vI, vSp ->   // wire linked copies to their source by id
-            vSp.pack.linkedTo?.let { vSrcId -> vPacks.getOrNull(vI)?.linkedSource = vPacks.firstOrNull { it.id == vSrcId } }
+            vSp.pack.linkedTo?.let { vSrcId ->
+                vPacks.getOrNull(vI)?.linkedSource = vPacks.firstOrNull { it.id == vSrcId }
+            }
         }
         if (vPacks.isEmpty()) vPacks.add(PackState(Pack(), null, false))
         vRoot = PackState(inSession.root ?: Pack(isRoot = true, name = "", requests = emptyList()), null, false)
@@ -643,33 +813,43 @@ internal fun App() {
         if (inPath != null) rememberRecent(inPath)
         vReqMsg = null; persist()
     }
+
     fun openSession(inPath: String) {
         importSession(inPath).fold(
             onSuccess = { loadSession(it, inPath); vReqMsg = "Opened session." },
             onFailure = { vReqMsg = "Open session failed: ${it.message}" },
         )
     }
+
     fun openSessionFile() {
         showOpenFileDialog { vPath -> if (vPath != null) openSession(vPath) }
     }
+
     fun newSession() {
         vPacks.clear(); vPacks.add(PackState(Pack(name = "My Pack"), null, false))
         vRoot = PackState(Pack(isRoot = true, name = "", requests = emptyList()), null, false)
         vGlobalEnv.clear(); vSessionHeaders.clear(); vSessionParams.clear(); vSessionCert = null
         vActivePackRef = vPacks.firstOrNull(); vSessionPath = null; vReqMsg = null; persist()
     }
-    fun loadDefaultSession() { loadSession(defaultSession(), null) }
+
+    fun loadDefaultSession() {
+        loadSession(defaultSession(), null)
+    }
+
     // Switching to another session replaces the current working set. If the
     // current session was never saved to a file, confirm first (and offer to
     // save it); a file-backed session auto-saves, so just switch.
     fun requestSwitch(inAction: () -> Unit) {
         if (vSessionPath == null) vSwitchAction = inAction else inAction()
     }
+
     fun renameSession(inName: String) {
         val vOld = vSessionPath ?: return
         if (inName.isBlank()) return
         renameFile(vOld, inName).fold(
-            onSuccess = { vNew -> vRecent.remove(vOld); vSessionPath = vNew; rememberRecent(vNew); vReqMsg = "Session renamed."; persist() },
+            onSuccess = { vNew ->
+                vRecent.remove(vOld); vSessionPath = vNew; rememberRecent(vNew); vReqMsg = "Session renamed."; persist()
+            },
             onFailure = { vReqMsg = "Rename failed: ${it.message}" },
         )
     }
@@ -678,41 +858,52 @@ internal fun App() {
     //  Save-and-close: the session is always persisted (state cache + its file
     //  if it has one), so closing never needs a warning.
     //  Plus app-wide keyboard shortcuts (work even with nothing focused).
-    val vKeyHandler: (KeyEvent) -> Boolean = handler@ { vKey ->
-            if (vKey.type != KeyEventType.KeyDown) return@handler false
-            // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
-            // open at a time, so run whichever action applies and clear them all.
-            if (vRenameTarget != null || vRenamePackTarget != null || vRenameSession || vRemovePackTarget != null || vDeleteTarget != null) {
-                when (vKey.key) {
-                    Key.Escape -> {
-                        vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget = null; vDeleteTarget = null
-                        return@handler true
-                    }
-                    Key.Enter, Key.NumPadEnter -> {
-                        vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
-                        vRenamePackTarget?.let { renamePack(it, vRenameText) }
-                        if (vRenameSession) renameSession(vRenameText)
-                        vRemovePackTarget?.let { removePack(it) }
-                        vDeleteTarget?.let { deleteRequest(it) }
-                        vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget = null; vDeleteTarget = null
-                        return@handler true
-                    }
+    val vKeyHandler: (KeyEvent) -> Boolean = handler@{ vKey ->
+        if (vKey.type != KeyEventType.KeyDown) return@handler false
+        // Confirm dialogs: Enter confirms, Escape cancels. Only one is ever
+        // open at a time, so run whichever action applies and clear them all.
+        if (vRenameTarget != null || vRenamePackTarget != null || vRenameSession || vRemovePackTarget != null || vDeleteTarget != null) {
+            when (vKey.key) {
+                Key.Escape -> {
+                    vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget =
+                        null; vDeleteTarget = null
+                    return@handler true
+                }
+
+                Key.Enter, Key.NumPadEnter -> {
+                    vRenameTarget?.let { if (vRenameText.isNotBlank()) renameRequest(it, vRenameText.trim()) }
+                    vRenamePackTarget?.let { renamePack(it, vRenameText) }
+                    if (vRenameSession) renameSession(vRenameText)
+                    vRemovePackTarget?.let { removePack(it) }
+                    vDeleteTarget?.let { deleteRequest(it) }
+                    vRenameTarget = null; vRenamePackTarget = null; vRenameSession = false; vRemovePackTarget =
+                        null; vDeleteTarget = null
+                    return@handler true
                 }
             }
-            val vPrimary = vKey.isCtrlPressed || vKey.isMetaPressed
-            when {
-                vPrimary && vKey.key == Key.S -> { saveSession(); true }
-                vPrimary && (vKey.key == Key.Enter || vKey.key == Key.NumPadEnter) -> {
-                    if (!vEnvActive) activePack()?.active?.let { send(it) }; true
-                }
-                vPrimary && vKey.key == Key.N -> { newRequest(); true }
-                vPrimary && vKey.key == Key.W -> {
-                    val vP = activePack()
-                    if (vEnvActive && vP != null) closeEnv(vP) else vP?.let { vQ -> vQ.active?.let { closeTab(it, vQ) } }
-                    true
-                }
-                else -> false
+        }
+        val vPrimary = vKey.isCtrlPressed || vKey.isMetaPressed
+        when {
+            vPrimary && vKey.key == Key.S -> {
+                saveSession(); true
             }
+
+            vPrimary && (vKey.key == Key.Enter || vKey.key == Key.NumPadEnter) -> {
+                if (!vEnvActive) activePack()?.active?.let { send(it) }; true
+            }
+
+            vPrimary && vKey.key == Key.N -> {
+                newRequest(); true
+            }
+
+            vPrimary && vKey.key == Key.W -> {
+                val vP = activePack()
+                if (vEnvActive && vP != null) closeEnv(vP) else vP?.let { vQ -> vQ.active?.let { closeTab(it, vQ) } }
+                true
+            }
+
+            else -> false
+        }
     }
     InstallWindowHooks(inOnCloseRequest = { persist(); true }, inOnKeyShortcut = vKeyHandler)
 
@@ -728,20 +919,19 @@ internal fun App() {
             LocalAppColors provides vC,
             LocalVolticExtended provides vExtended,
         ) {
-            val c = vC
             val vP = activePack()   // the active pack/scope (may be the loose root)
 
             HorizontalSplitPane(
-                modifier = Modifier.background(c.bg),
+                modifier = Modifier.background(vC.bg),
                 initialFirstSize = 248.dp,
                 minFirstSize = 190.dp,
                 minSecondSize = 520.dp,
-                dividerColor = c.border,
-                dividerHoverColor = c.accent,
+                dividerColor = vC.border,
+                dividerHoverColor = vC.accent,
                 first = {
                     // ============
                     //  Sidebar (Pack panel)
-                    Column(modifier = Modifier.fillMaxSize().background(c.panel)) {
+                    Column(modifier = Modifier.fillMaxSize().background(vC.panel)) {
                         // Sticky header — pack switcher + section tabs stay pinned while the list scrolls.
                         Column(
                             modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
@@ -789,7 +979,7 @@ internal fun App() {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
                         }
-                        HorizontalDivider(color = c.border)
+                        HorizontalDivider(color = vC.border)
 
                         // Scrollable list area below the pinned header.
                         Column(
@@ -843,13 +1033,13 @@ internal fun App() {
                                             inOnSetColor = {},
                                         )
                                         if (vPacks.isNotEmpty()) {
-                                            HorizontalDivider(color = c.border)
+                                            HorizontalDivider(color = vC.border)
                                         }
                                     }
                                     if (vPacks.isEmpty() && vRoot.requests.isEmpty()) {
                                         Text(
                                             "Nothing here yet — use Add (+) for a request or pack, or Open above.",
-                                            color = c.dim,
+                                            color = vC.dim,
                                             fontSize = 12.sp
                                         )
                                     } else {
@@ -902,7 +1092,7 @@ internal fun App() {
                                 1 -> {
                                     if (vHistory.isEmpty()) Text(
                                         "No requests sent yet.",
-                                        color = c.dim,
+                                        color = vC.dim,
                                         fontSize = 12.sp
                                     )
                                     vHistory.forEachIndexed { vI, vH ->
@@ -923,13 +1113,13 @@ internal fun App() {
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
                                                     vH.url,
-                                                    color = c.text,
+                                                    color = vC.text,
                                                     fontSize = 11.sp,
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
                                                 Text(
                                                     "#${vHistory.size - vI} · ${vH.timeMs} ms",
-                                                    color = c.dim,
+                                                    color = vC.dim,
                                                     fontSize = 10.sp
                                                 )
                                             }
@@ -954,28 +1144,35 @@ internal fun App() {
                     val vReqActive = vP?.active
                     val vEnvShown = vEnvActive && vP != null && vP.envOpen
                     if (vTabs.isEmpty()) {
-                        Column(modifier = Modifier.fillMaxSize().background(c.bg), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().background(vC.bg),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Spacer(Modifier.weight(1f))
                             if (vPacks.isEmpty()) {
-                                Text("No pack open.", color = c.dim)
+                                Text("No pack open.", color = vC.dim)
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedAction(MaterialSymbols.Add, "New pack") { newPack() }
                                     OutlinedAction(MaterialSymbols.Folder, "Import pack…") { openPackFile() }
-                                    OutlinedAction(MaterialSymbols.Refresh, "Load default session") { loadDefaultSession() }
+                                    OutlinedAction(
+                                        MaterialSymbols.Refresh,
+                                        "Load default session"
+                                    ) { loadDefaultSession() }
                                 }
-                            } else Text("Nothing open — click a request, a pack, or Session settings.", color = c.dim)
+                            } else Text("Nothing open — click a request, a pack, or Session settings.", color = vC.dim)
                             Spacer(Modifier.weight(1f))
                         }
                     } else {
-                        Column(modifier = Modifier.fillMaxSize().background(c.bg)) {
+                        Column(modifier = Modifier.fillMaxSize().background(vC.bg)) {
                             // Panel 1 — unified tab strip (session + pack-settings + request tabs).
                             RequestTabStrip(
                                 inTabs = vTabs,
                                 inActiveKey = when {
-                                    vSessionActive -> kSessionTabKey; vEnvShown && vP != null -> TabKey(
+                                    vSessionActive -> kSessionTabKey; vEnvShown -> TabKey(
                                         vP,
                                         null
-                                    ); vReqActive != null && vP != null -> TabKey(vP, vReqActive); else -> null
+                                    ); vReqActive != null -> TabKey(vP, vReqActive); else -> null
                                 },
                                 inOnSelect = { vT ->
                                     when {
@@ -997,7 +1194,7 @@ internal fun App() {
                                 inOnCloseAll = { closeAllTabs() },
                                 inOnReorder = { vFrom, vTo -> reorderTabs(vFrom, vTo) },
                             )
-                            HorizontalDivider(color = c.border)
+                            HorizontalDivider(color = vC.border)
 
                             when {
                                 vSessionActive -> {
@@ -1011,10 +1208,10 @@ internal fun App() {
                                             ) {
                                                 MaterialSymbolsOutlined(
                                                     MaterialSymbols.Tune,
-                                                    tint = c.accent,
+                                                    tint = vC.accent,
                                                     size = 18.dp
                                                 )
-                                                Text("Session", color = c.text, fontSize = 19.sp)
+                                                Text("Session", color = vC.text, fontSize = 19.sp)
                                             }
                                         },
                                         inVars = vGlobalEnv,
@@ -1033,7 +1230,7 @@ internal fun App() {
                                     )
                                 }
 
-                                vEnvShown && vP != null -> {
+                                vEnvShown -> {
                                     ScopeSettings(
                                         inTab = vSettingsTab,
                                         inOnTab = { vSettingsTab = it },
@@ -1043,7 +1240,7 @@ internal fun App() {
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
                                                 ColorDot(vP.color)
-                                                Text(vP.name, color = c.text, fontSize = 19.sp)
+                                                Text(vP.name, color = vC.text, fontSize = 19.sp)
                                             }
                                         },
                                         inVars = vP.variables,
@@ -1073,23 +1270,23 @@ internal fun App() {
                                     )
                                 }
 
-                                vReqActive != null && vP != null -> {
+                                vReqActive != null -> {
                                     val vReq = vReqActive.req
                                     if (vP.isLinked) {
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().background(c.accent.copy(alpha = 0.12f))
+                                            modifier = Modifier.fillMaxWidth().background(vC.accent.copy(alpha = 0.12f))
                                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                                         ) {
                                             MaterialSymbolsOutlined(
                                                 MaterialSymbols.Share,
-                                                tint = c.accent,
+                                                tint = vC.accent,
                                                 size = 14.dp
                                             )
                                             Text(
                                                 "Linked copy — read-only. Runs with this pack's Var/Header/Cert; edit the request in “${vP.linkedSource?.name ?: "source"}”.",
-                                                color = c.dim,
+                                                color = vC.dim,
                                                 fontSize = 11.sp
                                             )
                                         }
@@ -1110,14 +1307,14 @@ internal fun App() {
                                         vReqActive.tlsChain,
                                         vReqActive.chainUrl
                                     ) { vReqActive.showChain = false }
-                                    HorizontalDivider(color = c.border)
+                                    HorizontalDivider(color = vC.border)
                                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                                         HorizontalSplitPane(
                                             initialFirstSize = 460.dp,
                                             minFirstSize = 320.dp,
                                             minSecondSize = 320.dp,
-                                            dividerColor = c.border,
-                                            dividerHoverColor = c.accent,
+                                            dividerColor = vC.border,
+                                            dividerHoverColor = vC.accent,
                                             first = {
                                                 RequestBuilder(
                                                     inReq = vReq,
@@ -1153,7 +1350,7 @@ internal fun App() {
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Pick a tab above.", color = c.dim)
+                                    Text("Pick a tab above.", color = vC.dim)
                                 }
                             }
                         }
@@ -1166,16 +1363,24 @@ internal fun App() {
             val vRen = vRenameTarget
             if (vRen != null) {
                 Dialog(onDismissRequest = { vRenameTarget = null }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Rename request", color = c.text, fontSize = 16.sp)
-                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Rename request", color = vC.text, fontSize = 16.sp)
+                            ThinField(
+                                vRenameText,
+                                { vRenameText = it },
+                                inModifier = Modifier.fillMaxWidth(),
+                                inPlaceholder = "Name"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                                 Button(onClick = {
                                     if (vRenameText.isNotBlank()) renameRequest(vRen, vRenameText.trim())
                                     vRenameTarget = null
-                                }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
-                                OutlinedButton(onClick = { vRenameTarget = null }) { Text("Cancel", color = c.text) }
+                                }) { BtnContent(MaterialSymbols.Check, "Save", vC.onAccent) }
+                                OutlinedButton(onClick = { vRenameTarget = null }) { Text("Cancel", color = vC.text) }
                             }
                         }
                     }
@@ -1185,16 +1390,29 @@ internal fun App() {
             val vRenPack = vRenamePackTarget
             if (vRenPack != null) {
                 Dialog(onDismissRequest = { vRenamePackTarget = null }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Rename pack", color = c.text, fontSize = 16.sp)
-                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "Name")
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Rename pack", color = vC.text, fontSize = 16.sp)
+                            ThinField(
+                                vRenameText,
+                                { vRenameText = it },
+                                inModifier = Modifier.fillMaxWidth(),
+                                inPlaceholder = "Name"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                                 Button(onClick = {
                                     renamePack(vRenPack, vRenameText)
                                     vRenamePackTarget = null
-                                }) { BtnContent(MaterialSymbols.Check, "Save", c.onAccent) }
-                                OutlinedButton(onClick = { vRenamePackTarget = null }) { Text("Cancel", color = c.text) }
+                                }) { BtnContent(MaterialSymbols.Check, "Save", vC.onAccent) }
+                                OutlinedButton(onClick = { vRenamePackTarget = null }) {
+                                    Text(
+                                        "Cancel",
+                                        color = vC.text
+                                    )
+                                }
                             }
                         }
                     }
@@ -1205,17 +1423,35 @@ internal fun App() {
             val vSwitch = vSwitchAction
             if (vSwitch != null) {
                 Dialog(onDismissRequest = { vSwitchAction = null }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(420.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(420.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                MaterialSymbolsOutlined(MaterialSymbols.Warning, tint = VolticTheme.extended.warning, size = 20.dp)
-                                Text("Replace current session?", color = c.text, fontSize = 16.sp)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                MaterialSymbolsOutlined(
+                                    MaterialSymbols.Warning,
+                                    tint = VolticTheme.extended.warning,
+                                    size = 20.dp
+                                )
+                                Text("Replace current session?", color = vC.text, fontSize = 16.sp)
                             }
-                            Text("This session hasn't been saved to a file — continuing will discard it. Save it first if you want to keep it.", color = c.dim, fontSize = 13.sp)
+                            Text(
+                                "This session hasn't been saved to a file — continuing will discard it. Save it first if you want to keep it.",
+                                color = vC.dim,
+                                fontSize = 13.sp
+                            )
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    OutlinedButton(onClick = { vSwitchAction = null }) { Text("Cancel", color = c.text) }
-                                    Button(onClick = { vSwitchAction = null; saveSessionAs { vSwitch() } }) { BtnContent(MaterialSymbols.Save, "Save first…", c.onAccent) }
+                                    OutlinedButton(onClick = { vSwitchAction = null }) {
+                                        Text(
+                                            "Cancel",
+                                            color = vC.text
+                                        )
+                                    }
+                                    Button(onClick = {
+                                        vSwitchAction = null; saveSessionAs { vSwitch() }
+                                    }) { BtnContent(MaterialSymbols.Save, "Save first…", vC.onAccent) }
                                     DangerButton("Discard", MaterialSymbols.Delete) { vSwitchAction = null; vSwitch() }
                                 }
                             }
@@ -1226,16 +1462,24 @@ internal fun App() {
 
             if (vRenameSession) {
                 Dialog(onDismissRequest = { vRenameSession = false }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Rename session", color = c.text, fontSize = 16.sp)
-                            ThinField(vRenameText, { vRenameText = it }, inModifier = Modifier.fillMaxWidth(), inPlaceholder = "File name")
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Rename session", color = vC.text, fontSize = 16.sp)
+                            ThinField(
+                                vRenameText,
+                                { vRenameText = it },
+                                inModifier = Modifier.fillMaxWidth(),
+                                inPlaceholder = "File name"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                                 Button(onClick = {
                                     renameSession(vRenameText)
                                     vRenameSession = false
-                                }) { BtnContent(MaterialSymbols.Check, "Rename", c.onAccent) }
-                                OutlinedButton(onClick = { vRenameSession = false }) { Text("Cancel", color = c.text) }
+                                }) { BtnContent(MaterialSymbols.Check, "Rename", vC.onAccent) }
+                                OutlinedButton(onClick = { vRenameSession = false }) { Text("Cancel", color = vC.text) }
                             }
                         }
                     }
@@ -1246,17 +1490,40 @@ internal fun App() {
             if (vDel != null) {
                 val vName = vDel.req.name
                 Dialog(onDismissRequest = { vDeleteTarget = null }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(360.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                MaterialSymbolsOutlined(MaterialSymbols.Delete, tint = methodColor(ReqMethod.DELETE), size = 20.dp)
-                                Text("Delete request", color = c.text, fontSize = 16.sp)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                MaterialSymbolsOutlined(
+                                    MaterialSymbols.Delete,
+                                    tint = methodColor(ReqMethod.DELETE),
+                                    size = 20.dp
+                                )
+                                Text("Delete request", color = vC.text, fontSize = 16.sp)
                             }
-                            Text("\"$vName\" will be removed from the pack. This can't be undone.", color = c.dim, fontSize = 13.sp)
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "\"$vName\" will be removed from the pack. This can't be undone.",
+                                color = vC.dim,
+                                fontSize = 13.sp
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    OutlinedButton(onClick = { vDeleteTarget = null }) { Text("Cancel", color = c.text) }
-                                    DangerButton("Delete", MaterialSymbols.Delete) { deleteRequest(vDel); vDeleteTarget = null }
+                                    OutlinedButton(onClick = { vDeleteTarget = null }) {
+                                        Text(
+                                            "Cancel",
+                                            color = vC.text
+                                        )
+                                    }
+                                    DangerButton(
+                                        "Delete",
+                                        MaterialSymbols.Delete
+                                    ) { deleteRequest(vDel); vDeleteTarget = null }
                                 }
                             }
                         }
@@ -1267,17 +1534,36 @@ internal fun App() {
             val vRmPack = vRemovePackTarget
             if (vRmPack != null) {
                 Dialog(onDismissRequest = { vRemovePackTarget = null }) {
-                    Surface(color = c.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(380.dp)) {
+                    Surface(color = vC.panel, shape = RoundedCornerShape(10.dp), modifier = Modifier.width(380.dp)) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                MaterialSymbolsOutlined(MaterialSymbols.Delete, tint = methodColor(ReqMethod.DELETE), size = 20.dp)
-                                Text("Remove pack", color = c.text, fontSize = 16.sp)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                MaterialSymbolsOutlined(
+                                    MaterialSymbols.Delete,
+                                    tint = methodColor(ReqMethod.DELETE),
+                                    size = 20.dp
+                                )
+                                Text("Remove pack", color = vC.text, fontSize = 16.sp)
                             }
-                            Text("\"${vRmPack.name}\" will be removed from the session. Unsaved changes are lost — export it first to keep them.", color = c.dim, fontSize = 13.sp)
+                            Text(
+                                "\"${vRmPack.name}\" will be removed from the session. Unsaved changes are lost — export it first to keep them.",
+                                color = vC.dim,
+                                fontSize = 13.sp
+                            )
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    OutlinedButton(onClick = { vRemovePackTarget = null }) { Text("Cancel", color = c.text) }
-                                    DangerButton("Remove", MaterialSymbols.Delete) { removePack(vRmPack); vRemovePackTarget = null }
+                                    OutlinedButton(onClick = { vRemovePackTarget = null }) {
+                                        Text(
+                                            "Cancel",
+                                            color = vC.text
+                                        )
+                                    }
+                                    DangerButton(
+                                        "Remove",
+                                        MaterialSymbols.Delete
+                                    ) { removePack(vRmPack); vRemovePackTarget = null }
                                 }
                             }
                         }

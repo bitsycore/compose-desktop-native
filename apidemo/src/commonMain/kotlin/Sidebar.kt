@@ -1,5 +1,5 @@
 @file:OptIn(
-    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class,
     androidx.compose.ui.ExperimentalComposeUiApi::class,
 )
 
@@ -39,7 +39,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // ==================
 
 /** A small rounded square in the pack's palette colour (neutral when unset).
-   The pack's visual identity in the sidebar's foldable pack header. */
+The pack's visual identity in the sidebar's foldable pack header. */
 @Composable
 internal fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
     val c = LocalAppColors.current
@@ -48,7 +48,7 @@ internal fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
 }
 
 /** A 5×4 grid of swatches; tapping one sets the pack's colour (1-based index).
-   The current colour gets a ring. Sized to fit inside the (fixed-width) ⋮ menu. */
+The current colour gets a ring. Sized to fit inside the (fixed-width) ⋮ menu. */
 @Composable
 internal fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
     val c = LocalAppColors.current
@@ -78,14 +78,18 @@ internal fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 // ==================
 
 /** The header '+' — a small menu to add a pack to the open session, either blank
-   or imported from a .json file. Importing a pack always lands it in the session. */
+or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
 internal fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnImport: () -> Unit) {
     val c = LocalAppColors.current
     var vOpen by remember { mutableStateOf(false) }
     Box {
         IconBtn(MaterialSymbols.Add, "Add", inSize = 18.dp) { vOpen = true }
-        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, modifier = Modifier.widthIn(min = 200.dp)) {
+        DropdownMenu(
+            expanded = vOpen,
+            onDismissRequest = { vOpen = false },
+            modifier = Modifier.widthIn(min = 200.dp)
+        ) {
             DropdownMenuItem(text = {
                 MenuRow(
                     MaterialSymbols.Send,
@@ -93,7 +97,9 @@ internal fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnIm
                 )
             }, onClick = { vOpen = false; inOnNewRequest() })
             HorizontalDivider(color = c.border)
-            DropdownMenuItem(text = { MenuRow(MaterialSymbols.Add, "New pack") }, onClick = { vOpen = false; inOnNew() })
+            DropdownMenuItem(
+                text = { MenuRow(MaterialSymbols.Add, "New pack") },
+                onClick = { vOpen = false; inOnNew() })
             DropdownMenuItem(text = {
                 MenuRow(
                     MaterialSymbols.Download,
@@ -113,8 +119,8 @@ internal fun fileLeaf(inPath: String): String =
     inPath.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
 
 /** Shortens a long path to inMax chars keeping the start and end (so the root
-   and file stay visible), joined by an ellipsis. The menu has no text-overflow
-   primitive, so we trim the string ourselves. */
+and file stay visible), joined by an ellipsis. The menu has no text-overflow
+primitive, so we trim the string ourselves. */
 internal fun ellipsizeMiddle(inText: String, inMax: Int = 46): String {
     if (inText.length <= inMax) return inText
     val vKeep = inMax - 1
@@ -123,9 +129,9 @@ internal fun ellipsizeMiddle(inText: String, inMax: Int = 46): String {
 }
 
 /** Header dropdown for the one open session. Shows its file name with the full
-   path underneath when it has a file (so you can see it's saved — file-backed
-   sessions auto-save), or "Untitled session" with a dot when it has no file yet.
-   Menu: Save / Save as… / Rename / Reveal / Open… / New + a recent list. */
+path underneath when it has a file (so you can see it's saved — file-backed
+sessions auto-save), or "Untitled session" with a dot when it has no file yet.
+Menu: Save / Save as… / Rename / Reveal / Open… / New + a recent list. */
 @Composable
 internal fun SessionMenu(
     inPath: String?,
@@ -152,7 +158,10 @@ internal fun SessionMenu(
         // Highlight on hover and stay highlighted while the menu is open.
         Row(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                .background(if (vHover || vOpen) c.accent.copy(alpha = 0.16f) else Color.Transparent, RoundedCornerShape(6.dp))
+                .background(
+                    if (vHover || vOpen) c.accent.copy(alpha = 0.16f) else Color.Transparent,
+                    RoundedCornerShape(6.dp)
+                )
                 .hoverable(vHoverSrc)
                 .clickable { vOpen = true }.padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -166,7 +175,11 @@ internal fun SessionMenu(
             // No file yet → a dot; once it has a file it auto-saves, so no dot.
             if (!vSaved) Box(Modifier.size(6.dp).background(c.accent, RoundedCornerShape(3.dp)))
         }
-        DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }, modifier = Modifier.widthIn(min = 248.dp)) {
+        DropdownMenu(
+            expanded = vOpen,
+            onDismissRequest = { vOpen = false },
+            modifier = Modifier.widthIn(min = 248.dp)
+        ) {
             DropdownMenuItem(text = {
                 MenuRow(
                     MaterialSymbols.Tune,
@@ -174,7 +187,9 @@ internal fun SessionMenu(
                 )
             }, onClick = { vOpen = false; inOnSettings() })
             HorizontalDivider(color = c.border)
-            DropdownMenuItem(text = { MenuRow(MaterialSymbols.Save, "Save session") }, onClick = { vOpen = false; inOnSave() })
+            DropdownMenuItem(
+                text = { MenuRow(MaterialSymbols.Save, "Save session") },
+                onClick = { vOpen = false; inOnSave() })
             DropdownMenuItem(text = {
                 MenuRow(
                     MaterialSymbols.Download,
@@ -190,7 +205,8 @@ internal fun SessionMenu(
                     )
                 },
                 onClick = { vOpen = false; inOnRename() },
-                enabled = vSaved)
+                enabled = vSaved
+            )
             DropdownMenuItem(
                 text = {
                     MenuRow(
@@ -200,7 +216,8 @@ internal fun SessionMenu(
                     )
                 },
                 onClick = { vOpen = false; inOnReveal() },
-                enabled = vSaved)
+                enabled = vSaved
+            )
             HorizontalDivider(color = c.border)
             DropdownMenuItem(text = {
                 MenuRow(
@@ -208,7 +225,9 @@ internal fun SessionMenu(
                     "Default session"
                 )
             }, onClick = { vOpen = false; inOnDefault() })
-            DropdownMenuItem(text = { MenuRow(MaterialSymbols.Add, "New session") }, onClick = { vOpen = false; inOnNew() })
+            DropdownMenuItem(
+                text = { MenuRow(MaterialSymbols.Add, "New session") },
+                onClick = { vOpen = false; inOnNew() })
             DropdownMenuItem(text = {
                 MenuRow(
                     MaterialSymbols.Folder,
@@ -245,7 +264,9 @@ internal fun SessionMenu(
                                 // Reveal this session's folder — its own hover + tooltip so it
                                 // reads as a separate action from "open the session".
                                 TooltipBox(
-                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                        TooltipAnchorPosition.Above
+                                    ),
                                     tooltip = { PlainTooltip { Text("Reveal in ${fileManagerName()}") } },
                                     state = rememberTooltipState(),
                                 ) {
@@ -281,7 +302,7 @@ internal fun SessionMenu(
 // ==================
 
 /** The per-pack operations a PackSection needs, bundled so PackTree can bind them
-   recursively for sub-packs while PackSection itself stays callback-driven. */
+recursively for sub-packs while PackSection itself stays callback-driven. */
 internal class PackOps(
     val onEnv: (PackState) -> Unit,
     val onToggle: (PackState) -> Unit,
@@ -308,10 +329,17 @@ internal class PackOps(
 )
 
 /** Renders a pack then its sub-packs recursively, each indented by its depth.
-   inSiblings is the list this pack belongs to (top-level vPacks, or a parent's
-   subPacks) — used to position the pack-reorder drop bars by index. */
+inSiblings is the list this pack belongs to (top-level vPacks, or a parent's
+subPacks) — used to position the pack-reorder drop bars by index. */
 @Composable
-internal fun PackTree(inPack: PackState, inSiblings: List<PackState>, inDepth: Int, inOps: PackOps, inActive: PackState?, inEnvActive: Boolean) {
+internal fun PackTree(
+    inPack: PackState,
+    inSiblings: List<PackState>,
+    inDepth: Int,
+    inOps: PackOps,
+    inActive: PackState?,
+    inEnvActive: Boolean
+) {
     val vDrag = inOps.drag
     val vMyIndex = inSiblings.indexOf(inPack)
     val vMoving = vDrag.draggingPack && vDrag.engaged && vDrag.dropInto == null
@@ -319,7 +347,7 @@ internal fun PackTree(inPack: PackState, inSiblings: List<PackState>, inDepth: I
     val vPad = Modifier.padding(start = (inDepth * 14).dp)
     val vBarBefore = vMoving && vDrag.dropParent === inPack.parent && vDrag.dropSibIndex == vMyIndex
     val vBarAfter = vMoving && vDrag.dropParent === inPack.parent &&
-        vMyIndex == inSiblings.size - 1 && vDrag.dropSibIndex == inSiblings.size
+            vMyIndex == inSiblings.size - 1 && vDrag.dropSibIndex == inSiblings.size
     key(inPack) {
         if (vBarBefore) Box(modifier = vPad) { RowDropBar() }
         Box(modifier = vPad) {
@@ -351,7 +379,16 @@ internal fun PackTree(inPack: PackState, inSiblings: List<PackState>, inDepth: I
             )
         }
     }
-    if (inPack.expanded) inPack.subPacks.forEach { PackTree(it, inPack.subPacks, inDepth + 1, inOps, inActive, inEnvActive) }
+    if (inPack.expanded) inPack.subPacks.forEach {
+        PackTree(
+            it,
+            inPack.subPacks,
+            inDepth + 1,
+            inOps,
+            inActive,
+            inEnvActive
+        )
+    }
     if (vBarAfter) Box(modifier = vPad) { RowDropBar() }
 }
 
@@ -360,10 +397,10 @@ internal fun PackTree(inPack: PackState, inSiblings: List<PackState>, inDepth: I
 // ==================
 
 /** One open pack rendered as a foldable section: a header (fold chevron, colour
-   box, name, dirty dot, request count, ⋮ menu) over the pack's request list
-   when expanded. Clicking the header body selects the pack (so the Env tab and
-   main panel follow it); the chevron only folds. The request list drags to
-   reorder, scoped to this pack. Right-click the header for the pack menu. */
+box, name, dirty dot, request count, ⋮ menu) over the pack's request list
+when expanded. Clicking the header body selects the pack (so the Env tab and
+main panel follow it); the chevron only folds. The request list drags to
+reorder, scoped to this pack. Right-click the header for the pack menu. */
 @Composable
 internal fun PackSection(
     inPack: PackState,
@@ -404,13 +441,14 @@ internal fun PackSection(
         //  to reorder / reparent; highlighted when it's the "drop inside" target.
         val vHeaderDragged = inDrag.dragPack === inPack && vMoving
         val vIntoHi = vMoving && ((inDrag.draggingPack && inDrag.dropInto === inPack) ||
-            (inDrag.draggingReq && inDrag.dropPack === inPack && !inPack.expanded))
+                (inDrag.draggingReq && inDrag.dropPack === inPack && !inPack.expanded))
         var vHeadMod = Modifier.fillMaxWidth()
             .onGloballyPositioned { inDrag.headTop[inPack] = it.y }
             .onSizeChanged { inDrag.headH[inPack] = it.height }
         // See RequestTabStrip note: alpha + translation on the SAME graphicsLayer so
         // clip=false and the drag ghost isn't clipped to its original bounds.
-        if (vHeaderDragged) vHeadMod = vHeadMod.zIndex(1f).graphicsLayer(alpha = 0.65f, translationX = 0f, translationY = inDrag.dy)
+        if (vHeaderDragged) vHeadMod =
+            vHeadMod.zIndex(1f).graphicsLayer(alpha = 0.65f, translationX = 0f, translationY = inDrag.dy)
         vHeadMod = vHeadMod.clip(RoundedCornerShape(6.dp))
             .background(
                 when {
@@ -462,9 +500,15 @@ internal fun PackSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            IconBtn(if (inPack.expanded) MaterialSymbols.ExpandMore else MaterialSymbols.ChevronRight, "Fold", inSize = 18.dp, inPadding = 3.dp) { inOnToggle() }
+            IconBtn(
+                if (inPack.expanded) MaterialSymbols.ExpandMore else MaterialSymbols.ChevronRight,
+                "Fold",
+                inSize = 18.dp,
+                inPadding = 3.dp
+            ) { inOnToggle() }
             Row(
-                modifier = Modifier.weight(1f).clip(RoundedCornerShape(5.dp)).clickable { inOnSelect() }.padding(vertical = 4.dp),
+                modifier = Modifier.weight(1f).clip(RoundedCornerShape(5.dp)).clickable { inOnSelect() }
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
@@ -476,8 +520,16 @@ internal fun PackSection(
             // + (new request) and ⋮ (pack menu) — both reveal on hover only, so the
             // header width never shifts (alpha, not conditional layout). A linked
             // copy mirrors its source's requests, so it has no "new request".
-            Row(modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f), verticalAlignment = Alignment.CenterVertically) {
-                if (!inPack.isLinked) IconBtn(MaterialSymbols.Add, "New request", inSize = 16.dp, inPadding = 4.dp) { inOnNewRequest() }
+            Row(
+                modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!inPack.isLinked) IconBtn(
+                    MaterialSymbols.Add,
+                    "New request",
+                    inSize = 16.dp,
+                    inPadding = 4.dp
+                ) { inOnNewRequest() }
                 Box {
                     IconBtn(MaterialSymbols.MoreHoriz, "Pack menu", inSize = 16.dp, inPadding = 4.dp) { vMenu = true }
                     DropdownMenu(
@@ -485,16 +537,34 @@ internal fun PackSection(
                         onDismissRequest = { vMenu = false },
                         modifier = Modifier.widthIn(min = 220.dp),
                     ) {
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Edit, "Rename pack") }, onClick = { vMenu = false; inOnRenamePack() })
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.FileCopy, "Duplicate pack") }, onClick = { vMenu = false; inOnDuplicatePack() })
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Add, "New sub-pack") }, onClick = { vMenu = false; inOnNewSubPack() })
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Share, "Linked copy") }, onClick = { vMenu = false; inOnLinkedCopy() })
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Save, "Export pack") }, onClick = { vMenu = false; inOnSavePack() })
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Folder, "Export pack as…") }, onClick = { vMenu = false; inOnSaveAsPack() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.Edit, "Rename pack") },
+                            onClick = { vMenu = false; inOnRenamePack() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.FileCopy, "Duplicate pack") },
+                            onClick = { vMenu = false; inOnDuplicatePack() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.Add, "New sub-pack") },
+                            onClick = { vMenu = false; inOnNewSubPack() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.Share, "Linked copy") },
+                            onClick = { vMenu = false; inOnLinkedCopy() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.Save, "Export pack") },
+                            onClick = { vMenu = false; inOnSavePack() })
+                        DropdownMenuItem(
+                            text = { MenuRow(MaterialSymbols.Folder, "Export pack as…") },
+                            onClick = { vMenu = false; inOnSaveAsPack() })
                         HorizontalDivider(color = c.border)
                         PackColorPicker(inPack.color) { inOnSetColor(it) }
                         HorizontalDivider(color = c.border)
-                        DropdownMenuItem(text = { MenuRow(MaterialSymbols.Delete, "Remove pack", methodColor(ReqMethod.DELETE)) }, onClick = { vMenu = false; inOnRemovePack() })
+                        DropdownMenuItem(text = {
+                            MenuRow(
+                                MaterialSymbols.Delete,
+                                "Remove pack",
+                                methodColor(ReqMethod.DELETE)
+                            )
+                        }, onClick = { vMenu = false; inOnRemovePack() })
                     }
                 }
             }
@@ -522,7 +592,12 @@ internal fun PackSection(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 if (inHeaderless && vReqs.isEmpty())
-                    Text("Drop a request here to make it loose", color = c.dim, fontSize = 11.sp, modifier = Modifier.padding(vertical = 4.dp))
+                    Text(
+                        "Drop a request here to make it loose",
+                        color = c.dim,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
                 vReqs.forEach { vRs ->
                     if (vRs === vBarBefore) RowDropBar()
                     key(vRs) {
@@ -536,28 +611,30 @@ internal fun PackSection(
                             .onSizeChanged { inDrag.rowH[vRs] = it.height }
                         // translate is draw-only (doesn't shift absoluteY), so the
                         // cursor offset below stays correct while dragging.
-                        if (vDragged) vMod = vMod.zIndex(1f).graphicsLayer(alpha = 0.65f, translationX = 0f, translationY = inDrag.dy)
+                        if (vDragged) vMod =
+                            vMod.zIndex(1f).graphicsLayer(alpha = 0.65f, translationX = 0f, translationY = inDrag.dy)
                         if (!inPack.isLinked) vMod = vMod.pointerInput(vRs) {
-                                // Same graphicsLayer feedback concern as the pack drag —
-                                // accumulate dragAmount instead of reading change.position.
-                                detectDragGestures(
-                                    onDragStart = { offset ->
-                                        inDrag.clear()
-                                        inDrag.dragReq = vRs; inDrag.dragReqOwner = inPack
-                                        inDrag.pressRel = offset.y.toInt(); inDrag.dy = 0f
-                                        inDrag.dropPack = inPack; inDrag.dropIndex = vReqs.indexOf(vRs)
-                                    },
-                                    onDrag = { _, dragAmount ->
-                                        val vd = inDrag.dragReq ?: return@detectDragGestures
-                                        inDrag.dy += dragAmount.y
-                                        val vRelY = inDrag.pressRel + inDrag.dy.toInt()
-                                        if (!inDrag.engaged && kotlin.math.abs(inDrag.dy) >= kDragSlop) inDrag.engaged = true
-                                        if (inDrag.engaged) inResolveReqDrop((inDrag.rowTop[vd] ?: 0) + vRelY)
-                                    },
-                                    onDragEnd = { inOnReqDropEnd() },
-                                    onDragCancel = { inOnReqDropEnd() },
-                                )
-                            }
+                            // Same graphicsLayer feedback concern as the pack drag —
+                            // accumulate dragAmount instead of reading change.position.
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    inDrag.clear()
+                                    inDrag.dragReq = vRs; inDrag.dragReqOwner = inPack
+                                    inDrag.pressRel = offset.y.toInt(); inDrag.dy = 0f
+                                    inDrag.dropPack = inPack; inDrag.dropIndex = vReqs.indexOf(vRs)
+                                },
+                                onDrag = { _, dragAmount ->
+                                    val vd = inDrag.dragReq ?: return@detectDragGestures
+                                    inDrag.dy += dragAmount.y
+                                    val vRelY = inDrag.pressRel + inDrag.dy.toInt()
+                                    if (!inDrag.engaged && kotlin.math.abs(inDrag.dy) >= kDragSlop) inDrag.engaged =
+                                        true
+                                    if (inDrag.engaged) inResolveReqDrop((inDrag.rowTop[vd] ?: 0) + vRelY)
+                                },
+                                onDragEnd = { inOnReqDropEnd() },
+                                onDragCancel = { inOnReqDropEnd() },
+                            )
+                        }
                         Box(modifier = vMod) {
                             RequestRow(
                                 inRs = vRs,
@@ -637,10 +714,22 @@ internal fun RequestRow(
                 onDismissRequest = { vMenu = false },
                 modifier = Modifier.widthIn(min = 168.dp),
             ) {
-                if (!inReadOnly) DropdownMenuItem(text = { MenuRow(MaterialSymbols.Edit, "Rename") }, onClick = { vMenu = false; inOnRename() })
-                if (!inReadOnly) DropdownMenuItem(text = { MenuRow(MaterialSymbols.FileCopy, "Duplicate") }, onClick = { vMenu = false; inOnDuplicate() })
-                DropdownMenuItem(text = { MenuRow(MaterialSymbols.Terminal, "Copy as cURL") }, onClick = { vMenu = false; inOnCopyCurl() })
-                if (!inReadOnly) DropdownMenuItem(text = { MenuRow(MaterialSymbols.Delete, "Delete", methodColor(ReqMethod.DELETE)) }, onClick = { vMenu = false; inOnDelete() })
+                if (!inReadOnly) DropdownMenuItem(
+                    text = { MenuRow(MaterialSymbols.Edit, "Rename") },
+                    onClick = { vMenu = false; inOnRename() })
+                if (!inReadOnly) DropdownMenuItem(
+                    text = { MenuRow(MaterialSymbols.FileCopy, "Duplicate") },
+                    onClick = { vMenu = false; inOnDuplicate() })
+                DropdownMenuItem(
+                    text = { MenuRow(MaterialSymbols.Terminal, "Copy as cURL") },
+                    onClick = { vMenu = false; inOnCopyCurl() })
+                if (!inReadOnly) DropdownMenuItem(text = {
+                    MenuRow(
+                        MaterialSymbols.Delete,
+                        "Delete",
+                        methodColor(ReqMethod.DELETE)
+                    )
+                }, onClick = { vMenu = false; inOnDelete() })
             }
         }
     }

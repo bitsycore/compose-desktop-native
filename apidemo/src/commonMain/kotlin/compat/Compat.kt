@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.platform.ClipEntry
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import okio.FileSystem
 
 // ==================
@@ -50,28 +50,28 @@ expect fun memoryImagePainter(inKey: String, inSvg: Boolean): Painter
 //  Text layout
 
 /** Rows the given line occupies when soft-wrapped to inMaxWidthPx at
-   inFontPx (already density-scaled). Used by the body gutter so its line
-   numbers stay aligned with the wrapped body text. */
+inFontPx (already density-scaled). Used by the body gutter so its line
+numbers stay aligned with the wrapped body text. */
 expect fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inFamilyName: String?): Int
 
 /** Editor tab width in spaces — how wide a typed '\t' renders. On the native
-   stack this drives the project text pipeline (TextLayoutConfig); the jvm
-   parity app only stores the preference. */
+stack this drives the project text pipeline (TextLayoutConfig); the jvm
+parity app only stores the preference. */
 expect var editorTabWidth: Int
 
 // ============
 //  Infrastructure
 
 /** okio's FileSystem.SYSTEM is declared per-platform, not in its common
-   metadata — surface it through a seam. */
+metadata — surface it through a seam. */
 internal expect val systemFileSystem: FileSystem
 
 /** The app's Ktor client: Curl on native (bundled libcurl — same TLS stack as
-   the mTLS path), CIO on the jvm parity target. */
+the mTLS path), CIO on the jvm parity target. */
 expect fun createApiHttpClient(): HttpClient
 
 /** Window-shell integration: an intercepting close handler (return true to
-   allow the close) and an app-wide key-shortcut handler; both cleared when
-   the composition leaves. */
+allow the close) and an app-wide key-shortcut handler; both cleared when
+the composition leaves. */
 @Composable
 expect fun InstallWindowHooks(inOnCloseRequest: () -> Boolean, inOnKeyShortcut: (KeyEvent) -> Boolean)

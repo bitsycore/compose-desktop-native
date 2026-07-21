@@ -2,7 +2,6 @@ package apidemo
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import okio.FileSystem
 import okio.Path.Companion.toPath
 
 // ==================
@@ -17,7 +16,7 @@ private val fJson = Json {
 }
 
 /** Write the pack as pretty JSON to inPath. Returns null on success, else the
-   error message. */
+error message. */
 fun exportPack(inPack: Pack, inPath: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) {
         writeUtf8(fJson.encodeToString(inPack))
@@ -54,7 +53,7 @@ fun importSession(inPath: String): Result<Session> = try {
 }
 
 /** Rename inPath to inNewName within the same directory (adding a .json
-   extension when the new name has none), returning the new path on success. */
+extension when the new name has none), returning the new path on success. */
 fun renameFile(inPath: String, inNewName: String): Result<String> = try {
     val vSrc = inPath.trim().toPath()
     val vLeaf = inNewName.trim().let { if (it.contains('.')) it else "$it.json" }
@@ -66,7 +65,7 @@ fun renameFile(inPath: String, inNewName: String): Result<String> = try {
 }
 
 /** Write arbitrary text (a response body / headers dump) to inPath. Returns null
-   on success, else the error message. */
+on success, else the error message. */
 fun writeTextFile(inPath: String, inText: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) { writeUtf8(inText) }
     null
@@ -83,7 +82,7 @@ fun writeBytesFile(inPath: String, inBytes: ByteArray): String? = try {
 }
 
 /** Re-indent a JSON response for display; returns the input unchanged if it
-   isn't valid JSON (so plain-text / HTML responses still show). */
+isn't valid JSON (so plain-text / HTML responses still show). */
 fun prettyJsonOrRaw(inText: String): String = try {
     fJson.encodeToString(JsonElement.serializer(), fJson.parseToJsonElement(inText))
 } catch (e: Throwable) {

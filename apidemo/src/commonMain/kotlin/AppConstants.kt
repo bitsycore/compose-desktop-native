@@ -6,14 +6,6 @@ import androidx.compose.ui.graphics.Color
 // MARK: App-wide constants + pure color / asset mappers
 // ==================
 
-// SDL scancodes used for app keyboard shortcuts.
-internal const val kScS = 22
-internal const val kScN = 17
-internal const val kScW = 26
-internal const val kScEnter = 40
-internal const val kScKpEnter = 88
-internal const val kScEscape = 41
-
 internal fun methodColor(inM: ReqMethod): Color = when (inM) {
     ReqMethod.GET -> Color(0xFF4C9AFF)
     ReqMethod.POST -> Color(0xFF36B37E)

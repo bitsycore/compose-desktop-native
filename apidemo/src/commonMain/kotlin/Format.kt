@@ -25,6 +25,7 @@ fun formatBody(inText: String, inFormat: BodyFormat): String =
         BodyFormat.JSON -> runCatching {
             fPrettyJson.encodeToString(JsonElement.serializer(), fPrettyJson.parseToJsonElement(inText))
         }.getOrDefault(inText)
+
         BodyFormat.XML -> runCatching { formatXml(inText) }.getOrDefault(inText)
         else -> inText
     }

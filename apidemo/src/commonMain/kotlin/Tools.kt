@@ -5,12 +5,12 @@ package apidemo
 // ==================
 
 /** Matches a {{ name }} token. Names may contain letters, digits, _, . and -.
-   Surrounding whitespace inside the braces is tolerated. */
+Surrounding whitespace inside the braces is tolerated. */
 private val kVarRegex = Regex("""\{\{\s*([A-Za-z0-9_.\-]+)\s*\}\}""")
 
 /** Replace every {{name}} token in inText with the matching enabled variable's
-   value. Unknown / disabled names are left untouched so the user can spot the
-   ones that won't resolve. */
+value. Unknown / disabled names are left untouched so the user can spot the
+ones that won't resolve. */
 fun substituteVars(inText: String, inVars: List<KeyVal>): String {
     if (inText.isEmpty()) return inText
     val vMap = inVars
@@ -21,17 +21,32 @@ fun substituteVars(inText: String, inVars: List<KeyVal>): String {
 }
 
 /** Apply variable substitution across every field that actually gets sent — URL,
-   query params, headers and body — returning a fully-resolved request. The
-   original (template) request is left untouched. */
+query params, headers and body — returning a fully-resolved request. The
+original (template) request is left untouched. */
 fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
     val vActive = inVars.any { it.enabled && it.key.isNotBlank() }
     if (!vActive) return inReq
     return inReq.copy(
         url = substituteVars(inReq.url, inVars),
-        params = inReq.params.map { it.copy(key = substituteVars(it.key, inVars), value = substituteVars(it.value, inVars)) },
-        headers = inReq.headers.map { it.copy(key = substituteVars(it.key, inVars), value = substituteVars(it.value, inVars)) },
+        params = inReq.params.map {
+            it.copy(
+                key = substituteVars(it.key, inVars),
+                value = substituteVars(it.value, inVars)
+            )
+        },
+        headers = inReq.headers.map {
+            it.copy(
+                key = substituteVars(it.key, inVars),
+                value = substituteVars(it.value, inVars)
+            )
+        },
         body = substituteVars(inReq.body, inVars),
-        form = inReq.form.map { it.copy(key = substituteVars(it.key, inVars), value = substituteVars(it.value, inVars)) },
+        form = inReq.form.map {
+            it.copy(
+                key = substituteVars(it.key, inVars),
+                value = substituteVars(it.value, inVars)
+            )
+        },
         certPath = substituteVars(inReq.certPath, inVars),
         keyPath = substituteVars(inReq.keyPath, inVars),
         certPassword = substituteVars(inReq.certPassword, inVars),
@@ -39,7 +54,7 @@ fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
 }
 
 /** The distinct {{names}} referenced anywhere in the request that have no enabled
-   variable to fill them — surfaced as a warning in the editor. */
+variable to fill them — surfaced as a warning in the editor. */
 fun unresolvedVars(inReq: ApiRequest, inVars: List<KeyVal>): List<String> {
     val vDefined = inVars
         .filter { it.enabled && it.key.isNotBlank() }
@@ -68,9 +83,9 @@ fun unresolvedVars(inReq: ApiRequest, inVars: List<KeyVal>): List<String> {
 // ==================
 
 /** Render inReq as a runnable, multi-line curl command (pass an already-resolved
-   request so the output has real values, not {{tokens}}). Enabled query params
-   are folded into the URL; a Content-Type header is added for the body type
-   unless the request already sets one. */
+request so the output has real values, not {{tokens}}). Enabled query params
+are folded into the URL; a Content-Type header is added for the body type
+unless the request already sets one. */
 fun toCurl(inReq: ApiRequest): String {
     val vSb = StringBuilder()
     vSb.append("curl -X ").append(inReq.method.name)
@@ -98,8 +113,12 @@ fun toCurl(inReq: ApiRequest): String {
             vSb.append(" \\\n  -H ").append(shellQuote("Content-Type: $vContentType"))
         }
         when (inReq.bodyType) {
-            BodyType.FORM -> if (inReq.form.any { it.enabled && it.key.isNotBlank() }) vSb.append(" \\\n  --data ").append(shellQuote(formEncode(inReq.form)))
-            BodyType.FILE -> if (inReq.body.isNotBlank()) vSb.append(" \\\n  --data-binary ").append(shellQuote("@${inReq.body}"))
+            BodyType.FORM -> if (inReq.form.any { it.enabled && it.key.isNotBlank() }) vSb.append(" \\\n  --data ")
+                .append(shellQuote(formEncode(inReq.form)))
+
+            BodyType.FILE -> if (inReq.body.isNotBlank()) vSb.append(" \\\n  --data-binary ")
+                .append(shellQuote("@${inReq.body}"))
+
             else -> if (inReq.body.isNotEmpty()) vSb.append(" \\\n  --data ").append(shellQuote(inReq.body))
         }
     }

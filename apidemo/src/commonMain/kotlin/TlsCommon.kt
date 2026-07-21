@@ -9,13 +9,13 @@ package apidemo
 // native-only instead.
 
 /** One certificate in the chain: its CURLINFO_CERTINFO-style fields (Subject /
-   Issuer / the PEM under "Cert" / dates …) and whether the server actually
-   presented it. Derived certs — an issuer resolved from the OS store, or a
-   name-only placeholder — have fromServer = false and are drawn dotted. */
+Issuer / the PEM under "Cert" / dates …) and whether the server actually
+presented it. Derived certs — an issuer resolved from the OS store, or a
+name-only placeholder — have fromServer = false and are drawn dotted. */
 class ChainCert(val fields: List<Pair<String, String>>, val fromServer: Boolean)
 
 /** The server's TLS certificate chain. error is set instead when it couldn't be
-   fetched; fields vary by TLS backend. */
+fetched; fields vary by TLS backend. */
 class TlsChain(val certs: List<ChainCert>, val error: String?)
 
 /** Fetch the TLS certificate chain the request's server presents. */
@@ -25,5 +25,5 @@ expect fun inspectTlsChain(inReq: ApiRequest): TlsChain
 expect fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
 
 /** Remove temp client certs a previous crashed run left behind. Call once at
-   startup; no-op where the OS store isn't used. */
+startup; no-op where the OS store isn't used. */
 expect fun sweepTempClientCerts()

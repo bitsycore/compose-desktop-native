@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package apidemo
 
@@ -22,9 +22,9 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // ==================
 
 /** A request tab pairing an inherited (read-only, source-tagged) list with the
-   request's own editable list: Override copies an inherited entry down, and own
-   rows that shadow an inherited one get an OverrideMark. Used by Query / Var /
-   Headers — the only differences are the key case-sensitivity and the labels. */
+request's own editable list: Override copies an inherited entry down, and own
+rows that shadow an inherited one get an OverrideMark. Used by Query / Var /
+Headers — the only differences are the key case-sensitivity and the labels. */
 @Composable
 internal fun InheritedEditableTab(
     inInherited: List<InheritedKv>,
@@ -40,8 +40,10 @@ internal fun InheritedEditableTab(
     fun norm(inKey: String) = if (inCaseInsensitive) inKey.lowercase() else inKey
     val vOwnKeys = inOwn.filter { it.key.isNotBlank() }.map { norm(it.key) }.toSet()
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        InheritedKvSection(inInheritedTitle, inInherited, vOwnKeys, inCaseInsensitive,
-            inOnOverride = if (inReadOnly) null else inOnOverride)
+        InheritedKvSection(
+            inInheritedTitle, inInherited, vOwnKeys, inCaseInsensitive,
+            inOnOverride = if (inReadOnly) null else inOnOverride
+        )
         if (inInherited.any { it.kv.key.isNotBlank() }) {
             HorizontalDivider(color = c.border)
             Text(inOwnTitle, color = c.dim, fontSize = 11.sp)
@@ -54,24 +56,50 @@ internal fun InheritedEditableTab(
 
 /** Request Headers tab: inherited headers (case-insensitive) + the request's own. */
 @Composable
-internal fun HeadersTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) =
-    InheritedEditableTab(inInherited, inReq.headers, inCaseInsensitive = true, inReadOnly = inReadOnly, inOwnTitle = "Request headers",
+internal fun HeadersTab(
+    inReq: ApiRequest,
+    inInherited: List<InheritedKv>,
+    inReadOnly: Boolean,
+    inEdit: (((ApiRequest) -> ApiRequest)) -> Unit
+) =
+    InheritedEditableTab(
+        inInherited, inReq.headers, inCaseInsensitive = true, inReadOnly = inReadOnly, inOwnTitle = "Request headers",
         inOnOverride = { vKv -> inEdit { it.copy(headers = it.headers + vKv) } },
         inOnChange = { v -> inEdit { it.copy(headers = v) } })
 
 /** Request Query tab: inherited query params (case-sensitive) + the request's own. */
 @Composable
-internal fun QueryTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) =
-    InheritedEditableTab(inInherited, inReq.params, inCaseInsensitive = false, inReadOnly = inReadOnly, inOwnTitle = "Request query params",
+internal fun QueryTab(
+    inReq: ApiRequest,
+    inInherited: List<InheritedKv>,
+    inReadOnly: Boolean,
+    inEdit: (((ApiRequest) -> ApiRequest)) -> Unit
+) =
+    InheritedEditableTab(
+        inInherited,
+        inReq.params,
+        inCaseInsensitive = false,
+        inReadOnly = inReadOnly,
+        inOwnTitle = "Request query params",
         inOnOverride = { vKv -> inEdit { it.copy(params = it.params + vKv) } },
         inOnChange = { v -> inEdit { it.copy(params = v) } })
 
 /** Request Var tab: inherited variables (case-sensitive {{name}}) + the request's
-   own. A request's own variable overrides the same name inherited from a pack /
-   the session when the request is sent. */
+own. A request's own variable overrides the same name inherited from a pack /
+the session when the request is sent. */
 @Composable
-internal fun VarTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) =
-    InheritedEditableTab(inInherited, inReq.variables, inCaseInsensitive = false, inReadOnly = inReadOnly, inOwnTitle = "Request variables",
+internal fun VarTab(
+    inReq: ApiRequest,
+    inInherited: List<InheritedKv>,
+    inReadOnly: Boolean,
+    inEdit: (((ApiRequest) -> ApiRequest)) -> Unit
+) =
+    InheritedEditableTab(
+        inInherited,
+        inReq.variables,
+        inCaseInsensitive = false,
+        inReadOnly = inReadOnly,
+        inOwnTitle = "Request variables",
         inOnOverride = { vKv -> inEdit { it.copy(variables = it.variables + vKv) } },
         inOnChange = { v -> inEdit { it.copy(variables = v) } })
 
@@ -80,13 +108,17 @@ internal fun VarTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnl
 // ==================
 
 /** A small pill naming the kind of scope an inherited value comes from ("Session"
-   / "Pack"); hover shows the full path (e.g. "Methods / Nested"). The path tooltip
-   is skipped when it would just repeat the label (the session). */
+/ "Pack"); hover shows the full path (e.g. "Methods / Nested"). The path tooltip
+is skipped when it would just repeat the label (the session). */
 @Composable
 internal fun SourceTag(inLabel: String, inPath: String) {
     val c = LocalAppColors.current
     val vPill = @Composable {
-        Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(c.accent.copy(alpha = 0.16f), RoundedCornerShape(4.dp)).padding(horizontal = 5.dp, vertical = 1.dp)) {
+        Box(
+            modifier = Modifier.clip(RoundedCornerShape(4.dp))
+                .background(c.accent.copy(alpha = 0.16f), RoundedCornerShape(4.dp))
+                .padding(horizontal = 5.dp, vertical = 1.dp)
+        ) {
             Text(inLabel, color = c.accent, fontSize = 9.sp)
         }
     }
@@ -102,7 +134,7 @@ internal fun SourceTag(inLabel: String, inPath: String) {
 }
 
 /** The tiny marker shown on an own value that shadows an inherited one — hover for
-   "Overrides <key> from <path>". */
+"Overrides <key> from <path>". */
 @Composable
 internal fun OverrideMark(inKey: String, inPath: String) {
     val c = LocalAppColors.current
@@ -121,8 +153,8 @@ internal fun OverrideMark(inKey: String, inPath: String) {
 }
 
 /** Read-only list of inherited key/values, each tagged with its source. When not
-   already overridden in this scope (own key absent) and inOnOverride != null, a
-   row offers a one-click Override that copies it into this scope's own list. */
+already overridden in this scope (own key absent) and inOnOverride != null, a
+row offers a one-click Override that copies it into this scope's own list. */
 @Composable
 internal fun InheritedKvSection(
     inTitle: String,
@@ -139,15 +171,26 @@ internal fun InheritedKvSection(
         vShown.forEach { vIt ->
             val vKey = if (inCaseInsensitive) vIt.kv.key.lowercase() else vIt.kv.key
             val vOverridden = vKey in inOwnKeys
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 SourceTag(vIt.source, vIt.path)
                 Text(vIt.kv.key, color = c.dim, fontSize = 12.sp, modifier = Modifier.weight(0.42f))
-                Text(vIt.kv.value, color = c.dim.copy(alpha = if (vOverridden) 0.4f else 1f), fontSize = 12.sp, modifier = Modifier.weight(0.58f))
+                Text(
+                    vIt.kv.value,
+                    color = c.dim.copy(alpha = if (vOverridden) 0.4f else 1f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(0.58f)
+                )
                 when {
                     vOverridden -> Text("overridden", color = c.dim.copy(alpha = 0.6f), fontSize = 10.sp)
                     inOnOverride != null -> Box(
-                        modifier = Modifier.clip(RoundedCornerShape(6.dp)).border(1.dp, c.border, RoundedCornerShape(6.dp))
-                            .clickable { inOnOverride(KeyVal(vIt.kv.key, vIt.kv.value)) }.padding(horizontal = 8.dp, vertical = 3.dp),
+                        modifier = Modifier.clip(RoundedCornerShape(6.dp))
+                            .border(1.dp, c.border, RoundedCornerShape(6.dp))
+                            .clickable { inOnOverride(KeyVal(vIt.kv.key, vIt.kv.value)) }
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
                     ) { Text("Override", color = c.accent, fontSize = 11.sp) }
                 }
             }
@@ -160,10 +203,14 @@ internal fun InheritedKvSection(
 // ==================
 
 /** inOverrideInfo maps an own row to the source label it shadows (or null) so the
-   editor can flag overriding rows with an OverrideMark. It sits before inOnChange
-   so existing trailing-lambda calls (KeyValEditor(rows) { … }) still bind to onChange. */
+editor can flag overriding rows with an OverrideMark. It sits before inOnChange
+so existing trailing-lambda calls (KeyValEditor(rows) { … }) still bind to onChange. */
 @Composable
-internal fun KeyValEditor(inRows: List<KeyVal>, inOverrideInfo: (KeyVal) -> String? = { null }, inOnChange: (List<KeyVal>) -> Unit) {
+internal fun KeyValEditor(
+    inRows: List<KeyVal>,
+    inOverrideInfo: (KeyVal) -> String? = { null },
+    inOnChange: (List<KeyVal>) -> Unit
+) {
     val c = LocalAppColors.current
     val vAnyOverride = inRows.any { inOverrideInfo(it) != null }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -188,15 +235,33 @@ internal fun KeyValEditor(inRows: List<KeyVal>, inOverrideInfo: (KeyVal) -> Stri
                     Checkbox(
                         checked = vKv.enabled,
                         onCheckedChange = null,
-                        colors = CheckboxDefaults.colors(checkedColor = c.accent, uncheckedColor = c.dim, checkmarkColor = c.onAccent),
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = c.accent,
+                            uncheckedColor = c.dim,
+                            checkmarkColor = c.onAccent
+                        ),
                     )
                 }
                 if (vAnyOverride) Box(modifier = Modifier.width(18.dp), contentAlignment = Alignment.Center) {
                     inOverrideInfo(vKv)?.let { vSrc -> OverrideMark(vKv.key, vSrc) }
                 }
-                ThinField(vKv.key, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(key = v) else vR }) }, inModifier = Modifier.weight(1f), inPlaceholder = "key")
-                ThinField(vKv.value, { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(value = v) else vR }) }, inModifier = Modifier.weight(1.4f), inPlaceholder = "value")
-                IconBtn(MaterialSymbols.Close, "Remove", inSize = 16.dp) { inOnChange(inRows.filterIndexed { vJ, _ -> vJ != vI }) }
+                ThinField(
+                    vKv.key,
+                    { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(key = v) else vR }) },
+                    inModifier = Modifier.weight(1f),
+                    inPlaceholder = "key"
+                )
+                ThinField(
+                    vKv.value,
+                    { v -> inOnChange(inRows.mapIndexed { vJ, vR -> if (vJ == vI) vR.copy(value = v) else vR }) },
+                    inModifier = Modifier.weight(1.4f),
+                    inPlaceholder = "value"
+                )
+                IconBtn(
+                    MaterialSymbols.Close,
+                    "Remove",
+                    inSize = 16.dp
+                ) { inOnChange(inRows.filterIndexed { vJ, _ -> vJ != vI }) }
             }
         }
         OutlinedAction(MaterialSymbols.Add, "Add row") { inOnChange(inRows + KeyVal()) }

@@ -31,7 +31,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // ==================
 
 /** Method as a compact rounded badge (soft colour fill + coloured label), fixed
-   width so request names line up. */
+width so request names line up. */
 @Composable
 internal fun MethodTag(inMethod: ReqMethod) {
     val vCol = methodColor(inMethod)
@@ -46,7 +46,7 @@ internal fun MethodTag(inMethod: ReqMethod) {
 }
 
 /** Thin horizontal accent line showing where a dragged request row will drop
-   (the open-tab strip uses the vertical DropBar). */
+(the open-tab strip uses the vertical DropBar). */
 @Composable
 internal fun RowDropBar() {
     val c = LocalAppColors.current
@@ -54,7 +54,7 @@ internal fun RowDropBar() {
 }
 
 /** Tab indices listed in inDots get a small accent dot after their label — used
-   to flag a tab that holds content (e.g. a non-empty request body). */
+to flag a tab that holds content (e.g. a non-empty request body). */
 @Composable
 internal fun TabBar(inTabs: List<String>, inSelected: Int, inDots: Set<Int> = emptySet(), inOnSelect: (Int) -> Unit) {
     val c = LocalAppColors.current
@@ -91,9 +91,16 @@ internal fun TogglePill(inLabel: String, inSelected: Boolean, inOnClick: () -> U
 }
 
 /** Compact single-line (or fixed-height multi-line) input — a BasicTextField in
-   a slim bordered box, much shorter than the 56 dp Material OutlinedTextField. */
+a slim bordered box, much shorter than the 56 dp Material OutlinedTextField. */
 @Composable
-internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier: Modifier = Modifier, inPlaceholder: String = "", inSingleLine: Boolean = true, inOnEnter: (() -> Unit)? = null) {
+internal fun ThinField(
+    inValue: String,
+    inOnChange: (String) -> Unit,
+    inModifier: Modifier = Modifier,
+    inPlaceholder: String = "",
+    inSingleLine: Boolean = true,
+    inOnEnter: (() -> Unit)? = null
+) {
     val c = LocalAppColors.current
     // Box is an ancestor of the field, so it sees Enter the single-line field
     // leaves unconsumed (it propagates up the focus → root chain).
@@ -102,7 +109,9 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
         .border(1.dp, c.border, RoundedCornerShape(6.dp))
         .padding(horizontal = 10.dp, vertical = 9.dp)
     if (inOnEnter != null) vBoxMod = vBoxMod.onKeyEvent { ev ->
-        if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) { inOnEnter(); true } else false
+        if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) {
+            inOnEnter(); true
+        } else false
     }
     Box(
         modifier = vBoxMod,
@@ -111,10 +120,10 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
         if (inValue.isEmpty() && inPlaceholder.isNotEmpty()) Text(inPlaceholder, color = c.dim, fontSize = 13.sp)
         androidx.compose.runtime.CompositionLocalProvider(
             androidx.compose.foundation.text.selection.LocalTextSelectionColors provides
-                androidx.compose.foundation.text.selection.TextSelectionColors(
-                    handleColor = c.accent,
-                    backgroundColor = c.accent.copy(alpha = 0.35f),
-                ),
+                    androidx.compose.foundation.text.selection.TextSelectionColors(
+                        handleColor = c.accent,
+                        backgroundColor = c.accent.copy(alpha = 0.35f),
+                    ),
         ) {
             BasicTextField(
                 value = inValue,
@@ -129,9 +138,16 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
 }
 
 /** Small icon-only button (burger / pack / options / save / close). inPadding
-   tightens the tap area for slimmer rows. */
+tightens the tap area for slimmer rows. */
 @Composable
-internal fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inPadding: Dp = 6.dp, inOnClick: () -> Unit) {
+internal fun IconBtn(
+    inIcon: Int,
+    inDesc: String,
+    inModifier: Modifier = Modifier,
+    inSize: Dp = 18.dp,
+    inPadding: Dp = 6.dp,
+    inOnClick: () -> Unit
+) {
     val c = LocalAppColors.current
     val vHoverSrc = remember { MutableInteractionSource() }
     val vHover by vHoverSrc.collectIsHoveredAsState()
@@ -160,10 +176,10 @@ internal fun OutlinedAction(inIcon: Int, inLabel: String, inOnClick: () -> Unit)
 }
 
 /** Filled red icon+label button for destructive / stop actions (delete, cancel, quit).
-   Uses the m3 Button so its size + ripple + interaction match every other
-   Button in the app — previously handrolled Box + background + clickable + padding
-   gave it a different height / horizontal padding, and the Discard button sat
-   next to a Button ("Save first…") looking noticeably smaller in dialogs. */
+Uses the m3 Button so its size + ripple + interaction match every other
+Button in the app — previously handrolled Box + background + clickable + padding
+gave it a different height / horizontal padding, and the Discard button sat
+next to a Button ("Save first…") looking noticeably smaller in dialogs. */
 @Composable
 internal fun DangerButton(inLabel: String, inIcon: Int, inOnClick: () -> Unit) {
     val vRed = methodColor(ReqMethod.DELETE)

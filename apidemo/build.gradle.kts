@@ -136,9 +136,9 @@ val downloadNotoFonts = tasks.register("downloadNotoFonts") {
     description = "Download the Google Noto variable fonts (Sans + SansMono) to build/fonts/."
     val vDownloads = listOf(
         "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf"
-            to notoSansFile.get().asFile,
+                to notoSansFile.get().asFile,
         "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth%2Cwght%5D.ttf"
-            to notoMonoFile.get().asFile,
+                to notoMonoFile.get().asFile,
     )
     outputs.files(vDownloads.map { it.second })
     doLast {
@@ -154,8 +154,8 @@ val downloadNotoFonts = tasks.register("downloadNotoFonts") {
 // A style's font is bundled only when its call sites appear in the sources.
 val kAllStyles = listOf(
     "Outlined" to Regex("\\bMaterialSymbolsOutlined\\b"),
-    "Rounded"  to Regex("\\bMaterialSymbolsRounded\\b"),
-    "Sharp"    to Regex("\\bMaterialSymbolsSharp\\b"),
+    "Rounded" to Regex("\\bMaterialSymbolsRounded\\b"),
+    "Sharp" to Regex("\\bMaterialSymbolsSharp\\b"),
 )
 
 fun detectUsedStyles(): List<String> {
@@ -170,6 +170,7 @@ fun detectUsedStyles(): List<String> {
     }
     return vUsed.toList()
 }
+
 val vUsedStyles: List<String> = detectUsedStyles()
 
 val subsetIcons = (findProperty("subsetIcons") as? String)?.toBoolean() ?: false
@@ -213,7 +214,8 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
                 .filter { it.isNotBlank() && !it.startsWith("#") && it.contains("=") }
                 .map { it.substringAfter("=").trim().removePrefix("0x").removePrefix("0X") }
             if (vCodepoints.isEmpty()) throw GradleException(
-                "usage-codepoint.txt has no entries — refusing to subset to an empty font.")
+                "usage-codepoint.txt has no entries — refusing to subset to an empty font."
+            )
             val vUnicodes = vCodepoints.joinToString(",") { "U+$it" }
             vOut.parentFile.mkdirs()
             val vInputFile = vInputProvider.get().asFile
@@ -229,9 +231,11 @@ fun registerSubsetTask(inStyle: String): TaskProvider<*> {
                 ).redirectErrorStream(true).start()
             } catch (_: java.io.IOException) {
                 vInputFile.copyTo(vOut, overwrite = true)
-                logger.warn("[subset $inStyle] hb-subset not found on PATH — bundling the full font " +
-                    "(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
-                    "pacman -S mingw-w64-x86_64-harfbuzz / apt install harfbuzz-utils).")
+                logger.warn(
+                    "[subset $inStyle] hb-subset not found on PATH — bundling the full font " +
+                            "(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
+                            "pacman -S mingw-w64-x86_64-harfbuzz / apt install harfbuzz-utils)."
+                )
                 return@doLast
             }
             val vOutput = vProc.inputStream.bufferedReader().readText()

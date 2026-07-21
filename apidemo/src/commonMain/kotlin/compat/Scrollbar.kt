@@ -4,39 +4,31 @@
 // Keep in sync with the original when it changes.
 package apidemo
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.hoverable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -47,23 +39,23 @@ import kotlin.math.roundToInt
 // ==================
 
 /** A faithful subset of Compose Desktop's scrollbar (androidx.compose.foundation).
-   You overlay a VerticalScrollbar / HorizontalScrollbar on a scrollable and feed
-   it a ScrollbarAdapter built from the same ScrollState. This project's Box has
-   no BoxScope (so no Modifier.align) — pin the bar with the Box's
-   contentAlignment; the fillMaxSize content fills the rest:
+You overlay a VerticalScrollbar / HorizontalScrollbar on a scrollable and feed
+it a ScrollbarAdapter built from the same ScrollState. This project's Box has
+no BoxScope (so no Modifier.align) — pin the bar with the Box's
+contentAlignment; the fillMaxSize content fills the rest:
 
-       Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
-           val state = rememberScrollState()
-           Column(Modifier.fillMaxSize().verticalScroll(state)) { ... }
-           VerticalScrollbar(
-               adapter = rememberScrollbarAdapter(state),
-               modifier = Modifier.fillMaxHeight(),
-           )
-       }
+Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+val state = rememberScrollState()
+Column(Modifier.fillMaxSize().verticalScroll(state)) { ... }
+VerticalScrollbar(
+adapter = rememberScrollbarAdapter(state),
+modifier = Modifier.fillMaxHeight(),
+)
+}
 
-   Always visible (no auto-hide); the thumb tweens unhoverColor -> hoverColor on
-   hover over hoverDurationMillis, matching upstream. Drag the thumb to scroll;
-   click the track to page. */
+Always visible (no auto-hide); the thumb tweens unhoverColor -> hoverColor on
+hover over hoverDurationMillis, matching upstream. Drag the thumb to scroll;
+click the track to page. */
 
 @Immutable
 class ScrollbarStyle(
@@ -76,7 +68,7 @@ class ScrollbarStyle(
 )
 
 /** Upstream default: an 8dp black thumb that's faint until hovered. Dark UIs
-   provide a white-tinted style via LocalScrollbarStyle or the `style` param. */
+provide a white-tinted style via LocalScrollbarStyle or the `style` param. */
 fun defaultScrollbarStyle(): ScrollbarStyle = ScrollbarStyle(
     minimalHeight = 16.dp,
     thickness = 8.dp,
@@ -93,8 +85,8 @@ val LocalScrollbarStyle = compositionLocalOf { defaultScrollbarStyle() }
 // ==================
 
 /** Bridges a scrollable's state to the scrollbar in pixels. scrollOffset /
-   contentSize / viewportSize are along the scroll axis; the thumb is sized by
-   viewportSize / contentSize and positioned by scrollOffset / (content - viewport). */
+contentSize / viewportSize are along the scroll axis; the thumb is sized by
+viewportSize / contentSize and positioned by scrollOffset / (content - viewport). */
 interface ScrollbarAdapter {
     val scrollOffset: Double
     val contentSize: Double
@@ -107,11 +99,11 @@ interface ScrollbarAdapter {
 // :foundation cannot access. apidemo only scrollbars a LazyColumn.)
 
 /** Adapter for a virtualized LazyColumn / LazyRow. A lazy list only knows the
-   size of its VISIBLE items, so exact pixel geometry of off-screen content is
-   unknowable — we estimate it from the average visible item size × total item
-   count (the same approach as Compose Desktop). Accurate enough for a thumb
-   whose length/position track the scroll position; the estimate self-corrects
-   as items of different sizes scroll through the viewport. */
+size of its VISIBLE items, so exact pixel geometry of off-screen content is
+unknowable — we estimate it from the average visible item size × total item
+count (the same approach as Compose Desktop). Accurate enough for a thumb
+whose length/position track the scroll position; the estimate self-corrects
+as items of different sizes scroll through the viewport. */
 @Composable
 fun rememberScrollbarAdapter(scrollState: LazyListState): ScrollbarAdapter =
     remember(scrollState) { LazyListScrollbarAdapter(scrollState) }
@@ -181,11 +173,11 @@ fun HorizontalScrollbar(
 ) = Scrollbar(adapter, modifier, reverseLayout, style, interactionSource, isVertical = false)
 
 /** Shared impl. The root Box is the track (fixed thickness on the cross axis,
-   filling the main axis from the caller's modifier); a child Box is the thumb,
-   positioned with an offset. Drag + track-click are handled on the track in
-   track-relative coordinates (a stable origin), so the grab point stays under
-   the pointer with no feedback from the thumb moving. interactionSource is
-   accepted for API parity; hover here is driven by Modifier.hoverable. */
+filling the main axis from the caller's modifier); a child Box is the thumb,
+positioned with an offset. Drag + track-click are handled on the track in
+track-relative coordinates (a stable origin), so the grab point stays under
+the pointer with no feedback from the thumb moving. interactionSource is
+accepted for API parity; hover here is driven by Modifier.hoverable. */
 @Composable
 private fun Scrollbar(
     adapter: ScrollbarAdapter,
@@ -238,9 +230,9 @@ private fun Scrollbar(
 
         val vThumbLenDp = with(vDensity) { vThumbLen.toDp() }
         val vThumbMod = (
-            if (isVertical) Modifier.offset { IntOffset(0, vThumbPos) }.width(style.thickness).height(vThumbLenDp)
-            else Modifier.offset { IntOffset(vThumbPos, 0) }.height(style.thickness).width(vThumbLenDp)
-            )
+                if (isVertical) Modifier.offset { IntOffset(0, vThumbPos) }.width(style.thickness).height(vThumbLenDp)
+                else Modifier.offset { IntOffset(vThumbPos, 0) }.height(style.thickness).width(vThumbLenDp)
+                )
             .clip(style.shape)
             .background(vColor)
 
@@ -274,7 +266,7 @@ private fun Scrollbar(
                             .coerceIn(vMinLen.coerceAtMost(vTrackPx), vTrackPx)
                         val vTravelPx = vTrackPx - vLen
                         val vRaw = if (vTravelPx <= 0) 0
-                                   else (vTravelPx * (adapter.scrollOffset / vMaxScrollPx)).roundToInt()
+                        else (vTravelPx * (adapter.scrollOffset / vMaxScrollPx)).roundToInt()
                         val vPos = (if (reverseLayout) vTravelPx - vRaw else vRaw).coerceIn(0, vTravelPx)
 
                         // Map a track-relative thumb-top to a scroll offset. The
@@ -326,8 +318,8 @@ private fun Scrollbar(
 }
 
 /** Sizes the invisible drag-capture overlay to the full track. `inTrackDp`
-   comes from the caller pre-converted via LocalDensity (Option-B: layout
-   coords are physical px, so px-to-dp goes through the current density). */
+comes from the caller pre-converted via LocalDensity (Option-B: layout
+coords are physical px, so px-to-dp goes through the current density). */
 private fun Modifier.matchTrackSize(inVertical: Boolean, inTrackDp: Dp, inThickness: Dp): Modifier =
     if (inVertical) this.width(inThickness).height(inTrackDp)
     else this.height(inThickness).width(inTrackDp)

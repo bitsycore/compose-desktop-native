@@ -1,12 +1,10 @@
 package apidemo
 
-import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.CancellationException
 import okio.Buffer
-import okio.FileSystem
 import okio.GzipSource
 import okio.Path.Companion.toPath
 import okio.buffer
@@ -17,9 +15,9 @@ import kotlin.time.TimeSource
 // ==================
 
 /** Holds one Ktor HttpClient for the app's lifetime. One engine on every desktop
-   target: Ktor's Curl engine (bundled libcurl — Schannel on Windows, OpenSSL on
-   macOS/Linux). Same TLS stack as the client-cert path in CurlMtls.kt.
-   run() is a suspend fun — call it off the UI dispatcher. */
+target: Ktor's Curl engine (bundled libcurl — Schannel on Windows, OpenSSL on
+macOS/Linux). Same TLS stack as the client-cert path in CurlMtls.kt.
+run() is a suspend fun — call it off the UI dispatcher. */
 class HttpRunner {
 
     private val fClient = createApiHttpClient()
@@ -119,23 +117,23 @@ class HttpRunner {
 }
 
 /** Heuristic for a non-text body: textual content types (text, json, xml, html,
-   javascript, csv, form) are shown as text; everything else, or bytes with
-   embedded NULs, is treated as binary. */
+javascript, csv, form) are shown as text; everything else, or bytes with
+embedded NULs, is treated as binary. */
 internal fun isBinaryBody(inContentType: String?, inBytes: ByteArray): Boolean {
     val vCt = inContentType?.lowercase() ?: ""
     val vTextual = vCt.startsWith("text/") ||
-        vCt.contains("json") || vCt.contains("xml") || vCt.contains("html") ||
-        vCt.contains("javascript") || vCt.contains("csv") || vCt.contains("x-www-form-urlencoded")
+            vCt.contains("json") || vCt.contains("xml") || vCt.contains("html") ||
+            vCt.contains("javascript") || vCt.contains("csv") || vCt.contains("x-www-form-urlencoded")
     if (vTextual) return false
     if (vCt.isNotEmpty()) return true                       // a non-textual content type → binary
     return inBytes.take(1024).any { it.toInt() == 0 }       // no type: sniff for NUL bytes
 }
 
 /** True when the bytes are gzip — either the response says so or they carry the
-   gzip magic number (1f 8b). */
+gzip magic number (1f 8b). */
 private fun isGzip(inEncoding: String?, inBytes: ByteArray): Boolean =
     inEncoding?.contains("gzip", ignoreCase = true) == true ||
-        (inBytes.size >= 2 && inBytes[0] == 0x1f.toByte() && inBytes[1] == 0x8b.toByte())
+            (inBytes.size >= 2 && inBytes[0] == 0x1f.toByte() && inBytes[1] == 0x8b.toByte())
 
 /** Read a file's raw bytes (used for a FILE request body). */
 internal fun readFileBytes(inPath: String): ByteArray =

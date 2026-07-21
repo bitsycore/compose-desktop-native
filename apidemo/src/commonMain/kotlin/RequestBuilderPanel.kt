@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package apidemo
 
@@ -25,7 +25,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // ==================
 
 /** Tabs to edit query params, headers and the body, a Preview toggle top-right,
-   and a body-type dropdown pinned at the bottom. */
+and a body-type dropdown pinned at the bottom. */
 @Composable
 internal fun RequestBuilder(
     inReq: ApiRequest,
@@ -146,7 +146,7 @@ internal fun RequestBuilder(
 }
 
 /** The body editing area for the current body type (driven by the bottom menu). A
-   Text body is highlighted per its chosen format (bodyFormat). */
+Text body is highlighted per its chosen format (bodyFormat). */
 @Composable
 internal fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
     when (inReq.bodyType) {
@@ -157,21 +157,22 @@ internal fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest)
             inOnChange = { v -> inEdit { it.copy(body = v) } },
             inFormat = inReq.bodyFormat,
         )
+
         BodyType.FORM -> KeyValEditor(inReq.form) { v -> inEdit { it.copy(form = v) } }
         BodyType.FILE -> FileBody(inReq) { v -> inEdit(v) }
     }
 }
 
 /** Magic-wand button that pretty-prints the current body in place (JSON /
-   XML). Lives at the right end of the body type/format bar. */
+XML). Lives at the right end of the body type/format bar. */
 @Composable
 internal fun FormatButton(inOnClick: () -> Unit) {
     HoverIconBtn(MaterialSymbols.AutoFixHigh, "Format (pretty-print)", inOnClick)
 }
 
 /** Icon button with the toolbar's standard hover treatment — accent-tinted
-   background + accent icon on hover (matching the TLS chain button). inActive
-   keeps it lit, for toggles such as the preview eye. */
+background + accent icon on hover (matching the TLS chain button). inActive
+keeps it lit, for toggles such as the preview eye. */
 @Composable
 internal fun HoverIconBtn(
     inIcon: Int,
@@ -186,8 +187,8 @@ internal fun HoverIconBtn(
     val vHover by vHoverSrc.collectIsHoveredAsState()
     val vBg = when {
         inActive -> c.accent.copy(alpha = 0.20f)
-        vHover   -> c.accent.copy(alpha = 0.18f)
-        else     -> Color.Transparent
+        vHover -> c.accent.copy(alpha = 0.18f)
+        else -> Color.Transparent
     }
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
@@ -202,15 +203,17 @@ internal fun HoverIconBtn(
                 .clickable(onClick = inOnClick)
                 .padding(6.dp),
         ) {
-            MaterialSymbolsOutlined(inIcon, contentDescription = inTooltip,
-                tint = if (inActive || vHover) c.accent else c.dim, size = inSize)
+            MaterialSymbolsOutlined(
+                inIcon, contentDescription = inTooltip,
+                tint = if (inActive || vHover) c.accent else c.dim, size = inSize
+            )
         }
     }
 }
 
 /** Tab-size picker (2 / 4 / 8), shown left of the format button. Sets the global
-   editor tab width via TextLayoutConfig — how wide a typed '\t' renders AND how
-   deep the formatter indents. Snapshot-backed, so the change is live. */
+editor tab width via TextLayoutConfig — how wide a typed '\t' renders AND how
+deep the formatter indents. Snapshot-backed, so the change is live. */
 @Composable
 internal fun TabSizeSelector() {
     val c = LocalAppColors.current
@@ -227,7 +230,10 @@ internal fun TabSizeSelector() {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent, RoundedCornerShape(6.dp))
+                    .background(
+                        if (vHover) c.accent.copy(alpha = 0.18f) else Color.Transparent,
+                        RoundedCornerShape(6.dp)
+                    )
                     .hoverable(vHoverSrc)
                     .clickable { vOpen = true }
                     .padding(horizontal = 8.dp, vertical = 5.dp),
@@ -235,7 +241,11 @@ internal fun TabSizeSelector() {
                 horizontalArrangement = Arrangement.spacedBy(3.dp),
             ) {
                 Text("Tab $vSize", color = if (vHover) c.accent else c.dim, fontSize = 12.sp)
-                MaterialSymbolsOutlined(MaterialSymbols.UnfoldMore, tint = if (vHover) c.accent else c.dim, size = 14.dp)
+                MaterialSymbolsOutlined(
+                    MaterialSymbols.UnfoldMore,
+                    tint = if (vHover) c.accent else c.dim,
+                    size = 14.dp
+                )
             }
             DropdownMenu(expanded = vOpen, onDismissRequest = { vOpen = false }) {
                 for (vN in listOf(2, 4, 8)) {
@@ -262,11 +272,16 @@ internal fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) ->
 }
 
 /** Client-certificate (mTLS) editor — certificate + optional separate key +
-   passphrase. PEM/DER are used directly by OpenSSL on macOS/Linux; on Windows
-   they're imported into the certificate store for the request then removed
-   (see CurlMtls). PKCS#12 bundles its own private key. */
+passphrase. PEM/DER are used directly by OpenSSL on macOS/Linux; on Windows
+they're imported into the certificate store for the request then removed
+(see CurlMtls). PKCS#12 bundles its own private key. */
 @Composable
-internal fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client certificate (mTLS)", inOverrideSource: String? = null, inOnChange: (CertConfig) -> Unit) {
+internal fun CertConfigEditor(
+    inCert: CertConfig,
+    inHeading: String = "Client certificate (mTLS)",
+    inOverrideSource: String? = null,
+    inOnChange: (CertConfig) -> Unit
+) {
     val c = LocalAppColors.current
     val vHasCert = inCert.certPath.isNotBlank()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -291,7 +306,11 @@ internal fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client ce
                 inOnChange(CertConfig())
             }
         }
-        Text(if (vHasCert) inCert.certPath else "No certificate selected.", color = if (vHasCert) c.text else c.dim, fontSize = 12.sp)
+        Text(
+            if (vHasCert) inCert.certPath else "No certificate selected.",
+            color = if (vHasCert) c.text else c.dim,
+            fontSize = 12.sp
+        )
 
         // ============
         //  Private key (PKCS#12 carries its own key)
@@ -302,7 +321,14 @@ internal fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client ce
                     showOpenFileDialog { vPath -> if (vPath != null) inOnChange(inCert.copy(keyPath = vPath)) }
                 }
                 CertFormatMenu(inCert.keyFormat) { vF -> inOnChange(inCert.copy(keyFormat = vF)) }
-                if (inCert.keyPath.isNotBlank()) IconBtn(MaterialSymbols.Close, "Clear key") { inOnChange(inCert.copy(keyPath = "", keyFormat = CertFormat.PEM)) }
+                if (inCert.keyPath.isNotBlank()) IconBtn(MaterialSymbols.Close, "Clear key") {
+                    inOnChange(
+                        inCert.copy(
+                            keyPath = "",
+                            keyFormat = CertFormat.PEM
+                        )
+                    )
+                }
             }
             Text(
                 if (inCert.keyPath.isNotBlank()) inCert.keyPath else "Optional — only if the key is in a separate file.",
@@ -313,17 +339,27 @@ internal fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client ce
         // ============
         //  Passphrase
         Text("Passphrase", color = c.dim, fontSize = 12.sp)
-        ThinField(inCert.certPassword, { v -> inOnChange(inCert.copy(certPassword = v)) }, inPlaceholder = "Key / PKCS#12 password (optional)")
+        ThinField(
+            inCert.certPassword,
+            { v -> inOnChange(inCert.copy(certPassword = v)) },
+            inPlaceholder = "Key / PKCS#12 password (optional)"
+        )
     }
 }
 
 /** A read-only card for an inherited client cert: its source pill + path, plus an
-   Override action (copy it into this scope) when this scope hasn't set its own. */
+Override action (copy it into this scope) when this scope hasn't set its own. */
 @Composable
-internal fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, inReadOnly: Boolean, inOnOverride: () -> Unit) {
+internal fun InheritedCertCard(
+    inInherited: InheritedCert,
+    inOwnSet: Boolean,
+    inReadOnly: Boolean,
+    inOnOverride: () -> Unit
+) {
     val c = LocalAppColors.current
     Column(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+            .border(1.dp, c.border, RoundedCornerShape(8.dp)).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -342,22 +378,34 @@ internal fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, in
 }
 
 /** The request's Cert tab: the inherited cert (from pack / session) shown read-only
-   with its source + an Override action when the request has none, then the
-   request's own cert editor (its own cert overrides the inherited one). */
+with its source + an Override action when the request has none, then the
+request's own cert editor (its own cert overrides the inherited one). */
 @Composable
-internal fun RequestCertTab(inReq: ApiRequest, inInheritedCert: InheritedCert?, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) {
+internal fun RequestCertTab(
+    inReq: ApiRequest,
+    inInheritedCert: InheritedCert?,
+    inReadOnly: Boolean,
+    inEdit: (((ApiRequest) -> ApiRequest)) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = inReq.hasClientCert, inReadOnly = inReadOnly) {
+        if (inInheritedCert != null) InheritedCertCard(
+            inInheritedCert,
+            inOwnSet = inReq.hasClientCert,
+            inReadOnly = inReadOnly
+        ) {
             inEdit { it.withCert(inInheritedCert.cert) }
         }
-        CertConfigEditor(inReq.certConfig(), inOverrideSource = if (inReq.hasClientCert) inInheritedCert?.path else null) { vCc -> inEdit { it.withCert(vCc) } }
+        CertConfigEditor(
+            inReq.certConfig(),
+            inOverrideSource = if (inReq.hasClientCert) inInheritedCert?.path else null
+        ) { vCc -> inEdit { it.withCert(vCc) } }
     }
 }
 
 /** Scope settings editor (Variables / Query / Headers / Cert sub-tabs) — shared by
-   the session settings tab and each pack's settings tab. Each sub-tab shows what
-   the scope inherits from above (source-tagged, with Override) over its own
-   editable list, mirroring the request panels. */
+the session settings tab and each pack's settings tab. Each sub-tab shows what
+the scope inherits from above (source-tagged, with Override) over its own
+editable list, mirroring the request panels. */
 @Composable
 internal fun ScopeSettings(
     inTab: Int,
@@ -388,27 +436,44 @@ internal fun ScopeSettings(
         when (inTab) {
             0 -> {
                 Text(inVarHelp, color = c.dim, fontSize = 12.sp)
-                InheritedEditableTab(inInheritedVars, inVars, inCaseInsensitive = false, inReadOnly = false,
+                InheritedEditableTab(
+                    inInheritedVars, inVars, inCaseInsensitive = false, inReadOnly = false,
                     inOwnTitle = "This scope's variables", inInheritedTitle = "Inherited variables",
-                    inOnOverride = { vKv -> inOnVars(inVars + vKv) }, inOnChange = inOnVars)
+                    inOnOverride = { vKv -> inOnVars(inVars + vKv) }, inOnChange = inOnVars
+                )
             }
+
             1 -> {
                 Text(inParamHelp, color = c.dim, fontSize = 12.sp)
-                InheritedEditableTab(inInheritedParams, inParams, inCaseInsensitive = false, inReadOnly = false,
+                InheritedEditableTab(
+                    inInheritedParams, inParams, inCaseInsensitive = false, inReadOnly = false,
                     inOwnTitle = "This scope's query params", inInheritedTitle = "Inherited query params",
-                    inOnOverride = { vKv -> inOnParams(inParams + vKv) }, inOnChange = inOnParams)
+                    inOnOverride = { vKv -> inOnParams(inParams + vKv) }, inOnChange = inOnParams
+                )
             }
+
             2 -> {
                 Text(inHeaderHelp, color = c.dim, fontSize = 12.sp)
-                InheritedEditableTab(inInheritedHeaders, inHeaders, inCaseInsensitive = true, inReadOnly = false,
+                InheritedEditableTab(
+                    inInheritedHeaders, inHeaders, inCaseInsensitive = true, inReadOnly = false,
                     inOwnTitle = "This scope's headers", inInheritedTitle = "Inherited headers",
-                    inOnOverride = { vKv -> inOnHeaders(inHeaders + vKv) }, inOnChange = inOnHeaders)
+                    inOnOverride = { vKv -> inOnHeaders(inHeaders + vKv) }, inOnChange = inOnHeaders
+                )
             }
+
             else -> {
                 Text(inCertHelp, color = c.dim, fontSize = 12.sp)
                 val vOwnSet = inCert?.isSet == true
-                if (inInheritedCert != null) InheritedCertCard(inInheritedCert, inOwnSet = vOwnSet, inReadOnly = false) { inOnCert(inInheritedCert.cert) }
-                CertConfigEditor(inCert ?: CertConfig(), inCertHeading, inOverrideSource = if (vOwnSet) inInheritedCert?.path else null) { vCc -> inOnCert(vCc.takeIf { it.isSet }) }
+                if (inInheritedCert != null) InheritedCertCard(
+                    inInheritedCert,
+                    inOwnSet = vOwnSet,
+                    inReadOnly = false
+                ) { inOnCert(inInheritedCert.cert) }
+                CertConfigEditor(
+                    inCert ?: CertConfig(),
+                    inCertHeading,
+                    inOverrideSource = if (vOwnSet) inInheritedCert?.path else null
+                ) { vCc -> inOnCert(vCc.takeIf { it.isSet }) }
             }
         }
     }
