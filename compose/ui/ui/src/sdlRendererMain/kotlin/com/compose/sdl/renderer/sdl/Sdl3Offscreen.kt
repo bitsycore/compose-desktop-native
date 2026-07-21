@@ -135,10 +135,13 @@ internal class Sdl3OffscreenRenderer(
 	private val fTextRenderer: Sdl3TextRenderer?,
 	// Passed through to offscreen canvases so content drawn into an ImageBitmap
 	// (VectorPainter / DrawCache, and the shape-clip texture cache in
-	// SdlDisplayListRenderNode) can realize rounded-clip masks + drop shadows the
-	// same way the frame canvas does. Without the clip targets, clipRoundRect on an
-	// offscreen degrades to a rect clip and bakes SQUARE corners into the texture.
-	private val fClipTargets: Sdl3ClipTargets? = null,
+	// SdlDisplayListRenderNode) can realize drop shadows the same way the frame
+	// canvas does (a pure texture LRU — safe to share). Rounded-clip masks are NOT
+	// shared: each offscreen canvas builds its own bitmap-sized pool on demand —
+	// the frame pool destroys ALL its targets on any size change, so a mid-frame
+	// bake requesting bitmap-sized targets would kill frame-sized targets the main
+	// canvas is actively drawing into (whole subtrees vanished — the missing
+	// apidemo header/menu bug). See Sdl3Canvas.clipTargets().
 	private val fShadowCache: Sdl3ShadowCache? = null,
 ) : OffscreenRenderer {
 
@@ -157,7 +160,6 @@ internal class Sdl3OffscreenRenderer(
 			fRenderer,
 			Size(vBmp.width.toFloat(), vBmp.height.toFloat()),
 			fTextRenderer,
-			fClipTargets = fClipTargets,
 			fShadowCache = fShadowCache,
 			fOffscreenTexture = vTex,
 			// A single-colour icon is rasterised as an Alpha8 mask: draw it WHITE so

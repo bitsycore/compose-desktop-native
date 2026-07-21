@@ -96,7 +96,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         // DrawCache pipeline — hence material3's ImageVector icons — renders. Idempotent.
         if (com.compose.sdl.graphics.offscreenRenderer == null) {
             com.compose.sdl.graphics.offscreenRenderer =
-                Sdl3OffscreenRenderer(vRenderer, fTextRenderer, vClipTargets, vShadowCache)
+                Sdl3OffscreenRenderer(vRenderer, fTextRenderer, vShadowCache)
         }
         val vCanvas = Sdl3Canvas(
             vRenderer,

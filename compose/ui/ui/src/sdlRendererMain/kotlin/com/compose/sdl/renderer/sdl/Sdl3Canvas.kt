@@ -323,7 +323,7 @@ internal class Sdl3Canvas(
 			val vPending = fPendingClips.removeFirst()
 			fScope.flush()
 			val vRegion = vPending.region
-			val vTarget = fClipTargets?.target(fClipLayers.size, fSize.width.toInt(), fSize.height.toInt())
+			val vTarget = clipTargets()?.target(fClipLayers.size, fSize.width.toInt(), fSize.height.toInt())
 			if (vTarget == null || vRegion[2] <= vRegion[0] || vRegion[3] <= vRegion[1]) {
 				// Degrade to the rect clip that is already active.
 				continue
@@ -362,6 +362,7 @@ internal class Sdl3Canvas(
 			SDL_SetRenderTarget(fRenderer.reinterpret(), null)
 			fClipLayers.clear()
 		}
+		releaseLocalClipTargets()
 		SDL_SetRenderClipRect(fRenderer.reinterpret(), null)
 	}
 
@@ -410,6 +411,26 @@ internal class Sdl3Canvas(
 
 	private var fSavedOffscreenTarget: COpaquePointer? = null
 
+	// Rounded-clip mask pool for THIS canvas. The frame canvas uses the backend's
+	// shared frame-sized pool (fClipTargets). An OFFSCREEN canvas must NOT: the pool
+	// destroys every target on a size change (target() with the bitmap size would
+	// releaseAll() frame-sized targets the frame canvas is actively drawing into /
+	// holds as fSavedOffscreenTarget mid-frame — content of whole subtrees vanished,
+	// see the shape-clip texture cache in SdlDisplayListRenderNode) and both canvases
+	// would collide on the same depth indices. So an offscreen canvas lazily creates
+	// a PRIVATE pool sized to its bitmap, destroyed with the render (endOffscreen /
+	// finish — whichever runs first; the second is a no-op).
+	private var fLocalClipTargets: Sdl3ClipTargets? = null
+
+	private fun clipTargets(): Sdl3ClipTargets? =
+		if (fOffscreenTexture == null) fClipTargets
+		else fLocalClipTargets ?: Sdl3ClipTargets(fRenderer).also { fLocalClipTargets = it }
+
+	private fun releaseLocalClipTargets() {
+		fLocalClipTargets?.destroy()
+		fLocalClipTargets = null
+	}
+
 	private fun beginOffscreen() {
 		val vTex = fOffscreenTexture ?: return
 		// Commit whatever the frame has drawn so far to its own target, THEN redirect.
@@ -434,6 +455,10 @@ internal class Sdl3Canvas(
 		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
 		SDL_SetRenderTarget(vRenderer, fSavedOffscreenTarget?.reinterpret())
 		fSavedOffscreenTarget = null
+		// All clips are composited by the outermost restore that got us here, so the
+		// private mask pool is idle — free it with the render (the Canvas(ImageBitmap)
+		// path has no finish() call to do it later).
+		releaseLocalClipTargets()
 	}
 
 	override fun saveLayer(bounds: Rect, paint: Paint) {
@@ -493,7 +518,8 @@ internal class Sdl3Canvas(
 		realizePendingClips()
 		val vDiff = mapRectAABB(inL, inT, inR, inB)
 		val vRegion = fClip ?: intArrayOf(0, 0, fSize.width.toInt(), fSize.height.toInt())
-		if (fClipTargets == null || fSize.width < 1f || fSize.height < 1f ||
+		val vTargets = clipTargets()
+		if (vTargets == null || fSize.width < 1f || fSize.height < 1f ||
 			vRegion[2] <= vRegion[0] || vRegion[3] <= vRegion[1]
 		) {
 			// No offscreen pool — degrade by IGNORING the exclusion. Drawing the
@@ -502,7 +528,7 @@ internal class Sdl3Canvas(
 			return
 		}
 		fScope.flush()
-		val vTarget = fClipTargets.target(fClipLayers.size, fSize.width.toInt(), fSize.height.toInt()) ?: return
+		val vTarget = vTargets.target(fClipLayers.size, fSize.width.toInt(), fSize.height.toInt()) ?: return
 		val vRenderer = fRenderer.reinterpret<cnames.structs.SDL_Renderer>()
 		val vPrevTarget = SDL_GetRenderTarget(vRenderer)
 		val vPrevClip = fClip
@@ -571,7 +597,7 @@ internal class Sdl3Canvas(
 			inRoundRect.bottomLeftCornerRadius.x * vScaleX, inRoundRect.bottomLeftCornerRadius.y * vScaleY,
 		)
 		// Effectively-square corners or no offscreen pool → plain rectangular clip.
-		if (vMaxRadius < 0.5f || fClipTargets == null || fSize.width < 1f || fSize.height < 1f) {
+		if (vMaxRadius < 0.5f || clipTargets() == null || fSize.width < 1f || fSize.height < 1f) {
 			clipRect(inRoundRect.left, inRoundRect.top, inRoundRect.right, inRoundRect.bottom)
 			return
 		}

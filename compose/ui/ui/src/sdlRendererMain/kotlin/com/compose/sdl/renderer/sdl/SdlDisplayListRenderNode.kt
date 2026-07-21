@@ -187,9 +187,15 @@ internal class SdlDisplayListRenderNode : NativeRenderNode {
 		try {
 			// Bake the clip into the texture so the rounded corners are transparent in
 			// the cached pixels; content records at layer-local origin (transform is
-			// applied at blit).
+			// applied at blit). The clip MUST be pushed inside an explicit save frame:
+			// a rounded clip realizes as an offscreen mask that only the enclosing
+			// frame's restore() composites back — pushed at stack depth 0 it belongs
+			// to no frame, nothing composites it, and the bake stays TRANSPARENT
+			// (every rounded Surface/chip/icon-button blitted empty).
+			target.save()
 			applyClip(target)
 			drawScope.draw(recordedDensity, recordedLayoutDirection, target, Size(w.toFloat(), h.toFloat()), block)
+			target.restore()
 		} finally {
 			fRecordingStack.removeAt(fRecordingStack.size - 1)
 			(target as? NativeFinishableCanvas)?.finish()

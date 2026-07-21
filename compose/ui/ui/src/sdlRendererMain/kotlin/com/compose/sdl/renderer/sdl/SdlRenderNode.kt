@@ -150,9 +150,14 @@ internal class SdlRenderNode : NativeRenderNode {
 		try {
 			// Content is recorded at layer-local origin; the transform is applied at
 			// replay (blit). Clip is baked into the texture so rounded corners are
-			// transparent in the cached pixels.
+			// transparent in the cached pixels. Push the clip inside an explicit save
+			// frame: a rounded clip realizes as an offscreen mask that only the
+			// enclosing frame's restore() composites — pushed at depth 0 it is never
+			// composited and the bake stays transparent (see SdlDisplayListRenderNode).
+			target.save()
 			if (clip) applyClip(target)
 			drawScope.draw(recordedDensity, recordedLayoutDirection, target, Size(w.toFloat(), h.toFloat()), block)
+			target.restore()
 		} finally {
 			fRecordingStack.removeAt(fRecordingStack.size - 1)
 			(target as? com.compose.sdl.graphics.NativeFinishableCanvas)?.finish()
