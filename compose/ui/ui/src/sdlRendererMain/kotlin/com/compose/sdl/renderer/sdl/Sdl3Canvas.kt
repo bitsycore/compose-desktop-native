@@ -39,24 +39,19 @@ import kotlin.math.sin
 // MARK: Sdl3Canvas
 // ==================
 
-/*
- Phase 9 B4 — SDL implementation of the upstream `androidx.compose.ui.graphics.Canvas`
- (the "android-side" backend, the SDL analogue of upstream's SkiaBackedCanvas). This is
- what the vendored `CanvasDrawScope` (inside `LayoutNodeDrawScope`) draws into once the
- composition pivots to upstream `LayoutNode`: `owner.root.draw(sdl3Canvas)` →
- `NodeCoordinator.draw` → `DrawModifierNode.draw(ContentDrawScope)` → `CanvasDrawScope` →
- here.
+/**
+ SDL implementation of the upstream `androidx.compose.ui.graphics.Canvas` (the SDL
+ analogue of upstream's SkiaBackedCanvas). This is what the vendored
+ `CanvasDrawScope` (inside `LayoutNodeDrawScope`) draws into:
+ `owner.root.draw(sdl3Canvas)` → `NodeCoordinator.draw` →
+ `DrawModifierNode.draw(ContentDrawScope)` → `CanvasDrawScope` → here.
 
  Shape drawing reuses `Sdl3DrawScope`'s tessellation (the `*Core` helpers) verbatim — this
  canvas holds one `Sdl3DrawScope`, retargets its origin to the current transform before each
  call, and passes node-local coordinates. `Paint` is unpacked to a `Brush` + `DrawStyle` the
- cores already understand. State is a translate + clip stack (save/restore); the SDL vertex
+ cores already understand. State is an affine + clip stack (save/restore); the SDL vertex
  batch is flushed whenever the clip changes so batched geometry lands under the clip that was
  active when it was emitted.
-
- Not yet wired (later phases): scale / rotate / skew / concat (graphicsLayer transforms, B6);
- gradient shaders via `Paint.shader` (currently solid-colour only — B4 follow-up); drawImage /
- drawVertices / drawPoints (image leaf lands in B5). Those are no-ops / solid fallbacks for now.
 */
 @OptIn(ExperimentalForeignApi::class)
 internal class Sdl3Canvas(
@@ -72,7 +67,7 @@ internal class Sdl3Canvas(
 	// Alpha8 mask) so the tint applied on blit colours it correctly.
 	private val fOffscreenTexture: COpaquePointer? = null,
 	private val fForceWhite: Boolean = false,
-	// Phase 4 capture mode: when set, this canvas RECORDS shape geometry into the list
+	// Capture mode: when set, this canvas RECORDS shape geometry into the list
 	// (via the scope's recordingSink) and touches NO GPU. Ops not yet capturable
 	// (text / image / clip / saveLayer / shadow) mark the list `unsupported` so the
 	// SdlDisplayListRenderNode falls back to a crisp block-replay for that leaf — so
@@ -264,7 +259,7 @@ internal class Sdl3Canvas(
 	)
 	private val fPendingClips = ArrayDeque<PendingRoundClip>()
 
-	/* Point-in-round-rect (device space) - inside the rect and, within a
+	/** Point-in-round-rect (device space) - inside the rect and, within a
 	   corner cut square, inside its ellipse. */
 	private fun roundRectContains(inRR: RoundRect, inX: Float, inY: Float): Boolean {
 		if (inX < inRR.left || inX > inRR.right || inY < inRR.top || inY > inRR.bottom) return false
@@ -286,12 +281,12 @@ internal class Sdl3Canvas(
 		return true
 	}
 
-	/* A device-space aabb is inside the round rect iff its four corners are. */
+	/** A device-space aabb is inside the round rect iff its four corners are. */
 	private fun roundRectContainsAabb(inRR: RoundRect, inL: Float, inT: Float, inR: Float, inB: Float): Boolean =
 		roundRectContains(inRR, inL, inT) && roundRectContains(inRR, inR, inT) &&
 			roundRectContains(inRR, inR, inB) && roundRectContains(inRR, inL, inB)
 
-	/* Device aabb of a LOCAL rect under the current affine. */
+	/** Device aabb of a LOCAL rect under the current affine. */
 	private fun deviceAabb(inL: Float, inT: Float, inR: Float, inB: Float): FloatArray {
 		val vX0 = mapX(inL, inT); val vX1 = mapX(inR, inT); val vX2 = mapX(inR, inB); val vX3 = mapX(inL, inB)
 		val vY0 = mapY(inL, inT); val vY1 = mapY(inR, inT); val vY2 = mapY(inR, inB); val vY3 = mapY(inL, inB)
@@ -301,7 +296,7 @@ internal class Sdl3Canvas(
 		)
 	}
 
-	/* If the LOCAL-space aabb stays inside every pending rounded clip, drawing
+	/** If the LOCAL-space aabb stays inside every pending rounded clip, drawing
 	   it under the already-active rect clip is correct - no mask needed.
 	   Otherwise realize the pending masks before the draw proceeds. */
 	private fun admitDraw(inL: Float, inT: Float, inR: Float, inB: Float) {
@@ -315,7 +310,7 @@ internal class Sdl3Canvas(
 		}
 	}
 
-	/* Round-shape-aware admit for drawRoundRect / drawOval / drawCircle: the
+	/** Round-shape-aware admit for drawRoundRect / drawOval / drawCircle: the
 	   tessellated geometry IS the rounded shape, so a rounded draw whose outline
 	   (expanded by half the stroke width for strokes) stays inside every pending
 	   rounded clip needs no mask. The m3 Surface idiom — clip(shape) +
@@ -356,7 +351,7 @@ internal class Sdl3Canvas(
 		}
 	}
 
-	/* Device-space "inner axis-aligned round-rect fully inside outer round-rect",
+	/** Device-space "inner axis-aligned round-rect fully inside outer round-rect",
 	   with ~half-pixel tolerance so boundary-equal geometry passes. Edges check
 	   directly; each inner corner arc is sampled at five points against the
 	   outer's (tolerance-inflated) corner ellipses. */
@@ -385,7 +380,7 @@ internal class Sdl3Canvas(
 			sampleCorner(inL + inRx, inB - inRy, -1f, +1f)         // bottom-left
 	}
 
-	/* roundRectContains with the corner ellipses inflated by [inEps] px (and the
+	/** roundRectContains with the corner ellipses inflated by [inEps] px (and the
 	   rect edges relaxed by it) — admits points ON the outline. */
 	private fun roundRectContainsEps(inRR: RoundRect, inX: Float, inY: Float, inEps: Float): Boolean {
 		if (inX < inRR.left - inEps || inX > inRR.right + inEps ||
@@ -409,7 +404,7 @@ internal class Sdl3Canvas(
 		return true
 	}
 
-	/* Convert pending clips into real offscreen mask layers (outermost first).
+	/** Convert pending clips into real offscreen mask layers (outermost first).
 
 	   Each clip realizes with its OWN push-time region (pending.region =
 	   enclosing-clip-at-push ∩ bbox), NOT the current fClip: a lazily-realized
@@ -1060,7 +1055,7 @@ internal class Sdl3Canvas(
 			Stroke(inPaint.strokeWidth, cap = inPaint.strokeCap, pathEffect = inPaint.pathEffect)
 		else Fill
 
-	/* Compose BlendMode → an SDL renderer draw blend mode. SDL natively supports a
+	/** Compose BlendMode → an SDL renderer draw blend mode. SDL natively supports a
 	   handful; the rest (Screen, Overlay, Darken, …) have no SDL equivalent and fall
 	   back to normal alpha blend. */
 	private fun sdlBlendFor(inMode: BlendMode): UInt = when (inMode) {
@@ -1075,7 +1070,7 @@ internal class Sdl3Canvas(
 		else -> SDL_BLENDMODE_BLEND
 	}
 
-	/* Runs [inEmit] (which emits geometry into the batch) under [inPaint]'s blend
+	/** Runs [inEmit] (which emits geometry into the batch) under [inPaint]'s blend
 	   mode AND colorFilter. SrcOver (and unsupported modes) stay on the normal
 	   batched path. A supported non-default mode flushes the pending batch, sets
 	   the SDL blend, emits + flushes THIS draw, then restores alpha blend — and, in
@@ -1116,7 +1111,7 @@ internal class Sdl3Canvas(
 		withBlend(paint) { prep().rectCore(brushFor(paint), Offset(left, top), Size(right - left, bottom - top), (paint.alpha * fAlpha), styleFor(paint)) }
 	}
 
-	/* The `clip(shape).background(color)` idiom: a FILL rect that fully covers
+	/** The `clip(shape).background(color)` idiom: a FILL rect that fully covers
 	   the innermost pending clip becomes a direct rounded-shape fill (with the
 	   scope's fringe AA — no offscreen mask at all). A rect fully INSIDE every
 	   pending clip draws as-is. Returns true when the draw has been emitted. */

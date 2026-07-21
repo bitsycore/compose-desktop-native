@@ -44,7 +44,7 @@ internal fun installResourcePackaging(project: Project) {
 	}
 }
 
-/* The port's desktop targets and each one's default-hierarchy source sets,
+/** The port's desktop targets and each one's default-hierarchy source sets,
    most specific first — a target-level resource overrides a commonMain one. */
 private val desktopTargets = mapOf(
 	"MingwX64" to listOf("mingwX64Main", "mingwMain", "nativeMain", "commonMain"),
@@ -107,7 +107,7 @@ private fun registerDataKresTasks(project: Project) {
 	}
 }
 
-/* The package the generated accessors carry in their resource paths —
+/** The package the generated accessors carry in their resource paths —
    compose.resources.packageOfResClass (read REFLECTIVELY: the ResourcesExtension
    class lives in the project's buildscript loader, invisible from here), or
    the Compose plugin's documented default `{group}.{module}.generated.resources`

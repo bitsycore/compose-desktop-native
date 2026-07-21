@@ -13,14 +13,14 @@ import androidx.compose.ui.platform.ClipEntry
    screens go through these four helpers; each stack maps them 1:1 onto its
    native shape. */
 
-/* A ClipEntry carrying plain text, for Clipboard.setClipEntry. */
+/** A ClipEntry carrying plain text, for Clipboard.setClipEntry. */
 expect fun demoClipEntryOfText(text: String): ClipEntry
 
-/* A ClipEntry carrying an image from already-PNG-encoded bytes. */
+/** A ClipEntry carrying an image from already-PNG-encoded bytes. */
 expect fun demoClipEntryOfPng(pngBytes: ByteArray): ClipEntry
 
-/* The entry's plain text, or null when it carries none. */
+/** The entry's plain text, or null when it carries none. */
 expect fun ClipEntry.demoPlainText(): String?
 
-/* The entry's image as PNG-encoded bytes, or null when it carries none. */
+/** The entry's image as PNG-encoded bytes, or null when it carries none. */
 expect fun ClipEntry.demoPngImage(): ByteArray?

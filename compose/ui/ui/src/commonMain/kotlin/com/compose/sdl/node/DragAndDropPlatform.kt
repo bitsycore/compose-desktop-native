@@ -6,7 +6,7 @@ import androidx.compose.ui.draganddrop.DragAndDropManager
 // MARK: DragAndDropPlatform — SDL event pump hooks
 // ==================
 
-/* Platform hooks the :window layer's event loop uses to feed SDL_EVENT_DROP_*
+/** Platform hooks the :window layer's event loop uses to feed SDL_EVENT_DROP_*
  * into a per-window DragAndDropManager. The manager instance is created here
  * (native actual: Sdl3DragAndDropOwner over the SDL drop stream); each dropX
  * extension casts to the concrete platform implementation and no-ops if the

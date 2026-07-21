@@ -8,7 +8,7 @@ import androidx.compose.ui.draganddrop.awtTransferable
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 
-/* JVM (Compose Desktop) actual: DragAndDropEvent exposes the payload through
+/** JVM (Compose Desktop) actual: DragAndDropEvent exposes the payload through
  * the AWT flavor system via the awtTransferable extension (throws when the
  * event carries no transferable — hence the runCatching). */
 

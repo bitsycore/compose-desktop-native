@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 // MARK: InteractionSource convenience
 // ==================
 
-/* Convenience around the official MutableInteractionSource() factory. Official
+/** Convenience around the official MutableInteractionSource() factory. Official
    Compose uses `remember { MutableInteractionSource() }` directly; this helper
    is a project shorthand. Lives in :foundation because it references
    androidx.compose.foundation.interaction.MutableInteractionSource. */

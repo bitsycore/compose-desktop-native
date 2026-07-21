@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 // MARK: AnimationScreen
 // ==================
 
-/* Exercises the androidx.compose.animation.core surface: animate*AsState
+/** Exercises the androidx.compose.animation.core surface: animate*AsState
    on Float / Dp / Int / Color, plus rememberInfiniteTransition for
    looping animations. */
 @Composable

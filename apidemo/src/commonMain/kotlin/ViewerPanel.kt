@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 // MARK: Response
 // ==================
 
-/* Panel 4 — Request / Response viewer. Each tab stacks a HEADERS section over a
+/** Panel 4 — Request / Response viewer. Each tab stacks a HEADERS section over a
    BODY section. "Request" shows the resolved request that would be sent (the
    Preview); "Response" shows the result (image-aware). A copy / save toolbar
    acts on whichever view is showing. */
@@ -255,7 +255,7 @@ internal fun ViewerPanel(inRs: ReqState, inResolved: ApiRequest) {
 // MARK: HttpFlowView — flat httpie-style request/response layout
 // ==================
 
-/* Renders the body of a Request or Response tab in a httpie-flavoured
+/** Renders the body of a Request or Response tab in a httpie-flavoured
    layout: status line (with collapse arrow) + headers table + raw body
    inline, no card / rounded-rect chrome around each section. The
    headers section can be collapsed via the arrow. */
@@ -629,7 +629,7 @@ internal fun HttpFlowView(
 // MARK: Body selection (editor-style, spans virtualized chunks)
 // ==================
 
-/* A response body's selection is a pair of character offsets in the whole body
+/** A response body's selection is a pair of character offsets in the whole body
    string: [anchor] is where the user pressed / started the selection, [caret] is
    where they've moved to. When they differ, the selected range is [min..max].
    When equal, it's a zero-width caret still useful as a starting point for
@@ -645,7 +645,7 @@ private data class BodySel(val anchor: Int, val caret: Int) {
     val isEmpty get() = anchor == caret
 }
 
-/* Character offset of the start of the line containing [inOffset]. */
+/** Character offset of the start of the line containing [inOffset]. */
 private fun lineStartAt(inText: String, inOffset: Int): Int {
     if (inOffset <= 0) return 0
     val vClamped = inOffset.coerceAtMost(inText.length)
@@ -653,7 +653,7 @@ private fun lineStartAt(inText: String, inOffset: Int): Int {
     return if (vPrev < 0) 0 else vPrev + 1
 }
 
-/* Character offset of the end of the line containing [inOffset] — the position of
+/** Character offset of the end of the line containing [inOffset] — the position of
    its '\n', or the length of [inText] if this is the last line. */
 private fun lineEndAt(inText: String, inOffset: Int): Int {
     val vClamped = inOffset.coerceIn(0, inText.length)
@@ -661,7 +661,7 @@ private fun lineEndAt(inText: String, inOffset: Int): Int {
     return if (vNext < 0) inText.length else vNext
 }
 
-/* Move a caret one visual "row" down while trying to keep its column — i.e. the
+/** Move a caret one visual "row" down while trying to keep its column — i.e. the
    number of chars past the current line's start. If the target line is shorter,
    the caret snaps to its end. Off-by-one at EOF collapses to the body length. */
 private fun moveDown(inText: String, inOffset: Int): Int {
@@ -674,7 +674,7 @@ private fun moveDown(inText: String, inOffset: Int): Int {
     return (vNextStart + vCol).coerceAtMost(vNextEnd)
 }
 
-/* The Up counterpart to [moveDown]. */
+/** The Up counterpart to [moveDown]. */
 private fun moveUp(inText: String, inOffset: Int): Int {
     val vLineStart = lineStartAt(inText, inOffset)
     if (vLineStart == 0) return 0
@@ -684,7 +684,7 @@ private fun moveUp(inText: String, inOffset: Int): Int {
     return (vPrevStart + vCol).coerceAtMost(vPrevEnd)
 }
 
-/* Word boundary rule for double-click selection: contiguous run of "word chars"
+/** Word boundary rule for double-click selection: contiguous run of "word chars"
    (letters, digits, underscore) containing [inOffset], or an empty range at the
    click point when it lands on non-word text (whitespace, punctuation). Matches
    the boundary editors like VS Code / IntelliJ use for double-click select. */
@@ -704,7 +704,7 @@ private fun wordRangeAt(inText: String, inOffset: Int): IntRange {
     return vStart..vEnd
 }
 
-/* The index of the chunk in [inChunks] whose character range contains
+/** The index of the chunk in [inChunks] whose character range contains
    [inOffset], or null when the body is empty. Uses a linear scan — the chunk
    count is O(body / kLinesPerChunk) which stays modest even for huge bodies. */
 private fun chunkContaining(inChunks: List<BodyChunk>, inOffset: Int): Int? {
@@ -721,7 +721,7 @@ private fun chunkContaining(inChunks: List<BodyChunk>, inOffset: Int): Int? {
 // measure at the viewport edges, large enough to slash node/selectable count.
 private const val kLinesPerChunk = 48
 
-/* One BLOCK of a read-only body: a right-aligned column of line numbers in the
+/** One BLOCK of a read-only body: a right-aligned column of line numbers in the
    gutter + the block's (syntax-coloured) text, each a single BasicText. Rendering
    blocks (not one-BasicText-per-line) keeps the node / selectable / paragraph-set-up
    count low as blocks scroll through the viewport. The gutter is pinned outside
@@ -847,7 +847,7 @@ private fun BodyChunkRow(
     }
 }
 
-/* A block of consecutive source lines: 1-based number of the first line, the line
+/** A block of consecutive source lines: 1-based number of the first line, the line
    count, each source line's start offset WITHIN the block text (to map a wrapped body
    layout back to line numbers), the character offset of the block's first char in the
    full body (used to map local text offsets to global ones for cross-chunk selection),
@@ -860,7 +860,7 @@ private class BodyChunk(
     val body: AnnotatedString,
 )
 
-/* Slice a highlighted body into blocks of [inLinesPerChunk] lines. The O(total-spans)
+/** Slice a highlighted body into blocks of [inLinesPerChunk] lines. The O(total-spans)
    subSequence runs once per block HERE (build time, memoised) instead of once per
    visible line every frame — the difference between smooth and janky on a big body. */
 private fun buildBodyChunks(inText: String, inAnn: AnnotatedString, inLinesPerChunk: Int): List<BodyChunk> {
@@ -882,7 +882,7 @@ private fun buildBodyChunks(inText: String, inAnn: AnnotatedString, inLinesPerCh
     return vOut
 }
 
-/* Offsets where each source line starts (line i spans [starts[i], starts[i+1]-1),
+/** Offsets where each source line starts (line i spans [starts[i], starts[i+1]-1),
    the -1 dropping the '\n'; the last line runs to the string end). One cheap O(n)
    scan, memoised — replaces the old gutter pre-pass that ran measurer.wrap() on
    every one of N lines on each width change (the other half of the freeze). */
@@ -893,7 +893,7 @@ private fun lineStartOffsets(inText: String): IntArray {
     return vStarts.toIntArray()
 }
 
-/* Header table: each row is (key | value) where the key column has a
+/** Header table: each row is (key | value) where the key column has a
    fixed width so values line up. Long keys wrap; long values wrap too.
    Keys render in accent colour, values in regular text. */
 @Composable
@@ -919,7 +919,7 @@ internal fun HeaderTable(inHeaders: List<Pair<String, String>>, modifier: Modifi
     }
 }
 
-/* Body view with line numbers in the gutter — mimics the code panel
+/** Body view with line numbers in the gutter — mimics the code panel
    in httpie. Numbers are dim; body text uses the regular colour. */
 @Composable
 internal fun BodyView(
@@ -1071,7 +1071,7 @@ internal fun BodyView(
     }
 }
 
-/* "Request" + colored "GET" tab. inAccent is shown next to the label
+/** "Request" + colored "GET" tab. inAccent is shown next to the label
    when non-null (e.g. method name once sent, status code once received);
    when null the tab is just the label, no placeholder dash. Selected
    tab gets full-strength labels and a 2dp underline; unselected tabs
@@ -1112,7 +1112,7 @@ internal fun ViewerTab(
 // MARK: Helpers — header parsing / formatting
 // ==================
 
-/* "HTTP/1.1   200 OK" status line for a Response, with the protocol
+/** "HTTP/1.1   200 OK" status line for a Response, with the protocol
    token dimmed (it's structural) and the status code + reason in the
    status colour. Just "HTTP/1.1" pre-response — no placeholder. Triple-
    spaced to match the request-line formatting. */
@@ -1142,7 +1142,7 @@ internal fun formatStatusLine(inResp: ApiResponse?, inColors: AppColors): Annota
     }
 }
 
-/* "GET   /path   HTTP/1.1" status line for a Request. Each part takes
+/** "GET   /path   HTTP/1.1" status line for a Request. Each part takes
    its own colour: method in its canonical method colour, URL in the
    default text colour, protocol token dimmed so the eye lands on the
    request target first. Triple-spaced so the columns read at a glance.
@@ -1166,7 +1166,7 @@ internal fun formatRequestLine(inReq: ApiRequest, inHttpVersion: String, inColor
     pop()
 }
 
-/* Pull the path (+ query) out of a URL, dropping scheme + host. The
+/** Pull the path (+ query) out of a URL, dropping scheme + host. The
    request line in HTTP is "METHOD path HTTP/x.y" — the host lives on a
    separate Host: header line, not in the path. Falls back to the input
    string when no "://" is present (relative URL). */
@@ -1178,7 +1178,7 @@ internal fun urlPathOnly(inUrl: String): String {
     return if (vSlash < 0) "/" else vAfterScheme.substring(vSlash)
 }
 
-/* Extract the host (+ port) from a URL — used to synthesize a Host
+/** Extract the host (+ port) from a URL — used to synthesize a Host
    header for display when the engine didn't surface one. */
 internal fun urlHost(inUrl: String): String? {
     val vIdx = inUrl.indexOf("://")
@@ -1189,12 +1189,12 @@ internal fun urlHost(inUrl: String): String? {
     return vAuthority.ifEmpty { null }
 }
 
-/* The user-agent string our Darwin engine sends is opaque to Ktor —
+/** The user-agent string our Darwin engine sends is opaque to Ktor —
    NSURLSession picks the default. Match what httpie does: identify
    ourselves so the wire log isn't missing the field entirely. */
 internal const val kUserAgent: String = "compose-apidemo/1.0"
 
-/* Combine Ktor's reported request headers with the ones the engine
+/** Combine Ktor's reported request headers with the ones the engine
    adds at the wire level (Host, Content-Length, User-Agent) so the
    Request tab shows the actual on-the-wire header set rather than
    just the subset Ktor sees. Sorted alphabetically. */
@@ -1216,7 +1216,7 @@ internal fun synthesizeRequestHeaders(
     return vByKey.values.sortedBy { it.first.lowercase() }
 }
 
-/* Body length in bytes for the headers synthesis. JSON / TEXT use the
+/** Body length in bytes for the headers synthesis. JSON / TEXT use the
    raw UTF-8 byte count; FORM serialises and counts; FILE skips
    (loading the file just for the count would be wasteful — the engine
    sets the field anyway). */
@@ -1226,7 +1226,7 @@ internal fun computedBodyLength(inReq: ApiRequest): Int? = when (inReq.bodyType)
     BodyType.FILE, BodyType.NONE -> null
 }
 
-/* Format the timing / size footer text shown bottom-right. */
+/** Format the timing / size footer text shown bottom-right. */
 internal fun formatTimingSize(inResp: ApiResponse): String {
     val vSize = when {
         inResp.sizeBytes < 1024 -> "${inResp.sizeBytes} B"
@@ -1240,7 +1240,7 @@ internal fun formatTimingSize(inResp: ApiResponse): String {
 // MARK: ViewerOverflowMenu — 3-dot menu in the bottom-right of the viewer
 // ==================
 
-/* Replaces the inline Copy / Save chips with a single MoreHoriz menu.
+/** Replaces the inline Copy / Save chips with a single MoreHoriz menu.
    Copy actions target whichever tab is showing (request or response);
    Clear is global — wipes the response, sentReq, preview state, and any
    memory-backed image resource for the current request. */
@@ -1338,7 +1338,7 @@ internal fun ViewerOverflowMenu(
     }
 }
 
-/* Perceptual luminance check — true when the colour reads as "dark"
+/** Perceptual luminance check — true when the colour reads as "dark"
    (background gets a light foreground). Standard Rec. 709 weights. */
 internal fun isDarkBg(inColor: Color): Boolean {
     val vY = 0.299f * inColor.red + 0.587f * inColor.green + 0.114f * inColor.blue
@@ -1349,7 +1349,7 @@ internal fun isDarkBg(inColor: Color): Boolean {
 // MARK: BodyFormatSelector — small dropdown for RAW / JSON / XML / YAML / HTML
 // ==================
 
-/* Format / "type" picker. inBordered renders it as a full dropdown matching
+/** Format / "type" picker. inBordered renders it as a full dropdown matching
    BodyTypeMenu (the Body-tab Text-type picker); otherwise it's the compact inline
    control used by the response viewer. */
 @Composable
@@ -1384,7 +1384,7 @@ internal fun BodyFormatSelector(
     }
 }
 
-/* TLS validation indicator: only true when the URL is https AND we got
+/** TLS validation indicator: only true when the URL is https AND we got
    a real response back (i.e. the OS engine completed the TLS handshake
    without an error). The engines we ship — NSURLSession on macOS,
    WinHttp on Windows, libcurl on Linux — all reject an untrusted
@@ -1397,7 +1397,7 @@ internal fun isTlsValidated(inUrl: String, inResp: ApiResponse?): Boolean {
     return inResp.status > 0
 }
 
-/* Parse "Key: value\nKey2: value2" into a list of pairs so the headers
+/** Parse "Key: value\nKey2: value2" into a list of pairs so the headers
    table renderer can lay them out as a key/value grid. */
 internal fun parseHeaderLines(inText: String): List<Pair<String, String>> {
     if (inText.isBlank() || inText == "(no headers)") return emptyList()
@@ -1407,7 +1407,7 @@ internal fun parseHeaderLines(inText: String): List<Pair<String, String>> {
     }
 }
 
-/* "content-type" → "Content-Type"; preserves single-word keys; leaves
+/** "content-type" → "Content-Type"; preserves single-word keys; leaves
    already-correct ones unchanged. */
 internal fun titleCaseHeader(inKey: String): String =
     inKey.split('-').joinToString("-") { vWord ->
@@ -1415,7 +1415,7 @@ internal fun titleCaseHeader(inKey: String): String =
         else vWord[0].uppercaseChar() + vWord.drop(1).lowercase()
     }
 
-/* Centered icon + label placeholder for the viewer (Not sent / Not received /
+/** Centered icon + label placeholder for the viewer (Not sent / Not received /
    No Body). Fills its parent unless a sized modifier is supplied. */
 @Composable
 internal fun ViewerEmpty(inIcon: Int, inText: String, inModifier: Modifier = Modifier.fillMaxSize()) {
@@ -1428,7 +1428,7 @@ internal fun ViewerEmpty(inIcon: Int, inText: String, inModifier: Modifier = Mod
     }
 }
 
-/* A labelled, read-only (selectable) code block used by the viewer sections. */
+/** A labelled, read-only (selectable) code block used by the viewer sections. */
 @Composable
 internal fun CodeSection(inLabel: String, inText: String) {
     val c = LocalAppColors.current
@@ -1456,11 +1456,11 @@ internal fun CodeSection(inLabel: String, inText: String) {
     }
 }
 
-/* Format an actual header list (key: value per line). */
+/** Format an actual header list (key: value per line). */
 internal fun headersText(inHeaders: List<Pair<String, String>>): String =
     inHeaders.joinToString("\n") { (vK, vV) -> "$vK: $vV" }.ifEmpty { "(no headers)" }
 
-/* The headers that *would* be sent — explicit enabled headers plus the inferred
+/** The headers that *would* be sent — explicit enabled headers plus the inferred
    Content-Type for the body type (unless one is already set). Used for Preview;
    a sent request shows the real headers via headersText(response.requestHeaders). */
 internal fun requestHeadersText(inReq: ApiRequest): String {
@@ -1473,7 +1473,7 @@ internal fun requestHeadersText(inReq: ApiRequest): String {
     return vLines.joinToString("\n").ifEmpty { "(no headers)" }
 }
 
-/* The body that would be sent, rendered as text for the preview. */
+/** The body that would be sent, rendered as text for the preview. */
 internal fun requestBodyText(inReq: ApiRequest): String = when (inReq.bodyType) {
     BodyType.NONE -> "(no body)"
     BodyType.TEXT -> inReq.body.ifEmpty { "(empty)" }

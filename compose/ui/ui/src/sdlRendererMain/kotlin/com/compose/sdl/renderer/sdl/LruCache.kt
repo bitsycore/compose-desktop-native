@@ -4,7 +4,7 @@ package com.compose.sdl.renderer.sdl
 // MARK: LruCache
 // ==================
 
-/* Minimal insertion-order LRU for renderer-side caches (glyph textures, icon
+/** Minimal insertion-order LRU for renderer-side caches (glyph textures, icon
    bitmaps). Backed by a LinkedHashMap; a hit re-inserts the entry so eviction
    always removes the least-recently-used one. onEvict runs for every value
    dropped (capacity eviction, overwrite, clear) — used to SDL_DestroyTexture

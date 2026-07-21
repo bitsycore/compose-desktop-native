@@ -30,7 +30,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // MARK: Request tab strip (open requests; drag a tab to reorder)
 // ==================
 
-/* Strip of open requests above the editor. Each tab is clickable to select
+/** Strip of open requests above the editor. Each tab is clickable to select
    and drag-reorderable. While dragging, the grabbed tab lifts (zIndex),
    fades, and follows the cursor via a graphicsLayer translation — its
    neighbours don't shuffle; the reorder commits on drop, to the slot whose
@@ -230,7 +230,7 @@ internal fun RequestTabStrip(
     }
 }
 
-/* Thin accent bar marking where a dragged tab will be inserted. Rendered in-flow
+/** Thin accent bar marking where a dragged tab will be inserted. Rendered in-flow
    between tabs so the Row centres it vertically and reserves a little space. */
 @Composable
 internal fun DropBar() {

@@ -38,7 +38,7 @@ private const val kLogoResourcePath = "composeResources/demo.generated.resources
 // MARK: Clipboard screen
 // ==================
 
-/* Round-trips text AND PNG images through the OS clipboard via LocalClipboard
+/** Round-trips text AND PNG images through the OS clipboard via LocalClipboard
    (suspend, ClipEntry-typed) — on native over SDL3's SDL_[GS]etClipboardText /
    SDL_[GS]etClipboardData("image/png"), on JVM over the AWT clipboard.
    ClipEntry construction/reading has NO common upstream API (each platform
@@ -204,7 +204,7 @@ internal fun ClipboardScreen() {
     }
 }
 
-/* Non-composable helper: receives the Clipboard + a CoroutineScope captured
+/** Non-composable helper: receives the Clipboard + a CoroutineScope captured
    from composition at the call site. This is the idiomatic way to reach the
    clipboard from event handlers, coroutines, or utility functions — the
    modern Clipboard is intentionally suspend-only. */

@@ -24,7 +24,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // MARK: Panel 3 — request builder (Query / Headers / Body)
 // ==================
 
-/* Tabs to edit query params, headers and the body, a Preview toggle top-right,
+/** Tabs to edit query params, headers and the body, a Preview toggle top-right,
    and a body-type dropdown pinned at the bottom. */
 @Composable
 internal fun RequestBuilder(
@@ -145,7 +145,7 @@ internal fun RequestBuilder(
     }
 }
 
-/* The body editing area for the current body type (driven by the bottom menu). A
+/** The body editing area for the current body type (driven by the bottom menu). A
    Text body is highlighted per its chosen format (bodyFormat). */
 @Composable
 internal fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
@@ -162,14 +162,14 @@ internal fun BodyContent(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest)
     }
 }
 
-/* Magic-wand button that pretty-prints the current body in place (JSON /
+/** Magic-wand button that pretty-prints the current body in place (JSON /
    XML). Lives at the right end of the body type/format bar. */
 @Composable
 internal fun FormatButton(inOnClick: () -> Unit) {
     HoverIconBtn(MaterialSymbols.AutoFixHigh, "Format (pretty-print)", inOnClick)
 }
 
-/* Icon button with the toolbar's standard hover treatment — accent-tinted
+/** Icon button with the toolbar's standard hover treatment — accent-tinted
    background + accent icon on hover (matching the TLS chain button). inActive
    keeps it lit, for toggles such as the preview eye. */
 @Composable
@@ -208,7 +208,7 @@ internal fun HoverIconBtn(
     }
 }
 
-/* Tab-size picker (2 / 4 / 8), shown left of the format button. Sets the global
+/** Tab-size picker (2 / 4 / 8), shown left of the format button. Sets the global
    editor tab width via TextLayoutConfig — how wide a typed '\t' renders AND how
    deep the formatter indents. Snapshot-backed, so the change is live. */
 @Composable
@@ -248,7 +248,7 @@ internal fun TabSizeSelector() {
     }
 }
 
-/* FILE body — pick a file; its path is stored in body and sent as raw bytes. */
+/** FILE body — pick a file; its path is stored in body and sent as raw bytes. */
 @Composable
 internal fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
     val c = LocalAppColors.current
@@ -261,7 +261,7 @@ internal fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) ->
     }
 }
 
-/* Client-certificate (mTLS) editor — certificate + optional separate key +
+/** Client-certificate (mTLS) editor — certificate + optional separate key +
    passphrase. PEM/DER are used directly by OpenSSL on macOS/Linux; on Windows
    they're imported into the certificate store for the request then removed
    (see CurlMtls). PKCS#12 bundles its own private key. */
@@ -317,7 +317,7 @@ internal fun CertConfigEditor(inCert: CertConfig, inHeading: String = "Client ce
     }
 }
 
-/* A read-only card for an inherited client cert: its source pill + path, plus an
+/** A read-only card for an inherited client cert: its source pill + path, plus an
    Override action (copy it into this scope) when this scope hasn't set its own. */
 @Composable
 internal fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, inReadOnly: Boolean, inOnOverride: () -> Unit) {
@@ -341,7 +341,7 @@ internal fun InheritedCertCard(inInherited: InheritedCert, inOwnSet: Boolean, in
     }
 }
 
-/* The request's Cert tab: the inherited cert (from pack / session) shown read-only
+/** The request's Cert tab: the inherited cert (from pack / session) shown read-only
    with its source + an Override action when the request has none, then the
    request's own cert editor (its own cert overrides the inherited one). */
 @Composable
@@ -354,7 +354,7 @@ internal fun RequestCertTab(inReq: ApiRequest, inInheritedCert: InheritedCert?, 
     }
 }
 
-/* Scope settings editor (Variables / Query / Headers / Cert sub-tabs) — shared by
+/** Scope settings editor (Variables / Query / Headers / Cert sub-tabs) — shared by
    the session settings tab and each pack's settings tab. Each sub-tab shows what
    the scope inherits from above (source-tagged, with Override) over its own
    editable list, mirroring the request panels. */
@@ -414,7 +414,7 @@ internal fun ScopeSettings(
     }
 }
 
-/* Certificate / key encoding dropdown (PEM / DER / PKCS#12). */
+/** Certificate / key encoding dropdown (PEM / DER / PKCS#12). */
 @Composable
 internal fun CertFormatMenu(inFormat: CertFormat, inOnPick: (CertFormat) -> Unit) {
     val c = LocalAppColors.current

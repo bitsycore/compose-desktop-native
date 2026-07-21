@@ -88,7 +88,7 @@ abstract class ComposeDesktopNativeExtension {
 	}
 }
 
-/* Grafts the `native` extension onto the Compose plugin's `desktop` extension
+/** Grafts the `native` extension onto the Compose plugin's `desktop` extension
    (extensions are ExtensionAware, so this needs no compile-time dependency)
    and materialises the executables in afterEvaluate. All KGP access is
    reflective: applied from settings, this plugin's classloader is a PARENT of
@@ -146,7 +146,7 @@ private fun configureNativeExecutables(project: Project, ext: ComposeDesktopNati
 	}
 }
 
-/* Adds the windres icon-resource object (produced by
+/** Adds the windres icon-resource object (produced by
    compileComposeNativeIconResource, wired as a link dependency in
    installAppIcon) to the linker options of EVERY mingw executable — the ones
    `native { entryPoint }` just created AND hand-configured

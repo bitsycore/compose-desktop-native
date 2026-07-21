@@ -12,7 +12,7 @@ import com.compose.sdl.graphics.NativePainterCanvas
 // MARK: ResourcePainter
 // ==================
 
-/*
+/**
  A [Painter] that references a bundled resource by path + kind. The active
  RenderBackend decodes + caches + paints the resource; ResourcePainter carries
  no bitmap data itself. Constructed by `painterResource(...)` and the

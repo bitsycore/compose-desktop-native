@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 // MARK: InteractionSourceScreen
 // ==================
 
-/* Demonstrates InteractionSource: a single source receives Press / Hover
+/** Demonstrates InteractionSource: a single source receives Press / Hover
    events from clickable + hoverable, and visual feedback is wired off the
    source's state-backed booleans (collectIsPressedAsState /
    collectIsHoveredAsState) with animateColorAsState smoothing. */

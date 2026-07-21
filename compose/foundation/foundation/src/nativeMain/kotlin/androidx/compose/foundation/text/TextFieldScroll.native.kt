@@ -10,7 +10,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 // MARK: TextFieldScroll — native actuals
 // ==================
 
-/*
+/**
  Byte-identical mirror of upstream desktopMain — no overscroll on desktop,
  textFieldScroll delegates to `defaultTextFieldScroll` (a private helper in
  the vendored `TextFieldScroll.kt`).

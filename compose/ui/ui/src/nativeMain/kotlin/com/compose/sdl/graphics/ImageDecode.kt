@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 // MARK: Encoded-image decode hook (renderer-provided)
 // ==================
 
-/* Decodes an ENCODED image (png / jpg / webp / bmp / gif / svg bytes) into a
+/** Decodes an ENCODED image (png / jpg / webp / bmp / gif / svg bytes) into a
    drawable [ImageBitmap]. The active renderer registers its implementation at
    backend construction — the SDL backend goes through SDL3_image
    (Sdl3EncodedImageDecoder), the Skia backend through Image.makeFromEncoded /
@@ -20,7 +20,7 @@ interface EncodedImageDecoder {
 	fun decode(inBytes: ByteArray): ImageBitmap?
 }
 
-/* Volatile: written by the render backend on the main thread, read by the
+/** Volatile: written by the render backend on the main thread, read by the
    resources pipeline on Dispatchers.Default workers. */
 @kotlin.concurrent.Volatile
 var encodedImageDecoder: EncodedImageDecoder? = null

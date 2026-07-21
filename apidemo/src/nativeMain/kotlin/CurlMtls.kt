@@ -21,7 +21,7 @@ import kotlin.time.TimeSource
 // from HttpRunner.run(); cancellation is best-effort (an in-flight perform can't
 // be interrupted — the result is simply discarded if the caller cancelled).
 
-/* A client certificate readied for libcurl: the CURLOPT_SSLCERT value plus the
+/** A client certificate readied for libcurl: the CURLOPT_SSLCERT value plus the
    other SSL options to set, and a cleanup to run once the request is done.
    macOS/Linux (OpenSSL) just point curl at the files. Windows (Schannel) imports
    the cert + key into CurrentUser\MY, references it by SHA-1 thumbprint, and the
@@ -35,7 +35,7 @@ class PreparedCert(
 	val cleanup: () -> Unit,
 )
 
-/* Ready the request's client certificate for libcurl (platform-specific).
+/** Ready the request's client certificate for libcurl (platform-specific).
    Throws with a user-facing message if the cert/key can't be loaded. */
 expect fun prepareClientCert(inReq: ApiRequest): PreparedCert
 
@@ -44,17 +44,17 @@ expect fun prepareClientCert(inReq: ApiRequest): PreparedCert
 // consumes them from shared code; the per-OS ClientCert*.kt actuals below the
 // native tree actualize sweepTempClientCerts directly.
 
-/* Continue a server-presented chain with its issuer(s). Where possible the
+/** Continue a server-presented chain with its issuer(s). Where possible the
    issuer is resolved from the OS certificate store with full info; otherwise the
    chain ends with a name-only placeholder. Every derived (non-server) cert is
    flagged fromServer = false. Platform-specific (OS store on Windows). */
 expect fun extendChain(inServerCerts: List<List<Pair<String, String>>>): List<ChainCert>
 
-/* A CURLINFO_CERTINFO field by name (case-insensitive). */
+/** A CURLINFO_CERTINFO field by name (case-insensitive). */
 internal fun certFieldOf(inFields: List<Pair<String, String>>, inName: String): String? =
 	inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
 
-/* Server certs as ChainCerts; if the last one isn't self-signed, append a
+/** Server certs as ChainCerts; if the last one isn't self-signed, append a
    dotted, name-only issuer so the chain visibly continues. The cross-platform
    fallback when the OS store can't (or isn't able to) resolve the real issuer. */
 internal fun serverChainWithIssuerName(inServer: List<List<Pair<String, String>>>): List<ChainCert>
@@ -71,14 +71,14 @@ internal fun serverChainWithIssuerName(inServer: List<List<Pair<String, String>>
 	return vOut
 	}
 
-/* Per-transfer accumulators handed to the C callbacks through a StableRef. */
+/** Per-transfer accumulators handed to the C callbacks through a StableRef. */
 private class CurlSink
 	{
 	val body = Buffer()                 // response body bytes (already decompressed by curl)
 	val headerRaw = StringBuilder()     // raw response header lines, all responses incl. redirects
 	}
 
-/* Body write callback — appends each chunk to the sink's buffer. */
+/** Body write callback — appends each chunk to the sink's buffer. */
 @OptIn(ExperimentalForeignApi::class)
 private fun onCurlBody(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: size_t, inUserdata: COpaquePointer): size_t
 	{
@@ -88,7 +88,7 @@ private fun onCurlBody(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: siz
 	return vLen.convert()
 	}
 
-/* Header callback — one parsed header line per call; accumulated for parsing. */
+/** Header callback — one parsed header line per call; accumulated for parsing. */
 @OptIn(ExperimentalForeignApi::class)
 private fun onCurlHeader(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: size_t, inUserdata: COpaquePointer): size_t
 	{
@@ -98,13 +98,13 @@ private fun onCurlHeader(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: s
 	return vLen.convert()
 	}
 
-/* Sink callback that discards everything (used by the TLS-chain probe so the
+/** Sink callback that discards everything (used by the TLS-chain probe so the
    response body/headers don't spill to stdout). */
 @OptIn(ExperimentalForeignApi::class)
 private fun onCurlDiscard(inBuffer: CPointer<ByteVar>, inSize: size_t, inCount: size_t, inUserdata: COpaquePointer): size_t =
 	(inSize * inCount)
 
-/* Open a TLS connection to the request's URL (handshake only — no body) and
+/** Open a TLS connection to the request's URL (handshake only — no body) and
    return the server's certificate chain via CURLINFO_CERTINFO. Reuses the
    request's client certificate if it has one (so mTLS endpoints work too).
    inReq is already var-resolved. */
@@ -143,7 +143,7 @@ actual fun inspectTlsChain(inReq: ApiRequest): TlsChain
 		}
 	}
 
-/* Read CURLINFO_CERTINFO off a performed handle into per-cert field lists. */
+/** Read CURLINFO_CERTINFO off a performed handle into per-cert field lists. */
 @OptIn(ExperimentalForeignApi::class)
 private fun readCertInfo(inCurl: COpaquePointer): List<List<Pair<String, String>>> = memScoped {
 	val vPtr = alloc<COpaquePointerVar>()
@@ -171,7 +171,7 @@ private fun readCertInfo(inCurl: COpaquePointer): List<List<Pair<String, String>
 	vResult
 }
 
-/* Send a client-certificate request through libcurl and adapt the result into
+/** Send a client-certificate request through libcurl and adapt the result into
    the same ApiResponse the Ktor path produces. inReq is already var-resolved. */
 @OptIn(ExperimentalForeignApi::class)
 actual fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
@@ -280,11 +280,11 @@ actual fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse
 		}
 	}
 
-/* A failed-request ApiResponse with a message (mirrors HttpRunner's catch). */
+/** A failed-request ApiResponse with a message (mirrors HttpRunner's catch). */
 private fun errorResponse(inMessage: String, inMs: Long): ApiResponse =
 	ApiResponse(ok = false, status = 0, statusText = "—", timeMs = inMs, sizeBytes = 0, headers = emptyList(), body = "", error = inMessage)
 
-/* The encoded body for the request's body type, with the Content-Type curl
+/** The encoded body for the request's body type, with the Content-Type curl
    should send (null when there's no body). Mirrors HttpRunner.run(). */
 private class CurlBody(val contentType: String?, val bytes: ByteArray)
 
@@ -300,7 +300,7 @@ private fun requestBodyBytes(inReq: ApiRequest): CurlBody?
 		}
 	}
 
-/* Parse libcurl's accumulated raw header text into ordered key/value pairs,
+/** Parse libcurl's accumulated raw header text into ordered key/value pairs,
    keeping only the final response's block (a new "HTTP/" status line — emitted
    per redirect hop — resets what we've gathered). */
 private fun parseRawHeaders(inRaw: String): List<Pair<String, String>>
@@ -318,7 +318,7 @@ private fun parseRawHeaders(inRaw: String): List<Pair<String, String>>
 	return vCurrent.sortedBy { it.first.lowercase() }
 	}
 
-/* libcurl's CURLINFO_HTTP_VERSION code → a human protocol string. */
+/** libcurl's CURLINFO_HTTP_VERSION code → a human protocol string. */
 @OptIn(ExperimentalForeignApi::class)
 private fun httpVersionName(inCode: Long): String = when (inCode)
 	{

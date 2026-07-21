@@ -15,7 +15,7 @@ import sdl3.*
 // MARK: SkiaSurfaceBridge
 // ==================
 
-/* Owns the CPU pixel buffer Skia draws into, plus the streaming SDL_Texture
+/** Owns the CPU pixel buffer Skia draws into, plus the streaming SDL_Texture
    used to push that buffer onto the window. All three (buffer, Skia surface,
    SDL texture) get reallocated when the window resizes. */
 class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
@@ -68,7 +68,7 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
         return true
     }
 
-    /* Skia → SDL_Texture → screen, once per frame. */
+    /** Skia → SDL_Texture → screen, once per frame. */
     override fun present() {
         val vRenderer = backend.renderer ?: return
         val vTexture = fTexture ?: return
@@ -83,7 +83,7 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
 
     override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
 
-    /* CPU bridge already has the raw pixels in fPixels (RGBA8888 premul).
+    /** CPU bridge already has the raw pixels in fPixels (RGBA8888 premul).
        Repack to BGRA so we share one BMP writer with the GPU bridges. */
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? {
         val vPixels = fPixels ?: return null

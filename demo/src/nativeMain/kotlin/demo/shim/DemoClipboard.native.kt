@@ -2,7 +2,7 @@ package demo.shim
 
 import androidx.compose.ui.platform.ClipEntry
 
-/* Native actuals: 1:1 onto the port's ClipEntry, which mirrors upstream's
+/** Native actuals: 1:1 onto the port's ClipEntry, which mirrors upstream's
    macOS actual (withPlainText / getPlainText) extended with the PNG image
    path (withImage / getImage over SDL_[GS]etClipboardData "image/png"). */
 

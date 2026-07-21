@@ -4,7 +4,7 @@ package com.compose.sdl.renderer.skia
 // MARK: SkiaLeafDrawer — port text/image renderers behind the upstream canvas (B6.1)
 // ==================
 
-/* The Skia leg draws through upstream's `SkiaBackedCanvas` (real gradients/paint/
+/** The Skia leg draws through upstream's `SkiaBackedCanvas` (real gradients/paint/
    shader), but keeps the port's text engine (`SkiaTextRenderer`, incl. the P3.1
    metric work) and resource-image cache (`SkiaImageCache`). `SkiaBackedCanvas` is
    manual-vendored to implement the port `NativeTextCanvas`/`NativePainterCanvas`

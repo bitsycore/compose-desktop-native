@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 // MARK: ContextMenu — native actuals
 // ==================
 
-/*
+/**
  Mirrors upstream macosMain / desktopMain / iosMain — all three overloads
  delegate to CommonContextMenuArea (vendored). This unblocks vendored
  BasicTextField / SelectionContainer / CoreTextField call sites.

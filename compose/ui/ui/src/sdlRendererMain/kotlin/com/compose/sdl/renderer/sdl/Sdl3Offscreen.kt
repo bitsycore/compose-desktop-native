@@ -40,7 +40,7 @@ private class SdlBitmapHandles(
 	var surface: CPointer<SDL_Surface>?,
 )
 
-/* Enqueue destruction of the handles' current contents on the main thread
+/** Enqueue destruction of the handles' current contents on the main thread
    (SDL calls aren't thread-safe; the Cleaner runs on a GC worker). Idempotent:
    clears the fields so a second call frees nothing. Top-level so the Cleaner
    block never captures the bitmap. */
@@ -109,7 +109,7 @@ internal class SdlImageBitmap(
 			return fHandles.texture
 		}
 
-	/* Free the texture/surface now (deferred to the main thread). Call on
+	/** Free the texture/surface now (deferred to the main thread). Call on
 	   cache eviction / removeMemoryResource so native memory releases promptly
 	   instead of waiting for a GC. The Cleaner remains as a backstop. */
 	fun close() = enqueueRelease(fHandles)
@@ -169,7 +169,7 @@ internal class Sdl3OffscreenRenderer(
 		)
 	}
 
-	// Phase 4: a capture canvas records shape geometry into [list] and touches NO GPU
+	// A capture canvas records shape geometry into [list] and touches NO GPU
 	// (text/image/clip mark the list unsupported). Used by SdlDisplayListRenderNode to
 	// record a leaf's layer-local geometry. No render target — no timing nondeterminism.
 	internal fun createCaptureCanvas(list: SdlDisplayList, size: Size): Sdl3Canvas =
@@ -180,7 +180,7 @@ internal class Sdl3OffscreenRenderer(
 // MARK: Sdl3EncodedImageDecoder — encoded bytes → drawable ImageBitmap
 // ==================
 
-/* Registered on the com.compose.sdl.graphics decode hook; backs
+/** Registered on the com.compose.sdl.graphics decode hook; backs
    :components-resources' painterResource / SVG path on the SDL renderer.
    IMG_Load_IO auto-detects the container (png/jpg/bmp/gif/webp/svg — SVG is
    rasterised at its intrinsic size). Decoded surfaces carry STRAIGHT alpha,

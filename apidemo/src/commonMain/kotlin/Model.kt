@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 // MARK: Pack model (serialized to / from .json)
 // ==================
 
-/* A "pack" is a savable collection of requests plus its environment variables
+/** A "pack" is a savable collection of requests plus its environment variables
    — the export/import unit. Variables are referenced as {{name}} in any URL,
    query value, header or body and substituted just before the request is sent
    (see resolveVars in Tools.kt). Packs may be empty; the rich starter set lives
@@ -26,7 +26,7 @@ data class Pack(
     val subPacks: List<Pack> = emptyList(),    // nested packs (a pack tree)
 )
 
-/* A client-certificate (mutual TLS) configuration. Lives on a request today and
+/** A client-certificate (mutual TLS) configuration. Lives on a request today and
    — with the pack tree — on the session / packs too (inherited downward). Maps
    to libcurl's CURLOPT_SSLCERT / SSLCERTTYPE / SSLKEY / SSLKEYTYPE / KEYPASSWD. */
 @Serializable
@@ -38,7 +38,7 @@ data class CertConfig(
     val certPassword: String = "",
 )
 
-/* The starter SESSION loaded on first launch (and on demand from the session
+/** The starter SESSION loaded on first launch (and on demand from the session
    menu) — a guided tour of every feature against httpbin.org: the inheritance
    ladder (session → pack → sub-pack → request, for variables / query params /
    headers / client cert, innermost wins), loose root requests, a nested sub-pack,
@@ -159,24 +159,24 @@ data class ApiRequest(
     val certPassword: String = "",
 )
 
-/* Whether this request carries a client certificate (and so is sent via the
+/** Whether this request carries a client certificate (and so is sent via the
    libcurl mTLS path rather than the default engine). */
 val ApiRequest.hasClientCert: Boolean
     get() = certPath.isNotBlank()
 
-/* This request's cert fields as a CertConfig (certPath may be blank = none). */
+/** This request's cert fields as a CertConfig (certPath may be blank = none). */
 fun ApiRequest.certConfig(): CertConfig = CertConfig(certPath, certFormat, keyPath, keyFormat, certPassword)
 
-/* This request with its cert fields replaced by inCert's. */
+/** This request with its cert fields replaced by inCert's. */
 fun ApiRequest.withCert(inCert: CertConfig): ApiRequest =
     copy(certPath = inCert.certPath, certFormat = inCert.certFormat,
         keyPath = inCert.keyPath, keyFormat = inCert.keyFormat, certPassword = inCert.certPassword)
 
-/* True when this config actually selects a certificate. */
+/** True when this config actually selects a certificate. */
 val CertConfig.isSet: Boolean
     get() = certPath.isNotBlank()
 
-/* Certificate / private-key encodings, mapped to libcurl's CURLOPT_SSLCERTTYPE
+/** Certificate / private-key encodings, mapped to libcurl's CURLOPT_SSLCERTTYPE
    / CURLOPT_SSLKEYTYPE string values and to `curl --cert-type` / `--key-type`.
    Runtime support depends on the TLS backend: OpenSSL (macOS/Linux) handles all
    three; Schannel (Windows) effectively supports P12. */
@@ -187,14 +187,14 @@ enum class CertFormat(val curlName: String, val label: String) {
     PKCS12("P12", "PKCS#12"),
 }
 
-/* A toggleable key/value row, used for both query params and headers. */
+/** A toggleable key/value row, used for both query params and headers. */
 @Serializable
 data class KeyVal(val key: String = "", val value: String = "", val enabled: Boolean = true)
 
 @Serializable
 enum class ReqMethod { GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS }
 
-/* HTTP doesn't forbid a body on GET / HEAD / OPTIONS — RFC 7230 §3.3
+/** HTTP doesn't forbid a body on GET / HEAD / OPTIONS — RFC 7230 §3.3
    leaves it as "SHOULD NOT" / server discretion. Many APIs use a body
    on GET (Elasticsearch search, GraphQL queries) so we don't gate it
    here; the UI just sets bodyType=NONE by default for those methods. */
@@ -204,7 +204,7 @@ val ReqMethod.allowsBody: Boolean
 @Serializable
 enum class BodyType { NONE, TEXT, FORM, FILE }
 
-/* Title-case label for the body-type picker. */
+/** Title-case label for the body-type picker. */
 val BodyType.label: String
     get() = when (this) {
         BodyType.NONE -> "None"
@@ -213,7 +213,7 @@ val BodyType.label: String
         BodyType.FILE -> "File"
     }
 
-/* The Content-Type the request body implies (null when there's no body). For a
+/** The Content-Type the request body implies (null when there's no body). For a
    TEXT body it comes from the chosen format (Text→text/plain, JSON→application/
    json, …); FORM / FILE are fixed. Sent unless the request already sets one. */
 fun ApiRequest.bodyContentType(): String? = when (bodyType) {
@@ -242,6 +242,6 @@ class ApiResponse(
     val error: String? = null,
 )
 
-/* True when the response carries an image payload (rendered, not shown as text). */
+/** True when the response carries an image payload (rendered, not shown as text). */
 val ApiResponse.isImage: Boolean
     get() = contentType?.startsWith("image/", ignoreCase = true) == true

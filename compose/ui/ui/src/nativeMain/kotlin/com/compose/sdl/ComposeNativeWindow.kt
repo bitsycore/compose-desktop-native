@@ -20,7 +20,7 @@ import sdl3.SDL_SetWindowTitle
 // MARK: ComposeNativeWindow
 // ==================
 
-/* Reactive handle on the SDL3 window backing this composition.
+/** Reactive handle on the SDL3 window backing this composition.
    composeWindow's content lambda gets one via the ComposeWindowScope
    receiver and the LocalComposeNativeWindow CompositionLocal, so deep
    composables can read state (width, title, …) and act on the window
@@ -48,10 +48,10 @@ class ComposeNativeWindow constructor(
     // ============
     //  State
 
-    /* Logical (point) width — the same units layout uses. */
+    /** Logical (point) width — the same units layout uses. */
     val width: Int get() = fWidth
     val height: Int get() = fHeight
-    /* Physical (pixel) back-buffer size; on Retina this is `width * pixelDensity`. */
+    /** Physical (pixel) back-buffer size; on Retina this is `width * pixelDensity`. */
     val pixelWidth: Int get() = fPixelWidth
     val pixelHeight: Int get() = fPixelHeight
     val title: String get() = fTitle
@@ -59,11 +59,11 @@ class ComposeNativeWindow constructor(
     val isMaximized: Boolean get() = fMaximized
     val isFullscreen: Boolean get() = fFullscreen
     val pixelDensity: Float get() = backend.pixelDensity
-    /* Frames per second, refreshed ~once a second by the render loop. Snapshot-
+    /** Frames per second, refreshed ~once a second by the render loop. Snapshot-
        backed, so reading it in a composable recomposes when it changes. */
     val fps: Int get() = fFps
 
-    /* Human-readable name of the rendering pipeline:
+    /** Human-readable name of the rendering pipeline:
         "Skia / Metal", "Skia / OpenGL", "Skia / CPU"
         "SDL3 / metal", "SDL3 / opengl", "SDL3 / direct3d11", …
        For SDL3 we ask the live SDL_Renderer what driver it actually
@@ -91,7 +91,7 @@ class ComposeNativeWindow constructor(
         fTitle = inTitle
     }
 
-    /* Logical size in points — SDL fires AppEvent.WindowResized which
+    /** Logical size in points — SDL fires AppEvent.WindowResized which
        updates the size getters via onResized(). */
     fun setSize(inWidth: Int, inHeight: Int) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
@@ -125,7 +125,7 @@ class ComposeNativeWindow constructor(
         SDL_RaiseWindow(vWindow)
     }
 
-    /* Asks composeWindow's main loop to break out at the next frame.
+    /** Asks composeWindow's main loop to break out at the next frame.
        Same effect as the user closing the window via the OS. Bypasses any
        onCloseRequest handler — this is the "really quit now" path. */
     fun close() { fCloseRequested = true }
@@ -135,7 +135,7 @@ class ComposeNativeWindow constructor(
 
     private var fOnCloseRequest: (() -> Boolean)? = null
 
-    /* Register a handler invoked when the user tries to close the window (OS
+    /** Register a handler invoked when the user tries to close the window (OS
        close button / Quit). Return true to let the close proceed, false to veto
        it (e.g. to show an "unsaved changes" dialog first, then call close()
        once the user confirms). Pass null to clear. */
@@ -146,7 +146,7 @@ class ComposeNativeWindow constructor(
 
     private var fOnKeyShortcut: ((KeyEvent) -> Boolean)? = null
 
-    /* Register a handler for key events the focused node didn't consume — for
+    /** Register a handler for key events the focused node didn't consume — for
        app-wide shortcuts (Ctrl+S, etc.). Receives every unconsumed key (and all
        keys when nothing is focused). Return true if handled. Pass null to clear. */
     fun setOnKeyShortcut(inHandler: ((KeyEvent) -> Boolean)?) { fOnKeyShortcut = inHandler }
@@ -163,16 +163,16 @@ class ComposeNativeWindow constructor(
         fPixelHeight = backend.pixelHeight
     }
 
-    /* Called by the main loop ~once a second with the measured frame rate. */
+    /** Called by the main loop ~once a second with the measured frame rate. */
     fun updateFps(inFps: Int) { fFps = inFps }
 
     val isCloseRequested: Boolean get() = fCloseRequested
 
-    /* Driven by composeWindow's main loop on an OS close / Quit event. Returns
+    /** Driven by composeWindow's main loop on an OS close / Quit event. Returns
        true if the close should proceed (no handler, or the handler allowed it). */
     fun requestCloseFromUser(): Boolean = fOnCloseRequest?.invoke() ?: true
 
-    /* Driven by composeWindow's main loop for keys the focused node didn't
+    /** Driven by composeWindow's main loop for keys the focused node didn't
        consume. Returns true if the shortcut handler handled it. */
     fun dispatchKeyShortcut(inEvent: KeyEvent): Boolean = fOnKeyShortcut?.invoke(inEvent) ?: false
 }
@@ -181,7 +181,7 @@ class ComposeNativeWindow constructor(
 // MARK: Scope + CompositionLocal
 // ==================
 
-/* Receiver scope handed to composeWindow's content lambda so the root
+/** Receiver scope handed to composeWindow's content lambda so the root
    composable can write `window.setTitle(...)` directly. Deep children
    pull the same instance via LocalComposeNativeWindow.current. */
 interface ComposeWindowScope {

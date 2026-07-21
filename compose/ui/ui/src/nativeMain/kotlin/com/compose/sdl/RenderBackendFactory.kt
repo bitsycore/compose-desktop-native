@@ -16,9 +16,9 @@ package com.compose.sdl
    nativeMain metadata self-contained, which lets the WINDOWS publish job —
    the only host that declares every target — produce the root modules. */
 
-/* Create the render backend for the selected [GpuMode]; null when the
+/** Create the render backend for the selected [GpuMode]; null when the
    backend can't initialise (caller falls back / reports). */
 expect fun createRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend?
 
-/* The renderer module's per-OS default GpuMode (used for GpuMode.Auto). */
+/** The renderer module's per-OS default GpuMode (used for GpuMode.Auto). */
 expect fun rendererPreferredGpuMode(): GpuMode

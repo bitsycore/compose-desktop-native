@@ -4,7 +4,7 @@ package androidx.compose.ui.graphics
 // MARK: PathEffect — SDL3 renderer no-op actuals
 // ==================
 
-/*
+/**
  * SDL3 counterpart of upstream `SkiaBackedPathEffect.skiko.kt` (vendored into
  * `vendor/skikoRenderer/`). SDL3 has no path-effect pipeline, so corner/chain/
  * stamped return a shared no-op marker. Dash IS honoured: it carries its pattern

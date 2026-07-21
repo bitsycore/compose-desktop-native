@@ -12,7 +12,7 @@ import org.jetbrains.skia.Surface
 // MARK: GPU surface pixel readback
 // ==================
 
-/* Allocates a host Bitmap with BGRA8888 layout and asks Skia to copy the
+/** Allocates a host Bitmap with BGRA8888 layout and asks Skia to copy the
    given GPU Surface's pixels into it. Returns (w, h, bytes) on success.
 
    Returns null if anything along the way fails: the Surface may not yet

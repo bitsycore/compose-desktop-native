@@ -174,7 +174,7 @@ private fun installBridge(project: Project) {
 	}
 }
 
-/* The plugin's own version + the Compose versions it tracks, stamped into a
+/** The plugin's own version + the Compose versions it tracks, stamped into a
    resource at build time (from the version catalog). `version` is the plugin's
    own release; the rest are the official CMP versions the port's vendored
    sources build against. */

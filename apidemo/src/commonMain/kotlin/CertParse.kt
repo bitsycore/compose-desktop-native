@@ -12,7 +12,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 // to fill in the detail. Just enough ASN.1 to walk a Certificate; anything odd
 // is swallowed and the field is simply omitted.
 
-/* Parsed certificate detail, all nullable/empty when not found or unparseable. */
+/** Parsed certificate detail, all nullable/empty when not found or unparseable. */
 class CertDetails(
 	val version: Int?,                 // X.509 version (1/2/3)
 	val serial: String?,               // colon-separated hex
@@ -44,7 +44,7 @@ private class DerReader(val b: ByteArray, var pos: Int, val end: Int)
 		}
 	}
 
-/* Parse the PEM into the fields the chain dialog shows. Returns null on any
+/** Parse the PEM into the fields the chain dialog shows. Returns null on any
    structural surprise (the UI just falls back to whatever the backend gave). */
 fun parseCertDetails(inPem: String): CertDetails?
 	{
@@ -98,7 +98,7 @@ private fun pemToDer(inPem: String): ByteArray?
 	return try { Base64.decode(vBody) } catch (e: Throwable) { null }
 	}
 
-/* The friendly name (or dotted OID) of the first child OID of a SEQUENCE — used
+/** The friendly name (or dotted OID) of the first child OID of a SEQUENCE — used
    for signatureAlgorithm and subjectPublicKeyInfo's AlgorithmIdentifier. */
 private fun firstOidName(inB: ByteArray, inSeq: IntArray): String?
 	{
@@ -108,7 +108,7 @@ private fun firstOidName(inB: ByteArray, inSeq: IntArray): String?
 	return oidName(oidToString(inB, vOid[1], vOid[2]))
 	}
 
-/* Pull dNSName entries out of the SubjectAltName extension under [3]. */
+/** Pull dNSName entries out of the SubjectAltName extension under [3]. */
 private fun parseSans(inB: ByteArray, inExt3: IntArray, inOut: MutableList<String>)
 	{
 	val vSeq = DerReader(inB, inExt3[1], inExt3[2]).next()               // SEQUENCE OF Extension
@@ -138,7 +138,7 @@ private fun parseSans(inB: ByteArray, inExt3: IntArray, inOut: MutableList<Strin
 		}
 	}
 
-/* ASN.1 UTCTime (YYMMDD…) / GeneralizedTime (YYYYMMDD…) → readable UTC string. */
+/** ASN.1 UTCTime (YYMMDD…) / GeneralizedTime (YYYYMMDD…) → readable UTC string. */
 private fun parseAsn1Time(inB: ByteArray, inTlv: IntArray): String?
 	{
 	val vS = inB.copyOfRange(inTlv[1], inTlv[2]).decodeToString()
@@ -162,11 +162,11 @@ private fun parseAsn1Time(inB: ByteArray, inTlv: IntArray): String?
 	catch (e: Throwable) { vS }
 	}
 
-/* Colon-separated hex of a byte range (serial number rendering). */
+/** Colon-separated hex of a byte range (serial number rendering). */
 private fun bytesToHex(inB: ByteArray, inFrom: Int, inTo: Int): String =
 	(inFrom until inTo).joinToString(":") { (inB[it].toInt() and 0xFF).toString(16).padStart(2, '0') }
 
-/* Decode an OID's content bytes to dotted-decimal. */
+/** Decode an OID's content bytes to dotted-decimal. */
 private fun oidToString(inB: ByteArray, inFrom: Int, inTo: Int): String
 	{
 	if (inTo <= inFrom) return ""
@@ -183,7 +183,7 @@ private fun oidToString(inB: ByteArray, inFrom: Int, inTo: Int): String
 	return vSb.toString()
 	}
 
-/* Friendly name for the common signature / public-key OIDs, else the OID. */
+/** Friendly name for the common signature / public-key OIDs, else the OID. */
 private fun oidName(inOid: String): String = when (inOid)
 	{
 	"1.2.840.113549.1.1.1" -> "RSA"

@@ -10,14 +10,14 @@ import kotlinx.serialization.Serializable
 // MARK: BodyFormat — viewer/highlighter selection
 // ==================
 
-/* Format of a body payload as shown in the viewer, and (for a TEXT request body)
+/** Format of a body payload as shown in the viewer, and (for a TEXT request body)
    the type the user picks on the right of the Body tab — it drives both syntax
    highlighting and the sent Content-Type. RAW disables highlighting and falls back
    to the selectable BasicTextField; other values pick a tokeniser. */
 @Serializable
 enum class BodyFormat { RAW, JSON, XML, YAML, HTML }
 
-/* Short label for the format / "type" picker (RAW = plain text, no highlighting). */
+/** Short label for the format / "type" picker (RAW = plain text, no highlighting). */
 val BodyFormat.label: String
 	get() = when (this) {
 		BodyFormat.RAW -> "RAW"
@@ -27,7 +27,7 @@ val BodyFormat.label: String
 		BodyFormat.HTML -> "HTML"
 	}
 
-/* The Content-Type a TEXT body of this format is sent with. */
+/** The Content-Type a TEXT body of this format is sent with. */
 val BodyFormat.contentType: String
 	get() = when (this) {
 		BodyFormat.RAW -> "text/plain"
@@ -37,7 +37,7 @@ val BodyFormat.contentType: String
 		BodyFormat.HTML -> "text/html"
 	}
 
-/* Pick a format from a Content-Type header. JSON / XML / YAML / HTML
+/** Pick a format from a Content-Type header. JSON / XML / YAML / HTML
    match their canonical types and common variants; anything else
    (image types, text/plain, …) falls back to RAW. */
 fun autoFormatFor(inContentType: String?): BodyFormat {
@@ -55,7 +55,7 @@ fun autoFormatFor(inContentType: String?): BodyFormat {
 // MARK: Highlight palette
 // ==================
 
-/* Per-token colours. Two preset themes: a dark-on-dark and a dark-on-
+/** Per-token colours. Two preset themes: a dark-on-dark and a dark-on-
    light variant matching VS Code's defaults. Caller picks based on
    surrounding theme; auto-pick available via SyntaxPalette.forDark(). */
 data class SyntaxPalette(
@@ -68,7 +68,7 @@ data class SyntaxPalette(
 	val punct: Color,
 ) {
 	companion object {
-		/* Light-on-dark — VS Code Dark+. */
+		/** Light-on-dark — VS Code Dark+. */
 		val Dark = SyntaxPalette(
 			key     = Color(0xFF9CDCFE),
 			string  = Color(0xFFCE9178),
@@ -78,7 +78,7 @@ data class SyntaxPalette(
 			comment = Color(0xFF6A9955),
 			punct   = Color(0xFFCCCCCC),
 		)
-		/* Dark-on-light — VS Code Light+. Higher contrast on white. */
+		/** Dark-on-light — VS Code Light+. Higher contrast on white. */
 		val Light = SyntaxPalette(
 			key     = Color(0xFF0451A5),
 			string  = Color(0xFFA31515),
@@ -89,7 +89,7 @@ data class SyntaxPalette(
 			punct   = Color(0xFF333333),
 		)
 
-		/* Pick a palette by the host theme's background brightness. */
+		/** Pick a palette by the host theme's background brightness. */
 		fun forDark(inIsDark: Boolean): SyntaxPalette = if (inIsDark) Dark else Light
 	}
 }
@@ -98,7 +98,7 @@ data class SyntaxPalette(
 // MARK: Entry point
 // ==================
 
-/* Render the given text with per-token colour spans for the requested
+/** Render the given text with per-token colour spans for the requested
    format. RAW returns an unstyled AnnotatedString. */
 fun highlight(
 	inText: String,
@@ -115,7 +115,7 @@ fun highlight(
 // MARK: JSON tokeniser — single-pass, error-tolerant
 // ==================
 
-/* Tokeniser for JSON. Walks the string once and emits style spans for
+/** Tokeniser for JSON. Walks the string once and emits style spans for
    strings, numbers, booleans, null, punctuation. Distinguishes "keys"
    (strings followed by ':') from string values by peeking after each
    string. Error-tolerant — malformed JSON still highlights as best
@@ -181,7 +181,7 @@ private fun highlightJson(inText: String, inP: SyntaxPalette): AnnotatedString =
 // MARK: XML / HTML tokeniser
 // ==================
 
-/* Tokeniser for XML / HTML. Distinguishes tag names, attribute names,
+/** Tokeniser for XML / HTML. Distinguishes tag names, attribute names,
    attribute values (string), and comments. Inside tags, attr=value pairs
    are recognised; outside tags text is left in the default colour. */
 private fun highlightXml(inText: String, inP: SyntaxPalette): AnnotatedString = buildAnnotatedString {
@@ -249,7 +249,7 @@ private fun highlightXml(inText: String, inP: SyntaxPalette): AnnotatedString = 
 // MARK: YAML tokeniser — line-based
 // ==================
 
-/* Tokeniser for YAML. Walks line by line because YAML's grammar is
+/** Tokeniser for YAML. Walks line by line because YAML's grammar is
    indent-sensitive and most of the interesting colour decisions
    (key vs value, list item vs scalar) depend on position within a
    line. Comments (#), keys (text before ':'), quoted strings, numbers
@@ -293,7 +293,7 @@ private fun highlightYaml(inText: String, inP: SyntaxPalette): AnnotatedString =
 	}
 }
 
-/* Render the value portion of a YAML line — applies string / number /
+/** Render the value portion of a YAML line — applies string / number /
    keyword / list-marker colours where applicable. */
 private fun AnnotatedString.Builder.appendYamlValue(inSeg: String, inP: SyntaxPalette) {
 	val vTrimmed = inSeg.trimStart()
@@ -329,7 +329,7 @@ private fun AnnotatedString.Builder.appendYamlValue(inSeg: String, inP: SyntaxPa
 	}
 }
 
-/* Find the index of the first '#' that isn't inside a quoted string,
+/** Find the index of the first '#' that isn't inside a quoted string,
    or -1 if there is none. Used to split a YAML line into code + comment. */
 private fun findUnquotedHash(inLine: String): Int {
 	var vInSingle = false
@@ -345,7 +345,7 @@ private fun findUnquotedHash(inLine: String): Int {
 	return -1
 }
 
-/* Locate the colon that separates a YAML key from its value at the
+/** Locate the colon that separates a YAML key from its value at the
    current indent level — the FIRST unquoted ':' that's followed by
    either whitespace or end-of-line. Returns -1 if the line has no key. */
 private fun indexOfKeyColon(inLine: String): Int {

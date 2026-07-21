@@ -125,7 +125,7 @@ class SDL3Backend(
         return true
     }
 
-    /* Applies the theme-appropriate window icon via SDL_SetWindowIcon: the dark
+    /** Applies the theme-appropriate window icon via SDL_SetWindowIcon: the dark
        set when the OS is in dark mode and a dark set was supplied, otherwise the
        light set. No-op when no icon paths were configured or the current choice
        is already applied — so it is safe to call at init and again on every
@@ -160,12 +160,12 @@ class SDL3Backend(
         appliedIconKey = vKey
     }
 
-    /* Stable SDL identifier of this backend's window — events carry it, so the
+    /** Stable SDL identifier of this backend's window — events carry it, so the
        multi-window loop can route them to the right instance. 0 before init. */
     val windowId: UInt
         get() = window?.let { SDL_GetWindowID(it.reinterpret()) } ?: 0u
 
-    /* Tears down this backend's window + renderer. inQuitSdl controls the
+    /** Tears down this backend's window + renderer. inQuitSdl controls the
        process-wide SDL_Quit(): a multi-window app destroys each window with
        false and calls SDL_Quit once (via the app runtime) after the last —
        SDL_Quit shuts down ALL subsystems regardless of other live windows. */
@@ -195,7 +195,7 @@ class SDL3Backend(
         }
     }
 
-    /* Backing-store scale: pixelWidth / windowWidth. 1.0 on standard
+    /** Backing-store scale: pixelWidth / windowWidth. 1.0 on standard
        displays, 2.0 on Retina with SDL_WINDOW_HIGH_PIXEL_DENSITY active.
        Used to scale the Skia canvas so Compose's logical-point layout
        maps to physical pixels. */

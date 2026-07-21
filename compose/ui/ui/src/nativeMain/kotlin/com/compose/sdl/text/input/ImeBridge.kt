@@ -10,7 +10,7 @@ import androidx.compose.ui.text.input.SetComposingTextCommand
 // MARK: ImeBridge — SDL text events <-> the active text-input session
 // ==================
 
-/*
+/**
  * Connects SDL's text events to the focused text field's IME session. The owner's
  * textInputSession registers the active PlatformTextInputMethodRequest here when a
  * field gains focus (and clears it on focus loss); ComposeWindow feeds

@@ -7,7 +7,7 @@ import com.compose.sdl.loadComposeResourceBytes
 // MARK: Generic font families (FontFamily.Monospace / Serif / Cursive)
 // ==================
 
-/*
+/**
  * Registers the bundled fonts that back the generic FontFamily.* values, under the
  * "generic:<name>" keys that FontFamily.projectFontName() returns. Today only
  * Monospace has a bundled font (NotoSansMono, fetched by the app's downloadNotoFonts task);

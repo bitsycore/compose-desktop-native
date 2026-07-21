@@ -6,8 +6,8 @@ import androidx.compose.ui.text.font.FontVariation
 // MARK: SdlDisplayList — captured draw commands for retained replay
 // ==================
 
-/*
- Phase 4 (RENDERER.md §3/§13). A display list is a layer's drawing captured
+/**
+ The geo cache's storage (RENDERER.md §3). A display list is a layer's drawing captured
  ONCE in layer-local space and replayed under the layer transform — instead of
  re-tessellating every frame (DeferredRenderNode) or round-tripping through an
  offscreen texture (SdlRenderNode: fixed-resolution soft + timing-nondeterministic).
@@ -35,14 +35,14 @@ import androidx.compose.ui.text.font.FontVariation
 
 internal sealed class DisplayCommand
 
-/* One captured untextured triangle batch in layer-local coords (8 floats/vertex:
+/** One captured untextured triangle batch in layer-local coords (8 floats/vertex:
    pos.xy, color.rgba, tex.xy — Sdl3DrawScope.fVertexData packing). */
 internal class GeometryBatch(
 	val vertexData: FloatArray,
 	val vertexCount: Int,
 ) : DisplayCommand()
 
-/* One captured plain text run — replayed by re-looking-up its cached texture
+/** One captured plain text run — replayed by re-looking-up its cached texture
    (eviction-safe) and blitting at the transformed origin (glyph size stays logical,
    matching the immediate path's "layer scale reaches position, not glyph size"). */
 internal class TextRun(
@@ -58,7 +58,7 @@ internal class TextRun(
 	val colorArgb: Int,
 ) : DisplayCommand()
 
-/* One captured icon-font glyph (Material Symbols via FreeType). The box origin is
+/** One captured icon-font glyph (Material Symbols via FreeType). The box origin is
    layer-local (replay maps it through the layer affine); the box size stays logical
    (the glyph centres in it, like the immediate icon path). Replay re-draws through
    FreeTypeIcons' own glyph cache — eviction-safe (re-rasterises if dropped). */
@@ -74,7 +74,7 @@ internal class IconRun(
 	val colorArgb: Int,
 ) : DisplayCommand()
 
-/* Sink the drawscope + text renderer capture into during a recording. */
+/** Sink the drawscope + text renderer capture into during a recording. */
 internal interface GeometrySink {
 	fun captureGeometry(vertexData: FloatArray, vertexCount: Int)
 }
@@ -122,7 +122,7 @@ internal class SdlDisplayList : GeometrySink, TextRunSink {
 		unsupported = true
 	}
 
-	/* Icon glyphs are captured directly by the canvas (not via a sink) since the
+	/** Icon glyphs are captured directly by the canvas (not via a sink) since the
 	   canvas owns the icon-draw path. Box origin is layer-local; size logical. */
 	fun captureIconRun(
 		fontFamily: String,

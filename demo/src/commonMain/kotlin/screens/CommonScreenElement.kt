@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 // MARK: Common screen elements
 // ==================
 
-/* Shared building blocks every demo screen uses for a consistent visual grid:
+/** Shared building blocks every demo screen uses for a consistent visual grid:
    a title block, a captioned card section, and a labelled colour swatch. */
 
 @Composable
@@ -32,7 +32,7 @@ internal fun ScreenTitle(title: String, subtitle: String? = null) {
     }
 }
 
-/* Card-wrapped section with a small caption above the demonstrated content. */
+/** Card-wrapped section with a small caption above the demonstrated content. */
 @Composable
 internal fun Section(
     title: String,

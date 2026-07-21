@@ -7,7 +7,7 @@ import androidx.compose.ui.node.LayoutNode
 // MARK: NodeApplier
 // ==================
 
-/* Phase 9 B4 — composition applier over the vendored upstream LayoutNode.
+/** Composition applier over the vendored upstream LayoutNode.
    internal because LayoutNode is internal to :core; the :window layer drives
    composition through the public ComposeRootHost facade (which upcasts this to
    Applier<*>). */

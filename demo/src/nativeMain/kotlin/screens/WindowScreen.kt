@@ -16,7 +16,7 @@ import com.compose.sdl.LocalComposeNativeWindow
 // MARK: Window screen
 // ==================
 
-/* Extra demo windows opened from this screen. The app composition in MainNative.kt
+/** Extra demo windows opened from this screen. The app composition in MainNative.kt
    declares one keyed Window() per id in this list — the list IS the windows'
    lifetime (multi-window, Compose Desktop style). Each window is keyed by its
    own id, so closing one removes exactly THAT id (a count would always drop the

@@ -32,7 +32,7 @@ private const val kCryptUserKeyset = 0x00001000u        // CRYPT_USER_KEYSET (no
 
 private val kEncoding: UInt = X509_ASN_ENCODING.toUInt() or PKCS_7_ASN_ENCODING.toUInt()
 
-/* Import the request's certificate into CurrentUser\MY and return a libcurl
+/** Import the request's certificate into CurrentUser\MY and return a libcurl
    store reference plus a cleanup that removes it again. */
 @OptIn(ExperimentalForeignApi::class)
 actual fun prepareClientCert(inReq: ApiRequest): PreparedCert
@@ -57,7 +57,7 @@ actual fun prepareClientCert(inReq: ApiRequest): PreparedCert
 //  PEM / DER (RSA) → store
 // ============
 
-/* Build a cert context from PEM/DER, import its RSA private key into a named
+/** Build a cert context from PEM/DER, import its RSA private key into a named
    container, link the two, tag and add to CurrentUser\MY. Returns
    (thumbprintHex, containerName). */
 @OptIn(ExperimentalForeignApi::class)
@@ -91,7 +91,7 @@ private fun importPemDerRsa(inCertBytes: ByteArray, inReq: ApiRequest): Pair<Str
 	finally { CertFreeCertificateContext(vCert) }
 	}
 
-/* Create a fresh named key container and import the RSA blob into it. */
+/** Create a fresh named key container and import the RSA blob into it. */
 @OptIn(ExperimentalForeignApi::class)
 private fun importRsaIntoContainer(inContainer: String, inBlob: ByteArray) = memScoped {
 	deleteContainer(inContainer)   // drop a stale one if it somehow exists
@@ -110,7 +110,7 @@ private fun importRsaIntoContainer(inContainer: String, inBlob: ByteArray) = mem
 	finally { CryptReleaseContext(vProv.value, 0u) }
 }
 
-/* Attach the named container to the cert so Schannel can find its key. */
+/** Attach the named container to the cert so Schannel can find its key. */
 @OptIn(ExperimentalForeignApi::class)
 private fun linkKeyToCert(inCert: CPointer<CERT_CONTEXT>, inContainer: String) = memScoped {
 	val vInfo = alloc<CRYPT_KEY_PROV_INFO>()
@@ -129,7 +129,7 @@ private fun linkKeyToCert(inCert: CPointer<CERT_CONTEXT>, inContainer: String) =
 //  RSA key ASN.1 → CryptoAPI PRIVATEKEYBLOB
 // ============
 
-/* Minimal DER reader for the RSA key structures. */
+/** Minimal DER reader for the RSA key structures. */
 private class Der(val b: ByteArray)
 	{
 	var p = 0
@@ -156,7 +156,7 @@ private class Der(val b: ByteArray)
 		}
 	}
 
-/* Turn a PKCS#1 or PKCS#8 RSA private-key DER into a CryptoAPI PRIVATEKEYBLOB.
+/** Turn a PKCS#1 or PKCS#8 RSA private-key DER into a CryptoAPI PRIVATEKEYBLOB.
    Throws if it isn't an RSA key we can lay out. */
 private fun rsaKeyDerToBlob(inDer: ByteArray): ByteArray
 	{
@@ -180,7 +180,7 @@ private fun parsePkcs1(inDer: ByteArray): ByteArray
 	return buildBlob(vR.integer(), vR.integer(), vR.integer(), vR.integer(), vR.integer(), vR.integer(), vR.integer(), vR.integer())
 	}
 
-/* Lay out the MS PRIVATEKEYBLOB (all little-endian) from the RSA components. */
+/** Lay out the MS PRIVATEKEYBLOB (all little-endian) from the RSA components. */
 private fun buildBlob(
 	inN: ByteArray, inE: ByteArray, inD: ByteArray,
 	inP: ByteArray, inQ: ByteArray, inDp: ByteArray, inDq: ByteArray, inIq: ByteArray,
@@ -204,7 +204,7 @@ private fun buildBlob(
 	return vOut.toByteArray()
 	}
 
-/* A big-endian magnitude reversed to little-endian and zero-padded to inSize. */
+/** A big-endian magnitude reversed to little-endian and zero-padded to inSize. */
 private fun leField(inBe: ByteArray, inSize: Int): ByteArray
 	{
 	val vOut = ByteArray(inSize)
@@ -226,7 +226,7 @@ private fun beToUInt(inBe: ByteArray): UInt
 //  PKCS#12 → store
 // ============
 
-/* Import a .p12/.pfx into a memory store, then copy its cert (with the key
+/** Import a .p12/.pfx into a memory store, then copy its cert (with the key
    container PFXImportCertStore created) into CurrentUser\MY. */
 @OptIn(ExperimentalForeignApi::class)
 private fun importPkcs12(inBytes: ByteArray, inPassword: String): Pair<String, String?> = memScoped {
@@ -249,7 +249,7 @@ private fun importPkcs12(inBytes: ByteArray, inPassword: String): Pair<String, S
 	}
 }
 
-/* The key-container name PFXImportCertStore assigned to a cert (from its
+/** The key-container name PFXImportCertStore assigned to a cert (from its
    CERT_KEY_PROV_INFO), so cleanup can delete it. */
 @OptIn(ExperimentalForeignApi::class)
 private fun containerNameOf(inCert: CPointer<CERT_CONTEXT>): String? = memScoped {
@@ -264,7 +264,7 @@ private fun containerNameOf(inCert: CPointer<CERT_CONTEXT>): String? = memScoped
 //  Shared store helpers
 // ============
 
-/* Tag a cert with our friendly-name prefix so the startup sweep recognises it. */
+/** Tag a cert with our friendly-name prefix so the startup sweep recognises it. */
 @OptIn(ExperimentalForeignApi::class)
 private fun tagFriendlyName(inCert: CPointer<CERT_CONTEXT>, inName: String) = memScoped {
 	val vBlob = alloc<CRYPT_INTEGER_BLOB>()
@@ -273,7 +273,7 @@ private fun tagFriendlyName(inCert: CPointer<CERT_CONTEXT>, inName: String) = me
 	CertSetCertificateContextProperty(inCert, CERT_FRIENDLY_NAME_PROP_ID.toUInt(), 0u, vBlob.ptr)
 }
 
-/* Add a cert context to CurrentUser\MY (replacing any same-thumbprint entry). */
+/** Add a cert context to CurrentUser\MY (replacing any same-thumbprint entry). */
 @OptIn(ExperimentalForeignApi::class)
 private fun addToStore(inCert: CPointer<CERT_CONTEXT>)
 	{
@@ -286,11 +286,11 @@ private fun addToStore(inCert: CPointer<CERT_CONTEXT>)
 	finally { CertCloseStore(vStore, 0u) }
 	}
 
-/* Open CurrentUser\MY (the current user's Personal store). */
+/** Open CurrentUser\MY (the current user's Personal store). */
 @OptIn(ExperimentalForeignApi::class)
 private fun openMyStore() = CertOpenSystemStoreW(0.convert(), kStoreName)
 
-/* The SHA-1 thumbprint of a cert as uppercase hex. */
+/** The SHA-1 thumbprint of a cert as uppercase hex. */
 @OptIn(ExperimentalForeignApi::class)
 private fun thumbprintHex(inCert: CPointer<CERT_CONTEXT>): String = memScoped {
 	val vLen = alloc<UIntVar>().apply { value = 20u }
@@ -300,7 +300,7 @@ private fun thumbprintHex(inCert: CPointer<CERT_CONTEXT>): String = memScoped {
 	buildString { for (vI in 0 until vLen.value.toInt()) append(vBuf[vI].toInt().toString(16).uppercase().padStart(2, '0')) }
 }
 
-/* Remove a temporary cert (by thumbprint) from CurrentUser\MY and delete its
+/** Remove a temporary cert (by thumbprint) from CurrentUser\MY and delete its
    key container. Called per-request in finally; ignores what's already gone. */
 @OptIn(ExperimentalForeignApi::class)
 private fun deleteTempCert(inThumbHex: String, inContainer: String?)
@@ -320,14 +320,14 @@ private fun deleteTempCert(inThumbHex: String, inContainer: String?)
 	if (inContainer != null) deleteContainer(inContainer)
 	}
 
-/* Delete a named key container (best-effort). */
+/** Delete a named key container (best-effort). */
 @OptIn(ExperimentalForeignApi::class)
 private fun deleteContainer(inContainer: String) = memScoped {
 	val vProv = alloc<ULongVar>()
 	CryptAcquireContextW(vProv.ptr, inContainer, kProvName, PROV_RSA_FULL.toUInt(), CRYPT_DELETEKEYSET.toUInt())
 }
 
-/* Remove every temp cert we ever added (prefix-tagged) plus its container — for
+/** Remove every temp cert we ever added (prefix-tagged) plus its container — for
    clearing crash leftovers at startup. The user's own certs are never matched. */
 @OptIn(ExperimentalForeignApi::class)
 actual fun sweepTempClientCerts()
@@ -346,7 +346,7 @@ actual fun sweepTempClientCerts()
 	vDoomed.forEach { deleteTempCert(it.first, it.second) }
 	}
 
-/* A cert's friendly name, or null. */
+/** A cert's friendly name, or null. */
 @OptIn(ExperimentalForeignApi::class)
 private fun friendlyNameOf(inCert: CPointer<CERT_CONTEXT>): String? = memScoped {
 	val vLen = alloc<UIntVar>()
@@ -360,7 +360,7 @@ private fun friendlyNameOf(inCert: CPointer<CERT_CONTEXT>): String? = memScoped 
 //  Chain extension via the OS certificate store
 // ============
 
-/* Continue the server's chain by asking the OS to build it from the leaf — this
+/** Continue the server's chain by asking the OS to build it from the leaf — this
    pulls intermediates/roots from the Windows store with full info. Falls back to
    a name-only issuer if the OS can't (or the leaf can't be parsed). */
 @OptIn(ExperimentalForeignApi::class)
@@ -372,7 +372,7 @@ actual fun extendChain(inServerCerts: List<List<Pair<String, String>>>): List<Ch
 	return if (!vOs.isNullOrEmpty()) vOs else serverChainWithIssuerName(inServerCerts)
 	}
 
-/* Build the full chain from the leaf via CertGetCertificateChain (OS store). */
+/** Build the full chain from the leaf via CertGetCertificateChain (OS store). */
 @OptIn(ExperimentalForeignApi::class)
 private fun osChain(inLeafPem: String, inServerCount: Int): List<ChainCert> = memScoped {
 	val vDer = derFromMaybePem(inLeafPem.encodeToByteArray(), "CERTIFICATE")
@@ -411,7 +411,7 @@ private fun osChain(inLeafPem: String, inServerCount: Int): List<ChainCert> = me
 	finally { CertFreeCertificateContext(vLeaf) }
 }
 
-/* Subject / Issuer (RDN strings) + the PEM, read from a cert context. */
+/** Subject / Issuer (RDN strings) + the PEM, read from a cert context. */
 @OptIn(ExperimentalForeignApi::class)
 private fun certFieldsFromContext(inCtx: CPointer<CERT_CONTEXT>): List<Pair<String, String>>
 	{
@@ -422,7 +422,7 @@ private fun certFieldsFromContext(inCtx: CPointer<CERT_CONTEXT>): List<Pair<Stri
 	return vFields
 	}
 
-/* A cert's Subject (inFlags=0) or Issuer (CERT_NAME_ISSUER_FLAG) as an X.500 string. */
+/** A cert's Subject (inFlags=0) or Issuer (CERT_NAME_ISSUER_FLAG) as an X.500 string. */
 @OptIn(ExperimentalForeignApi::class)
 private fun certNameString(inCtx: CPointer<CERT_CONTEXT>, inFlags: UInt): String? = memScoped {
 	val vType = alloc<UIntVar>().apply { value = CERT_X500_NAME_STR.toUInt() }
@@ -433,7 +433,7 @@ private fun certNameString(inCtx: CPointer<CERT_CONTEXT>, inFlags: UInt): String
 	vBuf.toKString()
 }
 
-/* The PEM (base64-with-header) of a cert context. */
+/** The PEM (base64-with-header) of a cert context. */
 @OptIn(ExperimentalForeignApi::class)
 private fun certPem(inCtx: CPointer<CERT_CONTEXT>): String? = memScoped {
 	val vData = inCtx.pointed.pbCertEncoded ?: return@memScoped null
@@ -449,7 +449,7 @@ private fun certPem(inCtx: CPointer<CERT_CONTEXT>): String? = memScoped {
 //  Small helpers
 // ============
 
-/* Decode a PEM block (by label) to DER, or pass bytes through if already DER. */
+/** Decode a PEM block (by label) to DER, or pass bytes through if already DER. */
 @OptIn(ExperimentalEncodingApi::class)
 private fun derFromMaybePem(inBytes: ByteArray, inLabel: String): ByteArray
 	{
@@ -461,7 +461,7 @@ private fun derFromMaybePem(inBytes: ByteArray, inLabel: String): ByteArray
 	return Base64.Default.decode(pemBody(vBlock))
 	}
 
-/* Extract + DER-decode the first PRIVATE KEY block from PEM text, or pass DER
+/** Extract + DER-decode the first PRIVATE KEY block from PEM text, or pass DER
    bytes through. Null if no key. */
 @OptIn(ExperimentalEncodingApi::class)
 private fun privateKeyDer(inBytes: ByteArray): ByteArray?
@@ -473,14 +473,14 @@ private fun privateKeyDer(inBytes: ByteArray): ByteArray?
 	return Base64.Default.decode(pemBody(vMatch.value))
 	}
 
-/* The base64 body of a PEM block (drop the BEGIN/END lines and whitespace). */
+/** The base64 body of a PEM block (drop the BEGIN/END lines and whitespace). */
 private fun pemBody(inPem: String): String =
 	inPem.lineSequence().filterNot { it.startsWith("-----") }.joinToString("") { it.trim() }
 
 private fun hexToBytes(inHex: String): ByteArray =
 	ByteArray(inHex.length / 2) { inHex.substring(it * 2, it * 2 + 2).toInt(16).toByte() }
 
-/* Read a null-terminated UTF-16 (wide) string. */
+/** Read a null-terminated UTF-16 (wide) string. */
 @OptIn(ExperimentalForeignApi::class)
 private fun CPointer<UShortVar>.toKStringFromUtf16(): String
 	{

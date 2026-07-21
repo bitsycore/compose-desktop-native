@@ -11,7 +11,7 @@ import kotlinx.datetime.toLocalDateTime
 // MARK: PlatformDateFormat — native project actual
 // ==================
 
-/*
+/**
  Upstream ships this via NSDateFormatter (darwinMain) or java.text.DateFormat
  (desktopMain). Neither is available for K/N on Linux/Windows, so we ship a
  minimal English-only stub that unblocks DatePicker + TimePicker compilation.

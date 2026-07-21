@@ -300,7 +300,7 @@ fun main(args: Array<String>) {
     }
 }
 
-/* Content of the demo's extra windows — each has its own composition, focus,
+/** Content of the demo's extra windows — each has its own composition, focus,
    input routing, and render loop; the counter proves per-window state. */
 @Composable
 private fun com.compose.sdl.ComposeWindowScope.ExtraWindowContent(inId: Int) {
@@ -325,7 +325,7 @@ private fun com.compose.sdl.ComposeWindowScope.ExtraWindowContent(inId: Int) {
     }
 }
 
-/* Boots a window with a BackHandler, injects an Escape key through the live SDL
+/** Boots a window with a BackHandler, injects an Escape key through the live SDL
    path, and asserts the handler fired — proving ComposeWindow's
    BackNavigationInput drives the NavigationEventDispatcher (the mechanism that
    collapses an expanded m3 SearchBar on Escape). */
@@ -387,7 +387,7 @@ private fun runBackTest() {
     }
 }
 
-/* Drives a SharedTransitionLayout shared-element morph both directions from
+/** Drives a SharedTransitionLayout shared-element morph both directions from
    the frame counter (no clicks) — it requires the LOOKAHEAD pass, which dies
    with "LookaheadDelegate has not been measured yet" if the owner drops
    affectsLookahead measure/relayout requests. Reaching the end frame = PASS. */
@@ -441,7 +441,7 @@ private fun runSharedTest() {
     }
 }
 
-/* Boots TWO windows via nativeComposeApp, asserts both render, closes the
+/** Boots TWO windows via nativeComposeApp, asserts both render, closes the
    second by flipping the state that composes its Window(), and asserts the app
    keeps running on the first — the multi-window lifecycle end-to-end. */
 private fun runMultiWindowTest() {
@@ -494,7 +494,7 @@ private fun runMultiWindowTest() {
     println("multiwintest: $vResult")
 }
 
-/* Boots the REAL Search screen, clicks the first SearchBar's input field
+/** Boots the REAL Search screen, clicks the first SearchBar's input field
    (expands it), presses Escape, and writes esc_before.bmp / esc_after.bmp —
    the expanded overlay must be visible in `before` and gone in `after`. */
 private fun runSearchEscTest() {
@@ -543,7 +543,7 @@ private fun runSearchEscTest() {
    Crashes here (e.g. enableSavedStateHandles' INITIALIZED/CREATED contract) never
    reproduce under --screen, which composes during the initial CREATED composition.
    PASS = a screenshot gets written and the app exits cleanly. */
-/* P2.2 soak — cycle through EVERY registered screen kCycles times in ONE process,
+/** P2.2 soak — cycle through EVERY registered screen kCycles times in ONE process,
    disposing each via a changing key() so composition + layer (skiko RenderNode / SDL
    node) allocate-and-release is exercised repeatedly. After each full cycle, GC then
    record peak RSS (getrusage ru_maxrss). Peak RSS is monotonic, so after cycle 1 it
@@ -627,13 +627,13 @@ private fun runSoakTest() {
     }
 }
 
-/* CURRENT resident set (MB): current RSS can DROP after GC, so it distinguishes a
+/** CURRENT resident set (MB): current RSS can DROP after GC, so it distinguishes a
    true leak (ratchets up) from K/N allocator high-water, unlike getrusage's
    monotonic peak. posix reads it from `ps`; mingw has no `ps`/popen and returns
    -1 (the soak gate runs on macOS/Linux — see scripts/verify-mac.sh). */
 internal expect fun currentResidentMb(): Long
 
-/* --localetest: prints Locale.current / LocaleList.current (should reflect the OS
+/** --localetest: prints Locale.current / LocaleList.current (should reflect the OS
    preferred locales via SDL) and screenshots an M3 DatePicker, whose headline and
    navigation labels are M3-translated by Locale.current. Run under a forced locale,
    e.g. `demo.kexe --localetest -AppleLanguages "(fr-FR)"` on macOS. */
@@ -674,7 +674,7 @@ private fun runLocaleTest() {
     }
 }
 
-/* --cursortest: injects hover moves over pointerHoverIcon(Text) / (Hand) regions
+/** --cursortest: injects hover moves over pointerHoverIcon(Text) / (Hand) regions
    and a bare background, printing the applied SDL system cursor after each. Proves
    PointerIcon -> SDL_SetCursor end-to-end through the live hover pipeline. */
 private fun runCursorTest() {
@@ -710,7 +710,7 @@ private fun runCursorTest() {
     }
 }
 
-/* --windowinfotest: prints LocalWindowInfo.isWindowFocused / containerSize /
+/** --windowinfotest: prints LocalWindowInfo.isWindowFocused / containerSize /
    containerDpSize. containerSize starts Zero and becomes the window pixel size
    after the first measure — proof it's fed from the live root constraints. */
 private fun runWindowInfoTest() {
@@ -730,7 +730,7 @@ private fun runWindowInfoTest() {
     }
 }
 
-/* --imetest: focuses a BasicTextField, injects an IME composition (SDL TEXT_EDITING
+/** --imetest: focuses a BasicTextField, injects an IME composition (SDL TEXT_EDITING
    "ni"), then a commit (SDL TEXT_INPUT "に"). Verifies the preedit shows a
    composing region and the commit REPLACES it (not appends) — the real IME path. */
 private fun runImeTest() {
@@ -772,7 +772,7 @@ private fun runImeTest() {
     }
 }
 
-/* --imagebytestest: decodes an in-memory 2x2 BMP via ByteArray.decodeToImageBitmap()
+/** --imagebytestest: decodes an in-memory 2x2 BMP via ByteArray.decodeToImageBitmap()
    (routes to createImageBitmap(bytes)). On the SDL leg this used to throw
    UnsupportedOperationException; now it decodes through SDL3_image. Needs a window
    so the render backend installs the encoded-image decoder. */
@@ -796,7 +796,7 @@ private fun runImageBytesTest() {
     ) {}
 }
 
-/* --fonttest: same sample in FontFamily.Default (sans) and FontFamily.Monospace.
+/** --fonttest: same sample in FontFamily.Default (sans) and FontFamily.Monospace.
    Monospace used to collapse to the default sans; now it renders NotoSansMono
    (bundled because this source references FontFamily.Monospace). */
 private fun runFontTest() {
@@ -829,7 +829,7 @@ private fun runFontTest() {
     }
 }
 
-/* --tilemodetest: three rows filled with a narrow red->blue linear gradient using
+/** --tilemodetest: three rows filled with a narrow red->blue linear gradient using
    TileMode Repeated / Mirror / Decal. On the SDL leg TileMode was dropped (all
    clamped); now they tile / reflect / cut off (transparent) respectively. */
 private fun runTileModeTest() {
@@ -873,7 +873,7 @@ private fun runTileModeTest() {
     }
 }
 
-/* --dashtest: draws dashed lines + a dashed stroked rect on a Canvas and
+/** --dashtest: draws dashed lines + a dashed stroked rect on a Canvas and
    screenshots. On the SDL leg these used to render solid; now they dash. */
 private fun runDashTest() {
     nativeComposeWindow(
@@ -906,7 +906,7 @@ private fun runDashTest() {
     }
 }
 
-/* --pointstest: drawPoints in all three PointModes (Points / Lines / Polygon).
+/** --pointstest: drawPoints in all three PointModes (Points / Lines / Polygon).
    These were no-ops on the SDL leg (charts/scatter rendered nothing); now they draw. */
 private fun runPointsTest() {
     nativeComposeWindow(
@@ -939,7 +939,7 @@ private fun runPointsTest() {
     }
 }
 
-/* --blendtest: three overlapping circles (R/G/B) drawn with BlendMode.Plus, plus a
+/** --blendtest: three overlapping circles (R/G/B) drawn with BlendMode.Plus, plus a
    Multiply and a Modulate pair. On the SDL leg blend modes were ignored (all SrcOver);
    now Plus overlaps brighten toward white and Multiply darkens. */
 private fun runBlendTest() {
@@ -977,7 +977,7 @@ private fun runBlendTest() {
     }
 }
 
-/* --arctest: a filled rounded rect (corners must stay quarter-disc SECTORS) plus a
+/** --arctest: a filled rounded rect (corners must stay quarter-disc SECTORS) plus a
    filled arc drawn with useCenter=true (pie) and useCenter=false (segment/chord).
    Guards the emitFilledArc useCenter fix + the rounded-rect corner regression. */
 private fun runArcTest() {
@@ -1014,7 +1014,7 @@ private fun runArcTest() {
     }
 }
 
-/* --ovaltest: stroked non-square ovals + an elliptical arc. On the SDL leg these
+/** --ovaltest: stroked non-square ovals + an elliptical arc. On the SDL leg these
    used to stroke as a circular ring (averaged radius), bulging on the short axis;
    now the band follows the true ellipse normal. */
 private fun runOvalTest() {
@@ -1052,7 +1052,7 @@ private fun runOvalTest() {
     }
 }
 
-/* --filtertest: exercises ColorFilter on shapes on the SDL leg - grayscale
+/** --filtertest: exercises ColorFilter on shapes on the SDL leg - grayscale
    ColorMatrix, tint (SrcIn), and lighting - which used to be inert. Top row is
    a red->green->blue gradient with no filter (reference) then grayscaled. */
 private fun runFilterTest() {
@@ -1097,7 +1097,7 @@ private fun runFilterTest() {
     }
 }
 
-/* --jointest: three thick chevron polylines stroked with Miter / Bevel / Round
+/** --jointest: three thick chevron polylines stroked with Miter / Bevel / Round
    joins, plus a Butt vs Square capped line. On the SDL leg corners used to notch
    and Square fell back to Butt; now joins fill the corner and Square projects. */
 private fun runJoinTest() {
@@ -1140,7 +1140,7 @@ private fun runJoinTest() {
     }
 }
 
-/* --rotimgtest: a two-colour image (top red / bottom blue) rotated 30 via
+/** --rotimgtest: a two-colour image (top red / bottom blue) rotated 30 via
    graphicsLayer. On the SDL leg images used to stay axis-aligned (SDL_RenderTexture);
    now the rotated layer produces a tilted image via a textured SDL_RenderGeometry quad. */
 private fun runRotImgTest() {
@@ -1257,7 +1257,7 @@ private fun runNav3Test() {
     }
 }
 
-/* Frame-by-frame trace of AnimatedVisibility(fadeIn+expandVertically / fadeOut+
+/** Frame-by-frame trace of AnimatedVisibility(fadeIn+expandVertically / fadeOut+
    shrinkVertically): logs the AV container's animated size and the window-Y of a
    marker Box below it every frame, toggling visibility three times. Diagnoses
    (a) a size snap between just-before-end and end of the animation and (b)
@@ -1327,7 +1327,7 @@ private fun runAnimVisTest() {
     }
 }
 
-/* Boots a window whose full-size surface opens an m3 AlertDialog on click (the real
+/** Boots a window whose full-size surface opens an m3 AlertDialog on click (the real
    material3 → ui.window.Dialog path, default DialogProperties ⇒ animateTransition on),
    injects the click, then dumps screenshots during the 0.2s appearance animation and
    after it settles; then injects Escape and dumps mid-disappearance (0.1s reverse,
@@ -1385,7 +1385,7 @@ private fun runDialogAnimTest() {
     }
 }
 
-/* Boots a real window (installs the SDL TextMeasurer), then builds an upstream Paragraph via the
+/** Boots a real window (installs the SDL TextMeasurer), then builds an upstream Paragraph via the
    vendored factory (→ SdlParagraph) for a long string constrained to a narrow width. Verifies it
    wrapped to multiple lines, has positive size, and that getHorizontalPosition/getOffsetForPosition
    round-trip — proving the paragraph-engine measurement bridge works. */
@@ -1418,7 +1418,7 @@ private fun runParagraphTest() {
     }
 }
 
-/* Prints paragraph metrics (single-line cell, lineHeight-styled single + triple line,
+/** Prints paragraph metrics (single-line cell, lineHeight-styled single + triple line,
    first baseline) for a font-size sweep at density 1 — the native half of the
    metrics-alignment probe. Mirror of MainJvm's `--metrics`; both must print the same
    numbers for the parity text drift to vanish. */
@@ -1481,7 +1481,7 @@ private fun runMetricsProbe() {
 // MARK: clicktest
 // ==================
 
-/* Boots a real nativeComposeWindow with a full-size clickable box, then injects
+/** Boots a real nativeComposeWindow with a full-size clickable box, then injects
    move→press→release SDL mouse events a few frames apart (giving the upstream
    clickable's gesture coroutine time to launch + await between frames), and prints
    PASS/FAIL based on whether onClick fired. Proves the whole vendored interaction
@@ -1521,7 +1521,7 @@ private fun runClickTest() {
     }
 }
 
-/* Same injection harness as clicktest, but the target is a Material Switch (Modifier.toggleable
+/** Same injection harness as clicktest, but the target is a Material Switch (Modifier.toggleable
    from the vendored foundation.selection). Asserts onCheckedChange flipped the state — proving
    toggleable rides the same verified upstream interaction path as clickable. */
 private fun runToggleTest() {
@@ -1558,7 +1558,7 @@ private fun runToggleTest() {
     }
 }
 
-/* Boots a window with a real BasicTextField, clicks it to focus (focus-on-click via the
+/** Boots a window with a real BasicTextField, clicks it to focus (focus-on-click via the
    FocusOwner), then injects TEXT_INPUT ("A","B") and a Backspace key through the live SDL path.
    Asserts the field edits to "A" — proving click-to-focus + typing + editing keys route to the
    focused field via ComposeRootHost.dispatchKeyEvent + the synthesised typed-key path. */
@@ -1600,7 +1600,7 @@ private fun runKeyTest() {
     }
 }
 
-/* Boots a tall Column wrapped in the vendored Modifier.verticalScroll, injects several wheel-down
+/** Boots a tall Column wrapped in the vendored Modifier.verticalScroll, injects several wheel-down
    events through the live SDL path (→ processor → MouseWheelScrollingLogic), and asserts the
    ScrollState offset advanced — proving upstream scrolling works end-to-end. */
 private fun runScrollTest() {

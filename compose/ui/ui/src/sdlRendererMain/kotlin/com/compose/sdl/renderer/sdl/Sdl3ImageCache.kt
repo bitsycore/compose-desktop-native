@@ -17,7 +17,7 @@ import kotlin.math.min
 // MARK: Sdl3ImageCache
 // ==================
 
-/* Decodes bundled image resources to SDL_Textures via SDL3_image and caches
+/** Decodes bundled image resources to SDL_Textures via SDL3_image and caches
    them by relative path. Backs both the layout pass (intrinsicSize) and the
    renderer's draw — a resource is decoded exactly once.
 
@@ -75,7 +75,7 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 		return Cached(vTex, vW, vH)
 	}
 
-	/* Decodes any IMG_-supported raster or SVG container from raw bytes
+	/** Decodes any IMG_-supported raster or SVG container from raw bytes
 	   (png/jpg/bmp/gif/webp/svg). IMG_Load_IO peeks the bytes to auto-detect
 	   the format; closeio = true so SDL closes its IOStream wrapper. The
 	   underlying mem only needs to outlive the call (the surface owns its
@@ -89,7 +89,7 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 		}
 	}
 
-	/* Rasterises an SVG string from memory. */
+	/** Rasterises an SVG string from memory. */
 	private fun loadSvgSurface(inSvg: String): CPointer<sdl3.SDL_Surface>? {
 		val vBytes = inSvg.encodeToByteArray()
 		if (vBytes.isEmpty()) return null
@@ -105,7 +105,7 @@ internal class Sdl3ImageCache(private val backend: SDL3Backend) {
 	// MARK: Draw
 	// ==================
 
-	/* Paints the resource into (inX, inY, inW, inH) logical points applying
+	/** Paints the resource into (inX, inY, inW, inH) logical points applying
 	   contentScale + alpha. No-op if the resource isn't decodable. */
 	fun draw(
 		inPath: String,

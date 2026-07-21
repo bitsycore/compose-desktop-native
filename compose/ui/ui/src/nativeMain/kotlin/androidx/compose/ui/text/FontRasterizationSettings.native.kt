@@ -4,7 +4,7 @@ package androidx.compose.ui.text
 // MARK: FontRasterizationSettings native actual (Skia-free)
 // ==================
 
-/*
+/**
  * Hand-written port of upstream `FontRasterizationSettings.skiko.kt` minus
  * the Skia-only `toSkFontEdging` / `toSkFontHinting` extensions and the
  * `currentPlatform()` lookup. Vendored TextStyle.native.kt references

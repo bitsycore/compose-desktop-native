@@ -9,8 +9,8 @@ import kotlinx.cinterop.toKString
 // MARK: createNativeRenderNode — SDL3 renderer actual
 // ==================
 
-/* CDN_LAYERCACHE selects the retained node. The DEFAULT is now the cached-geometry
-   node (Phase 4): it records each leaf's tessellated geometry + plain text runs ONCE
+/** CDN_LAYERCACHE selects the retained node. The DEFAULT is now the cached-geometry
+   node: it records each leaf's tessellated geometry + plain text runs ONCE
    and replays them under the layer transform — crisp/bit-exact at any transform, no
    render-target state, deterministic. A full 57-screen geo-vs-block-replay sweep is
    clean (55 at 0.000%; GraphicsLayer/ModShortcuts <0.13% cosmetic rotated-edge AA)

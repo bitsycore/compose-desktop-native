@@ -42,7 +42,7 @@ import kotlin.math.roundToInt
 // MARK: Scrollbar (Compose Desktop-style)
 // ==================
 
-/* A faithful subset of Compose Desktop's scrollbar (androidx.compose.foundation).
+/** A faithful subset of Compose Desktop's scrollbar (androidx.compose.foundation).
    You overlay a VerticalScrollbar / HorizontalScrollbar on a scrollable and feed
    it a ScrollbarAdapter built from the same ScrollState. This project's Box has
    no BoxScope (so no Modifier.align) — pin the bar with the Box's
@@ -71,7 +71,7 @@ class ScrollbarStyle(
     val hoverColor: Color,
 )
 
-/* Upstream default: an 8dp black thumb that's faint until hovered. Dark UIs
+/** Upstream default: an 8dp black thumb that's faint until hovered. Dark UIs
    provide a white-tinted style via LocalScrollbarStyle or the `style` param. */
 fun defaultScrollbarStyle(): ScrollbarStyle = ScrollbarStyle(
     minimalHeight = 16.dp,
@@ -88,7 +88,7 @@ val LocalScrollbarStyle = compositionLocalOf { defaultScrollbarStyle() }
 // MARK: ScrollbarAdapter
 // ==================
 
-/* Bridges a scrollable's state to the scrollbar in pixels. scrollOffset /
+/** Bridges a scrollable's state to the scrollbar in pixels. scrollOffset /
    contentSize / viewportSize are along the scroll axis; the thumb is sized by
    viewportSize / contentSize and positioned by scrollOffset / (content - viewport). */
 interface ScrollbarAdapter {
@@ -115,7 +115,7 @@ private class ScrollStateScrollbarAdapter(private val state: ScrollState) : Scro
     }
 }
 
-/* Adapter for a virtualized LazyColumn / LazyRow. A lazy list only knows the
+/** Adapter for a virtualized LazyColumn / LazyRow. A lazy list only knows the
    size of its VISIBLE items, so exact pixel geometry of off-screen content is
    unknowable — we estimate it from the average visible item size × total item
    count (the same approach as Compose Desktop). Accurate enough for a thumb
@@ -189,7 +189,7 @@ fun HorizontalScrollbar(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = Scrollbar(adapter, modifier, reverseLayout, style, interactionSource, isVertical = false)
 
-/* Shared impl. The root Box is the track (fixed thickness on the cross axis,
+/** Shared impl. The root Box is the track (fixed thickness on the cross axis,
    filling the main axis from the caller's modifier); a child Box is the thumb,
    positioned with an offset. Drag + track-click are handled on the track in
    track-relative coordinates (a stable origin), so the grab point stays under
@@ -334,7 +334,7 @@ private fun Scrollbar(
     }
 }
 
-/* Sizes the invisible drag-capture overlay to the full track. `inTrackDp`
+/** Sizes the invisible drag-capture overlay to the full track. `inTrackDp`
    comes from the caller pre-converted via LocalDensity (Option-B: layout
    coords are physical px, so px-to-dp goes through the current density). */
 private fun Modifier.matchTrackSize(inVertical: Boolean, inTrackDp: Dp, inThickness: Dp): Modifier =

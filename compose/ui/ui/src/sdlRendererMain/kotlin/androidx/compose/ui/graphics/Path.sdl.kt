@@ -7,7 +7,7 @@ import com.compose.sdl.graphics.ProjectPathIterator
 // MARK: Path + PathIterator — SDL3 renderer actuals
 // ==================
 
-/*
+/**
  * SDL3 counterpart of upstream `SkiaBackedPath.skiko.kt`. Vendored Skia path
  * is backed by `org.jetbrains.skia.Path`; SDL3 has no native path type, so
  * the vendored `expect fun Path()` and `expect fun PathIterator(...)`

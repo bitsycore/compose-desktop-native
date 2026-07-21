@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 // MARK: TLS certificate-chain dialog + cert cards
 // ==================
 
-/* Dialog showing the server's TLS certificate chain (one card per cert, plus a
+/** Dialog showing the server's TLS certificate chain (one card per cert, plus a
    Copy PEM action). Fetched on demand by the lock button in the URL bar. */
 @Composable
 internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -> Unit) {
@@ -66,7 +66,7 @@ internal fun TlsChainDialog(inChain: TlsChain?, inUrl: String, inOnDismiss: () -
     }
 }
 
-/* One certificate's summary card (subject / issuer / validity). Server-presented
+/** One certificate's summary card (subject / issuer / validity). Server-presented
    certs get a solid border; derived ones (issuer pulled from the OS store, or a
    name-only placeholder) get an accent-coloured border + a label. A self-signed
    cert shows "Self-signed" in green instead of repeating its issuer. */
@@ -115,7 +115,7 @@ internal fun CertCard(inIndex: Int, inCert: ChainCert) {
 
 internal val kSelfSignedColor = Color(0xFF3FB950L)
 
-/* Copy button — rounded, hover overlay, real click that copies inText and shows
+/** Copy button — rounded, hover overlay, real click that copies inText and shows
    a green check. Icon-only (per cert) flashes a small floating "Copied" bubble
    for 2s; the labelled variant (Copy chain) flips its label to "Copied" instead.
    Uses a non-catching Popup so it never dismisses the dialog or eats clicks. */
@@ -175,11 +175,11 @@ internal fun CertLine(inLabel: String, inValue: String, inValueColor: Color? = n
     }
 }
 
-/* Look up a CURLINFO_CERTINFO field by name (case-insensitive). */
+/** Look up a CURLINFO_CERTINFO field by name (case-insensitive). */
 internal fun certField(inFields: List<Pair<String, String>>, inName: String): String? =
     inFields.firstOrNull { it.first.equals(inName, ignoreCase = true) }?.second
 
-/* The CN= value out of a distinguished-name string. Handles every
+/** The CN= value out of a distinguished-name string. Handles every
    format the platform backends emit:
      "CN=R3, O=Let's Encrypt, C=US"        (Windows CertGetNameStringA)
      "/C=US/O=Let's Encrypt/CN=R3"          (OpenSSL X509_NAME_oneline)
@@ -192,6 +192,6 @@ internal fun cnOf(inDn: String): String? {
     return vMatch.groupValues[1].trim().ifBlank { null }
 }
 
-/* The host portion of a URL (for the chain dialog header). */
+/** The host portion of a URL (for the chain dialog header). */
 internal fun hostOf(inUrl: String): String =
     inUrl.substringAfter("://", inUrl).substringBefore("/").substringBefore("?").ifBlank { inUrl }

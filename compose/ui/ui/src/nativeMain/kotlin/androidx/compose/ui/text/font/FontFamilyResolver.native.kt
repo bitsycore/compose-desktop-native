@@ -4,7 +4,7 @@ package androidx.compose.ui.text.font
 // MARK: FontFamilyResolver — native actuals for vendored expects
 // ==================
 
-/*
+/**
  * Project-side actuals for the vendored `FontFamilyResolver.kt` (commonMain):
  *   * `internal expect class PlatformFontFamilyTypefaceAdapter()` — the "everything-
  *     that-isn't-a-FontListFontFamily" adapter. Upstream's skiko actual routes

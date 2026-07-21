@@ -54,7 +54,7 @@ import kotlin.math.sqrt
 // MARK: Sdl3DrawScope
 // ==================
 
-/* SDL3 implementation of DrawScope. SDL3's only public shape-rendering API
+/** SDL3 implementation of DrawScope. SDL3's only public shape-rendering API
    is SDL_RenderGeometry (triangle list with per-vertex colour) — there is
    no arc / stroke primitive. We tessellate every primitive into triangles
    here:
@@ -119,11 +119,11 @@ internal class Sdl3DrawScope(
 	internal fun setMatrix(a: Float, b: Float, c: Float, d: Float, e: Float, f: Float) {
 		fMa = a; fMb = b; fMc = c; fMd = d; fMe = e; fMf = f
 	}
-	// Current device affine (a,b,c,d,e,f) — screen = (a*x+c*y+e, b*x+d*y+f). Phase 4
+	// Current device affine (a,b,c,d,e,f) — screen = (a*x+c*y+e, b*x+d*y+f). Display-list
 	// replay reads this to re-transform captured layer-local vertices.
 	internal fun currentDeviceMatrix(): FloatArray = floatArrayOf(fMa, fMb, fMc, fMd, fMe, fMf)
 
-	// Phase 4: when set, flush() CAPTURES the tessellated batch (layer-local, if this
+	// When set, flush() CAPTURES the tessellated batch (layer-local, if this
 	// scope's base CTM is identity) instead of submitting to the GPU. null = normal
 	// immediate submit. See SdlDisplayList.
 	internal var recordingSink: GeometrySink? = null
@@ -143,14 +143,14 @@ internal class Sdl3DrawScope(
 	// count. kFloatsPerVertex must match SDL_Vertex's layout.
 	private val fVertexData = FloatArray(kBatchCapacity * kFloatsPerVertex)
 
-	/* Submit the accumulated triangles to SDL: copy the staged floats into the
+	/** Submit the accumulated triangles to SDL: copy the staged floats into the
 	   native SDL_Vertex buffer in one memcpy, then one SDL_RenderGeometry. Safe to
 	   call mid-scope when the buffer fills up (no cross-triangle state). */
 	fun flush() {
 		if (fBatchCount == 0) return
 		val vSink = recordingSink
 		if (vSink != null) {
-			// Phase 4 recording: capture the batch (layer-local) instead of submitting.
+			// Recording: capture the batch (layer-local) instead of submitting.
 			vSink.captureGeometry(fVertexData, fBatchCount)
 			fBatchCount = 0
 			return
@@ -168,7 +168,7 @@ internal class Sdl3DrawScope(
 		fBatchCount = 0
 	}
 
-	/* Releases the native vertex pool. Called by the renderer after the
+	/** Releases the native vertex pool. Called by the renderer after the
 	   drawer block + flush() complete. */
 	fun release() {
 		flush()
@@ -799,7 +799,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	/* Splits a polyline into the "on" runs of a DashPathEffect pattern (SDL3 has no
+	/** Splits a polyline into the "on" runs of a DashPathEffect pattern (SDL3 has no
 	   path-effect pipeline). [inIntervals] is on/off run lengths (Skia doubles an odd
 	   list); [inPhase] offsets the start into the pattern. Each returned run is a
 	   sub-polyline to stroke; the gaps are skipped. */
@@ -915,7 +915,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	/* Fills the convex wedge where two stroke segments meet at [inV], between the
+	/** Fills the convex wedge where two stroke segments meet at [inV], between the
 	   outer offset corners of the incoming (from [inPa]) and outgoing (to [inNb])
 	   segments. Round = a disc, Bevel = one triangle to the two corners, Miter =
 	   extends the outer edges to their apex (falls back to bevel past the limit). */
@@ -964,7 +964,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	/* Round / square end cap at [inEnd], oriented by the outward direction
+	/** Round / square end cap at [inEnd], oriented by the outward direction
 	   [inEnd] - [inNeighbor]. Butt draws nothing (the segment quad already ends flush). */
 	private fun emitCap(
 		inEnd: Pair<Float, Float>,
@@ -998,7 +998,7 @@ internal class Sdl3DrawScope(
 	// ============
 	//  Tessellation primitives
 
-	/* Number of arc segments from the arc's PIXEL length — one chord per ~4px
+	/** Number of arc segments from the arc's PIXEL length — one chord per ~4px
 	   of arc, so a 4px chip corner doesn't spend as many vertices as a 200px
 	   progress ring, and big shapes stop showing facets. The ~1px AA feather
 	   hides residual chord flatness; bounds keep tiny arcs ≥3 chords and
@@ -1100,7 +1100,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	/* Stroked ELLIPTIC arc — the stroke band follows the ellipse's outward normal
+	/** Stroked ELLIPTIC arc — the stroke band follows the ellipse's outward normal
 	   at each angle sample instead of a fixed radius, so a non-square oval strokes
 	   as a true elliptical ring (a circular ring would bulge on the short axis).
 	   Reduces to emitStrokedArc when rx == ry. Same solid-band + AA-fringe scheme. */
@@ -1135,7 +1135,7 @@ internal class Sdl3DrawScope(
 		}
 	}
 
-	/* Point on the ellipse at angle [inA] plus its unit OUTWARD normal, as
+	/** Point on the ellipse at angle [inA] plus its unit OUTWARD normal, as
 	   [bx, by, nx, ny]. The normal of (x/rx)²+(y/ry)²=1 is (cosθ/rx, sinθ/ry). */
 	private fun ellipseNormalPoint(inCx: Float, inCy: Float, inRx: Float, inRy: Float, inA: Float): FloatArray {
 		val vCa = cos(inA); val vSa = sin(inA)
@@ -1147,7 +1147,7 @@ internal class Sdl3DrawScope(
 		return floatArrayOf(vBx, vBy, vNx, vNy)
 	}
 
-	/* Round cap for an elliptic stroked arc: a disc of the half-stroke radius
+	/** Round cap for an elliptic stroked arc: a disc of the half-stroke radius
 	   centred on the centreline ellipse at [inAngleDeg]. */
 	private fun emitRoundCapEllipse(
 		inCx: Float, inCy: Float, inRx: Float, inRy: Float, inCapRadius: Float,
@@ -1214,7 +1214,7 @@ internal class Sdl3DrawScope(
 		writeVertex(cx, cy, inSampler.sample(cx, cy))
 	}
 
-	/* Antialiasing fringe: a quad whose SOLID edge (sA→sB) carries the shape's
+	/** Antialiasing fringe: a quad whose SOLID edge (sA→sB) carries the shape's
 	   colour at full coverage and whose FADE edge (fB→fA) carries the same colour
 	   at alpha 0, so SDL interpolates a ~1px feather along an edge. */
 	private fun emitFringeQuad(
@@ -1230,7 +1230,7 @@ internal class Sdl3DrawScope(
 		writeVertex(fAx, fAy, inSampler.sample(fAx, fAy), 0f)
 	}
 
-	/* Feathers one straight edge (x0,y0)→(x1,y1) outward along (inNx,inNy) — a
+	/** Feathers one straight edge (x0,y0)→(x1,y1) outward along (inNx,inNy) — a
 	   pre-scaled outward normal — from full alpha at the edge to 0 just outside.
 	   Used to AA the edges of rotated rects and filled paths (which are otherwise
 	   crisp only when axis-aligned). */
@@ -1240,7 +1240,7 @@ internal class Sdl3DrawScope(
 		emitFringeQuad(x0, y0, x1, y1, x1 + inNx, y1 + inNy, x0 + inNx, y0 + inNy, inSampler)
 	}
 
-	// Phase 4 replay: re-emit a captured (layer-local) batch through the CURRENT CTM.
+	// Display-list replay: re-emit a captured (layer-local) batch through the CURRENT CTM.
 	// The batch was recorded with an identity base CTM, so applying fMa..fMf here
 	// places it at the layer's transform. Colours/UVs pass through unchanged apart
 	// from [inAlphaMul] — the canvas's current alpha multiplier (an enclosing
@@ -1356,7 +1356,7 @@ private fun Sdl3DrawScope.samplerFor(
 	return Sampler { x, y -> vTransform(vBase.sample(x, y)) }
 }
 
-/* Resolves a ColorFilter into a reusable (Color) -> Color transform, hoisting any
+/** Resolves a ColorFilter into a reusable (Color) -> Color transform, hoisting any
    one-time cost (matrix copy, param unpacking) out of the per-vertex sample loop. */
 private fun colorFilterTransform(inFilter: ColorFilter): (ComposeColor) -> ComposeColor {
 	// Each branch binds a typed local for the transform, then returns it — a bare
@@ -1397,7 +1397,7 @@ private fun colorFilterTransform(inFilter: ColorFilter): (ComposeColor) -> Compo
 // renderer draws (SolidColor and gradients alike). Image blits keep their own
 // texture-colour-mod tint path in Sdl3Canvas.
 
-/* The ColorFilter.tint contract composites the tint as SOURCE over the drawn
+/** The ColorFilter.tint contract composites the tint as SOURCE over the drawn
    pixel as DESTINATION under [inMode] (default SrcIn = recolour, keep coverage).
    SDL has no per-pixel blender here, so we evaluate the separable formula in
    software for the modes UI actually uses; anything else defaults to SrcIn. */
@@ -1425,7 +1425,7 @@ private fun applyTint(inDst: ComposeColor, inTint: ComposeColor, inMode: BlendMo
 	}
 }
 
-/* 4x5 colour-matrix transform. ColorMatrix operates on channels in [0, 255]
+/** 4x5 colour-matrix transform. ColorMatrix operates on channels in [0, 255]
    with the fifth column an offset in the same scale (see ColorMatrix.kt), so we
    scale up, apply, clamp, and scale back to Compose's [0, 1] Color. */
 private fun applyColorMatrix(inColor: ComposeColor, inMatrix: androidx.compose.ui.graphics.ColorMatrix): ComposeColor {
@@ -1494,14 +1494,14 @@ private fun Sdl3DrawScope.sweepSampler(inB: SweepGradient, inSize: Size, inAlpha
 	}
 }
 
-/* Uniform stop positions for a gradient with no explicit stops. Built ONCE
+/** Uniform stop positions for a gradient with no explicit stops. Built ONCE
    per sampler (not per vertex — the old per-vertex list allocation dominated
    gradient fills). Sizes < 2 return an empty list; sampleColors early-outs
    before reading stops in those cases. */
 private fun uniformStops(inCount: Int): List<Float> =
 	if (inCount < 2) emptyList() else List(inCount) { it / (inCount - 1f) }
 
-/* Apply a gradient TileMode to a raw position t (0..1 is inside the gradient).
+/** Apply a gradient TileMode to a raw position t (0..1 is inside the gradient).
    Clamp holds the edge colour; Repeated wraps; Mirror reflects each period. Decal
    (transparent outside 0..1) is handled by the sampler, so it clamps here. */
 private fun tileT(inT: Float, inMode: TileMode): Float = when (inMode) {
@@ -1510,7 +1510,7 @@ private fun tileT(inT: Float, inMode: TileMode): Float = when (inMode) {
 	else -> inT.coerceIn(0f, 1f)
 }
 
-/* Sample the colour at position [0..1] along the gradient. */
+/** Sample the colour at position [0..1] along the gradient. */
 private fun sampleColors(
 	inColors: List<ComposeColor>,
 	inStops: List<Float>,

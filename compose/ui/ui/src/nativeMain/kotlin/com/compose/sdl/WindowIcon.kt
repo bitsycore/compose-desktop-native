@@ -21,13 +21,13 @@ import sdl3.SDL_Surface
 // the exact memory layout of SDL_PIXELFORMAT_RGBA32, so filling the surface is a
 // per-row memcpy with no conversion.
 
-/* True when the OS reports a dark system theme. UNKNOWN and LIGHT both read as
+/** True when the OS reports a dark system theme. UNKNOWN and LIGHT both read as
    "not dark", so the light icon is the default. */
 @OptIn(ExperimentalForeignApi::class)
 internal fun systemPrefersDarkTheme(): Boolean =
 	SDL_GetSystemTheme() == SDL_SystemTheme.SDL_SYSTEM_THEME_DARK
 
-/* Decodes one .rgba blob into a fresh SDL_Surface that OWNS its pixels (so it is
+/** Decodes one .rgba blob into a fresh SDL_Surface that OWNS its pixels (so it is
    safe to free once SDL_SetWindowIcon has copied it). Null on a malformed or
    truncated blob, or an allocation failure. */
 @OptIn(ExperimentalForeignApi::class)

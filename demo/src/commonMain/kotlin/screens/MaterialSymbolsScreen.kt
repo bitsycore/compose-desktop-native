@@ -22,7 +22,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsSharp
 // MARK: Material Symbols screen — variable-font icon engine showcase
 // ==================
 
-/* The :material-symbols engine demos: the four variable-font axes (FILL /
+/** The :material-symbols engine demos: the four variable-font axes (FILL /
    wght / GRAD / opsz), the animated fill transition, and the three style
    families. Runs the SAME shared code on native (IconFont over SDL3_ttf-fork
    / Skia) and JVM (Skiko direct) — differences between the builds = port
@@ -269,7 +269,7 @@ internal fun MaterialSymbolsScreen() {
     }
 }
 
-/* One click-toggled icon: FILL 0↔1 and tint animate together — swap-free
+/** One click-toggled icon: FILL 0↔1 and tint animate together — swap-free
    selected-state feedback, the Material 3 expressive icon pattern. */
 @Composable
 private fun AnimatedFillIcon(codepoint: Int, label: String) {

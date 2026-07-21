@@ -4,11 +4,11 @@ package apidemo
 // MARK: Variable substitution ({{name}})
 // ==================
 
-/* Matches a {{ name }} token. Names may contain letters, digits, _, . and -.
+/** Matches a {{ name }} token. Names may contain letters, digits, _, . and -.
    Surrounding whitespace inside the braces is tolerated. */
 private val kVarRegex = Regex("""\{\{\s*([A-Za-z0-9_.\-]+)\s*\}\}""")
 
-/* Replace every {{name}} token in inText with the matching enabled variable's
+/** Replace every {{name}} token in inText with the matching enabled variable's
    value. Unknown / disabled names are left untouched so the user can spot the
    ones that won't resolve. */
 fun substituteVars(inText: String, inVars: List<KeyVal>): String {
@@ -20,7 +20,7 @@ fun substituteVars(inText: String, inVars: List<KeyVal>): String {
     return kVarRegex.replace(inText) { vMatch -> vMap[vMatch.groupValues[1]] ?: vMatch.value }
 }
 
-/* Apply variable substitution across every field that actually gets sent — URL,
+/** Apply variable substitution across every field that actually gets sent — URL,
    query params, headers and body — returning a fully-resolved request. The
    original (template) request is left untouched. */
 fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
@@ -38,7 +38,7 @@ fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
     )
 }
 
-/* The distinct {{names}} referenced anywhere in the request that have no enabled
+/** The distinct {{names}} referenced anywhere in the request that have no enabled
    variable to fill them — surfaced as a warning in the editor. */
 fun unresolvedVars(inReq: ApiRequest, inVars: List<KeyVal>): List<String> {
     val vDefined = inVars
@@ -67,7 +67,7 @@ fun unresolvedVars(inReq: ApiRequest, inVars: List<KeyVal>): List<String> {
 // MARK: Copy as cURL
 // ==================
 
-/* Render inReq as a runnable, multi-line curl command (pass an already-resolved
+/** Render inReq as a runnable, multi-line curl command (pass an already-resolved
    request so the output has real values, not {{tokens}}). Enabled query params
    are folded into the URL; a Content-Type header is added for the body type
    unless the request already sets one. */
@@ -106,12 +106,12 @@ fun toCurl(inReq: ApiRequest): String {
     return vSb.toString()
 }
 
-/* URL-encode enabled form fields into an application/x-www-form-urlencoded body. */
+/** URL-encode enabled form fields into an application/x-www-form-urlencoded body. */
 fun formEncode(inForm: List<KeyVal>): String =
     inForm.filter { it.enabled && it.key.isNotBlank() }
         .joinToString("&") { "${urlEncode(it.key)}=${urlEncode(it.value)}" }
 
-/* The request URL with its enabled query params appended (percent-encoded). */
+/** The request URL with its enabled query params appended (percent-encoded). */
 internal fun urlWithParams(inReq: ApiRequest): String {
     val vTrimmed = inReq.url.trim()
     val vEnabled = inReq.params.filter { it.enabled && it.key.isNotBlank() }
@@ -121,10 +121,10 @@ internal fun urlWithParams(inReq: ApiRequest): String {
     return vTrimmed + vSep + vQuery
 }
 
-/* Single-quote a string for a POSIX shell, escaping any embedded quotes. */
+/** Single-quote a string for a POSIX shell, escaping any embedded quotes. */
 private fun shellQuote(inS: String): String = "'" + inS.replace("'", "'\\''") + "'"
 
-/* Minimal RFC-3986 percent-encoding for query keys / values. */
+/** Minimal RFC-3986 percent-encoding for query keys / values. */
 private fun urlEncode(inS: String): String = buildString {
     for (vByte in inS.encodeToByteArray()) {
         val vCode = vByte.toInt() and 0xFF

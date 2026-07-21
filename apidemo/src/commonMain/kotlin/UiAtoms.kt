@@ -30,7 +30,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // MARK: Small UI atoms (shared across panels / dialogs / sidebar)
 // ==================
 
-/* Method as a compact rounded badge (soft colour fill + coloured label), fixed
+/** Method as a compact rounded badge (soft colour fill + coloured label), fixed
    width so request names line up. */
 @Composable
 internal fun MethodTag(inMethod: ReqMethod) {
@@ -45,7 +45,7 @@ internal fun MethodTag(inMethod: ReqMethod) {
     }
 }
 
-/* Thin horizontal accent line showing where a dragged request row will drop
+/** Thin horizontal accent line showing where a dragged request row will drop
    (the open-tab strip uses the vertical DropBar). */
 @Composable
 internal fun RowDropBar() {
@@ -53,7 +53,7 @@ internal fun RowDropBar() {
     Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(c.accent, RoundedCornerShape(1.dp)))
 }
 
-/* Tab indices listed in inDots get a small accent dot after their label — used
+/** Tab indices listed in inDots get a small accent dot after their label — used
    to flag a tab that holds content (e.g. a non-empty request body). */
 @Composable
 internal fun TabBar(inTabs: List<String>, inSelected: Int, inDots: Set<Int> = emptySet(), inOnSelect: (Int) -> Unit) {
@@ -90,7 +90,7 @@ internal fun TogglePill(inLabel: String, inSelected: Boolean, inOnClick: () -> U
     ) { Text(inLabel, color = if (inSelected) c.onAccent else c.dim, fontSize = 12.sp) }
 }
 
-/* Compact single-line (or fixed-height multi-line) input — a BasicTextField in
+/** Compact single-line (or fixed-height multi-line) input — a BasicTextField in
    a slim bordered box, much shorter than the 56 dp Material OutlinedTextField. */
 @Composable
 internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier: Modifier = Modifier, inPlaceholder: String = "", inSingleLine: Boolean = true, inOnEnter: (() -> Unit)? = null) {
@@ -128,7 +128,7 @@ internal fun ThinField(inValue: String, inOnChange: (String) -> Unit, inModifier
     }
 }
 
-/* Small icon-only button (burger / pack / options / save / close). inPadding
+/** Small icon-only button (burger / pack / options / save / close). inPadding
    tightens the tap area for slimmer rows. */
 @Composable
 internal fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifier, inSize: Dp = 18.dp, inPadding: Dp = 6.dp, inOnClick: () -> Unit) {
@@ -152,14 +152,14 @@ internal fun IconBtn(inIcon: Int, inDesc: String, inModifier: Modifier = Modifie
     }
 }
 
-/* Outlined icon+label action (New request / Add row / pack actions). */
+/** Outlined icon+label action (New request / Add row / pack actions). */
 @Composable
 internal fun OutlinedAction(inIcon: Int, inLabel: String, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
     OutlinedButton(onClick = inOnClick) { BtnContent(inIcon, inLabel, c.accent) }
 }
 
-/* Filled red icon+label button for destructive / stop actions (delete, cancel, quit).
+/** Filled red icon+label button for destructive / stop actions (delete, cancel, quit).
    Uses the m3 Button so its size + ripple + interaction match every other
    Button in the app — previously handrolled Box + background + clickable + padding
    gave it a different height / horizontal padding, and the Discard button sat
@@ -173,7 +173,7 @@ internal fun DangerButton(inLabel: String, inIcon: Int, inOnClick: () -> Unit) {
     ) { BtnContent(inIcon, inLabel, Color.White) }
 }
 
-/* Bordered icon+label chip (Copy / Save as / Cancel). */
+/** Bordered icon+label chip (Copy / Save as / Cancel). */
 @Composable
 internal fun IconLabelChip(inIcon: Int, inLabel: String, inOnClick: () -> Unit) {
     val c = LocalAppColors.current
@@ -183,7 +183,7 @@ internal fun IconLabelChip(inIcon: Int, inLabel: String, inOnClick: () -> Unit) 
     ) { BtnContent(inIcon, inLabel, c.dim, 14.dp) }
 }
 
-/* Icon + label row used inside buttons. */
+/** Icon + label row used inside buttons. */
 @Composable
 internal fun BtnContent(inIcon: Int, inLabel: String, inColor: Color, inSize: Dp = 16.dp) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -8,7 +8,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 // MARK: makeSelectionModifier — native actual
 // ==================
 
-/*
+/**
  Mirrors upstream desktopMain / macosMain / iosMain actuals — all just
  delegate to `makeDefaultSelectionModifier`. That helper lives inside
  `SelectionController.kt` (vendored) and installs a SelectionModifierNode

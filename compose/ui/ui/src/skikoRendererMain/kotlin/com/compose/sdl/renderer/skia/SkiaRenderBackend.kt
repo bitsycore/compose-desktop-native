@@ -13,7 +13,7 @@ import org.jetbrains.skia.Color as SkColor
 // MARK: SkiaRenderBackend
 // ==================
 
-/* RenderBackend that paints through Skia. Picks the concrete SkiaBridge
+/** RenderBackend that paints through Skia. Picks the concrete SkiaBridge
    (CPU raster, OpenGL, or Metal) from gpuMode. Canvas is scaled by the
    per-frame DPR so the layout (in logical points) maps to physical pixels.
 

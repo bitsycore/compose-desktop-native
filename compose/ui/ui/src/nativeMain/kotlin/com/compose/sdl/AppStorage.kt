@@ -9,7 +9,7 @@ import sdl3.SDL_free
 // MARK: App data directory
 // ==================
 
-/* Returns a per-user, writable directory an app can drop its config / state
+/** Returns a per-user, writable directory an app can drop its config / state
    into, creating it if needed. Wraps SDL_GetPrefPath, which resolves to the
    platform-appropriate location (e.g. %APPDATA%\inOrg\inApp\ on Windows,
    ~/Library/Application Support/inApp/ on macOS, $XDG_DATA_HOME/inApp/ on

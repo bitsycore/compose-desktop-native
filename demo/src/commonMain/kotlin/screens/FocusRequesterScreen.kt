@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 // MARK: FocusRequesterScreen
 // ==================
 
-/* Programmatic focus via FocusRequester + LocalFocusManager. Two
+/** Programmatic focus via FocusRequester + LocalFocusManager. Two
    focusable boxes; buttons in the right column move focus to either
    one, or clear focus globally. */
 @Composable

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 // MARK: AnnotatedStringScreen
 // ==================
 
-/* Exercises Text(AnnotatedString): each contiguous-style run is rendered
+/** Exercises Text(AnnotatedString): each contiguous-style run is rendered
    as its own BasicText in a Row. Per-run color / font size / font
    weight (via FontVariation.Weight) apply directly; backgrounds tint
    via Modifier.background; underline / line-through paint via

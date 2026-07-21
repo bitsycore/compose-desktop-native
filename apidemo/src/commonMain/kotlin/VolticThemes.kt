@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 // driven by the selected palette; the legacy AppColors abstraction is DERIVED
 // from the active scheme (appColorsFromScheme) so existing widgets follow along.
 
-/* Colors M3's ColorScheme has no slot for. Warning is the amber "unsaved /
+/** Colors M3's ColorScheme has no slot for. Warning is the amber "unsaved /
    undefined variable" accent; read it with VolticTheme.extended.warning. */
 @Immutable
 data class VolticExtendedColors(
@@ -27,7 +27,7 @@ data class VolticExtendedColors(
     val onWarningContainer: Color,
 )
 
-/* One palette's four schemes: the M3 light/dark ColorSchemes + the matching
+/** One palette's four schemes: the M3 light/dark ColorSchemes + the matching
    extended groups. */
 @Immutable
 class VolticScheme(
@@ -37,11 +37,11 @@ class VolticScheme(
     val darkExtended: VolticExtendedColors,
 )
 
-/* The palettes the user can pick from. `id` is the stable persistence key. */
+/** The palettes the user can pick from. `id` is the stable persistence key. */
 enum class VolticPalette(val id: String, val label: String) {
     Purple("purple", "Kotlin Purple"),
     Orange("orange", "Voltic Orange"),
-    PurpleStock("purple-stock", "Purple (stock M3)");
+    PurpleStock("purple-stock", "Purple");
 
     val scheme: VolticScheme
         get() = when (this) {
@@ -63,7 +63,7 @@ object VolticTheme {
         @Composable get() = LocalVolticExtended.current
 }
 
-/* Maps the active M3 ColorScheme onto the app's legacy AppColors slots, so the
+/** Maps the active M3 ColorScheme onto the app's legacy AppColors slots, so the
    ~50 existing `LocalAppColors.current` call sites theme with the palette:
    panel = surface, field = surfaceVariant, border = the subtle outlineVariant,
    dim = onSurfaceVariant, accent = primary. */

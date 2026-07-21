@@ -12,7 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 // MARK: TextFieldSelectionState — native actuals
 // ==================
 
-/*
+/**
  Byte-close mirror of upstream macosMain — desktop tap / selection gestures
  delegate to the default helpers baked into TextFieldSelectionState.
  addBasicTextFieldTextContextMenuComponents = no-op (TODO CMP-7819).

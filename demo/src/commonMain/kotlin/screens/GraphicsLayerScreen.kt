@@ -18,7 +18,7 @@ import kotlinx.coroutines.delay
 // MARK: GraphicsLayerScreen
 // ==================
 
-/* Demonstrates Modifier.graphicsLayer: rotation / scale / alpha /
+/** Demonstrates Modifier.graphicsLayer: rotation / scale / alpha /
    translation, and the cacheKey opt-in that pre-renders a subtree into
    a texture and reuses it across frames.
    The same modifier API is implemented in both the Skia and SDL3

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 
-/* Icon + label row used inside nearly every DropdownMenuItem. */
+/** Icon + label row used inside nearly every DropdownMenuItem. */
 @Composable
 internal fun MenuRow(inIcon: Int, inLabel: String, inColor: Color? = null) {
     val c = LocalAppColors.current

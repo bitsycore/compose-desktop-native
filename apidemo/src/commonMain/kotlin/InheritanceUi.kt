@@ -21,7 +21,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // MARK: Headers tab (inherited read-only + own editable)
 // ==================
 
-/* A request tab pairing an inherited (read-only, source-tagged) list with the
+/** A request tab pairing an inherited (read-only, source-tagged) list with the
    request's own editable list: Override copies an inherited entry down, and own
    rows that shadow an inherited one get an OverrideMark. Used by Query / Var /
    Headers — the only differences are the key case-sensitivity and the labels. */
@@ -52,21 +52,21 @@ internal fun InheritedEditableTab(
     }
 }
 
-/* Request Headers tab: inherited headers (case-insensitive) + the request's own. */
+/** Request Headers tab: inherited headers (case-insensitive) + the request's own. */
 @Composable
 internal fun HeadersTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) =
     InheritedEditableTab(inInherited, inReq.headers, inCaseInsensitive = true, inReadOnly = inReadOnly, inOwnTitle = "Request headers",
         inOnOverride = { vKv -> inEdit { it.copy(headers = it.headers + vKv) } },
         inOnChange = { v -> inEdit { it.copy(headers = v) } })
 
-/* Request Query tab: inherited query params (case-sensitive) + the request's own. */
+/** Request Query tab: inherited query params (case-sensitive) + the request's own. */
 @Composable
 internal fun QueryTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnly: Boolean, inEdit: (((ApiRequest) -> ApiRequest)) -> Unit) =
     InheritedEditableTab(inInherited, inReq.params, inCaseInsensitive = false, inReadOnly = inReadOnly, inOwnTitle = "Request query params",
         inOnOverride = { vKv -> inEdit { it.copy(params = it.params + vKv) } },
         inOnChange = { v -> inEdit { it.copy(params = v) } })
 
-/* Request Var tab: inherited variables (case-sensitive {{name}}) + the request's
+/** Request Var tab: inherited variables (case-sensitive {{name}}) + the request's
    own. A request's own variable overrides the same name inherited from a pack /
    the session when the request is sent. */
 @Composable
@@ -79,7 +79,7 @@ internal fun VarTab(inReq: ApiRequest, inInherited: List<InheritedKv>, inReadOnl
 // MARK: Inheritance UI (source tags / override markers / inherited lists)
 // ==================
 
-/* A small pill naming the kind of scope an inherited value comes from ("Session"
+/** A small pill naming the kind of scope an inherited value comes from ("Session"
    / "Pack"); hover shows the full path (e.g. "Methods / Nested"). The path tooltip
    is skipped when it would just repeat the label (the session). */
 @Composable
@@ -101,7 +101,7 @@ internal fun SourceTag(inLabel: String, inPath: String) {
     }
 }
 
-/* The tiny marker shown on an own value that shadows an inherited one — hover for
+/** The tiny marker shown on an own value that shadows an inherited one — hover for
    "Overrides <key> from <path>". */
 @Composable
 internal fun OverrideMark(inKey: String, inPath: String) {
@@ -120,7 +120,7 @@ internal fun OverrideMark(inKey: String, inPath: String) {
     }
 }
 
-/* Read-only list of inherited key/values, each tagged with its source. When not
+/** Read-only list of inherited key/values, each tagged with its source. When not
    already overridden in this scope (own key absent) and inOnOverride != null, a
    row offers a one-click Override that copies it into this scope's own list. */
 @Composable
@@ -159,7 +159,7 @@ internal fun InheritedKvSection(
 // MARK: Key/value editor
 // ==================
 
-/* inOverrideInfo maps an own row to the source label it shadows (or null) so the
+/** inOverrideInfo maps an own row to the source label it shadows (or null) so the
    editor can flag overriding rows with an OverrideMark. It sits before inOnChange
    so existing trailing-lambda calls (KeyValEditor(rows) { … }) still bind to onChange. */
 @Composable

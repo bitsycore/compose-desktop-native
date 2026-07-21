@@ -37,12 +37,12 @@ import com.compose.sdl.graphics.prepareLayerTransformationMatrix
 // MARK: SdlRenderNode — RETAINED (texture-cached) NativeRenderNode
 // ==================
 
-/*
- The SDL caching node — the perf payoff. Records a layer's drawing ONCE into an
- offscreen SDL texture; replay is a cheap textured blit under the layer transform,
- NOT a re-tessellation (compare DeferredRenderNode, which re-runs the block every
- replay). Gated behind CDN_LAYERCACHE=1 while it's verified; DeferredRenderNode
- stays the default.
+/**
+ The texture-caching node (CDN_LAYERCACHE=texture — a fallback; the geo
+ display-list node SdlDisplayListRenderNode is the default, see RENDERER.md §3).
+ Records a layer's drawing ONCE into an offscreen SDL texture; replay is a cheap
+ textured blit under the layer transform, NOT a re-tessellation (compare
+ DeferredRenderNode, which re-runs the block every replay).
 
  CORRECT-BY-CONSTRUCTION nesting, no upstream divergence: SDL textures composite
  children BY VALUE, unlike skiko's by-reference Picture, so a naive "cache every
@@ -52,7 +52,7 @@ import com.compose.sdl.graphics.prepareLayerTransformationMatrix
  block (children composite their own live textures, so no staleness). If it didn't
  → it's a leaf → keep the texture and just blit it henceforth. Leaves (text runs,
  icons, shapes — the bulk of static content like the sidebar) stop re-tessellating;
- parents cheaply re-composite. See RENDERER.md §4b / §13.
+ parents cheaply re-composite.
 */
 internal class SdlRenderNode : NativeRenderNode {
 
@@ -142,9 +142,9 @@ internal class SdlRenderNode : NativeRenderNode {
 		// premultiplied offscreen (the heart painterResource rendered visibly wrong),
 		// so a leaf that draws any image bails to the crisp block-replay. Text/shapes/
 		// solid fills bump other DrawStats counters and stay cached (pixel-equal).
-		// (A true bit-exact cache of such content is Phase 4's cached-geometry list,
-		// which has no texture round-trip.) Costs little: icons are blits, not
-		// tessellation — the big tessellation cost is text, which still caches.
+		// (A true bit-exact cache of such content is SdlDisplayListRenderNode's
+		// geometry list, which has no texture round-trip.) Costs little: icons are
+		// blits, not tessellation — the big tessellation cost is text, which still caches.
 		val imgBlitsBefore = DrawStats.imageBlits
 		fRecordingStack.add(this)
 		try {

@@ -4,7 +4,7 @@ package androidx.compose.ui.text.intl
 // MARK: PlatformLocaleDelegate native actual
 // ==================
 
-/*
+/**
  * Returns a `PlatformLocaleDelegate` whose `current` is the OS preferred-locale
  * list, ordered by preference, from SDL (see
  * com.compose.sdl.text.systemPreferredLocaleTags). Falls back to a single-entry

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 // MARK: MaterialSymbolsIcon — COMMON API
 // ==================
 
-/* The public Material Symbols surface, declared in commonMain so consumers'
+/** The public Material Symbols surface, declared in commonMain so consumers'
    shared code (and the IDE's common analysis) resolve it directly. Rendering
    goes through the internal expect below:
 
@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
    jvm resources at font/<Style>.ttf on JVM — see :demo's build file). */
 sealed class MaterialSymbolsIcon {
 
-    /* Font-family key the glyphs render under (also the install/cache key). */
+    /** Font-family key the glyphs render under (also the install/cache key). */
     abstract val Family: String
 
-    /* Where the app is expected to ship this style's variable font. */
+    /** Where the app is expected to ship this style's variable font. */
     abstract val DefaultResourcePath: String
 
     @Composable
@@ -78,7 +78,7 @@ object MaterialSymbolsRounded : MaterialSymbolsIcon() {
     override val DefaultResourcePath: String = "font/MaterialSymbolsRounded.ttf"
 }
 
-/* Default positions of the four Material Symbols variable-font axes. */
+/** Default positions of the four Material Symbols variable-font axes. */
 object MaterialIconAxisDefaults {
     const val Fill: Float = 0f
     const val Weight: Int = 400
@@ -86,7 +86,7 @@ object MaterialIconAxisDefaults {
     const val OpticalSize: Int = 24
 }
 
-/* Per-stack glyph renderer — receives the tint already resolved. */
+/** Per-stack glyph renderer — receives the tint already resolved. */
 @Composable
 internal expect fun renderMaterialSymbol(
     style: MaterialSymbolsIcon,
@@ -101,7 +101,7 @@ internal expect fun renderMaterialSymbol(
     opticalSize: Int,
 )
 
-/* Converts a Unicode codepoint to a String, handling supplementary-plane
+/** Converts a Unicode codepoint to a String, handling supplementary-plane
    codepoints (≥0x10000) via UTF-16 surrogate pairs. */
 internal fun codepointToString(codepoint: Int): String {
     if (codepoint < 0x10000) return Char(codepoint).toString()

@@ -16,7 +16,7 @@ import com.compose.sdl.*
 // MARK: Desktop integration (SDL3 / platform)
 // ==================
 
-/* OS integration the SDL3 backend exposes and upstream Compose Multiplatform
+/** OS integration the SDL3 backend exposes and upstream Compose Multiplatform
    does not: open URLs / files with the default handler, reveal a folder in the
    platform file manager, resolve the per-user app-data directory, and register
    in-memory resources at runtime. */

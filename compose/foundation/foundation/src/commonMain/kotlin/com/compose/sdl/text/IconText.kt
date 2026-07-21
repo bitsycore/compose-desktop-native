@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.TextUnit
 // MARK: IconText — project-only text composable for icon fonts
 // ==================
 
-/*
+/**
  A minimal project text composable that renders a codepoint through a named
  icon font with optional variable-font axis settings (Material Symbols).
 

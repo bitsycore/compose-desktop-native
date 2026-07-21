@@ -15,7 +15,7 @@ import com.compose.sdl.graphics.decodeEncodedImageBitmap
 // MARK: Image actuals — SDL renderer
 // ==================
 
-/* Decoding goes through the :ui hook the SDL backend registers at init
+/** Decoding goes through the :ui hook the SDL backend registers at init
    (SDL3_image, IMG auto-detect). resourceDensity/targetDensity are ignored:
    under this port's Option-B density flow layout runs in physical pixels and
    drawables ship at a single density, so no decode-time rescale applies. */
@@ -23,7 +23,7 @@ internal actual fun ByteArray.toImageBitmap(resourceDensity: Int, targetDensity:
 	decodeEncodedImageBitmap(this)
 		?: error("Image decode failed — is the render backend initialised before painterResource ran?")
 
-/* SVG on SDL: SDL3_image rasterises SVG at its intrinsic size (IMG_LoadSVG),
+/** SVG on SDL: SDL3_image rasterises SVG at its intrinsic size (IMG_LoadSVG),
    so the "element" is just the raw bytes and the painter is the rasterised
    bitmap. No DOM, no vector scaling — prefer XML vector drawables for
    resolution-independent art on this renderer. */

@@ -76,7 +76,7 @@ internal fun OptionsMenu(
 // MARK: Method picker (dropdown)
 // ==================
 
-/* Panel 2 — one unified bar: a method dropdown (coloured label + unfold arrows),
+/** Panel 2 — one unified bar: a method dropdown (coloured label + unfold arrows),
    a borderless URL field that melts into the bar, and Send (or Cancel). */
 @Composable
 internal fun UrlBar(
@@ -177,7 +177,7 @@ internal fun UrlBar(
     }
 }
 
-/* Bottom-of-panel-3 dropdown choosing the body type (None/Text/Form/File). */
+/** Bottom-of-panel-3 dropdown choosing the body type (None/Text/Form/File). */
 @Composable
 internal fun BodyTypeMenu(inType: BodyType, inEnabled: Boolean, inOnPick: (BodyType) -> Unit) {
     val c = LocalAppColors.current

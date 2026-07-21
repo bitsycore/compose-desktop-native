@@ -32,11 +32,11 @@ internal val kPackColors: List<Long> = listOf(
     0xFFFF7043, 0xFF8D6E63, 0xFF78909C, 0xFFBDBDBD, 0xFF5C7CFA,
 )
 
-/* The palette colour for a 1-based pack-colour index, or null when unset. */
+/** The palette colour for a 1-based pack-colour index, or null when unset. */
 internal fun packColor(inIndex: Int): Color? =
     if (inIndex in 1..kPackColors.size) Color(kPackColors[inIndex - 1]) else null
 
-/* Default save name for an image response, by content type. */
+/** Default save name for an image response, by content type. */
 internal fun imageFileName(inContentType: String?): String = when {
     inContentType == null -> "image.bin"
     inContentType.contains("png", ignoreCase = true) -> "image.png"

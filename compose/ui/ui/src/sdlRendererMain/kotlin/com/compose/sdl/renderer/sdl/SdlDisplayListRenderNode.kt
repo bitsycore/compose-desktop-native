@@ -35,16 +35,16 @@ import com.compose.sdl.graphics.offscreenRenderer
 import com.compose.sdl.graphics.prepareLayerTransformationMatrix
 
 // ==================
-// MARK: SdlDisplayListRenderNode — cached-GEOMETRY retained node (Phase 4)
+// MARK: SdlDisplayListRenderNode — cached-GEOMETRY retained node (the default)
 // ==================
 
-/*
+/**
  The robust retained node. record() captures a leaf's tessellated geometry ONCE (in
  layer-local space, via a capture canvas that touches no GPU); drawInto() re-emits
  those cached vertices through the layer transform — crisp under ANY transform
  (vertices re-transformed, not a resampled texture), bit-exact (no texture round-trip),
  and with NO per-frame render-target state (so none of the texture node's timing-
- dependent nondeterminism). See RENDERER.md §3/§13.
+ dependent nondeterminism). See RENDERER.md §3.
 
  Captures tessellated geometry, plain + spanned text runs, and Material Symbols icon
  glyphs. A leaf whose block draws something not-yet-capturable (image blits, saveLayer,

@@ -6,7 +6,7 @@ import androidx.compose.ui.geometry.Offset
 // MARK: RenderEffect / BlurEffect / OffsetEffect — SDL3 renderer actuals
 // ==================
 
-/*
+/**
  * SDL3 counterpart of upstream `SkiaBackedRenderEffect.skiko.kt`. SDL3 has
  * no render-effect / blur / offset filter pipeline (that would require an
  * offscreen framebuffer + shader chain), so `isSupported()` always returns

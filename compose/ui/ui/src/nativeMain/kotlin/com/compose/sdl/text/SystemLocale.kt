@@ -16,7 +16,7 @@ import sdl3.SDL_free
 // MARK: System locale (SDL)
 // ==================
 
-/*
+/**
  * The OS preferred-locale list as BCP47 tags (language[-REGION]), ordered by
  * preference, read via SDL_GetPreferredLocales(). Backs Locale.current and
  * LocaleList.current (androidx.compose.ui.text.intl), which in turn key Material

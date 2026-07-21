@@ -130,7 +130,7 @@ internal fun DispatchersScreen() {
     }
 }
 
-/* Tiny helper to label which thread we're observing — K/N doesn't expose
+/** Tiny helper to label which thread we're observing — K/N doesn't expose
    Thread.currentThread() in commonMain. We just attach the current
    monotonic timestamp so the printed string differs each call. */
 private fun threadHint(): String {

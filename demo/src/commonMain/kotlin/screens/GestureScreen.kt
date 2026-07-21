@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 // MARK: GestureScreen
 // ==================
 
-/* Exercises the new pointerInput + gesture DSL: detectTapGestures with
+/** Exercises the new pointerInput + gesture DSL: detectTapGestures with
    onTap / onDoubleTap / onLongPress, and detectDragGestures driving a
    draggable square via per-frame deltas. */
 @Composable

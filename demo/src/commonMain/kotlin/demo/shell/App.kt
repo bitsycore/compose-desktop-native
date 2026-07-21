@@ -42,7 +42,7 @@ import demo.shim.blend
 // MARK: App shell — sidebar + content
 // ==================
 
-/* Platform-neutral showcase shell. The sidebar dropdown switches between the
+/** Platform-neutral showcase shell. The sidebar dropdown switches between the
    categories returned by allCategories() (common Core + Material 3, plus whatever
    getPlatformCategories() contributes). Nothing here touches project-only APIs —
    the same code runs on native today and on a future jvm target. */
@@ -107,7 +107,7 @@ fun App(isJvm: Boolean = false) {
     }
 }
 
-/* The category dropdown at the top of the sidebar. A styled trigger row (current
+/** The category dropdown at the top of the sidebar. A styled trigger row (current
    category + chevron) opens an anchored menu listing every category. */
 @Composable
 private fun CategorySelector(

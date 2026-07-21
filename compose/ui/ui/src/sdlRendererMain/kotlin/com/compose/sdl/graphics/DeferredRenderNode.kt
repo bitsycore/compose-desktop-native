@@ -28,25 +28,17 @@ import androidx.compose.ui.unit.LayoutDirection
 // MARK: DeferredRenderNode — replay-the-block NativeRenderNode
 // ==================
 
-/*
- The renderer-agnostic [NativeRenderNode] both renderers use today. It does NOT
- cache rasterised output: [record] stores the draw block; [drawInto] REPLAYS it
- against the target canvas under the node's transform / clip / shadow / alpha. This
- is behaviour-identical to the pre-refactor paths it replaces — the old
- GraphicsLayer.native lambda-replay AND ProjectOwnedLayer's transform/shadow/clip —
- now unified in one place behind the RenderNode seam.
-
- It is the correct-but-unoptimised node. The perf win (stop re-tessellating on
- replay) comes from swapping the per-renderer createNativeRenderNode actual to a
- caching node — skiko RenderNode (a real display list) on Skia, an offscreen /
- cached-geometry display list on SDL — WITHOUT touching GraphicsLayer. See
- RENDERER.md §4 (Phase 2 = that swap).
+/**
+ The uncached fallback [NativeRenderNode] (CDN_LAYERCACHE=off): [record] stores
+ the draw block; [drawInto] REPLAYS it against the target canvas under the node's
+ transform / clip / shadow / alpha every frame. Always correct, never stale —
+ the reference the caching nodes (SdlDisplayListRenderNode / SdlRenderNode) are
+ verified against.
 
  Transform is applied via [prepareLayerTransformationMatrix] + canvas.concat, the
  SAME matrix GraphicsLayerOwnerLayer uses for hit-testing (mapOffset), so draw and
  hit-test provably agree. Shadow + rounded/shape clip go through the project canvas
- interfaces (NativeShadowCanvas / NativeShapeClipCanvas), exactly as the old
- ProjectOwnedLayer did.
+ interfaces (NativeShadowCanvas / NativeShapeClipCanvas).
 */
 internal class DeferredRenderNode : NativeRenderNode {
 
@@ -157,9 +149,8 @@ internal class DeferredRenderNode : NativeRenderNode {
 		// Content clip.
 		if (clip && w > 0f && h > 0f) applyClip(canvas)
 
-		// Offscreen for alpha (behaviour-preserving: the old paths saveLayer'd on
-		// alpha<1). ModulateAlpha suppresses the offscreen (alpha folds per-op) — but
-		// our DrawScope has no per-op multiplier yet, so it still composites here.
+		// Alpha propagates as a per-op multiplier through the canvas's saveLayer
+		// (SDL has no offscreen layer compositing; see Sdl3Canvas.saveLayer).
 		val needsAlphaLayer = alpha < 1f && w > 0f && h > 0f
 		if (needsAlphaLayer) {
 			canvas.saveLayer(

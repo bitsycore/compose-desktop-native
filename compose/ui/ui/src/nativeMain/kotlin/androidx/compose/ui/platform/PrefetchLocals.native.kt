@@ -7,7 +7,7 @@ import androidx.compose.ui.InternalComposeUiApi
 // MARK: LocalPlatformPrefetchScheduler
 // ==================
 
-/*
+/**
  Upstream declares this in ui/platform/CompositionLocals.skiko.kt (which we don't vendor — it's
  platform-scene heavy) with an `error("not present")` default. Lazy layout reads it via
  `rememberDefaultPrefetchScheduler`. We give it a no-op scheduler default: prefetch is a

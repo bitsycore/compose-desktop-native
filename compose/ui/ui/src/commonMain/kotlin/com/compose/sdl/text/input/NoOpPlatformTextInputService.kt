@@ -10,7 +10,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 // MARK: NoOpPlatformTextInputService
 // ==================
 
-/*
+/**
  A no-op `PlatformTextInputService` used by ComposeOwner / StubOwner /
  RootForTest to satisfy the deprecated `TextInputService` field the vendored
  Owner surface still exposes. Modern text input goes through

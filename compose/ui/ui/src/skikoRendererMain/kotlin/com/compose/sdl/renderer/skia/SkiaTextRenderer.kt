@@ -43,7 +43,7 @@ import org.jetbrains.skia.FontVariation as SkiaFontVariation
 // substring for the whole session. Lookups stay a single hash op.
 private const val kWidthCacheMax: Int = 16384
 
-/* Replaces SDL3TextRenderer. Uses Skia for measurement + draw.
+/** Replaces SDL3TextRenderer. Uses Skia for measurement + draw.
 
    IMPORTANT: in Skiko 0.144.6, the typefaces returned by FontMgr.default
    .matchFamilyStyle on macOS go through SkTypeface_Mac::onCharsToGlyphs,
@@ -72,7 +72,7 @@ class SkiaTextRenderer {
 
     private val fTypeface: Typeface? = pickTypeface()
 
-    /* Typeface key bundles family with a stable string representation of any
+    /** Typeface key bundles family with a stable string representation of any
        variable-font axis settings, so each variant gets its own makeClone'd
        typeface in the cache. Null variations / null family resolve to the
        default-font slot. */
@@ -85,7 +85,7 @@ class SkiaTextRenderer {
         return inV.sortedBy { it.axisName }.joinToString(",") { "${it.axisName}=${it.toVariationValue(null)}" }
     }
 
-    /* Overrides the wght axis (or adds one) on top of caller-supplied variations,
+    /** Overrides the wght axis (or adds one) on top of caller-supplied variations,
        so per-span FontWeight can be applied without discarding the base font's
        other axes (e.g. a Material Symbols icon that already carries FILL/GRAD/opsz).
        weight=400 short-circuits back to the caller list — the outer drawLine already
@@ -108,7 +108,7 @@ class SkiaTextRenderer {
     // Cache of measured widths per (typefaceKey, text, fontSize).
     private val fWidthCache = mutableMapOf<Triple<TypefaceKey, String, Int>, Int>()
 
-    /* WORKAROUND for Skiko 0.144.6 / macOS — both Font.measureText and
+    /** WORKAROUND for Skiko 0.144.6 / macOS — both Font.measureText and
        Font.measureTextWidth call into SkFont::measureText, which goes through
        SkTypeface_Mac::onCharsToGlyphs and aborts inside sk_malloc_flags. Same
        code path even for a file-loaded typeface, because SkFontMgr_Mac wraps
@@ -251,7 +251,7 @@ class SkiaTextRenderer {
         }
     }
 
-    /* Aligns a line's pen X inside the box by its natural line width. */
+    /** Aligns a line's pen X inside the box by its natural line width. */
     private fun alignX(inX: Float, inBoxWidth: Int, inLineWidth: Float, inAlign: TextAlign): Float =
         when (inAlign) {
             TextAlign.Start  -> inX
@@ -260,7 +260,7 @@ class SkiaTextRenderer {
             else             -> inX
         }
 
-    /* Renders ONE wrapped line inside a per-line box, with per-run styling and a
+    /** Renders ONE wrapped line inside a per-line box, with per-run styling and a
        common baseline. Mirrors Sdl3TextRenderer.drawText's spans path: styled
        prefix advances, alignment width = sum of styled run advances, common
        baseline centres the line's TALLEST run cell in the box, background rect
@@ -415,7 +415,7 @@ class SkiaTextRenderer {
         }
     }
 
-    /* Greedy soft-wrap that also tracks each line's start index in the
+    /** Greedy soft-wrap that also tracks each line's start index in the
        ORIGINAL text. Hard lines (split on '\n') always start a new line,
        and the '\n' is consumed between them. Long hard lines are split at
        whitespace (the trailing whitespace stays attached to the preceding
@@ -499,7 +499,7 @@ class SkiaTextRenderer {
         }
     }
 
-    /* Width = sum of per-glyph advances. We don't use Font.measureTextWidth
+    /** Width = sum of per-glyph advances. We don't use Font.measureTextWidth
        because in Skiko 0.148.2 it returns roughly half the real advance
        (measureText also undermeasures: rect.width ≈ 30 vs sum=62 for
        "Disabled" at 16px Roboto). getStringGlyphs + getWidths bypasses
@@ -544,7 +544,7 @@ class SkiaTextRenderer {
         return vFont
     }
 
-    /* Looks up a registered IconFont typeface by family name and applies any
+    /** Looks up a registered IconFont typeface by family name and applies any
        variable-font axes via Typeface.makeClone. Caches the result (including
        failure → null) so we don't re-open or re-clone per frame. */
     private fun resolveTypeface(inKey: TypefaceKey, inFamily: String?, inVariations: List<ComposeFontVariation.Setting>?): Typeface? {

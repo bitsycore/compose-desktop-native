@@ -34,19 +34,19 @@ class ProjectPath : Path {
 
 	private val fCommands = mutableListOf<PathCommand>()
 
-	/* Read-only view for renderers — public for cross-module access. */
+	/** Read-only view for renderers — public for cross-module access. */
 	val commands: List<PathCommand> get() = fCommands
 
 	// Bumped on destructive edits (reset / translate). Appends don't bump —
 	// contentKey folds the size in, so any append changes the key anyway.
 	private var fGeneration = 0
 
-	/* Monotonic content key: same key ⇒ identical command list (within one
+	/** Monotonic content key: same key ⇒ identical command list (within one
 	   generation the list only ever appends). Renderers use it to invalidate
 	   cached tessellations. */
 	val contentKey: Long get() = (fGeneration.toLong() shl 32) or (fCommands.size.toLong() and 0xFFFFFFFFL)
 
-	/* Renderer-side linearisation cache slot (see Sdl3DrawScope.linearisePath):
+	/** Renderer-side linearisation cache slot (see Sdl3DrawScope.linearisePath):
 	   the flattened polylines live on the path so unchanged paths skip
 	   re-tessellation across frames. Opaque here — only the renderer reads it. */
 	internal var linearised: Any? = null

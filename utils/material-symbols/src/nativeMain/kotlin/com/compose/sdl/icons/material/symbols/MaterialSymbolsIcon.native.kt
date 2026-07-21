@@ -14,13 +14,13 @@ import com.compose.sdl.text.TextRendererCapabilities
 // MARK: renderMaterialSymbol — native actual (port IconFont pipeline)
 // ==================
 
-/* Draws through :foundation's IconFontIcon; IconFont / the text renderers in
+/** Draws through :foundation's IconFontIcon; IconFont / the text renderers in
    :ui handle the SDL3-vs-Skia split, so this module stays renderer-unaware.
    The style's variable font is loaded once per family from data.kres. */
 
 private val installedFamilies = mutableSetOf<String>()
 
-/* Registers the style's font with IconFont on first use. Returns false (and
+/** Registers the style's font with IconFont on first use. Returns false (and
    warns) when the app's data.kres doesn't carry the font — the icon then
    renders as blank, same as before. */
 private fun ensureInstalled(style: MaterialSymbolsIcon): Boolean {
@@ -70,7 +70,7 @@ internal actual fun renderMaterialSymbol(
     )
 }
 
-/* Axis list for IconFontIcon — empty at the defaults so the renderers skip
+/** Axis list for IconFontIcon — empty at the defaults so the renderers skip
    the variable-font instancing path entirely. */
 private fun materialIconAxes(
     fill: Float,

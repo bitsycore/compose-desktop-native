@@ -6,7 +6,7 @@ import com.compose.sdl.GpuMode
 // MARK: CLI args
 // ==================
 
-/* Parsed view of the demo's command line.
+/** Parsed view of the demo's command line.
 
    --gpu=auto | none | skia.metal | skia.opengl |
          sdl3 | sdl3.auto | sdl3.software |
@@ -28,7 +28,7 @@ internal data class CliArgs(
     val maxFrames: Int = 300,
 )
 
-/* Translates the --gpu= string to the right GpuMode sealed instance.
+/** Translates the --gpu= string to the right GpuMode sealed instance.
    Accepts both dotted (`skia.metal`) and dashed (`skia-metal`) forms,
    plus the bare driver names (`metal`, `opengl`, …) as Skia aliases
    for backwards compatibility. */

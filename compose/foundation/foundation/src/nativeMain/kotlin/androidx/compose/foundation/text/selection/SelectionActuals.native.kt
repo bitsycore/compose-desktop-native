@@ -26,28 +26,28 @@ import androidx.compose.ui.unit.DpSize
  SDL renderer's identical for all three, so one set of actuals covers all.
 */
 
-/* Cmd on macOS, Ctrl elsewhere. We don't know which platform at compile
+/** Cmd on macOS, Ctrl elsewhere. We don't know which platform at compile
    time — accept both, matches Ctrl+C on Windows/Linux and Cmd+C on macOS.
    Also honours the dedicated Copy key. */
 internal actual fun isCopyKeyEvent(keyEvent: KeyEvent): Boolean =
 	keyEvent.key == Key.Copy ||
 	(keyEvent.key == Key.C && (keyEvent.isMetaPressed || keyEvent.isCtrlPressed))
 
-/* No selection magnifier on desktop — mobile-only affordance. */
+/** No selection magnifier on desktop — mobile-only affordance. */
 internal actual fun Modifier.selectionMagnifier(manager: SelectionManager): Modifier = this
 
-/* Desktop text-context-menu doesn't add SelectionContainer-specific
+/** Desktop text-context-menu doesn't add SelectionContainer-specific
    items yet. TODO(CMP-7819): wire the paste-into-selection / clear
    / select-all extras through here when the toolbar lands. */
 internal actual fun Modifier.addSelectionContainerTextContextMenuComponents(
 	selectionManager: SelectionManager
 ): Modifier = this
 
-/* Default long-press adjustment on desktop = Word (matches upstream macOS). */
+/** Default long-press adjustment on desktop = Word (matches upstream macOS). */
 internal actual val FirstLongPressSelectionAdjustment: SelectionAdjustment
 	get() = SelectionAdjustment.Word
 
-/* Mobile-style draggable selection handle. Desktop never shows one —
+/** Mobile-style draggable selection handle. Desktop never shows one —
    mouse drag directly extends the selection, no handle bubble.
    TODO: If touch input lands (SDL_EVENT_FINGER_*), route to a real
    handle Composable driven by SelectionHandleInfo. */

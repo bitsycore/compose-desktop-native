@@ -4,7 +4,7 @@ package androidx.compose.ui.input.pointer
 // MARK: PointerIcon actuals — SDL3 cursors
 // ==================
 
-/*
+/**
  Actuals for vendored PointerIcon.kt. Each of the four canonical icons is a
  distinct marker object; com.compose.sdl.SdlCursors maps them BY IDENTITY to
  SDL_SYSTEM_CURSOR_*, and ComposeOwner's pointerIconService applies the cursor

@@ -4,7 +4,7 @@ package com.compose.sdl
 // MARK: GpuMode
 // ==================
 
-/* Which renderer backend (Skia or SDL3) and which GPU driver to use.
+/** Which renderer backend (Skia or SDL3) and which GPU driver to use.
    Sealed hierarchy so callers can pick a generic mode (Auto, None) or
    refine all the way down to a specific driver inside SDL3 / Skia.
 
@@ -27,24 +27,24 @@ package com.compose.sdl
    with a clear error so callers get a real failure instead of a silent
    fallback. */
 sealed class GpuMode {
-    /* Let the platform pick: Skia.Metal on macOS, Skia.OpenGL on Linux,
+    /** Let the platform pick: Skia.Metal on macOS, Skia.OpenGL on Linux,
        Sdl3.Auto on mingwX64. Resolved at composeWindow entry. */
     object Auto : GpuMode() { override fun toString() = "Auto" }
 
-    /* Skia CPU raster — paints into a host pixel buffer that
+    /** Skia CPU raster — paints into a host pixel buffer that
        SDL_Renderer uploads as a texture each frame. */
     object Software : GpuMode() { override fun toString() = "Software" }
 
-    /* Skia GPU bridges. Available on macOS / Linux only. */
+    /** Skia GPU bridges. Available on macOS / Linux only. */
     sealed class Skia : GpuMode() {
         object OpenGL : Skia() { override fun toString() = "Skia.OpenGL" }
         object Metal  : Skia() { override fun toString() = "Skia.Metal" }
     }
 
-    /* Pure-SDL3 renderer with an optional driver pin. AUTO lets SDL
+    /** Pure-SDL3 renderer with an optional driver pin. AUTO lets SDL
        choose; the rest map to SDL_HINT_RENDER_DRIVER strings. */
     sealed class Sdl3 : GpuMode() {
-        /* SDL_HINT_RENDER_DRIVER value, or null for SDL's default pick. */
+        /** SDL_HINT_RENDER_DRIVER value, or null for SDL's default pick. */
         abstract val driverHint: String?
 
         object Auto     : Sdl3() { override val driverHint: String? = null;            override fun toString() = "Sdl3.Auto" }

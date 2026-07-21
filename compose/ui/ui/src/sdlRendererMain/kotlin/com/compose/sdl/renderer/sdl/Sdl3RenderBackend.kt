@@ -12,7 +12,7 @@ import sdl3.*
 // MARK: Sdl3RenderBackend
 // ==================
 
-/* RenderBackend that uses only SDL3 primitives + SDL3_ttf — no Skia,
+/** RenderBackend that uses only SDL3 primitives + SDL3_ttf — no Skia,
    no Skiko. The only renderer on mingwX64. Constructed by the
    makeRenderBackend actual in the core package.
 
@@ -65,8 +65,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         // Clear the frame to Material's dark background (0x121212). Without this
         // the SDL back buffer holds whatever was previously in GPU memory —
         // uncovered regions of the composition (e.g. apidemo's transparent
-        // panels) show garbage / pink on macOS Metal. Was previously done by
-        // the legacy Sdl3Renderer.draw entry which we retired.
+        // panels) show garbage / pink on macOS Metal.
         //
         // Order matters: clear at physical pixel scale (scale=1) so the clear
         // covers the FULL back buffer, THEN apply DPR scale for subsequent draws.
@@ -119,7 +118,7 @@ internal class Sdl3RenderBackend(private val backend: SDL3Backend) : RenderBacke
         SDL_RenderPresent(r)
     }
 
-    /* Read the renderer output into a host BGRA byte array. The renderer's
+    /** Read the renderer output into a host BGRA byte array. The renderer's
        native pixel format is platform-dependent (Metal on macOS uses BGRA,
        OpenGL on Linux uses RGBA, etc.), so we explicitly convert the
        returned surface to BGRA32 to share one byte order with the BMP

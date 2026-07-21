@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 // MARK: PathScreen
 // ==================
 
-/* Demonstrates the new Path API and the new DrawScope primitives:
+/** Demonstrates the new Path API and the new DrawScope primitives:
    drawPath (filled + stroked), drawOval, drawRoundRect. Skia renders
    each natively; SDL3 tessellates paths into triangle fans via the
    Sdl3DrawScope.linearisePath / fanFill pipeline. */

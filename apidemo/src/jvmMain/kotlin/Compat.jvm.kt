@@ -60,7 +60,7 @@ actual fun InstallWindowHooks(inOnCloseRequest: () -> Boolean, inOnKeyShortcut: 
 	}
 }
 
-/* Mirrors SDL_GetPrefPath's layout: <os user-data dir>/<org>/<app>/ with a
+/** Mirrors SDL_GetPrefPath's layout: <os user-data dir>/<org>/<app>/ with a
    trailing separator, created on demand. */
 actual fun appDataDir(inOrg: String, inApp: String): String? {
 	val vHome = System.getProperty("user.home") ?: return null
@@ -74,7 +74,7 @@ actual fun appDataDir(inOrg: String, inApp: String): String? {
 	return vDir.absolutePath + File.separator
 }
 
-/* Opens the path's containing folder (AWT has no cross-platform "select in
+/** Opens the path's containing folder (AWT has no cross-platform "select in
    file manager"); fire-and-forget off the EDT. */
 actual fun revealInFileManager(inPath: String, inOnResult: ((Boolean) -> Unit)?) {
 	Thread {
@@ -92,7 +92,7 @@ actual fun fileManagerName(): String = when {
 	else       -> "Files"
 }
 
-/* AWT FileDialog runs its own nested event loop, so invoking from the EDT
+/** AWT FileDialog runs its own nested event loop, so invoking from the EDT
    (where Compose Desktop also runs) keeps the UI serviced while modal. */
 actual fun showSaveFileDialog(inDefaultName: String?, inOnResult: (String?) -> Unit) {
 	EventQueue.invokeLater {
@@ -111,7 +111,7 @@ actual fun showOpenFileDialog(inOnResult: (String?) -> Unit) {
 	}
 }
 
-/* Upstream desktop's ClipEntry wraps an AWT Transferable. */
+/** Upstream desktop's ClipEntry wraps an AWT Transferable. */
 actual fun clipEntryOfText(inText: String): ClipEntry = ClipEntry(StringSelection(inText))
 
 // ============
@@ -139,7 +139,7 @@ actual fun memoryImagePainter(inKey: String, inSvg: Boolean): Painter {
 // ============
 //  Text layout
 
-/* Upstream TextMeasurer at density 1 so the px-valued font size maps 1:1
+/** Upstream TextMeasurer at density 1 so the px-valued font size maps 1:1
    (the caller passes an already density-scaled size). */
 private val kRowMeasurer: TextMeasurer by lazy {
 	TextMeasurer(createFontFamilyResolver(), Density(1f), LayoutDirection.Ltr)
@@ -154,7 +154,7 @@ actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inF
 		).lineCount
 	}.getOrDefault(1)
 
-/* The jvm parity app only stores the preference — upstream's text pipeline has
+/** The jvm parity app only stores the preference — upstream's text pipeline has
    no global tab-width knob. Backed by state so menu checkmarks recompose. */
 private var fTabWidth by mutableStateOf(4)
 actual var editorTabWidth: Int

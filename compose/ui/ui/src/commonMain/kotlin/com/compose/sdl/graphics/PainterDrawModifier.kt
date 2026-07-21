@@ -7,9 +7,9 @@ import com.compose.sdl.res.ResourceKind
 // MARK: NativePainterCanvas bridge
 // ==================
 
-/*
- Phase 9 B5 — image drawing bridge. Renderer Canvas backends (Sdl3Canvas /
- future SkiaCanvas) implement this interface to paint a bundled resource by
+/**
+ Image drawing bridge. Renderer Canvas backends (Sdl3Canvas / SkiaBackedCanvas)
+ implement this interface to paint a bundled resource by
  path + kind. [ResourcePainter] (upstream `Painter` subclass in the res
  pipeline) casts the current Canvas to this and calls drawNativePainter from
  inside its `Painter.onDraw()` — reached via upstream `Modifier.paint(...)`
@@ -17,7 +17,7 @@ import com.compose.sdl.res.ResourceKind
  vendored upstream engine.
 
  contentScale is FillBounds when called through PainterModifier (which
- pre-scales the size); other values are supported for legacy callers.
+ pre-scales the size); other values are supported for direct callers.
 */
 interface NativePainterCanvas {
 	fun drawNativePainter(

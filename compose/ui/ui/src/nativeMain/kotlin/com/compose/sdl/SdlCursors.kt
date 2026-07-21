@@ -15,7 +15,7 @@ import sdl3.SDL_SystemCursor
 // MARK: SDL cursor manager
 // ==================
 
-/*
+/**
  * Maps the port's PointerIcon actuals to SDL system cursors and applies them
  * globally via SDL_SetCursor. System cursors are created lazily and cached
  * (SDL_CreateSystemCursor is not free) and the OS cursor is only re-set when the

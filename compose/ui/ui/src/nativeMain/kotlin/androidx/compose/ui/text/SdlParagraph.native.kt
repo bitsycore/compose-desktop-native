@@ -32,7 +32,7 @@ import kotlin.math.max
 // MARK: SdlParagraph — Paragraph actual bridged to the project TextMeasurer
 // ==================
 
-/*
+/**
  The upstream `Paragraph` (Skia/skiko-only) can't be used on the SDL target, so this bridges the
  upstream Paragraph interface to the project's name-based `TextMeasurer` (SDL_ttf / FreeType line
  wrapping + measurement). MEASUREMENT is real (width/height/line metrics/offset<->position/cursor/
@@ -112,7 +112,7 @@ internal class SdlParagraph(
 	private fun measureStr(inStr: String): Float =
 		currentTextMeasurer.measure(inStr, fontPx, Int.MAX_VALUE, family, variations).width.toFloat()
 
-	/* Width of a slice of the ORIGINAL text starting at inGlobalStart — styled
+	/** Width of a slice of the ORIGINAL text starting at inGlobalStart — styled
 	   (per-run size/weight) when metric spans exist, base otherwise. */
 	private fun measureSlice(inSlice: String, inGlobalStart: Int): Float =
 		if (metricSpans) {

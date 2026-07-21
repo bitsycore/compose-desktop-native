@@ -10,7 +10,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 // macOS: Ktor bundles an OpenSSL-backed libcurl, which reads PEM / DER / PKCS#12
 // certificate and key files directly — no certificate-store dance needed.
 
-/* Point libcurl straight at the certificate / key files. */
+/** Point libcurl straight at the certificate / key files. */
 actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
 	PreparedCert(
 		sslCert     = inReq.certPath,
@@ -21,10 +21,10 @@ actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
 		cleanup     = {},
 	)
 
-/* No temporary certificate store off Windows. */
+/** No temporary certificate store off Windows. */
 actual fun sweepTempClientCerts() {}
 
-/* Continue the server's chain with intermediates / roots pulled from the
+/** Continue the server's chain with intermediates / roots pulled from the
    macOS Keychain — same UX as the Windows path does via the trust store.
    Falls back to the name-only placeholder if Apple's APIs can't resolve
    the chain (e.g. the server's leaf doesn't parse, or its issuer isn't
@@ -41,7 +41,7 @@ actual fun extendChain(inServerCerts: List<List<Pair<String, String>>>): List<Ch
 //  Chain walk via Security.framework
 // ============
 
-/* Build the chain by handing the leaf to SecTrust + evaluating against
+/** Build the chain by handing the leaf to SecTrust + evaluating against
    an SSL policy — Apple then walks Keychain, pulling intermediates and
    the root in. Returns the resolved chain with fromServer=true for the
    first inServerCount entries (those came down on the wire) and false
@@ -124,7 +124,7 @@ private fun osChainApple(
 	return vResolved
 }
 
-/* SecCertificate from DER bytes. Returns null if the bytes aren't a
+/** SecCertificate from DER bytes. Returns null if the bytes aren't a
    valid X.509 cert. */
 @OptIn(ExperimentalForeignApi::class)
 private fun createSecCertificate(inDer: ByteArray): SecCertificateRef? {
@@ -136,7 +136,7 @@ private fun createSecCertificate(inDer: ByteArray): SecCertificateRef? {
 	return vCert
 }
 
-/* CFArray of SecCertificateRef — the input to SecTrustCreateWithCertificates. */
+/** CFArray of SecCertificateRef — the input to SecTrustCreateWithCertificates. */
 @OptIn(ExperimentalForeignApi::class)
 private fun createCFArray(inCerts: List<SecCertificateRef>): CFArrayRef {
 	val vPtrs = nativeHeap.allocArray<COpaquePointerVar>(inCerts.size)
@@ -146,7 +146,7 @@ private fun createCFArray(inCerts: List<SecCertificateRef>): CFArrayRef {
 	return vArr
 }
 
-/* Apple's "subject summary" — basically the CN, but falls back to the
+/** Apple's "subject summary" — basically the CN, but falls back to the
    organisation when no CN is present (matches what Keychain Access
    displays in its cert list). */
 @OptIn(ExperimentalForeignApi::class)
@@ -156,7 +156,7 @@ private fun secSubjectSummary(inCert: SecCertificateRef): String? {
 	return vNs?.toString()
 }
 
-/* PEM string for a SecCertificate — base64 of the DER bytes wrapped
+/** PEM string for a SecCertificate — base64 of the DER bytes wrapped
    with -----BEGIN CERTIFICATE-----/-----END----- headers. */
 @OptIn(ExperimentalForeignApi::class, ExperimentalEncodingApi::class)
 private fun secCertPem(inCert: SecCertificateRef): String? {
@@ -171,7 +171,7 @@ private fun secCertPem(inCert: SecCertificateRef): String? {
 	return "-----BEGIN CERTIFICATE-----\n$vWrapped\n-----END CERTIFICATE-----"
 }
 
-/* Decode a PEM block to DER bytes, or pass DER bytes through. */
+/** Decode a PEM block to DER bytes, or pass DER bytes through. */
 @OptIn(ExperimentalEncodingApi::class)
 private fun derFromPem(inPem: String): ByteArray? {
 	if (!inPem.contains("-----BEGIN")) return inPem.encodeToByteArray()

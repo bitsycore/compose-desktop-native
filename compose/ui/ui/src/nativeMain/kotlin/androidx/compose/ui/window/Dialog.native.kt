@@ -74,7 +74,7 @@ private const val kAnimatedLayerScale = 0.05f
 private const val kAppearanceDurationSeconds = 0.2
 private const val kDisappearanceDurationSeconds = 0.1
 
-/* Alpha ramp shared by the dialog content and the scrim — upstream's
+/** Alpha ramp shared by the dialog content and the scrim — upstream's
    `contentAlpha(progress)`: starts at 0.2, ends at 1. */
 private fun dialogContentAlpha(inProgress: Float): Float =
 	kAnimatedLayerInitialAlpha + (1f - kAnimatedLayerInitialAlpha) * inProgress
@@ -99,11 +99,11 @@ actual class DialogProperties actual constructor(
 	actual val dismissOnClickOutside: Boolean,
 	actual val usePlatformDefaultWidth: Boolean,
 ) {
-	/* Scrim fill colour — upstream skiko default: 60% black. */
+	/** Scrim fill colour — upstream skiko default: 60% black. */
 	var scrimColor: Color = kDefaultScrimColor
 		private set
 
-	/* Whether the dialog appearance animates — upstream default is the
+	/** Whether the dialog appearance animates — upstream default is the
 	   SkikoComposeUiFlags.isDialogAnimationEnabled flag (true). */
 	var animateTransition: Boolean = SkikoComposeUiFlags.isDialogAnimationEnabled
 		private set

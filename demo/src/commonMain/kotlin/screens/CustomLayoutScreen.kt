@@ -17,7 +17,7 @@ import kotlin.math.max
 // MARK: CustomLayoutScreen
 // ==================
 
-/* Demonstrates the public Layout(...) composable + MeasurePolicy + the
+/** Demonstrates the public Layout(...) composable + MeasurePolicy + the
    Modifier.layout {} per-node interception. Both render identically on
    Skia and SDL3 because they go through the same LayoutNode pipeline as
    Row / Column / Box. */

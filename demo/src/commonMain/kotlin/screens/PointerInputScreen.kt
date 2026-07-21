@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 // MARK: PointerInputScreen — stock Compose gestures
 // ==================
 
-/* Stock Compose pointer-input patterns: detectTapGestures for taps / long
+/** Stock Compose pointer-input patterns: detectTapGestures for taps / long
    press, detectDragGestures for drag, and an inline awaitPointerEventScope
    for the button variants (right / middle) upstream doesn't wrap in a
    named gesture detector. */

@@ -13,18 +13,18 @@ import androidx.compose.ui.unit.IntSize
    colliding on the official name. The native backend installs an impl at
    startup (Skia / SDL3) via currentTextMeasurer. */
 
-/* Wrapped layout result. `lines[i]` is the visible text of wrapped line i;
+/** Wrapped layout result. `lines[i]` is the visible text of wrapped line i;
    `lineStarts[i]` is the offset into the original text where that line
    begins. lineStarts[i] + lines[i].length may be less than lineStarts[i+1]
    when the gap contains explicit '\n' characters (which are consumed
    between lines and don't appear in any line's text). */
 class WrappedText(val lines: List<String>, val lineStarts: IntArray)
 
-/* Shared abstraction so that the commonMain layout pass (TextMeasurePolicy)
+/** Shared abstraction so that the commonMain layout pass (TextMeasurePolicy)
    can get the same width / height that the native renderer will actually
    draw. The native backend installs a Skia-backed implementation at startup. */
 interface TextMeasurer {
-	/* Measure the text's laid-out size. If inMaxWidth is bounded, lines wrap
+	/** Measure the text's laid-out size. If inMaxWidth is bounded, lines wrap
 	   at word boundaries (or mid-word if a single word exceeds the limit).
 	   inFontFamily picks a registered IconFont; null falls back to the
 	   renderer's default font. inFontVariations applies variable-font axis
@@ -38,7 +38,7 @@ interface TextMeasurer {
 		inFontVariations: List<FontVariation.Setting>? = null,
 	): IntSize
 
-	/* Wrapped lines + the original-text offset where each begins. */
+	/** Wrapped lines + the original-text offset where each begins. */
 	fun wrap(
 		inText: String,
 		inFontSize: Int,
@@ -47,7 +47,7 @@ interface TextMeasurer {
 		inFontVariations: List<FontVariation.Setting>? = null,
 	): WrappedText
 
-	/* Exact line height the renderer uses for this fontSize, as a Float so
+	/** Exact line height the renderer uses for this fontSize, as a Float so
 	   callers (TextField cursor / click math) line up with rendered glyph
 	   slots even when the per-line drift is sub-pixel. */
 	fun lineHeight(
@@ -81,7 +81,7 @@ private val kFallbackTextMeasurer = object : TextMeasurer {
 
 var currentTextMeasurer: TextMeasurer = kFallbackTextMeasurer
 
-/* Logical size of the window, set by the render loop each frame. Lets commonMain
+/** Logical size of the window, set by the render loop each frame. Lets commonMain
    composables (selection highlights cull per-line work, DropdownMenu flips/clamps
    itself) read the viewport without a hard dependency on the window layer.
    0 until first set — callers treat that as "viewport unknown". */

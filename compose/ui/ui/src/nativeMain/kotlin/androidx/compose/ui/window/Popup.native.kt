@@ -25,7 +25,7 @@ import com.compose.sdl.window.PopupOutsideDismiss
 // MARK: Popup — native actuals for the vendored expect
 // ==================
 
-/*
+/**
  Native actuals for the vendored upstream Popup.kt (expect class PopupProperties +
  expect fun Popup). This desktop/SDL renderer hosts overlay content at the composition
  root via the project's PopupHostState (no OS popup window). Behaviour flags on
@@ -102,7 +102,7 @@ actual class PopupProperties {
 	}
 }
 
-/* Overlay at the window root, positioned by [alignment] + [offset] (in PIXELS). */
+/** Overlay at the window root, positioned by [alignment] + [offset] (in PIXELS). */
 @Composable
 actual fun Popup(
 	alignment: Alignment,
@@ -141,7 +141,7 @@ actual fun Popup(
 	}
 }
 
-/* Fills the window (constraint.max) and places `content` at `alignment` +
+/** Fills the window (constraint.max) and places `content` at `alignment` +
    pixel-space `offset`. Replaces the old `Box(Modifier.fillMaxSize()) { Box(offset {...}) { content } }`
    with a single Layout so no androidx.compose.foundation.layout deps are pulled. */
 @Composable
@@ -185,7 +185,7 @@ fun Popup(
 	Popup(popupPositionProvider, onDismissRequest, properties, content)
 }
 
-/* Position-provider overload — the path upstream Tooltip / Menu / ExposedDropdown
+/** Position-provider overload — the path upstream Tooltip / Menu / ExposedDropdown
    components use. Positions the hosted content by asking [popupPositionProvider]
    for an offset, feeding it the REAL anchor bounds (captured by the zero-size probe
    below, whose parent layout is the popup's anchor) and the measured content size.
@@ -250,7 +250,7 @@ actual fun Popup(
 	}
 }
 
-/* Fills the window and places the popup content at the offset [provider] computes
+/** Fills the window and places the popup content at the offset [provider] computes
    from the live [anchorBounds], the window size, and the measured content size.
    Reading [anchorBounds] inside the placement block subscribes this layout to
    re-placement when the probe reports the anchor's bounds. */

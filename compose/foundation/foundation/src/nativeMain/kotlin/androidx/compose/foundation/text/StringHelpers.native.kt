@@ -4,7 +4,7 @@ package androidx.compose.foundation.text
 // MARK: StringHelpers native actuals
 // ==================
 
-/*
+/**
  Actuals for vendored StringHelpers.kt. Upstream's nonJvm actual calls
  StringBuilder.appendCodePoint() which is a JVM-only extension; on
  Kotlin/Native, StringBuilder holds UTF-16 code units, so we encode
@@ -49,7 +49,7 @@ internal actual fun String.findCodePointOrEmojiStartBefore(index: Int, ifNotFoun
 	return i
 }
 
-/*
+/**
  Byte-identical extract of `internal fun CharSequence.offsetByCodePoints`
  from upstream `foundation.text.StringHelpers.skiko.kt`. The skiko file
  pulls org.jetbrains.skia.BreakIterator, so we can't vendor it whole; this

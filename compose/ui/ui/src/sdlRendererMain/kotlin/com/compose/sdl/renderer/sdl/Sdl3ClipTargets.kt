@@ -7,7 +7,7 @@ import sdl3.*
 // MARK: Sdl3ClipTargets
 // ==================
 
-/* Persistent pool of offscreen render-target textures used by Sdl3Canvas to
+/** Persistent pool of offscreen render-target textures used by Sdl3Canvas to
    implement rounded-shape clipping (SDL has only a rectangular render clip, so
    a rounded / circular clip is done by drawing the clipped subtree into an
    offscreen target, zeroing the corners outside the rounded outline, then
@@ -32,7 +32,7 @@ internal class Sdl3ClipTargets(private val fRenderer: COpaquePointer) {
 	private var fHeight = 0
 	private val fTargets = mutableListOf<COpaquePointer>()
 
-	/* Returns a render-target texture for clip nesting [inDepth], sized to
+	/** Returns a render-target texture for clip nesting [inDepth], sized to
 	   (inWidth, inHeight). Recreates the whole pool if the output size changed.
 	   Returns null if the texture could not be created (caller falls back to a
 	   plain rectangular clip). */

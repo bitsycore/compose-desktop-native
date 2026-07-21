@@ -9,8 +9,8 @@ import androidx.compose.ui.layout.positionInWindow
 // its node is mid-recycle, and positionInWindow() throws on a detached
 // coordinator.
 
-/* Logical-point X of this layout in the window. */
+/** Logical-point X of this layout in the window. */
 val LayoutCoordinates.x: Int get() = if (isAttached) positionInWindow().x.toInt() else 0
 
-/* Logical-point Y of this layout in the window. */
+/** Logical-point Y of this layout in the window. */
 val LayoutCoordinates.y: Int get() = if (isAttached) positionInWindow().y.toInt() else 0

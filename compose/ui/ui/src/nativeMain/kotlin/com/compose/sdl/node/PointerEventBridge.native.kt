@@ -14,7 +14,7 @@ import com.compose.sdl.node.impl.ComposeOwner
 // MARK: feedPointerToProcessor — native actual
 // ==================
 
-/* Held-button state across events. Upstream's `isChangedToDown` (TapGestureDetector) rejects a
+/** Held-button state across events. Upstream's `isChangedToDown` (TapGestureDetector) rejects a
    mouse down unless `buttons.isPrimaryPressed`, and drag/scroll gestures need the held button to
    persist across Move events, so the synthesized PointerInputEvent must carry a live button mask —
    not just the changed button. A single mouse => module-level flags are enough. */
@@ -22,7 +22,7 @@ private var fPrimaryDown = false
 private var fSecondaryDown = false
 private var fTertiaryDown = false
 
-/* Builds the internal PointerInputEvent (its constructor is native-only) from a single mouse
+/** Builds the internal PointerInputEvent (its constructor is native-only) from a single mouse
    pointer and drives the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release 3=Exit;
    inButton: 0=primary 1=secondary 2=tertiary. */
 internal fun feedPointerToProcessor(
@@ -79,7 +79,7 @@ internal fun feedPointerToProcessor(
 // MARK: feedScrollToProcessor — native actual
 // ==================
 
-/* Builds a Scroll-type PointerInputEvent carrying scrollDelta and drives the processor. The
+/** Builds a Scroll-type PointerInputEvent carrying scrollDelta and drives the processor. The
    vendored Modifier.scrollable (MouseWheelScrollingLogic) consumes it. SDL wheel delta maps
    directly to scrollDelta (wheel-down = SDL deltaY<0 → content scrolls down); magnitude is scaled
    in Sdl3ScrollConfig (dp per notch). */

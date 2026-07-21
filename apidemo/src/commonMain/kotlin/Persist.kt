@@ -9,7 +9,7 @@ import okio.Path.Companion.toPath
 // MARK: Persisted app state
 // ==================
 
-/* Everything the app restores on relaunch: the theme, the global override env,
+/** Everything the app restores on relaunch: the theme, the global override env,
    every open pack (with its file path + dirty flag so unsaved work survives a
    quit) and which pack was active. `launched` flips to true after the very
    first run so the httpbin starter pack is only auto-loaded once. */
@@ -35,7 +35,7 @@ data class AppState(
     val activeReq: Int = -1,
 )
 
-/* A pack as stored in the app state: the pack content plus where it was last
+/** A pack as stored in the app state: the pack content plus where it was last
    saved (null = never saved to a file) and whether it has unsaved edits. */
 @Serializable
 data class SavedPack(
@@ -44,7 +44,7 @@ data class SavedPack(
     val pack: Pack = Pack(),
 )
 
-/* A whole session, the export/import unit for the working set: every open pack
+/** A whole session, the export/import unit for the working set: every open pack
    (self-contained — full content embedded) plus the shared global env and which
    pack was active. Only one session is open at a time. */
 @Serializable
@@ -73,14 +73,14 @@ private const val kOrg = "ComposeDesktopNative"
 private const val kApp = "ApiManager"
 private const val kStateFile = "state.json"
 
-/* Absolute path to the state file in the per-user app-data dir (created on
+/** Absolute path to the state file in the per-user app-data dir (created on
    demand by SDL_GetPrefPath). Null if no writable dir is available. */
 private fun stateFilePath(): String? {
     val vDir = appDataDir(kOrg, kApp) ?: return null  // ends with a separator
     return vDir + kStateFile
 }
 
-/* Read the persisted app state, or a fresh (first-launch) AppState if there's
+/** Read the persisted app state, or a fresh (first-launch) AppState if there's
    nothing saved yet or it can't be read. */
 fun loadAppState(): AppState {
     val vPath = stateFilePath() ?: return AppState()
@@ -92,7 +92,7 @@ fun loadAppState(): AppState {
     }
 }
 
-/* Write the app state. Best-effort — failures are swallowed (it's a cache of
+/** Write the app state. Best-effort — failures are swallowed (it's a cache of
    the session, not the user's exported .json packs). */
 fun saveAppState(inState: AppState) {
     val vPath = stateFilePath() ?: return
@@ -103,7 +103,7 @@ fun saveAppState(inState: AppState) {
     }
 }
 
-/* Open the per-user app-data folder where the state file lives in the OS file
+/** Open the per-user app-data folder where the state file lives in the OS file
    manager. Revealing the state file opens its containing folder, which SDL has
    already created even when nothing's been saved yet. Fire-and-forget — the
    reveal launches off the main thread (see revealInFileManager). */

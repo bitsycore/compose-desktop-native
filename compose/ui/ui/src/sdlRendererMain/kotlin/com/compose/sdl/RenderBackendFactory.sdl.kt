@@ -6,7 +6,7 @@ import com.compose.sdl.renderer.sdl.Sdl3RenderBackend
 // MARK: createRenderBackend (SDL3 renderer module entry)
 // ==================
 
-/* Public factory the :window module calls (its per-target makeRenderBackend
+/** Public factory the :window module calls (its per-target makeRenderBackend
    actual delegates here when this module is the selected renderer). Both
    renderer modules expose createRenderBackend / rendererPreferredGpuMode
    with identical signatures in this package, and the build includes exactly

@@ -8,7 +8,7 @@ import sdl3.SDL_ShowSaveFileDialog
 // MARK: Native file dialogs (SDL3)
 // ==================
 
-/* Wraps SDL3's native "Save As" / "Open" dialogs. SDL runs the callback on the
+/** Wraps SDL3's native "Save As" / "Open" dialogs. SDL runs the callback on the
    thread that pumps its events — i.e. the compose main-loop thread — so the
    result handler may safely touch snapshot state (the recomposer picks it up on
    the next frame).
@@ -26,7 +26,7 @@ private val fDialogCallback = staticCFunction { inUserData: COpaquePointer?, inF
     vHandler(vPath)
 }
 
-/* Show the OS "Save As" dialog. inOnResult receives the chosen path, or null if
+/** Show the OS "Save As" dialog. inOnResult receives the chosen path, or null if
    the user cancelled. inDefaultName seeds the suggested file name / location. */
 fun showSaveFileDialog(inDefaultName: String? = null, inOnResult: (String?) -> Unit) {
     val vRef = StableRef.create(inOnResult)
@@ -40,7 +40,7 @@ fun showSaveFileDialog(inDefaultName: String? = null, inOnResult: (String?) -> U
     )
 }
 
-/* Show the OS "Open" dialog (single selection). inOnResult receives the chosen
+/** Show the OS "Open" dialog (single selection). inOnResult receives the chosen
    path, or null on cancel. */
 fun showOpenFileDialog(inOnResult: (String?) -> Unit) {
     val vRef = StableRef.create(inOnResult)

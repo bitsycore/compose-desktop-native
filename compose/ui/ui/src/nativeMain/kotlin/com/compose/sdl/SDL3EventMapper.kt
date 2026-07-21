@@ -13,33 +13,33 @@ import sdl3.*
 // MARK: SDL3EventMapper
 // ==================
 
-/* Events carry the SDL window id they belong to (0 = unknown — injected test
+/** Events carry the SDL window id they belong to (0 = unknown — injected test
    events; the loop routes those to its first window). Quit is app-level. */
 sealed class AppEvent {
 	data object Quit : AppEvent()
 	data class Pointer(val event: LegacyPointerEvent, val windowId: UInt = 0u) : AppEvent()
 	data class Key(val event: KeyEvent, val windowId: UInt = 0u) : AppEvent()
 	data class TextInput(val text: String, val windowId: UInt = 0u) : AppEvent()
-	/* IME preedit / composition (SDL_EVENT_TEXT_EDITING). Empty text = composition
+	/** IME preedit / composition (SDL_EVENT_TEXT_EDITING). Empty text = composition
 	   cleared, so it's dispatched even when blank (unlike committed TextInput). */
 	data class TextEditing(val text: String, val windowId: UInt = 0u) : AppEvent()
 	data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float, val windowId: UInt = 0u) : AppEvent()
-	/* The pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). The loop clears
+	/** The pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). The loop clears
 	   the window's hover state so a widget doesn't stay highlighted after the cursor
 	   exits (SDL then sends no motion, so nothing else would clear it). */
 	data class PointerExit(val windowId: UInt = 0u) : AppEvent()
 	data class WindowResized(val windowId: UInt = 0u) : AppEvent()
-	/* The user asked THIS window to close (OS close button). The loop routes it
+	/** The user asked THIS window to close (OS close button). The loop routes it
 	   through the window's close-interception then its onCloseRequest. */
 	data class WindowClose(val windowId: UInt = 0u) : AppEvent()
-	/* The OS invalidated the window contents (expose / un-minimise / focus
+	/** The OS invalidated the window contents (expose / un-minimise / focus
 	   regain). The render-on-demand main loop uses it to force a frame even
 	   though no state changed. */
 	data class RedrawNeeded(val windowId: UInt = 0u) : AppEvent()
-	/* The OS light/dark theme changed (SDL_EVENT_SYSTEM_THEME_CHANGED) — app
+	/** The OS light/dark theme changed (SDL_EVENT_SYSTEM_THEME_CHANGED) — app
 	   level, no window id. The loop re-applies each window's theme-aware icon. */
 	data object SystemThemeChanged : AppEvent()
-	/* Focus / visibility transitions driving the window's Lifecycle (Compose
+	/** Focus / visibility transitions driving the window's Lifecycle (Compose
 	   Desktop mapping: focused → RESUMED, visible unfocused → STARTED,
 	   hidden / minimised → CREATED). Null = "this event doesn't change it".
 	   Also implies RedrawNeeded for the shown/focused transitions. */
@@ -48,7 +48,7 @@ sealed class AppEvent {
 		val focused: Boolean? = null,
 		val visible: Boolean? = null,
 	) : AppEvent()
-	/* A drag-and-drop from another app hit the window. SDL fires these as a
+	/** A drag-and-drop from another app hit the window. SDL fires these as a
 	   BEGIN → (FILE / TEXT)* + POSITION* → COMPLETE sequence; the loop
 	   forwards each to the window's Sdl3DragAndDropOwner via ComposeRootHost. */
 	data class Drop(
@@ -217,7 +217,7 @@ private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
 	else -> PointerButton.Primary
 }
 
-/* SDL_Keycode (layout-aware) → Key, for Latin LETTERS only. The keycode reflects
+/** SDL_Keycode (layout-aware) → Key, for Latin LETTERS only. The keycode reflects
    the active layout, so this maps to the letter the user perceives regardless of
    the key's physical position — the fix for Ctrl+<letter> shortcuts on AZERTY /
    QWERTZ. Uppercase is folded to lowercase (some SDL builds apply Shift to the
@@ -241,7 +241,7 @@ private fun kKeyForKeycode(inKeycode: Int): Key? {
 // MARK: SDL3 scancode → Key map
 // ==================
 
-/* SDL_SCANCODE_* values (from sdl3/SDL_scancode.h) → vendored Key.
+/** SDL_SCANCODE_* values (from sdl3/SDL_scancode.h) → vendored Key.
    Returns Key.Unknown for codes we don't have a named slot for. */
 private fun kKeyForScancode(inScancode: Int): Key = when (inScancode) {
 	// Letters (4..29)

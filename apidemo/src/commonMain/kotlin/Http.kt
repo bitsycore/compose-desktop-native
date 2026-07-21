@@ -16,7 +16,7 @@ import kotlin.time.TimeSource
 // MARK: HttpRunner — executes an ApiRequest through Ktor
 // ==================
 
-/* Holds one Ktor HttpClient for the app's lifetime. One engine on every desktop
+/** Holds one Ktor HttpClient for the app's lifetime. One engine on every desktop
    target: Ktor's Curl engine (bundled libcurl — Schannel on Windows, OpenSSL on
    macOS/Linux). Same TLS stack as the client-cert path in CurlMtls.kt.
    run() is a suspend fun — call it off the UI dispatcher. */
@@ -118,7 +118,7 @@ class HttpRunner {
     fun close() = fClient.close()
 }
 
-/* Heuristic for a non-text body: textual content types (text, json, xml, html,
+/** Heuristic for a non-text body: textual content types (text, json, xml, html,
    javascript, csv, form) are shown as text; everything else, or bytes with
    embedded NULs, is treated as binary. */
 internal fun isBinaryBody(inContentType: String?, inBytes: ByteArray): Boolean {
@@ -131,17 +131,17 @@ internal fun isBinaryBody(inContentType: String?, inBytes: ByteArray): Boolean {
     return inBytes.take(1024).any { it.toInt() == 0 }       // no type: sniff for NUL bytes
 }
 
-/* True when the bytes are gzip — either the response says so or they carry the
+/** True when the bytes are gzip — either the response says so or they carry the
    gzip magic number (1f 8b). */
 private fun isGzip(inEncoding: String?, inBytes: ByteArray): Boolean =
     inEncoding?.contains("gzip", ignoreCase = true) == true ||
         (inBytes.size >= 2 && inBytes[0] == 0x1f.toByte() && inBytes[1] == 0x8b.toByte())
 
-/* Read a file's raw bytes (used for a FILE request body). */
+/** Read a file's raw bytes (used for a FILE request body). */
 internal fun readFileBytes(inPath: String): ByteArray =
     systemFileSystem.read(inPath.trim().toPath()) { readByteArray() }
 
-/* Inflate a gzip stream to its original bytes via okio's GzipSource. */
+/** Inflate a gzip stream to its original bytes via okio's GzipSource. */
 private fun gunzip(inBytes: ByteArray): ByteArray {
     val vGz = GzipSource(Buffer().write(inBytes)).buffer()
     val vResult = vGz.readByteArray()

@@ -24,7 +24,7 @@ import demo.shim.demoReadText
 // MARK: DragAndDropScreen — Modifier.dragAndDropTarget over SDL_EVENT_DROP_*
 // ==================
 
-/* Modifier.dragAndDropTarget receives OS drops from other apps. On this
+/** Modifier.dragAndDropTarget receives OS drops from other apps. On this
    port SDL3's SDL_EVENT_DROP_BEGIN / FILE / TEXT / POSITION / COMPLETE
    drive the events (see Sdl3DragAndDropOwner); on JVM the AWT
    DropTargetDropEvent path does. Either way the shouldStartDragAndDrop

@@ -4,7 +4,7 @@ package com.compose.sdl.res
 // MARK: Res
 // ==================
 
-/* Resource accessor root. The library provides the namespaces + readBytes;
+/** Resource accessor root. The library provides the namespaces + readBytes;
    the per-module typed accessors are emitted by the generateComposeResAccessors
    Gradle task as extension properties on these objects, e.g.
 
@@ -17,7 +17,7 @@ object Res {
 	object drawable
 	object files
 
-	/* Reads a bundled resource's raw bytes by path relative to
+	/** Reads a bundled resource's raw bytes by path relative to
 	   composeResources/ (e.g. Res.readBytes("files/data.bin")). Returns null if
 	   the resource is missing or no loader is installed. */
 	fun readBytes(inPath: String): ByteArray? = currentImageLoader.readBytes(inPath)

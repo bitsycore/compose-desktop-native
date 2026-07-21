@@ -9,7 +9,7 @@ import org.jetbrains.skia.Image
 // MARK: SkiaEncodedImageDecoder
 // ==================
 
-/* Encoded-image decode hook impl for the Skia renderer — the counterpart of
+/** Encoded-image decode hook impl for the Skia renderer — the counterpart of
    Sdl3EncodedImageDecoder, consumed by :components-resources' actuals
    (painterResource / SVG). Raster formats go through Image.makeFromEncoded;
    when that fails the bytes are retried as SVG through the same SVGDOM

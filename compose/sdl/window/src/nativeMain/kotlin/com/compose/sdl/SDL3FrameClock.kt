@@ -4,7 +4,7 @@ import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.MonotonicFrameClock
 import sdl3.SDL_GetTicksNS
 
-/* MonotonicFrameClock for the SDL main loop, with upstream frame semantics:
+/** MonotonicFrameClock for the SDL main loop, with upstream frame semantics:
 
    - withFrameNanos ALWAYS suspends until the NEXT sendFrame — never completes
      with a stale frame. Deferred animations (AnimatedVisibility's enter/exit

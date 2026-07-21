@@ -60,7 +60,7 @@ import org.jetbrains.skia.Shader
 // MARK: SkiaDrawScope
 // ==================
 
-/* DrawScope implementation that translates the common-side primitives into
+/** DrawScope implementation that translates the common-side primitives into
    native Skia Canvas calls. Each method allocates a Paint, configures
    fill / stroke style + shader, draws, then closes the Paint — Skia's
    ref-counting frees the underlying SkPaint promptly. */

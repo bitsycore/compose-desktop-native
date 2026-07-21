@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.LayoutDirection
 // MARK: ComposeRootHost
 // ==================
 
-/*
+/**
  Public facade the :window layer drives the upstream layout engine through.
  `LayoutNode` / `Owner` / `ComposeOwner` / `NodeApplier` are all internal to
  :core, so this hides them behind a public surface: [applier] (upcast to
@@ -136,7 +136,7 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// MARK: Key input — route to the focused node via the FocusOwner
 	// ==================
 
-	/* Routes a key event to the focused node's KeyInput chain (upstream onPreKeyEvent /
+	/** Routes a key event to the focused node's KeyInput chain (upstream onPreKeyEvent /
 	   onKeyEvent) — drives text-field editing keys (backspace / arrows / enter) and
 	   clickable Enter/Space activation. Returns true if some node consumed it. */
 	fun dispatchKeyEvent(inEvent: androidx.compose.ui.input.key.KeyEvent): Boolean =

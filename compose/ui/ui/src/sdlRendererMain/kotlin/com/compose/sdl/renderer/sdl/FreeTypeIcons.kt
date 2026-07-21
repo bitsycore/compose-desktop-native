@@ -19,7 +19,7 @@ import com.compose.sdl.graphics.a8
 // small (icon-sized), the cap just bounds pathological churn.
 private const val kGlyphCacheMax: Int = 512
 
-/* Variable-font icon rasterisation for the SDL3 renderer. SDL3_ttf 3.2's
+/** Variable-font icon rasterisation for the SDL3 renderer. SDL3_ttf 3.2's
    public API has no axis-set, so we go directly to FreeType for icon-font
    families — FT_Set_Var_Design_Coordinates drives the OpenType FILL /
    wght / GRAD / opsz axes per face.
@@ -44,7 +44,7 @@ internal class FreeTypeIcons {
 	// ============
 	//  Config
 
-	/* Supersample factor: glyphs are rendered at this multiple of the
+	/** Supersample factor: glyphs are rendered at this multiple of the
 	   requested physical pixel size, then downsampled with a kSS×kSS box
 	   filter on the way into the SDL surface. 2 = 4 samples per output
 	   pixel — enough to merge the inner-ring gaps that variable-font
@@ -62,9 +62,9 @@ internal class FreeTypeIcons {
 	private class FamilyState(
 		val baseFace: CPointer<FT_FaceRec>,
 		val bytes: FaceBytes,
-		/* axis index keyed by 4-char OpenType tag (e.g. "wght" → 1). */
+		/** axis index keyed by 4-char OpenType tag (e.g. "wght" → 1). */
 		val axisIndexByTag: Map<String, Int>,
-		/* 16.16-fixed-point default coords for every axis, in font order. */
+		/** 16.16-fixed-point default coords for every axis, in font order. */
 		val defaultCoords: LongArray,
 	)
 
@@ -148,7 +148,7 @@ internal class FreeTypeIcons {
 	// ============
 	//  Public API
 
-	/* Paints a single-codepoint icon at the given pen position with the
+	/** Paints a single-codepoint icon at the given pen position with the
 	   requested tint. Returns false (without drawing) if FreeType isn't
 	   initialised, the family isn't registered with IconFont, or the
 	   codepoint has no glyph in the font. Callers that get false can fall
@@ -399,7 +399,7 @@ internal class FreeTypeIcons {
 	// ============
 	//  Bitmap → tinted ARGB texture
 
-	/* FreeType's normal-mode bitmap is 8-bit grayscale (FT_PIXEL_MODE_GRAY,
+	/** FreeType's normal-mode bitmap is 8-bit grayscale (FT_PIXEL_MODE_GRAY,
 	   coverage 0..255) at kSupersampleFactor× the target size. We
 	   downsample with a kSupersampleFactor² box filter on the way into an
 	   ARGB8888 SDL_Surface where RGB = white (tint applied per-blit via
@@ -491,7 +491,7 @@ internal class FreeTypeIcons {
 		return inV.sortedBy { it.axisName }.joinToString(",") { "${it.axisName}=${it.toVariationValue(null)}" }
 	}
 
-	/* Unpacks a packed 32-bit OpenType tag into its 4-char ASCII string. */
+	/** Unpacks a packed 32-bit OpenType tag into its 4-char ASCII string. */
 	private fun tagFromInt(inTag: Int): String {
 		val vChars = CharArray(4)
 		vChars[0] = ((inTag shr 24) and 0xFF).toChar()

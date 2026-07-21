@@ -20,7 +20,7 @@ import kotlin.math.roundToInt
    italic + background + decoration + size). Lives in
    `com.compose.sdl.text` rather than `androidx.compose.ui.text`. */
 
-/* A run of one style within a wrapped line, line-local [start, end) cols.
+/** A run of one style within a wrapped line, line-local [start, end) cols.
    `weight` is the OpenType wght axis (100..900, 400 = default), `italic` =
    FontStyle.Italic (paragraph base or span), `background` = SpanStyle.background
    (Unspecified = none), `underline`/`lineThrough` = TextDecoration flags
@@ -43,7 +43,7 @@ class ColorRun(
 	val fontSize: TextUnit = TextUnit.Unspecified,
 )
 
-/* Style runs for a single wrapped line, given the AnnotatedString spans (whose
+/** Style runs for a single wrapped line, given the AnnotatedString spans (whose
    start/end index the ORIGINAL text) and this line's start offset. Gaps use
    the base style; overlapping spans compose colour/background/size last-wins,
    weight max-wins (bold beats regular), italic/underline/lineThrough OR-wins
@@ -147,7 +147,7 @@ fun lineColorRuns(
 // (layout-time widths/heights) so painted glyph runs land exactly inside the
 // measured box — per-run fontSize / fontWeight change metrics, not just paint.
 
-/* Resolves a run's SpanStyle.fontSize to pixels: Em scales the paragraph's
+/** Resolves a run's SpanStyle.fontSize to pixels: Em scales the paragraph's
    base size, Sp resolves through the density the base size was resolved with,
    Unspecified inherits the base. */
 fun resolveRunPx(inRun: ColorRun, inBasePx: Int, inDensity: Float): Int = when (inRun.fontSize.type) {
@@ -156,7 +156,7 @@ fun resolveRunPx(inRun: ColorRun, inBasePx: Int, inDensity: Float): Int = when (
 	else            -> inBasePx
 }
 
-/* A run's font axes: its own weight when set (400 = "no run weight"), else
+/** A run's font axes: its own weight when set (400 = "no run weight"), else
    the paragraph's base axes. */
 fun runVariations(
 	inRun: ColorRun,
@@ -164,7 +164,7 @@ fun runVariations(
 ): List<FontVariation.Setting>? =
 	if (inRun.weight != 400) listOf(FontVariation.weight(inRun.weight)) else inBaseVariations
 
-/* Whether any span carries a metric-affecting style (size / weight) — the
+/** Whether any span carries a metric-affecting style (size / weight) — the
    gate for the styled measurement paths, so plain/colour-only text keeps the
    cheap single-measure route. */
 fun spansAffectMetrics(inSpans: List<Range<SpanStyle>>?): Boolean =
@@ -172,7 +172,7 @@ fun spansAffectMetrics(inSpans: List<Range<SpanStyle>>?): Boolean =
 		it.item.fontSize != TextUnit.Unspecified || it.item.fontWeight != null
 	}
 
-/* Width of a text slice, span-aware: sums each style run's advance at its
+/** Width of a text slice, span-aware: sums each style run's advance at its
    resolved size/weight through [inMeasurer]. `inGlobalStart` maps the slice
    into the spans' index space. */
 fun styledSliceWidth(
@@ -197,7 +197,7 @@ fun styledSliceWidth(
 	return vW
 }
 
-/* Tallest run cell height on a line — the line's box height when spans carry
+/** Tallest run cell height on a line — the line's box height when spans carry
    their own sizes; the base cell height when they don't (or the line is empty). */
 fun styledLineCellHeight(
 	inLine: String,
@@ -220,7 +220,7 @@ fun styledLineCellHeight(
 	return vH
 }
 
-/* Index of the first span whose end is past inLineStart — i.e. the first that
+/** Index of the first span whose end is past inLineStart — i.e. the first that
    can reach into a line starting there. Binary search; relies on spans being
    sorted with non-decreasing end (see lineColorRuns). */
 private fun firstSpanReaching(inSpans: List<Range<SpanStyle>>, inLineStart: Int): Int {

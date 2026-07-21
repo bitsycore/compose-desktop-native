@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
 // MARK: Locale native actual
 // ==================
 
-/*
+/**
  * Cross-platform native actual for `expect class Locale`. We don't have
  * NSLocale on linux/windows and don't want to introduce platform-specific
  * actuals for each leg, so we use a plain BCP47 language tag parser

@@ -21,7 +21,7 @@ import kotlin.math.min
 // MARK: SkiaImageCache
 // ==================
 
-/* Decodes bundled image resources to org.jetbrains.skia.Image and caches them
+/** Decodes bundled image resources to org.jetbrains.skia.Image and caches them
    by relative path; backs both the layout pass (intrinsicSize) and the
    renderer's draw. Raster formats go through Image.makeFromEncoded; SVG and
    the SVG produced from Android <vector> XML are rendered through SVGDOM into
@@ -62,7 +62,7 @@ internal class SkiaImageCache {
 	// MARK: Draw
 	// ==================
 
-	/* Paints the resource into (inX, inY, inW, inH) applying contentScale +
+	/** Paints the resource into (inX, inY, inW, inH) applying contentScale +
 	   alpha. Alpha modulates via the paint colour's alpha channel (RGB is
 	   ignored for images without a colour filter). */
 	fun draw(
@@ -122,7 +122,7 @@ internal class SkiaImageCache {
 // MARK: SVG rasterisation (shared with SkiaEncodedImageDecoder)
 // ==================
 
-/* SVGDOM → offscreen raster → Image. Falls back to a 100×100 canvas when
+/** SVGDOM → offscreen raster → Image. Falls back to a 100×100 canvas when
    the document declares no explicit width/height (the Android-vector path
    always supplies them). */
 internal fun rasterizeSvg(inBytes: ByteArray): Image? = runCatching {

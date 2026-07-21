@@ -8,7 +8,7 @@ import kotlin.native.Platform
 // MARK: platformDefaultKeyMapping — native actual
 // ==================
 
-/*
+/**
  Actual for vendored KeyMapping.kt's expect val. Upstream ships this per
  platform (macos: createMacOsDefaultKeyMapping, ios: create.../etc). We use
  Kotlin/Native's `Platform.osFamily` to pick at startup:

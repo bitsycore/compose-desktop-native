@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.sp
 // MARK: IconFontIcon — codepoint-based Icon rendered via a text glyph
 // ==================
 
-/* Renders a single Unicode codepoint from a named IconFont (Material Symbols /
+/** Renders a single Unicode codepoint from a named IconFont (Material Symbols /
    any glyph font registered via IconFont.registerIcon) at the given size.
 
    Lived in `androidx.compose.material.Icon` until :material was retired. Moved
@@ -49,7 +49,7 @@ fun IconFontIcon(
 
 object IconDefaults {
 	val DefaultIconSize: Dp = 24.dp
-	/* STATIC fallback tint for direct IconFontIcon use — :foundation cannot
+	/** STATIC fallback tint for direct IconFontIcon use — :foundation cannot
 	   read material3's LocalContentColor (module layering, same as upstream).
 	   The themed default lives one layer up: MaterialSymbols<Style> defaults
 	   its tint to material3's LocalContentColor.current, mirroring upstream
@@ -58,7 +58,7 @@ object IconDefaults {
 	val LocalContentColor: Color = Color.White
 }
 
-/* Converts a Unicode codepoint to a String, handling supplementary-plane
+/** Converts a Unicode codepoint to a String, handling supplementary-plane
    codepoints (≥0x10000) via UTF-16 surrogate pairs. */
 internal fun codepointToString(inCodepoint: Int): String {
 	if (inCodepoint < 0x10000) return Char(inCodepoint).toString()

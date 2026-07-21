@@ -4,7 +4,7 @@ package com.compose.sdl.icons
 // MARK: IconFont registry
 // ==================
 
-/* Shared store of icon-font byte blobs keyed by family name. Icon-font modules
+/** Shared store of icon-font byte blobs keyed by family name. Icon-font modules
    (e.g. :material-symbols:outlined) call register() at
    app start with their bundled font bytes; the active RenderBackend's text
    renderer consults bytesFor() the first time it sees a Text/Icon that asks
@@ -25,14 +25,14 @@ object IconFont {
 	// monospace) must go through normal full-string rendering.
 	private val fIconFamilies = mutableSetOf<String>()
 
-	/* Register a TEXT font family's bytes (rendered as full strings; e.g. a
+	/** Register a TEXT font family's bytes (rendered as full strings; e.g. a
 	   bundled monospace). Idempotent — a second call with the same family
 	   replaces the previous bytes. */
 	fun register(inFamily: String, inBytes: ByteArray) {
 		fFonts[inFamily] = inBytes
 	}
 
-	/* Register an ICON font family (Material Symbols et al.) — variable-axis,
+	/** Register an ICON font family (Material Symbols et al.) — variable-axis,
 	   drawn one glyph at a time on the SDL3 backend. Same byte store as
 	   register(), but also flags the family as an icon font. */
 	fun registerIcon(inFamily: String, inBytes: ByteArray) {
@@ -40,11 +40,11 @@ object IconFont {
 		fIconFamilies += inFamily
 	}
 
-	/* Bytes for a registered family, or null if not registered. Renderers
+	/** Bytes for a registered family, or null if not registered. Renderers
 	   fall back to the default font when this returns null. */
 	fun bytesFor(inFamily: String): ByteArray? = fFonts[inFamily]
 
-	/* True only for families registered via registerIcon() — icon fonts that
+	/** True only for families registered via registerIcon() — icon fonts that
 	   need single-glyph (variable-axis) rendering, not text fonts. */
 	fun isIconFamily(inFamily: String): Boolean = inFamily in fIconFamilies
 

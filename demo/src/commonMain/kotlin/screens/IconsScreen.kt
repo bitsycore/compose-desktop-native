@@ -23,7 +23,7 @@ import org.jetbrains.compose.resources.painterResource
 // MARK: Icons screen — material3 icon APIs
 // ==================
 
-/* material3 icon APIs: Icon(painter) over compose resources and IconButton. */
+/** material3 icon APIs: Icon(painter) over compose resources and IconButton. */
 @Composable
 internal fun IconsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

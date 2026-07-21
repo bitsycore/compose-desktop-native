@@ -9,7 +9,7 @@ import kotlin.math.sqrt
 // MARK: PathMeasure — SDL3 renderer actual
 // ==================
 
-/*
+/**
  * SDL3 counterpart of upstream `SkiaBackedPathMeasure.skiko.kt`, implemented
  * over ProjectPath's command list: the FIRST contour is flattened to a
  * polyline (same curve sampling density as the tessellator) with cumulative

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 // MARK: LazyExtraScreen
 // ==================
 
-/* Demonstrates LazyRow (horizontal counterpart of LazyColumn) and
+/** Demonstrates LazyRow (horizontal counterpart of LazyColumn) and
    LazyVerticalGrid with GridCells.Fixed + GridCells.Adaptive. */
 @Composable
 internal fun LazyExtraScreen() {

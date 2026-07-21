@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
-/* JVM (Compose Desktop) actuals: upstream's desktop ClipEntry wraps an AWT
+/** JVM (Compose Desktop) actuals: upstream's desktop ClipEntry wraps an AWT
    Transferable — text rides DataFlavor.stringFlavor, images ride
    DataFlavor.imageFlavor as a decoded java.awt.Image (PNG bytes are
    en/decoded with ImageIO at the edges). */
@@ -44,7 +44,7 @@ actual fun ClipEntry.demoPngImage(): ByteArray? {
     return if (ok) out.toByteArray() else null
 }
 
-/* Serves PNG bytes as DataFlavor.imageFlavor — AWT's canonical image exchange
+/** Serves PNG bytes as DataFlavor.imageFlavor — AWT's canonical image exchange
    format, so pasting into other desktop apps works. */
 private class PngTransferable(private val pngBytes: ByteArray) : Transferable {
     override fun getTransferDataFlavors(): Array<DataFlavor> = arrayOf(DataFlavor.imageFlavor)

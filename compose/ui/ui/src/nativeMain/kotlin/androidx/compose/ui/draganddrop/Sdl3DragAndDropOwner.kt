@@ -8,7 +8,7 @@ import androidx.compose.ui.node.ModifierNodeElement
 // MARK: Sdl3DragAndDropOwner — real DragAndDropManager over SDL_EVENT_DROP_*
 // ==================
 
-/* The per-window DragAndDropManager backing ComposeOwner. Holds a root
+/** The per-window DragAndDropManager backing ComposeOwner. Holds a root
  * DragAndDropNode installed on the root LayoutNode via [modifier]; the SDL
  * event pump (see SDL3EventMapper + ComposeWindow) drives [handleDrop] which
  * accumulates BEGIN → FILE / TEXT / POSITION → COMPLETE into a single

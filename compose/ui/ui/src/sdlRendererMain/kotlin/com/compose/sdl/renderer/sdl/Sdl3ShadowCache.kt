@@ -11,7 +11,7 @@ import kotlin.math.tanh
 // MARK: Sdl3ShadowCache
 // ==================
 
-/* Cached drop-shadow tiles for the SDL renderer.
+/** Cached drop-shadow tiles for the SDL renderer.
 
    A shadow's falloff only depends on (corner radius, blur radius) — never on
    the shape's overall size — so one small canonical tile per (radius, blur)
@@ -83,7 +83,7 @@ internal class Sdl3ShadowCache(private val fRenderer: COpaquePointer) {
 		return vEntry
 	}
 
-	/* Order-sensitive fold of every command coordinate — two paths with the
+	/** Order-sensitive fold of every command coordinate — two paths with the
 	   same geometry hash the same regardless of the Path INSTANCE (outlines
 	   are re-created per layer update, so identity can't key the cache). */
 	private fun geometryHash(inPath: com.compose.sdl.graphics.ProjectPath): Long {
@@ -189,7 +189,7 @@ internal class Sdl3ShadowCache(private val fRenderer: COpaquePointer) {
 		return GenericEntry(vTexture, vW, vH, vMinX - vPad, vMinY - vPad)
 	}
 
-	/* Flattens the command list into closed polyline contours (x,y pairs). */
+	/** Flattens the command list into closed polyline contours (x,y pairs). */
 	private fun flattenPath(inPath: com.compose.sdl.graphics.ProjectPath): List<FloatArray> {
 		val vContours = ArrayList<FloatArray>()
 		var vCurrent = ArrayList<Float>()
@@ -236,7 +236,7 @@ internal class Sdl3ShadowCache(private val fRenderer: COpaquePointer) {
 		return vContours
 	}
 
-	/* In-place horizontal box blur on the alpha mask (sliding window sum). */
+	/** In-place horizontal box blur on the alpha mask (sliding window sum). */
 	private fun boxBlurH(inMask: ByteArray, inW: Int, inH: Int, inR: Int) {
 		val vLine = IntArray(inW)
 		val vNorm = 2 * inR + 1
@@ -254,7 +254,7 @@ internal class Sdl3ShadowCache(private val fRenderer: COpaquePointer) {
 		}
 	}
 
-	/* In-place vertical box blur on the alpha mask. */
+	/** In-place vertical box blur on the alpha mask. */
 	private fun boxBlurV(inMask: ByteArray, inW: Int, inH: Int, inR: Int) {
 		val vLine = IntArray(inH)
 		val vNorm = 2 * inR + 1
@@ -271,7 +271,7 @@ internal class Sdl3ShadowCache(private val fRenderer: COpaquePointer) {
 		}
 	}
 
-	/* Rasterises the canonical tile: a rounded rect of corner radius `inRadius`
+	/** Rasterises the canonical tile: a rounded rect of corner radius `inRadius`
 	   whose edge sits `inBlur` px inside the tile border, alpha = falloff of
 	   the signed distance to that edge. */
 	private fun build(inRadius: Int, inBlur: Int): Entry? {

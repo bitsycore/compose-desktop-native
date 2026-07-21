@@ -16,9 +16,9 @@ import androidx.compose.ui.text.style.TextDecoration
 // MARK: Native text drawing bridge (B5)
 // ==================
 
-/*
- Phase 9 B5 — bridges commonMain text drawing to the platform renderer without a
- hard dependency on it. A renderer's `Canvas` (Sdl3Canvas / future SkiaCanvas)
+/**
+ Bridges commonMain text drawing to the platform renderer without a hard
+ dependency on it. A renderer's `Canvas` (Sdl3Canvas / SkiaBackedCanvas)
  implements [NativeTextCanvas]; the text [DrawModifierNode] gets the live Canvas via
  `drawIntoCanvas` and, if it's a NativeTextCanvas, asks it to paint the glyphs. Layout
  sizing still goes through `currentTextMeasurer` so bounds match the drawn text.

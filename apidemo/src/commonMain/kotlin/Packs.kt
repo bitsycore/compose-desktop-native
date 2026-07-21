@@ -16,7 +16,7 @@ private val fJson = Json {
     encodeDefaults = true
 }
 
-/* Write the pack as pretty JSON to inPath. Returns null on success, else the
+/** Write the pack as pretty JSON to inPath. Returns null on success, else the
    error message. */
 fun exportPack(inPack: Pack, inPath: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) {
@@ -27,7 +27,7 @@ fun exportPack(inPack: Pack, inPath: String): String? = try {
     e.message ?: e.toString()
 }
 
-/* Read a pack back from inPath. */
+/** Read a pack back from inPath. */
 fun importPack(inPath: String): Result<Pack> = try {
     val vText = systemFileSystem.read(inPath.trim().toPath()) { readUtf8() }
     Result.success(fJson.decodeFromString<Pack>(vText))
@@ -35,7 +35,7 @@ fun importPack(inPath: String): Result<Pack> = try {
     Result.failure(e)
 }
 
-/* Write a whole self-contained session to inPath. Returns null on success. */
+/** Write a whole self-contained session to inPath. Returns null on success. */
 fun exportSession(inSession: Session, inPath: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) {
         writeUtf8(fJson.encodeToString(inSession))
@@ -45,7 +45,7 @@ fun exportSession(inSession: Session, inPath: String): String? = try {
     e.message ?: e.toString()
 }
 
-/* Read a session back from inPath. */
+/** Read a session back from inPath. */
 fun importSession(inPath: String): Result<Session> = try {
     val vText = systemFileSystem.read(inPath.trim().toPath()) { readUtf8() }
     Result.success(fJson.decodeFromString<Session>(vText))
@@ -53,7 +53,7 @@ fun importSession(inPath: String): Result<Session> = try {
     Result.failure(e)
 }
 
-/* Rename inPath to inNewName within the same directory (adding a .json
+/** Rename inPath to inNewName within the same directory (adding a .json
    extension when the new name has none), returning the new path on success. */
 fun renameFile(inPath: String, inNewName: String): Result<String> = try {
     val vSrc = inPath.trim().toPath()
@@ -65,7 +65,7 @@ fun renameFile(inPath: String, inNewName: String): Result<String> = try {
     Result.failure(e)
 }
 
-/* Write arbitrary text (a response body / headers dump) to inPath. Returns null
+/** Write arbitrary text (a response body / headers dump) to inPath. Returns null
    on success, else the error message. */
 fun writeTextFile(inPath: String, inText: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) { writeUtf8(inText) }
@@ -74,7 +74,7 @@ fun writeTextFile(inPath: String, inText: String): String? = try {
     e.message ?: e.toString()
 }
 
-/* Write raw bytes (a binary response body, e.g. an image) to inPath. */
+/** Write raw bytes (a binary response body, e.g. an image) to inPath. */
 fun writeBytesFile(inPath: String, inBytes: ByteArray): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) { write(inBytes) }
     null
@@ -82,7 +82,7 @@ fun writeBytesFile(inPath: String, inBytes: ByteArray): String? = try {
     e.message ?: e.toString()
 }
 
-/* Re-indent a JSON response for display; returns the input unchanged if it
+/** Re-indent a JSON response for display; returns the input unchanged if it
    isn't valid JSON (so plain-text / HTML responses still show). */
 fun prettyJsonOrRaw(inText: String): String = try {
     fJson.encodeToString(JsonElement.serializer(), fJson.parseToJsonElement(inText))

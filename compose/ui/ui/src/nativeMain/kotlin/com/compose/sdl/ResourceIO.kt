@@ -61,7 +61,7 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 
 	fun has(inPath: String): Boolean = fEntries.containsKey(inPath)
 
-	/* Reads an entry's bytes (inflated if needed) or null if the entry is
+	/** Reads an entry's bytes (inflated if needed) or null if the entry is
 	   missing / uses an unsupported compression method. */
 	fun readBytes(inPath: String): ByteArray? {
 		val vEntry = fEntries[inPath] ?: return null
@@ -88,7 +88,7 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 		}
 	}
 
-	/* Decompress a raw-deflate stream (no zlib/gzip header) into a buffer
+	/** Decompress a raw-deflate stream (no zlib/gzip header) into a buffer
 	   of the known uncompressed length. windowBits = -MAX_WBITS (-15) is
 	   what zlib calls "raw deflate" — matches the zip entry payload. */
 	@OptIn(ExperimentalForeignApi::class)
@@ -224,7 +224,7 @@ private val kArchive: ComposeResourceArchive? by lazy {
 // MARK: Public API
 // ==================
 
-/* Lets an app feed the image pipeline bytes it produced at runtime (e.g. a
+/** Lets an app feed the image pipeline bytes it produced at runtime (e.g. a
    downloaded PNG) under a synthetic path, so painterResource(key) / Image(...)
    render it through the same decode + cache path as bundled drawables. Use a
    unique key per distinct content — renderers cache decoded textures by path,
@@ -235,11 +235,11 @@ fun registerMemoryResource(inKey: String, inBytes: ByteArray) { kMemoryResources
 
 fun removeMemoryResource(inKey: String) { kMemoryResources.remove(inKey) }
 
-/* Reads a resource's raw bytes — an in-memory resource if registered under the
+/** Reads a resource's raw bytes — an in-memory resource if registered under the
    path, otherwise the bundled entry inside data.kres. Null when neither exists. */
 fun loadComposeResourceBytes(inRelativePath: String): ByteArray? =
 	kMemoryResources[inRelativePath] ?: kArchive?.readBytes(inRelativePath)
 
-/* True when an entry exists in memory or the bundled archive. Cheap. */
+/** True when an entry exists in memory or the bundled archive. Cheap. */
 fun hasComposeResource(inRelativePath: String): Boolean =
 	kMemoryResources.containsKey(inRelativePath) || kArchive?.has(inRelativePath) == true

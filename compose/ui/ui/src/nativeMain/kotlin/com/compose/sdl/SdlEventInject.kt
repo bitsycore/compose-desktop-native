@@ -7,7 +7,7 @@ import sdl3.*
 // MARK: SdlEventInject
 // ==================
 
-/* Test-only: push a synthetic mouse event into SDL's real event queue so it flows
+/** Test-only: push a synthetic mouse event into SDL's real event queue so it flows
    through the exact live path (pollEvents → AppEvent.Pointer → host.onPointerRaw →
    PointerInputEventProcessor → upstream clickable). Used by the demo's `--clicktest`
    to verify the vendored interaction engine end-to-end. inType: 0=Move 1=Press 2=Release. */
@@ -45,7 +45,7 @@ fun injectMouseEvent(inType: Int, inX: Float, inY: Float) {
 	}
 }
 
-/* Test-only: push a synthetic SDL_EVENT_TEXT_INPUT (typed character[s]). SDL_TextInputEvent.text
+/** Test-only: push a synthetic SDL_EVENT_TEXT_INPUT (typed character[s]). SDL_TextInputEvent.text
    is a const char* that SDL does NOT copy on push, so the UTF-8 buffer is allocated on nativeHeap
    and intentionally leaked — it must stay valid until the event is polled next frame. */
 @OptIn(ExperimentalForeignApi::class)
@@ -62,7 +62,7 @@ fun injectTextInput(inText: String) {
 	}
 }
 
-/* Test-only: push a synthetic SDL_EVENT_TEXT_EDITING (IME preedit/composition). Like
+/** Test-only: push a synthetic SDL_EVENT_TEXT_EDITING (IME preedit/composition). Like
    injectTextInput, edit.text is a non-copied const char*, so the buffer is nativeHeap
    allocated and intentionally leaked until the event is polled. */
 @OptIn(ExperimentalForeignApi::class)
@@ -81,7 +81,7 @@ fun injectTextEditing(inText: String) {
 	}
 }
 
-/* Test-only: push a synthetic mouse-wheel event at (inX,inY) with wheel deltas (inDeltaX,inDeltaY).
+/** Test-only: push a synthetic mouse-wheel event at (inX,inY) with wheel deltas (inDeltaX,inDeltaY).
    SDL convention: deltaY positive = wheel up. */
 @OptIn(ExperimentalForeignApi::class)
 fun injectWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float) {
@@ -96,7 +96,7 @@ fun injectWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float) {
 	}
 }
 
-/* Test-only: push a synthetic key event. inScancode is an SDL_SCANCODE_* value (e.g. 42=Backspace). */
+/** Test-only: push a synthetic key event. inScancode is an SDL_SCANCODE_* value (e.g. 42=Backspace). */
 @OptIn(ExperimentalForeignApi::class)
 fun injectKey(inScancode: Int, inDown: Boolean) {
 	memScoped {

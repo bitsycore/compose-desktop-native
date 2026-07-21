@@ -7,7 +7,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 // MARK: CalendarLocale — native project actuals
 // ==================
 
-/*
+/**
  Upstream's darwinMain / desktopMain provide these actuals from platform locale
  APIs (NSLocale on darwin, java.util.Locale on JVM). Our K/N native target has
  neither, so we ship a locale-agnostic stub — a single implicit "current" locale

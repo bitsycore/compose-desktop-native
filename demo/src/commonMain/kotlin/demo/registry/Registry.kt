@@ -7,17 +7,17 @@ import screens.*
 // MARK: Screen / category registry
 // ==================
 
-/* One showcase screen: a display name (also the `--screen=<name>` CLI key) and
+/** One showcase screen: a display name (also the `--screen=<name>` CLI key) and
    its content composable. */
 data class DemoScreen(val name: String, val content: @Composable () -> Unit)
 
-/* A sidebar group. [id] is stable across platforms so a platform-specific screen
+/** A sidebar group. [id] is stable across platforms so a platform-specific screen
    can be folded into a shared category (e.g. a native-only Core screen adds to
    the common "core" group), while platform-only groups (Native on native) use a
    fresh id. */
 data class DemoCategory(val id: String, val label: String, val screens: List<DemoScreen>)
 
-/* Shared, platform-neutral registries — these compile against upstream Compose
+/** Shared, platform-neutral registries — these compile against upstream Compose
    on a future jvm target unchanged. Screens migrate into these lists as they're
    moved to commonMain. */
 val CoreScreens: List<DemoScreen> = listOf(
@@ -100,13 +100,13 @@ val commonCategories: List<DemoCategory> = listOf(
     DemoCategory("others", "Others", OthersScreens),
 )
 
-/* Platform extras that fill the dropdown dynamically: screens that can't be
+/** Platform extras that fill the dropdown dynamically: screens that can't be
    common (project-only APIs) folded into their category by id, plus any
    platform-only category (Native on native; a jvm target would add its own or
    return an empty list). */
 expect fun getPlatformCategories(): List<DemoCategory>
 
-/* commonCategories merged with getPlatformCategories(), by id: matching ids
+/** commonCategories merged with getPlatformCategories(), by id: matching ids
    concatenate their screens (common first); brand-new platform ids append at the
    end. This is what the sidebar dropdown iterates. */
 fun allCategories(): List<DemoCategory> {

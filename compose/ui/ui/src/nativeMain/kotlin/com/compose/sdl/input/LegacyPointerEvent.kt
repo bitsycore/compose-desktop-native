@@ -7,7 +7,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 // MARK: LegacyPointerEvent (project-only)
 // ==================
 
-/* Project-only legacy event class used by the SDL3 input pipeline
+/** Project-only legacy event class used by the SDL3 input pipeline
    (`SDL3EventMapper` → `AppEvent.Pointer` → `ComposeWindow`'s event loop).
    The name `PointerEvent` is now reserved for upstream's multi-touch
    vendored event (in androidx.compose.ui.input.pointer.PointerEvent);

@@ -49,7 +49,7 @@ import sdl3.SDL_WaitEventTimeout
 // MARK: Application entry — nativeComposeApp + Window()
 // ==================
 
-/*
+/**
  Multi-window entry point, shaped like Compose Desktop's `application {}`:
 
      nativeComposeApp {
@@ -73,12 +73,12 @@ import sdl3.SDL_WaitEventTimeout
 */
 
 interface ApplicationScope {
-	/* Requests the main loop to exit after the current iteration (all windows
+	/** Requests the main loop to exit after the current iteration (all windows
 	   are torn down on the way out). */
 	fun exitApplication()
 }
 
-/* Declares one native window for as long as this composable stays in the app
+/** Declares one native window for as long as this composable stays in the app
    composition. `onCloseRequest` fires when the user asks the window to close
    (OS close button, or `window.close()` from content) — remove the state that
    composes this Window to actually close it, or call exitApplication(). */
@@ -118,7 +118,7 @@ fun ApplicationScope.Window(
 	}
 }
 
-/* Boots SDL + the Compose runtime, runs `content` as the application
+/** Boots SDL + the Compose runtime, runs `content` as the application
    composition, and drives every declared Window until exitApplication() or
    the last window closes. */
 fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
@@ -291,7 +291,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	SDL_Quit()
 }
 
-/* CDN_PROFILE=1 — per-phase timings, printed every ~2s of rendered frames.
+/** CDN_PROFILE=1 — per-phase timings, printed every ~2s of rendered frames.
    A named-phase SINGLETON so both the main loop (events / app / pump / render)
    AND renderFrame's sub-steps (render.layout / render.draw / render.present)
    report into one line. `mark()` resets the stopwatch; `phase(name)` charges
@@ -359,29 +359,30 @@ internal object FrameProfiler {
 	}
 }
 
-/* Trigger a Kotlin/Native GC so Cleaner-managed renderer resources release
-   their native memory (see the main loop's native-memory nudge). */
+/** CDN_FORCERENDER=1 forces every frame to render so sustained steady-state
+   timings can be measured on otherwise-idle screens (see TOOLING.md, frame
+   profiler). */
 private val kForceRender: Boolean = platform.posix.getenv("CDN_FORCERENDER") != null
 
 // ==================
 // MARK: Probe / screenshot support (render-to-quiescence)
 // ==================
 
-/* Set BEFORE nativeComposeApp/nativeComposeWindow: every window's composition then runs
+/** Set BEFORE nativeComposeApp/nativeComposeWindow: every window's composition then runs
    under an InfiniteAnimationPolicy that CANCELS infinite animations, so
    rememberInfiniteTransition & co. freeze at their initial value — the same mechanism
    upstream's test rules use. Screenshot/parity runs enable it so looping screens can
    reach quiescence and capture deterministically. */
 var disableInfiniteAnimations: Boolean = false
 
-/* The cancelling policy: a coroutine that ends in CancellationException counts as
+/** The cancelling policy: a coroutine that ends in CancellationException counts as
    cancelled (not failed), so only the animation coroutine stops — nothing propagates. */
 private object CancelInfiniteAnimationsPolicy : androidx.compose.ui.platform.InfiniteAnimationPolicy {
 	override suspend fun <R> onInfiniteOperation(block: suspend () -> R): R =
 		throw CancellationException("infinite animations are disabled (disableInfiniteAnimations)")
 }
 
-/* Set BEFORE nativeComposeApp/nativeComposeWindow: the composition + animation frame
+/** Set BEFORE nativeComposeApp/nativeComposeWindow: the composition + animation frame
    clocks advance a VIRTUAL 16.6ms per main-loop iteration instead of reading SDL's
    real-time ticks — the native mirror of the JVM parity leg's render(nanos) stepping.
    Animations then progress by exact per-frame deltas, so anything time-raced (e.g. a
@@ -408,16 +409,18 @@ private fun animationClockNanos(): Long =
 // var is enough for onFrame probes to address "the window I'm being called for".
 private var renderingWindow: WindowInstance? = null
 
-/* From inside an onFrame callback: true while the just-rendered window still has pending
+/** From inside an onFrame callback: true while the just-rendered window still has pending
    work (recomposition, layout/draw invalidation, or an animation awaiting the next frame).
    Screenshot probes capture once this stays false for a few consecutive frames instead of
    at a fixed frame count. Outside onFrame it answers false. */
 fun windowHasInvalidations(): Boolean = renderingWindow?.hasInvalidations() ?: false
 
+/** Trigger a Kotlin/Native GC so Cleaner-managed renderer resources release
+   their native memory (see the main loop's native-memory nudge). */
 @OptIn(kotlin.native.runtime.NativeRuntimeApi::class)
 private fun collectNativeGarbage() = kotlin.native.runtime.GC.collect()
 
-/* Single-window compatibility wrapper — the pre-multi-window entry point.
+/** Single-window compatibility wrapper — the pre-multi-window entry point.
    Closing the window exits the app, exactly as before. */
 fun nativeComposeWindow(
 	title: String = "ComposeNativeSDL3",
@@ -450,7 +453,7 @@ internal class ApplicationScopeImpl(val runtime: AppRuntime) : ApplicationScope 
 	override fun exitApplication() { runtime.exitRequested = true }
 }
 
-/* Registry + lifecycle for the live windows. Windows are created by the app
+/** Registry + lifecycle for the live windows. Windows are created by the app
    composition (Window()'s remember) and destroyed by the LOOP — DisposableEffect
    onDispose only schedules, because teardown disposes a composition and that
    must not run re-entrantly inside another composition's apply pass. */
@@ -732,7 +735,7 @@ internal class WindowInstance(
 		return true
 	}
 
-	/* Points the render-bridge globals (text measurer / image loader /
+	/** Points the render-bridge globals (text measurer / image loader /
 	   viewport) at this window's renderer. Must be called before composing,
 	   measuring, or drawing this window's tree. */
 	fun installGlobals() {
@@ -776,7 +779,7 @@ internal class WindowInstance(
 		hasMousePos = true
 	}
 
-	/* Pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). Stop the per-frame
+	/** Pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). Stop the per-frame
 	   synthetic hover re-dispatch and fire one Exit at the last position so a
 	   hovered widget clears its highlight instead of sticking forever. */
 	fun onPointerExit() {
@@ -867,13 +870,13 @@ internal class WindowInstance(
 		facade.onResized()
 	}
 
-	/* OS light/dark theme changed — re-pick the theme-appropriate window icon
+	/** OS light/dark theme changed — re-pick the theme-appropriate window icon
 	   (no-op if this window has no icon configured or the choice is unchanged). */
 	fun onSystemThemeChanged() {
 		backend.applyThemeIcon()
 	}
 
-	/* OS close button / app-level Quit: honour the veto handler, then hand the
+	/** OS close button / app-level Quit: honour the veto handler, then hand the
 	   decision to the Window() declaration. */
 	fun requestClose() {
 		if (closeDispatched) return
@@ -889,16 +892,13 @@ internal class WindowInstance(
 	fun shouldRender(): Boolean =
 		needsFrame || (recomposer?.hasPendingWork == true) || onFrame != null || kForceRender
 
-	/* True while this window still has pending work: a state/layout/draw invalidation
+	/** True while this window still has pending work: a state/layout/draw invalidation
 	   (needsFrame), recomposer work, or a composition/node animation awaiting the next
 	   frame. Sampled by windowHasInvalidations() from onFrame probes — the quiescence
 	   signal for render-to-settle screenshot capture. */
 	fun hasInvalidations(): Boolean =
 		needsFrame || recomposer?.hasPendingWork == true ||
 			frameClock.hasAwaiters || host.hasAnimationAwaiters()
-
-	// TEMP measurement: CDN_FORCERENDER=1 forces every frame to render so
-	// sustained steady-state timings can be measured on otherwise-idle screens.
 
 	fun renderFrame() {
 		val vRender = renderBackend ?: return
@@ -989,7 +989,7 @@ internal class WindowInstance(
 // MARK: WindowArchitectureOwner
 // ==================
 
-/* Per-window architecture-components owner, modeled on upstream desktop's
+/** Per-window architecture-components owner, modeled on upstream desktop's
    DefaultArchitectureComponentsOwner (compose/ui skikoMain
    PlatformOwnerProvider.skiko.kt): one object implements LifecycleOwner +
    ViewModelStoreOwner + SavedStateRegistryOwner (+ the SavedState-aware
@@ -1037,7 +1037,7 @@ private class WindowArchitectureOwner :
 		lifecycle.currentState = androidx.lifecycle.Lifecycle.State.CREATED
 	}
 
-	/* Focus/visibility-driven state (see WindowInstance.onActivationEvent).
+	/** Focus/visibility-driven state (see WindowInstance.onActivationEvent).
 	   Ignored once destroyed — a stray SDL event during teardown must not
 	   resurrect the registry. */
 	fun setLifecycleState(inState: androidx.lifecycle.Lifecycle.State) {
@@ -1058,7 +1058,7 @@ private class WindowArchitectureOwner :
 // MARK: Input helpers
 // ==================
 
-/* Escape → back: port of upstream desktop's BackNavigationEventInput. An
+/** Escape → back: port of upstream desktop's BackNavigationEventInput. An
    unconsumed Escape KeyDown completes a back navigation on the dispatcher
    this input is registered with (BackHandler / PredictiveBackHandler
    consumers: m3 SearchBar collapse, dialog dismissal, …). */
@@ -1074,7 +1074,7 @@ private class BackNavigationInput : androidx.navigationevent.NavigationEventInpu
 	}
 }
 
-/* Re-dispatches committed text (SDL TEXT_INPUT) as one synthetic typed
+/** Re-dispatches committed text (SDL TEXT_INPUT) as one synthetic typed
    KeyDown per Unicode codepoint (surrogate pairs folded). Key.Unknown +
    codePoint + no modifiers matches both vendored text stacks' isTypedEvent
    criteria; the SDL key mapper leaves codePoint = 0 on real key events, so

@@ -9,7 +9,7 @@ import androidx.compose.ui.InternalComposeUiApi
 // MARK: CompositionLocals — native actuals + project stubs
 // ==================
 
-/*
+/**
  * Project native actuals for the vendored commonMain CompositionLocals.kt.
  * Upstream ships these in `CompositionLocals.skiko.kt` next to
  * `ProvidePlatformCompositionLocals` (which needs PlatformContext + the

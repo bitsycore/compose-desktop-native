@@ -26,7 +26,7 @@ import org.jetbrains.skia.Typeface as SkTypeface
 // MARK: renderMaterialSymbol — JVM actual (Skiko direct)
 // ==================
 
-/* Draws the glyph straight through Skiko (Compose Desktop's rendering
+/** Draws the glyph straight through Skiko (Compose Desktop's rendering
    backend): the style's variable font is loaded once, Typeface.makeClone
    instantiates the FILL / wght / GRAD / opsz axes per combination, and the
    glyph is drawn as a TextLine on the native Skia canvas.
@@ -43,7 +43,7 @@ import org.jetbrains.skia.Typeface as SkTypeface
 private val baseTypefaces = HashMap<String, SkTypeface?>()
 private val variantTypefaces = HashMap<String, SkTypeface>()
 
-/* The style's font as loaded from the classpath (no axes applied), null when
+/** The style's font as loaded from the classpath (no axes applied), null when
    the app didn't bundle it — warned once, icon renders blank. */
 private fun baseTypeface(style: MaterialSymbolsIcon): SkTypeface? {
     if (style.Family in baseTypefaces) return baseTypefaces[style.Family]
@@ -60,7 +60,7 @@ private fun baseTypeface(style: MaterialSymbolsIcon): SkTypeface? {
     return typeface
 }
 
-/* One clone per (style, axes) combination; the default axes use the font's
+/** One clone per (style, axes) combination; the default axes use the font's
    own default position, no clone needed. Fill is quantised to 1/100 steps so
    ANIMATED fill values (arbitrary floats every frame) hit a bounded set of
    cached clones instead of growing the cache forever. */

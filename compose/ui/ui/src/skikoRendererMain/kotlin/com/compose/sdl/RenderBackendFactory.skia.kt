@@ -6,7 +6,7 @@ import com.compose.sdl.renderer.skia.SkiaRenderBackend
 // MARK: createRenderBackend (Skia renderer module entry)
 // ==================
 
-/* Public factory the :window module calls (its per-target makeRenderBackend
+/** Public factory the :window module calls (its per-target makeRenderBackend
    actual delegates here when Skia is the selected renderer). Mirrors the
    SDL3 module's createRenderBackend / rendererPreferredGpuMode in the same
    package; exactly one renderer module is included per target. Rejects

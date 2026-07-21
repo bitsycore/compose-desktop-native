@@ -22,7 +22,7 @@ import sdl3.SDL_free
 // MARK: ResourceEnvironment — SDL actual
 // ==================
 
-/* Non-composable system environment for qualifier resolution (values-fr,
+/** Non-composable system environment for qualifier resolution (values-fr,
    drawable-dark, …): locale from SDL_GetPreferredLocales, theme from
    SDL_GetSystemTheme. Density is reported as 1f — under this port's Option-B
    density flow layout runs in physical pixels and drawables are bundled at a

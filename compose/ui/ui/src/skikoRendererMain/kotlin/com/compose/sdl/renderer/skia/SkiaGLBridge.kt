@@ -20,7 +20,7 @@ import sdl3.SDL_GL_SwapWindow
 // MARK: SkiaGLBridge — Skia GPU on top of an SDL3 OpenGL context.
 // ==================
 
-/* Requires the SDL window to have been created with SDL_WINDOW_OPENGL and
+/** Requires the SDL window to have been created with SDL_WINDOW_OPENGL and
    a GL context current. Each frame: clear via Canvas → draw → flush GL
    commands → SDL_GL_SwapWindow.
 

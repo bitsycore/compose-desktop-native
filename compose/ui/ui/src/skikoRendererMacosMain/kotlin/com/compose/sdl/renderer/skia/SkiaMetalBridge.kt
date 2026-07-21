@@ -25,7 +25,7 @@ import sdl3.SDL_Metal_GetLayer
 // MARK: SkiaMetalBridge — Skia GPU on top of an SDL3 Metal view.
 // ==================
 
-/* Per-frame flow:
+/** Per-frame flow:
    ensureSize → resize CAMetalLayer (if dimensions changed) and acquire the
    next drawable, wrap the drawable's texture as a Skia BackendRenderTarget
    and build a Surface around it.

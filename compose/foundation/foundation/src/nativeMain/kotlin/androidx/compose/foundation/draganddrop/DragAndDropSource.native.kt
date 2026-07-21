@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.graphics.drawscope.DrawScope
 
-/* Native actuals for the vendored `DragAndDropSource.kt` internal `expect`s.
+/** Native actuals for the vendored `DragAndDropSource.kt` internal `expect`s.
  *
  * Upstream's skiko actuals use Skiko-JVM extensions (`asComposeCanvas`,
  * `skiaCanvas`, `PictureRecorder`) plus `PointerMatcher.mouse(...)` from the

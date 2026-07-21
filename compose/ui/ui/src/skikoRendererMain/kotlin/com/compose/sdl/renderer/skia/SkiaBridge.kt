@@ -9,7 +9,7 @@ import org.jetbrains.skia.Image
 // MARK: SkiaBridge
 // ==================
 
-/* Backend-agnostic Skia rendering surface. ComposeWindow drives it once
+/** Backend-agnostic Skia rendering surface. ComposeWindow drives it once
    per frame; the concrete implementation owns whatever GPU / CPU
    resources it needs (raster buffer + SDL_Texture, or a GL/Metal backend
    render target). */

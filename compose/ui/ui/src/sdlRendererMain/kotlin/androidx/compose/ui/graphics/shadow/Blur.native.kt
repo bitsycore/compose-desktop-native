@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Paint
 // MARK: Blur — native actuals (no-op)
 // ==================
 
-/*
+/**
  * Actuals for the vendored commonMain `Blur.kt` (`internal expect fun
  * BlurFilter(radius)`, `internal expect class BlurFilter`, `internal expect
  * fun Paint.setBlurFilter`). Upstream's Skia actual routes to

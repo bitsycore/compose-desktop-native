@@ -79,7 +79,7 @@ private object CancelInfiniteAnimations : androidx.compose.ui.platform.InfiniteA
         throw kotlinx.coroutines.CancellationException("infinite animations disabled for parity screenshots")
 }
 
-/* Render each registered screen headlessly (density 1 to match the native
+/** Render each registered screen headlessly (density 1 to match the native
    physical-pixel screenshots) to quiescence and write a PNG per screen. */
 @OptIn(ExperimentalComposeUiApi::class)
 private fun screenshotAllScreens(outDir: File, width: Int, height: Int) {
@@ -123,7 +123,7 @@ private val notoSans: FontFamily? by lazy {
     } else FontFamily(Font(identity = "NotoSans", data = bytes))
 }
 
-/* A copy of the M3 Typography with every core style forced to [family] (Typography styles
+/** A copy of the M3 Typography with every core style forced to [family] (Typography styles
    carry their own fontFamily, so overriding LocalTextStyle alone wouldn't reach them). */
 private fun notoTypography(family: FontFamily): Typography {
     val b = Typography()
@@ -146,7 +146,7 @@ private fun notoTypography(family: FontFamily): Typography {
     )
 }
 
-/* Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans — the same
+/** Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans — the same
    font the native leg bundles). The JVM half of the metrics-alignment probe: MainNative's
    `--metricsprobe` prints the same table from SdlParagraph; aligning the numbers kills
    the accumulating vertical text drift in parity (P3.1). Runs inside a headless scene so
@@ -208,7 +208,7 @@ private fun printParagraphMetrics() {
     }
 }
 
-/* Same wrapper as MainNative's --screen path — plus NotoSans font-alignment (P0.3) so the
+/** Same wrapper as MainNative's --screen path — plus NotoSans font-alignment (P0.3) so the
    parity diff isn't dominated by the JVM's default typeface. */
 @Composable
 private fun ScreenHost(content: @Composable () -> Unit) {

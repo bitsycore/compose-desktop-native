@@ -20,7 +20,7 @@ internal fun writeFile(inPath: String, inBytes: ByteArray) {
     fclose(vFile)
 }
 
-/* Minimal BMP writer: 24-bit BGR (drop alpha) with the classic 40-byte
+/** Minimal BMP writer: 24-bit BGR (drop alpha) with the classic 40-byte
    BITMAPINFOHEADER. Universally readable, including `sips`. Rows are
    bottom-up (positive height) and padded to 4 bytes. */
 internal fun encodeBmpBgra32(inWidth: Int, inHeight: Int, inBgra: ByteArray): ByteArray {

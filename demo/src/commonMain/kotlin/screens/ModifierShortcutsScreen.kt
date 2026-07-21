@@ -16,7 +16,7 @@ import androidx.compose.ui.zIndex
 // MARK: ModifierShortcutsScreen
 // ==================
 
-/* Thin one-line modifiers built on top of Modifier.graphicsLayer:
+/** Thin one-line modifiers built on top of Modifier.graphicsLayer:
    rotate / scale / translate, plus zIndex which reorders siblings at
    draw time. */
 @Composable

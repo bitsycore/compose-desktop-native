@@ -38,7 +38,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 // MARK: Pack colour (palette dot + picker)
 // ==================
 
-/* A small rounded square in the pack's palette colour (neutral when unset).
+/** A small rounded square in the pack's palette colour (neutral when unset).
    The pack's visual identity in the sidebar's foldable pack header. */
 @Composable
 internal fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
@@ -47,7 +47,7 @@ internal fun ColorDot(inColor: Int, inSize: Dp = 11.dp) {
     Box(Modifier.size(inSize).background(vCol, RoundedCornerShape(3.dp)))
 }
 
-/* A 5×4 grid of swatches; tapping one sets the pack's colour (1-based index).
+/** A 5×4 grid of swatches; tapping one sets the pack's colour (1-based index).
    The current colour gets a ring. Sized to fit inside the (fixed-width) ⋮ menu. */
 @Composable
 internal fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
@@ -77,7 +77,7 @@ internal fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 // MARK: Add-pack menu (header '+')
 // ==================
 
-/* The header '+' — a small menu to add a pack to the open session, either blank
+/** The header '+' — a small menu to add a pack to the open session, either blank
    or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
 internal fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnImport: () -> Unit) {
@@ -108,11 +108,11 @@ internal fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnIm
 // MARK: Session menu (save / open / new / recent)
 // ==================
 
-/* The last path segment of inPath (the file name), tolerant of either slash. */
+/** The last path segment of inPath (the file name), tolerant of either slash. */
 internal fun fileLeaf(inPath: String): String =
     inPath.trimEnd('/', '\\').substringAfterLast('/').substringAfterLast('\\')
 
-/* Shortens a long path to inMax chars keeping the start and end (so the root
+/** Shortens a long path to inMax chars keeping the start and end (so the root
    and file stay visible), joined by an ellipsis. The menu has no text-overflow
    primitive, so we trim the string ourselves. */
 internal fun ellipsizeMiddle(inText: String, inMax: Int = 46): String {
@@ -122,7 +122,7 @@ internal fun ellipsizeMiddle(inText: String, inMax: Int = 46): String {
     return inText.take(vHead) + "…" + inText.takeLast(vKeep - vHead)
 }
 
-/* Header dropdown for the one open session. Shows its file name with the full
+/** Header dropdown for the one open session. Shows its file name with the full
    path underneath when it has a file (so you can see it's saved — file-backed
    sessions auto-save), or "Untitled session" with a dot when it has no file yet.
    Menu: Save / Save as… / Rename / Reveal / Open… / New + a recent list. */
@@ -280,7 +280,7 @@ internal fun SessionMenu(
 // MARK: Pack tree (recursive sidebar rendering)
 // ==================
 
-/* The per-pack operations a PackSection needs, bundled so PackTree can bind them
+/** The per-pack operations a PackSection needs, bundled so PackTree can bind them
    recursively for sub-packs while PackSection itself stays callback-driven. */
 internal class PackOps(
     val onEnv: (PackState) -> Unit,
@@ -307,7 +307,7 @@ internal class PackOps(
     val packDropEnd: () -> Unit,
 )
 
-/* Renders a pack then its sub-packs recursively, each indented by its depth.
+/** Renders a pack then its sub-packs recursively, each indented by its depth.
    inSiblings is the list this pack belongs to (top-level vPacks, or a parent's
    subPacks) — used to position the pack-reorder drop bars by index. */
 @Composable
@@ -359,7 +359,7 @@ internal fun PackTree(inPack: PackState, inSiblings: List<PackState>, inDepth: I
 // MARK: Pack section (foldable pack in the sidebar)
 // ==================
 
-/* One open pack rendered as a foldable section: a header (fold chevron, colour
+/** One open pack rendered as a foldable section: a header (fold chevron, colour
    box, name, dirty dot, request count, ⋮ menu) over the pack's request list
    when expanded. Clicking the header body selects the pack (so the Env tab and
    main panel follow it); the chevron only folds. The request list drags to

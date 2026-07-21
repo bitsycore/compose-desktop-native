@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Density
 // MARK: ParagraphIntrinsics + Paragraph factory actuals (SDL)
 // ==================
 
-/* Carries text+style for the intrinsics-based Paragraph factories; intrinsic widths come from a
+/** Carries text+style for the intrinsics-based Paragraph factories; intrinsic widths come from a
    throwaway unbounded SdlParagraph. `density` here is the LocalDensity scalar (dpr on Retina); it
    converts sp → pixels so the intrinsic widths land in the same pixel space the layout tree measures
    itself in. */

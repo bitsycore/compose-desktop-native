@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 // MARK: SelectionRect
 // ==================
 
-/* One selection-highlight rectangle (in layout pixels), painted behind the glyphs.
+/** One selection-highlight rectangle (in layout pixels), painted behind the glyphs.
    Internal render glue shared by BasicText (selection-aware) and BasicTextField.
    Sizes come from Paragraph.getBoundingBox / getPathForRange — already pixels
    (see § HiDPI in CLAUDE.md), so use the pixel-based offset + a raw Layout

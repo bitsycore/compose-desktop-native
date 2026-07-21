@@ -33,7 +33,7 @@ import java.util.zip.Inflater
 // consumers. The only external tool is `windres` (mingw-w64 binutils), needed
 // solely for the optional Windows .exe embed.
 
-/* Deterministic output paths so the executable's linkerOpts (added reflectively
+/** Deterministic output paths so the executable's linkerOpts (added reflectively
    in NativeApplication) and the windres task agree without sharing state. */
 internal fun appIconWorkDir(inProject: Project): File =
 	inProject.layout.buildDirectory.dir("composeNativeAppIcon").get().asFile
@@ -41,7 +41,7 @@ internal fun appIconWorkDir(inProject: Project): File =
 internal fun appIconObjectFile(inProject: Project): File =
 	File(appIconWorkDir(inProject), "app_icon.o")
 
-/* True when the consumer configured a Windows .exe embed (icon supplied + not
+/** True when the consumer configured a Windows .exe embed (icon supplied + not
    disabled). Read at afterEvaluate. */
 internal fun wantsWindowsIconEmbed(inExt: ComposeDesktopNativeExtension): Boolean =
 	!inExt.icon.light.isEmpty && inExt.icon.embedWindowsIcon.getOrElse(true)
@@ -178,7 +178,7 @@ internal object IconCodec {
 		0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
 	)
 
-	/* Decodes an 8-bit non-interlaced RGBA (type 6) or RGB (type 2) PNG to
+	/** Decodes an 8-bit non-interlaced RGBA (type 6) or RGB (type 2) PNG to
 	   straight-alpha RGBA bytes. Returns (width, height, pixels). */
 	fun decodePngToRgba(inBytes: ByteArray): Triple<Int, Int, ByteArray> {
 		require(inBytes.size >= 8 && inBytes.copyOfRange(0, 8).contentEquals(kPngSignature)) {
@@ -260,7 +260,7 @@ internal object IconCodec {
 		return Triple(vWidth, vHeight, vOut)
 	}
 
-	/* An 8-byte little-endian [width][height] header + straight-alpha RGBA — the
+	/** An 8-byte little-endian [width][height] header + straight-alpha RGBA — the
 	   format the runtime (WindowIcon.kt / SDL3Backend) reads. */
 	fun rgbaBlob(inW: Int, inH: Int, inRgba: ByteArray): ByteArray {
 		val vOut = ByteArray(8 + inRgba.size)
@@ -270,7 +270,7 @@ internal object IconCodec {
 		return vOut
 	}
 
-	/* A multi-resolution .ico embedding each PNG verbatim (PNG-payload entries —
+	/** A multi-resolution .ico embedding each PNG verbatim (PNG-payload entries —
 	   read by every modern Windows shell). */
 	fun buildIco(inPngFiles: List<File>): ByteArray {
 		data class Img(val w: Int, val h: Int, val bytes: ByteArray)

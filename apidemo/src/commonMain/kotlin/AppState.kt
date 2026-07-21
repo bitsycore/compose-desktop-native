@@ -13,7 +13,7 @@ import kotlinx.coroutines.Job
 
 internal class HistoryEntry(val method: ReqMethod, val url: String, val status: Int, val timeMs: Long, val request: ApiRequest)
 
-/* One request plus its live session state — response, in-flight job (for
+/** One request plus its live session state — response, in-flight job (for
    cancel) and which sub-tabs show. Stable identity lets the sidebar and the
    open-tab strip reference the same request without index juggling. */
 internal class ReqState(inInitial: ApiRequest) {
@@ -35,7 +35,7 @@ internal class ReqState(inInitial: ApiRequest) {
     var chainUrl by mutableStateOf("")               // resolved URL the chain was fetched from
 }
 
-/* One open pack: its file path (null = never saved), a dirty flag (edits since
+/** One open pack: its file path (null = never saved), a dirty flag (edits since
    last file save), and its own requests, variables and open-tab strip. Switching
    packs swaps the whole working set. */
 internal class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpenTabs: List<Int> = emptyList(), inActive: Int = -1) {
@@ -79,16 +79,16 @@ internal class PackState(inPack: Pack, inPath: String?, inDirty: Boolean, inOpen
     )
 }
 
-/* A fresh random id for a pack (used to wire linked-copy packs to their source
+/** A fresh random id for a pack (used to wire linked-copy packs to their source
    across save / load). */
 internal fun newPackId(): String = "pk-" + kotlin.random.Random.nextLong().toULong().toString(16)
 
-/* One entry in the unified tab strip: a request tab, a pack's settings tab when
+/** One entry in the unified tab strip: a request tab, a pack's settings tab when
    req == null, or the session settings tab when isSession (pack == null). The
    underlying ReqState / PackState (or the session key) is the stable identity. */
 internal const val kSessionTabKey = "session-settings"
 internal class StripTab(val pack: PackState?, val req: ReqState?, val isSession: Boolean = false)
-/* Identity of a strip tab. A linked pack shares the source's ReqState objects,
+/** Identity of a strip tab. A linked pack shares the source's ReqState objects,
    so the key must include the pack — otherwise the source's and linked's tabs
    for the same request collide (double selection, duplicate key()). Data class →
    structural equality, so compare keys with == (not ===). */
@@ -99,7 +99,7 @@ internal val StripTab.tabKey: Any get() = if (isSession) kSessionTabKey else Tab
 // MARK: Cross-pack drag (sidebar tree)
 // ==================
 
-/* Shared state for dragging within and across packs in the sidebar tree. One
+/** Shared state for dragging within and across packs in the sidebar tree. One
    instance is hoisted to App so any PackSection can be the drag source or the
    drop target. Two drag kinds: a request row (dragReq, owned by dragReqOwner) or
    a whole pack header (dragPack). Every rendered row / header registers its

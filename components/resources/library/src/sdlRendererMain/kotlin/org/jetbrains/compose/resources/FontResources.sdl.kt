@@ -18,7 +18,7 @@ import com.compose.sdl.text.NamedFont
 // MARK: Font actuals — SDL renderer
 // ==================
 
-/* The SDL text stack resolves fonts by FAMILY NAME through the project font
+/** The SDL text stack resolves fonts by FAMILY NAME through the project font
    registry (IconFont.registerIcon — the general byte-font table, not just
    icons). A font resource therefore loads its bytes through the resource
    reader, registers them under a per-resource family name, and returns a

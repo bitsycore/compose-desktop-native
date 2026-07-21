@@ -79,7 +79,7 @@ private const val kStyleItalic: Int = 0x02
 private const val kStyleUnderline: Int = 0x04
 private const val kStyleStrikethrough: Int = 0x08
 
-/* Text via SDL3_ttf. Caches TTF_Font per size, and a per-(text, color,
+/** Text via SDL3_ttf. Caches TTF_Font per size, and a per-(text, color,
    fontSize) SDL_Texture so repeated frames don't re-rasterise the same
    string. Implements TextMeasurer so the common layout pass agrees
    with what we paint. */
@@ -129,13 +129,13 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     private data class FontKey(val family: String?, val size: Int, val variations: String)
     private val fFontCache = mutableMapOf<FontKey, COpaquePointer>()
 
-    /* A stable key for a variation set — also the value serialised for cache
+    /** A stable key for a variation set — also the value serialised for cache
        lookups. Empty when there are no variations. */
     private fun variationsKey(inVariations: List<FontVariation.Setting>?): String =
         if (inVariations.isNullOrEmpty()) ""
         else inVariations.joinToString(",") { "${it.axisName}=${it.toVariationValue(fVarDensity)}" }
 
-    /* Applies each variation axis to an open TTF_Font via the forked axis API.
+    /** Applies each variation axis to an open TTF_Font via the forked axis API.
        TTF_StringToTag turns "wght" into the OpenType tag; unsupported axes are
        ignored by SDL3_ttf (returns false), so passing e.g. wght to a static
        font is a harmless no-op. */
@@ -171,7 +171,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         SDL_DestroyTexture(it.tex.reinterpret())
     }
 
-    /* Applies the tint at blit time — the cached texture is white glyphs with
+    /** Applies the tint at blit time — the cached texture is white glyphs with
        coverage alpha; modulation multiplies per-channel, exactly what baking
        the colour into the surface used to do. */
     private fun applyTint(inTex: COpaquePointer, inColor: ComposeColor) {
@@ -190,7 +190,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     private val fWidthCache = mutableMapOf<WidthKey, Int>()
 
-    /* Returns false if TTF couldn't init. */
+    /** Returns false if TTF couldn't init. */
     fun init(): Boolean {
         if (!TTF_Init()) {
             println("TTF_Init failed: ${SDL_GetError()?.toKString()}")
@@ -289,7 +289,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
     }
 
-    /* Greedy soft-wrap that mirrors the Skia renderer's algorithm so the
+    /** Greedy soft-wrap that mirrors the Skia renderer's algorithm so the
        cross-platform behaviour stays identical. Hard lines on '\n'; long
        lines split at whitespace, ultra-long words split mid-word. */
     private fun wrapTextWithStarts(inText: String, inFontSize: Int, inMaxWidth: Int, inFontFamily: String? = null, inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>? = null): WrappedText {
@@ -375,7 +375,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
     private fun expandTabs(inText: String): String =
         if ('\t' in inText) inText.replace("\t", " ".repeat(TextLayoutConfig.tabWidth)) else inText
 
-    /* Returns LOGICAL-point width. The font was opened at fontSize*DPR
+    /** Returns LOGICAL-point width. The font was opened at fontSize*DPR
        so TTF_GetStringSize reports physical pixels — divide by DPR to
        get back to logical. */
     private fun measureWidth(
@@ -421,7 +421,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return vLogical
     }
 
-    /* Ascent of the font at inFontSize in LOGICAL points — used to align
+    /** Ascent of the font at inFontSize in LOGICAL points — used to align
        mixed-size runs on a common baseline. */
     private fun fontAscent(
         inFontSize: Int,
@@ -432,7 +432,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return TTF_GetFontAscent(vFont.reinterpret()).toFloat() / fDpr
     }
 
-    /* Renders one already-wrapped line at (inX, inY) inside a box of
+    /** Renders one already-wrapped line at (inX, inY) inside a box of
        (inBoxWidth, inBoxHeight). Caches the rasterised texture so calling
        this every frame for the same string is cheap. */
     fun drawText(
@@ -716,7 +716,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         }
     }
 
-    /* Phase 4 replay: re-draw a captured icon glyph. Mirrors drawNativeText's icon
+    /** Phase 4 replay: re-draw a captured icon glyph. Mirrors drawNativeText's icon
        branch — FreeType glyph first (its own cache re-rasterises on eviction), then the
        SDL_ttf fallback for a codepoint the FreeType path can't draw (rare: a glyph
        absent from the subset font). Box origin is DEVICE (already mapped through the
@@ -771,7 +771,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         (255f * (i / 255f).pow(kTextGamma)).roundToInt().coerceIn(0, 255).toUByte()
     }
 
-    /* Gamma-boosts the alpha (coverage) channel of an ARGB8888 glyph surface
+    /** Gamma-boosts the alpha (coverage) channel of an ARGB8888 glyph surface
        in place. Runs once per cached string. */
     private fun applyCoverageGamma(inSurface: CPointer<sdl3.SDL_Surface>) {
         val vS = inSurface.pointed
@@ -845,7 +845,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return vCached
     }
 
-    /* Opens the font at PHYSICAL pixels (logical fontSize × DPR) so the
+    /** Opens the font at PHYSICAL pixels (logical fontSize × DPR) so the
        rasterised glyphs match the back buffer's resolution. The cache key
        is (family, logical size) — setDpr clears the cache when DPR changes.
 
@@ -898,7 +898,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
 
     private fun defaultFontBytes(): ByteArray? = loadComposeResourceBytes("font/NotoSans.ttf")
 
-    /* Lazily uploads a family's bytes into the native heap (once per family),
+    /** Lazily uploads a family's bytes into the native heap (once per family),
        then opens a fresh TTF_Font on a new SDL_IOFromConstMem stream. Each
        size of a family gets its own font handle but shares the same byte
        buffer; the buffer lives until destroy(). */
@@ -920,7 +920,7 @@ internal class Sdl3TextRenderer(private val backend: SDL3Backend) {
         return TTF_OpenFontIO(vIo.reinterpret(), true, inPhysicalPt)
     }
 
-    /* Decodes the codepoint at the given char index, handling UTF-16
+    /** Decodes the codepoint at the given char index, handling UTF-16
        surrogate pairs for supplementary-plane characters. Material Symbols
        icons are BMP so the surrogate path rarely fires, but Icon supports
        arbitrary codepoints (codepointToString returns a surrogate pair for
