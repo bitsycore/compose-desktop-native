@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.native:material-symbols>
+// Library unique name: <com.bitsycore.compose.sdl:material-symbols>
 final object com.compose.desktop.native.icons/MaterialSymbols { // com.compose.desktop.native.icons/MaterialSymbols|null[0]
     final const val Abc // com.compose.desktop.native.icons/MaterialSymbols.Abc|{}Abc[0]
         final fun <get-Abc>(): kotlin/Int // com.compose.desktop.native.icons/MaterialSymbols.Abc.<get-Abc>|<get-Abc>(){}[0]

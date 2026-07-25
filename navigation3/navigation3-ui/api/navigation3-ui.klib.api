@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:navigation3-ui>
+// Library unique name: <com.bitsycore.navigation3:navigation3-ui>
 abstract fun interface <#A: kotlin/Any> androidx.navigation3.scene/SceneDecoratorStrategy { // androidx.navigation3.scene/SceneDecoratorStrategy|null[0]
     abstract fun (androidx.navigation3.scene/SceneDecoratorStrategyScope<#A>).decorateScene(androidx.navigation3.scene/Scene<#A>): androidx.navigation3.scene/Scene<#A> // androidx.navigation3.scene/SceneDecoratorStrategy.decorateScene|decorateScene@androidx.navigation3.scene.SceneDecoratorStrategyScope<1:0>(androidx.navigation3.scene.Scene<1:0>){}[0]
 }

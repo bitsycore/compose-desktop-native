@@ -72,7 +72,7 @@ saved state behave as they do on Android.
 
 ```kotlin
 commonMain.dependencies {
-    implementation(project(":window"))           // window shell + main loop
+    implementation(project(":desktop-native-window")) // window shell + main loop
     implementation(project(":material3"))        // Material 3 widgets
     implementation(project(":material-symbols")) // icon-font composables (optional)
 }
@@ -142,8 +142,8 @@ client certificates.
 ## Modules
 
 One Gradle module per upstream Compose artifact, mirroring the upstream
-`compose/` tree. The renderer and cinterops live in `:ui`; `:window` is the SDL
-integration layer. `:material-symbols`, `:components-resources`, and
+`compose/` tree. The renderer lives in `:ui` and the `sdl3` cinterop in
+`:sdl-core`; `:desktop-native-window` is the SDL integration layer. `:material-symbols`, `:components-resources`, and
 `:navigation3-ui` are project or vendored modules that the official Maven
 artifacts do not cover for Kotlin/Native desktop.
 

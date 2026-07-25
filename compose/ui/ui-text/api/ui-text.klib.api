@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-text>
+// Library unique name: <com.bitsycore.compose.ui:ui-text>
 open annotation class androidx.compose.ui.text/ExperimentalTextApi : kotlin/Annotation { // androidx.compose.ui.text/ExperimentalTextApi|null[0]
     constructor <init>() // androidx.compose.ui.text/ExperimentalTextApi.<init>|<init>(){}[0]
 }

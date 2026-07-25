@@ -52,7 +52,7 @@ internal fun installWindowsSkiaDll(inProject: Project) {
 	}
 	inProject.dependencies.add(
 		vDllConfig.name,
-		"org.jetbrains.skiko:skiko-mingwx64:$vVersion:windows-x64@dll"
+		"com.bitsycore.skiko:skiko-mingwx64:$vVersion:windows-x64@dll"
 	)
 
 	// icudtl.dat rides inside the official skiko-awt-runtime-windows-x64 jar; pull

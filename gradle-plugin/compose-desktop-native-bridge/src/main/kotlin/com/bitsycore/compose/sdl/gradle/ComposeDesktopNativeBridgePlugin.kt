@@ -11,36 +11,37 @@ import java.util.Properties
 // ==================
 
 /**
- * Official Compose Multiplatform coordinates → com.bitsycore.compose.sdl
- * artifactIds. Mirrors the repo-internal FULL-COMMONIZATION BRIDGE (root
- * build.gradle.kts): ui-graphics / ui-text are their own modules (upstream
- * layout). The runtime is deliberately absent — the official
- * org.jetbrains.compose.runtime klibs serve every target, never substituted.
+ * Official Compose Multiplatform coordinates → the port's com.bitsycore fork
+ * coordinates. The fork mirrors upstream's per-area groups under the bitsycore
+ * name (org.jetbrains.compose.ui:ui → com.bitsycore.compose.ui:ui, …), so each
+ * value is the full `group:artifact`. Mirrors the repo-internal
+ * FULL-COMMONIZATION BRIDGE (root build.gradle.kts): ui-graphics / ui-text are
+ * their own modules (upstream layout). The runtime is deliberately absent — the
+ * official org.jetbrains.compose.runtime klibs serve every target, never
+ * substituted.
  */
 private val bridgeTable = mapOf(
-    "org.jetbrains.compose.ui:ui" to "ui",
-    "org.jetbrains.compose.ui:ui-graphics" to "ui-graphics",
-    "org.jetbrains.compose.ui:ui-text" to "ui-text",
-    "org.jetbrains.compose.ui:ui-unit" to "ui-unit",
-    "org.jetbrains.compose.ui:ui-geometry" to "ui-geometry",
-    "org.jetbrains.compose.ui:ui-util" to "ui-util",
-    "org.jetbrains.compose.ui:ui-backhandler" to "ui-backhandler",
-    "org.jetbrains.compose.ui:ui-tooling-preview" to "ui-tooling-preview",
-    "org.jetbrains.compose.foundation:foundation" to "foundation",
-    "org.jetbrains.compose.foundation:foundation-layout" to "foundation-layout",
-    "org.jetbrains.compose.animation:animation" to "animation",
-    "org.jetbrains.compose.animation:animation-core" to "animation-core",
-    "org.jetbrains.compose.animation:animation-graphics" to "animation-graphics",
-    "org.jetbrains.compose.material3:material3" to "material3",
-    "org.jetbrains.compose.material:material-ripple" to "material-ripple",
-    "org.jetbrains.compose.components:components-resources" to "components-resources",
-    "org.jetbrains.androidx.navigation3:navigation3-ui" to "navigation3-ui",
+    "org.jetbrains.compose.ui:ui" to "com.bitsycore.compose.ui:ui",
+    "org.jetbrains.compose.ui:ui-graphics" to "com.bitsycore.compose.ui:ui-graphics",
+    "org.jetbrains.compose.ui:ui-text" to "com.bitsycore.compose.ui:ui-text",
+    "org.jetbrains.compose.ui:ui-unit" to "com.bitsycore.compose.ui:ui-unit",
+    "org.jetbrains.compose.ui:ui-geometry" to "com.bitsycore.compose.ui:ui-geometry",
+    "org.jetbrains.compose.ui:ui-util" to "com.bitsycore.compose.ui:ui-util",
+    "org.jetbrains.compose.ui:ui-backhandler" to "com.bitsycore.compose.ui:ui-backhandler",
+    "org.jetbrains.compose.ui:ui-tooling-preview" to "com.bitsycore.compose.ui:ui-tooling-preview",
+    "org.jetbrains.compose.foundation:foundation" to "com.bitsycore.compose.foundation:foundation",
+    "org.jetbrains.compose.foundation:foundation-layout" to "com.bitsycore.compose.foundation:foundation-layout",
+    "org.jetbrains.compose.animation:animation" to "com.bitsycore.compose.animation:animation",
+    "org.jetbrains.compose.animation:animation-core" to "com.bitsycore.compose.animation:animation-core",
+    "org.jetbrains.compose.animation:animation-graphics" to "com.bitsycore.compose.animation:animation-graphics",
+    "org.jetbrains.compose.material3:material3" to "com.bitsycore.compose.material3:material3",
+    "org.jetbrains.compose.material:material-ripple" to "com.bitsycore.compose.material:material-ripple",
+    "org.jetbrains.compose.components:components-resources" to "com.bitsycore.compose.components:components-resources",
+    "org.jetbrains.androidx.navigation3:navigation3-ui" to "com.bitsycore.navigation3:navigation3-ui",
 )
 
 /** The K/N desktop targets the port serves; configuration names carry the token. */
 private val nativeTargetTokens = listOf("mingwX64", "linuxX64", "linuxArm64", "macosArm64")
-
-private const val portGroup = "com.bitsycore.compose.sdl"
 
 /** Gradle property overriding the substitution version (default: the plugin's own). */
 private const val versionProperty = "composeDesktopNative.version"
@@ -162,9 +163,9 @@ private fun installBridge(project: Project) {
 	project.configurations.configureEach { configuration ->
 		if (nativeTargetTokens.any { configuration.name.contains(it, ignoreCase = true) }) {
 			configuration.resolutionStrategy.dependencySubstitution { substitutions ->
-				for ((official, artifactId) in bridgeTable) {
+				for ((official, forkCoord) in bridgeTable) {
 					substitutions.substitute(substitutions.module(official))
-						.using(substitutions.module("$portGroup:$artifactId:$version"))
+						.using(substitutions.module("$forkCoord:$version"))
 						.because(
 							"Compose Desktop Native bridge — the official artifact ships no " +
 								"mingwX64/linux Kotlin/Native klibs"

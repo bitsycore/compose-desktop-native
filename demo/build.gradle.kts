@@ -76,7 +76,7 @@ kotlin {
         }
         nativeMain {
             dependencies {
-                implementation(project(":window"))
+                implementation(project(":desktop-native-window"))
             }
         }
         jvmMain {

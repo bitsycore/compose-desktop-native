@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-graphics>
+// Library unique name: <com.bitsycore.compose.ui:ui-graphics>
 open annotation class androidx.compose.ui.graphics.drawscope/DrawScopeMarker : kotlin/Annotation { // androidx.compose.ui.graphics.drawscope/DrawScopeMarker|null[0]
     constructor <init>() // androidx.compose.ui.graphics.drawscope/DrawScopeMarker.<init>|<init>(){}[0]
 }

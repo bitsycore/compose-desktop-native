@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-tooling-preview>
+// Library unique name: <com.bitsycore.compose.ui:ui-tooling-preview>
 open annotation class androidx.compose.ui.tooling.preview/AndroidUiMode : kotlin/Annotation { // androidx.compose.ui.tooling.preview/AndroidUiMode|null[0]
     constructor <init>() // androidx.compose.ui.tooling.preview/AndroidUiMode.<init>|<init>(){}[0]
 }

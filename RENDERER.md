@@ -198,7 +198,7 @@ remembering.
   is not re-recording, not redrawing less.
 - **A custom `cacheKey` API.** Superseded by the real per-node display list.
 - **Vendoring `RootNodeOwner` / the `ComposeScene` stack.** Coupled to skiko's
-  `SkiaLayer` and windowing; it fights the `:window` SDL loop. The port borrows
+  `SkiaLayer` and windowing; it fights the `:desktop-native-window` SDL loop. The port borrows
   only the layer engine.
 
 ## 9. Key files

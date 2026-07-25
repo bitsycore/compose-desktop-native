@@ -44,7 +44,7 @@ interface RenderBackend {
     fun destroy()
 }
 
-// The per-target factory now lives in :window (an expect that delegates to
+// The per-target factory now lives in :desktop-native-window (an expect that delegates to
 // the selected renderer module's createRenderBackend). Renderer modules
 // expose createRenderBackend(...) / rendererPreferredGpuMode() in this same
 // package; the build includes exactly one of them per target.

@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.LayoutDirection
 // ==================
 
 /**
- Public facade the :window layer drives the upstream layout engine through.
+ Public facade the :desktop-native-window layer drives the upstream layout engine through.
  `LayoutNode` / `Owner` / `ComposeOwner` / `NodeApplier` are all internal to
  :core, so this hides them behind a public surface: [applier] (upcast to
  Applier<*> for the Composition), [attach], [setConstraints],
@@ -165,7 +165,7 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// MARK: Drag-and-drop — feed SDL_EVENT_DROP_* into the tree
 	// ==================
 	//
-	// The :window loop maps SDL_EVENT_DROP_BEGIN / POSITION / FILE / TEXT /
+	// The :desktop-native-window loop maps SDL_EVENT_DROP_BEGIN / POSITION / FILE / TEXT /
 	// COMPLETE to these methods; Sdl3DragAndDropOwner accumulates the drop
 	// session and dispatches through the root DragAndDropNode on COMPLETE.
 

@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-unit>
+// Library unique name: <com.bitsycore.compose.ui:ui-unit>
 open annotation class androidx.compose.ui.unit/ExperimentalUnitApi : kotlin/Annotation { // androidx.compose.ui.unit/ExperimentalUnitApi|null[0]
     constructor <init>() // androidx.compose.ui.unit/ExperimentalUnitApi.<init>|<init>(){}[0]
 }

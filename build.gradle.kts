@@ -18,8 +18,38 @@ apiValidation {
 // Version is driven by PUBLISH_VERSION (set from the git tag in the publish
 // workflow, `v1.2.3` → `1.2.3`). Local dev / demo runs default to SNAPSHOT.
 val vPublishVersion = (System.getenv("PUBLISH_VERSION") ?: "0.0.0-SNAPSHOT").removePrefix("v")
+
+// Published groups mirror the org.jetbrains.compose.<area> originals under the
+// com.bitsycore fork name, so each module is the obvious 1:1 fork of its upstream
+// coord (e.g. org.jetbrains.compose.ui:ui → com.bitsycore.compose.ui:ui). Modules
+// with no upstream area (project-only: :sdl-core, :material-symbols) fall through
+// to the default com.bitsycore.compose.sdl group; :desktop-native-window is the
+// headline app-shell artifact, published under com.bitsycore.compose.
+val kDefaultGroup = "com.bitsycore.compose.sdl"
+val kAreaGroups = mapOf(
+    ":ui" to "com.bitsycore.compose.ui",
+    ":ui-graphics" to "com.bitsycore.compose.ui",
+    ":ui-text" to "com.bitsycore.compose.ui",
+    ":ui-unit" to "com.bitsycore.compose.ui",
+    ":ui-geometry" to "com.bitsycore.compose.ui",
+    ":ui-util" to "com.bitsycore.compose.ui",
+    ":ui-backhandler" to "com.bitsycore.compose.ui",
+    ":ui-tooling-preview" to "com.bitsycore.compose.ui",
+    ":foundation" to "com.bitsycore.compose.foundation",
+    ":foundation-layout" to "com.bitsycore.compose.foundation",
+    ":animation" to "com.bitsycore.compose.animation",
+    ":animation-core" to "com.bitsycore.compose.animation",
+    ":animation-graphics" to "com.bitsycore.compose.animation",
+    ":material3" to "com.bitsycore.compose.material3",
+    ":material-ripple" to "com.bitsycore.compose.material",
+    ":components-resources" to "com.bitsycore.compose.components",
+    ":navigation3-ui" to "com.bitsycore.navigation3",
+    ":desktop-native-window" to "com.bitsycore.compose",
+)
+fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
+
 allprojects {
-    group = "com.bitsycore.compose.sdl"
+    group = groupFor(path)
     version = vPublishVersion
 }
 
@@ -43,7 +73,7 @@ val kPublishedLibs = setOf(
     ":animation-core", ":animation", ":animation-graphics",
     ":foundation", ":foundation-layout",
     ":material3", ":material-ripple",
-    ":window", ":material-symbols",
+    ":desktop-native-window", ":material-symbols",
     ":navigation3-ui", ":components-resources",
 )
 
@@ -77,7 +107,7 @@ subprojects {
                 kPublishedLibs.forEach { modulePath ->
                     val vArtifactId = modulePath.removePrefix(":")
                     substitute(project(modulePath))
-                        .using(module("com.bitsycore.compose.sdl:$vArtifactId:$kConsumeVersion"))
+                        .using(module("${groupFor(modulePath)}:$vArtifactId:$kConsumeVersion"))
                         .because("-PuseGithubPackages=true")
                 }
             }

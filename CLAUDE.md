@@ -31,7 +31,7 @@ Rendering is **Skia everywhere** behind one `RenderBackend` — Metal / OpenGL
 - **Windows (mingwX64)** links the bitsycore skiko FORK — skiko+Skia compiled
   into `skiko-windows-x64.dll` with a flat extern-C surface, bound from K/N via
   an embedded GNU import lib, published to GitHub Packages as
-  `org.jetbrains.skiko:skiko:0.150.1-mingw.1` (override with
+  `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (override with
   `-PskikoMingwVersion`). The runtime DLL is auto-provisioned next to the exe by
   the bridge plugin (`installWindowsSkiaDll`). See SKIKO-MINGW-FEASIBILITY.md.
 
@@ -47,9 +47,10 @@ re-implements the layers on top (`androidx.compose.ui.*`, `.foundation.*`,
 
 Library modules mirror upstream Compose Multiplatform's `compose/` tree.
 The SDL layer is two modules: `:sdl-core` (the NAKED sdl3 cinterop + platform
-primitives — zero Compose dep, like `skiko`) at `sdl/sdl-core/`, and `:window`
-(the SDL3 main-loop shell) under `compose/sdl/`. `:ui` depends on `:sdl-core`
-and its renderer + SDL↔Compose bridges pick the cinterop from it.
+primitives — zero Compose dep, like `skiko`) at `sdl/sdl-core/`, and
+`:desktop-native-window` (the SDL3 main-loop shell + app entry point) at
+`compose/desktop/native/window/`. `:ui` depends on `:sdl-core` and its renderer
++ SDL↔Compose bridges pick the cinterop from it.
 
 One Gradle module per upstream artifact; the directory mirrors the upstream
 `compose/` path, the gradle path is kept short (redirected via `projectDir`).
@@ -89,9 +90,15 @@ compose/
 │   └── material3/                   → :material3   — androidx.compose.material3.*
 ├── material/
 │   └── material-ripple/             → :material-ripple — androidx.compose.material.ripple.*
-└── sdl/                             ("Compose SDL" — project modules, not upstream CMP artifacts)
-    └── window/                      → :window     — nativeComposeApp { Window(...) {} } multi-window
-                                                    shell + SDL3 main loop; nativeComposeWindow() wrapper
+└── desktop/native/window/           → :desktop-native-window — nativeComposeApp { Window(...) {} }
+                                                    multi-window shell + SDL3 main loop; nativeComposeWindow()
+                                                    wrapper (project app-shell, not an upstream CMP artifact).
+                                                    Published as com.bitsycore.compose:desktop-native-window.
+
+sdl/
+└── sdl-core/                        → :sdl-core   — the NAKED sdl3 cinterop + platform primitives
+                                                    (zero Compose dep, like skiko); the single `sdl3` cinterop
+                                                    lives here. :ui depends on it. com.bitsycore.compose.sdl:sdl-core.
 
 utils/
 └── material-symbols/                → :material-symbols — codepoints + all three style objects
@@ -191,7 +198,7 @@ libs/                → gitignored per-host static SDL3 output of
                       scripts/build-sdl/build-all.py on Windows
 ```
 
-Module PATHS stay short (`:ui`, `:foundation`, `:window`, …) —
+Module PATHS stay short (`:ui`, `:foundation`, `:desktop-native-window`, …) —
 `settings.gradle.kts` redirects `projectDir` for each so build files across
 the repo stay terse. `androidx.collection` is a plain Maven dependency
 (`androidx.collection:collection`), not a module — same as other simple
@@ -203,7 +210,7 @@ androidx KMP libs.
 :ui  ←  :animation-core  ←  :animation          ←  :foundation  ←  :material3  ← :demo, :apidemo
 :ui  ←  :foundation-layout  ←──────────────────────┘   ↑              ↑
                         :material-ripple  ←────────────┘──────────────┘
-:foundation, :animation-core  ←  :window ;  :foundation, :material3  ←  :material-symbols
+:foundation, :animation-core  ←  :desktop-native-window ;  :foundation, :material3  ←  :material-symbols
 ```
 
 All edges are `api`, so a consumer of `:foundation` / `:material3` transitively
@@ -223,7 +230,7 @@ sits on `:ui-graphics` / `:ui-text` (the graphics/text primitives + their skiko
 `actual`s, SDL-free) and the naked `:sdl-core` (sdl3 cinterop). The pure lower
 artifacts (`:ui-util`, `:ui-geometry`, `:ui-unit`, `:ui-backhandler`) are below.
 Everything above `:ui` touches renderer internals only via its public surface.
-`:window` depends on `:ui` + `:foundation` (needs `LazyList`-style scaffolding to
+`:desktop-native-window` depends on `:ui` + `:foundation` (needs `LazyList`-style scaffolding to
 install the popup / scaffold layer at the composition root).
 
 ## Vendoring philosophy — read this before writing any `androidx.compose.*` code
@@ -360,10 +367,10 @@ The `sdl3` cinterop lives in the NAKED `:sdl-core` module
 (`sdl/sdl-core/src/nativeInterop/cinterop/sdl3.def`: SDL_Window / SDL_Event /
 SDL_GetBasePath / clipboard / dialogs / GL+Metal context / SDL_Renderer-for-CPU-
 raster). `:ui` depends on `:sdl-core` (`api`), so `:ui`'s renderer + SDL↔Compose
-bridges — and `:window` downstream — see `sdl3.*` and inherit SDL3's static-lib +
+bridges — and `:desktop-native-window` downstream — see `sdl3.*` and inherit SDL3's static-lib +
 linker-opt propagation (the `.def` bakes in `staticLibraries = libSDL3.a` + the
 per-OS `linkerOpts`, carried through the klib chain to the final exe, so apps
-link SDL just by depending on `:ui`/`:window`). `:sdl-core` has NO Compose
+link SDL just by depending on `:ui`/`:desktop-native-window`). `:sdl-core` has NO Compose
 dependency, so `:ui → :sdl-core` is cycle-free — the compose way (like `ui → skiko`).
 
 ## Density flow (Option B — layout in physical pixels)
@@ -399,7 +406,7 @@ Passing raw `px.dp` will double-scale on Retina.
 ./gradlew :apidemo:runDebugExecutableLinuxX64
 
 # Windows (from Windows — mingw cross-build from macOS/Linux fails at cinterop).
-# Links the bitsycore skiko FORK from GitHub Packages (org.jetbrains.skiko:skiko:
+# Links the bitsycore skiko FORK from GitHub Packages (com.bitsycore.skiko:skiko:
 # 0.150.1-mingw.1, override -PskikoMingwVersion); the bridge plugin drops
 # skiko-windows-x64.dll next to the exe (installWindowsSkiaDll).
 gradlew.bat :demo:runDebugExecutableMingwX64
@@ -466,7 +473,7 @@ drift / vendor-clean guardrails are in
 ## Key files by area — start here when you need to find something
 
 ### Renderer + main loop
-- `compose/sdl/window/src/nativeMain/…/ComposeWindow.kt` — main loop,
+- `compose/desktop/native/window/src/nativeMain/…/ComposeWindow.kt` — main loop,
   recomposer lifecycle, SDL event dispatch, composition-local seeding.
 - `compose/ui/ui/src/nativeMain/…/RenderBackend.kt` — the interface.
 - `compose/ui/ui/src/nativeMain/…/GpuMode.kt` — sealed driver picker

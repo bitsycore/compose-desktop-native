@@ -151,16 +151,35 @@ jobs:
           VER="${PUBLISH_VERSION#v}"
           OWNER="${GITHUB_REPOSITORY%%/*}"
           # Keep in sync with the module list in settings.gradle.kts.
-          MODULES="ui ui-util ui-geometry ui-unit ui-backhandler ui-tooling-preview animation animation-core animation-graphics foundation foundation-layout material3 material-ripple window material-symbols navigation3-ui components-resources"
+          MODULES="sdl-core ui ui-graphics ui-text ui-util ui-geometry ui-unit ui-backhandler ui-tooling-preview animation animation-core animation-graphics foundation foundation-layout material3 material-ripple desktop-native-window material-symbols navigation3-ui components-resources"
           case "${{ matrix.host }}" in
             macos)   SUFFIXES="-macosarm64" ;;
             linux)   SUFFIXES="-linuxx64 -linuxarm64" ;;
             windows) SUFFIXES="_ROOT_ -mingwx64" ;;
           esac
+          # Published group per module — mirrors the per-area com.bitsycore groups
+          # in root build.gradle.kts. Project-only modules (sdl-core, material-symbols)
+          # fall through to com.bitsycore.compose.sdl; the GitHub Packages Maven
+          # package name is "<group>.<artifact>".
+          group_of() {
+            case "$1" in
+              ui|ui-graphics|ui-text|ui-util|ui-geometry|ui-unit|ui-backhandler|ui-tooling-preview)
+                                      echo "com.bitsycore.compose.ui" ;;
+              foundation|foundation-layout)                echo "com.bitsycore.compose.foundation" ;;
+              animation|animation-core|animation-graphics) echo "com.bitsycore.compose.animation" ;;
+              material3)              echo "com.bitsycore.compose.material3" ;;
+              material-ripple)        echo "com.bitsycore.compose.material" ;;
+              components-resources)   echo "com.bitsycore.compose.components" ;;
+              navigation3-ui)         echo "com.bitsycore.navigation3" ;;
+              desktop-native-window)  echo "com.bitsycore.compose" ;;
+              *)                      echo "com.bitsycore.compose.sdl" ;;
+            esac
+          }
           host_packages() {
             for m in $MODULES; do
+              g=$(group_of "$m")
               for s in $SUFFIXES; do
-                if [ "$s" = "_ROOT_" ]; then echo "com.bitsycore.compose.sdl.$m"; else echo "com.bitsycore.compose.sdl.$m$s"; fi
+                if [ "$s" = "_ROOT_" ]; then echo "$g.$m"; else echo "$g.$m$s"; fi
               done
             done
             if [ "${{ matrix.host }}" = "windows" ]; then

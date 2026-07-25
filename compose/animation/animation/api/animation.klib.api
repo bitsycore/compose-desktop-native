@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:animation>
+// Library unique name: <com.bitsycore.compose.animation:animation>
 open annotation class androidx.compose.animation/ExperimentalAnimationApi : kotlin/Annotation { // androidx.compose.animation/ExperimentalAnimationApi|null[0]
     constructor <init>() // androidx.compose.animation/ExperimentalAnimationApi.<init>|<init>(){}[0]
 }

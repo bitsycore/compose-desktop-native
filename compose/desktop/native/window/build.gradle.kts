@@ -1,4 +1,4 @@
-// :window — the module apps depend on. Owns nativeComposeWindow() (main loop,
+// :desktop-native-window — the module apps depend on. Owns nativeComposeWindow() (main loop,
 // recomposer lifecycle, event dispatch, Snapshot apply notifications).
 // Renderer selection happens entirely inside :ui via source-set wiring
 // (skikoRendererMain — Skia-only) — this module just calls
@@ -28,7 +28,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // api so apps depending on :window also get the compose re-impl,
+            // api so apps depending on :desktop-native-window also get the compose re-impl,
             // Res/resources, GpuMode, and the renderer pipeline from :ui, plus
             // the foundation / animation-core / animation modules that were split
             // out of :ui (upstream Compose layout).

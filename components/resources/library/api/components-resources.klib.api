@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:components-resources>
+// Library unique name: <com.bitsycore.compose.components:components-resources>
 open annotation class org.jetbrains.compose.resources/ExperimentalResourceApi : kotlin/Annotation { // org.jetbrains.compose.resources/ExperimentalResourceApi|null[0]
     constructor <init>() // org.jetbrains.compose.resources/ExperimentalResourceApi.<init>|<init>(){}[0]
 }

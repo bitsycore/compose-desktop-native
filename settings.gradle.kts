@@ -29,10 +29,13 @@ dependencyResolutionManagement {
                     ?: providers.gradleProperty("gpr.token").orNull
                     ?: ""
             }
-            content { excludeGroup("org.jetbrains.skiko") }
+            // Neither skiko group lives here: the official skiko comes from Maven
+            // Central, the bitsycore fork from GitHubPackagesSkiko below.
+            content { excludeGroup("org.jetbrains.skiko"); excludeGroup("com.bitsycore.skiko") }
         }
         // Route 1a: the bitsycore/skiko fork's mingwX64 klib + runtime DLL,
-        // published by its CI to GitHub Packages. Scoped to org.jetbrains.skiko.
+        // published by its CI to GitHub Packages. Scoped to com.bitsycore.skiko
+        // (the fork is republished under the bitsycore name — see the fork repo).
         maven {
             name = "GitHubPackagesSkiko"
             url = uri("https://maven.pkg.github.com/bitsycore/skiko")
@@ -44,7 +47,7 @@ dependencyResolutionManagement {
                     ?: providers.gradleProperty("gpr.token").orNull
                     ?: ""
             }
-            content { includeGroup("org.jetbrains.skiko") }
+            content { includeGroup("com.bitsycore.skiko") }
         }
     }
 }
@@ -67,7 +70,7 @@ include(":foundation")
 include(":foundation-layout")
 include(":material3")
 include(":material-ripple")
-include(":window")
+include(":desktop-native-window")
 include(":sdl-core")
 include(":material-symbols")
 include(":navigation3-ui")
@@ -87,7 +90,7 @@ project(":foundation").projectDir = file("compose/foundation/foundation")
 project(":foundation-layout").projectDir = file("compose/foundation/foundation-layout")
 project(":material3").projectDir = file("compose/material3/material3")
 project(":material-ripple").projectDir = file("compose/material/material-ripple")
-project(":window").projectDir = file("compose/sdl/window")
+project(":desktop-native-window").projectDir = file("compose/desktop/native/window")
 project(":sdl-core").projectDir = file("sdl/sdl-core")
 project(":material-symbols").projectDir = file("utils/material-symbols")
 project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")

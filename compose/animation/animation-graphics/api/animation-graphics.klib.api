@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:animation-graphics>
+// Library unique name: <com.bitsycore.compose.animation:animation-graphics>
 open annotation class androidx.compose.animation.graphics/ExperimentalAnimationGraphicsApi : kotlin/Annotation { // androidx.compose.animation.graphics/ExperimentalAnimationGraphicsApi|null[0]
     constructor <init>() // androidx.compose.animation.graphics/ExperimentalAnimationGraphicsApi.<init>|<init>(){}[0]
 }

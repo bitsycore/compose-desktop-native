@@ -54,7 +54,7 @@ kotlin {
                 kotlin.srcDir("src/skikoRendererMain/kotlin")
                 kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
                 dependencies {
-                    implementation("org.jetbrains.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
+                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
                 }
             }
             val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }

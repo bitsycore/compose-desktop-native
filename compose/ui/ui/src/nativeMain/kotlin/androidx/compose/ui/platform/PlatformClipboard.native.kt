@@ -206,7 +206,7 @@ private fun sdlWriteEntry(entry: ClipEntry?) {
 
 // The SDL3-backed Clipboard implementation. Singleton because SDL's clipboard
 // is process-global — allocating a new one per Window() would only waste
-// memory. Consumed by :window when seeding LocalClipboard.
+// memory. Consumed by :desktop-native-window when seeding LocalClipboard.
 private object SDL3Clipboard : Clipboard {
 	override suspend fun getClipEntry(): ClipEntry? = sdlReadEntry()
 	override suspend fun setClipEntry(clipEntry: ClipEntry?) { sdlWriteEntry(clipEntry) }

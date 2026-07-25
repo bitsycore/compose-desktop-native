@@ -136,7 +136,7 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 ```
 
 mingwX64 renders through Skia via the **bitsycore skiko fork**, consumed from
-GitHub Packages as `org.jetbrains.skiko:skiko:0.150.1-mingw.1` (macOS/Linux use
+GitHub Packages as `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (macOS/Linux use
 official Skiko). The runtime `skiko-windows-x64.dll` is auto-provisioned next
 to the executable by the bridge plugin — no manual copy. The fork itself is
 published by a separate GitHub Actions workflow in the fork repo, out of band
@@ -161,7 +161,7 @@ single file to edit; know which axis you are changing.
 | Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Group is `com.bitsycore.compose.sdl`. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
 | JVM parity forcing | `vComposeJvmVersion` in `demo`, `apidemo`, and `material-symbols` `build.gradle.kts`. | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published. |
-| Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko; mingwX64 uses the bitsycore fork (`0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses. Verify with a throwaway `skikoRendererMain` compile if unsure. |
+| Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
 | SDL3 | `scripts/build-sdl/build-sdl.properties`. | Rebuild `libs/` with `build-all.py` after any change. |
 | Bridge substituted version | Defaults to the bridge plugin's own published version; consumers override with the `composeDesktopNative.version` Gradle property. | The plugin publishes with the release tag, so a consumer on the matching plugin version resolves the right klibs automatically. |
 
@@ -187,7 +187,7 @@ Run this on each upstream bump; it is the flow that keeps the sync tax low.
 
 1. Complete the ref-bump flow above and confirm it is green. For a STABLE
    release, `vComposeJvmVersion` should match the vendored ref (no skew).
-2. On a Windows host, run `gradlew :window:compileCommonMainKotlinMetadata`.
+2. On a Windows host, run `gradlew :desktop-native-window:compileCommonMainKotlinMetadata`.
    Only Windows compiles the full common-metadata variant table, and the root
    KotlinMultiplatform publications live there; a macOS-only publish leaves the
    roots without mingwX64 variants (this bit v0.1.15).

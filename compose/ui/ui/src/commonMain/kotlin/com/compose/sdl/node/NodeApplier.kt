@@ -8,7 +8,7 @@ import androidx.compose.ui.node.LayoutNode
 // ==================
 
 /** Composition applier over the vendored upstream LayoutNode.
-   internal because LayoutNode is internal to :core; the :window layer drives
+   internal because LayoutNode is internal to :core; the :desktop-native-window layer drives
    composition through the public ComposeRootHost facade (which upcasts this to
    Applier<*>). */
 internal class NodeApplier(root: LayoutNode) : AbstractApplier<LayoutNode>(root) {

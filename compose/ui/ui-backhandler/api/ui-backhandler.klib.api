@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-backhandler>
+// Library unique name: <com.bitsycore.compose.ui:ui-backhandler>
 final class androidx.compose.ui.backhandler/BackEventCompat { // androidx.compose.ui.backhandler/BackEventCompat|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Int) // androidx.compose.ui.backhandler/BackEventCompat.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int){}[0]
 

@@ -81,7 +81,7 @@ kotlin {
         }
         nativeMain {
             dependencies {
-                implementation(project(":window"))
+                implementation(project(":desktop-native-window"))
                 implementation(libs.ktor.client.curl)
             }
         }

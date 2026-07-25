@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 //
 // SDL3 stays as the windowing / input / platform layer (the single `sdl3`
 // cinterop, now in :sdl-core). Every target renders through Skia.
-// `:window` depends only on this module and calls createRenderBackend() /
+// `:desktop-native-window` depends only on this module and calls createRenderBackend() /
 // rendererPreferredGpuMode(), which resolve to the Skia actuals.
 
 plugins {
@@ -68,7 +68,7 @@ kotlin {
             kotlin.srcDir("src/vendor/native/kotlin")
             dependencies {
                 // The sdl3 cinterop now lives in :sdl-core; expose it (api) so :ui's
-                // SDL platform + renderer code — and :window downstream — see sdl3.*
+                // SDL platform + renderer code — and :desktop-native-window downstream — see sdl3.*
                 // and inherit SDL3's static-lib + linker-opt propagation.
                 api(project(":sdl-core"))
             }
@@ -106,7 +106,7 @@ kotlin {
                 dependencies {
                     // Published by the fork's CI to GitHub Packages; version
                     // overridable via -PskikoMingwVersion=.
-                    implementation("org.jetbrains.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
+                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
                 }
             }
             val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }

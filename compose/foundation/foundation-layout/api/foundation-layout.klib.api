@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:foundation-layout>
+// Library unique name: <com.bitsycore.compose.foundation:foundation-layout>
 open annotation class androidx.compose.foundation.layout/ExperimentalFlexBoxApi : kotlin/Annotation { // androidx.compose.foundation.layout/ExperimentalFlexBoxApi|null[0]
     constructor <init>() // androidx.compose.foundation.layout/ExperimentalFlexBoxApi.<init>|<init>(){}[0]
 }

@@ -144,7 +144,7 @@ class ComposeNativeWindow constructor(
 
     // ============
     //  Framework hooks — driven by composeWindow's main loop (which lives in
-    //  the :window module, so these are public rather than internal). Not
+    //  the :desktop-native-window module, so these are public rather than internal). Not
     //  intended for app code.
 
     fun onResized() {

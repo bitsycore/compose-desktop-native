@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:material-ripple>
+// Library unique name: <com.bitsycore.compose.material:material-ripple>
 abstract interface androidx.compose.material.ripple/RippleTheme { // androidx.compose.material.ripple/RippleTheme|null[0]
     abstract fun defaultColor(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.ui.graphics/Color // androidx.compose.material.ripple/RippleTheme.defaultColor|defaultColor(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
     abstract fun rippleAlpha(androidx.compose.runtime/Composer?, kotlin/Int): androidx.compose.material.ripple/RippleAlpha // androidx.compose.material.ripple/RippleTheme.rippleAlpha|rippleAlpha(androidx.compose.runtime.Composer?;kotlin.Int){}[0]

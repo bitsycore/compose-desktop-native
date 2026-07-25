@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.compose.sdl:ui-geometry>
+// Library unique name: <com.bitsycore.compose.ui:ui-geometry>
 final class androidx.compose.ui.geometry/MutableRect { // androidx.compose.ui.geometry/MutableRect|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.geometry/MutableRect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 
