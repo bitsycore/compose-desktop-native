@@ -23,13 +23,6 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
 }
 
-// SDL3 headers/libs from the in-repo static build tree at <repo>/libs
-// (scripts/build-sdl/build-all.py). The .def file is pathless and relies on
-// these -I / -libraryPath injections.
-val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
-val vHostSdlInclude: String = "$vLibs/SDL3/include"
-val vSdlLibDir: String = "$vLibs/SDL3/lib"
-
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
@@ -40,19 +33,6 @@ kotlin {
     if (vHostSupportsMingw) mingwX64()
 
     applyDefaultHierarchyTemplate()
-
-    targets.withType<KotlinNativeTarget>().all {
-        compilations["main"].cinterops {
-            // The one SDL3 cinterop — windowing / input / SDL_GetBasePath / … —
-            // used by every target regardless of GPU path.
-            create("sdl3") {
-                defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
-                packageName("sdl3")
-                extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                extraOpts("-libraryPath", vSdlLibDir)
-            }
-        }
-    }
 
     sourceSets {
         commonMain {
@@ -82,6 +62,12 @@ kotlin {
         // Vendored platform `actual`s + project SDL3 wrappers / Compose native code.
         nativeMain {
             kotlin.srcDir("src/vendor/native/kotlin")
+            dependencies {
+                // The sdl3 cinterop now lives in :sdl-core; expose it (api) so :ui's
+                // SDL platform + renderer code — and :window downstream — see sdl3.*
+                // and inherit SDL3's static-lib + linker-opt propagation.
+                api(project(":sdl-core"))
+            }
         }
 
         // ============
