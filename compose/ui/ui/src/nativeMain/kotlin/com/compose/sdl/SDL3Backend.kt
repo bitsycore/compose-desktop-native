@@ -55,6 +55,14 @@ class SDL3Backend(
         // cursor would never fire). Desktop apps expect click-through.
         SDL_SetHint("SDL_MOUSE_FOCUS_CLICKTHROUGH", "1")
 
+        // Install platform-env seams read by :foundation (isSystemInDarkTheme) and
+        // :components-resources (locale/theme qualifiers), so those modules carry no
+        // sdl3 cinterop dependency of their own.
+        com.compose.sdl.res.systemThemeIsDarkProvider = {
+            SDL_GetSystemTheme() == SDL_SystemTheme.SDL_SYSTEM_THEME_DARK
+        }
+        com.compose.sdl.res.preferredLocaleProvider = ::sdlPreferredLocale
+
         if (gpuMode is GpuMode.Skia.OpenGL) {
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, 2)
@@ -195,4 +203,22 @@ class SDL3Backend(
        maps to physical pixels. */
     val pixelDensity: Float
         get() = if (windowWidth > 0) pixelWidth.toFloat() / windowWidth.toFloat() else 1f
+}
+
+/** OS preferred locale as (language, region) via SDL; either may be empty.
+   Installed as the [com.compose.sdl.res.preferredLocaleProvider] seam. */
+@OptIn(ExperimentalForeignApi::class)
+private fun sdlPreferredLocale(): Pair<String, String> {
+    memScoped {
+        val vCount = alloc<IntVar>()
+        val vLocales = SDL_GetPreferredLocales(vCount.ptr)
+        if (vLocales != null && vCount.value > 0) {
+            val vFirst = vLocales[0]?.pointed
+            val vLang = vFirst?.language?.toKString() ?: ""
+            val vRegion = vFirst?.country?.toKString() ?: ""
+            SDL_free(vLocales)
+            return vLang to vRegion
+        }
+    }
+    return "" to ""
 }

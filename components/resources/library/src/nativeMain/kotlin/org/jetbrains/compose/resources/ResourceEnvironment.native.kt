@@ -4,46 +4,24 @@ package org.jetbrains.compose.resources
 
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.get
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.pointed
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.toKString
-import kotlinx.cinterop.IntVar
-import kotlinx.cinterop.value
-import sdl3.SDL_GetPreferredLocales
-import sdl3.SDL_GetSystemTheme
-import sdl3.SDL_SystemTheme
-import sdl3.SDL_free
+import com.compose.sdl.res.preferredLocaleProvider
+import com.compose.sdl.res.systemThemeIsDarkProvider
 
 // ==================
-// MARK: ResourceEnvironment — SDL actual
+// MARK: ResourceEnvironment — platform-env-seam actual
 // ==================
 
 /** Non-composable system environment for qualifier resolution (values-fr,
-   drawable-dark, …): locale from SDL_GetPreferredLocales, theme from
-   SDL_GetSystemTheme. Density is reported as 1f — under this port's Option-B
-   density flow layout runs in physical pixels and drawables are bundled at a
-   single density, so the mdpi bucket is always the right one. The COMPOSABLE
-   path (rememberResourceEnvironment) doesn't use this: it reads
-   LocalDensity / isSystemInDarkTheme from the composition. */
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+   drawable-dark, …): locale + theme come from the platform-env seams installed
+   by the SDL layer, so :components-resources carries no dependency on the sdl3
+   cinterop. Density is reported as 1f — under this port's Option-B density flow
+   layout runs in physical pixels and drawables are bundled at a single density,
+   so the mdpi bucket is always the right one. The COMPOSABLE path
+   (rememberResourceEnvironment) doesn't use this: it reads LocalDensity /
+   isSystemInDarkTheme from the composition. */
 internal actual fun getSystemEnvironment(): ResourceEnvironment {
-	var vLanguage = ""
-	var vRegion = ""
-	memScoped {
-		val vCount = alloc<IntVar>()
-		val vLocales = SDL_GetPreferredLocales(vCount.ptr)
-		if (vLocales != null && vCount.value > 0) {
-			val vFirst = vLocales[0]?.pointed
-			vLanguage = vFirst?.language?.toKString() ?: ""
-			vRegion = vFirst?.country?.toKString() ?: ""
-			SDL_free(vLocales)
-		}
-	}
-	val vDark = SDL_GetSystemTheme() == SDL_SystemTheme.SDL_SYSTEM_THEME_DARK
+	val (vLanguage, vRegion) = preferredLocaleProvider?.invoke() ?: ("" to "")
+	val vDark = systemThemeIsDarkProvider?.invoke() ?: false
 	return ResourceEnvironment(
 		language = LanguageQualifier(vLanguage),
 		// SDL locales carry language+country only — no script subtag.
