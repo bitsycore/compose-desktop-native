@@ -530,12 +530,15 @@ internal class WindowInstance(
 	private val onFrame: ((RenderBackend, Int) -> Boolean)?,
 	private val contentHolder: () -> (@Composable ComposeWindowScope.() -> Unit),
 ) {
-	private val gpuMode = if (inGpu is GpuMode.Auto) rendererPreferredGpuMode() else inGpu
-	val backend = SDL3Backend(
-		initialTitle, inWidth, inHeight, gpuMode = gpuMode,
-		iconLightResourcePaths = inIcon?.light ?: emptyList(),
-		iconDarkResourcePaths = inIcon?.dark ?: emptyList(),
-	)
+	// Resolved renderer mode. `var` so init() can fall back GPU → CPU raster when
+	// a Skia GPU context can't be created (RDP / headless / missing GL driver).
+	private var gpuMode = if (inGpu is GpuMode.Auto) rendererPreferredGpuMode() else inGpu
+	private val initialWidth = inWidth
+	private val initialHeight = inHeight
+	private val icon = inIcon
+	// Assigned by init() from the first backend that comes up (see makeBackend()).
+	lateinit var backend: SDL3Backend
+		private set
 	private var renderBackend: RenderBackend? = null
 	lateinit var host: ComposeRootHost
 		private set
@@ -606,14 +609,42 @@ internal class WindowInstance(
 		needsFrame = true
 	}
 
-	fun init(inScope: CoroutineScope): Boolean {
-		if (!backend.init()) return false
-		backend.updateWindowSize()
+	// Creates + initialises an SDL3Backend for [mode] and its RenderBackend. On
+	// success commits `backend` and returns the renderer; else tears everything
+	// down and returns null so the caller can retry with a different mode.
+	private fun makeBackend(mode: GpuMode): RenderBackend? {
+		val vBackend = SDL3Backend(
+			initialTitle, initialWidth, initialHeight, gpuMode = mode,
+			iconLightResourcePaths = icon?.light ?: emptyList(),
+			iconDarkResourcePaths = icon?.dark ?: emptyList(),
+		)
+		if (!vBackend.init()) {
+			vBackend.destroy(inQuitSdl = false)
+			return null
+		}
+		vBackend.updateWindowSize()
+		val vRender = createRenderBackend(vBackend, mode)
+		if (vRender == null || !vRender.ensureSize(vBackend.pixelWidth, vBackend.pixelHeight)) {
+			vRender?.destroy()
+			vBackend.destroy(inQuitSdl = false)
+			return null
+		}
+		backend = vBackend
+		return vRender
+	}
 
-		val vRender = createRenderBackend(backend, gpuMode)
-		if (vRender == null || !vRender.ensureSize(backend.pixelWidth, backend.pixelHeight)) {
-			println("Failed to init render backend for $gpuMode")
-			backend.destroy(inQuitSdl = false)
+	fun init(inScope: CoroutineScope): Boolean {
+		// Try the resolved gpuMode; if it's a Skia GPU mode whose context/bridge
+		// can't come up (RDP / headless / missing GL driver), fall back once to
+		// CPU raster (Software) so the window still opens instead of failing.
+		var vRender = makeBackend(gpuMode)
+		if (vRender == null && gpuMode is GpuMode.Skia) {
+			println("GPU renderer ($gpuMode) unavailable — falling back to CPU raster (Software)")
+			gpuMode = GpuMode.Software
+			vRender = makeBackend(gpuMode)
+		}
+		if (vRender == null) {
+			println("Failed to init render backend")
 			return false
 		}
 		renderBackend = vRender

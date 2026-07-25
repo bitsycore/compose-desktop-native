@@ -13,6 +13,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        // Route 1a: the bitsycore/skiko fork's skiko-mingwx64 klib is published here.
+        mavenLocal()
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")

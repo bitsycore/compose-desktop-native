@@ -30,6 +30,11 @@ plugins {
 // -Prenderer=sdl3 flips macOS/Linux targets onto sdlRendererMain (Skiko-free build).
 val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
 
+// -PwindowsSkia=true flips mingwX64 onto the Skia leg, backed by the bitsycore
+// skiko fork's skiko-mingwx64 klib (Route 1a). Windows-host only; default off,
+// so the shipped Windows build stays on the SDL renderer.
+val useWindowsSkia = (findProperty("windowsSkia") as? String) == "true"
+
 // All targets pull headers from the in-repo static build tree at <repo>/libs,
 // populated by scripts/build-sdl/build-all.py (optionally one library at a time).
 // Same paths on macOS / Linux / Windows — the .def files are pathless and
@@ -55,7 +60,7 @@ val vImageLibDir: String = "$vLibs/SDL3_image/lib"
 // Renderer assignment per target. mingwX64 is always SDL3; macOS / Linux
 // default to Skia, switch to SDL3 under -Prenderer=sdl3.
 fun isSkiaTarget(targetName: String): Boolean = when (targetName) {
-    "mingwX64" -> false
+    "mingwX64" -> useWindowsSkia
     "macosArm64", "linuxX64", "linuxArm64" -> !useSdl3Everywhere
     else -> false
 }
@@ -79,8 +84,7 @@ kotlin {
         // ship in releases, so the default release build (Skia) skips the
         // sdl3_ttf / sdl3_image / freetype cinterops entirely — one fewer set
         // of system headers to install in CI, and a smaller klib footprint.
-        val vSdlRenderer = vTargetName == "mingwX64" ||
-            ((vTargetName == "macosArm64" || vTargetName == "linuxX64" || vTargetName == "linuxArm64") && useSdl3Everywhere)
+        val vSdlRenderer = !isSkiaTarget(vTargetName)
 
         // Path to the sdl3 cinterop output klib for this target — used to
         // wire `depends = sdl3` in sdl3_ttf / sdl3_image / freetype below.
@@ -200,7 +204,7 @@ kotlin {
         // mingwX64 is SDL3 always — attach its intermediate only when the
         // target itself was declared (host is Windows). Non-Windows hosts skip
         // both the target and its source-set wiring.
-        if (vHostSupportsMingw) {
+        if (vHostSupportsMingw && !useWindowsSkia) {
             val sdlRendererMingwMain = create("sdlRendererMingwMain") { dependsOn(sdlRendererMain) }
             mingwX64Main.get().dependsOn(sdlRendererMingwMain)
         }
@@ -233,6 +237,28 @@ kotlin {
             macosArm64Main.dependsOn(skikoRendererMacosMain)
             linuxX64Main.dependsOn(skikoRendererLinuxMain)
             linuxArm64Main.dependsOn(skikoRendererLinuxMain)
+
+            // Route 1a: mingwX64 Skia leg. Official Skiko has no mingw klib, so this
+            // is a SEPARATE tree pulling the bitsycore fork's skiko-mingwx64 (mavenLocal),
+            // kept out of skikoRendererMain (whose libs.skiko is the official coord) so
+            // macOS/Linux keep official Skiko and only mingw gets the fork. Two levels so
+            // the shared PlatformGpu expect (skikoRendererMingwSharedMain) has its mingw
+            // actual (skikoRendererMingwMain), mirroring the macos/linux split.
+            if (useWindowsSkia && vHostSupportsMingw) {
+                val skikoRendererMingwSharedMain = create("skikoRendererMingwSharedMain") {
+                    dependsOn(nativeMain.get())
+                    kotlin.srcDir("src/skikoRendererMain/kotlin")
+                    kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
+                    dependencies {
+                        // The bitsycore fork root; KMP variant-resolution selects mingwX64.
+                        // (Depending on the platform artifact skiko-mingwx64 directly does
+                        // NOT expose its api-elements — must go through the root module.)
+                        implementation("org.jetbrains.skiko:skiko:0.0.0-SNAPSHOT")
+                    }
+                }
+                val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }
+                mingwX64Main.get().dependsOn(skikoRendererMingwMain)
+            }
         }
     }
 
