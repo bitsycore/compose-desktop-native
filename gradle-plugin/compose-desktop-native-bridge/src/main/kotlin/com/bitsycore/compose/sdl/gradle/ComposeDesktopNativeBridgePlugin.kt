@@ -131,6 +131,7 @@ class ComposeDesktopNativeBridgePlugin : Plugin<Any> {
 private fun installBridge(project: Project) {
 	installResourcePackaging(project)
 	installNativeApplicationDsl(project)
+	installWindowsSkiaDll(project)
 
 	// The effective port version: the override property, else the plugin's own.
 	val version = project.providers.gradleProperty(versionProperty).orNull ?: bridgeProperty("version")
