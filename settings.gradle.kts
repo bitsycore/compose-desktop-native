@@ -29,6 +29,22 @@ dependencyResolutionManagement {
                     ?: providers.gradleProperty("gpr.token").orNull
                     ?: ""
             }
+            content { excludeGroup("org.jetbrains.skiko") }
+        }
+        // Route 1a: the bitsycore/skiko fork's mingwX64 klib + runtime DLL,
+        // published by its CI to GitHub Packages. Scoped to org.jetbrains.skiko.
+        maven {
+            name = "GitHubPackagesSkiko"
+            url = uri("https://maven.pkg.github.com/bitsycore/skiko")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                    ?: providers.gradleProperty("gpr.user").orNull
+                    ?: ""
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: providers.gradleProperty("gpr.token").orNull
+                    ?: ""
+            }
+            content { includeGroup("org.jetbrains.skiko") }
         }
     }
 }

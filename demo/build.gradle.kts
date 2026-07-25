@@ -115,3 +115,27 @@ registerComposeFontBundling {
     autoDetectNotoSansMono = true
     bundleMaterialSymbols = true
 }
+
+// Route 1a: provision skiko-windows-x64.dll next to the mingwX64 executable(s)
+// for the Windows Skia leg (-PwindowsSkia=true). Resolved from the bitsycore
+// skiko fork's published mingwX64 artifact (classifier windows-x64, ext dll),
+// so no manual copy is needed. The DLL is a runtime dependency of the exe.
+if (providers.gradleProperty("windowsSkia").orNull == "true") {
+    val skikoVersion = providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")
+    val skikoRuntimeDll = configurations.create("skikoWindowsRuntimeDll") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
+    dependencies.add(skikoRuntimeDll.name, "org.jetbrains.skiko:skiko-mingwx64:$skikoVersion:windows-x64@dll")
+    listOf("Debug", "Release").forEach { variant ->
+        val provision = tasks.register("provisionSkikoDll${variant}MingwX64", Copy::class.java) {
+            from(skikoRuntimeDll)
+            into(layout.buildDirectory.dir("bin/mingwX64/${variant.replaceFirstChar { it.lowercaseChar() }}Executable"))
+            rename { "skiko-windows-x64.dll" }
+        }
+        // finalizedBy the link (a plain build stages the DLL) + dependsOn from run
+        // (the exe finds it). finalizedBy avoids the bridge's link<->package cycle.
+        tasks.matching { it.name == "link${variant}ExecutableMingwX64" }.configureEach { finalizedBy(provision) }
+        tasks.matching { it.name == "run${variant}ExecutableMingwX64" }.configureEach { dependsOn(provision) }
+    }
+}

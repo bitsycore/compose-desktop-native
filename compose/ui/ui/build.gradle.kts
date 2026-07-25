@@ -253,7 +253,9 @@ kotlin {
                         // The bitsycore fork root; KMP variant-resolution selects mingwX64.
                         // (Depending on the platform artifact skiko-mingwx64 directly does
                         // NOT expose its api-elements — must go through the root module.)
-                        implementation("org.jetbrains.skiko:skiko:0.0.0-SNAPSHOT")
+                        // Published by the fork's CI to GitHub Packages; version overridable
+                        // via -PskikoMingwVersion=.
+                        implementation("org.jetbrains.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
                     }
                 }
                 val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }
