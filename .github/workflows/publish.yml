@@ -242,8 +242,21 @@ jobs:
           for app in demo apidemo; do
             src="$app/build/bin/$target_dir/releaseExecutable"
             zip_path="$(pwd)/dist/$app-$version-$target_dir.zip"
+            files=("$src/$app.${{ matrix.exe_ext }}" "$src/data.kres")
+            # Windows Skia leg ships two runtime sidecars next to the exe — the
+            # skiko fork DLL and Skia's ICU data (icudtl.dat) — provisioned by the
+            # bridge plugin after linkReleaseExecutableMingwX64. The exe cannot run
+            # without them, so include them (and fail loudly if a provision regressed).
+            if [ "${{ matrix.exe_ext }}" = "exe" ]; then
+              for sidecar in skiko-windows-x64.dll icudtl.dat; do
+                if [ ! -f "$src/$sidecar" ]; then
+                  echo "::error::Missing Windows runtime sidecar: $src/$sidecar"; exit 1
+                fi
+                files+=("$src/$sidecar")
+              done
+            fi
             python3 -c 'import sys,os,zipfile; z=zipfile.ZipFile(sys.argv[1],"w",zipfile.ZIP_DEFLATED,compresslevel=9); [z.write(f,os.path.basename(f)) for f in sys.argv[2:]]; z.close()' \
-              "$zip_path" "$src/$app.${{ matrix.exe_ext }}" "$src/data.kres"
+              "$zip_path" "${files[@]}"
           done
           ls -la dist/
 
