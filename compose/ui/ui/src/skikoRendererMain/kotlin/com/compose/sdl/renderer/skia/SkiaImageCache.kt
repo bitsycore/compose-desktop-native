@@ -5,6 +5,7 @@ import com.compose.sdl.*
 import androidx.compose.ui.layout.ContentScale
 import com.compose.sdl.res.AndroidVectorToSvg
 import com.compose.sdl.res.ResourceKind
+import com.compose.sdl.res.composeResourceReader
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
@@ -49,7 +50,7 @@ internal class SkiaImageCache {
 	}
 
 	private fun decode(inPath: String, inKind: ResourceKind): Image? {
-		val vBytes = loadComposeResourceBytes(inPath) ?: return null
+		val vBytes = composeResourceReader?.invoke(inPath) ?: return null
 		return when (inKind) {
 			ResourceKind.Raster        -> runCatching { Image.makeFromEncoded(vBytes) }.getOrNull()
 			ResourceKind.Svg           -> rasterizeSvg(vBytes)

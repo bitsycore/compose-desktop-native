@@ -56,6 +56,13 @@ private val kFallbackImageLoader = object : ImageLoader {
 /** Installed by ComposeWindow from renderBackend.imageLoader. */
 var currentImageLoader: ImageLoader = kFallbackImageLoader
 
+/** Raw resource-bytes reader (reads an entry from the bundled data.kres). The
+   platform layer installs the impl (SDL's ResourceIO via SDL_GetBasePath); the
+   Skia font + image actuals read through this instead of the SDL loader directly,
+   so ui-graphics / ui-text carry no dependency on the sdl3 cinterop. null until
+   installed → callers treat that as "resource unavailable". */
+var composeResourceReader: ((String) -> ByteArray?)? = null
+
 // ==================
 // MARK: painterResource
 // ==================

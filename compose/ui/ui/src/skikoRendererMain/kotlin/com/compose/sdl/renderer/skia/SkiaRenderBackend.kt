@@ -38,6 +38,10 @@ internal class SkiaRenderBackend(
         // Symbols FILL/wght/GRAD/opsz) — silence the icon capability warning.
         TextRendererCapabilities.supportsFontVariations = true
 
+        // Install the resource-bytes reader the Skia font/image actuals read
+        // through, so ui-graphics/ui-text carry no dependency on the sdl3 cinterop.
+        com.compose.sdl.res.composeResourceReader = ::loadComposeResourceBytes
+
         // Encoded-image decode (painterResource / SVG in :components-resources).
         // Registered at CONSTRUCTION, not first frame: the official resources
         // pipeline decodes during COMPOSITION, which runs before beginFrame —

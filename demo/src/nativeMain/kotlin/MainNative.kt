@@ -47,13 +47,6 @@ fun main(args: Array<String>) {
         println("[demo] --pipetest / --inputtest were retired in the :foundation split")
         return
     }
-    // B6.3 de-risk spike: render text through the UPSTREAM skiko paragraph stack
-    // (org.jetbrains.skia.paragraph.*) instead of the port's SdlParagraph, to
-    // prove it works on the mingwX64 fork before migrating the real engine.
-    if (args.any { it == "--paraspike" }) {
-        println(com.compose.sdl.renderer.skia.paragraphSpike("paraspike.png"))
-        return
-    }
     // End-to-end verification of the vendored interaction engine: boots a real
     // window with a clickable box and injects synthetic SDL mouse events through
     // the live path (SDL queue → pollEvents → host.onPointerRaw → processor →

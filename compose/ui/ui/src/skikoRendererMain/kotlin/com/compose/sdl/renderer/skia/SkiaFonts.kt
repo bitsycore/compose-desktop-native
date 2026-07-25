@@ -2,7 +2,7 @@ package com.compose.sdl.renderer.skia
 
 import androidx.compose.ui.text.font.FontVariation as ComposeFontVariation
 import com.compose.sdl.icons.IconFont
-import com.compose.sdl.loadComposeResourceBytes
+import com.compose.sdl.res.composeResourceReader
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontVariation as SkiaFontVariation
@@ -38,7 +38,7 @@ internal object SkiaFonts {
 
 	/** Bundled default (NotoSans from data.kres); the fallback for every unresolved family. */
 	val defaultTypeface: Typeface? =
-		loadComposeResourceBytes("font/NotoSans.ttf")
+		composeResourceReader?.invoke("font/NotoSans.ttf")
 			?.let { fontMgr.makeFromData(Data.makeFromBytes(it), 0) }
 			?.also { provider.registerTypeface(it, DEFAULT_ALIAS) }
 
