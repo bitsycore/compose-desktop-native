@@ -6,4 +6,30 @@
 // - Show declarations: true
 
 // Library unique name: <com.bitsycore.compose:desktop-native-window>
-final fun com.compose.desktop.native/nativeComposeWindow(kotlin/String = ..., kotlin/Int = ..., kotlin/Int = ..., com.compose.desktop.native/GpuMode = ..., kotlin/Function2<com.compose.desktop.native/RenderBackend, kotlin/Int, kotlin/Boolean>? = ..., kotlin/Function3<com.compose.desktop.native/ComposeWindowScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // com.compose.desktop.native/nativeComposeWindow|nativeComposeWindow(kotlin.String;kotlin.Int;kotlin.Int;com.compose.desktop.native.GpuMode;kotlin.Function2<com.compose.desktop.native.RenderBackend,kotlin.Int,kotlin.Boolean>?;kotlin.Function3<com.compose.desktop.native.ComposeWindowScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
+abstract interface com.compose.sdl/ApplicationScope { // com.compose.sdl/ApplicationScope|null[0]
+    abstract fun exitApplication() // com.compose.sdl/ApplicationScope.exitApplication|exitApplication(){}[0]
+}
+
+final class com.compose.sdl/AppWindowIcon { // com.compose.sdl/AppWindowIcon|null[0]
+    constructor <init>(kotlin.collections/List<kotlin/String>, kotlin.collections/List<kotlin/String> = ...) // com.compose.sdl/AppWindowIcon.<init>|<init>(kotlin.collections.List<kotlin.String>;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val dark // com.compose.sdl/AppWindowIcon.dark|{}dark[0]
+        final fun <get-dark>(): kotlin.collections/List<kotlin/String> // com.compose.sdl/AppWindowIcon.dark.<get-dark>|<get-dark>(){}[0]
+    final val light // com.compose.sdl/AppWindowIcon.light|{}light[0]
+        final fun <get-light>(): kotlin.collections/List<kotlin/String> // com.compose.sdl/AppWindowIcon.light.<get-light>|<get-light>(){}[0]
+}
+
+final val com.compose.sdl/com_compose_sdl_AppWindowIcon$stableprop // com.compose.sdl/com_compose_sdl_AppWindowIcon$stableprop|#static{}com_compose_sdl_AppWindowIcon$stableprop[0]
+
+final var com.compose.sdl/disableInfiniteAnimations // com.compose.sdl/disableInfiniteAnimations|{}disableInfiniteAnimations[0]
+    final fun <get-disableInfiniteAnimations>(): kotlin/Boolean // com.compose.sdl/disableInfiniteAnimations.<get-disableInfiniteAnimations>|<get-disableInfiniteAnimations>(){}[0]
+    final fun <set-disableInfiniteAnimations>(kotlin/Boolean) // com.compose.sdl/disableInfiniteAnimations.<set-disableInfiniteAnimations>|<set-disableInfiniteAnimations>(kotlin.Boolean){}[0]
+final var com.compose.sdl/useVirtualFrameTime // com.compose.sdl/useVirtualFrameTime|{}useVirtualFrameTime[0]
+    final fun <get-useVirtualFrameTime>(): kotlin/Boolean // com.compose.sdl/useVirtualFrameTime.<get-useVirtualFrameTime>|<get-useVirtualFrameTime>(){}[0]
+    final fun <set-useVirtualFrameTime>(kotlin/Boolean) // com.compose.sdl/useVirtualFrameTime.<set-useVirtualFrameTime>|<set-useVirtualFrameTime>(kotlin.Boolean){}[0]
+
+final fun (com.compose.sdl/ApplicationScope).com.compose.sdl/Window(kotlin/Function0<kotlin/Unit>, kotlin/String?, kotlin/Int, kotlin/Int, com.compose.sdl/GpuMode?, com.compose.sdl/AppWindowIcon?, kotlin/Function2<com.compose.sdl/RenderBackend, kotlin/Int, kotlin/Boolean>?, kotlin/Function3<com.compose.sdl/ComposeWindowScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.compose.sdl/Window|Window@com.compose.sdl.ApplicationScope(kotlin.Function0<kotlin.Unit>;kotlin.String?;kotlin.Int;kotlin.Int;com.compose.sdl.GpuMode?;com.compose.sdl.AppWindowIcon?;kotlin.Function2<com.compose.sdl.RenderBackend,kotlin.Int,kotlin.Boolean>?;kotlin.Function3<com.compose.sdl.ComposeWindowScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun com.compose.sdl/com_compose_sdl_AppWindowIcon$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_AppWindowIcon$stableprop_getter|com_compose_sdl_AppWindowIcon$stableprop_getter(){}[0]
+final fun com.compose.sdl/nativeComposeApp(kotlin/Function3<com.compose.sdl/ApplicationScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // com.compose.sdl/nativeComposeApp|nativeComposeApp(kotlin.Function3<com.compose.sdl.ApplicationScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
+final fun com.compose.sdl/nativeComposeWindow(kotlin/String = ..., kotlin/Int = ..., kotlin/Int = ..., com.compose.sdl/GpuMode = ..., com.compose.sdl/AppWindowIcon? = ..., kotlin/Function2<com.compose.sdl/RenderBackend, kotlin/Int, kotlin/Boolean>? = ..., kotlin/Function3<com.compose.sdl/ComposeWindowScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>) // com.compose.sdl/nativeComposeWindow|nativeComposeWindow(kotlin.String;kotlin.Int;kotlin.Int;com.compose.sdl.GpuMode;com.compose.sdl.AppWindowIcon?;kotlin.Function2<com.compose.sdl.RenderBackend,kotlin.Int,kotlin.Boolean>?;kotlin.Function3<com.compose.sdl.ComposeWindowScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){}[0]
+final fun com.compose.sdl/windowHasInvalidations(): kotlin/Boolean // com.compose.sdl/windowHasInvalidations|windowHasInvalidations(){}[0]
