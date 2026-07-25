@@ -158,7 +158,7 @@ single file to edit; know which axis you are changing.
 
 | Version | Where | Notes |
 |---------|-------|-------|
-| Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Group is `com.bitsycore.compose.sdl`. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
+| Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Groups mirror upstream per area (`com.bitsycore.compose.<area>:<module>`, e.g. `com.bitsycore.compose.ui:ui`); project-only modules use `com.bitsycore.compose.sdl` and `:desktop-native-window` is `com.bitsycore.compose` — see `groupFor()` in the root build. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
 | JVM parity forcing | `vComposeJvmVersion` in `demo`, `apidemo`, and `material-symbols` `build.gradle.kts`. | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published. |
 | Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
@@ -191,12 +191,21 @@ Run this on each upstream bump; it is the flow that keeps the sync tax low.
    Only Windows compiles the full common-metadata variant table, and the root
    KotlinMultiplatform publications live there; a macOS-only publish leaves the
    roots without mingwX64 variants (this bit v0.1.15).
-3. `git tag vX.Y.Z && git push origin vX.Y.Z`. This triggers `.github/workflows/publish.yml`.
+3. Refresh the klib API baselines: on a Windows host (JDK 21, matching CI) run
+   `./gradlew apiDump` and commit any diff. Not a hard gate yet — the API is
+   pre-stable and `apiCheck` isn't wired — but regenerating each release keeps
+   the baselines honest so the eventual gate is a no-op. `macosArm64` is inferred
+   from the linux/mingw ABIs (accurate for the target-independent Compose
+   surface); `:sdl-core` (cinterop) and `:material-symbols` (generated icon maps)
+   are excluded via `apiValidation.ignoredProjects`. Best host: Windows — it
+   builds the mingw slice (the fork's unique surface) for real and only infers
+   macos; the macos ABI is target-independent for the tracked pure-Kotlin modules.
+4. `git tag vX.Y.Z && git push origin vX.Y.Z`. This triggers `.github/workflows/publish.yml`.
 
 What the publish job does, so you can read a failure:
 
 - Each host publishes only its own target's publications to GitHub Packages
-  under `com.bitsycore.compose.sdl:*`. Windows additionally publishes the root
+  under their per-area `com.bitsycore.compose.*` coords. Windows additionally publishes the root
   KotlinMultiplatform metadata, the `jvm` publication, and the bridge plugin
   (only Windows declares every target).
 - The `MODULES` list in the workflow must stay in sync with the modules in

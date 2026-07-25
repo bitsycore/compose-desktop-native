@@ -12,7 +12,12 @@ plugins {
 apiValidation {
     @OptIn(ExperimentalBCVApi::class)
     klib { enabled = true }
-    ignoredProjects.addAll(listOf("demo", "apidemo"))
+    // demo/apidemo: apps, no published API. sdl-core: naked SDL cinterop — its
+    // "API" is the generated sdl3.* bindings (per-OS, can't infer macos), not our
+    // surface. material-symbols: auto-generated icon codepoint maps + its jvm
+    // dump trips BCV's ASM on newer JDKs (class file major 69). Track the
+    // hand-authored Compose surface, not generated/binding code.
+    ignoredProjects.addAll(listOf("demo", "apidemo", "sdl-core", "material-symbols"))
 }
 
 // Version is driven by PUBLISH_VERSION (set from the git tag in the publish
