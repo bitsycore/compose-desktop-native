@@ -37,8 +37,9 @@ allprojects {
 
 val kAppModules = setOf(":demo", ":apidemo")
 val kPublishedLibs = setOf(
-    ":ui", ":ui-util", ":ui-geometry", ":ui-unit", ":ui-backhandler",
-    ":ui-tooling-preview",
+    ":sdl-core",
+    ":ui", ":ui-util", ":ui-geometry", ":ui-graphics", ":ui-text",
+    ":ui-unit", ":ui-backhandler", ":ui-tooling-preview",
     ":animation-core", ":animation", ":animation-graphics",
     ":foundation", ":foundation-layout",
     ":material3", ":material-ripple",
@@ -135,10 +136,11 @@ allprojects {
         if (vNativeTargetTokens.any { name.contains(it, ignoreCase = true) }) {
             resolutionStrategy.dependencySubstitution {
                 substitute(module("org.jetbrains.compose.ui:ui")).using(project(":ui"))
-                // ui's split artifacts: ui-graphics + ui-text are merged INTO
-                // :ui in the port; ui-unit / ui-geometry have their own modules.
-                substitute(module("org.jetbrains.compose.ui:ui-graphics")).using(project(":ui"))
-                substitute(module("org.jetbrains.compose.ui:ui-text")).using(project(":ui"))
+                // ui-graphics / ui-text are their own modules (split out of :ui,
+                // upstream layout). Declare each DIRECTLY so the app commonMain sees
+                // them under the granular-metadata visibility rule.
+                substitute(module("org.jetbrains.compose.ui:ui-graphics")).using(project(":ui-graphics"))
+                substitute(module("org.jetbrains.compose.ui:ui-text")).using(project(":ui-text"))
                 substitute(module("org.jetbrains.compose.ui:ui-unit")).using(project(":ui-unit"))
                 substitute(module("org.jetbrains.compose.ui:ui-geometry")).using(project(":ui-geometry"))
                 substitute(module("org.jetbrains.compose.ui:ui-util")).using(project(":ui-util"))

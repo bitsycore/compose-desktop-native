@@ -13,14 +13,14 @@ import java.util.Properties
 /**
  * Official Compose Multiplatform coordinates → com.bitsycore.compose.sdl
  * artifactIds. Mirrors the repo-internal FULL-COMMONIZATION BRIDGE (root
- * build.gradle.kts): ui-graphics / ui-text are merged INTO the port's ui;
- * the runtime is deliberately absent — the official
+ * build.gradle.kts): ui-graphics / ui-text are their own modules (upstream
+ * layout). The runtime is deliberately absent — the official
  * org.jetbrains.compose.runtime klibs serve every target, never substituted.
  */
 private val bridgeTable = mapOf(
     "org.jetbrains.compose.ui:ui" to "ui",
-    "org.jetbrains.compose.ui:ui-graphics" to "ui",
-    "org.jetbrains.compose.ui:ui-text" to "ui",
+    "org.jetbrains.compose.ui:ui-graphics" to "ui-graphics",
+    "org.jetbrains.compose.ui:ui-text" to "ui-text",
     "org.jetbrains.compose.ui:ui-unit" to "ui-unit",
     "org.jetbrains.compose.ui:ui-geometry" to "ui-geometry",
     "org.jetbrains.compose.ui:ui-util" to "ui-util",
