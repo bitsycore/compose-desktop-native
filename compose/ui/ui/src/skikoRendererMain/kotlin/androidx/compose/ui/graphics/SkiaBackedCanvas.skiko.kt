@@ -103,7 +103,6 @@ var Canvas.alphaMultiplier: Float
 internal class SkiaBackedCanvas(
     internal val internalSkiaCanvas: SkCanvas,
 ) : Canvas,
-    com.compose.sdl.text.NativeTextCanvas,
     com.compose.sdl.graphics.NativePainterCanvas,
     com.compose.sdl.graphics.NativeShadowCanvas,
     com.compose.sdl.graphics.NativeFinishableCanvas {
@@ -496,49 +495,6 @@ internal class SkiaBackedCanvas(
     //  Port draw contracts (B6.1) -- forward to the port renderers via skiaLeafDrawer.
 
     override fun finish() { /* Skia save/restore is balanced per call */ }
-
-    override fun drawNativeText(
-        inText: String,
-        inSpans: List<androidx.compose.ui.text.AnnotatedString.Range<androidx.compose.ui.text.SpanStyle>>?,
-        inX: Float,
-        inY: Float,
-        inBoxWidth: Float,
-        inBoxHeight: Float,
-        inColor: Color,
-        inFontSizePx: Int,
-        inTextAlign: androidx.compose.ui.text.style.TextAlign,
-        inSoftWrap: Boolean,
-        inFontFamily: String?,
-        inFontVariations: List<androidx.compose.ui.text.font.FontVariation.Setting>?,
-        inBaseItalic: Boolean,
-        inTextDecoration: androidx.compose.ui.text.style.TextDecoration?,
-        inLineHeightPx: Float,
-        inTrimFirstLine: Boolean,
-    ) {
-        val drawer = skiaLeafDrawer ?: return
-        val vUnderline = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.Underline) == true
-        val vLineThrough = inTextDecoration?.contains(androidx.compose.ui.text.style.TextDecoration.LineThrough) == true
-        drawer.textRenderer.drawText(
-            inCanvas = internalSkiaCanvas,
-            inText = inText,
-            inX = inX,
-            inY = inY,
-            inBoxWidth = inBoxWidth.toInt(),
-            inBoxHeight = inBoxHeight.toInt(),
-            inColor = inColor,
-            inFontSize = inFontSizePx,
-            inAlign = inTextAlign,
-            inSoftWrap = inSoftWrap,
-            inFontFamily = inFontFamily,
-            inFontVariations = inFontVariations,
-            inSpans = inSpans,
-            inBaseItalic = inBaseItalic,
-            inBaseUnderline = vUnderline,
-            inBaseLineThrough = vLineThrough,
-            inLineHeightPx = inLineHeightPx,
-            inTrimFirstLine = inTrimFirstLine,
-        )
-    }
 
     override fun drawNativePainter(
         inResourcePath: String,

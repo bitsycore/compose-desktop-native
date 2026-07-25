@@ -25,7 +25,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.lifecycle.enableSavedStateHandles
 import com.compose.sdl.node.ComposeRootHost
 import com.compose.sdl.res.currentImageLoader
-import com.compose.sdl.text.currentTextMeasurer
 import com.compose.sdl.window.LocalPopupHost
 import com.compose.sdl.window.PopupLayer
 import com.compose.sdl.window.createPopupHostState
@@ -771,7 +770,6 @@ internal class WindowInstance(
 	   measuring, or drawing this window's tree. */
 	fun installGlobals() {
 		val vRender = renderBackend ?: return
-		currentTextMeasurer = vRender.textMeasurer
 		currentImageLoader = vRender.imageLoader
 		com.compose.sdl.text.currentViewportWidth = backend.pixelWidth
 		com.compose.sdl.text.currentViewportHeight = backend.pixelHeight

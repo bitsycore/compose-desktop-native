@@ -30,6 +30,10 @@ class NamedFont(
 	override val weight: FontWeight = FontWeight.Normal,
 	override val style: FontStyle = FontStyle.Normal,
 	val variationSettings: FontVariation.Settings = FontVariation.Settings(weight, style),
+	// Raw variable-font axis settings (Material Symbols FILL/wght/GRAD/opsz),
+	// threaded through the family so the skiko text engine can apply them via
+	// FontFamily.projectFontVariations() — icons render on the standard text path.
+	val axes: List<FontVariation.Setting>? = null,
 ) : Font {
 	override val loadingStrategy: FontLoadingStrategy = FontLoadingStrategy.Blocking
 
@@ -52,7 +56,8 @@ fun namedFontFamily(
 	name: String,
 	weight: FontWeight = FontWeight.Normal,
 	style: FontStyle = FontStyle.Normal,
-): FontFamily = FontFamily(NamedFont(name, weight, style))
+	axes: List<FontVariation.Setting>? = null,
+): FontFamily = FontFamily(NamedFont(name, weight, style, axes = axes))
 
 /**
  * Extract the renderer font-registry name for a `FontFamily`:
@@ -69,3 +74,9 @@ fun FontFamily?.projectFontName(): String? = when (this) {
 		if (name == "sans-serif") null else "generic:$name"
 	else -> null
 }
+
+/** Variable-font axis settings carried by a [namedFontFamily]'s [NamedFont]
+ *  (Material Symbols FILL/wght/GRAD/opsz); null for every other family. The
+ *  skiko text engine applies these on top of / instead of the paragraph weight. */
+fun FontFamily?.projectFontVariations(): List<FontVariation.Setting>? =
+	((this as? FontListFontFamily)?.firstOrNull() as? NamedFont)?.axes

@@ -16,39 +16,44 @@ import org.jetbrains.skia.paragraph.TypefaceFontProvider
 
 /**
  * Turns the port's `(family-name, variable-axis)` font model into skiko
- * [Typeface]s for [SkiaParagraph]. Families come from
- * [com.compose.sdl.text.NamedFont.projectFontName] (a bundled default, a
+ * [Typeface]s for the paragraph engine. Families come from
+ * [com.compose.sdl.text.NamedFont.projectFontName] (a bundled default, an
  * [IconFont]-registered text/icon family, or `generic:*`); variable axes
- * (Material Symbols `wght`/`FILL`/… and paragraph `FontWeight`→`wght`) are
- * applied via [Typeface.makeClone]. Replaces `SkiaTextRenderer`'s typeface
- * cache while keeping the same registry, so icons / monospace / custom fonts
- * resolve unchanged — only the shaping/layout engine underneath changes.
+ * (Material Symbols `FILL`/`wght`/… and paragraph `FontWeight`→`wght`) are
+ * applied via [Typeface.makeClone].
+ *
+ * Every resolved typeface is registered in a [TypefaceFontProvider] under a
+ * UNIQUE alias, and [resolve] hands that alias back so the caller sets both
+ * `TextStyle.typeface` AND `TextStyle.fontFamilies = [alias]`. That matters:
+ * skiko's shaper maps codepoints→glyphs through `fontFamilies` (the
+ * FontCollection), so an icon font MUST be reachable by its alias — otherwise a
+ * bare `typeface` is ignored and private-use icon codepoints render as tofu.
+ * (Mirrors upstream FontCache: register alias + set fontFamilies + typeface.)
  */
 internal object SkiaFonts {
+	private const val DEFAULT_ALIAS = "Noto Sans"
+
 	private val fontMgr = FontMgr.default
+	private val provider = TypefaceFontProvider()
 
 	/** Bundled default (NotoSans from data.kres); the fallback for every unresolved family. */
-	val defaultTypeface: Typeface? by lazy {
-		loadComposeResourceBytes("font/NotoSans.ttf")?.let {
-			fontMgr.makeFromData(Data.makeFromBytes(it), 0)
-		}
-	}
+	val defaultTypeface: Typeface? =
+		loadComposeResourceBytes("font/NotoSans.ttf")
+			?.let { fontMgr.makeFromData(Data.makeFromBytes(it), 0) }
+			?.also { provider.registerTypeface(it, DEFAULT_ALIAS) }
 
-	/** Shared collection used by skiko for glyph fallback (CJK/emoji via the system
-	   FontMgr where present); the bundled NotoSans is registered as "Noto Sans". */
-	val fontCollection: FontCollection by lazy {
-		val provider = TypefaceFontProvider()
-		defaultTypeface?.let { provider.registerTypeface(it, "Noto Sans") }
-		FontCollection().apply {
-			setDefaultFontManager(fontMgr)
-			setAssetFontManager(provider)
-		}
+	/** Shared collection: the alias provider first (bundled + icon + varied fonts),
+	   then the system FontMgr for glyph fallback (CJK/emoji where present). */
+	val fontCollection: FontCollection = FontCollection().apply {
+		setDefaultFontManager(fontMgr)
+		setAssetFontManager(provider)
 	}
 
 	// family name (null = default) -> base typeface
 	private val baseCache = mutableMapOf<String?, Typeface?>()
-	// (family, sorted-variations key) -> axis-cloned typeface
-	private val variantCache = mutableMapOf<Pair<String?, String>, Typeface?>()
+	// resolve key -> (typeface, registered alias)
+	private val resolveCache = mutableMapOf<String, Pair<Typeface?, String>>()
+	private val registered = mutableSetOf(DEFAULT_ALIAS)
 
 	private fun baseTypeface(family: String?): Typeface? =
 		baseCache.getOrPut(family) {
@@ -59,17 +64,25 @@ internal object SkiaFonts {
 	private fun variationsKey(variations: List<ComposeFontVariation.Setting>): String =
 		variations.sortedBy { it.axisName }.joinToString(",") { "${it.axisName}=${it.toVariationValue(null)}" }
 
-	/** Resolve a family + optional variable-axis settings to a concrete typeface,
-	   falling back to the bundled default. Cloned/variant typefaces are cached. */
-	fun typeface(family: String?, variations: List<ComposeFontVariation.Setting>?): Typeface? {
-		if (variations.isNullOrEmpty()) return baseTypeface(family)
-		return variantCache.getOrPut(family to variationsKey(variations)) {
-			val base = baseTypeface(family) ?: return@getOrPut null
-			runCatching {
-				base.makeClone(
-					variations.map { SkiaFontVariation(it.axisName, it.toVariationValue(null)) }.toTypedArray()
-				)
+	/** Resolve a family + optional variable-axis settings to a concrete typeface AND
+	   a provider alias (register-on-first-use). Set `fontFamilies = [alias]` and
+	   `typeface = first` on the skiko TextStyle. */
+	fun resolve(family: String?, variations: List<ComposeFontVariation.Setting>?): Pair<Typeface?, String> {
+		if (family == null && variations.isNullOrEmpty()) return defaultTypeface to DEFAULT_ALIAS
+		val varKey = variations?.takeUnless { it.isEmpty() }?.let { variationsKey(it) } ?: ""
+		val key = "${family ?: ""}#$varKey"
+		return resolveCache.getOrPut(key) {
+			val base = baseTypeface(family) ?: defaultTypeface
+			val typeface = if (varKey.isEmpty() || base == null) base
+			else runCatching {
+				base.makeClone(variations!!.map { SkiaFontVariation(it.axisName, it.toVariationValue(null)) }.toTypedArray())
 			}.getOrDefault(base)
+			val alias = if (family == null && varKey.isEmpty()) DEFAULT_ALIAS else "cdn-font:$key"
+			if (typeface != null && alias !in registered) {
+				provider.registerTypeface(typeface, alias)
+				registered += alias
+			}
+			typeface to alias
 		}
 	}
 }

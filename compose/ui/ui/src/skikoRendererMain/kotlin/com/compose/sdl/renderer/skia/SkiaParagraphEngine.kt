@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.isSpecified
 import com.compose.sdl.renderer.skia.SkiaFonts
 import com.compose.sdl.text.projectFontName
+import com.compose.sdl.text.projectFontVariations
 import org.jetbrains.skia.Font as SkFont
 import org.jetbrains.skia.FontStyle as SkFontStyle
 import org.jetbrains.skia.paragraph.Alignment as SkAlignment
@@ -55,9 +56,12 @@ internal class SkiaParagraphOps(
 	private val fontPx: Float =
 		((if (style.fontSize.isSpecified) style.fontSize.value else 14f) * density).coerceAtLeast(1f)
 	private val baseFamily: String? = style.fontFamily.projectFontName()
+	// Icon families (Material Symbols) carry explicit axes on the family; ordinary
+	// text derives only the wght axis from the paragraph FontWeight.
 	private val baseVariations: List<FontVariation.Setting>? =
-		style.fontWeight?.let { listOf(FontVariation.weight(it.weight)) }
-	private val baseTypeface = SkiaFonts.typeface(baseFamily, baseVariations)
+		style.fontFamily.projectFontVariations()
+			?: style.fontWeight?.let { listOf(FontVariation.weight(it.weight)) }
+	private val baseTypeface = SkiaFonts.resolve(baseFamily, baseVariations).first
 	private val defaultFont = SkFont(baseTypeface ?: SkiaFonts.defaultTypeface, fontPx)
 	private val layoutWidth: Float =
 		if (widthConstraint.isFinite() && widthConstraint > 0f) widthConstraint else INTRINSIC_WIDTH
@@ -177,6 +181,7 @@ internal class SkiaParagraphOps(
 			sp.fontStyle?.let { fontStyle = it }
 			sp.textDecoration?.let { deco = it }
 			sp.fontFamily.projectFontName()?.let { family = it }
+			sp.fontFamily.projectFontVariations()?.let { variations = it }
 		}
 		return makeTextStyle(family, variations, size, segColor, fontStyle, deco, shadow)
 	}
@@ -189,8 +194,12 @@ internal class SkiaParagraphOps(
 		val argb = (if (color.isSpecified) color else Color.Black).toArgb()
 		ts.color = argb
 		ts.fontSize = sizePx
-		ts.fontFamilies = arrayOf("Noto Sans")
-		SkiaFonts.typeface(family, variations)?.let { ts.typeface = it }
+		// Register + resolve to a provider alias so skiko's shaper maps codepoints
+		// through the exact typeface (icon fonts would otherwise fall back to
+		// Noto Sans and render private-use glyphs as tofu).
+		val (tf, alias) = SkiaFonts.resolve(family, variations)
+		tf?.let { ts.typeface = it }
+		ts.fontFamilies = arrayOf(alias)
 		if (fontStyle == FontStyle.Italic) ts.fontStyle = SkFontStyle.ITALIC
 		decoration?.takeUnless { it == TextDecoration.None }?.let {
 			ts.decorationStyle = SkDecorationStyle(

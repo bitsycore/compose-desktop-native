@@ -1,38 +1,31 @@
 package com.compose.sdl.text
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
 
 // ==================
-// MARK: IconText — project-only text composable for icon fonts
+// MARK: IconText — icon-font text on the standard text path
 // ==================
 
 /**
  A minimal project text composable that renders a codepoint through a named
- icon font with optional variable-font axis settings (Material Symbols).
+ icon font with optional variable-font axis settings (Material Symbols FILL /
+ wght / GRAD / opsz).
 
- Sits outside `androidx.compose.foundation.text.BasicText` so BasicText can
- remain a byte-identical match of upstream. Icons need:
-   - `fontFamily: String` — the registered icon font family name (project's
-     `FontFamily.Named`, not upstream `FontFamily.Resolver`).
-   - `fontVariationSettings` — per-usage variable-font axis values (FILL,
-     wght, GRAD, opsz for Material Symbols).
+ Now just a [BasicText]: the icon font family and its variable axes are threaded
+ through [namedFontFamily] (`axes = …`), which the skiko text engine reads via
+ `FontFamily.projectFontVariations()` and applies to the typeface. So icons
+ measure + draw through the same skiko `skparagraph` path as ordinary text — no
+ separate renderer/measurer seam.
 
- Upstream `TextStyle` has neither: fontFamily routes through the
- `FontFamily.Resolver`, and axis values are set per-Font at construction
- time. Rather than fight that abstraction for one composable, icons use
- this project path — the TextDrawElement modifier feeds directly into
- SdlParagraph / Sdl3Canvas.drawNativeText.
-
- Material `Icon(codepoint = ..., fontFamily = ...)` uses this. Everything
- else (Text, BasicText, TextField) goes through the upstream-shaped path.
+ Material `Icon(codepoint = …, fontFamily = …)` uses this; Text / BasicText /
+ TextField go through the upstream-shaped path already.
 */
 @Composable
 fun IconText(
@@ -44,28 +37,16 @@ fun IconText(
 	textAlign: TextAlign = TextAlign.Start,
 	fontVariationSettings: List<FontVariation.Setting>? = null,
 ) {
-	// Layout runs in physical pixels (LocalDensity = DPR), so the icon font
-	// size must also convert `sp → px`. Matches SdlParagraph's `fontSize.value
-	// * density`. Without this the icons render at half size on Retina.
-	val vDensity = LocalDensity.current.density
-	val vFontPx = (fontSize.value * vDensity).toInt().coerceAtLeast(1)
-	Box(modifier = modifier) {
-		androidx.compose.ui.layout.Layout(
-			modifier = TextDrawElement(
-				text = text,
-				spans = null,
-				color = if (color == Color.Unspecified) Color.Black else color,
-				fontSizePx = vFontPx,
-				textAlign = textAlign,
-				softWrap = false,
-				fontFamily = fontFamily,
-				fontVariations = fontVariationSettings,
-			),
-		) { _, constraints ->
-			val vSize = currentTextMeasurer.measure(text, vFontPx, Int.MAX_VALUE, fontFamily, fontVariationSettings)
-			val w = vSize.width.coerceIn(constraints.minWidth, constraints.maxWidth)
-			val h = vSize.height.coerceIn(constraints.minHeight, constraints.maxHeight)
-			layout(w, h) {}
-		}
-	}
+	BasicText(
+		text = text,
+		modifier = modifier,
+		style = TextStyle(
+			color = if (color == Color.Unspecified) Color.Black else color,
+			fontSize = fontSize,
+			fontFamily = namedFontFamily(fontFamily, axes = fontVariationSettings),
+			textAlign = textAlign,
+		),
+		softWrap = false,
+		maxLines = 1,
+	)
 }

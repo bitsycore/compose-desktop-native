@@ -3,7 +3,7 @@ package com.compose.sdl.renderer.skia
 import androidx.compose.ui.geometry.Size
 import com.compose.sdl.res.ImageLoader
 import com.compose.sdl.res.ResourceKind
-import com.compose.sdl.text.TextMeasurer
+import com.compose.sdl.text.TextRendererCapabilities
 import com.compose.sdl.*
 import androidx.compose.ui.graphics.asComposeCanvas
 import org.jetbrains.skia.Canvas
@@ -30,11 +30,14 @@ internal class SkiaRenderBackend(
 ) : RenderBackend {
 
     private val fBridge: SkiaBridge = buildBridge()
-    private val fSkiaTextRenderer = SkiaTextRenderer()
     private val fSkiaImageCache = SkiaImageCache()
     private var fCurrentCanvas: Canvas? = null
 
     init {
+        // skiko's paragraph engine always supports variable-font axes (Material
+        // Symbols FILL/wght/GRAD/opsz) — silence the icon capability warning.
+        TextRendererCapabilities.supportsFontVariations = true
+
         // Encoded-image decode (painterResource / SVG in :components-resources).
         // Registered at CONSTRUCTION, not first frame: the official resources
         // pipeline decodes during COMPOSITION, which runs before beginFrame —
@@ -50,13 +53,10 @@ internal class SkiaRenderBackend(
     // contracts (text/painter/shadow) forward to the port renderers via this global
     // drawer. It is per-WINDOW state (each window has its own text renderer + image
     // cache), so it must be re-pointed at THIS backend before every frame — exactly
-    // like ComposeWindow.installGlobals() does for currentTextMeasurer. Setting it
-    // once in the ctor left it dangling at a CLOSED window's (destroyed) renderer
-    // after a multi-window teardown → crash on the surviving window's next frame.
-    private val fLeafDrawer = SkiaLeafDrawer(fSkiaTextRenderer, fSkiaImageCache)
-
-    override val textMeasurer: TextMeasurer
-        get() = fSkiaTextRenderer.textMeasurer
+    // Setting it once in the ctor left it dangling at a CLOSED window's (destroyed)
+    // image cache after a multi-window teardown → crash on the surviving window's
+    // next frame, so it is re-pointed at THIS backend before every frame.
+    private val fLeafDrawer = SkiaLeafDrawer(fSkiaImageCache)
 
     override val imageLoader: ImageLoader = object : ImageLoader {
         override fun intrinsicSize(inPath: String, inKind: ResourceKind): Size =
@@ -83,13 +83,6 @@ internal class SkiaRenderBackend(
         canvas.clear(SkColor.makeARGB(0xFF, 0x12, 0x12, 0x12))
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
-        // Sp-valued span sizes resolve through resolveRunPx, which needs the
-        // same LocalDensity DPR the paragraph used to bake base fontPx (16sp *
-        // density=2 → 32px). ComposeWindow calls beginFrame(1f) — layout is
-        // already in physical pixels — so use backend.pixelDensity directly
-        // here or Sp spans render at logical-point sizes and look tiny next
-        // to their base text.
-        fSkiaTextRenderer.setDensity(sdl.pixelDensity)
         fCurrentCanvas = canvas
     }
 
@@ -119,7 +112,6 @@ internal class SkiaRenderBackend(
         // so a stray draw before the next window's drawRoot can't hit freed renderers.
         if (skiaLeafDrawer === fLeafDrawer) skiaLeafDrawer = null
         fSkiaImageCache.destroy()
-        fSkiaTextRenderer.destroy()
         fBridge.destroy()
     }
 }
