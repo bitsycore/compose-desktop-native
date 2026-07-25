@@ -8,10 +8,7 @@ import com.compose.sdl.GpuMode
 
 /** Parsed view of the demo's command line.
 
-   --gpu=auto | none | skia.metal | skia.opengl |
-         sdl3 | sdl3.auto | sdl3.software |
-         sdl3.opengl | sdl3.metal | sdl3.vulkan |
-         sdl3.d3d11 | sdl3.d3d12                 (default: auto)
+   --gpu=auto | software | skia.metal | skia.opengl   (default: auto)
    --screen=Buttons | TextField | ...            (default: full app w/ sidebar)
    --screenshot=path.bmp                         capture at quiescence and quit
    --width=W  --height=H                         (default 1000 / 700)
@@ -37,13 +34,6 @@ private fun parseGpu(inValue: String): GpuMode = when (inValue.lowercase().repla
     "none", "cpu", "software"    -> GpuMode.Software
     "metal", "skia.metal"   -> GpuMode.Skia.Metal
     "opengl", "gl", "skia.opengl" -> GpuMode.Skia.OpenGL
-    "sdl3", "sdl3.auto"     -> GpuMode.Sdl3.Auto
-    "sdl3.software", "sdl3.sw" -> GpuMode.Sdl3.Software
-    "sdl3.opengl"    -> GpuMode.Sdl3.OpenGL
-    "sdl3.metal"     -> GpuMode.Sdl3.Metal
-    "sdl3.vulkan"    -> GpuMode.Sdl3.Vulkan
-    "sdl3.d3d11"     -> GpuMode.Sdl3.D3D11
-    "sdl3.d3d12"     -> GpuMode.Sdl3.D3D12
     else -> {
         println("Unknown --gpu=$inValue, using auto")
         GpuMode.Auto

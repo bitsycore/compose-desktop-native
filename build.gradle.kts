@@ -160,11 +160,11 @@ allprojects {
 }
 
 // Whether the current host can build the mingwX64 target. Kotlin/Native can
-// only cross-compile mingwX64 cinterops from a Windows host — the sdl3_ttf /
-// sdl3_image cinterops need Windows SDL3 headers under libs/ (produced by
-// scripts/build-sdl/build-all.py run on a Windows host). Declaring `mingwX64()` on
-// a non-Windows host is safe for pure-Kotlin modules but blows up the moment
-// a `depends = sdl3` cinterop tries to include SDL3_ttf/SDL_ttf.h.
+// only cross-compile the mingwX64 sdl3 cinterop from a Windows host — it needs
+// the Windows SDL3 headers under libs/ (produced by scripts/build-sdl/build-all.py
+// run on a Windows host). Declaring `mingwX64()` on a non-Windows host is safe
+// for pure-Kotlin modules but blows up the moment the sdl3 cinterop tries to
+// include SDL3's headers.
 // Override with `-PforceMingw=true` if you actually have the headers wired.
 val vHostSupportsMingw = System.getProperty("os.name").startsWith("Windows") ||
     (findProperty("forceMingw") as? String)?.toBoolean() == true

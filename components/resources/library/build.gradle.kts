@@ -3,8 +3,8 @@
 // Maven artifact ships no mingwX64/linux klibs. Public API is byte-for-byte
 // upstream (painterResource / stringResource / Font / qualifiers / Res codegen
 // compatibility); the platform actuals are this port's: data.kres reading,
-// SDL3_image decoding, SDL locale/theme environment. Apps' JVM targets keep
-// using the official Maven artifact — this module is native-only.
+// image decode via :ui's Skia decoder, SDL locale/theme environment. Apps' JVM
+// targets keep using the official Maven artifact — this module is native-only.
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
@@ -17,7 +17,6 @@ repositories {
 	maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
@@ -41,52 +40,11 @@ kotlin {
 		}
 		nativeMain {
 			kotlin.srcDir("src/vendor/native/kotlin")
-		}
-
-		// ============
-		//  Renderer roots — same conditional wiring as :ui: only the source
-		//  sets that will actually be attached are created.
-		val sdlRendererMain = create("sdlRendererMain") {
-			dependsOn(nativeMain.get())
-			kotlin.srcDir("src/vendor/sdlRenderer/kotlin")
-		}
-		if (vHostSupportsMingw) {
-			val sdlRendererMingwMain = create("sdlRendererMingwMain") { dependsOn(sdlRendererMain) }
-			get("mingwX64Main").dependsOn(sdlRendererMingwMain)
-		}
-
-		val macosArm64Main = get("macosArm64Main")
-		val linuxX64Main = get("linuxX64Main")
-		val linuxArm64Main = get("linuxArm64Main")
-
-		if (useSdl3Everywhere) {
-			val sdlRendererMacosMain = create("sdlRendererMacosMain") { dependsOn(sdlRendererMain) }
-			val sdlRendererLinuxMain = create("sdlRendererLinuxMain") { dependsOn(sdlRendererMain) }
-			macosArm64Main.dependsOn(sdlRendererMacosMain)
-			linuxX64Main.dependsOn(sdlRendererLinuxMain)
-			linuxArm64Main.dependsOn(sdlRendererLinuxMain)
-		} else {
-			// The Font/Image actuals for this module are pure project code
-			// (:ui's IconFont / NamedFont / decodeEncodedImageBitmap in nativeMain)
-			// so they work identically under either renderer. Only one renderer
-			// source set is attached to a given target, so pointing skikoRenderer
-			// at sdlRendererMain's srcDir doesn't cause duplicate actuals.
-			// Upstream's skikoMain vendored files here referenced Compose-Desktop
-			// Skia extensions (SystemFont / toComposeImageBitmap / nativeCanvas)
-			// that this port's :ui doesn't expose — sharing the SDL actuals sidesteps
-			// that gap entirely.
-			val skikoRendererMain = create("skikoRendererMain") {
-				dependsOn(nativeMain.get())
-				kotlin.srcDir("src/sdlRendererMain/kotlin")
-				dependencies {
-					implementation(libs.skiko)
-				}
-			}
-			val skikoRendererMacosMain = create("skikoRendererMacosMain") { dependsOn(skikoRendererMain) }
-			val skikoRendererLinuxMain = create("skikoRendererLinuxMain") { dependsOn(skikoRendererMain) }
-			macosArm64Main.dependsOn(skikoRendererMacosMain)
-			linuxX64Main.dependsOn(skikoRendererLinuxMain)
-			linuxArm64Main.dependsOn(skikoRendererLinuxMain)
+			// The Font / Image resource actuals — pure project code that delegates
+			// to :ui's IconFont / NamedFont / decodeEncodedImageBitmap (the Skia
+			// decoder). Renderer-agnostic and skiko-free, so a single native set
+			// covers every target. (Dir name is historical — .sdl.kt.)
+			kotlin.srcDir("src/sdlRendererMain/kotlin")
 		}
 	}
 

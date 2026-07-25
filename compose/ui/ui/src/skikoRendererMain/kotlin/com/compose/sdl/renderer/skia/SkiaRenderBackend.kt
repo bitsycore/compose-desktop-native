@@ -69,7 +69,6 @@ internal class SkiaRenderBackend(
         is GpuMode.Skia.Metal  -> makeMetalBridge(sdl) ?: error("Skia.Metal isn't supported on this target")
         is GpuMode.Skia.OpenGL -> SkiaGLBridge(sdl).also { require(it.init()) { "Skia.OpenGL init failed" } }
         is GpuMode.Software        -> SkiaSurfaceBridge(sdl)
-        is GpuMode.Sdl3,
         is GpuMode.Auto        -> error("SkiaRenderBackend received non-Skia gpuMode $gpuMode")
     }
 

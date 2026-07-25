@@ -1,8 +1,0 @@
-headers = ft2build.h freetype/freetype.h freetype/ftmm.h freetype/ftoutln.h freetype/ftbitmap.h
-headerFilter = freetype2/** ft2build.h freetype/**
-
-# libfreetype.a is baked into the cinterop klib. See sdl3.def — the static
-# archive location is injected via :ui build.gradle.kts (-libraryPath).
-# Optional deps (HarfBuzz / PNG / Brotli / BZip2 / zlib) were disabled in
-# build-freetype.sh so this archive has no external references beyond libc.
-staticLibraries = libfreetype.a

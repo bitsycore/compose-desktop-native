@@ -64,21 +64,12 @@ class ComposeNativeWindow constructor(
     val fps: Int get() = fFps
 
     /** Human-readable name of the rendering pipeline:
-        "Skia / Metal", "Skia / OpenGL", "Skia / CPU"
-        "SDL3 / metal", "SDL3 / opengl", "SDL3 / direct3d11", …
-       For SDL3 we ask the live SDL_Renderer what driver it actually
-       picked (Sdl3.Auto can resolve to different drivers per platform). */
+        "Skia / Metal", "Skia / OpenGL", "Skia / CPU raster". */
     val rendererName: String
-        get() = when (val vMode = gpuMode) {
+        get() = when (gpuMode) {
             is GpuMode.Skia.Metal  -> "Skia / Metal"
             is GpuMode.Skia.OpenGL -> "Skia / OpenGL"
             is GpuMode.Software        -> "Skia / CPU raster"
-            is GpuMode.Sdl3 -> {
-                val vDriver = backend.renderer?.let {
-                    SDL_GetRendererName(it.reinterpret())?.toKString()
-                } ?: vMode.driverHint ?: "auto"
-                "SDL3 / $vDriver"
-            }
             is GpuMode.Auto -> "Auto (unresolved)"
         }
 

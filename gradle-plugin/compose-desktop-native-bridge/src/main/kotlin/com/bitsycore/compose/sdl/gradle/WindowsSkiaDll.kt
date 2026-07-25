@@ -7,8 +7,8 @@ import org.gradle.api.tasks.Copy
 // MARK: Windows Skia leg — runtime DLL provisioning
 // ==================
 //
-// When the mingwX64 target runs the Skia renderer (-PwindowsSkia=true), the app
-// links against the bitsycore skiko fork, whose Kotlin/Native binding calls into
+// The mingwX64 target renders through Skia (the SDL renderer was removed); the
+// app links against the bitsycore skiko fork, whose Kotlin/Native binding calls into
 // a runtime skiko-windows-x64.dll. Unlike the JVM — where skiko-awt bundles its
 // native lib inside the jar and a runtime loader extracts + LoadLibrary's it —
 // Kotlin/Native has NO runtime native-lib loader: the DLL is imported by the PE
@@ -21,14 +21,13 @@ private const val SKIKO_MINGW_VERSION_PROPERTY = "skikoMingwVersion"
 private const val DEFAULT_SKIKO_MINGW_VERSION = "0.150.1-mingw.1"
 
 /**
- * Provisions skiko-windows-x64.dll next to the mingwX64 executable(s) when the
- * Windows Skia leg is enabled (-PwindowsSkia=true). No-op otherwise. Version is
- * overridable via -PskikoMingwVersion. Called from installBridge at apply time;
- * the task hooks are lazy so targets that don't exist are simply not matched.
+ * Provisions skiko-windows-x64.dll next to the mingwX64 executable(s). mingwX64
+ * always renders through Skia (the SDL renderer was removed), so this is
+ * unconditional — the task hooks are lazy and only fire for mingw link/run, so
+ * projects without a mingwX64 target simply never resolve the DLL. Version is
+ * overridable via -PskikoMingwVersion. Called from installBridge at apply time.
  */
 internal fun installWindowsSkiaDll(inProject: Project) {
-	if (inProject.providers.gradleProperty("windowsSkia").orNull != "true") return
-
 	val vVersion = inProject.providers.gradleProperty(SKIKO_MINGW_VERSION_PROPERTY).orNull
 		?: DEFAULT_SKIKO_MINGW_VERSION
 

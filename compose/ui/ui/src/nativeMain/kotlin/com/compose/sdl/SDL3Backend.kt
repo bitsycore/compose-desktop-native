@@ -68,7 +68,6 @@ class SDL3Backend(
             is GpuMode.Skia.OpenGL -> SDL_WINDOW_OPENGL
             is GpuMode.Skia.Metal  -> SDL_WINDOW_METAL
             is GpuMode.Software        -> 0UL
-            is GpuMode.Sdl3        -> 0UL
             is GpuMode.Auto        -> error("unreachable")
         }
         window = SDL_CreateWindow(title, width, height, flags)
@@ -94,14 +93,9 @@ class SDL3Backend(
                     return false
                 }
             }
-            is GpuMode.Software, is GpuMode.Sdl3 -> {
-                // For Sdl3.* with a driver pin we steer SDL_CreateRenderer
-                // via SDL_HINT_RENDER_DRIVER. SDL3 looks the hint up the
-                // moment the renderer is created.
-                val vDriverHint = (gpuMode as? GpuMode.Sdl3)?.driverHint
-                if (vDriverHint != null) {
-                    SDL_SetHint("SDL_RENDER_DRIVER", vDriverHint)
-                }
+            is GpuMode.Software -> {
+                // Skia CPU raster: SkiaSurfaceBridge paints a host buffer that
+                // this SDL_Renderer uploads as a texture each frame.
                 renderer = SDL_CreateRenderer(window?.reinterpret(), null)
                 if (renderer == null) {
                     println("SDL_CreateRenderer failed: ${SDL_GetError()?.toKString()}")

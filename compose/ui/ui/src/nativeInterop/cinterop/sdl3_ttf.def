@@ -1,8 +1,0 @@
-headers = SDL3_ttf/SDL_ttf.h
-headerFilter = SDL3_ttf/**
-depends = sdl3
-
-# libSDL3_ttf.a is baked into the cinterop klib. See sdl3.def — the static
-# archive location is injected via :ui build.gradle.kts (-libraryPath).
-# No extra system libs beyond what sdl3.def / freetype.def already declare.
-staticLibraries = libSDL3_ttf.a

@@ -115,5 +115,5 @@ registerComposeFontBundling {
     autoDetectNotoSansMono = true
     bundleMaterialSymbols = true
 }
-// The Windows Skia leg's skiko-windows-x64.dll is provisioned automatically by
-// the bridge plugin (see installWindowsSkiaDll) under -PwindowsSkia=true.
+// The mingwX64 skiko-windows-x64.dll is provisioned automatically by the bridge
+// plugin (see installWindowsSkiaDll).

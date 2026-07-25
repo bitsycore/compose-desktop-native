@@ -1,25 +1,21 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :core — the renderer-agnostic Compose base + both renderer pipelines.
+// :ui — the Compose base + the Skia rendering pipeline (all native targets).
 //
 // Source-set hierarchy:
 //   commonMain
-//     └── nativeMain                 (vendored .native.kt + project SDL3 wrappers)
-//           ├── skikoRendererMain         (Skia drawing pipeline; Skiko on classpath)
-//           │     ├── skikoRendererMacosMain     (macOS-only Skia actuals — Metal bridge)
-//           │     └── skikoRendererLinuxMain     (Linux-only Skia actuals — OpenGL)
-//           │       attached: macosArm64Main / linuxX64Main / linuxArm64Main
-//           │       only when Skia path is active (default on macOS/Linux)
-//           └── sdlRendererMain           (SDL3 drawing pipeline + TTF/IMG/FreeType)
-//                 ├── sdlRendererMacosMain      (macOS-only SDL3 driver hint)
-//                 ├── sdlRendererLinuxMain      (Linux-only SDL3 driver hint)
-//                 └── sdlRendererMingwMain      (mingwX64-only SDL3 driver hint)
-//                   attached: mingwX64Main always; macOS/Linux when -Prenderer=sdl3
+//     └── nativeMain                        (vendored .native.kt + project SDL3 wrappers)
+//           ├── skikoRendererMain           (Skia pipeline; OFFICIAL Skiko — macOS/Linux)
+//           │     ├── skikoRendererMacosMain    (macOS Metal bridge)  → macosArm64
+//           │     └── skikoRendererLinuxMain    (Linux OpenGL)        → linuxX64/Arm64
+//           └── skikoRendererMingwSharedMain (Skia pipeline; the bitsycore skiko FORK —
+//                 └── skikoRendererMingwMain    mingwX64 has no official Skiko klib) → mingwX64
 //
-// `-Prenderer=sdl3` flips macOS/Linux targets onto the SDL3 path. The
-// `:renderer-skia` and `:renderer-sdl3` sibling modules are gone — their code
-// lives here. `:window` depends only on `:core`; `createRenderBackend` comes
-// from whichever of the renderer source sets is active for the target.
+// SDL3 stays as the windowing / input / platform layer (the single `sdl3`
+// cinterop). The from-scratch SDL renderer and its SDL3_ttf / SDL3_image /
+// FreeType cinterops were removed — every target now renders through Skia.
+// `:window` depends only on this module and calls createRenderBackend() /
+// rendererPreferredGpuMode(), which resolve to the Skia actuals.
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -27,43 +23,12 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
 }
 
-// -Prenderer=sdl3 flips macOS/Linux targets onto sdlRendererMain (Skiko-free build).
-val useSdl3Everywhere = (findProperty("renderer") as? String) == "sdl3"
-
-// -PwindowsSkia=true flips mingwX64 onto the Skia leg, backed by the bitsycore
-// skiko fork's skiko-mingwx64 klib (Route 1a). Windows-host only; default off,
-// so the shipped Windows build stays on the SDL renderer.
-val useWindowsSkia = (findProperty("windowsSkia") as? String) == "true"
-
-// All targets pull headers from the in-repo static build tree at <repo>/libs,
-// populated by scripts/build-sdl/build-all.py (optionally one library at a time).
-// Same paths on macOS / Linux / Windows — the .def files are pathless and
-// rely on these -I injections. Cross-target cinterop indexing under
-// kotlin.mpp.enableCInteropCommonization is fine: clang silently ignores -I
-// dirs that don't exist, and the libs/ tree only has headers for the host
-// that built them (they aren't cross-installed).
+// SDL3 headers/libs from the in-repo static build tree at <repo>/libs
+// (scripts/build-sdl/build-all.py). The .def file is pathless and relies on
+// these -I / -libraryPath injections.
 val vLibs = "${rootDir.invariantSeparatorsPath}/libs"
-val vHostSdlInclude: String   = "$vLibs/SDL3/include"
-val vHostFtInclude: String    = "$vLibs/FreeType/include/freetype2"
-val vHostTtfInclude: String   = "$vLibs/SDL3_ttf/include"
-val vHostImageInclude: String = "$vLibs/SDL3_image/include"
-
-// Static-archive dirs for cinterop's `staticLibraries = …` directive. Same
-// paths on every host — cinterop only reads the one for the target being
-// built, so cross-target indexing on a host that hasn't built libs/ for a
-// foreign target is fine (cinterop skips the archive lookup).
-val vSdlLibDir: String   = "$vLibs/SDL3/lib"
-val vFtLibDir: String    = "$vLibs/FreeType/lib"
-val vTtfLibDir: String   = "$vLibs/SDL3_ttf/lib"
-val vImageLibDir: String = "$vLibs/SDL3_image/lib"
-
-// Renderer assignment per target. mingwX64 is always SDL3; macOS / Linux
-// default to Skia, switch to SDL3 under -Prenderer=sdl3.
-fun isSkiaTarget(targetName: String): Boolean = when (targetName) {
-    "mingwX64" -> useWindowsSkia
-    "macosArm64", "linuxX64", "linuxArm64" -> !useSdl3Everywhere
-    else -> false
-}
+val vHostSdlInclude: String = "$vLibs/SDL3/include"
+val vSdlLibDir: String = "$vLibs/SDL3/lib"
 
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
@@ -77,84 +42,24 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     targets.withType<KotlinNativeTarget>().all {
-        val vTargetName = name
-        // Whether this target compiles the SDL3 drawing pipeline. mingwX64 is
-        // always SDL3 (no Skiko on Windows); macOS / Linux switch to it only
-        // under -Prenderer=sdl3. SDL3 on macOS/Linux is a DEBUG target we don't
-        // ship in releases, so the default release build (Skia) skips the
-        // sdl3_ttf / sdl3_image / freetype cinterops entirely — one fewer set
-        // of system headers to install in CI, and a smaller klib footprint.
-        val vSdlRenderer = !isSkiaTarget(vTargetName)
-
-        // Path to the sdl3 cinterop output klib for this target — used to
-        // wire `depends = sdl3` in sdl3_ttf / sdl3_image / freetype below.
-        // Gradle does NOT auto-add the sdl3 klib to the dependent cinterop
-        // tasks' -library list, so cinterop generates its own SDL_Surface /
-        // SDL_Color inside sdl3_image / sdl3_ttf instead of reusing the sdl3
-        // ones. Passing the path explicitly via extraOpts forces the link.
-        val vSdl3Klib = layout.buildDirectory.dir(
-            "classes/kotlin/$vTargetName/main/cinterop/ui-cinterop-sdl3"
-        ).get().asFile.absolutePath
-
         compilations["main"].cinterops {
-            // sdl3 stays for every target — :window uses the SDL3 main-loop
-            // types (SDL_Window / SDL_Event / SDL_GetBasePath / …) regardless
-            // of the renderer choice.
+            // The one SDL3 cinterop — windowing / input / SDL_GetBasePath / … —
+            // used by every target regardless of GPU path.
             create("sdl3") {
                 defFile(project.file("src/nativeInterop/cinterop/sdl3.def"))
                 packageName("sdl3")
                 extraOpts("-compiler-options", "-I$vHostSdlInclude")
                 extraOpts("-libraryPath", vSdlLibDir)
             }
-            if (vSdlRenderer) {
-               create("sdl3_ttf") {
-                    defFile(project.file("src/nativeInterop/cinterop/sdl3_ttf.def"))
-                    packageName("sdl3_ttf")
-                    extraOpts("-library", vSdl3Klib)
-                    extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                    extraOpts("-compiler-options", "-I$vHostTtfInclude")
-                    extraOpts("-libraryPath", vTtfLibDir)
-                }
-                create("sdl3_image") {
-                    defFile(project.file("src/nativeInterop/cinterop/sdl3_image.def"))
-                    packageName("sdl3_image")
-                    extraOpts("-library", vSdl3Klib)
-                    extraOpts("-compiler-options", "-I$vHostSdlInclude")
-                    extraOpts("-compiler-options", "-I$vHostImageInclude")
-                    extraOpts("-libraryPath", vImageLibDir)
-                }
-                // FreeType powers variable-font axis rendering (FILL / wght /
-                // GRAD / opsz) on Material Symbols icons in the SDL3 path.
-                create("freetype") {
-                    defFile(project.file("src/nativeInterop/cinterop/freetype.def"))
-                    packageName("freetype")
-                    extraOpts("-compiler-options", "-I$vHostFtInclude")
-                    extraOpts("-libraryPath", vFtLibDir)
-                }
-            }
-        }
-
-        // Wire the task graph so cinteropSdl3_ttf/_image*Target run AFTER
-        // cinteropSdl3*Target — the -library reference above only points at
-        // the klib path; without a task dependency Gradle might run the
-        // dependent cinterop first and the path wouldn't exist yet.
-        if (vSdlRenderer) {
-            val vT = vTargetName.replaceFirstChar { it.uppercase() }
-            tasks.matching { it.name == "cinteropSdl3_ttf$vT" || it.name == "cinteropSdl3_image$vT" }
-                .configureEach { dependsOn("cinteropSdl3$vT") }
         }
     }
 
     sourceSets {
         commonMain {
             // Files vendored VERBATIM from upstream Compose by
-            // scripts/compose-fork/sync.sh. Kept in their own folder so it's
-            // obvious they are generated — never hand-edit; re-run sync instead.
+            // scripts/compose-fork/sync.sh. Never hand-edit; re-run sync.
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                // Split-out lower ui artifacts (CMP layout). The graphics/text/framework
-                // vendored code + renderers here import ui.util / ui.geometry / ui.unit /
-                // ui.backhandler from these modules.
                 api(project(":ui-util"))
                 api(project(":ui-geometry"))
                 api(project(":ui-unit"))
@@ -167,11 +72,6 @@ kotlin {
                 api("androidx.savedstate:savedstate-compose:1.5.0")
                 api("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
                 api("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
-                // Navigation 3 runtime — the backstack / NavEntry / scene model. Published for
-                // all our K/N targets (mingwX64 + macos/linux) and pulls only runtime / lifecycle /
-                // savedstate / collection / serialization (no androidx.compose.ui). The NavDisplay
-                // UI (androidx.navigation3:navigation3-ui) has NO K/N desktop artifact, so it's not
-                // here — a display is hand-rolled on the project's own ui/animation.
                 api("androidx.navigation3:navigation3-runtime:1.1.4")
                 api("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
                 implementation(libs.kotlinx.coroutines.core)
@@ -185,95 +85,52 @@ kotlin {
         }
 
         // ============
-        //  Renderer roots. Each is a child of nativeMain; per-platform
-        //  intermediates below attach to one of these. Only the renderer
-        //  source sets that will actually be attached are created, so Gradle
-        //  doesn't warn about unused source sets when the build is asymmetric
-        //  (e.g. -Prenderer=sdl3 wouldn't use any skikoRenderer* sets).
+        //  Skia renderer. macOS/Linux use the OFFICIAL Skiko; mingwX64 uses the
+        //  bitsycore skiko FORK (no official mingw klib), in a separate tree so
+        //  only mingw gets the fork coord.
 
-        val sdlRendererMain = create("sdlRendererMain") {
+        val skikoRendererMain = create("skikoRendererMain") {
             dependsOn(nativeMain.get())
-            // src/vendor/sdlRenderer/kotlin holds files vendored verbatim
-            // from upstream's skikoMain that are SDL3-friendly (no Skia refs)
-            // or whose SDL3 actual we provide; same "never hand-edit" rule
-            // as the other vendor srcDirs.
-            kotlin.srcDir("src/vendor/sdlRenderer/kotlin")
-            // SDL3_ttf / SDL3_image / freetype cinterop bindings come from
-            // the per-target cinterop block above; no separate Gradle deps.
+            // src/vendor/skikoRenderer/kotlin — upstream `skikoMain` files
+            // (Skia-tied actuals like BlendMode.skiko.kt) vendored verbatim.
+            kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
+            dependencies {
+                implementation(libs.skiko)
+            }
         }
-        // mingwX64 is SDL3 always — attach its intermediate only when the
-        // target itself was declared (host is Windows). Non-Windows hosts skip
-        // both the target and its source-set wiring.
-        if (vHostSupportsMingw && !useWindowsSkia) {
-            val sdlRendererMingwMain = create("sdlRendererMingwMain") { dependsOn(sdlRendererMain) }
-            mingwX64Main.get().dependsOn(sdlRendererMingwMain)
-        }
+        val skikoRendererMacosMain = create("skikoRendererMacosMain") { dependsOn(skikoRendererMain) }
+        val skikoRendererLinuxMain = create("skikoRendererLinuxMain") { dependsOn(skikoRendererMain) }
+        get("macosArm64Main").dependsOn(skikoRendererMacosMain)
+        get("linuxX64Main").dependsOn(skikoRendererLinuxMain)
+        get("linuxArm64Main").dependsOn(skikoRendererLinuxMain)
 
-        val macosArm64Main = get("macosArm64Main")
-        val linuxX64Main = get("linuxX64Main")
-        val linuxArm64Main = get("linuxArm64Main")
-
-        if (useSdl3Everywhere) {
-            // macOS / Linux flip to SDL3 — create the sdl intermediates.
-            val sdlRendererMacosMain = create("sdlRendererMacosMain") { dependsOn(sdlRendererMain) }
-            val sdlRendererLinuxMain = create("sdlRendererLinuxMain") { dependsOn(sdlRendererMain) }
-            macosArm64Main.dependsOn(sdlRendererMacosMain)
-            linuxX64Main.dependsOn(sdlRendererLinuxMain)
-            linuxArm64Main.dependsOn(sdlRendererLinuxMain)
-        } else {
-            // Default: macOS / Linux use Skia. Create the skiko tree.
-            val skikoRendererMain = create("skikoRendererMain") {
+        if (vHostSupportsMingw) {
+            // Route 1a: mingwX64 Skia leg on the fork. Two levels so the shared
+            // PlatformGpu expect (Shared) has its mingw actual (Mingw), mirroring
+            // the macos/linux split. Depends on the fork ROOT coord (not the
+            // platform artifact) so KMP variant-resolution exposes api-elements.
+            val skikoRendererMingwSharedMain = create("skikoRendererMingwSharedMain") {
                 dependsOn(nativeMain.get())
-                // src/vendor/skikoRenderer/kotlin holds upstream's `skikoMain`
-                // files (Skia-tied actuals / helpers like BlendMode.skiko.kt)
-                // vendored verbatim. Same "never hand-edit" rule.
+                kotlin.srcDir("src/skikoRendererMain/kotlin")
                 kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
                 dependencies {
-                    implementation(libs.skiko)
+                    // Published by the fork's CI to GitHub Packages; version
+                    // overridable via -PskikoMingwVersion=.
+                    implementation("org.jetbrains.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
                 }
             }
-            val skikoRendererMacosMain = create("skikoRendererMacosMain") { dependsOn(skikoRendererMain) }
-            val skikoRendererLinuxMain = create("skikoRendererLinuxMain") { dependsOn(skikoRendererMain) }
-            macosArm64Main.dependsOn(skikoRendererMacosMain)
-            linuxX64Main.dependsOn(skikoRendererLinuxMain)
-            linuxArm64Main.dependsOn(skikoRendererLinuxMain)
-
-            // Route 1a: mingwX64 Skia leg. Official Skiko has no mingw klib, so this
-            // is a SEPARATE tree pulling the bitsycore fork's skiko-mingwx64 (mavenLocal),
-            // kept out of skikoRendererMain (whose libs.skiko is the official coord) so
-            // macOS/Linux keep official Skiko and only mingw gets the fork. Two levels so
-            // the shared PlatformGpu expect (skikoRendererMingwSharedMain) has its mingw
-            // actual (skikoRendererMingwMain), mirroring the macos/linux split.
-            if (useWindowsSkia && vHostSupportsMingw) {
-                val skikoRendererMingwSharedMain = create("skikoRendererMingwSharedMain") {
-                    dependsOn(nativeMain.get())
-                    kotlin.srcDir("src/skikoRendererMain/kotlin")
-                    kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
-                    dependencies {
-                        // The bitsycore fork root; KMP variant-resolution selects mingwX64.
-                        // (Depending on the platform artifact skiko-mingwx64 directly does
-                        // NOT expose its api-elements — must go through the root module.)
-                        // Published by the fork's CI to GitHub Packages; version overridable
-                        // via -PskikoMingwVersion=.
-                        implementation("org.jetbrains.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
-                    }
-                }
-                val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }
-                mingwX64Main.get().dependsOn(skikoRendererMingwMain)
-            }
+            val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }
+            get("mingwX64Main").dependsOn(skikoRendererMingwMain)
         }
     }
 
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xcollection-literals",
-            // Silence the expect/actual-classes Beta warning that vendored files
-            // (e.g. ImageBitmap / Paint / Canvas / Path / ClipEntry) tripped. See
+            // Silence the expect/actual-classes Beta warning vendored files trip.
             // https://youtrack.jetbrains.com/issue/KT-61573.
             "-Xexpect-actual-classes",
             "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
-            // Vendored code is upstream foundation/ui, which their build compiles with these
-            // module-level opt-ins (e.g. lazy-layout prefetch uses ExperimentalFoundationApi).
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-opt-in=androidx.compose.ui.InternalComposeUiApi",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"

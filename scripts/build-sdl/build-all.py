@@ -5,15 +5,15 @@ into the executable as a STATIC library, installing each into <repo>/libs/.
 Runs on macOS, Linux, and Windows with plain Python 3 — no Git Bash, curl or
 cygpath needed. Replaces the former build-*.sh scripts.
 
-Build order matters — later libraries link the earlier ones:
-  1. freetype    -> libs/FreeType/lib/libfreetype.a
-  2. sdl3        -> libs/SDL3/lib/libSDL3.a
-  3. sdl3-image  -> libs/SDL3_image   (vendored PNG/JPG/SVG/WEBP; needs SDL3)
-  4. sdl3-ttf    -> libs/SDL3_ttf    (variable-font-axes patch; needs SDL3 + FreeType)
+Builds SDL3 (windowing / input / platform) as a static library:
+  sdl3        -> libs/SDL3/lib/libSDL3.a
+
+The SDL3_ttf / SDL3_image / FreeType libraries are no longer built: the project
+renders through Skia now, so the from-scratch SDL renderer and its glyph/image
+codecs were removed. Their builders remain in this file but are unused.
 
 Usage:
-  python3 build-all.py                 build everything, in order
-  python3 build-all.py sdl3 sdl3-ttf   build a subset (canonical order enforced)
+  python3 build-all.py                 build SDL3
 
 Everything is static + HarfBuzz/plutosvg-free, so the app links to a clean
 <app> + data.kres with no runtime .dylib / .so / .dll alongside.
@@ -45,7 +45,7 @@ from pathlib import Path
 kToolsDir = Path(__file__).resolve().parent
 kRepoRoot = kToolsDir.parent.parent
 kLibsDir = kRepoRoot / "libs"
-kBuildOrder = ["freetype", "sdl3", "sdl3-image", "sdl3-ttf"]
+kBuildOrder = ["sdl3"]
 
 # Compile flags shared by every library: size-optimised and sectioned so the
 # final link's --gc-sections can drop every function the app never calls.
@@ -524,10 +524,7 @@ def buildSdl3Ttf(inHost, inCc, inCxx):
 # ==================
 
 kBuilders = {
-	"freetype": buildFreetype,
 	"sdl3": buildSdl3,
-	"sdl3-image": buildSdl3Image,
-	"sdl3-ttf": buildSdl3Ttf,
 }
 
 
