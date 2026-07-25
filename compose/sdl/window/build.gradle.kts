@@ -1,8 +1,8 @@
 // :window — the module apps depend on. Owns nativeComposeWindow() (main loop,
 // recomposer lifecycle, event dispatch, Snapshot apply notifications).
-// Renderer selection happens entirely inside :core via source-set wiring
-// (skikoRendererMain vs sdlRendererMain) — this module just calls
-// `createRenderBackend(...)` and `rendererPreferredGpuMode()` from :core and
+// Renderer selection happens entirely inside :ui via source-set wiring
+// (skikoRendererMain — Skia-only) — this module just calls
+// `createRenderBackend(...)` and `rendererPreferredGpuMode()` from :ui and
 // the right symbol resolves per target.
 // Publication artifactId (when set up): compose-desktop-native.
 
@@ -23,15 +23,15 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    // sdl3.* types are api-exposed via :ui's cinterop klib — no separate
-    // sdl3 cinterop here.
+    // sdl3.* types are api-exposed via :ui → :sdl-core's cinterop klib — no
+    // separate sdl3 cinterop here.
 
     sourceSets {
         commonMain.dependencies {
             // api so apps depending on :window also get the compose re-impl,
-            // Res/resources, GpuMode, and the renderer pipeline from :core, plus
+            // Res/resources, GpuMode, and the renderer pipeline from :ui, plus
             // the foundation / animation-core / animation modules that were split
-            // out of :core (upstream Compose layout).
+            // out of :ui (upstream Compose layout).
             // Material widgets used to be re-exported from :material here; the
             // module was retired when :apidemo and :demo migrated to :material3.
             // Apps that want Material 3 widgets pull `implementation(project(":material3"))`

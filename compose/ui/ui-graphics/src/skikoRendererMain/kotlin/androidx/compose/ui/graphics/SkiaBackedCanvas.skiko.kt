@@ -17,11 +17,11 @@
 // DERIVED (copy + edit) from compose-multiplatform-core -- MANUAL VENDOR, NON-IDEMPOTENT.
 // VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt @ v1.12.0-beta03+dev4483
 // ONLY change vs upstream: this class also implements the port draw contracts
-// (NativeTextCanvas / NativePainterCanvas / NativeShadowCanvas / NativeFinishableCanvas) so
-// the port text engine (SkiaTextRenderer, P3.1 metrics) + resource-image cache + elevation
-// shadows keep working on the Skia leg, which now draws through THIS canvas instead of the
-// retired project SkiaCanvas. Bridged methods forward to `skiaLeafDrawer` using
-// `internalSkiaCanvas`. See RENDERER.md (B6.1, section 4).
+// (NativePainterCanvas / NativeShadowCanvas / NativeFinishableCanvas) so the
+// resource-image cache + elevation shadows keep working on the Skia renderer,
+// which draws through THIS canvas instead of the retired project SkiaCanvas.
+// Bridged methods forward to `skiaLeafDrawer` using `internalSkiaCanvas`.
+// See RENDERER.md (B6.1, section 4).
 
 package androidx.compose.ui.graphics
 

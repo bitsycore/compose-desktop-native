@@ -393,8 +393,8 @@ def main():
 	"""Parse the library selection, wire the host toolchain, and run the
 	selected build steps in canonical order."""
 	vParser = argparse.ArgumentParser(
-		description="Build the static SDL3 / SDL3_ttf / SDL3_image / FreeType "
-			+ "libraries into <repo>/libs/ (see build-sdl.properties for versions).")
+		description="Build the static SDL3 library into <repo>/libs/ "
+			+ "(see build-sdl.properties for versions).")
 	vParser.add_argument("libs", nargs="*", metavar="lib",
 		help="libraries to build: " + " ".join(kBuildOrder) + " (default: all, in order)")
 	vArgs = vParser.parse_args()

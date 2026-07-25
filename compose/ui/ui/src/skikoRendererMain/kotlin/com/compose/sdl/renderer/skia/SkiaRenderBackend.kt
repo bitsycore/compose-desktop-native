@@ -21,9 +21,9 @@ import org.jetbrains.skia.Color as SkColor
    sees concrete modes.
 
    B6.1: the composition draws through upstream's SkiaBackedCanvas (real
-   paint/shader/gradients). The port's text engine (SkiaTextRenderer) +
-   resource-image cache (SkiaImageCache) + elevation shadows ride behind it
-   via skiaLeafDrawer + the SkiaBackedCanvas manual-vendor. */
+   paint/shader/gradients). The resource-image cache (SkiaImageCache) +
+   elevation shadows ride behind it via skiaLeafDrawer + the SkiaBackedCanvas
+   manual-vendor. */
 internal class SkiaRenderBackend(
     private val sdl: SDL3Backend,
     private val gpuMode: GpuMode,
@@ -97,7 +97,7 @@ internal class SkiaRenderBackend(
         // Wrap the live skia canvas as upstream's SkiaBackedCanvas (real gradients/
         // paint/shader). Its port draw contracts forward to skiaLeafDrawer. The
         // ImageBitmap-backed offscreen (VectorPainter / DrawCache) now goes through
-        // upstream's own ActualCanvas, so no project offscreenRenderer registration.
+        // upstream's own ActualCanvas.
         val vCanvas = canvas.asComposeCanvas()
         inDraw(vCanvas)
         (vCanvas as? com.compose.sdl.graphics.NativeFinishableCanvas)?.finish()

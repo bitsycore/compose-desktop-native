@@ -62,8 +62,8 @@ private val mRowCountFontResolver = createFontFamilyResolver()
 actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inFamilyName: String?): Int {
     if (inText.isEmpty()) return 1
     // inFontPx is already physical pixels, so measure at density 1 (fontSize.value
-    // * density = inFontPx) and wrap at inMaxWidthPx px — same space the old
-    // currentTextMeasurer.wrap used. lineCount comes from skiko's paragraph layout.
+    // * density = inFontPx) and wrap at inMaxWidthPx px by building a Paragraph.
+    // lineCount comes from skiko's paragraph layout.
     val vStyle = TextStyle(
         fontSize = inFontPx.sp,
         fontFamily = inFamilyName?.let { namedFontFamily(it) },

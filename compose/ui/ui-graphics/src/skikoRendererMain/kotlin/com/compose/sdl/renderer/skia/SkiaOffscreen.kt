@@ -9,15 +9,15 @@ import org.jetbrains.skia.Image
 // MARK: SkiaEncodedImageDecoder
 // ==================
 
-/** Encoded-image decode hook impl for the Skia renderer — the counterpart of
-   Sdl3EncodedImageDecoder, consumed by :components-resources' actuals
-   (painterResource / SVG). Raster formats go through Image.makeFromEncoded;
-   when that fails the bytes are retried as SVG through the same SVGDOM
-   rasterisation SkiaImageCache uses. Pure CPU raster (no GrContext), so it is
-   safe on the resources pipeline's Dispatchers.Default workers.
+/** Encoded-image decode hook impl for the Skia renderer, consumed by
+   :components-resources' actuals (painterResource / SVG). Raster formats go
+   through Image.makeFromEncoded; when that fails the bytes are retried as SVG
+   through the same SVGDOM rasterisation SkiaImageCache uses. Pure CPU raster
+   (no GrContext), so it is safe on the resources pipeline's Dispatchers.Default
+   workers.
 
    B6.1: produces an UPSTREAM ImageBitmap (Image.toComposeImageBitmap) — the Skia
-   leg now uses upstream's SkiaBackedCanvas/SkiaImageAsset, so the offscreen +
+   renderer uses upstream's SkiaBackedCanvas/SkiaImageAsset, so the offscreen +
    ImageBitmap-backed paths go through upstream's own actuals (the project
    SkiaImageBitmap / SkiaOffscreenRenderer are retired). */
 class SkiaEncodedImageDecoder : EncodedImageDecoder {

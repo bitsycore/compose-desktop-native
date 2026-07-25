@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 // :foundation — androidx.compose.foundation.* AND androidx.compose.animation.*
-// (non-core) vendored VERBATIM from upstream. Sits on :core (which still owns
-// androidx.compose.ui.*, both renderers, cinterops) + :animation-core.
+// (non-core) vendored VERBATIM from upstream. Sits on :ui (which still owns
+// androidx.compose.ui.*, the Skia renderer, cinterops) + :animation-core.
 //
 // Why the two upstream modules (`:animation` and `:foundation`) are combined
 // here: upstream splits `foundation-layout` off from `foundation`, then has
@@ -20,9 +20,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // Note on DarkTheme: foundation declares `internal expect fun _isSystemInDarkTheme()`,
 // and its actual lives here as a plain nativeMain kt file (see
 // src/nativeMain/kotlin/androidx/compose/foundation/DarkTheme.native.kt) — a single
-// stub returning false. The upstream skiko/sdl per-renderer actuals were dropped
-// when :foundation was split from :core: expect/actual must live in the same
-// module, and duplicating the skikoRenderer/sdlRenderer source-set hierarchy on
+// stub returning false. The upstream skiko per-renderer actuals were dropped
+// when :foundation was split from :ui: expect/actual must live in the same
+// module, and duplicating the skikoRenderer source-set hierarchy on
 // :foundation just to read `LocalSystemTheme` on the Skia path was more build
 // wiring than is worth it for one function no in-repo app calls.
 //

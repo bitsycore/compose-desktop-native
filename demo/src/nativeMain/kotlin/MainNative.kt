@@ -40,7 +40,7 @@ import kotlinx.cinterop.toKString
 
 fun main(args: Array<String>) {
     // Phase 9 B4 probes (`--pipetest=<path.bmp>` / `--inputtest`) were retired
-    // during the :core/:foundation split — they lived in :core's sdlRendererMain
+    // during the :ui/:foundation split — they lived in the retired SDL renderer
     // but relied on foundation's Modifier.background / .clickable, which moved
     // to :foundation. Reachable via git history if anyone needs them again.
     if (args.any { it.startsWith("--pipetest") || it == "--inputtest" }) {
@@ -97,14 +97,14 @@ fun main(args: Array<String>) {
         runScrollTest()
         return
     }
-    // Verifies the vendored text-paragraph engine: builds a real upstream Paragraph (bridged to the
-    // SDL TextMeasurer via SdlParagraph) and checks width-wrapping + offset<->position geometry.
+    // Verifies the vendored text-paragraph engine: builds a real upstream Paragraph (SkiaParagraph)
+    // and checks width-wrapping + offset<->position geometry.
     if (args.any { it == "--paragraphtest" }) {
         runParagraphTest()
         return
     }
     // Prints Paragraph cell/line metrics for a size sweep — compare against the JVM
-    // leg's `--metrics` output to align the SDL text metrics with upstream (P3.1).
+    // leg's `--metrics` output to align the native text metrics with upstream (P3.1).
     if (args.any { it == "--metricsprobe" }) {
         runMetricsProbe()
         return
@@ -508,12 +508,12 @@ private fun runSearchEscTest() {
    reproduce under --screen, which composes during the initial CREATED composition.
    PASS = a screenshot gets written and the app exits cleanly. */
 /** P2.2 soak — cycle through EVERY registered screen kCycles times in ONE process,
-   disposing each via a changing key() so composition + layer (skiko RenderNode / SDL
-   node) allocate-and-release is exercised repeatedly. After each full cycle, GC then
+   disposing each via a changing key() so composition + layer (skiko RenderNode)
+   allocate-and-release is exercised repeatedly. After each full cycle, GC then
    record peak RSS (getrusage ru_maxrss). Peak RSS is monotonic, so after cycle 1 it
    already reflects visiting every screen once; if there is NO leak it plateaus, if
    there IS one it keeps climbing each cycle. PASS iff last-cycle peak stays within a
-   ceiling of the first-cycle peak. Runs on both renderer legs. */
+   ceiling of the first-cycle peak. */
 @OptIn(kotlin.native.runtime.NativeRuntimeApi::class, ExperimentalForeignApi::class)
 private fun runSoakTest() {
     // Disable never-settling animations so RSS reflects composition/layer lifetime,
@@ -980,8 +980,8 @@ private fun runDialogAnimTest() {
     }
 }
 
-/** Boots a real window (installs the SDL TextMeasurer), then builds an upstream Paragraph via the
-   vendored factory (→ SdlParagraph) for a long string constrained to a narrow width. Verifies it
+/** Boots a real window, then builds an upstream Paragraph via the
+   vendored factory (→ SkiaParagraph) for a long string constrained to a narrow width. Verifies it
    wrapped to multiple lines, has positive size, and that getHorizontalPosition/getOffsetForPosition
    round-trip — proving the paragraph-engine measurement bridge works. */
 private fun runParagraphTest() {
@@ -1004,7 +1004,7 @@ private fun runParagraphTest() {
                 val vLine = vP.getLineForOffset(30)
                 println("paragraphtest: lineCount=${vP.lineCount} w=${vP.width} h=${vP.height} hpos(3)=$vHpos offBack=$vOffBack lineFor(30)=$vLine")
                 val vPass = vP.lineCount >= 2 && vP.height > 0f && vP.width > 0f && vOffBack in 2..4
-                println(if (vPass) "paragraphtest: PASS (real width-wrapped Paragraph via SdlParagraph)" else "paragraphtest: FAIL")
+                println(if (vPass) "paragraphtest: PASS (real width-wrapped Paragraph via SkiaParagraph)" else "paragraphtest: FAIL")
                 false
             } else true
         },

@@ -1,6 +1,9 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :ui — the Compose base + the Skia rendering pipeline (all native targets).
+// :ui — the Compose core + the Skia rendering pipeline + the SDL bridges
+// (all native targets). androidx.compose.ui.graphics.* / .text.* were split out
+// to :ui-graphics / :ui-text, and the sdl3 cinterop now lives in :sdl-core;
+// :ui depends on both.
 //
 // Source-set hierarchy:
 //   commonMain
@@ -12,8 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 //                 └── skikoRendererMingwMain    mingwX64 has no official Skiko klib) → mingwX64
 //
 // SDL3 stays as the windowing / input / platform layer (the single `sdl3`
-// cinterop). The from-scratch SDL renderer and its SDL3_ttf / SDL3_image /
-// FreeType cinterops were removed — every target now renders through Skia.
+// cinterop, now in :sdl-core). Every target renders through Skia.
 // `:window` depends only on this module and calls createRenderBackend() /
 // rendererPreferredGpuMode(), which resolve to the Skia actuals.
 

@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Outline
 // MARK: NativeShadowCanvas (render bridge)
 // ==================
 
-/** Drop-shadow bridge, same shape as NativeTextCanvas / NativePainterCanvas:
+/** Drop-shadow bridge, same shape as NativePainterCanvas:
    the render nodes call it when a layer carries shadowElevation > 0
    (Modifier.shadow, m3 Surface tonal+shadow elevation). The outline is the
    layer's resolved shape in LAYER-LOCAL pixels — the canvas is already
@@ -15,9 +15,7 @@ import androidx.compose.ui.graphics.Outline
    paint BEFORE the layer's clip (it lives outside the bounds).
 
    Implementations:
-   - SkiaBackedCanvas — a real Gaussian blur MaskFilter on the outline.
-   - Sdl3Canvas — cached shadow tiles (Sdl3ShadowCache) blitted via 9-slice
-     (the SDL 2D renderer has no shader/blur primitive). */
+   - SkiaBackedCanvas — a real Gaussian blur MaskFilter on the outline. */
 interface NativeShadowCanvas {
 	fun drawDropShadow(
 		inOutline: Outline,

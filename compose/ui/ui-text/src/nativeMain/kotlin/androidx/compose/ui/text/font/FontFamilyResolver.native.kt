@@ -10,7 +10,7 @@ package androidx.compose.ui.text.font
  *     that-isn't-a-FontListFontFamily" adapter. Upstream's skiko actual routes
  *     `Default`, `SansSerif`, `Serif`, `Monospace`, `Cursive`, and `LoadedFontFamily`
  *     through `SkiaFontLoader` to produce a real `SkTypeface`. Our text renderer
- *     (SdlParagraph / SkiaParagraph) reads `TextStyle.fontFamily` and
+ *     (SkiaParagraph) reads `TextStyle.fontFamily` and
  *     [com.compose.sdl.text.NamedFont] directly to look the family up
  *     against its registered font table, so the resolver's typeface is never
  *     consulted. A no-op adapter (returns an [TypefaceResult.Immutable] wrapping

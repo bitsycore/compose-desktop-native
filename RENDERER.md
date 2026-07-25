@@ -28,12 +28,12 @@ stack, vendored verbatim: `SkiaBackedCanvas`, `SkiaBackedPaint`, `SkiaShader`,
 upstream. macOS/Linux link the official Skiko klibs; mingwX64 links the
 bitsycore skiko **fork** (`skikoRendererMingwMain`, Route 1a).
 
-The text and image pipeline (`SdlParagraph`, `NativeTextMeasurer`, `IconFont`)
-is the port's own engine; glyph rasterization is Skia. GPU path per platform:
-Metal (macOS), OpenGL (Linux + Windows), with a CPU-raster `Software` fallback.
+The text pipeline is now upstream's own `SkiaParagraph` (skparagraph, vendored
+verbatim); glyph rasterization is Skia. GPU path per platform: Metal (macOS),
+OpenGL (Linux + Windows), with a CPU-raster `Software` fallback.
 
 The seam is kept as narrow and low as possible. Code flows
-`Common (upstream) -> shared native engine -> Skia actual / SDL actual`. What we
+`Common (upstream) -> shared native engine -> Skia actual`. What we
 minimize is hand-rolled actual surface, not actual-side line count: a fat
 vendored-upstream actual (the Skia leg carrying upstream's whole GraphicsLayer
 stack) is preferred over a thin hand-written one.
@@ -96,26 +96,21 @@ The compositing-strategy contract (`requiresLayer()`, from
   upstream does? If not, what real platform constraint forces the difference?"
   Valid answers name a constraint (e.g. no windowing/input toolkit in K/N ->
   SDL3). "It was easier" is not valid.
-- **Text stays the port's engine (B6.3 skipped).** Making Skia-leg text truly
-  upstream (`SkiaParagraph`) is a font-subsystem replacement, not a canvas swap:
-  two coexisting font-identity models (the port's name-to-bytes `IconFont` +
-  no-op resolver vs upstream `PlatformFont`/`FontCache`/`FontCollection`), about
-  13 skiko files to re-vendor, about 10 shared actuals to split, a
-  `data.kres`-to-`FontCache` bridge, no green intermediate, and it discards the
-  P3.1 metrics work. ROI is low: the Skia leg already measures text with skiko
-  `Font` metrics (via `currentTextMeasurer` -> `SkiaTextRenderer`), which is how
-  parity reached about 2%. Revisit only if complex-script/bidi fidelity becomes
-  a hard requirement.
-- **Module split (`:ui-graphics` / `:ui-text`) is shelved as infeasible.** Not
-  cosmetic churn as originally scoped: the `sdl3` cinterop is a shared substrate
-  used by 11 graphics-side files AND 12 platform/windowing/node/resources files
-  that stay in `:ui`. Kotlin/Native cannot cleanly share a cinterop klib across a
-  module boundary, which is exactly why they were merged. A real split needs a
-  new non-upstream `:ui-cinterop` base module plus cross-module cinterop
-  api-exposure, which is bigger and more divergent than the "match upstream
-  artifacts" goal it was meant to serve. The one keeper from the attempt:
-  `RenderBackend.drawRoot` now takes `(Canvas) -> Unit`, decoupling the backends
-  from `ComposeRootHost` (a genuine improvement, retained).
+- **Text is now upstream's engine (B6.3 done).** Skia-leg text draws through
+  upstream's own `SkiaParagraph` (skparagraph), vendored verbatim — the
+  font-subsystem replacement landed: upstream `PlatformFont`/`FontCache`/
+  `FontCollection` back a `data.kres`-fed font supply, replacing the port's
+  name-to-bytes engine. glyph rasterization stays Skia. This subsumes the P3.1
+  metrics work (measurement is now upstream's, so the numbers match by
+  construction).
+- **Module split (`:ui-graphics` / `:ui-text`) is done.** The blocker — the
+  `sdl3` cinterop being a shared substrate that Kotlin/Native can't cleanly
+  share across a module boundary — was resolved by extracting a non-upstream
+  `:sdl-core` base module that owns the cinterop and api-exposes it. With that
+  base in place, `androidx.compose.ui.graphics.*` / `.text.*` split off into
+  `:ui-graphics` / `:ui-text` (matching upstream artifacts), leaving `:ui` as
+  the Compose core + Skia renderer + SDL bridges. `RenderBackend.drawRoot` takes
+  `(Canvas) -> Unit`, decoupling the backends from `ComposeRootHost`.
 - **Real Skia on Windows K/N shipped (Route 1a).** mingwX64 links the bitsycore
   skiko fork against `skiko-windows-x64.dll` (with an embedded GNU import lib),
   published to GitHub Packages and auto-provisioned by the bridge plugin. This
@@ -131,12 +126,12 @@ The compositing-strategy contract (`requiresLayer()`, from
 | B2: Skia leg on upstream GraphicsLayer/GraphicsContext | Done |
 | B6.1: Skia leg on upstream `SkiaBackedCanvas` + paint/shader | Done |
 | B6.2: upstream `GraphicsLayer` + delete transient port cluster | Done |
-| B6.3: upstream text (`SkiaParagraph`) on the Skia leg | Skipped (decision) |
+| B6.3: upstream text (`SkiaParagraph`) on the Skia leg | Done |
 | B5: engine-convergence deltas audit | Done (clean wins spent by B6) |
 | P2.2: composition memory leak | Fixed + soak-gated |
 | P2.3: outsets / blur / renderEffect | Done via upstream `SkiaGraphicsLayer` |
 | P3.1: text metrics parity (17% median -> 2%) | Done |
-| Module split | Shelved (infeasible as specified) |
+| Module split (`:ui-graphics` / `:ui-text` via `:sdl-core`) | Done |
 | Track A: real Skia on Windows (Route 1a) | Done |
 
 ## 6. Remaining and future work
@@ -215,5 +210,5 @@ remembering.
   hit-test, event dispatch, snapshot observer sweep.
 - `compose/ui/ui/src/commonMain/.../node/impl/ComposeOwner.kt`: the project
   `Owner` + `GraphicsLayerOwnerLayer` bridge.
-- `compose/ui/ui/src/nativeMain/.../ui/text/SdlParagraph.native.kt`: the bridged
-  `Paragraph` (measurement, hit-test, line metrics, span painting).
+- `compose/ui/ui-text/src/nativeMain/.../ui/text/SkiaParagraph.native.kt`: the
+  upstream `Paragraph` actual (measurement, hit-test, line metrics, span painting).

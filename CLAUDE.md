@@ -46,8 +46,10 @@ re-implements the layers on top (`androidx.compose.ui.*`, `.foundation.*`,
 ## Module layout
 
 Library modules mirror upstream Compose Multiplatform's `compose/` tree.
-Only `:window` is the SDL integration layer ("Compose SDL" — SDL3 main loop)
-and lives under `compose/sdl/`.
+The SDL layer is two modules: `:sdl-core` (the NAKED sdl3 cinterop + platform
+primitives — zero Compose dep, like `skiko`) at `sdl/sdl-core/`, and `:window`
+(the SDL3 main-loop shell) under `compose/sdl/`. `:ui` depends on `:sdl-core`
+and its renderer + SDL↔Compose bridges pick the cinterop from it.
 
 One Gradle module per upstream artifact; the directory mirrors the upstream
 `compose/` path, the gradle path is kept short (redirected via `projectDir`).
@@ -55,10 +57,18 @@ One Gradle module per upstream artifact; the directory mirrors the upstream
 ```
 compose/
 ├── ui/
-│   ├── ui/                          → :ui        — androidx.compose.ui.* (ui + ui-graphics + ui-text) +
-│   │                                               com.compose.sdl.* — the sdl3 cinterop + the Skia renderer
-│   │                                               pipeline live here. ui-graphics/ui-text can't split off: their
-│   │                                               Canvas / Paragraph `expect`s are the renderer's `actual`s (same-module).
+│   ├── ui/                          → :ui        — androidx.compose.ui.* CORE (Modifier, LayoutNode,
+│   │                                               composition, semantics, input, focus) + com.compose.sdl.* —
+│   │                                               the Skia RenderBackend + GPU bridges + the SDL↔Compose
+│   │                                               bridges (events / clipboard / cursors / window). Depends on
+│   │                                               :ui-graphics, :ui-text, :sdl-core. (ui-graphics + ui-text +
+│   │                                               the sdl3 cinterop were split OUT — upstream layout.)
+│   ├── ui-graphics/                 → :ui-graphics — androidx.compose.ui.graphics.* + the Skia actuals
+│   │                                               (SkiaBackedCanvas/Path/Paint, GraphicsLayer, SkiaImageCache,
+│   │                                               painter/image + resource seams). → skiko; SDL-free.
+│   ├── ui-text/                     → :ui-text   — androidx.compose.ui.text.* + the skiko text engine
+│   │                                               (SkiaParagraph → NativeParagraphOps → SkiaFonts, IconFont,
+│   │                                               NamedFont). → :ui-graphics, skiko; SDL-free.
 │   ├── ui-util/                     → :ui-util       — androidx.compose.ui.util.* (+ Experimental/InternalComposeUiApi)
 │   ├── ui-geometry/                 → :ui-geometry   — androidx.compose.ui.geometry.*
 │   ├── ui-unit/                     → :ui-unit       — androidx.compose.ui.unit.*
@@ -199,16 +209,20 @@ androidx KMP libs.
 All edges are `api`, so a consumer of `:foundation` / `:material3` transitively
 sees the split modules. Full DAG: `:ui-util → collection`; `:ui-geometry → :ui-util`;
 `:ui-unit → :ui-geometry, :ui-util`; `:ui-backhandler → :ui-util, navigationevent`;
-`:ui → :ui-util, :ui-geometry, :ui-unit, :ui-backhandler`; `:animation-core → :ui`;
+`:sdl-core → sdl3 cinterop (NAKED — no Compose)`;
+`:ui-graphics → :ui-geometry, :ui-unit, :ui-util, skiko`;
+`:ui-text → :ui-graphics, :ui-unit, :ui-util, skiko`;
+`:ui → :ui-graphics, :ui-text, :sdl-core, :ui-util, :ui-geometry, :ui-unit, :ui-backhandler`; `:animation-core → :ui`;
 `:foundation-layout → :ui`; `:animation → :animation-core, :foundation-layout`;
 `:foundation → :animation, :foundation-layout, :animation-core, :ui`;
 `:material-ripple → :foundation, :animation-core`;
 `:material3 → :foundation, :material-ripple, :animation-core, :foundation-layout`.
 
-`:ui` is the renderer/cinterop hub (the ui-graphics + ui-text `expect`s resolve to
-its Skia renderer `actual`s). The pure lower artifacts (`:ui-util`,
-`:ui-geometry`, `:ui-unit`, `:ui-backhandler`) are split out below it. Everything
-above `:ui` can only touch renderer / cinterop internals via its public surface.
+`:ui` is the Compose core + the Skia RenderBackend + the SDL↔Compose bridges; it
+sits on `:ui-graphics` / `:ui-text` (the graphics/text primitives + their skiko
+`actual`s, SDL-free) and the naked `:sdl-core` (sdl3 cinterop). The pure lower
+artifacts (`:ui-util`, `:ui-geometry`, `:ui-unit`, `:ui-backhandler`) are below.
+Everything above `:ui` touches renderer internals only via its public surface.
 `:window` depends on `:ui` + `:foundation` (needs `LazyList`-style scaffolding to
 install the popup / scaffold layer at the composition root).
 
@@ -292,11 +306,12 @@ Two categories of code live in each module:
    reconciled by hand. This is fine; do it when the edit is small and
    the file is unlikely to churn upstream.
 
-4. **Skiko-specific things go in `:ui/src/skikoRendererMain/`.** When upstream
-   ships a `.skiko.kt` file that uses Skiko's Canvas / Paragraph / …, the
-   `.skiko.kt` variant is fine to vendor into `skikoRendererMain` (the Skia
-   drawing pipeline — `SkiaCanvas.kt`, `SkiaTextRenderer.kt`,
-   `SkiaImageCache.kt`, …). All native targets attach this source set;
+4. **Skiko-specific things go in a `skikoRendererMain` source set.** When
+   upstream ships a `.skiko.kt` file that uses Skiko's Canvas / Paragraph / …,
+   the `.skiko.kt` variant is fine to vendor into `skikoRendererMain` — graphics
+   into `:ui-graphics` (`SkiaBackedCanvas.skiko.kt`, `SkiaImageCache.kt`, …),
+   text into `:ui-text` (`SkiaParagraphEngine.kt`), the render backend into
+   `:ui` (`SkiaRenderBackend.kt`). All native targets attach this source set;
    mingwX64 layers its fork actuals on top under `skikoRendererMingwMain`.
 
 5. **Multi-OS project code goes through SDL3, not hand-rolled per-target
@@ -315,7 +330,9 @@ call sites don't care.
 
 ## Source-set hierarchy (:ui only)
 
-`:ui` owns the `sdl3` cinterop + the Skia renderer pipeline. Its source-set tree:
+`:ui` owns the Skia RenderBackend + GPU bridges. The SAME source-set tree is used
+by `:ui-graphics` / `:ui-text` for their skiko `actual`s (only the deps differ);
+the `sdl3` cinterop lives in `:sdl-core` (see below). `:ui`'s tree:
 
 ```
 commonMain
@@ -339,12 +356,15 @@ fails to come up.
 
 ### Cinterop
 
-`:ui` owns ONE cinterop in `src/nativeInterop/cinterop/`: `sdl3` (SDL_Window /
-SDL_Event / SDL_GetBasePath / clipboard / dialogs / GL+Metal context /
-SDL_Renderer-for-CPU-raster). It has no siblings, so there's no
-`depends = <sibling>` propagation to worry about — cinterop `.def` files list
-each other under `depends =` and Gradle does NOT auto-add a sibling cinterop's
-klib to the `-library` list, but with a single cinterop that gotcha is moot.
+The `sdl3` cinterop lives in the NAKED `:sdl-core` module
+(`sdl/sdl-core/src/nativeInterop/cinterop/sdl3.def`: SDL_Window / SDL_Event /
+SDL_GetBasePath / clipboard / dialogs / GL+Metal context / SDL_Renderer-for-CPU-
+raster). `:ui` depends on `:sdl-core` (`api`), so `:ui`'s renderer + SDL↔Compose
+bridges — and `:window` downstream — see `sdl3.*` and inherit SDL3's static-lib +
+linker-opt propagation (the `.def` bakes in `staticLibraries = libSDL3.a` + the
+per-OS `linkerOpts`, carried through the klib chain to the final exe, so apps
+link SDL just by depending on `:ui`/`:window`). `:sdl-core` has NO Compose
+dependency, so `:ui → :sdl-core` is cycle-free — the compose way (like `ui → skiko`).
 
 ## Density flow (Option B — layout in physical pixels)
 
@@ -464,14 +484,15 @@ drift / vendor-clean guardrails are in
   alpha bridge).
 - `compose/ui/ui/src/commonMain/…/node/NodeApplier.kt`.
 
-### Text
-- `compose/ui/ui/src/nativeMain/…/ui/text/SdlParagraph.native.kt` — the
-  bridged `Paragraph` implementation (measurement, hit-test, line metrics,
-  span painting).
-- `compose/ui/ui/src/nativeMain/…/ui/text/ParagraphFactories.native.kt` —
+### Text (all in `:ui-text` now)
+- `compose/ui/ui-text/src/nativeMain/…/ui/text/SkiaParagraph.native.kt` — the
+  `Paragraph` actual (skiko-free; the 30 interface methods over plain data),
+  driving the skiko engine through the `NativeParagraphOps` seam.
+- `compose/ui/ui-text/src/skikoRendererMain/…/renderer/skia/SkiaParagraphEngine.kt`
+  — `SkiaParagraphOps` (builds/queries the real skiko `skparagraph`) + `SkiaFonts`
+  (data.kres bytes → skiko Typeface; the port's family/variable-axis model).
+- `compose/ui/ui-text/src/nativeMain/…/ui/text/ParagraphFactories.native.kt` —
   actuals for the `Paragraph(…)` / `ParagraphIntrinsics(…)` factory family.
-- `compose/ui/ui/src/commonMain/…/text/TextMeasurer.kt` — `NativeTextMeasurer`
-  interface (implemented by `SkiaTextRenderer`).
 
 ### Icons
 - `compose/foundation/foundation/src/nativeMain/…/icons/IconFontIcon.kt` —

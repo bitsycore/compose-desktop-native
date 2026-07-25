@@ -4,17 +4,15 @@ package com.compose.sdl
 // MARK: Renderer entry points (expect)
 // ==================
 
-/* The renderer seam :window builds against. Each renderer source set
-   (skikoRendererMain / sdlRendererMain) supplies the actuals; exactly one of
-   the two is attached to any given target, so resolution stays unambiguous.
+/* The renderer seam :window builds against. The skikoRendererMain source set
+   (attached to every native target) supplies the actual.
 
-   These were originally declared identically in both renderer source sets
-   with NO expect — fine per-target, but shared nativeMain METADATA (=: what
-   :window's KotlinMultiplatform publication compiles against) could not see
-   them on a host where the attached targets span BOTH renderers (Windows:
-   skikoRenderer for macos/linux + sdlRenderer for mingw). The expect makes
-   nativeMain metadata self-contained, which lets the WINDOWS publish job —
-   the only host that declares every target — produce the root modules. */
+   Declared as an expect in nativeMain — not just a plain fun in
+   skikoRendererMain — so shared nativeMain METADATA (what :window's
+   KotlinMultiplatform publication compiles against) can see the symbol.
+   Without the expect the actual would sit below nativeMain and be invisible to
+   nativeMain-level consumers on the WINDOWS publish job — the only host that
+   declares every target, and so the one that produces the root modules. */
 
 /** Create the render backend for the selected [GpuMode]; null when the
    backend can't initialise (caller falls back / reports). */

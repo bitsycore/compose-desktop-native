@@ -8,10 +8,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 
 /** Decodes an ENCODED image (png / jpg / webp / bmp / gif / svg bytes) into a
    drawable [ImageBitmap]. The active renderer registers its implementation at
-   backend construction — the SDL backend goes through SDL3_image
-   (Sdl3EncodedImageDecoder), the Skia backend through Image.makeFromEncoded /
+   backend construction — the Skia backend goes through Image.makeFromEncoded /
    SVGDOM (SkiaEncodedImageDecoder). :components-resources' actuals share this
-   hook under BOTH renderers (its skikoRendererMain reuses the SDL actuals).
+   hook.
 
    Consumed by `ByteArray.toImageBitmap` / `SvgElement.toSvgPainter` so
    painterResource(Res.drawable.x) works without that module reaching into

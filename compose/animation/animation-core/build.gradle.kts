@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 // :animation-core — androidx.compose.animation.core.* vendored VERBATIM from
 // upstream. Renderer-agnostic (spring/tween specs, animatable, transition,
-// vector math). Split out of :core so :core stays about renderer+ui glue only.
+// vector math). Split out of :ui so :ui stays about renderer+ui glue only.
 //
 // Provenance = animation-core/compose-fork.txt + scripts/compose-fork/compose.properties.
 // Never hand-edit files under animation-core/src/vendor/ — change the manifest and

@@ -4,8 +4,8 @@
 #   rgba : decode each PNG to a raw straight-alpha RGBA blob (8-byte header
 #          [width u32-le][height u32-le] + width*height*4 bytes) that the
 #          runtime loads with CORE SDL only (SDL_CreateSurface + memcpy →
-#          SDL_SetWindowIcon). No SDL3_image / Skia decode needed, so it works
-#          identically on every renderer and every target.
+#          SDL_SetWindowIcon). No image decoder needed, so it works on every
+#          target.
 #   ico  : assemble a multi-resolution Windows .ico (PNG-compressed entries,
 #          read straight from the source PNGs) for windres to embed as the
 #          executable's icon resource.

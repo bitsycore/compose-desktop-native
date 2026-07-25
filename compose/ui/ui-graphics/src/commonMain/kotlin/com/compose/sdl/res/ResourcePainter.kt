@@ -23,7 +23,7 @@ import com.compose.sdl.graphics.NativePainterCanvas
  the renderer, so this reduced type carries just the resource pointer.
 
  [onDraw] casts the current Canvas to [NativePainterCanvas] (implemented by
- Sdl3Canvas / SkiaCanvas) and delegates paint to the renderer's image cache.
+ SkiaBackedCanvas) and delegates paint to the renderer's image cache.
  If the Canvas doesn't implement NativePainterCanvas (offscreen layer capture
  for graphics-layer effects) the paint is skipped.
 */

@@ -4,11 +4,10 @@
 # mingwX64/linux variants, so the runtime library is vendored and the platform
 # actuals are project code:
 #   src/nativeMain      — ResourceReader (data.kres), getSystemEnvironment (SDL),
-#                         pure-Kotlin DomXmlParser (upstream's is Darwin NSXMLParser)
-#   src/sdlRendererMain — the Font/Image resource actuals: renderer-agnostic
-#                         project code (image decode via :ui's Skia decoder, Font
-#                         via the project font registry). Dir name is historical;
-#                         the build attaches it to nativeMain.
+#                         pure-Kotlin DomXmlParser (upstream's is Darwin NSXMLParser),
+#                         and the Font/Image resource actuals: renderer-agnostic
+#                         project code (image decode via the :ui-graphics Skia
+#                         decoder, Font via the project font registry)
 # Re-sync: python scripts/compose-fork/sync.py components/resources/library
 
 SET_REPO=https://github.com/JetBrains/compose-multiplatform@<COMPOSE_REF>
@@ -55,9 +54,9 @@ skikoMain/kotlin/org/jetbrains/compose/resources/ResourceReader.skiko.kt -> src/
 
 # Skia-bound pieces — upstream's skikoMain actuals rely on Compose-Desktop Skia
 # extensions (SystemFont / toComposeImageBitmap / nativeCanvas) this port's :ui
-# doesn't expose. The module's own Font/Image actuals (src/sdlRendererMain/kotlin/,
-# attached to nativeMain) use pure project APIs (IconFont / NamedFont /
-# decodeEncodedImageBitmap) instead, so opt the upstream Skia-bound files out.
+# doesn't expose. The module's own Font/Image actuals (src/nativeMain/kotlin/)
+# use pure project APIs (IconFont / NamedFont / decodeEncodedImageBitmap)
+# instead, so opt the upstream Skia-bound files out.
 !skikoMain/kotlin/org/jetbrains/compose/resources/ImageResources.skiko.kt
 !skikoMain/kotlin/org/jetbrains/compose/resources/FontResources.skiko.kt
 !skikoMain/kotlin/org/jetbrains/compose/resources/SvgPainter.kt

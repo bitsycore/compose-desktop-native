@@ -908,7 +908,7 @@ private fun buildBodyChunks(inText: String, inAnn: AnnotatedString, inLinesPerCh
 
 /** Offsets where each source line starts (line i spans [starts[ i], starts[i+1]-1),
 the -1 dropping the '\n'; the last line runs to the string end). One cheap O(n)
-scan, memoised — replaces the old gutter pre-pass that ran measurer.wrap() on
+scan, memoised — replaces the old gutter pre-pass that measured wrapping on
 every one of N lines on each width change (the other half of the freeze). */
 private fun lineStartOffsets(inText: String): IntArray {
     val vStarts = ArrayList<Int>(64)
@@ -963,10 +963,10 @@ internal fun BodyView(
     val vGutterWidth = (vDigits * 7 + 4).dp
     // Body wrap width (physical px, from onSizeChanged), reported by the body
     // Box once it's laid out (0 on the first frame). The gutter numbering
-    // depends on it — see vNumbers. NativeTextMeasurer.wrap expects the font
+    // depends on it — see vNumbers. Wrap measurement expects the font
     // size + max-width in the SAME unit (both physical px on Retina), so we
-    // scale 12.sp through the current density here, matching what SdlParagraph
-    // does when it builds the body's real paragraph.
+    // scale 12.sp through the current density here, matching what the paragraph
+    // engine does when it builds the body's real paragraph.
     var vBodyWidthPx by remember { mutableStateOf(0) }
     val vFontPx = with(LocalDensity.current) { 12.sp.toPx().toInt() }
     // Horizontal scroll for no-wrap mode (read-only body only); dormant when wrapping.

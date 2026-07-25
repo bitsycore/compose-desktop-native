@@ -24,9 +24,8 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsSharp
 
 /** The :material-symbols engine demos: the four variable-font axes (FILL /
    wght / GRAD / opsz), the animated fill transition, and the three style
-   families. Runs the SAME shared code on native (IconFont over SDL3_ttf-fork
-   / Skia) and JVM (Skiko direct) — differences between the builds = port
-   bugs. */
+   families. Runs the SAME shared code on native (IconFont over Skia) and JVM
+   (Skiko direct) — differences between the builds = port bugs. */
 @Composable
 internal fun MaterialSymbolsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -38,8 +37,8 @@ internal fun MaterialSymbolsScreen() {
 
         // ============
         //  Variable-font axes — each row pins everything except one axis.
-        //  Skia, the SDL3_ttf fork (TTF_SetFontAxisValue) and the JVM build
-        //  (Skiko Typeface.makeClone) all honour the axes.
+        //  Both native (Skia) and the JVM build (Skiko Typeface.makeClone)
+        //  honour the axes.
 
         Section(
             "Weight (wght 100..700)",

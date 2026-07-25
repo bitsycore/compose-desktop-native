@@ -40,11 +40,11 @@ kotlin {
 		}
 		nativeMain {
 			kotlin.srcDir("src/vendor/native/kotlin")
-			// The Font / Image resource actuals — pure project code that delegates
-			// to :ui's IconFont / NamedFont / decodeEncodedImageBitmap (the Skia
-			// decoder). Renderer-agnostic and skiko-free, so a single native set
-			// covers every target. (Dir name is historical — .sdl.kt.)
-			kotlin.srcDir("src/sdlRendererMain/kotlin")
+			// src/nativeMain/kotlin also holds the Font / Image resource actuals —
+			// pure project code that delegates to the project font registry
+			// (IconFont / NamedFont) and the :ui-graphics Skia decoder
+			// (decodeEncodedImageBitmap). Skiko-free, so a single native set covers
+			// every target.
 		}
 	}
 

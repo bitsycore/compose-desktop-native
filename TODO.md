@@ -94,7 +94,7 @@ calendar/clock/number prefs). These require a bundled CLDR subset or a K/N i18n 
   - `:62` `getDateInputFormat()` hardcoded `yyyy-MM-dd` / `'-'`. **Nice-to-have.**
   - `:65` `is24HourFormat()` hardcoded `true`. **Cosmetic.**
 - `compose/ui/ui/src/nativeMain/.../text/platform/NativeStringDelegate.native.kt:17` · `toUpperCase`/`toLowerCase` use locale-independent stdlib casing; the `locale` param is ignored (wrong for Turkish dotted/dotless i, etc.). **Cosmetic.**
-- `compose/ui/ui/src/nativeMain/.../text/intl/Locale.native.kt` · `Locale.isRtl()` not implemented; the pipeline is LTR-only (`SdlParagraph.native.kt` `getBidiRunDirection` always returns `Ltr`; owners/DrawScopes default `LayoutDirection.Ltr`). No RTL shaping. **Nice-to-have.**
+- `compose/ui/ui/src/nativeMain/.../text/intl/Locale.native.kt` · `Locale.isRtl()` not implemented; the pipeline is LTR-only (`SkiaParagraph.native.kt` hardcodes `textDirection = Ltr`, so `getParagraphDirection` always returns `Ltr`; owners/DrawScopes default `LayoutDirection.Ltr`). No RTL shaping. **Nice-to-have.**
 - No `NumberFormat` / currency / decimal-grouping actual exists; numbers render via `toString()` with `.` decimal and no grouping regardless of locale. **Cosmetic.**
 
 ## D. Font resolution
@@ -112,7 +112,7 @@ so the standard CMP way to bundle a font renders correctly.
 
 ## E. Text rendering details
 
-- `compose/ui/ui/src/nativeMain/.../text/SdlParagraph.native.kt:376` · `drawNativeText` accepts and ignores text `Shadow`, stroke `DrawStyle`, and non-`SrcOver` blend, so those never render on text. **Cosmetic.**
+- `compose/ui/ui-text/src/nativeMain/.../text/SkiaParagraph.native.kt` · text `Shadow` + `TextDecoration` now render (the `paint(...)` overloads forward them to `ops.rebuildAndPaint`), but stroke `DrawStyle` and non-`SrcOver` `blendMode` are still accepted and ignored, so those never render on text. **Cosmetic.**
 - `compose/foundation/.../text/StringHelpers.native.kt:31` and `compose/ui/ui/src/nativeMain/.../text/CharHelpers.native.kt:14` · `findPrecedingBreak`/`findFollowingBreak` (and `offsetByCodePoints`) do a codepoint/surrogate walk only, with no ICU grapheme clusters, so caret movement and backspace split combining marks and emoji ZWJ sequences. **Nice-to-have.**
 
 ## F. Drag and drop

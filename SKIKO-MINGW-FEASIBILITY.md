@@ -1,5 +1,10 @@
 # Skiko on mingwX64 — Feasibility & Effort Assessment
 
+> **STATUS: SHIPPED (Route 1a).** The real Skia leg now runs on mingwX64 via the
+> bitsycore skiko fork + `skiko-windows-x64.dll`. This document is retained as
+> **historical design context** — the feasibility findings and route trade-offs
+> that led to the shipped implementation.
+
 Investigation of the effort to run the real Skia leg (`org.jetbrains.skiko`)
 on the Kotlin/Native **mingwX64** target, under the relaxed constraint that a
 **DLL is acceptable** (the static / no-DLL invariant may be dropped). Companion

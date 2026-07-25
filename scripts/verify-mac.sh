@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # MAC-VERIFY runbook (P0.2, RENDERER.md) - the one-command gate for renderer work.
 #
-# Runs on macOS or Linux and exercises BOTH renderers:
+# Runs on macOS or Linux and exercises the Skia renderer (the only one now):
 #   0. DRIFT-CHECK: vendor-clean (sync.py + diff src/vendor, P0.7) + manual-vendor
 #      provenance tripwire (P0.6)
-#   1. Build :demo + :apidemo for the host target        (Skia leg, then -Prenderer=sdl3)
-#   2. Run the interaction probes on each leg, gate on their PASS/FAIL output
-#   3. Run scripts/parity/parity.py for each leg         (gates on baselines.json when seeded)
+#   1. Build :demo + :apidemo for the host target
+#   2. Run the interaction probes, gate on their PASS/FAIL output
+#   3. Run scripts/parity/parity.py                      (gates on baselines.json when seeded)
 #   4. CDN_PROFILE draw-ms spot-check on LazyColumn/Tabs (fails on >20% regression vs the
 #      last recorded run; build/verify-mac/perf-baseline.txt, seeded on first run)
 #
@@ -15,10 +15,7 @@
 #   scripts/verify-mac.sh --update-perf-baseline # re-seed the perf baseline first
 #
 # Notes:
-#   - Probes self-terminate on a frame counter; a hang means the leg is broken anyway.
-#   - Toggling -Prenderer= keys a separate Gradle configuration-cache entry; if the SDL
-#     leg fails with "couldn't find sdl3_ttf", rm -rf .gradle/configuration-cache (see
-#     CLAUDE.md "Common pitfalls") and re-run.
+#   - Probes self-terminate on a frame counter; a hang means the build is broken anyway.
 
 set -u
 
@@ -80,13 +77,11 @@ perf_check() { # $1=leg $2=screen
 
 # ============
 #  One leg = build + probes + parity + perf.
-run_leg() { # $1=skia|sdl3
+run_leg() { # $1=label (Skia everywhere now — the SDL renderer leg was removed)
 	local leg="$1"
-	local props=()
-	[ "$leg" = "sdl3" ] && props=(-Prenderer=sdl3)
 
 	note "[$leg] build :demo + :apidemo ($TARGET)"
-	if ! ./gradlew ${props[@]+"${props[@]}"} ":demo:linkDebugExecutable$TARGET" \
+	if ! ./gradlew ":demo:linkDebugExecutable$TARGET" \
 			":apidemo:linkDebugExecutable$TARGET" --console=plain; then
 		fail "[$leg] build"
 		return
@@ -102,8 +97,8 @@ run_leg() { # $1=skia|sdl3
 		fi
 	done
 
-	note "[$leg] parity ($leg leg)"
-	python3 scripts/parity/parity.py --renderer="$leg" || fail "[$leg] parity"
+	note "[$leg] parity (native Skia vs JVM)"
+	python3 scripts/parity/parity.py || fail "[$leg] parity"
 
 	# P2.2 memory soak: cycle every screen x6, assert current RSS doesn't ratchet up
 	# (regression guard for the snapshot-observation / dispose leak fixed in c59caf72).
@@ -126,8 +121,8 @@ python3 scripts/compose-fork/check-vendor-clean.py || fail "drift-check: src/ven
 note "drift-check: manual-vendor provenance"
 python3 scripts/compose-fork/check-vendor-drift.py || fail "drift-check: a manual vendor lags the pinned ref"
 
+# Single Skia renderer (the from-scratch SDL renderer leg was removed).
 run_leg skia
-run_leg sdl3
 
 # ============
 #  Summary
@@ -137,5 +132,5 @@ if [ ${#FAILURES[@]} -gt 0 ]; then
 	printf '  - %s\n' "${FAILURES[@]}"
 	exit 1
 fi
-echo "verify-mac: ALL GREEN (both legs: build + probes + parity + perf)"
+echo "verify-mac: ALL GREEN (build + probes + parity + perf)"
 exit 0

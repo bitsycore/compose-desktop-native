@@ -78,8 +78,8 @@ actual class ClipEntry internal constructor() {
 
 		/** Wrap already-PNG-encoded image bytes for [Clipboard.setClipEntry].
 		 *  The caller owns the encoding — Skia can produce these via
-		 *  `Image.encodeToData(EncodedImageFormat.PNG)`, SDL3_image via
-		 *  `IMG_SavePNG_IO`, or the bytes may come from an app resource. */
+		 *  `Image.encodeToData(EncodedImageFormat.PNG)`, or the bytes may come
+		 *  from an app resource. */
 		fun withImage(pngBytes: ByteArray): ClipEntry = ClipEntry().apply { imageBytes = pngBytes }
 	}
 }

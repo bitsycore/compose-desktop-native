@@ -20,9 +20,9 @@ object IconFont {
 
 	private val fFonts = mutableMapOf<String, ByteArray>()
 	// Families that render as single variable-axis glyphs (Material Symbols),
-	// vs ordinary text fonts. The SDL3 renderer routes only these through its
-	// single-glyph FreeType icon path; text families (e.g. a bundled
-	// monospace) must go through normal full-string rendering.
+	// vs ordinary text fonts — icon families are drawn one codepoint at a time,
+	// while text families (e.g. a bundled monospace) go through normal
+	// full-string rendering.
 	private val fIconFamilies = mutableSetOf<String>()
 
 	/** Register a TEXT font family's bytes (rendered as full strings; e.g. a

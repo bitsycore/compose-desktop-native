@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 
    The four Material Symbols variable-font axes (fill / weight / grade /
    opticalSize) come in via `fontVariationSettings`; use `MaterialIconAxes(…)`
-   to build the list. Skia honours the axes; SDL3_ttf 3.2 ignores them. */
+   to build the list. Skia honours the axes. */
 @Composable
 fun IconFontIcon(
 	codepoint: Int,

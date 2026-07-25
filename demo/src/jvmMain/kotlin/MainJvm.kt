@@ -148,7 +148,7 @@ private fun notoTypography(family: FontFamily): Typography {
 
 /** Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans — the same
    font the native leg bundles). The JVM half of the metrics-alignment probe: MainNative's
-   `--metricsprobe` prints the same table from SdlParagraph; aligning the numbers kills
+   `--metricsprobe` prints the same table from SkiaParagraph; aligning the numbers kills
    the accumulating vertical text drift in parity (P3.1). Runs inside a headless scene so
    LocalFontFamilyResolver supplies the platform resolver. */
 @OptIn(ExperimentalComposeUiApi::class)

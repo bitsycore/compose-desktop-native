@@ -64,7 +64,7 @@ import sdl3.SDL_WaitEventTimeout
  routes events per SDL window id.
 
  Per-window pumping order matters: the render-bridge globals
- (currentTextMeasurer / currentImageLoader / viewport) are per-renderer, so the
+ (currentImageLoader / viewport) are per-renderer, so the
  loop installs a window's globals before recomposing / laying out / drawing it.
 
  `nativeComposeWindow(...)` remains as the single-window wrapper (all demo
