@@ -7,22 +7,52 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 
 // ==================
-// MARK: ParagraphIntrinsics + Paragraph factory actuals (SDL)
+// MARK: ParagraphIntrinsics + Paragraph factory actuals (skiko engine)
 // ==================
+//
+// The `Paragraph()` / `ParagraphIntrinsics()` factories (expects in vendored
+// commonMain) resolve here to the skiko-backed engine. Because `:ui`'s native
+// hierarchy is nativeMain -> skiko (inverted vs upstream skiko -> native), the
+// real SkiaParagraph lives in the child skiko source set; these parent-level
+// actuals bridge to it through `makeSkiaParagraph` / `paragraphIntrinsicWidths`,
+// whose actuals sit in skikoRendererMain (compiled into both the official-skiko
+// and mingw-fork siblings). Same pattern as createRenderBackend.
 
-/** Carries text+style for the intrinsics-based Paragraph factories; intrinsic widths come from a
-   throwaway unbounded SdlParagraph. `density` here is the LocalDensity scalar (dpr on Retina); it
-   converts sp → pixels so the intrinsic widths land in the same pixel space the layout tree measures
-   itself in. */
-internal class SdlParagraphIntrinsics(
+/** Construct the nativeMain [SkiaParagraph] over a skiko-backed ops seam. */
+private fun makeSkiaParagraph(
+	text: String,
+	style: TextStyle,
+	width: Float,
+	maxLines: Int,
+	ellipsize: Boolean,
+	density: Float,
+	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+): Paragraph = SkiaParagraph(
+	text, style, width,
+	buildParagraphOps(text, style, width, maxLines, ellipsize, density, spanStyles),
+)
+
+/** [min, max] intrinsic width from a throwaway unbounded skiko layout. */
+internal expect fun paragraphIntrinsicWidths(
+	text: String,
+	style: TextStyle,
+	density: Float,
+	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+): FloatArray
+
+/** Carries text+style for the intrinsics-based Paragraph factories; intrinsic
+   widths come from an unbounded skiko layout. `density` is the LocalDensity
+   scalar (dpr on Retina): it converts sp → pixels so intrinsic widths land in
+   the same physical-pixel space the layout tree measures in. */
+internal class NativeParagraphIntrinsics(
 	val paragraphText: String,
 	val paragraphStyle: TextStyle,
 	val density: Float,
 	val spanStyles: List<AnnotatedString.Range<SpanStyle>> = emptyList(),
 ) : ParagraphIntrinsics {
-	private val probe = SdlParagraph(paragraphText, paragraphStyle, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density, spanStyles)
-	override val minIntrinsicWidth: Float = probe.minIntrinsicWidth
-	override val maxIntrinsicWidth: Float = probe.maxIntrinsicWidth
+	private val widths = paragraphIntrinsicWidths(paragraphText, paragraphStyle, density, spanStyles)
+	override val minIntrinsicWidth: Float = widths[0]
+	override val maxIntrinsicWidth: Float = widths[1]
 	override val hasStaleResolvedFonts: Boolean = false
 }
 
@@ -39,7 +69,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density, spanStyles)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -48,7 +78,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density, spanStyles)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -57,7 +87,7 @@ actual fun ParagraphIntrinsics(
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -67,12 +97,11 @@ actual fun ParagraphIntrinsics(
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	softWrap: Boolean,
-): ParagraphIntrinsics = SdlParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
 
-// AnnotatedString.Annotation is a sealed interface with subtypes SpanStyle,
-// ParagraphStyle, LinkAnnotation, StringAnnotation, TtsAnnotation, etc. Only
-// SpanStyle contributes to glyph rendering — the paint path knows how to
-// interpret it via drawNativeText's `inSpans` argument.
+// AnnotatedString.Annotation is a sealed interface (SpanStyle, ParagraphStyle,
+// LinkAnnotation, StringAnnotation, TtsAnnotation, …). Only SpanStyle affects
+// glyph layout/painting.
 @Suppress("UNCHECKED_CAST")
 private fun List<AnnotatedString.Range<out AnnotatedString.Annotation>>.filterSpanStyles():
 	List<AnnotatedString.Range<SpanStyle>> =
@@ -91,7 +120,7 @@ actual fun Paragraph(
 	width: Float,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): Paragraph = SdlParagraph(text, style, width, maxLines, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles)
 
 actual fun Paragraph(
 	text: String,
@@ -103,7 +132,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = SdlParagraph(text, style, width, maxLines, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles)
 
 actual fun Paragraph(
 	text: String,
@@ -115,7 +144,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, widthFrom(constraints), maxLines, ellipsis, density.density, spanStyles)
 
 actual fun Paragraph(
 	text: String,
@@ -127,7 +156,9 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	overflow: TextOverflow,
-): Paragraph = SdlParagraph(text, style, widthFrom(constraints), maxLines, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(
+	text, style, widthFrom(constraints), maxLines, overflow == TextOverflow.Ellipsis, density.density, spanStyles,
+)
 
 actual fun Paragraph(
 	paragraphIntrinsics: ParagraphIntrinsics,
@@ -135,8 +166,8 @@ actual fun Paragraph(
 	ellipsis: Boolean,
 	width: Float,
 ): Paragraph {
-	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, width, maxLines, vI.density, vI.spanStyles)
+	val i = paragraphIntrinsics as NativeParagraphIntrinsics
+	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, width, maxLines, ellipsis, i.density, i.spanStyles)
 }
 
 actual fun Paragraph(
@@ -145,8 +176,8 @@ actual fun Paragraph(
 	maxLines: Int,
 	ellipsis: Boolean,
 ): Paragraph {
-	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines, vI.density, vI.spanStyles)
+	val i = paragraphIntrinsics as NativeParagraphIntrinsics
+	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines, ellipsis, i.density, i.spanStyles)
 }
 
 actual fun Paragraph(
@@ -155,6 +186,9 @@ actual fun Paragraph(
 	maxLines: Int,
 	overflow: TextOverflow,
 ): Paragraph {
-	val vI = paragraphIntrinsics as SdlParagraphIntrinsics
-	return SdlParagraph(vI.paragraphText, vI.paragraphStyle, widthFrom(constraints), maxLines, vI.density, vI.spanStyles)
+	val i = paragraphIntrinsics as NativeParagraphIntrinsics
+	return makeSkiaParagraph(
+		i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines,
+		overflow == TextOverflow.Ellipsis, i.density, i.spanStyles,
+	)
 }
