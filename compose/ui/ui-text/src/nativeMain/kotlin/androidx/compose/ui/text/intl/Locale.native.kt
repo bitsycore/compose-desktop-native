@@ -64,4 +64,4 @@ actual class Locale actual constructor(languageTag: String) {
 // The OS's most-preferred locale (SDL); en-US before SDL init or on a host that
 // reports none. Cheap: the tag list is cached after the first non-empty read.
 private fun systemCurrentLocale(): Locale =
-	com.compose.sdl.text.systemPreferredLocaleTags().firstOrNull()?.let(::Locale) ?: Locale("en-US")
+	com.compose.sdl.res.preferredLocaleTagsProvider?.invoke()?.firstOrNull()?.let(::Locale) ?: Locale("en-US")

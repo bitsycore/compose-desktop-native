@@ -62,6 +62,7 @@ class SDL3Backend(
             SDL_GetSystemTheme() == SDL_SystemTheme.SDL_SYSTEM_THEME_DARK
         }
         com.compose.sdl.res.preferredLocaleProvider = ::sdlPreferredLocale
+        com.compose.sdl.res.preferredLocaleTagsProvider = { com.compose.sdl.text.systemPreferredLocaleTags() }
 
         if (gpuMode is GpuMode.Skia.OpenGL) {
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3)

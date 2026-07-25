@@ -20,7 +20,7 @@ import androidx.compose.ui.text.input.TextFieldValue
  SDL_TEXT_INPUT_EVENT), replace this with a real implementation.
 */
 @Suppress("DEPRECATION")
-internal object NoOpPlatformTextInputService : PlatformTextInputService {
+object NoOpPlatformTextInputService : PlatformTextInputService {
 	override fun startInput(
 		value: TextFieldValue,
 		imeOptions: ImeOptions,

@@ -1,0 +1,256 @@
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/ui/ui-text/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/ui/text/AnnotatedString.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/AnnotatedString.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/AtomicReference.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/AtomicReference.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/Bullet.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/Bullet.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/CharHelpers.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/CharHelpers.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/ExperimentalTextApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/ExperimentalTextApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/InternalTextApi.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/InternalTextApi.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/LinkAnnotation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/LinkAnnotation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/LinkInteractionListener.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/MultiParagraph.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraph.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/MultiParagraphIntrinsics.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/Paragraph.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/Paragraph.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/ParagraphStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/ParagraphStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/Placeholder.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/Placeholder.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/PlatformTextStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/Savers.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/Savers.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/SpanStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/SpanStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/String.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/String.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/StringAnnotation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/StringAnnotation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextGranularity.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextGranularity.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextInclusionStrategy.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextLayoutResult.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextLayoutResult.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextLinkStyles.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextLinkStyles.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextMeasurer.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextMeasurer.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextPainter.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextPainter.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextRange.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextRange.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TextStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/TtsAnnotation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TtsAnnotation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/UrlAnnotation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/UrlAnnotation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/Font.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/Font.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontFamily.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamily.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontFamilyTypefaceAdapter.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontListFontFamilyTypefaceAdapter.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontListFontFamilyTypefaceAdapter.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontLoadingStrategy.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontMatcher.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontMatcher.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontSynthesis.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontVariation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontVariation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/FontWeight.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/FontWeight.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/font/Typeface.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/font/Typeface.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/EditCommand.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/EditCommand.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/EditProcessor.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/EditProcessor.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/EditingBuffer.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/GapBuffer.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/GapBuffer.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/ImeAction.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeAction.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/ImeOptions.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/ImeOptions.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/InputEventCallback.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardCapitalization.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/KeyboardType.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/KeyboardType.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/MathUtils.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/MathUtils.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/OffsetMapping.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/TextFieldValue.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/TextInputService.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/TextInputService.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/input/VisualTransformation.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/internal/InlineClassHelper.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/intl/Locale.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/intl/Locale.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/intl/LocaleList.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/intl/LocaleList.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/intl/PlatformLocale.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/platform/Dispatcher.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformMultiParagraphDraw.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/platform/PlatformString.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/platform/PlatformString.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/BaselineShift.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/BaselineShift.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/Hyphens.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/Hyphens.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/LineBreak.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/LineBreak.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/LineHeightStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/ResolvedTextDirection.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/ResolvedTextDirection.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextAlign.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextAlign.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextDecoration.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDecoration.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextDirection.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextDirection.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextForegroundStyle.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextGeometricTransform.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextGeometricTransform.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextIndent.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextIndent.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextMotion.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextMotion.kt
+#     | commonMain/kotlin/androidx/compose/ui/text/style/TextOverflow.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/style/TextOverflow.kt
+!commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
+
+nativeMain/kotlin/androidx/compose/ui/text/WeakReference.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/WeakReference.native.kt
+nativeMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/font/FontSynthesis.native.kt
+
+nonJvmMain/kotlin/ -> src/vendor/native/kotlin/
+#     | nonJvmMain/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/AnnotatedString.nonJvm.kt
+#     | nonJvmMain/kotlin/androidx/compose/ui/text/AtomicReference.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/AtomicReference.nonJvm.kt
+#     | nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt
+#     | nonJvmMain/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/input/GapBuffer.nonJvmMain.kt
+#     | nonJvmMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.nonJvmNative.kt
+!nonJvmMain/kotlin/androidx/compose/ui/text/CharHelpers.nonJvm.kt
+
+skikoMain/kotlin/androidx/compose/ui/text/Paragraph.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/Paragraph.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/Savers.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/Savers.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/TextDecorationLineStyle.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/TextDecorationLineStyle.kt
+skikoMain/kotlin/androidx/compose/ui/text/TextStyle.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/TextStyle.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/UnresolvedSymbolsRegistry.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/WeakReference.skiko.kt -> src/vendor/common/kotlin/androidx/compose/ui/text/WeakReference.kt
+skikoMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformTextInputService2.kt
+skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/platform/SkiaMultiParagraphDraw.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/style/LineBreak.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/style/LineBreak.native.kt
+skikoMain/kotlin/androidx/compose/ui/text/style/TextMotion.skiko.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/style/TextMotion.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (77)
+#     | androidMain/kotlin/androidx/compose/ui/text/AndroidComposeUiTextFlags.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/AndroidComposeUiTextFlags.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/AndroidParagraph.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/AndroidParagraph.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/AndroidTextStyle.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/AndroidTextStyle.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/CharHelpers.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/CharHelpers.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/EmojiSupportMatch.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/EmojiSupportMatch.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/Html.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/Html.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/Paragraph.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/Paragraph.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/ParagraphIntrinsics.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/Savers.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/Savers.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/BoringLayoutFactory.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/BoringLayoutFactory.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/CharSequenceCharacterIterator.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/CharSequenceCharacterIterator.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/InlineClassUtils.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/InlineClassUtils.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/InternalPlatformTextApi.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/InternalPlatformTextApi.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/LayoutCompat.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/LayoutCompat.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/LayoutHelper.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/LayoutHelper.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/LayoutIntrinsics.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/LayoutIntrinsics.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/ListUtils.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/ListUtils.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/PaintExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/PaintExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/SpannedExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/SpannedExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/StaticLayoutFactory.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/StaticLayoutFactory.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/TextAndroidCanvas.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/TextAndroidCanvas.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/TextLayout.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/TextLayout.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/TextLayoutGetRangeForRectExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/TextLayoutGetRangeForRectExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/selection/SegmentFinder.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/selection/SegmentFinder.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/selection/WordBoundary.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/selection/WordBoundary.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/selection/WordIterator.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/selection/WordIterator.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/BaselineShiftSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/BaselineShiftSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/FontFeatureSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/FontFeatureSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/IndentationFixSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/IndentationFixSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/LetterSpacingSpanEm.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/LetterSpacingSpanEm.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/LetterSpacingSpanPx.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/LetterSpacingSpanPx.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/LineHeightSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/LineHeightSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/LineHeightStyleSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/LineHeightStyleSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/PlaceholderSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/PlaceholderSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/ShadowSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/ShadowSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/SkewXSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/SkewXSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/TextDecorationSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/TextDecorationSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/android/style/TypefaceSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/android/style/TypefaceSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidFont.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidFont.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidFontLoader.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidFontLoader.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidFontResolveInterceptor.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidFontResolveInterceptor.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidFontUtils.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidFontUtils.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidPreloadedFont.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidPreloadedFont.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/AndroidTypeface.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/AndroidTypeface.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/DeviceFontFamilyNameFont.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/DeviceFontFamilyNameFont.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/FontSynthesis.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/PlatformFontVariationSettings.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/PlatformFontVariationSettings.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/font/PlatformTypefaces.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/font/PlatformTypefaces.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/intl/AndroidLocaleDelegate.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/intl/AndroidLocaleDelegate.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/intl/AndroidPlatformLocale.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/intl/AndroidPlatformLocale.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidAccessibilitySpannableString.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidAccessibilitySpannableString.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidDefaultTypeface.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidDefaultTypeface.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidFontListTypeface.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidFontListTypeface.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidGenericFontFamilyTypeface.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidGenericFontFamilyTypeface.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidMultiParagraphDraw.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidMultiParagraphDraw.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidParagraphHelper.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidParagraphHelper.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidStringDelegate.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidStringDelegate.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidTextPaint.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidTextPaint.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidTypeface.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidTypeface.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/AndroidTypefaceWrapper.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/AndroidTypefaceWrapper.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/EmojiCompatStatus.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/EmojiCompatStatus.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/Synchronization.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/Synchronization.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/URLSpanCache.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/URLSpanCache.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/extensions/LocaleExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/extensions/LocaleExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/extensions/PlaceholderExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/extensions/PlaceholderExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/extensions/SpannableExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/extensions/SpannableExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/extensions/TextPaintExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/extensions/TextPaintExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/extensions/TtsAnnotationExtensions.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/extensions/TtsAnnotationExtensions.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/style/BulletSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/style/BulletSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/style/DrawStyleSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/style/DrawStyleSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/platform/style/ShaderBrushSpan.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/platform/style/ShaderBrushSpan.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/style/LineBreak.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/style/LineBreak.android.kt
+#     | androidMain/kotlin/androidx/compose/ui/text/style/TextMotion.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/text/style/TextMotion.android.kt
+#   darwinMain (2)
+#     | darwinMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.darwin.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/intl/PlatformLocale.darwin.kt
+#     | darwinMain/kotlin/androidx/compose/ui/text/platform/NativeStringDelegate.darwin.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/platform/NativeStringDelegate.darwin.kt
+#   desktopMain (15)
+#     | desktopMain/kotlin/androidx/compose/ui/text/Cache.jvm.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/Cache.jvm.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/CharHelpers.jvm.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/CharHelpers.jvm.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/WeakReference.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/WeakReference.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/font/FontFamily.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/font/FontFamily.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/font/FontSynthesis.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/intl/DesktopPlatformLocale.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/intl/DesktopPlatformLocale.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/AwtFontInterop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/AwtFontInterop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/AwtFontUtils.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/AwtFontUtils.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/DesktopFont.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/DesktopFont.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/DesktopStringDelegate.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/DesktopStringDelegate.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/InternalFontApiChecker.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/InternalFontApiChecker.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/JetBrainsRuntimeFontFamilies.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/JetBrainsRuntimeFontFamilies.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.desktop.kt
+#     | desktopMain/kotlin/androidx/compose/ui/text/platform/ReflectionUtil.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/text/platform/ReflectionUtil.kt
+#   iosMain (2)
+#     | iosMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.ios.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.ios.kt
+#     | iosMain/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.ios.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/input/PlatformImeOptions.ios.kt
+#   jsMain (1)
+#     | jsMain/kotlin/androidx/compose/ui/text/intl/Actuals.js.kt -> src/vendor/js/kotlin/androidx/compose/ui/text/intl/Actuals.js.kt
+#   jvmAndAndroidMain (5)
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/text/ActualAtomicReferenceJvm.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/text/ActualAtomicReferenceJvm.jvmAndAndroid.kt
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/text/JvmAnnotatedString.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/text/JvmAnnotatedString.jvmAndAndroid.kt
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/text/input/GapBuffer.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/text/input/GapBuffer.jvmAndAndroid.kt
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/text/internal/JvmDefaultWithCompatibility.jvmAndAndroid.kt
+#     | jvmAndAndroidMain/kotlin/androidx/compose/ui/text/intl/Locale.jvmAndAndroid.kt -> src/vendor/jvmAndAndroid/kotlin/androidx/compose/ui/text/intl/Locale.jvmAndAndroid.kt
+#   macosMain (1)
+#     | macosMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.macos.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.macos.kt
+#   nativeMain (4)
+#     | nativeMain/kotlin/androidx/compose/ui/text/Cache.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/Cache.native.kt
+#     | nativeMain/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/platform/NativeFont.native.kt
+#     | nativeMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.native.kt
+#     | nativeMain/kotlin/androidx/compose/ui/text/platform/PlatformFont.native.kt -> src/vendor/native/kotlin/androidx/compose/ui/text/platform/PlatformFont.native.kt
+#   skikoMain (17)
+#     | skikoMain/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/ActualParagraph.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/Cache.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/Cache.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/CharHelpers.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/CharHelpers.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/ParagraphIntrisics.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/ParagraphIntrisics.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/SkiaParagraph.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/font/DelegatingFontLoaderForDeprecatedUsage.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/font/PlatformFontFamilyTypefaceAdapter.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/font/SkiaFontLoader.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/intl/PlatformLocale.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/ParagraphBuilder.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/PlatformFont.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/PlatformFont.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/SkiaParagraphIntrinsics.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/SkiaTextPaint.skiko.kt
+#     | skikoMain/kotlin/androidx/compose/ui/text/platform/Synchronization.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/text/platform/Synchronization.skiko.kt
+#   wasmJsMain (1)
+#     | wasmJsMain/kotlin/androidx/compose/ui/text/intl/Actuals.wasm.kt -> src/vendor/wasmJs/kotlin/androidx/compose/ui/text/intl/Actuals.wasm.kt
+#   webMain (10)
+#     | webMain/kotlin/androidx/compose/ui/text/Cache.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/Cache.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/WeakReference.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/WeakReference.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/font/FontFamilyResolver.skiko.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/font/FontSynthesis.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/font/FontSynthesis.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/intl/PlatformLocale.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/intl/PlatformLocale.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/intl/PreferredLanguages.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/intl/PreferredLanguages.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/platform/ParagraphLayouter.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/platform/PlatformFont.web.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/platform/PlatformFont.web.kt
+#     | webMain/kotlin/androidx/compose/ui/text/platform/WebFont.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/platform/WebFont.kt
+#     | webMain/kotlin/androidx/compose/ui/text/platform/WebStringDelegate.kt -> src/vendor/web/kotlin/androidx/compose/ui/text/platform/WebStringDelegate.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

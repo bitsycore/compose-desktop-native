@@ -17,7 +17,7 @@ internal actual fun createPlatformLocaleDelegate(): PlatformLocaleDelegate =
 	object : PlatformLocaleDelegate {
 		override val current: LocaleList
 			get() {
-				val tags = com.compose.sdl.text.systemPreferredLocaleTags()
+				val tags = com.compose.sdl.res.preferredLocaleTagsProvider?.invoke().orEmpty()
 				return if (tags.isEmpty()) LocaleList(listOf(Locale("en-US")))
 				else LocaleList(tags.map(::Locale))
 			}

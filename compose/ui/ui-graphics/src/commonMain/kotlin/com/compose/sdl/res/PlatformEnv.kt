@@ -19,3 +19,8 @@ var systemThemeIsDarkProvider: (() -> Boolean)? = null
 /** The OS preferred locale as (language, region) — e.g. ("fr", "FR"); either may
    be empty. Installed from SDL_GetPreferredLocales. */
 var preferredLocaleProvider: (() -> Pair<String, String>)? = null
+
+/** OS preferred-locale BCP47 tags (language[-REGION]), most-preferred first —
+   backs androidx.compose.ui.text.intl Locale.current / LocaleList.current (in
+   :ui-text). Installed from SDL_GetPreferredLocales. */
+var preferredLocaleTagsProvider: (() -> List<String>)? = null
