@@ -33,8 +33,8 @@ internal fun ImagesScreen() {
 
         Section(
             "Formats",
-            "Each loads from composeResources/drawable through the active renderer's decoder " +
-                "(SDL3_image on Windows; Skia on macOS/Linux). SVG + Android XML are rasterised.",
+            "Each loads from composeResources/drawable through Skia's image codecs " +
+                "(PNG / JPG / WEBP); SVG + Android XML are rasterised.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Top) {
                 LabeledImage("PNG · alpha", painterResource(Res.drawable.compose_logo))

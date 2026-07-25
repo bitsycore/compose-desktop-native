@@ -24,11 +24,16 @@ context — read it first, then look at the files it points to.
 on SDL3, no JVM. Compiles to native binaries for macOS (arm64), Linux
 (x64/arm64), Windows (mingwX64).
 
-Rendering is pluggable behind one `RenderBackend`:
+Rendering is **Skia everywhere** behind one `RenderBackend` — Metal / OpenGL
+/ CPU raster:
 
-- **Skia** (via Skiko klibs) on macOS + Linux — Metal / OpenGL / CPU raster.
-- **SDL3** (`SDL3_ttf` + `SDL_RenderGeometry`) on Windows, and on macOS/Linux
-  when `-Prenderer=sdl3` is passed.
+- **macOS + Linux** link the OFFICIAL Skiko klibs from Maven.
+- **Windows (mingwX64)** links the bitsycore skiko FORK — skiko+Skia compiled
+  into `skiko-windows-x64.dll` with a flat extern-C surface, bound from K/N via
+  an embedded GNU import lib, published to GitHub Packages as
+  `org.jetbrains.skiko:skiko:0.150.1-mingw.1` (override with
+  `-PskikoMingwVersion`). The runtime DLL is auto-provisioned next to the exe by
+  the bridge plugin (`installWindowsSkiaDll`). See SKIKO-MINGW-FEASIBILITY.md.
 
 Windowing, input, audio, filesystem access, and the OS-integration surface
 (file dialogs, clipboard, "open in Finder/Explorer"…) all go through
@@ -51,9 +56,9 @@ One Gradle module per upstream artifact; the directory mirrors the upstream
 compose/
 ├── ui/
 │   ├── ui/                          → :ui        — androidx.compose.ui.* (ui + ui-graphics + ui-text) +
-│   │                                               com.compose.sdl.* — cinterops + BOTH renderer pipelines live
-│   │                                               here. ui-graphics/ui-text can't split off: their Canvas /
-│   │                                               Paragraph `expect`s are the renderers' `actual`s (same-module).
+│   │                                               com.compose.sdl.* — the sdl3 cinterop + the Skia renderer
+│   │                                               pipeline live here. ui-graphics/ui-text can't split off: their
+│   │                                               Canvas / Paragraph `expect`s are the renderer's `actual`s (same-module).
 │   ├── ui-util/                     → :ui-util       — androidx.compose.ui.util.* (+ Experimental/InternalComposeUiApi)
 │   ├── ui-geometry/                 → :ui-geometry   — androidx.compose.ui.geometry.*
 │   ├── ui-unit/                     → :ui-unit       — androidx.compose.ui.unit.*
@@ -82,8 +87,7 @@ utils/
 └── material-symbols/                → :material-symbols — codepoints + all three style objects
                                                     (Outlined / Rounded / Sharp). COMMON API (usable from
                                                     shared app code) + per-stack actuals: native renders
-                                                    via :foundation IconFontIcon (IconFont handles the
-                                                    SDL3/Skia split), jvm() via Skiko directly
+                                                    via :foundation IconFontIcon (Skia), jvm() via Skiko directly
                                                     (Typeface.makeClone per axes — upstream's FontCache
                                                     drops variationSettings from its key). Its commonMain
                                                     declares official Maven compose coords — the root
@@ -106,8 +110,8 @@ components/
                                                     no mingwX64/linux klibs. Platform layer is project
                                                     code: data.kres ResourceReader, pure-Kotlin
                                                     DomXmlParser (upstream's is Darwin NSXMLParser),
-                                                    SDL3_image decode via the :ui EncodedImageDecoder
-                                                    hook, NamedFont registration, SDL locale/theme env.
+                                                    image decode via the :ui EncodedImageDecoder hook
+                                                    (Skia), NamedFont registration, SDL locale/theme env.
                                                     Apps' JVM targets keep the Maven artifact — the
                                                     generated Res accessors work against BOTH.
 
@@ -173,8 +177,8 @@ scripts/             → vendor-sync + python helper scripts (compose-coverage =
                       coverage/fidelity vs upstream, material-symbols generate/subset)
                       + compose-fork/;
                       scripts/build-sdl/ = static-lib build script (python)
-libs/                → gitignored per-host static SDL3 / SDL3_ttf / SDL3_image / FreeType
-                      output of scripts/build-sdl/build-all.py on Windows
+libs/                → gitignored per-host static SDL3 output of
+                      scripts/build-sdl/build-all.py on Windows
 ```
 
 Module PATHS stay short (`:ui`, `:foundation`, `:window`, …) —
@@ -202,7 +206,7 @@ sees the split modules. Full DAG: `:ui-util → collection`; `:ui-geometry → :
 `:material3 → :foundation, :material-ripple, :animation-core, :foundation-layout`.
 
 `:ui` is the renderer/cinterop hub (the ui-graphics + ui-text `expect`s resolve to
-its SDL/Skia renderer `actual`s). The pure lower artifacts (`:ui-util`,
+its Skia renderer `actual`s). The pure lower artifacts (`:ui-util`,
 `:ui-geometry`, `:ui-unit`, `:ui-backhandler`) are split out below it. Everything
 above `:ui` can only touch renderer / cinterop internals via its public surface.
 `:window` depends on `:ui` + `:foundation` (needs `LazyList`-style scaffolding to
@@ -222,7 +226,7 @@ compose-multiplatform umbrella repo that `:components-resources` vendors from).
 There is no implicit default — `SET_REPO` is required. `scripts/compose-fork/sync.sh`
 walks all manifests and copies each selected file byte-for-byte from the pinned
 checkout (each distinct repo sparse-cloned to `../cmp-ref[-<name>]`) into
-`<module>/src/vendor/{common,native,skikoRenderer,sdlRenderer}/kotlin/`. The
+`<module>/src/vendor/{common,native,skikoRenderer}/kotlin/`. The
 `src/vendor/` tree is **gitignored** — you don't check it in, you re-sync
 on demand.
 
@@ -247,8 +251,8 @@ Two categories of code live in each module:
    Never hand-edit these. If upstream diverges, adjust the manifest or the
    pinned ref and re-sync. This is the bulk of the codebase (~1500 files
    across the modules).
-2. **Project code (in `src/commonMain/`, `src/nativeMain/`, `src/skikoRendererMain/`,
-   `src/sdlRendererMain/`)** — code we author (project actuals, glue between
+2. **Project code (in `src/commonMain/`, `src/nativeMain/`,
+   `src/skikoRendererMain/`)** — code we author (project actuals, glue between
    Compose and SDL3, project-specific extensions).
 
 ### The 5 rules for adding upstream Compose surface
@@ -288,14 +292,12 @@ Two categories of code live in each module:
    reconciled by hand. This is fine; do it when the edit is small and
    the file is unlikely to churn upstream.
 
-4. **Skiko-specific things go in `:ui/src/skikoRendererMain/`, with
-   an SDL3 equivalent in `:ui/src/sdlRendererMain/`.** When upstream
-   ships a `.skiko.kt` file that uses Skiko's Canvas / Paragraph / …,
-   the `.skiko.kt` variant is fine to vendor into `skikoRendererMain`.
-   Then hand-roll (or minimally vendor) the SDL3 counterpart in
-   `sdlRendererMain` — `SkiaCanvas.kt` ↔ `Sdl3Canvas.kt`,
-   `SkiaTextRenderer.kt` ↔ `Sdl3TextRenderer.kt` (using SDL3_ttf +
-   FreeType), `SkiaImageCache.kt` ↔ `Sdl3ImageCache.kt` (using SDL3_image).
+4. **Skiko-specific things go in `:ui/src/skikoRendererMain/`.** When upstream
+   ships a `.skiko.kt` file that uses Skiko's Canvas / Paragraph / …, the
+   `.skiko.kt` variant is fine to vendor into `skikoRendererMain` (the Skia
+   drawing pipeline — `SkiaCanvas.kt`, `SkiaTextRenderer.kt`,
+   `SkiaImageCache.kt`, …). All native targets attach this source set;
+   mingwX64 layers its fork actuals on top under `skikoRendererMingwMain`.
 
 5. **Multi-OS project code goes through SDL3, not hand-rolled per-target
    ifdefs.** SDL3 already handles the platform differences for filesystem
@@ -313,52 +315,36 @@ call sites don't care.
 
 ## Source-set hierarchy (:ui only)
 
-`:ui` owns cinterops + both renderer pipelines. Its source-set tree:
+`:ui` owns the `sdl3` cinterop + the Skia renderer pipeline. Its source-set tree:
 
 ```
 commonMain
 └── nativeMain                                  (vendored .native.kt + project native code)
-      ├── skikoRendererMain                     (Skia drawing pipeline; Skiko on classpath)
+      ├── skikoRendererMain                     (Skia drawing pipeline; official Skiko on classpath)
       │     ├── skikoRendererMacosMain          (macOS-only Skia actuals — Metal bridge)
       │     └── skikoRendererLinuxMain          (Linux-only Skia actuals — OpenGL)
-      │            attached to: macosArm64Main / linuxX64Main / linuxArm64Main
-      │            ONLY when the Skia renderer is active for the target.
-      └── sdlRendererMain                       (SDL3 drawing pipeline + TTF/image/FreeType)
-            ├── sdlRendererMacosMain            (macOS-only SDL3 driver hint)
-            ├── sdlRendererLinuxMain            (Linux-only SDL3 driver hint)
-            └── sdlRendererMingwMain            (mingwX64-only SDL3 driver hint)
-                   attached to: mingwX64Main always; macOS/Linux when -Prenderer=sdl3.
+      │            attached to: macosArm64Main / linuxX64Main / linuxArm64Main.
+      └── skikoRendererMingwSharedMain
+            └── skikoRendererMingwMain          (mingwX64-only Skia actuals — the bitsycore
+                                                 skiko FORK: skiko-windows-x64.dll bound via
+                                                 an embedded GNU import lib; OpenGL context)
+                   attached to: mingwX64Main.
 ```
 
 `createRenderBackend(…)` + `rendererPreferredGpuMode()` are `expect`s in
-`:ui`'s nativeMain with `actual`s in BOTH `skikoRendererMain` and
-`sdlRendererMain` — unambiguous because **only one of the two renderer source
-sets is attached to a given target**. (They used to be plain duplicate
-declarations with no expect; that compiled per-target but shared nativeMain
-METADATA couldn't see them on a host whose targets span both renderers, which
-blocked the WINDOWS host from producing :window's KotlinMultiplatform
-publication — and Windows must publish the root modules, see the publish
-workflow.) Under `-Prenderer=sdl3`, the `skikoRenderer*` source sets are
-**not even created**, so Gradle has nothing to warn about and Skiko is never
-pulled in.
+`:ui`'s nativeMain with `actual`s in `skikoRendererMain` (shared by every native
+target). `rendererPreferredGpuMode()` picks Metal on macOS, OpenGL on
+Linux + Windows, with a Software (CPU raster) auto-fallback if the GPU context
+fails to come up.
 
-### Cinterop sibling-dependency gotcha
+### Cinterop
 
-`:ui` owns four cinterops in `src/nativeInterop/cinterop/`:
-`sdl3`, `sdl3_ttf`, `sdl3_image`, `freetype`. The `.def` files for `sdl3_ttf` /
-`sdl3_image` carry `depends = sdl3` so their `SDL_Surface` / `SDL_Color`
-references resolve to the *same* types `sdl3` produces (not duplicates inside
-`sdl3_image.SDL_Surface`). **Gradle does not automatically add a sibling
-cinterop's klib to a cinterop task's `-library` list**, so the manifest
-directive silently fails and you get cryptic
-`expected CPointer<sdl3.SDL_Surface>?, actual CPointer<sdl3_image.SDL_Surface>?`
-errors.
-
-`:ui/build.gradle.kts` works around this by passing the sdl3 cinterop output
-klib path explicitly via `extraOpts("-library", vSdl3Klib)` on `sdl3_ttf` /
-`sdl3_image`, plus a task dependency
-(`cinteropSdl3_ttf*Target.dependsOn(cinteropSdl3*Target)`). If you ever add
-another `depends = sdl3` cinterop, add it to that list too.
+`:ui` owns ONE cinterop in `src/nativeInterop/cinterop/`: `sdl3` (SDL_Window /
+SDL_Event / SDL_GetBasePath / clipboard / dialogs / GL+Metal context /
+SDL_Renderer-for-CPU-raster). It has no siblings, so there's no
+`depends = <sibling>` propagation to worry about — cinterop `.def` files list
+each other under `depends =` and Gradle does NOT auto-add a sibling cinterop's
+klib to the `-library` list, but with a single cinterop that gotcha is moot.
 
 ## Density flow (Option B — layout in physical pixels)
 
@@ -392,12 +378,12 @@ Passing raw `px.dp` will double-scale on Retina.
 ./gradlew :demo:runDebugExecutableLinuxX64
 ./gradlew :apidemo:runDebugExecutableLinuxX64
 
-# Windows (from Windows — mingw cross-build from macOS/Linux fails at cinterop)
+# Windows (from Windows — mingw cross-build from macOS/Linux fails at cinterop).
+# Links the bitsycore skiko FORK from GitHub Packages (org.jetbrains.skiko:skiko:
+# 0.150.1-mingw.1, override -PskikoMingwVersion); the bridge plugin drops
+# skiko-windows-x64.dll next to the exe (installWindowsSkiaDll).
 gradlew.bat :demo:runDebugExecutableMingwX64
 gradlew.bat :apidemo:runDebugExecutableMingwX64
-
-# Skiko-free build on macOS/Linux — SDL3 renderer everywhere
-./gradlew :demo:runDebugExecutableMacosArm64 -Prenderer=sdl3
 
 # Stock JVM Compose Desktop (any host) — the parity reference: the SAME shared
 # screens on upstream Compose; differences vs the native build = port bugs.
@@ -407,12 +393,16 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 
 ### System dependencies
 
-SDL3 + SDL3_ttf + SDL3_image + FreeType (+ image codecs) are **built from
-source as static libraries on every OS** and linked straight into the
-executable — no brew/apt SDL packages, no runtime .dll/.so/.dylib; a
-distributable is `<app>` + `data.kres`. Build them once per host with
-`python scripts/build-sdl/build-all.py`. Per-host toolchain requirements and
-the step breakdown are in [TOOLING.md](TOOLING.md#native-libraries).
+SDL3 is **built from source as a static library on every OS** and linked
+straight into the executable — no brew/apt SDL packages. Build it once per host
+with `python scripts/build-sdl/build-all.py`. Per-host toolchain requirements
+and the step breakdown are in [TOOLING.md](TOOLING.md#native-libraries).
+
+Skia comes in through the Skiko klibs: the official Maven ones on macOS/Linux
+(no runtime .so/.dylib — Skia is statically inside the klib), and the bitsycore
+fork on Windows, whose `skiko-windows-x64.dll` the bridge plugin provisions next
+to the exe. So a macOS/Linux distributable is `<app>` + `data.kres`; a Windows
+one is `<app>.exe` + `data.kres` + `skiko-windows-x64.dll`.
 
 ## Runtime bundling — data.kres
 
@@ -459,12 +449,12 @@ drift / vendor-clean guardrails are in
 - `compose/sdl/window/src/nativeMain/…/ComposeWindow.kt` — main loop,
   recomposer lifecycle, SDL event dispatch, composition-local seeding.
 - `compose/ui/ui/src/nativeMain/…/RenderBackend.kt` — the interface.
-- `compose/ui/ui/src/nativeMain/…/GpuMode.kt` — sealed renderer / driver picker.
-- `compose/ui/ui/src/skikoRendererMain/…/renderer/skia/SkiaRenderBackend.kt`.
-- `compose/ui/ui/src/sdlRendererMain/…/renderer/sdl/Sdl3RenderBackend.kt`.
-- `compose/ui/ui/src/sdlRendererMain/…/renderer/sdl/FreeTypeIcons.kt` —
-  variable-font axis rasterisation (SDL3_ttf has no axis-set API; we go
-  to FreeType directly for icon families).
+- `compose/ui/ui/src/nativeMain/…/GpuMode.kt` — sealed driver picker
+  (`Auto` / `Software` / `Skia.OpenGL` / `Skia.Metal`).
+- `compose/ui/ui/src/skikoRendererMain/…/renderer/skia/SkiaRenderBackend.kt` —
+  the Skia render backend (shared by every native target).
+- `compose/ui/ui/src/skikoRendererMingwMain/…` — mingwX64-only Skia actuals
+  bound against the skiko fork's flat extern-C surface.
 
 ### Layout / composition wiring
 - `compose/ui/ui/src/commonMain/…/node/ComposeRootHost.kt` — root LayoutNode
@@ -481,8 +471,7 @@ drift / vendor-clean guardrails are in
 - `compose/ui/ui/src/nativeMain/…/ui/text/ParagraphFactories.native.kt` —
   actuals for the `Paragraph(…)` / `ParagraphIntrinsics(…)` factory family.
 - `compose/ui/ui/src/commonMain/…/text/TextMeasurer.kt` — `NativeTextMeasurer`
-  interface (per-renderer implementations: `SkiaTextRenderer` /
-  `Sdl3TextRenderer`).
+  interface (implemented by `SkiaTextRenderer`).
 
 ### Icons
 - `compose/foundation/foundation/src/nativeMain/…/icons/IconFontIcon.kt` —
@@ -516,7 +505,7 @@ profiler. Quick rules of thumb:
   the broad net.
 - Chasing one reported interaction → run the **probe** (`scripts/probe/`), targeted.
 - Slow frame → **profiler** first (`CDN_PROFILE=1`), optimize second.
-- Any renderer change → the **`verify-mac`** runbook gates both legs before commit.
+- Any renderer change → the **`verify-mac`** runbook gates it before commit.
 
 See [RENDERER.md](RENDERER.md) for the renderer work these support.
 
@@ -565,12 +554,6 @@ that should surface in tooling.
   `Modifier.alpha(x)` desugars to `graphicsLayer(alpha = x, clip = true)`.
   For a drag ghost that also translates, put `alpha` and `translationX` on
   the SAME `graphicsLayer(...)` so clip stays false.
-- **Cinterop `depends = sdl3`** — silently doesn't propagate; see the
-  gotcha section above.
-- **Configuration cache + `-Prenderer=`** — Gradle caches configuration;
-  toggling the renderer property may not invalidate it. Delete
-  `.gradle/configuration-cache/` between switches if you see weird
-  "couldn't find sdl3_ttf" errors.
 - **Substituted Maven modules hide their transitives from common metadata** —
   when the bridge swaps an official coord for a project module on native
   configs, KGP's granular-metadata visibility check drops that Maven module's
@@ -583,17 +566,11 @@ that should surface in tooling.
   declares every target, so only its .module files carry the full variant
   table; macOS-published roots left v0.1.15 without mingwX64 variants) —
   test with `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging.
-- **`Path()` in commonMain returns different actuals per renderer** —
-  the Skia renderer produces a `SkiaBackedPath` (wraps
-  `org.jetbrains.skia.Path`), the SDL renderer produces a project
-  `ProjectPath` (command-list based). `SkiaCanvas.toSkiaPath` handles
-  both — never assume the type without checking.
 
 ## Useful Gradle tricks
 
-- `--args="--gpu=sdl3.opengl --screen=Buttons"` — pass CLI to the demo.
+- `--args="--gpu=skia.opengl --screen=Buttons"` — pass CLI to the demo.
 - `--info` — see cinterop classpath + include paths actually used.
-- `--rerun-tasks` — force rebuild after toggling `-Prenderer=`.
 - After a module rename or IC-cache mismatch: nuke
   `demo/build/kotlin-native-ic-cache` (or `apidemo/build/…`). Kotlin/Native
   pins module IDs into its klib metadata; a stale cache surfaces as

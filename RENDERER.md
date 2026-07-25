@@ -40,7 +40,7 @@ stack) is preferred over a thin hand-written one.
 
 ## 2. The retained-layer engine (the model we copied)
 
-Upstream skiko skips work at three levels. The port has all three.
+Upstream skiko skips work at three levels. The Skia leg has all three.
 
 - **L1 frame scheduling.** A frame schedules the next only if still dirty.
   Ours: `ComposeWindow.shouldRender()` gates `renderFrame()`; the loop blocks on
@@ -60,8 +60,7 @@ dirty-region present; the entire win is not re-recording clean layers, not
 drawing less screen. Dirty-region rendering is therefore an explicit non-goal.
 
 The compositing-strategy contract (`requiresLayer()`, from
-`SkiaGraphicsLayer.skiko.kt`) must match on both legs. It decides when a layer
-needs an offscreen:
+`SkiaGraphicsLayer.skiko.kt`) decides when a layer needs an offscreen:
 
 | Condition | Auto | Offscreen | ModulateAlpha |
 |---|---|---|---|
@@ -78,43 +77,25 @@ needs an offscreen:
   vendored verbatim. The Skia leg gets real display-list caching and correct
   clip/shadow/renderEffect for free from upstream. After this landed, Skia
   `draw` on LazyColumn fell from 1.75 ms to 0.2 ms.
-- **SDL leg ships the geo node as the Windows default.** `SdlDisplayListRenderNode`
-  records a leaf's layer-local tessellated geometry, text runs, and icon glyphs
-  by params (not texture pointers), then re-emits through the layer transform.
-  Crisp under any transform, bit-exact, deterministic (no render-target state),
-  and eviction-safe (replay re-looks-up via the run LRU / FreeType glyph cache).
-  0.000% across a 57-screen self-consistency sweep bar a sub-0.06% rotated-edge
-  AA fringe. LazyColumn steady-state `draw` fell 57% versus the un-cached
-  baseline. Fallbacks: `CDN_LAYERCACHE=off|texture`.
-- **Parity is a golden-master on the Skia leg** (about 2% median, dominated by
-  the shared text engine's small metric delta) and a bounded, ranked signal on
-  the SDL leg. See TOOLING.md for how to read it.
+- **Parity is a golden-master against JVM** (about 2% median, dominated by the
+  shared text engine's small metric delta). See TOOLING.md for how to read it.
 - **Memory is stable.** The historical composition leak is fixed (see section 6)
   and guarded by the `--soaktest` gate in the verify runbook.
 
 ## 4. Decisions to remember
 
 - **Goal is G1, cheap upstream-tracking.** The target is low per-bump
-  reconciliation cost when following upstream, not Windows pixel-parity or
-  feature completeness. The JVM Compose Desktop target (`:demo:run`) is the
-  documented Windows fidelity/feature tier: real Skia, full fidelity, on any
-  host. That makes SDL-leg fidelity work (B3) and real-Skia-on-Windows (Track A)
-  optional polish, not obligations.
+  reconciliation cost when following upstream. All platforms now render through
+  real Skia — mingwX64 via the bitsycore skiko fork (Route 1a; see
+  [SKIKO-MINGW-FEASIBILITY.md](SKIKO-MINGW-FEASIBILITY.md)) — so there is no
+  fidelity tier below the JVM cross-check. The JVM Compose Desktop target
+  (`:demo:run`) remains the fidelity/parity reference on any host.
 - **Vendor, do not hand-roll.** Copy upstream verbatim wherever it compiles.
   Edit-to-compile becomes a manual vendor with a `// VENDOR-BASE:` header so the
   drift tripwire can track it. The litmus test for any divergence: "Is this what
   upstream does? If not, what real platform constraint forces the difference?"
-  Valid answers name a constraint (no Skiko on Windows K/N; SDL is a triangle
-  blitter). "It was easier" is not valid.
-- **B2 convergence is complete.** The Skia leg was migrated off the port's
-  hand-rolled GraphicsLayer onto upstream's own. This was a source-set migration,
-  not a file-flip: the SDL node cluster relocated `nativeMain -> sdlRendererMain`,
-  `GraphicsContext` forked per-leg behind a `createGraphicsContext()` seam, and
-  the upstream skiko files were un-refused in `compose-fork.txt`. Measured
-  sync-tax reduction on the skiko path: about 8.5x (roughly 1240 hand-rolled
-  lines down to about 145 lines of drift-tracked edits; roughly 1006 lines now
-  auto-sync verbatim on a ref bump). The beta02 -> beta03 bump proved it: zero
-  reconciliation, all manual-vendor bases unchanged.
+  Valid answers name a constraint (e.g. no windowing/input toolkit in K/N ->
+  SDL3). "It was easier" is not valid.
 - **Text stays the port's engine (B6.3 skipped).** Making Skia-leg text truly
   upstream (`SkiaParagraph`) is a font-subsystem replacement, not a canvas swap:
   two coexisting font-identity models (the port's name-to-bytes `IconFont` +
@@ -123,18 +104,8 @@ needs an offscreen:
   `data.kres`-to-`FontCache` bridge, no green intermediate, and it discards the
   P3.1 metrics work. ROI is low: the Skia leg already measures text with skiko
   `Font` metrics (via `currentTextMeasurer` -> `SkiaTextRenderer`), which is how
-  parity reached about 2%. Revisit only if complex-script/bidi fidelity on the
-  native Skia leg becomes a hard requirement.
-- **`GraphicsLayerOwnerLayer` stays shared.** The fork point is `GraphicsLayer` /
-  `GraphicsContext`, not the owner layer. The shared owner layer compiles
-  against both `GraphicsLayer` actuals (upstream skiko + port SDL) only if both
-  satisfy the commonMain `expect class GraphicsLayer` API. That API-parity
-  invariant is enforced by `:ui:compileCommonMainKotlinMetadata` on every build.
-- **Lifetime model.** The SDL leg uses GC / release-queue for layer lifetime and
-  does NOT vendor `ChildLayerDependenciesTracker`. The Skia leg uses upstream's
-  `SkiaGraphicsLayer`, which inherently uses the tracker (already vendored in
-  commonMain). A per-leg lifetime divergence is the class of bug that caused an
-  early navigation crash, so any change here goes to both legs plus a soak gate.
+  parity reached about 2%. Revisit only if complex-script/bidi fidelity becomes
+  a hard requirement.
 - **Module split (`:ui-graphics` / `:ui-text`) is shelved as infeasible.** Not
   cosmetic churn as originally scoped: the `sdl3` cinterop is a shared substrate
   used by 11 graphics-side files AND 12 platform/windowing/node/resources files
@@ -145,13 +116,12 @@ needs an offscreen:
   artifacts" goal it was meant to serve. The one keeper from the attempt:
   `RenderBackend.drawRoot` now takes `(Canvas) -> Unit`, decoupling the backends
   from `ComposeRootHost` (a genuine improvement, retained).
-- **Track A (real Skia on Windows K/N) is shelved.** Kotlin/Native mingwX64 is
-  GNU-ABI; skia-pack Windows is MSVC-ABI, which cannot be statically fused into a
-  GNU-ABI binary. Building current C++20 Skia to a GNU/mingw static archive is an
-  open-ended fork (only abandoned Mozilla-era precedent). The only working route
-  is a runtime DLL, which breaks the no-DLL invariant and adds tens of MB on the
-  one platform it targets. The SDL leg is the permanent Windows renderer; JVM is
-  the fidelity escape hatch.
+- **Real Skia on Windows K/N shipped (Route 1a).** mingwX64 links the bitsycore
+  skiko fork against `skiko-windows-x64.dll` (with an embedded GNU import lib),
+  published to GitHub Packages and auto-provisioned by the bridge plugin. This
+  replaced the SDL renderer as the Windows path. See
+  [SKIKO-MINGW-FEASIBILITY.md](SKIKO-MINGW-FEASIBILITY.md) for the ABI details
+  and the route trade-offs.
 
 ## 5. Convergence status
 
@@ -165,20 +135,19 @@ needs an offscreen:
 | B5: engine-convergence deltas audit | Done (clean wins spent by B6) |
 | P2.2: composition memory leak | Fixed + soak-gated |
 | P2.3: outsets / blur / renderEffect | Done via upstream `SkiaGraphicsLayer` |
-| P3.1: SDL text metrics parity (17% median -> 2%) | Done |
-| B3: further SDL fidelity | Capped (parity-ranked wins only) |
+| P3.1: text metrics parity (17% median -> 2%) | Done |
 | Module split | Shelved (infeasible as specified) |
-| Track A: real Skia on Windows | Shelved |
+| Track A: real Skia on Windows (Route 1a) | Done |
 
 ## 6. Remaining and future work
 
 Nothing here blocks day-to-day work. These are the open threads worth
 remembering.
 
-- **WIN-SMOKE (pre-ship, Windows only).** The Mac runbook covers both renderers
-  but cannot cover the shipped mingwX64 binary, the Windows-only `PrintWindow`
-  probe, or the common-metadata publish job. Run these on a Windows host before
-  any release. This is the only outstanding verification.
+- **WIN-SMOKE (pre-ship, Windows only).** The Mac runbook cannot cover the
+  shipped mingwX64 binary, the Windows-only `PrintWindow` probe, or the
+  common-metadata publish job. Run these on a Windows host before any release.
+  This is the only outstanding verification.
 - **Stabilization at Compose 1.12.0 stable.** The vendored refs are pinned to
   `v1.12.0-beta03+dev4483` (no clean beta03 tag exists yet, and it is not on
   Maven). The native side leads the JVM parity leg (forced to beta02, the latest
@@ -194,17 +163,12 @@ remembering.
     shadows already match JVM.
   - D3: dedupe `LayerTransformationMatrix.kt` against the now-vendored
     `Matrices.skiko`. Blocked on D2 (the shared owner-layer hit-test needs a
-    both-legs matrix fn).
+    matrix fn usable from the owner layer).
   - D4/D5: `SemanticsRegion` intersect/difference are stubs, and `CharHelpers`
     is naive grapheme/bidi vs upstream ICU. Real fidelity gaps, gated on an
     accessibility or complex-script roadmap.
   - D6: `Focusability` / `PlatformVelocityTracker` are byte-equal to upstream;
     vendoring them saves nothing.
-- **SDL performance (opportunistic).** Shared glyph atlas to replace per-run
-  textures; `drawImageRect` capture in the geo node (journal rates it low-ROI).
-- **SDL_GPU backend (long-term).** Real stencil clipping, pipelined batching,
-  shader gradients. The `NativeRenderNode` seam makes a GPU node a clean
-  drop-in.
 - **Native-resource lifecycle.** Wire `GraphicsLayer`/RenderNode +
   `SdlImageBitmap.close()` fully into cache eviction and the renderer
   `destroy()` chain; demote the periodic GC nudge once ownership covers it.
@@ -227,13 +191,6 @@ remembering.
   Found by exact live-counters, static-mode isolation, macOS `leaks`/`heap`/
   `vmmap`, and component bisection. RSS alone cannot pinpoint a referenced leak;
   budget heap tooling for this class.
-- **Offscreen-texture caching is timing-nondeterministic on complex screens.**
-  This is why the geo (no-render-target) node is the robust default, not the
-  texture node.
-- **Rounded/path layer clips must be applied or deferred on the fast path.** The
-  geo path submits raw geometry, which clips only to a rect; rounded clips are a
-  lazy offscreen mask the fast replay bypasses. Rect clip on the fast path;
-  rounded/generic clips fall back to block-replay.
 - **Screenshots miss crashes and settle-timing.** Free-running screenshots on
   animated/settling screens give false signals. Use render-to-quiescence +
   virtual frame time for parity, the probe for interaction/crash coverage.
@@ -254,9 +211,6 @@ remembering.
 - `compose/ui/ui/src/nativeMain/.../RenderBackend.kt`: the interface.
 - `compose/ui/ui/src/nativeMain/.../GpuMode.kt`: renderer / driver picker.
 - `compose/ui/ui/src/skikoRendererMain/.../renderer/skia/SkiaRenderBackend.kt`.
-- `compose/ui/ui/src/sdlRendererMain/.../renderer/sdl/Sdl3RenderBackend.kt`.
-- `compose/ui/ui/src/sdlRendererMain/.../renderer/sdl/FreeTypeIcons.kt`:
-  variable-font axis rasterization.
 - `compose/ui/ui/src/commonMain/.../node/ComposeRootHost.kt`: root host,
   hit-test, event dispatch, snapshot observer sweep.
 - `compose/ui/ui/src/commonMain/.../node/impl/ComposeOwner.kt`: the project

@@ -8,18 +8,18 @@ For architecture, source-set layout, and vendoring rules, see
 
 ## Native libraries
 
-SDL3, SDL3_ttf, SDL3_image, and FreeType are built from source as static
-libraries and linked straight into the executable. One script does it on every
-OS. Output lands in the gitignored `libs/`; versions are pinned in
-`scripts/build-sdl/build-sdl.properties`.
+SDL3 is built from source as a static library and linked straight into the
+executable — the windowing, input, and platform-integration layer. One script
+does it on every OS. Output lands in the gitignored `libs/`; the version is
+pinned in `scripts/build-sdl/build-sdl.properties`.
 
 ```bash
-python3 scripts/build-sdl/build-all.py            # freetype, sdl3, sdl3-image, sdl3-ttf
-python3 scripts/build-sdl/build-all.py sdl3-ttf   # rebuild one step
+python3 scripts/build-sdl/build-all.py            # sdl3
+python3 scripts/build-sdl/build-all.py sdl3       # rebuild the step
 ```
 
 Needs `git`, `cmake`, and Python 3 on every host (`ninja` is fetched when
-absent). Run it once per machine, or after bumping the pinned versions.
+absent). Run it once per machine, or after bumping the pinned version.
 
 ## Vendoring upstream Compose
 
@@ -63,16 +63,16 @@ python3 scripts/compose-coverage.py --missing ui-text      # list uncovered decl
 ### One-command gate
 
 `verify-mac.sh` is the runbook to run after any renderer or layout change. On
-macOS or Linux it exercises BOTH renderer legs (Skia by default, then
-`-Prenderer=sdl3`) and exits non-zero on any failure:
+macOS or Linux it exercises the Skia renderer and exits non-zero on any
+failure:
 
 ```bash
 scripts/verify-mac.sh
 ```
 
-It runs, per leg: the vendor drift and clean checks, a build of `:demo` and
-`:apidemo`, the interaction probes, the parity sweep, a memory soak, and a
-frame-time spot check. The Windows target is verified separately (see below).
+It runs: the vendor drift and clean checks, a build of `:demo` and `:apidemo`,
+the interaction probes, the parity sweep, a memory soak, and a frame-time spot
+check. The Windows target is verified separately (see below).
 
 ### Parity: native vs JVM
 
@@ -135,6 +135,13 @@ gradlew.bat :demo:runDebugExecutableMingwX64
 gradlew.bat :apidemo:runDebugExecutableMingwX64
 ```
 
+mingwX64 renders through Skia via the **bitsycore skiko fork**, consumed from
+GitHub Packages as `org.jetbrains.skiko:skiko:0.150.1-mingw.1` (macOS/Linux use
+official Skiko). The runtime `skiko-windows-x64.dll` is auto-provisioned next
+to the executable by the bridge plugin — no manual copy. The fork itself is
+published by a separate GitHub Actions workflow in the fork repo, out of band
+from this repo's release flow.
+
 ## Consuming the port
 
 To build a third-party app against the published klibs, apply the bridge Gradle
@@ -154,8 +161,8 @@ single file to edit; know which axis you are changing.
 | Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Group is `com.bitsycore.compose.sdl`. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
 | JVM parity forcing | `vComposeJvmVersion` in `demo`, `apidemo`, and `material-symbols` `build.gradle.kts`. | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published. |
-| Skiko | `skiko` in `gradle/libs.versions.toml`. | Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses. Verify with a throwaway `skikoRendererMain` compile if unsure. |
-| SDL3 / SDL3_ttf / SDL3_image / FreeType | `scripts/build-sdl/build-sdl.properties`. | Rebuild `libs/` with `build-all.py` after any change. |
+| Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko; mingwX64 uses the bitsycore fork (`0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses. Verify with a throwaway `skikoRendererMain` compile if unsure. |
+| SDL3 | `scripts/build-sdl/build-sdl.properties`. | Rebuild `libs/` with `build-all.py` after any change. |
 | Bridge substituted version | Defaults to the bridge plugin's own published version; consumers override with the `composeDesktopNative.version` Gradle property. | The plugin publishes with the release tag, so a consumer on the matching plugin version resolves the right klibs automatically. |
 
 ### Bump the upstream Compose ref
@@ -168,8 +175,8 @@ Run this on each upstream bump; it is the flow that keeps the sync tax low.
 3. `python3 scripts/compose-fork/check-vendor-drift.py`. For any manual vendor
    whose upstream base actually changed, reconcile by hand; otherwise re-stamp
    its `// VENDOR-BASE:` header to the new ref.
-4. Build both legs and fix any fallout.
-5. `scripts/verify-mac.sh` (both legs green, including the soak and parity gates).
+4. Build and fix any fallout.
+5. `scripts/verify-mac.sh` (green, including the soak and parity gates).
 6. If a matching Compose version is now published to Maven, bump
    `vComposeJvmVersion` in demo/apidemo/material-symbols to close the skew.
 7. Run WIN-SMOKE on a Windows host.

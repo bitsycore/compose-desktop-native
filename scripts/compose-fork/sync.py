@@ -377,7 +377,7 @@ def ensure_clone(url, ref, sparse_dirs):
 # ==================
 
 # Source-set (upstream dir name) -> vendor area, matching the project's
-# src/vendor/{common,native,skikoRenderer,sdlRenderer} layout. Anything not listed
+# src/vendor/{common,native,skikoRenderer} layout. Anything not listed
 # falls back to the source-set name minus "Main" (e.g. desktopMain -> desktop) so a
 # non-K/N set is clearly flagged as "you probably don't want this here" in the
 # commented suggestion the user then edits.
@@ -386,7 +386,7 @@ GAP_AREA = {
 	'nativeMain': 'native', 'macosMain': 'native', 'iosMain': 'native',
 	'linuxMain': 'native', 'mingwMain': 'native', 'darwinMain': 'native',
 	'appleMain': 'native', 'unixMain': 'native', 'tvosMain': 'native', 'watchosMain': 'native',
-	'skikoMain': 'skikoRenderer', 'sdlMain': 'sdlRenderer',
+	'skikoMain': 'skikoRenderer',
 }
 GAP_START = '# >>> ---- DIAGNOSTIC GAPS ---- <<<<'
 GAP_END = '# <<< ---- DIAGNOSTIC GAPS ---- >>>>'

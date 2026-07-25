@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Parity harness - render every demo screen on the NATIVE (SDL/Skia) stack and on
+Parity harness - render every demo screen on the NATIVE (Skia) stack and on
 the JVM upstream-Compose stack, then pixel-diff them per screen.
 
 The two stacks share the exact same commonMain screen composables, so a screen
@@ -15,8 +15,6 @@ Usage (from repo root):
     python scripts/parity/parity.py                 # all screens, host's native target
     python scripts/parity/parity.py Buttons Shapes  # a subset
     python scripts/parity/parity.py --no-build      # reuse existing screenshots
-    python scripts/parity/parity.py --renderer=sdl3 # force the SDL leg (default on mingw;
-                                                    # on macOS/Linux this -Prenderer=sdl3 build)
     python scripts/parity/parity.py --target=macosArm64   # cross/explicit native target
 
 Outputs to build/parity/ (gitignored):
@@ -25,10 +23,9 @@ Outputs to build/parity/ (gitignored):
     report.txt                 ranked table
 The <pct> prefix is zero-padded so a plain file listing sorts worst-first.
 
-TARGET-AWARE (P0.1): the native leg runs on whatever host you invoke it from - Windows
-(mingwX64, always the SDL renderer), or macOS/Linux (default the Skia renderer, or the SDL
-renderer under --renderer=sdl3). macOS/Linux run BOTH renderers, so one Mac verifies both
-legs. Needs Pillow.
+TARGET-AWARE (P0.1): the native leg runs on whatever host you invoke it from -
+Windows (mingwX64), macOS (macosArm64/X64), or Linux (linuxX64/Arm64). Every host
+renders through Skia now; the comparison is native-Skia vs JVM. Needs Pillow.
 """
 import subprocess, sys, os, shutil, platform, json
 from pathlib import Path
@@ -74,14 +71,9 @@ def run(cmd, **kw):
     return subprocess.run(cmd, cwd=REPO, **kw)
 
 
-def build(target: str, renderer: str):
+def build(target: str):
     suffix, _ = TARGETS[target]
-    cmd = [GRADLEW, f":demo:linkDebugExecutable{suffix}", "--console=plain"]
-    # macOS/Linux pick the renderer at BUILD time via -Prenderer; mingw is always sdl3
-    # (no property needed, and omitting it keeps the default Windows invocation stable).
-    if renderer == "sdl3" and target != "mingwX64":
-        cmd.append("-Prenderer=sdl3")
-    run(cmd, check=True)
+    run([GRADLEW, f":demo:linkDebugExecutable{suffix}", "--console=plain"], check=True)
 
 
 def jvm_shots(dst: Path):
@@ -143,10 +135,10 @@ def side_by_side(native, jvm, diff, path):
     canvas.save(path)
 
 
-# P0.4 (RENDERER.md §8): per-(target/renderer) golden baselines so parity GATES
-# (non-zero exit) instead of only ranking. A screen regresses if it exceeds its baseline by
-# more than max(ABS_MARGIN pts, baseline*REL_MARGIN) - tolerant of run-to-run AA jitter,
-# strict on a real jump. `--update-baselines` reseeds the current target/renderer.
+# P0.4: per-target golden baselines so parity GATES (non-zero exit) instead of
+# only ranking. A screen regresses if it exceeds its baseline by more than
+# max(ABS_MARGIN pts, baseline*REL_MARGIN) - tolerant of run-to-run AA jitter,
+# strict on a real jump. `--update-baselines` reseeds the current target.
 BASELINES = REPO / "scripts" / "parity" / "baselines.json"
 ABS_MARGIN = 3.0   # percentage points
 REL_MARGIN = 0.25  # +25% of the baseline
@@ -173,19 +165,15 @@ def main():
     if target not in TARGETS:
         print(f"parity: unknown --target={target} (known: {', '.join(TARGETS)})", file=sys.stderr)
         return 2
-    # Renderer: mingw is always SDL; macOS/Linux default to Skia unless --renderer=sdl3.
-    renderer = next((f.split("=", 1)[1] for f in flags if f.startswith("--renderer=")),
-                    "sdl3" if target == "mingwX64" else "skia")
-    # Runtime GPU driver: default "sdl3" for the SDL renderer; omit for Skia (app default,
-    # e.g. Metal on macOS). Explicit --gpu= always wins.
-    gpu = next((f.split("=", 1)[1] for f in flags if f.startswith("--gpu=")),
-               "sdl3" if renderer == "sdl3" else "")
+    # Runtime GPU driver override (skia.opengl / skia.metal / software); omit to
+    # let the app pick its per-platform default. Explicit --gpu= always wins.
+    gpu = next((f.split("=", 1)[1] for f in flags if f.startswith("--gpu=")), "")
     exe = native_exe(target)
     update_baselines = "--update-baselines" in flags
-    baseline_key = f"{target}/{renderer}"
+    baseline_key = target
     baselines = load_baselines()
     base_for_key = baselines.get(baseline_key, {})
-    print(f"parity: target={target} renderer={renderer} gpu={gpu or '(default)'} exe={exe}")
+    print(f"parity: target={target} gpu={gpu or '(default)'} exe={exe}")
     print(f"parity: baseline key '{baseline_key}' - {len(base_for_key)} screen(s) baselined"
           f"{'  [--update-baselines: WILL RESEED]' if update_baselines else ''}")
 
@@ -197,7 +185,7 @@ def main():
         old.unlink()
 
     if not no_build:
-        build(target, renderer)
+        build(target)
         if jvm_dir.exists():
             shutil.rmtree(jvm_dir)
         jvm_dir.mkdir(parents=True)

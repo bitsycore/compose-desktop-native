@@ -2,9 +2,8 @@
 
 Everything the port currently leaves as a no-op, stub, hardcode, or partial
 implementation, plus the gaps worth closing before a stable 1.12 release. This
-is an audit of PROJECT code only (the `*.native.kt` / `*.sdl.kt` /
-`com.compose.sdl.*` actuals); vendored upstream under `src/vendor/` is out of
-scope.
+is an audit of PROJECT code only (the `*.native.kt` / `com.compose.sdl.*`
+actuals); vendored upstream under `src/vendor/` is out of scope.
 
 Severity is a rough guide, not a mandate:
 
@@ -14,10 +13,10 @@ Severity is a rough guide, not a mandate:
 - **Cosmetic**: minor fidelity or edge-case behavior.
 
 Context for prioritizing: the project goal is **G1, cheap upstream-tracking**
-(see [RENDERER.md](RENDERER.md)). The **JVM Compose Desktop target is the
-documented Windows fidelity/feature tier**, so SDL-leg visual gaps (section H)
-are lower priority than the cross-cutting platform gaps that affect every
-backend including Skia on macOS/Linux.
+(see [RENDERER.md](RENDERER.md)). There is now ONE renderer — **Skia**
+(macOS/Linux official Skiko; mingwX64 the bitsycore skiko fork), so Windows
+renders through real Skia. The priorities below are the cross-cutting platform
+gaps that affect every OS. JVM Compose Desktop remains a parity cross-check.
 
 Renderer-internal cleanups (the deferred D2 shadow-lighting split, D3 matrix
 dedupe) live in [RENDERER.md](RENDERER.md#6-remaining-and-future-work), not
@@ -37,27 +36,12 @@ Platform / cross-cutting:
   via SDL (I-beam over text, hand over links).
 - **WindowInfo** (`bad23073`) — `isWindowFocused` + `containerSize` / `containerDpSize`
   report real values (were hardcoded `true` / `Zero`).
-- **ImageBitmap from bytes** (SDL leg) — `ByteArray.decodeToImageBitmap()` /
-  `createImageBitmap(bytes)` decodes via SDL3_image; was
-  `UnsupportedOperationException`. Verified `demo --imagebytestest` on both legs.
+- **ImageBitmap from bytes** — `ByteArray.decodeToImageBitmap()` /
+  `createImageBitmap(bytes)` decodes encoded image bytes; was
+  `UnsupportedOperationException`. Verified `demo --imagebytestest`.
 - **`FontFamily.Monospace`** — generic families map to `"generic:<name>"`;
   `registerGenericFonts` registers bundled NotoSansMono under `generic:monospace`
   (bundled only when the app references it). Verified `demo --fonttest`.
-
-SDL renderer fidelity (all verified against the Skia leg via `demo --<name>test`):
-
-- **DashPathEffect** (`--dashtest`), **gradient TileMode** repeat/mirror/decal
-  (`--tilemodetest`), **drawPoints/drawRawPoints** Points/Lines/Polygon
-  (`--pointstest`), **rotated images** via textured `SDL_RenderGeometry`
-  (`--rotimgtest`).
-- **BlendMode** (`774271eb`, `--blendtest`) — Plus/Modulate/Multiply/Src via SDL
-  hardware blend (`withBlend`); other separable modes fall back to SrcOver.
-- **Stroke joins + Square cap** (`3518521c`, `--jointest`) — miter/bevel/round
-  (`emitJoin`) + round/square end caps (`emitCap`), pixel-identical to Skia.
-- **ColorFilter on shapes** (`169a51f0`, `--filtertest`) — tint / colorMatrix
-  (grayscale/saturation) / lighting per-vertex; pixel-exact vs Skia.
-- **Stroked elliptical ovals** (`efaf20d9`, `--ovaltest`) — true ellipse band, not
-  a circular ring on the averaged radius.
 
 ---
 
@@ -70,7 +54,7 @@ The cross-cutting items to weigh first (all detailed below):
    menu, upstream TODO CMP-7819).
 2. **Accessibility is entirely absent** (section A). Decide whether stable
    requires any screen-reader support at all.
-3. Fonts (section D): compose-resources `Font(Res.font.x)` works on both legs, and
+3. Fonts (section D): compose-resources `Font(Res.font.x)` works, and
    `FontFamily.Monospace` now renders NotoSansMono. Remaining: `Serif`/`Cursive`
    generics (no bundled font) and the androidx `Font(bytes)`/`PlatformFontLoader`
    path. Nice-to-have, not a blocker.
@@ -116,9 +100,8 @@ calendar/clock/number prefs). These require a bundled CLDR subset or a K/N i18n 
 ## D. Font resolution
 
 **Custom fonts via compose-resources work.** `org.jetbrains.compose.resources.Font(Res.font.x)`
-loads the bytes and registers them with the project font registry (IconFont → NamedFont)
-on both renderer legs (`FontResources.sdl.kt`, shared by the skiko leg via a srcDir
-alias), so the standard CMP way to bundle a font renders correctly.
+loads the bytes and registers them with the project font registry (IconFont → NamedFont),
+so the standard CMP way to bundle a font renders correctly.
 
 - `FontFamily.Serif` / `FontFamily.Cursive` still collapse to the default sans — no bundled
   serif/cursive font yet (`downloadNotoFonts` fetches Sans + SansMono only). Register one under
@@ -149,56 +132,29 @@ Drop INTO the window (files + text) is fully wired and works. Drag OUT does not.
 - `compose/ui/ui/src/nativeMain/.../node/impl/ComposeOwner.kt:287` · deprecated `clipboardManager` `setText`/`getText` NOP, and `clipboard.getClipEntry` null. Harmless: the real `LocalClipboard` (text + PNG image via SDL3) works. **Cosmetic.**
 - `compose/foundation/.../text/input/internal/selection/TextFieldSelectionState.native.kt:44` · `ClipboardPasteState.hasClip` aliased to `hasText`, so image-only clipboard is not detected for the paste affordance. **Cosmetic.**
 
-## H. SDL renderer graphics (Windows / `-Prenderer=sdl3` only)
+## H. Skia renderer anomalies
 
-These affect only the SDL leg. On macOS/Linux the Skia leg implements them
-correctly, and JVM is the documented Windows fidelity tier, so these are lower
-priority under G1. Listed because SDL is the shipped Windows renderer. (Several
-SDL fidelity gaps are now closed — see **Completed** above.)
+Skia is the renderer everywhere, so its bugs are rarely tracked here. This one
+surfaced while adding BlendMode coverage (`demo --blendtest`):
 
-The biggest remaining value here is the **offscreen-layer work** (blur + real
-`saveLayer`); the two are the same infrastructure and warrant a dedicated pass
-with the full parity + verify-mac gate, not a probe.
-
-- **Blur / RenderEffect** — `compose/ui/ui/src/sdlRendererMain/.../graphics/RenderEffect.sdl.kt:16` `RenderEffect.isSupported()` is `false`; `Modifier.blur()` and `graphicsLayer{renderEffect=...}` do nothing; `.../graphics/shadow/Blur.native.kt:33` `Paint.setBlurFilter` NOP. Needs an offscreen render target + a blur pass (box-blur infra already exists in `Sdl3ShadowCache`). **Nice-to-have (Windows visual parity).**
-- **`saveLayer` has no offscreen buffer** — `Sdl3Canvas.kt:436`: layer alpha is multiplied into each primitive, so overlapping content double-composites (wrong group opacity) and the layer paint's colorFilter/blendMode/renderEffect are dropped. Same offscreen infra as blur. **Nice-to-have (blocker for correct group-alpha over overlapping content).**
-- **`clipPath` degrades to a bounding box** — `Sdl3Canvas.kt:509`: an arbitrary path clip collapses to its AABB; a rotated/sheared `clipRect` also collapses to an AABB, so non-rect clips leak. (Rounded/difference clips are real, with feathered AA.) **Nice-to-have.**
-- **`ActualImageShader` / `ActualCompositeShader` are stubs** — `CanvasPaintActuals.native.kt:106`: an image/composite `ShaderBrush` degrades to a solid white/black fill (the tessellator emits per-vertex colours, not UVs). **Nice-to-have.**
-- **`PathFillType` (NonZero vs EvenOdd)** — mostly ignored beyond the 2-contour border-ring case; interior holes and self-intersections are not cut out, and concave fills self-overlap (fan triangulation) (`Sdl3DrawScope.kt:366,717`). Needs a scanline/tessellation fill. **Nice-to-have.**
-- **`drawVertices`** (custom vertex meshes) is still a NOP in the DrawScope. **Nice-to-have.**
-- **ColorFilter/blur on IMAGE blits** — image blits honor only `BlendModeColorFilter` tint (`Sdl3Canvas.kt:1281`); a `ColorMatrix`/lighting filter or blur on a bitmap needs per-pixel work. Capture-mode (`graphicsLayer`) block-replay also drops the shape colorFilter. **Nice-to-have.**
-- **`SdlImageBitmap.readPixels` is a no-op** (`Sdl3Offscreen.kt:117`) — can't read back an offscreen-rendered bitmap. **Cosmetic / nice-to-have.**
-- **Drop shadow is approximated** (`Sdl3Canvas.kt:785`) — 9-slice / stacked rings, not a true gaussian; ambient vs spot largely collapsed; AA is a ~1px geometry fringe, not analytic coverage. **Cosmetic.**
-- `DashPathEffect` `corner`/`chain`/`stamped` variants remain NOP (only the interval dash is implemented). **Cosmetic.**
-
-## I. Skia renderer (macOS/Linux default) anomalies
-
-The Skia leg is normally the fidelity reference, so its bugs are rarely tracked
-here. This one surfaced while adding SDL BlendMode parity (`demo --blendtest`):
-
-- `BlendMode.Multiply` renders wrong on the Skia leg. A filled `drawRect` with
-  opaque `Color.Cyan` over opaque `Color.Yellow` reads back `(0,0,255)` blue;
-  the multiply formula can only yield `(0,255,0)` green for opaque cyan×yellow,
-  and the SDL leg produces exactly that. `Plus` and `Modulate` composite
-  correctly on the same path, so `paint.blendMode` IS applied — the fault is
-  specific to `MULTIPLY` (likely a Metal-backend / premultiply interaction in
-  the graphics-layer flatten, not the `BlendMode.toSkia()` map, which is
-  correct). Needs isolating on the Skia draw path. **Nice-to-have (Skia leg).**
+- `BlendMode.Multiply` renders wrong. A filled `drawRect` with opaque
+  `Color.Cyan` over opaque `Color.Yellow` reads back `(0,0,255)` blue; the
+  multiply formula can only yield `(0,255,0)` green for opaque cyan×yellow.
+  `Plus` and `Modulate` composite correctly on the same path, so
+  `paint.blendMode` IS applied — the fault is specific to `MULTIPLY` (likely a
+  Metal-backend / premultiply interaction in the graphics-layer flatten, not
+  the `BlendMode.toSkia()` map, which is correct). Needs isolating on the Skia
+  draw path. **Nice-to-have.**
 
 ## J. Needs further review (2026-07 bug audit)
 
-An audit (3 parallel passes over the renderer, recent SDL features, and the
-text/input/event actuals) surfaced these. The clear, contained bugs were fixed
-in the same pass (see below); the items here are left open because they are
-either invasive, risky, or a cosmetic-AA judgement call.
+An audit (parallel passes over the renderer and the text/input/event actuals)
+surfaced these. The clear, contained bugs were fixed in the same pass; the items
+here are left open because they are either invasive, risky, or a judgement call.
+(The renderer-side fixes from that pass predate the single-Skia consolidation and
+are no longer tracked here.)
 
-Fixed in the audit (for reference, not open work): the `roundRectCore`
-inverted-rect crash; `drawArc(useCenter=false)` now fills the segment (was always
-a pie sector); `BlendMode.Src` no longer punches the AA fringe out via
-`SDL_BLENDMODE_NONE`; the cover-fill fast-path no longer drops the paint's
-`colorFilter`; `saveLayer` in capture mode keeps the save/restore stack balanced;
-stroked oval / round-rect inner radius is clamped ≥ 0; the per-vertex
-`ColorMatrix` copy is hoisted out of the sample loop; `Locale.region` no longer
+Fixed in the audit (for reference, not open work): `Locale.region` no longer
 returns the language for a single-subtag tag; and a `MOUSE_LEAVE` now clears
 hover so a widget doesn't stay highlighted after the cursor exits.
 
@@ -208,10 +164,3 @@ Open — platform / input:
 - **A window created unfocused is still promoted to RESUMED** (`ComposeWindow.kt:575-576, 713-719`). `windowFocused`/`windowVisible` default `true`, so a second `Window {}` opened while another holds focus (or one opened minimized) reports `RESUMED` until SDL later delivers a focus/minimize event. Should query `SDL_GetWindowFlags` at creation. **Review.**
 - **IME text-input area is only pushed on the first `TEXT_EDITING`** (`ComposeWindow.kt:803`; `updateImeArea()` not called on focus gain / first `StartTextInput` / caret move). The first candidate popup can appear at (0,0) before correcting. The rect math itself is correct. **Review.**
 - **`Snapshot.sendApplyNotifications()` is called synchronously inside the global write observer** (`ComposeWindow.kt:143-146`). Compose Desktop's `GlobalSnapshotManager` deliberately defers it to a separate dispatch; calling it per-write is redundant (the main loop already calls it each frame) and risks re-entrancy during snapshot application. Verify against the runtime's guard before changing — behaviour-sensitive. **Review (risky).**
-
-Open — SDL renderer (cosmetic AA / draw-time):
-
-- **Stroke joins are not antialiased and reach ~0.5px past the band** (`Sdl3DrawScope.kt` `emitJoin`). The segment band feathers to `halfW − kAaHalf` solid + fringe, but joins fill solid to full `halfW` with a hard edge, so corners read as slightly darker/crisper nubs — visible on thin or translucent strokes. Needs feathered join geometry. **Review (cosmetic).**
-- **Round join over-draws the stroke body** (`Sdl3DrawScope.kt` `emitJoin`, `StrokeJoin.Round`): a full disc overlaps the adjacent segments, so a semi-transparent stroke double-blends darker at each corner. Fill only the convex wedge. **Review (cosmetic).**
-- **Text / icon draws ignore the draw-time `colorFilter`** — `activeColorFilter` is consulted only by the tessellation sampler; glyph/icon runs blit through the text renderer with a pre-resolved colour, so a `BlendModeColorFilter` tint applied at draw time to a `Text`/icon node isn't honored (acceptable if callers pre-fold the tint into the glyph colour). **Review.**
-- **Rounded-clip containment ignores stroke half-width** (`Sdl3Canvas.kt` `admitDraw`/`tryDrawRectUnderPendingClips`): a stroked shape whose fill-box is inside a pending rounded clip but whose stroke pokes past it skips mask realization, so the stroke's outer half is bounded only by the AABB, not the rounded outline. Marginal (only bites at the exact clip boundary). **Review.**

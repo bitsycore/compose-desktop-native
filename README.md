@@ -18,20 +18,21 @@ executable for macOS (arm64), Linux (x64/arm64), and Windows (mingwX64), using
 - **The UI layers are vendored upstream.** `androidx.compose.ui`, `foundation`,
   `animation`, and `material3` are copied from Compose Multiplatform verbatim
   wherever they compile as is, with project code filling in only the native glue.
-- **Rendering is pluggable** behind one `RenderBackend`: Skia (via Skiko) on
-  macOS and Linux, and a from-scratch SDL3 renderer (`SDL3_ttf` +
-  `SDL_RenderGeometry`) on Windows, or anywhere with `-Prenderer=sdl3`.
+- **Rendering is Skia everywhere.** macOS and Linux link the official Skiko
+  klibs (Metal / OpenGL); Windows links the bitsycore Skiko fork, which ships
+  Skiko and Skia together in `skiko-windows-x64.dll`.
 - **The platform is SDL3.** Windowing, input, audio, filesystem, file dialogs,
   and clipboard all go through SDL3, so one code path covers every OS.
-- **No runtime dependencies.** SDL3 and its codecs are built as static
-  libraries and linked in. A distributable is just the executable plus a
-  `data.kres` resource bundle.
+- **Lean distributables.** SDL3 is built as a static library and linked in. On
+  macOS and Linux a distributable is just the executable plus a `data.kres`
+  resource bundle; on Windows it also ships `skiko-windows-x64.dll` next to the
+  exe (auto-provisioned by the bridge plugin).
 
-| Platform | Gradle target | Default renderer |
-|----------|---------------|------------------|
-| macOS arm64 | `macosArm64` | Skia (Metal) |
-| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia (OpenGL) |
-| Windows | `mingwX64` | SDL3 |
+| Platform | Gradle target | Renderer |
+|----------|---------------|----------|
+| macOS arm64 | `macosArm64` | Skia (Metal) — official Skiko |
+| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia (OpenGL) — official Skiko |
+| Windows | `mingwX64` | Skia — bitsycore Skiko fork |
 
 ## Quickstart
 
@@ -122,7 +123,7 @@ dialogs, canvas, graphics layers, animation, and gestures.
 ```bash
 ./gradlew :demo:runDebugExecutableMacosArm64   # macOS (Skia / Metal)
 ./gradlew :demo:runDebugExecutableLinuxX64     # Linux (Skia / OpenGL)
-gradlew.bat :demo:runDebugExecutableMingwX64   # Windows (SDL3)
+gradlew.bat :demo:runDebugExecutableMingwX64   # Windows (Skia / Skiko fork)
 ./gradlew :demo:run                            # JVM Compose Desktop (reference)
 ```
 
@@ -137,9 +138,6 @@ client certificates.
 ./gradlew :apidemo:runDebugExecutableMacosArm64
 ./gradlew :apidemo:run                         # JVM Compose Desktop (reference)
 ```
-
-Pass `-Prenderer=sdl3` on macOS or Linux to drop Skiko and use the pure SDL3
-renderer everywhere.
 
 ## Modules
 
@@ -159,7 +157,7 @@ compatible artifacts are in [CLAUDE.md](CLAUDE.md).
 Build the native libraries once per machine, then build any app target:
 
 ```bash
-python3 scripts/build-sdl/build-all.py         # SDL3, SDL3_ttf, SDL3_image, FreeType (static)
+python3 scripts/build-sdl/build-all.py         # SDL3 (static)
 ./gradlew :demo:runDebugExecutableMacosArm64
 ```
 

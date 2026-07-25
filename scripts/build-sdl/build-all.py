@@ -10,13 +10,14 @@ Builds SDL3 (windowing / input / platform) as a static library:
 
 The SDL3_ttf / SDL3_image / FreeType libraries are no longer built: the project
 renders through Skia now, so the from-scratch SDL renderer and its glyph/image
-codecs were removed. Their builders remain in this file but are unused.
+codecs were removed.
 
 Usage:
   python3 build-all.py                 build SDL3
 
-Everything is static + HarfBuzz/plutosvg-free, so the app links to a clean
-<app> + data.kres with no runtime .dylib / .so / .dll alongside.
+SDL3 links statically into the executable. macOS/Linux stay self-contained
+(<app> + data.kres); Windows also ships skiko-windows-x64.dll (the Skia fork)
+next to the exe, provisioned by the bridge plugin.
 
 Requires on every host: git, cmake, python 3. Ninja is fetched into
 libs/.build/ninja-bin when absent. Windows also needs a mingw-w64 g++ on PATH
@@ -284,34 +285,6 @@ def cmakeBuildInstall(inOut):
 	run(["cmake", "--install", Path(inOut).as_posix()])
 
 # ==================
-# MARK: FreeType
-# ==================
-
-def buildFreetype(inHost, inCc, inCxx):
-	"""Build a self-contained static FreeType into libs/FreeType. Optional
-	dependencies (PNG / HarfBuzz / Brotli / BZip2 / system zlib) are DISABLED —
-	only core + variable-font (MM / GX) support is kept, which is all the SDL3
-	renderer needs for Material Symbols axes and variable Roboto. The result
-	is a static libfreetype.a with NO external DLLs / dylibs that links
-	straight into the Kotlin/Native binary (the freetype.def does -lfreetype)."""
-	vBuild = kLibsDir / ".build" / "freetype"
-	vBuild.mkdir(parents=True, exist_ok=True)
-	vNinja = findNinja(vBuild, inHost)
-	vUrl = requireManifest("FREETYPE_URL", inHost)
-	vTag = requireManifest("FREETYPE_TAG", inHost)
-	vSrc = cloneIfChanged(vBuild, vUrl, vTag)
-
-	print(">> configuring (static, optional deps off)")
-	cmakeConfigure(vSrc, vBuild / "out", vNinja, inCc, inHost, kLibsDir / "FreeType", [
-		"-DFT_DISABLE_HARFBUZZ=ON", "-DFT_DISABLE_PNG=ON", "-DFT_DISABLE_BROTLI=ON",
-		"-DFT_DISABLE_BZIP2=ON", "-DFT_DISABLE_ZLIB=ON",
-	])
-
-	print(">> building + installing")
-	cmakeBuildInstall(vBuild / "out")
-	print(">> done: " + str(kLibsDir / "FreeType") + " (static libfreetype.a, no runtime deps)")
-
-# ==================
 # MARK: SDL3
 # ==================
 
@@ -390,134 +363,6 @@ def bakeSetjmpStub(inBuildDir, inSdl3Dir, inCc):
 	vCFile.write_text(kSetjmpStubSource, encoding="utf-8")
 	run([inCc, "-c", "-Os", vCFile.as_posix(), "-o", vObj.as_posix()])
 	run(["ar", "rcs", (Path(inSdl3Dir) / "lib" / "libSDL3.a").as_posix(), vObj.as_posix()])
-
-# ==================
-# MARK: SDL3_image
-# ==================
-
-def buildSdl3Image(inHost, inCc, inCxx):
-	"""Build a static SDL3_image into libs/SDL3_image plus the static archives
-	of its vendored codecs (zlib, libpng, libwebp). Formats: PNG + JPG
-	(built-in stb backend) + WEBP + SVG (and the built-in BMP/GIF/QOI/TGA/...
-	which need no external codec). AVIF / TIFF / JXL are OFF — they pull the
-	very large dav1d / aom / libjxl submodules we don't init.
-
-	Static archives don't bundle their dependencies, so every vendored *.a is
-	copied out of the build tree next to libSDL3_image.a; the app's linker
-	line lists them. Needs sdl3 built FIRST (links against libs/SDL3)."""
-	if not (kLibsDir / "SDL3" / "lib").is_dir():
-		raise SystemExit("ERROR: static SDL3 not found — run `python3 "
-			+ str(kToolsDir / "build-all.py") + " sdl3` first")
-	vBuild = kLibsDir / ".build" / "sdl3imgsrc"
-	vBuild.mkdir(parents=True, exist_ok=True)
-	vNinja = findNinja(vBuild, inHost)
-	vUrl = requireManifest("SDL_IMAGE_URL", inHost)
-	vRef = requireManifest("SDL_IMAGE_REF", inHost)
-	vSrc = cloneIfChanged(vBuild, vUrl, vRef)
-	vOut = vBuild / "out"
-	vPrefix = vBuild / "prefix"
-
-	print(">> fetching vendored codec submodules (zlib, libpng, libwebp)")
-	run(["git", "-C", vSrc, "submodule", "update", "--init", "--depth", "1",
-		"external/zlib", "external/libpng", "external/libwebp"])
-
-	print(">> configuring (static, vendored PNG/WEBP + stb JPG + built-in SVG; AVIF/TIF/JXL off)")
-	forceRmtree(vOut)
-	cmakeConfigure(vSrc, vOut, vNinja, inCc, inHost, vPrefix, [
-		"-DCMAKE_CXX_COMPILER=" + (inCxx or inCc),
-		"-DCMAKE_PREFIX_PATH=" + (kLibsDir / "SDL3").as_posix(),
-		"-DSDLIMAGE_VENDORED=ON",
-		"-DSDLIMAGE_DEPS_SHARED=OFF",
-		"-DSDLIMAGE_SAMPLES=OFF", "-DSDLIMAGE_TESTS=OFF", "-DSDLIMAGE_INSTALL=ON",
-		"-DSDLIMAGE_PNG=ON", "-DSDLIMAGE_JPG=ON", "-DSDLIMAGE_WEBP=ON", "-DSDLIMAGE_SVG=ON",
-		"-DSDLIMAGE_AVIF=OFF", "-DSDLIMAGE_TIF=OFF", "-DSDLIMAGE_JXL=OFF",
-	])
-
-	print(">> building + installing")
-	forceRmtree(vPrefix)
-	cmakeBuildInstall(vOut)
-
-	vDest = kLibsDir / "SDL3_image"
-	print(">> installing into " + str(vDest) + " (+ vendored codec archives)")
-	forceRmtree(vDest)
-	(vDest / "lib").mkdir(parents=True)
-	shutil.copytree(vPrefix / "include", vDest / "include")
-	for vLib in (vPrefix / "lib").rglob("libSDL3_image*.a"):
-		shutil.copy2(vLib, vDest / "lib" / vLib.name)
-	# Harvest the vendored codec static archives from the build tree.
-	for vLib in vOut.rglob("*.a"):
-		if vLib.name != "libSDL3_image.a":
-			shutil.copy2(vLib, vDest / "lib" / vLib.name)
-	# libpng installs both libpng.a and an identical libpng16.a — keep one.
-	(vDest / "lib" / "libpng.a").unlink(missing_ok=True)
-	# Normalize zlib archive name across platforms: on Windows CMake produces
-	# libzlibstatic.a, elsewhere libz.a. The cinterop staticLibraries directive
-	# lists a single filename per platform, so drop a libz.a alias if only the
-	# libzlibstatic.a form exists.
-	vZlibStatic = vDest / "lib" / "libzlibstatic.a"
-	if vZlibStatic.is_file() and not (vDest / "lib" / "libz.a").is_file():
-		shutil.copy2(vZlibStatic, vDest / "lib" / "libz.a")
-
-	print(">> done: " + str(vDest))
-	print(">> static archives present:")
-	for vLib in sorted((vDest / "lib").iterdir()):
-		print("   " + vLib.name)
-
-# ==================
-# MARK: SDL3_ttf
-# ==================
-
-def buildSdl3Ttf(inHost, inCc, inCxx):
-	"""Build a static SDL3_ttf into libs/SDL3_ttf. Defaults (from
-	build-sdl.properties) point at the in-house fork
-	https://github.com/bitsycore/SDL_ttf @ variable-font-axes: upstream
-	SDL3_ttf has no public API to set OpenType variable-font axes
-	(wght / wdth / opsz / GRAD / FILL ...); the fork adds it so the renderer
-	can drive axes through TTF_SetFontAxisValue() instead of bypassing SDL_ttf
-	and talking to FreeType directly.
-
-	Static: a static archive doesn't bundle its dependencies, so the app's
-	final link pulls in libs/FreeType and libs/SDL3 to resolve SDL_ttf's
-	symbols. HarfBuzz and plutosvg are OFF, matching this repo's HarfBuzz-free
-	FreeType build. Needs sdl3 + freetype built FIRST."""
-	if not (kLibsDir / "SDL3" / "lib" / "cmake" / "SDL3" / "SDL3Config.cmake").is_file():
-		raise SystemExit("ERROR: SDL3 not found in libs/SDL3 — run `python3 "
-			+ str(kToolsDir / "build-all.py") + " sdl3` first")
-	if not (kLibsDir / "FreeType" / "lib" / "libfreetype.a").is_file():
-		raise SystemExit("ERROR: FreeType not found in libs/FreeType — run `python3 "
-			+ str(kToolsDir / "build-all.py") + " freetype` first")
-	vBuild = kLibsDir / ".build" / "sdl3_ttf"
-	vBuild.mkdir(parents=True, exist_ok=True)
-	vNinja = findNinja(vBuild, inHost)
-	vUrl = requireManifest("SDL_TTF_URL", inHost)
-	vRef = requireManifest("SDL_TTF_REF", inHost)
-	vSrc = cloneIfChanged(vBuild, vUrl, vRef, inBlobFilter=True)
-	vOut = vBuild / "out"
-	vPrefix = vBuild / "prefix"
-
-	print(">> configuring (non-vendored: libs/FreeType + libs/SDL3; HarfBuzz/plutosvg off)")
-	forceRmtree(vOut)
-	cmakeConfigure(vSrc, vOut, vNinja, inCc, inHost, vPrefix, [
-		"-DCMAKE_PREFIX_PATH=" + (kLibsDir / "SDL3").as_posix() + ";"
-			+ (kLibsDir / "FreeType").as_posix(),
-		"-DSDLTTF_VENDORED=OFF",
-		"-DSDLTTF_HARFBUZZ=OFF",
-		"-DSDLTTF_PLUTOSVG=OFF",
-		"-DSDLTTF_SAMPLES=OFF",
-		"-DSDLTTF_INSTALL=ON",
-	])
-
-	print(">> building + installing")
-	forceRmtree(vPrefix)
-	cmakeBuildInstall(vOut)
-
-	vDest = kLibsDir / "SDL3_ttf"
-	print(">> installing into " + str(vDest))
-	forceRmtree(vDest)
-	vDest.mkdir(parents=True)
-	shutil.copytree(vPrefix / "include", vDest / "include")
-	shutil.copytree(vPrefix / "lib", vDest / "lib")
-	print(">> done: " + str(vDest) + "  (libSDL3_ttf.a from " + vRef + ", static, no HarfBuzz)")
 
 # ==================
 # MARK: Entry point
