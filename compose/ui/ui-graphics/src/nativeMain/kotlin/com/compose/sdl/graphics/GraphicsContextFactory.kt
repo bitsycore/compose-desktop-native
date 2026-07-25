@@ -11,4 +11,4 @@ import androidx.compose.ui.graphics.GraphicsContext
    (the createRenderBackend trick). SDL → the project ProjectGraphicsContext (record/
    replay via the SDL NativeRenderNode); Skia → upstream's SkiaGraphicsContext (owns a
    skiko RenderNodeContext). See RENDERER.md §4 (B2). */
-internal expect fun createGraphicsContext(): GraphicsContext
+expect fun createGraphicsContext(): GraphicsContext

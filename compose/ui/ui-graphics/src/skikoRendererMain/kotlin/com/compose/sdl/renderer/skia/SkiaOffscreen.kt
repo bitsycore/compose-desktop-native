@@ -20,7 +20,7 @@ import org.jetbrains.skia.Image
    leg now uses upstream's SkiaBackedCanvas/SkiaImageAsset, so the offscreen +
    ImageBitmap-backed paths go through upstream's own actuals (the project
    SkiaImageBitmap / SkiaOffscreenRenderer are retired). */
-internal class SkiaEncodedImageDecoder : EncodedImageDecoder {
+class SkiaEncodedImageDecoder : EncodedImageDecoder {
 
 	override fun decode(inBytes: ByteArray): ImageBitmap? {
 		if (inBytes.isEmpty()) return null

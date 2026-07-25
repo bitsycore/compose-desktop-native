@@ -1,12 +1,8 @@
 package com.compose.sdl.renderer.skia
 
-import com.compose.sdl.*
-
-import androidx.compose.ui.layout.ContentScale
 import com.compose.sdl.res.AndroidVectorToSvg
 import com.compose.sdl.res.ResourceKind
 import com.compose.sdl.res.composeResourceReader
-import androidx.compose.ui.unit.IntSize
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Color
 import org.jetbrains.skia.Data
@@ -15,8 +11,6 @@ import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
 import org.jetbrains.skia.svg.SVGDOM
-import kotlin.math.max
-import kotlin.math.min
 
 // ==================
 // MARK: SkiaImageCache
@@ -32,7 +26,7 @@ import kotlin.math.min
    NOTE: this source set isn't compiled on the mingwX64 host, so it is built
    only on macOS / Linux — keep it to the Skiko APIs already used elsewhere in
    this module. */
-internal class SkiaImageCache {
+class SkiaImageCache {
 
 	// Value is null when a decode failed — cached to avoid retrying each frame.
 	private val fCache = HashMap<String, Image?>()
@@ -74,7 +68,6 @@ internal class SkiaImageCache {
 		inY: Float,
 		inW: Float,
 		inH: Float,
-		inScale: ContentScale,
 		inAlpha: Float,
 	) {
 		if (inW <= 0f || inH <= 0f) return
@@ -86,30 +79,9 @@ internal class SkiaImageCache {
 		val vPaint = Paint()
 		vPaint.color = Color.makeARGB((inAlpha * 255f).toInt().coerceIn(0, 255), 255, 255, 255)
 
-		when (inScale) {
-			ContentScale.FillBounds -> {
-				inCanvas.drawImageRect(vImg, Rect.makeWH(vIw, vIh), Rect.makeXYWH(inX, inY, inW, inH), vPaint)
-			}
-			ContentScale.Crop -> {
-				val vScale = max(inW / vIw, inH / vIh)
-				val vSrcW = inW / vScale
-				val vSrcH = inH / vScale
-				val vSrc = Rect.makeXYWH((vIw - vSrcW) / 2f, (vIh - vSrcH) / 2f, vSrcW, vSrcH)
-				inCanvas.drawImageRect(vImg, vSrc, Rect.makeXYWH(inX, inY, inW, inH), vPaint)
-			}
-			else -> {
-				val vScale = when (inScale) {
-					ContentScale.Fit    -> min(inW / vIw, inH / vIh)
-					ContentScale.Inside -> min(1f, min(inW / vIw, inH / vIh))
-					else                -> 1f   // None
-				}
-				val vDw = vIw * vScale
-				val vDh = vIh * vScale
-				val vDx = inX + (inW - vDw) / 2f
-				val vDy = inY + (inH - vDh) / 2f
-				inCanvas.drawImageRect(vImg, Rect.makeWH(vIw, vIh), Rect.makeXYWH(vDx, vDy, vDw, vDh), vPaint)
-			}
-		}
+		// Upstream PainterModifier pre-scales the destination per ContentScale, so
+		// draw fill-bounds into the given rect.
+		inCanvas.drawImageRect(vImg, Rect.makeWH(vIw, vIh), Rect.makeXYWH(inX, inY, inW, inH), vPaint)
 		vPaint.close()
 	}
 

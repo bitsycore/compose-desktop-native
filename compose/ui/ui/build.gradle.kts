@@ -42,6 +42,7 @@ kotlin {
             dependencies {
                 api(project(":ui-util"))
                 api(project(":ui-geometry"))
+                api(project(":ui-graphics"))
                 api(project(":ui-unit"))
                 api(project(":ui-backhandler"))
                 api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")

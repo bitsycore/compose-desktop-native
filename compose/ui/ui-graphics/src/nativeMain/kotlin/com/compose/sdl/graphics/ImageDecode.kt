@@ -24,7 +24,6 @@ interface EncodedImageDecoder {
    resources pipeline on Dispatchers.Default workers. */
 @kotlin.concurrent.Volatile
 var encodedImageDecoder: EncodedImageDecoder? = null
-	internal set
 
 /** Decode via the active renderer's registered decoder — null when no renderer
  *  has initialised yet or the bytes aren't a supported image. */

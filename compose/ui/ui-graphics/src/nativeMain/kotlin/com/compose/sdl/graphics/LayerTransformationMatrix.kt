@@ -16,7 +16,7 @@ import kotlin.math.abs
 
 // Builds the layer transform (translation / rotation / scale / camera about a
 // pivot) into [matrix]. Matches the skiko copy so hit-testing agrees across legs.
-internal fun prepareLayerTransformationMatrix(
+fun prepareLayerTransformationMatrix(
 	matrix: Matrix,
 	pivotX: Float,
 	pivotY: Float,

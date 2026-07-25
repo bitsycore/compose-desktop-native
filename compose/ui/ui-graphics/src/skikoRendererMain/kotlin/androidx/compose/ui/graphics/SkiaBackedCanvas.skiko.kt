@@ -503,7 +503,6 @@ internal class SkiaBackedCanvas(
         inY: Float,
         inWidth: Float,
         inHeight: Float,
-        inContentScale: androidx.compose.ui.layout.ContentScale,
         inAlpha: Float,
     ) {
         val drawer = skiaLeafDrawer ?: return
@@ -515,7 +514,6 @@ internal class SkiaBackedCanvas(
             inY = inY,
             inW = inWidth,
             inH = inHeight,
-            inScale = inContentScale,
             inAlpha = inAlpha,
         )
     }

@@ -45,8 +45,7 @@ class ResourcePainter internal constructor(
 			// translate + scaledSize, so we paint the resource FillBounds into the
 			// full DrawScope size. Alpha is threaded via applyAlpha.
 			(vCanvas as? NativePainterCanvas)?.drawNativePainter(
-				resourcePath, kind, 0f, 0f, size.width, size.height,
-				androidx.compose.ui.layout.ContentScale.FillBounds, fAlpha,
+				resourcePath, kind, 0f, 0f, size.width, size.height, fAlpha,
 			)
 		}
 	}

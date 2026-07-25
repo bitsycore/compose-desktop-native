@@ -10,8 +10,8 @@ package com.compose.sdl.renderer.skia
    `SkiaBackedCanvas`'s `NativePainterCanvas` contract forwards to. Set once by
    `SkiaRenderBackend`; any `SkiaBackedCanvas` (frame, offscreen, or a GraphicsLayer
    recording — B6.2) can then draw images onto its own `internalSkiaCanvas`. */
-internal var skiaLeafDrawer: SkiaLeafDrawer? = null
+var skiaLeafDrawer: SkiaLeafDrawer? = null
 
-internal class SkiaLeafDrawer(
+class SkiaLeafDrawer(
 	val imageCache: SkiaImageCache,
 )

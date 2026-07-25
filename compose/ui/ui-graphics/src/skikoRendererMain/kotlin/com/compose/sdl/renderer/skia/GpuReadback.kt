@@ -18,7 +18,7 @@ import org.jetbrains.skia.Surface
    Returns null if anything along the way fails: the Surface may not yet
    exist (first frame), the GPU readback may fail, or bitmap.readPixels()
    may not be exposed in this Skiko build. */
-internal fun readBackBgra(inSurface: Surface?, inWidth: Int, inHeight: Int): Triple<Int, Int, ByteArray>? {
+fun readBackBgra(inSurface: Surface?, inWidth: Int, inHeight: Int): Triple<Int, Int, ByteArray>? {
     val vSurface = inSurface ?: return null
     if (inWidth <= 0 || inHeight <= 0) return null
     val vBitmap = Bitmap()
