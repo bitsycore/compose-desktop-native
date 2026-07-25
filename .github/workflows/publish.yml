@@ -193,7 +193,7 @@ jobs:
             host_packages | while read -r pkg; do
               vid=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
                 "https://api.github.com/users/$OWNER/packages/maven/$pkg/versions?per_page=100" \
-                | jq -r --arg v "$VER" '[.[]? | select(.name==$v) | .id] | first // empty')
+                | jq -r --arg v "$VER" 'if type=="array" then ([.[] | select(.name==$v) | .id] | first // empty) else empty end')
               [ -z "$vid" ] && continue
               code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
                 -H "Authorization: Bearer $GITHUB_TOKEN" \
