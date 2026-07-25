@@ -49,9 +49,11 @@ class ComposeFontBundlingConfig {
 	var bundleMaterialSymbols: Boolean = false
 
 	/**
-	 * hb-subset each bundled Material Symbols font to the glyphs the sources reference
-	 * (scripts/subset-material-symbols.py + hb-subset; full font when hb-subset is
-	 * absent). Needs [bundleMaterialSymbols]; still gated by -PsubsetIcons.
+	 * Subset each bundled Material Symbols font to the glyphs the sources reference
+	 * (scripts/subset-material-symbols.py picks the codepoints; the subset task uses
+	 * hb-subset when present, else fontTools via Python — auto-installed — and only
+	 * bundles the full font if neither is available). Needs [bundleMaterialSymbols];
+	 * still gated by -PsubsetIcons.
 	 */
 	var enableIconSubsetting: Boolean = false
 }
@@ -247,8 +249,10 @@ private fun Project.registerIconSubsetPipeline(inUsedStyles: List<String>): Map<
 }
 
 /**
- * hb-subset inStyle's downloaded TTF to the codepoints in usage-codepoint.txt, into this
- * app's build/icons/. Bundles the full font instead when hb-subset is not on PATH.
+ * Subset inStyle's downloaded TTF to the codepoints in usage-codepoint.txt, into this
+ * app's build/icons/. Prefers hb-subset (harfbuzz); falls back to fontTools via Python
+ * (variable-font-aware, auto-installed via pip) when hb-subset is absent; bundles the
+ * full font only if neither subsetter is available.
  */
 private fun Project.registerSubsetTask(
 	inStyle: String,
@@ -279,30 +283,67 @@ private fun Project.registerSubsetTask(
 			vOut.parentFile.mkdirs()
 			val vInputFile = vInputProvider.get().asFile
 			val vBefore = vInputFile.length()
-			// ProcessBuilder: project.exec isn't usable inside doLast on Gradle 9.
-			// hb-subset is optional : without it, bundle the full font.
-			val vProc = try {
-				ProcessBuilder(
-					"hb-subset",
-					vInputFile.absolutePath,
-					"-o", vOut.absolutePath,
-					"--unicodes=$vUnicodes",
-				).redirectErrorStream(true).start()
-			} catch (_: java.io.IOException) {
-				vInputFile.copyTo(vOut, overwrite = true)
-				logger.warn(
-					"[subset $inStyle] hb-subset not found on PATH : bundling the full font " +
-							"(${vBefore / 1024}KB). Install harfbuzz to shrink it (brew install harfbuzz / " +
-							"pacman -S mingw-w64-x86_64-harfbuzz / apt install harfbuzz-utils)."
+			// project.exec isn't usable inside doLast on Gradle 9, so shell out via
+			// ProcessBuilder. Returns (exitedZero, combinedOutput); a missing binary
+			// (IOException) yields (false, message) so callers can fall through.
+			fun runCmd(vararg inCmd: String): Pair<Boolean, String> =
+				try {
+					val vProc = ProcessBuilder(*inCmd).redirectErrorStream(true).start()
+					val vText = vProc.inputStream.bufferedReader().readText()
+					(vProc.waitFor() == 0) to vText
+				} catch (e: java.io.IOException) {
+					false to (e.message ?: "not found")
+				}
+
+			fun logShrink(inTool: String) {
+				val vAfter = vOut.length()
+				val vPct = if (vBefore == 0L) 0 else (100 - 100 * vAfter / vBefore).coerceAtLeast(0)
+				logger.lifecycle(
+					"[subset $inStyle] ${vBefore / 1024}KB → ${vAfter / 1024}KB (-$vPct%) · " +
+							"${vCodepoints.size} glyphs kept [$inTool]"
 				)
-				return@doLast
 			}
-			val vOutput = vProc.inputStream.bufferedReader().readText()
-			val vCode = vProc.waitFor()
-			if (vCode != 0) throw GradleException("hb-subset failed (exit $vCode):\n$vOutput")
-			val vAfter = vOut.length()
-			val vPct = if (vBefore == 0L) 0 else ((100 - 100 * vAfter / vBefore)).coerceAtLeast(0)
-			logger.lifecycle("[subset $inStyle] ${vBefore / 1024}KB → ${vAfter / 1024}KB (-$vPct%) · ${vCodepoints.size} glyphs kept")
+
+			// 1. hb-subset (harfbuzz) — fastest path when it is on PATH.
+			if (runCmd("hb-subset", vInputFile.absolutePath, "-o", vOut.absolutePath, "--unicodes=$vUnicodes").first
+				&& vOut.length() > 0L
+			) {
+				logShrink("hb-subset"); return@doLast
+			}
+
+			// 2. fontTools (pyftsubset) via Python — the portable fallback. Python is
+			//    already a build prerequisite (SDL build + vendor sync) and fontTools is
+			//    variable-font-aware, so the FILL/wght/GRAD/opsz axes survive. It is
+			//    auto-installed if missing, so no manual harfbuzz install is ever required.
+			val vPython = listOf("python3", "python", "py").firstOrNull { runCmd(it, "--version").first }
+			if (vPython != null) {
+				if (!runCmd(vPython, "-c", "import fontTools").first) {
+					logger.lifecycle("[subset $inStyle] fontTools not present — installing it via pip…")
+					// --user (no root) → --break-system-packages (PEP 668) → plain.
+					listOf(listOf("--user"), listOf("--break-system-packages"), emptyList<String>())
+						.firstOrNull { vExtra ->
+							runCmd(
+								vPython, "-m", "pip", "install", "-q", "--disable-pip-version-check",
+								*vExtra.toTypedArray(), "fonttools"
+							).first
+						}
+				}
+				val (vFtOk, vFtOut) = runCmd(
+					vPython, "-m", "fontTools.subset", vInputFile.absolutePath,
+					"--unicodes=$vUnicodes", "--output-file=${vOut.absolutePath}"
+				)
+				if (vFtOk && vOut.length() > 0L) { logShrink("fontTools"); return@doLast }
+				logger.warn("[subset $inStyle] fontTools subset failed :\n$vFtOut")
+			}
+
+			// 3. Last resort : the full font — correct, just larger.
+			vInputFile.copyTo(vOut, overwrite = true)
+			logger.warn(
+				"[subset $inStyle] no working subsetter found (hb-subset or python3+fontTools) : " +
+						"bundling the full font (${vBefore / 1024}KB). Install harfbuzz " +
+						"(brew install harfbuzz / apt install harfbuzz-utils / " +
+						"pacman -S mingw-w64-x86_64-harfbuzz) or put python3 on PATH."
+			)
 		}
 	}
 }
