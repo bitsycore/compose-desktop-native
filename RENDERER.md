@@ -8,27 +8,29 @@ actuals, or the layer engine.
 For build and verification commands see [TOOLING.md](TOOLING.md). For module
 layout, source-set hierarchy, and vendoring rules see [CLAUDE.md](CLAUDE.md).
 
-## 1. The two renderer legs
+## 1. The renderer
 
-Rendering is pluggable behind one `RenderBackend` interface. Exactly one leg is
-active per target:
+> **This branch is Skia-only.** The from-scratch SDL renderer leg
+> (`sdlRendererMain`: `Sdl3Canvas` / `Sdl3TextRenderer` / `FreeTypeIcons` / the
+> SDL render nodes, ~3,800 lines) and its `SDL3_ttf` / `SDL3_image` / FreeType
+> cinterops were removed once Skiko-on-mingwX64 landed (Route 1a — see
+> [SKIKO-MINGW-FEASIBILITY.md](SKIKO-MINGW-FEASIBILITY.md)). SDL3 remains as the
+> windowing / input / platform layer only. Below, references to "the SDL leg", a
+> second `RenderBackend` actual, `-Prenderer=sdl3`, and the SDL-leg fidelity work
+> are **historical** — kept because the convergence decisions still explain the
+> Skia leg's shape.
 
-- **Skia leg** (`skikoRendererMain`, macOS + Linux). Draws through upstream
-  Compose Multiplatform's own Skia stack, vendored verbatim: `SkiaBackedCanvas`,
-  `SkiaBackedPaint`, `SkiaShader`, `actual class GraphicsLayer` backed by
-  `org.jetbrains.skiko.node.RenderNode`, `SkiaGraphicsContext`. On this leg the
-  layer and draw engine internals are literally upstream.
-- **SDL leg** (`sdlRendererMain`, Windows always; macOS/Linux under
-  `-Prenderer=sdl3`). A from-scratch renderer on `SDL_RenderGeometry` +
-  `SDL3_ttf` + FreeType. SDL is a triangle blitter, so this leg carries a
-  permanent bespoke surface (about 3,800 lines): `Sdl3Canvas`,
-  `Sdl3TextRenderer`, `FreeTypeIcons`, and the SDL render nodes.
+Rendering goes through one `RenderBackend`, implemented once: the **Skia leg**
+(`skikoRendererMain`). It draws through upstream Compose Multiplatform's own Skia
+stack, vendored verbatim: `SkiaBackedCanvas`, `SkiaBackedPaint`, `SkiaShader`,
+`actual class GraphicsLayer` backed by `org.jetbrains.skiko.node.RenderNode`,
+`SkiaGraphicsContext` — the layer and draw engine internals are literally
+upstream. macOS/Linux link the official Skiko klibs; mingwX64 links the
+bitsycore skiko **fork** (`skikoRendererMingwMain`, Route 1a).
 
-Both legs share one project-owned text and image pipeline (`SdlParagraph`,
-`NativeTextMeasurer`, `IconFont`). Text layout, line-breaking, metrics, and
-hit-test are the port's engine on both legs; only glyph rasterization differs
-(Skia vs SDL3_ttf/FreeType). This is a deliberate axiom, not a gap: see the
-text decision in section 4.
+The text and image pipeline (`SdlParagraph`, `NativeTextMeasurer`, `IconFont`)
+is the port's own engine; glyph rasterization is Skia. GPU path per platform:
+Metal (macOS), OpenGL (Linux + Windows), with a CPU-raster `Software` fallback.
 
 The seam is kept as narrow and low as possible. Code flows
 `Common (upstream) -> shared native engine -> Skia actual / SDL actual`. What we
