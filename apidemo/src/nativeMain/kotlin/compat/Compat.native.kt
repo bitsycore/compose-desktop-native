@@ -16,7 +16,13 @@ import com.compose.sdl.res.painterResource
 import com.compose.sdl.revealInFileManager
 import com.compose.sdl.showOpenFileDialog
 import com.compose.sdl.showSaveFileDialog
-import com.compose.sdl.text.currentTextMeasurer
+import com.compose.sdl.text.namedFontFamily
+import androidx.compose.ui.text.Paragraph
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.sp
 import io.ktor.client.*
 import io.ktor.client.engine.curl.*
 import okio.FileSystem
@@ -49,8 +55,31 @@ actual fun removeMemoryImage(inKey: String) = removeMemoryResource(inKey)
 actual fun memoryImagePainter(inKey: String, inSvg: Boolean): Painter =
     painterResource(inKey, if (inSvg) ResourceKind.Svg else ResourceKind.Raster)
 
-actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inFamilyName: String?): Int =
-    currentTextMeasurer.wrap(inText, inFontPx, inMaxWidthPx, inFamilyName).lines.size
+// Cached resolver for wrappedRowCount — the skiko engine resolves fonts by name
+// (projectFontName), so this is just the required non-null Paragraph argument.
+private val mRowCountFontResolver = createFontFamilyResolver()
+
+actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inFamilyName: String?): Int {
+    if (inText.isEmpty()) return 1
+    // inFontPx is already physical pixels, so measure at density 1 (fontSize.value
+    // * density = inFontPx) and wrap at inMaxWidthPx px — same space the old
+    // currentTextMeasurer.wrap used. lineCount comes from skiko's paragraph layout.
+    val vStyle = TextStyle(
+        fontSize = inFontPx.sp,
+        fontFamily = inFamilyName?.let { namedFontFamily(it) },
+    )
+    return Paragraph(
+        text = inText,
+        style = vStyle,
+        constraints = Constraints(maxWidth = inMaxWidthPx.coerceAtLeast(0)),
+        density = Density(1f),
+        fontFamilyResolver = mRowCountFontResolver,
+        spanStyles = emptyList(),
+        placeholders = emptyList(),
+        maxLines = Int.MAX_VALUE,
+        ellipsis = false,
+    ).lineCount
+}
 
 actual var editorTabWidth: Int
     get() = TextLayoutConfig.tabWidth
