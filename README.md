@@ -80,7 +80,9 @@ commonMain.dependencies {
 
 ### Building from your own project: the bridge plugin
 
-The klibs publish to GitHub Packages under `com.bitsycore.compose.sdl:*`. Apply
+The klibs publish to GitHub Packages under per-area coordinates that mirror
+upstream — `com.bitsycore.compose.ui:ui`, `com.bitsycore.compose.foundation:foundation`,
+… (the `com.bitsycore` fork of each `org.jetbrains.compose.*`). Apply
 the bridge Gradle plugin once, declare the **official** Compose Multiplatform
 coordinates, and the plugin swaps in the port's klibs on native desktop targets
 while android, jvm, iOS, and wasm keep resolving the official artifacts.
@@ -103,7 +105,15 @@ commonMain.dependencies {
 }
 ```
 
-Repositories, credentials, and version pinning:
+**Two GitHub Packages repos are needed.** A consumer declares the port's repo
+(`bitsycore/compose-desktop-native`) **and** the skiko fork's (`bitsycore/skiko`).
+The Windows (mingwX64) target renders through the bitsycore skiko fork, and
+GitHub Packages binds each package name to a **single** repository — so
+`com.bitsycore.skiko` can't be mirrored into the port's repo, it stays in its
+own. Scope them with `includeGroup`/`excludeGroup("com.bitsycore.skiko")`
+(macOS/Linux pull the official skiko from Maven Central instead; if you build no
+mingwX64 you can omit the fork repo). The exact `repositories {}` snippet,
+credentials, and version pinning:
 [gradle-plugin/compose-desktop-native-bridge/README.md](gradle-plugin/compose-desktop-native-bridge/README.md).
 
 For a complete project that applies the bridge and builds one shared UI for
