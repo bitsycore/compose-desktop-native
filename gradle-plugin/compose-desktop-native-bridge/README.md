@@ -37,7 +37,18 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        maven("https://maven.pkg.github.com/bitsycore/compose-desktop-native") { credentials { /* same */ } }
+        maven("https://maven.pkg.github.com/bitsycore/compose-desktop-native") {
+            credentials { /* same */ }
+            content { excludeGroup("com.bitsycore.skiko") }
+        }
+        // Windows (mingwX64) renders through the bitsycore skiko fork, published to
+        // its OWN GitHub Packages repo as com.bitsycore.skiko:skiko / :skiko-mingwx64.
+        // (macOS/Linux use the official org.jetbrains.skiko from Maven Central, so this
+        // repo is scoped to just the fork group.) Omit only if you build no mingwX64.
+        maven("https://maven.pkg.github.com/bitsycore/skiko") {
+            credentials { /* same */ }
+            content { includeGroup("com.bitsycore.skiko") }
+        }
         google()
         mavenCentral()
     }
