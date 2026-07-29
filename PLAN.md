@@ -79,14 +79,30 @@ most of **P1.1** (see below).
 ### Phase 1 — The text engine (the big steady-state perf win)
 | Status | ID | Item | Impact | Verify |
 |:------:|----|------|--------|--------|
-| 🟡 | **P1.1** | Cache the built skia paragraph; stop reshaping on every paint | **High** | parity, profiler |
-| ⬜ | **P1.2** | Reuse one layouter for intrinsics + final layout (no double-shape) | High | parity |
-| ⬜ | **P1.3** | Coalesce `Snapshot.sendApplyNotifications()` toward once/frame | Med | profiler CPU |
+| ✅ | **P1.1** | Cache the built skia paragraph; stop reshaping on every paint | **High** | parity, profiler |
+| ⏸️ | **P1.2** | Reuse one layouter for intrinsics + final layout (no double-shape) | High | parity |
+| ✅ | **P1.3** | Coalesce `Snapshot.sendApplyNotifications()` toward once/frame | Med | profiler CPU |
 
-**P1.1 is partly done** by P0.7: paint no longer re-shapes when color/shadow/
-decoration are unchanged (the common case). What remains for full P1.1 —
-mutating the foreground paint for color-only changes instead of a full rebuild
-(upstream `ParagraphLayouter.setColor`), and only re-laying-out on width change.
+**P1.1 done:** the paragraph is built once at measure and never re-shaped when
+color/shadow/decoration are unchanged (P0.7); a color-only change on
+single-style, undecorated text now re-applies the foreground paint via skia's
+`updateForegroundPaint` + `markDirty` + re-layout (no HarfBuzz re-shape),
+mirroring upstream `ParagraphLayouter.setColor`. Spanned/decorated text and
+shadow/decoration changes still take the full rebuild (colours are baked
+per-run there).
+
+**P1.3 done:** the global snapshot write-observer now only *schedules* a frame
+(`markAllNeedFrame`) instead of calling `sendApplyNotifications()` inline on
+every state write — the apply is coalesced to the once-per-iteration calls
+(loop top / before each pump / before layout). Mirrors upstream
+`GlobalSnapshotManager`.
+
+**P1.2 deferred (evaluated):** reusing the intrinsics-pass paragraph for the
+final layout is blocked by `maxLines`/ellipsis being baked at *build* time (the
+unbounded intrinsics paragraph can't be re-laid-out with a line cap), and
+holding a live paragraph per `ParagraphIntrinsics` trades the clean
+build-then-`dispose()` (P0.7) for longer-lived native memory. Net win needs a
+profiler measurement of the double-shape cost first — not done blind.
 
 ### Phase 2 — Frame-pacing correctness & the on-demand model
 | Status | ID | Item | Impact | Verify |

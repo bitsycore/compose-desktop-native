@@ -19,6 +19,7 @@ import org.jetbrains.skia.Font as SkFont
 import org.jetbrains.skia.FontEdging as SkFontEdging
 import org.jetbrains.skia.FontHinting as SkFontHinting
 import org.jetbrains.skia.FontStyle as SkFontStyle
+import org.jetbrains.skia.Paint as SkPaint
 import org.jetbrains.skia.paragraph.Alignment as SkAlignment
 import org.jetbrains.skia.paragraph.DecorationLineStyle as SkDecorationLineStyle
 import org.jetbrains.skia.paragraph.DecorationStyle as SkDecorationStyle
@@ -107,6 +108,8 @@ internal class SkiaParagraphOps(
 	private var builtShadow: Shadow? = style.shadow
 	private var builtDecoration: TextDecoration? = style.textDecoration
 	private var disposed = false
+	// Reused across color-only repaints (see rebuildAndPaint's fast path).
+	private var foregroundPaint: SkPaint? = null
 
 	// ============
 	//  NativeParagraphOps
@@ -158,16 +161,42 @@ internal class SkiaParagraphOps(
 		paragraph.getWordBoundary(offset).let { intArrayOf(it.start, it.end) }
 
 	override fun rebuildAndPaint(canvas: Canvas, color: Color, shadow: Shadow?, decoration: TextDecoration?) {
-		// Re-shape only when a paint attribute actually changed; closing the
-		// previous native paragraph deterministically so it doesn't accumulate
-		// until the next GC (issue #2 — native memory ballooning).
-		if (color != builtColor || shadow != builtShadow || decoration != builtDecoration) {
-			val previous = paragraph
-			paragraph = build(color, shadow, decoration)
-			builtColor = color; builtShadow = shadow; builtDecoration = decoration
-			previous.close()
+		val shadowOrDecoChanged = shadow != builtShadow || decoration != builtDecoration
+		val colorChanged = color != builtColor
+		// Fast path (mirrors upstream ParagraphLayouter): a color-only change on
+		// single-style, undecorated text re-applies the foreground paint without
+		// re-shaping (HarfBuzz + line-break stay cached). Anything else — a
+		// shadow/decoration change, or color on spanned/decorated text where the
+		// colour is baked per-run — takes the full rebuild, closing the previous
+		// native paragraph so it doesn't leak to GC (issue #2).
+		val canUpdateForeground = colorChanged && !shadowOrDecoChanged &&
+			spanStyles.isEmpty() && text.isNotEmpty() &&
+			(decoration == null || decoration == TextDecoration.None)
+		when {
+			shadowOrDecoChanged || (colorChanged && !canUpdateForeground) -> {
+				val previous = paragraph
+				paragraph = build(color, shadow, decoration)
+				builtColor = color; builtShadow = shadow; builtDecoration = decoration
+				previous.close()
+			}
+			canUpdateForeground -> {
+				applyForegroundColor(color)
+				paragraph.markDirty()
+				paragraph.layout(layoutWidth)
+				builtColor = color
+			}
 		}
 		paragraph.paint(canvas.skiaCanvas, 0f, 0f)
+	}
+
+	/** Re-colour the whole (single-style) paragraph in place via skia's
+	   updateForegroundPaint, reusing one Paint instance across repaints. */
+	private fun applyForegroundColor(color: Color) {
+		val argb = (if (color.isSpecified) color else Color.Black).toArgb()
+		val paint = foregroundPaint ?: SkPaint().also { foregroundPaint = it }
+		paint.reset()
+		paint.color = argb
+		paragraph.updateForegroundPaint(0, text.length, paint)
 	}
 
 	// ============
@@ -204,10 +233,11 @@ internal class SkiaParagraphOps(
 	override fun dispose() {
 		if (disposed) return
 		disposed = true
-		// Both are per-ops native objects (skiko Managed). close() frees them and
+		// All are per-ops native objects (skiko Managed). close() frees them and
 		// cancels skiko's own GC-driven Cleaner, so nothing double-frees later.
 		paragraph.close()
 		defaultFont.close()
+		foregroundPaint?.close()
 	}
 
 	private fun appendWithSpans(pb: SkParagraphBuilder, color: Color, shadow: Shadow?, decoration: TextDecoration?) {

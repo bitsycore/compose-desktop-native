@@ -142,8 +142,12 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 		val appScope = ApplicationScopeImpl(runtime)
 
 		val snapshotHandle = Snapshot.registerGlobalWriteObserver {
+			// Only SCHEDULE a frame here; the apply is coalesced to once per loop
+			// iteration (top of loop + before each pump + before layout in
+			// renderFrame) instead of walking every snapshot observer on every
+			// individual state write. Mirrors upstream GlobalSnapshotManager,
+			// which schedules rather than applying inline.
 			runtime.markAllNeedFrame()
-			Snapshot.sendApplyNotifications()
 		}
 
 		appComposition.setContent { appScope.content() }
