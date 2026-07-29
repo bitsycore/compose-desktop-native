@@ -13,8 +13,7 @@ plugins {
 	alias(libs.plugins.kotlin.plugin.compose)
 }
 
-// Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
-val vHostSupportsMingw: Boolean by rootProject.extra
+val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {
 	linuxArm64()

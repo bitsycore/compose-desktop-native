@@ -4,7 +4,6 @@ Audited plan for closing the performance and feature-parity gap between
 **ComposeNativeSDL3** and upstream Compose Multiplatform, after the removal of
 the second (non-Skia) SDL renderer. This is the actionable companion to
 [RENDERER.md](RENDERER.md) (which is partly stale — see §8) and
-[TODO.md](TODO.md).
 
 > **Headline conclusion.** The retained-layer render engine is **already
 > byte-for-byte upstream** and is *not* where the performance gap lives. Two
@@ -51,15 +50,15 @@ leftmost column in every phase table below.
 `:ui-graphics` `klibApiCheck` green. P0.4 + P0.6 deferred (macOS-only, need
 `verify-mac` on a Mac host).
 
-| Status | ID | Item | Impact | Verify |
-|:------:|----|------|--------|--------|
-| ✅ | **P0.1** | Fix vsync double-pacing (GL + Metal report `vsyncEnabled`) | **High** | profiler FPS, manual |
-| ✅ | **P0.2** | Add missing `else` in the pace block (kill the pending-spin) | Med | profiler CPU |
-| ✅ | **P0.3** | Delete dead `DrawStats` so the profiler stops lying | Med | `CDN_PROFILE=1` |
-| ⏸️ | **P0.4** | Drop per-frame full-surface `clear()` to first-frame-only (after P0.6) | Med | verify-mac |
-| ✅ | **P0.5** | Set `FontRasterizationSettings` (edging/hinting/subpixel) on text styles | Med | parity, verify-mac |
-| ⏸️ | **P0.6** | Stop the per-frame Metal drawable reacquire in `ensureSize` (macOS — owner will do) | **High** (mac) | verify-mac, profiler |
-| ✅ | **P0.7** | Explicit open/close of native paragraph resources (was: GC nudge) | Med (memory) | manual RSS watch |
+| Status | ID       | Item                                                                                | Impact         | Verify               |
+|:------:|----------|-------------------------------------------------------------------------------------|----------------|----------------------|
+|   ✅   | **P0.1** | Fix vsync double-pacing (GL + Metal report `vsyncEnabled`)                          | **High**       | profiler FPS, manual |
+|   ✅   | **P0.2** | Add missing `else` in the pace block (kill the pending-spin)                        | Med            | profiler CPU         |
+|   ✅   | **P0.3** | Delete dead `DrawStats` so the profiler stops lying                                 | Med            | `CDN_PROFILE=1`      |
+|   ⏸️    | **P0.4** | Drop per-frame full-surface `clear()` to first-frame-only (after P0.6)              | Med            | verify-mac           |
+|   ✅   | **P0.5** | Set `FontRasterizationSettings` (edging/hinting/subpixel) on text styles            | Med            | parity, verify-mac   |
+|   ⏸️    | **P0.6** | Stop the per-frame Metal drawable reacquire in `ensureSize` (macOS — owner will do) | **High** (mac) | verify-mac, profiler |
+|   ✅   | **P0.7** | Explicit open/close of native paragraph resources (was: GC nudge)                   | Med (memory)   | manual RSS watch     |
 
 **Deferred rationale:** P0.6 (and the P0.4 clear that depends on it) is a
 macOS-only Metal change — this host is Windows, so it can't be verified here and
@@ -77,11 +76,11 @@ removed after an RSS check, but that's left as a follow-up. This also delivers
 most of **P1.1** (see below).
 
 ### Phase 1 — The text engine (the big steady-state perf win)
-| Status | ID | Item | Impact | Verify |
-|:------:|----|------|--------|--------|
-| ✅ | **P1.1** | Cache the built skia paragraph; stop reshaping on every paint | **High** | parity, profiler |
-| ⏸️ | **P1.2** | Reuse one layouter for intrinsics + final layout (no double-shape) | High | parity |
-| ✅ | **P1.3** | Coalesce `Snapshot.sendApplyNotifications()` toward once/frame | Med | profiler CPU |
+| Status | ID       | Item                                                               | Impact   | Verify           |
+|:------:|----------|--------------------------------------------------------------------|----------|------------------|
+|   ✅   | **P1.1** | Cache the built skia paragraph; stop reshaping on every paint      | **High** | parity, profiler |
+|   ⏸️    | **P1.2** | Reuse one layouter for intrinsics + final layout (no double-shape) | High     | parity           |
+|   ✅   | **P1.3** | Coalesce `Snapshot.sendApplyNotifications()` toward once/frame     | Med      | profiler CPU     |
 
 **P1.1 done:** the paragraph is built once at measure and never re-shaped when
 color/shadow/decoration are unchanged (P0.7); a color-only change on
@@ -105,11 +104,11 @@ build-then-`dispose()` (P0.7) for longer-lived native memory. Net win needs a
 profiler measurement of the double-shape cost first — not done blind.
 
 ### Phase 2 — Frame-pacing correctness & the on-demand model
-| Status | ID | Item | Impact | Verify |
-|:------:|----|------|--------|--------|
-| ✅ | **P2.1** | FPS-lock to real display refresh (`SDL_GetCurrentDisplayMode`) | Med | manual multi-monitor |
-| ⏸️ | **P2.2** | Adopt upstream `GlobalSnapshotManager` invalidation-driven scheduling | Med | probe, parity |
-| ✅ | **P2.3** | Bound the idle `SDL_WaitEventTimeout` and fix woken-event latency | Low | manual idle CPU |
+| Status | ID       | Item                                                                  | Impact | Verify               |
+|:------:|----------|-----------------------------------------------------------------------|--------|----------------------|
+|   ✅   | **P2.1** | FPS-lock to real display refresh (`SDL_GetCurrentDisplayMode`)        | Med    | manual multi-monitor |
+|   ⏸️    | **P2.2** | Adopt upstream `GlobalSnapshotManager` invalidation-driven scheduling | Med    | probe, parity        |
+|   ✅   | **P2.3** | Bound the idle `SDL_WaitEventTimeout` and fix woken-event latency     | Low    | manual idle CPU      |
 
 **P2.1 done:** the non-vsync fallback pacing now derives its frame cap from the
 rendered window's real display refresh (`SDL_GetDisplayForWindow` +
@@ -130,13 +129,13 @@ coupled change (RENDERER.md §8 non-goal) needing probe/parity verification —
 left as a bigger follow-up, not done blind.
 
 ### Phase 3 — Font & image parity
-| Status | ID | Item | Impact | Verify |
-|:------:|----|------|--------|--------|
-| 🟡 | **P3.1** | System/default + generic-family font resolution via `FontMgr.default` | **High** (correctness) | parity |
-| ⏸️ | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High | parity |
-| ⏸️ | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector` | Med | parity |
-| 🟡 | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction) | Med | manual RSS |
-| ⏸️ | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs | Low | compile |
+| Status | ID       | Item                                                                          | Impact                 | Verify     |
+|:------:|----------|-------------------------------------------------------------------------------|------------------------|------------|
+|   🟡   | **P3.1** | System/default + generic-family font resolution via `FontMgr.default`         | **High** (correctness) | parity     |
+|   ⏸️    | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High                   | parity     |
+|   ⏸️    | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
+|   🟡   | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction)            | Med                    | manual RSS |
+|   ⏸️    | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs       | Low                    | compile    |
 
 **P3.1 (concrete names done):** unbundled family names now resolve against the
 OS font set via `FontMgr.matchFamilyStyle` (e.g. `FontFamily("Arial")`) instead
@@ -162,13 +161,13 @@ L-effort and need visual/parity verification — not done blind. Vendor targets
 noted in §5/§6.
 
 ### Phase 4 — Vendoring cleanup & docs
-| Status | ID | Item | Impact | Verify |
-|:------:|----|------|--------|--------|
-| ⏸️ | **P4.1** | Reverse the two second-renderer manual vendors | Med (maintenance) | verify-mac, parity |
-| 🟡 | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files | Low (maintenance) | build |
-| ✅ | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md | Low | n/a |
-| ✅ | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low | build |
-| ⏸️ | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter | Low | parity |
+| Status | ID       | Item                                                                    | Impact            | Verify             |
+|:------:|----------|-------------------------------------------------------------------------|-------------------|--------------------|
+|   ⏸️    | **P4.1** | Reverse the two second-renderer manual vendors                          | Med (maintenance) | verify-mac, parity |
+|   🟡   | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files            | Low (maintenance) | build              |
+|   ✅   | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md   | Low               | n/a                |
+|   ✅   | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low               | build              |
+|   ⏸️    | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter  | Low               | parity             |
 
 **P4.3 done:** RENDERER.md's biggest inaccuracy is fixed — it claimed text was
 "upstream's own `SkiaParagraph`, vendored verbatim" with "upstream
@@ -542,14 +541,14 @@ should be done together:
 
 **P4.2 extraction map** (mechanical, Low impact):
 
-| Extract | New file |
-|---------|----------|
-| `WindowInstance` (SDL window + renderer + composition + events + FPS + render) | `WindowInstance.kt` |
-| `WindowArchitectureOwner` | `WindowArchitectureOwner.kt` |
-| `BackNavigationInput` + `dispatchTypedText` | `WindowInputHelpers.kt` |
-| `FrameProfiler` | `FrameProfiler.kt` |
-| Virtual-frame/screenshot timing flags | `FrameTiming.kt` (co-locate the P2.1 `DisplayRefresh` helper) |
-| The 60-line composition-local seeding block | `WindowCompositionLocals.kt` |
+| Extract                                                                        | New file                                                      |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------|
+| `WindowInstance` (SDL window + renderer + composition + events + FPS + render) | `WindowInstance.kt`                                           |
+| `WindowArchitectureOwner`                                                      | `WindowArchitectureOwner.kt`                                  |
+| `BackNavigationInput` + `dispatchTypedText`                                    | `WindowInputHelpers.kt`                                       |
+| `FrameProfiler`                                                                | `FrameProfiler.kt`                                            |
+| Virtual-frame/screenshot timing flags                                          | `FrameTiming.kt` (co-locate the P2.1 `DisplayRefresh` helper) |
+| The 60-line composition-local seeding block                                    | `WindowCompositionLocals.kt`                                  |
 
 Also reduce `pollEvents()` allocation churn (`SDL3EventMapper.kt:65-75` allocates
 a fresh list + an `AppEvent` per event every iteration — GC pressure that feeds
@@ -615,16 +614,16 @@ after Phase 0 and Phase 1 — those two phases should recover most of the gap.
 
 ## 11. Expected impact summary
 
-| Change | Where the time goes today | After |
-|--------|---------------------------|-------|
-| P0.1 vsync | ~30 FPS cap while animating (16 ms delay on vsync-blocked present) | true refresh rate |
-| P1.1/P1.2 text | every visible `Text` re-shapes (HarfBuzz+bidi+break) each frame, ≥2× on measure | shape once, cache |
-| P0.6 Metal | fresh drawable + RT/Surface rebuild every frame | reacquire in present only |
-| P0.4 clear | full-screen opaque fill every frame (2× area Retina) | first-frame only |
-| P1.3/P2.2 snapshot | ~5 `sendApplyNotifications` per iteration | ~1 per frame |
-| P0.5 raster | skia raw defaults (blurry on Win/Linux) | upstream per-OS hinting |
-| P3.1/P3.2 fonts | non-bundled families → Noto Sans; no static weight/async | system + full resolver |
-| P3.3 SVG | icons blurry when scaled | resolution-independent |
+| Change             | Where the time goes today                                                       | After                     |
+|--------------------|---------------------------------------------------------------------------------|---------------------------|
+| P0.1 vsync         | ~30 FPS cap while animating (16 ms delay on vsync-blocked present)              | true refresh rate         |
+| P1.1/P1.2 text     | every visible `Text` re-shapes (HarfBuzz+bidi+break) each frame, ≥2× on measure | shape once, cache         |
+| P0.6 Metal         | fresh drawable + RT/Surface rebuild every frame                                 | reacquire in present only |
+| P0.4 clear         | full-screen opaque fill every frame (2× area Retina)                            | first-frame only          |
+| P1.3/P2.2 snapshot | ~5 `sendApplyNotifications` per iteration                                       | ~1 per frame              |
+| P0.5 raster        | skia raw defaults (blurry on Win/Linux)                                         | upstream per-OS hinting   |
+| P3.1/P3.2 fonts    | non-bundled families → Noto Sans; no static weight/async                        | system + full resolver    |
+| P3.3 SVG           | icons blurry when scaled                                                        | resolution-independent    |
 
 **Do Phase 0 + Phase 1 first.** They are small, and they target the two things
 that actually cost the gap — everything else is correctness/parity/maintenance
