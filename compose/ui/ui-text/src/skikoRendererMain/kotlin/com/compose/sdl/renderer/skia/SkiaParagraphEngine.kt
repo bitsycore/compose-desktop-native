@@ -16,6 +16,8 @@ import com.compose.sdl.renderer.skia.SkiaFonts
 import com.compose.sdl.text.projectFontName
 import com.compose.sdl.text.projectFontVariations
 import org.jetbrains.skia.Font as SkFont
+import org.jetbrains.skia.FontEdging as SkFontEdging
+import org.jetbrains.skia.FontHinting as SkFontHinting
 import org.jetbrains.skia.FontStyle as SkFontStyle
 import org.jetbrains.skia.paragraph.Alignment as SkAlignment
 import org.jetbrains.skia.paragraph.DecorationLineStyle as SkDecorationLineStyle
@@ -43,6 +45,34 @@ import org.jetbrains.skia.paragraph.TextStyle as SkTextStyle
 
 private const val INTRINSIC_WIDTH = 100_000f
 
+// ==================
+// MARK: Rasterization defaults
+// ==================
+//
+// Edging / hinting / subpixel positioning applied to every text style, mirroring
+// upstream ParagraphBuilder.skiko.kt (which sets these on every SkTextStyle).
+// The values come from the port's FontRasterizationSettings.PlatformDefault
+// (per-OS). Without them skiko falls back to its raw defaults and text renders
+// less crisp — noticeably so on Windows/Linux. Computed once (platform is fixed).
+
+@OptIn(ExperimentalTextApi::class)
+private val RASTER_EDGING: SkFontEdging = when (FontRasterizationSettings.PlatformDefault.smoothing) {
+	FontSmoothing.None -> SkFontEdging.ALIAS
+	FontSmoothing.AntiAlias -> SkFontEdging.ANTI_ALIAS
+	FontSmoothing.SubpixelAntiAlias -> SkFontEdging.SUBPIXEL_ANTI_ALIAS
+}
+
+@OptIn(ExperimentalTextApi::class)
+private val RASTER_HINTING: SkFontHinting = when (FontRasterizationSettings.PlatformDefault.hinting) {
+	FontHinting.None -> SkFontHinting.NONE
+	FontHinting.Slight -> SkFontHinting.SLIGHT
+	FontHinting.Normal -> SkFontHinting.NORMAL
+	FontHinting.Full -> SkFontHinting.FULL
+}
+
+@OptIn(ExperimentalTextApi::class)
+private val RASTER_SUBPIXEL: Boolean = FontRasterizationSettings.PlatformDefault.subpixelPositioning
+
 internal class SkiaParagraphOps(
 	private val text: String,
 	private val style: TextStyle,
@@ -67,6 +97,16 @@ internal class SkiaParagraphOps(
 		if (widthConstraint.isFinite() && widthConstraint > 0f) widthConstraint else INTRINSIC_WIDTH
 
 	private var paragraph: SkParagraph = build(style.color, style.shadow, style.textDecoration)
+
+	// The paint attributes the current [paragraph] was built with. Compose paints
+	// with paint-time color/shadow/decoration; when they match what we already
+	// laid out (the common case — static text), paint reuses the existing native
+	// paragraph instead of re-shaping. The constructor above builds with the
+	// style values, so seed these to match.
+	private var builtColor: Color = style.color
+	private var builtShadow: Shadow? = style.shadow
+	private var builtDecoration: TextDecoration? = style.textDecoration
+	private var disposed = false
 
 	// ============
 	//  NativeParagraphOps
@@ -118,7 +158,15 @@ internal class SkiaParagraphOps(
 		paragraph.getWordBoundary(offset).let { intArrayOf(it.start, it.end) }
 
 	override fun rebuildAndPaint(canvas: Canvas, color: Color, shadow: Shadow?, decoration: TextDecoration?) {
-		paragraph = build(color, shadow, decoration)
+		// Re-shape only when a paint attribute actually changed; closing the
+		// previous native paragraph deterministically so it doesn't accumulate
+		// until the next GC (issue #2 — native memory ballooning).
+		if (color != builtColor || shadow != builtShadow || decoration != builtDecoration) {
+			val previous = paragraph
+			paragraph = build(color, shadow, decoration)
+			builtColor = color; builtShadow = shadow; builtDecoration = decoration
+			previous.close()
+		}
 		paragraph.paint(canvas.skiaCanvas, 0f, 0f)
 	}
 
@@ -136,15 +184,30 @@ internal class SkiaParagraphOps(
 				ellipsis = if (ellipsize) "…" else ""
 			}
 		}
+		// The builder is a native resource; close it once the paragraph is built
+		// (the paragraph owns its own native data and outlives the builder).
 		val pb = SkParagraphBuilder(pStyle, SkiaFonts.fontCollection)
-		if (spanStyles.isEmpty()) {
-			pb.pushStyle(baseStyle)
-			pb.addText(text)
-			pb.popStyle()
-		} else {
-			appendWithSpans(pb, color, shadow, decoration)
+		try {
+			if (spanStyles.isEmpty()) {
+				pb.pushStyle(baseStyle)
+				pb.addText(text)
+				pb.popStyle()
+			} else {
+				appendWithSpans(pb, color, shadow, decoration)
+			}
+			return pb.build().also { it.layout(layoutWidth) }
+		} finally {
+			pb.close()
 		}
-		return pb.build().also { it.layout(layoutWidth) }
+	}
+
+	override fun dispose() {
+		if (disposed) return
+		disposed = true
+		// Both are per-ops native objects (skiko Managed). close() frees them and
+		// cancels skiko's own GC-driven Cleaner, so nothing double-frees later.
+		paragraph.close()
+		defaultFont.close()
 	}
 
 	private fun appendWithSpans(pb: SkParagraphBuilder, color: Color, shadow: Shadow?, decoration: TextDecoration?) {
@@ -194,6 +257,11 @@ internal class SkiaParagraphOps(
 		val argb = (if (color.isSpecified) color else Color.Black).toArgb()
 		ts.color = argb
 		ts.fontSize = sizePx
+		// Match upstream text rasterization (edging / hinting / subpixel) instead
+		// of skiko's raw defaults — see the RASTER_* defaults above.
+		ts.fontEdging = RASTER_EDGING
+		ts.fontHinting = RASTER_HINTING
+		ts.subpixel = RASTER_SUBPIXEL
 		// Register + resolve to a provider alias so skiko's shaper maps codepoints
 		// through the exact typeface (icon fonts would otherwise fall back to
 		// Noto Sans and render private-use glyphs as tofu).
@@ -252,5 +320,9 @@ internal actual fun paragraphIntrinsicWidths(
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
 ): FloatArray {
 	val ops = SkiaParagraphOps(text, style, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density, spanStyles, false)
-	return floatArrayOf(ops.minIntrinsicWidth, ops.maxIntrinsicWidth)
+	try {
+		return floatArrayOf(ops.minIntrinsicWidth, ops.maxIntrinsicWidth)
+	} finally {
+		ops.dispose()
+	}
 }

@@ -252,6 +252,11 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 				// spinning. Keep FPS windows anchored to active periods.
 				SDL_WaitEventTimeout(null, 10)
 				for (vW in runtime.windows) vW.resetFpsWindow()
+			} else {
+				// App composition has pending work but nothing rendered this
+				// iteration — yield briefly instead of spinning at full speed
+				// until the composition settles into a renderable state.
+				SDL_Delay(1u)
 			}
 
 			// ============
@@ -340,17 +345,12 @@ internal object FrameProfiler {
 				val vAvg = (fSum[vName] ?: 0.0) / fFrames
 				"$vName=${(vAvg * 100).toInt() / 100.0}/${((fMax[vName] ?: 0.0) * 100).toInt() / 100.0}ms"
 			}
-			// Per-frame draw-work averages (see DrawStats): what's inside `draw`.
-			val vStats = com.compose.sdl.graphics.DrawStats
-			val vDraw = "geo=${vStats.geometrySubmits / fFrames} verts=${vStats.vertices / fFrames} " +
-				"masks=${vStats.maskRealizations / fFrames} text=${vStats.textDraws / fFrames} img=${vStats.imageBlits / fFrames}"
-			val vLine = "[profile] frames=$fFrames avg/max " + vParts.joinToString(" ") + " | per-frame " + vDraw + "\n"
+			val vLine = "[profile] frames=$fFrames avg/max " + vParts.joinToString(" ") + "\n"
 			val vFile = platform.posix.fopen(fPath, "a")
 			if (vFile != null) {
 				platform.posix.fputs(vLine, vFile)
 				platform.posix.fclose(vFile)
 			}
-			vStats.reset()
 			fSum.clear(); fMax.clear()
 			fFrames = 0
 			fLastPrintMs = vNowMs

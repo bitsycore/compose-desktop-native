@@ -78,6 +78,11 @@ internal interface NativeParagraphOps {
 	fun wordBoundary(offset: Int): IntArray // [start, end]
 
 	fun rebuildAndPaint(canvas: Canvas, color: Color, shadow: Shadow?, decoration: TextDecoration?)
+
+	/** Explicitly free the underlying native paragraph. Call when the ops is
+	   discarded (e.g. an intrinsics-only throwaway) so the native memory is
+	   released deterministically instead of waiting for a GC-driven Cleaner. */
+	fun dispose()
 }
 
 /** Bridge to the skiko ops impl (actual in skikoRendererMain). */

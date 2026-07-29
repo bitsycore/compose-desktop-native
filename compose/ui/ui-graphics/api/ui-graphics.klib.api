@@ -2099,27 +2099,6 @@ final object androidx.compose.ui.graphics.colorspace/Illuminant { // androidx.co
 
 final object androidx.compose.ui.graphics.drawscope/Fill : androidx.compose.ui.graphics.drawscope/DrawStyle // androidx.compose.ui.graphics.drawscope/Fill|null[0]
 
-final object com.compose.sdl.graphics/DrawStats { // com.compose.sdl.graphics/DrawStats|null[0]
-    final var geometrySubmits // com.compose.sdl.graphics/DrawStats.geometrySubmits|{}geometrySubmits[0]
-        final fun <get-geometrySubmits>(): kotlin/Int // com.compose.sdl.graphics/DrawStats.geometrySubmits.<get-geometrySubmits>|<get-geometrySubmits>(){}[0]
-        final fun <set-geometrySubmits>(kotlin/Int) // com.compose.sdl.graphics/DrawStats.geometrySubmits.<set-geometrySubmits>|<set-geometrySubmits>(kotlin.Int){}[0]
-    final var imageBlits // com.compose.sdl.graphics/DrawStats.imageBlits|{}imageBlits[0]
-        final fun <get-imageBlits>(): kotlin/Int // com.compose.sdl.graphics/DrawStats.imageBlits.<get-imageBlits>|<get-imageBlits>(){}[0]
-        final fun <set-imageBlits>(kotlin/Int) // com.compose.sdl.graphics/DrawStats.imageBlits.<set-imageBlits>|<set-imageBlits>(kotlin.Int){}[0]
-    final var maskRealizations // com.compose.sdl.graphics/DrawStats.maskRealizations|{}maskRealizations[0]
-        final fun <get-maskRealizations>(): kotlin/Int // com.compose.sdl.graphics/DrawStats.maskRealizations.<get-maskRealizations>|<get-maskRealizations>(){}[0]
-        final fun <set-maskRealizations>(kotlin/Int) // com.compose.sdl.graphics/DrawStats.maskRealizations.<set-maskRealizations>|<set-maskRealizations>(kotlin.Int){}[0]
-    final var textDraws // com.compose.sdl.graphics/DrawStats.textDraws|{}textDraws[0]
-        final fun <get-textDraws>(): kotlin/Int // com.compose.sdl.graphics/DrawStats.textDraws.<get-textDraws>|<get-textDraws>(){}[0]
-        final fun <set-textDraws>(kotlin/Int) // com.compose.sdl.graphics/DrawStats.textDraws.<set-textDraws>|<set-textDraws>(kotlin.Int){}[0]
-    final var vertices // com.compose.sdl.graphics/DrawStats.vertices|{}vertices[0]
-        final fun <get-vertices>(): kotlin/Int // com.compose.sdl.graphics/DrawStats.vertices.<get-vertices>|<get-vertices>(){}[0]
-        final fun <set-vertices>(kotlin/Int) // com.compose.sdl.graphics/DrawStats.vertices.<set-vertices>|<set-vertices>(kotlin.Int){}[0]
-
-    final fun reset() // com.compose.sdl.graphics/DrawStats.reset|reset(){}[0]
-    final fun summary(): kotlin/String // com.compose.sdl.graphics/DrawStats.summary|summary(){}[0]
-}
-
 final object com.compose.sdl.graphics/NativeReleaseQueue { // com.compose.sdl.graphics/NativeReleaseQueue|null[0]
     final fun drain(): kotlin/Int // com.compose.sdl.graphics/NativeReleaseQueue.drain|drain(){}[0]
     final fun enqueue(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.graphics/NativeReleaseQueue.enqueue|enqueue(kotlin.Function0<kotlin.Unit>){}[0]
@@ -2243,7 +2222,6 @@ final val androidx.compose.ui.graphics/union // androidx.compose.ui.graphics/uni
     final fun (androidx.compose.ui.graphics/PathOperation.Companion).<get-union>(): androidx.compose.ui.graphics/PathOperation // androidx.compose.ui.graphics/union.<get-union>|<get-union>@androidx.compose.ui.graphics.PathOperation.Companion(){}[0]
 final val androidx.compose.ui.graphics/xor // androidx.compose.ui.graphics/xor|@androidx.compose.ui.graphics.PathOperation.Companion{}xor[0]
     final fun (androidx.compose.ui.graphics/PathOperation.Companion).<get-xor>(): androidx.compose.ui.graphics/PathOperation // androidx.compose.ui.graphics/xor.<get-xor>|<get-xor>@androidx.compose.ui.graphics.PathOperation.Companion(){}[0]
-final val com.compose.sdl.graphics/com_compose_sdl_graphics_DrawStats$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_DrawStats$stableprop|#static{}com_compose_sdl_graphics_DrawStats$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_NativeReleaseQueue$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_NativeReleaseQueue$stableprop|#static{}com_compose_sdl_graphics_NativeReleaseQueue$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop|#static{}com_compose_sdl_graphics_PathCommand_Close$stableprop[0]
 final val com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop|#static{}com_compose_sdl_graphics_PathCommand_CubicTo$stableprop[0]
@@ -2459,7 +2437,6 @@ final fun androidx.compose.ui.graphics/findFirstRoot(androidx.compose.ui.graphic
 final fun androidx.compose.ui.graphics/lerp(androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color, kotlin/Float): androidx.compose.ui.graphics/Color // androidx.compose.ui.graphics/lerp|lerp(androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
 final fun androidx.compose.ui.graphics/lerp(androidx.compose.ui.graphics/Shadow, androidx.compose.ui.graphics/Shadow, kotlin/Float): androidx.compose.ui.graphics/Shadow // androidx.compose.ui.graphics/lerp|lerp(androidx.compose.ui.graphics.Shadow;androidx.compose.ui.graphics.Shadow;kotlin.Float){}[0]
 final fun androidx.compose.ui.graphics/prepareTransformationMatrix(androidx.compose.ui.graphics/Matrix, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // androidx.compose.ui.graphics/prepareTransformationMatrix|prepareTransformationMatrix(androidx.compose.ui.graphics.Matrix;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-final fun com.compose.sdl.graphics/com_compose_sdl_graphics_DrawStats$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_DrawStats$stableprop_getter|com_compose_sdl_graphics_DrawStats$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_NativeReleaseQueue$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_NativeReleaseQueue$stableprop_getter|com_compose_sdl_graphics_NativeReleaseQueue$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_Close$stableprop_getter|com_compose_sdl_graphics_PathCommand_Close$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter|com_compose_sdl_graphics_PathCommand_CubicTo$stableprop_getter(){}[0]

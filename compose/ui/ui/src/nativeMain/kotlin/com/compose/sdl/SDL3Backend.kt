@@ -40,7 +40,9 @@ class SDL3Backend(
     var pixelWidth: Int = width; private set
     var pixelHeight: Int = height; private set
     // True when the active renderer paces itself to the display (vsync), so the
-    // main loop can skip its manual frame delay. Set for the SDL renderer path.
+    // main loop can skip its manual frame delay. Set per GPU mode in init():
+    // GL from SDL_GL_SetSwapInterval, Metal always (CAMetalLayer blocks on the
+    // vertical blank), Software from SDL_SetRenderVSync.
     var vsyncEnabled: Boolean = false; private set
 
     fun init(): Boolean {
@@ -93,7 +95,11 @@ class SDL3Backend(
                     return false
                 }
                 SDL_GL_MakeCurrent(window?.reinterpret(), glContext?.reinterpret())
-                SDL_GL_SetSwapInterval(1)
+                // Vsync on: SDL_GL_SwapWindow blocks until the vertical blank, so
+                // the main loop can drop its manual SDL_Delay. If the driver
+                // refuses (returns false) vsyncEnabled stays false and the loop
+                // keeps its fallback frame cap.
+                vsyncEnabled = SDL_GL_SetSwapInterval(1)
             }
             is GpuMode.Skia.Metal -> {
                 metalView = SDL_Metal_CreateView(window?.reinterpret())
@@ -101,6 +107,9 @@ class SDL3Backend(
                     println("SDL_Metal_CreateView failed: ${SDL_GetError()?.toKString()}")
                     return false
                 }
+                // CAMetalLayer presents on the vertical blank — nextDrawable
+                // blocks — so Metal is vsync-paced and the loop skips its delay.
+                vsyncEnabled = true
             }
             is GpuMode.Software -> {
                 // Skia CPU raster: SkiaSurfaceBridge paints a host buffer that

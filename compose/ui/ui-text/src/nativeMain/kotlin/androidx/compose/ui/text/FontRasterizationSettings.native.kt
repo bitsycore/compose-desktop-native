@@ -1,18 +1,19 @@
 package androidx.compose.ui.text
 
+import kotlin.experimental.ExperimentalNativeApi
+
 // ==================
 // MARK: FontRasterizationSettings native actual (Skia-free)
 // ==================
 
 /**
- * Hand-written port of upstream `FontRasterizationSettings.skiko.kt` minus
- * the Skia-only `toSkFontEdging` / `toSkFontHinting` extensions and the
- * `currentPlatform()` lookup. Vendored TextStyle.native.kt references
- * `FontRasterizationSettings.PlatformDefault` so we need the class +
- * companion to exist; the renderer doesn't read these values yet so a
- * single shared "PlatformDefault" instance (AntiAlias / Normal /
- * subpixel-on / autohint-off — matches upstream's macOS/Linux default)
- * is fine.
+ * Hand-written port of upstream `FontRasterizationSettings.skiko.kt` minus the
+ * Skia-only `toSkFontEdging` / `toSkFontHinting` extensions (the skiko renderer
+ * maps `PlatformDefault` to skiko enums itself, in SkiaParagraphEngine).
+ * `PlatformDefault` mirrors upstream's per-OS defaults: anti-aliased + subpixel
+ * everywhere, hinting Slight on Linux and Normal on Windows/macOS (macOS
+ * ignores hinting). Vendored TextStyle.native.kt also references
+ * `FontRasterizationSettings.PlatformDefault`.
  */
 
 @ExperimentalTextApi
@@ -38,9 +39,10 @@ class FontRasterizationSettings(
 	val autoHintingForced: Boolean,
 ) {
 	companion object {
+		@OptIn(ExperimentalNativeApi::class)
 		val PlatformDefault: FontRasterizationSettings = FontRasterizationSettings(
 			smoothing = FontSmoothing.AntiAlias,
-			hinting = FontHinting.Normal,
+			hinting = if (Platform.osFamily == OsFamily.LINUX) FontHinting.Slight else FontHinting.Normal,
 			subpixelPositioning = true,
 			autoHintingForced = false,
 		)
