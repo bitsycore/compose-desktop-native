@@ -21,6 +21,18 @@ the second (non-Skia) SDL renderer. This is the actionable companion to
 > Fixing the frame-pacing bug (Phase 0, ~1 line each) and the paragraph cache
 > (Phase 1) is expected to recover the bulk of the gap.
 
+> **Update (2026-07-29, macOS execution pass).** Phases 0–1 landed; macOS Metal
+> measurement (§12) then showed there is **no steady-state perf gap** on
+> macOS/Metal (P0.4/P0.6 closed as non-issues). The remaining work is FEATURE
+> PARITY, and this pass closed the high-value, low-risk parity gaps: lineHeight /
+> LineHeightStyle / textIndent / baselineShift / span-background in the text
+> engine (Material3 typography sets lineHeight almost everywhere — parity harness
+> Buttons dropped ~16% → 1.6% differing), generic font-family resolution
+> (serif/cursive/…), a real DatePicker/TimePicker date formatter, NamedFont axis
+> identity, and size-driven SVG on the project image path. The genuinely-large /
+> high-risk items (P3.2 font-resolver rewire, P3.3 official-path `SVGPainter`,
+> P4.1 RenderNode-shadow revert) stay deferred with rationale in their sections.
+
 ---
 
 ## 0. How to read this plan
