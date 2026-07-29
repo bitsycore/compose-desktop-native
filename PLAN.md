@@ -107,9 +107,27 @@ profiler measurement of the double-shape cost first — not done blind.
 ### Phase 2 — Frame-pacing correctness & the on-demand model
 | Status | ID | Item | Impact | Verify |
 |:------:|----|------|--------|--------|
-| ⬜ | **P2.1** | FPS-lock to real display refresh (`SDL_GetCurrentDisplayMode`) | Med | manual multi-monitor |
-| ⬜ | **P2.2** | Adopt upstream `GlobalSnapshotManager` invalidation-driven scheduling | Med | probe, parity |
-| ⬜ | **P2.3** | Bound the idle `SDL_WaitEventTimeout` and fix woken-event latency | Low | manual idle CPU |
+| ✅ | **P2.1** | FPS-lock to real display refresh (`SDL_GetCurrentDisplayMode`) | Med | manual multi-monitor |
+| ⏸️ | **P2.2** | Adopt upstream `GlobalSnapshotManager` invalidation-driven scheduling | Med | probe, parity |
+| ✅ | **P2.3** | Bound the idle `SDL_WaitEventTimeout` and fix woken-event latency | Low | manual idle CPU |
+
+**P2.1 done:** the non-vsync fallback pacing now derives its frame cap from the
+rendered window's real display refresh (`SDL_GetDisplayForWindow` +
+`SDL_GetCurrentDisplayMode`), min across non-vsync windows, instead of a
+hardcoded 16 ms — so a 144 Hz panel on a Software/vsync-unavailable path isn't
+capped to 60. No `sdl3.def` change (the cinterop binds all of SDL3). Post-P0.1
+this path is only hit when vsync is unavailable.
+
+**P2.3 done:** idle `SDL_WaitEventTimeout` raised 10 ms → 100 ms (a real event
+still wakes it immediately; the timeout only bounds async-work re-checks while
+truly idle), cutting idle wakeups.
+
+**P2.2 deferred (evaluated):** the *coalescing* half of the upstream
+`GlobalSnapshotManager` model is already delivered by P1.3 (write-observer
+schedules, doesn't apply inline). Vendoring the full manager /
+`FrameRecomposer` invalidation-driven scheduler is a larger, skiko-windowing-
+coupled change (RENDERER.md §8 non-goal) needing probe/parity verification —
+left as a bigger follow-up, not done blind.
 
 ### Phase 3 — Font & image parity
 | Status | ID | Item | Impact | Verify |

@@ -35,7 +35,11 @@ import kotlinx.cinterop.toKString
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.COpaquePointer
+import kotlinx.cinterop.pointed
 import sdl3.SDL_Delay
+import sdl3.SDL_GetCurrentDisplayMode
+import sdl3.SDL_GetDisplayForWindow
 import sdl3.SDL_GetPerformanceCounter
 import sdl3.SDL_GetPerformanceFrequency
 import sdl3.SDL_GetTicks
@@ -220,6 +224,10 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			//  Per-window pump + render.
 			var vAnyRendered = false
 			var vAllVsync = true
+			// Non-vsync fallback cap: the shortest frame interval among the
+			// rendered non-vsync windows' displays (60Hz default). Only used when
+			// no window is vsync-paced (Software renderer / vsync unavailable).
+			var vFallbackDelayMs = 16u
 			val vAppPending = appRecomposer.hasPendingWork
 			for (vW in runtime.windows.toList()) {
 				vW.installGlobals()
@@ -232,7 +240,10 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 				if (vW.shouldRender()) {
 					vW.renderFrame()
 					vAnyRendered = true
-					if (!vW.backend.vsyncEnabled) vAllVsync = false
+					if (!vW.backend.vsyncEnabled) {
+						vAllVsync = false
+						vFallbackDelayMs = minOf(vFallbackDelayMs, displayFrameDelayMs(vW.backend.window))
+					}
 				}
 				FrameProfiler.phase("render")
 			}
@@ -250,11 +261,13 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			// ============
 			//  Pace / idle-skip.
 			if (vAnyRendered) {
-				SDL_Delay(if (vAllVsync) 1u else 16u)
+				SDL_Delay(if (vAllVsync) 1u else vFallbackDelayMs)
 			} else if (!vAppPending) {
 				// Nothing invalidated anywhere: block for events instead of
-				// spinning. Keep FPS windows anchored to active periods.
-				SDL_WaitEventTimeout(null, 10)
+				// spinning. A real input/redraw event wakes this immediately; the
+				// timeout only bounds how often async work (dispatcher/timers) is
+				// re-checked while truly idle, so keep it coarse to cut wakeups.
+				SDL_WaitEventTimeout(null, 100)
 				for (vW in runtime.windows) vW.resetFpsWindow()
 			} else {
 				// App composition has pending work but nothing rendered this
@@ -422,6 +435,18 @@ fun windowHasInvalidations(): Boolean = renderingWindow?.hasInvalidations() ?: f
    their native memory (see the main loop's native-memory nudge). */
 @OptIn(kotlin.native.runtime.NativeRuntimeApi::class)
 private fun collectNativeGarbage() = kotlin.native.runtime.GC.collect()
+
+/** Frame interval (ms) of the window's current display, for the non-vsync
+   fallback pacing (SDL_Delay). Falls back to 16ms (~60Hz) when the mode can't
+   be read, so a 144Hz panel on a non-vsync path isn't capped to 60. */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+private fun displayFrameDelayMs(window: COpaquePointer?): UInt {
+	val vWindow = window ?: return 16u
+	val vDisplay = SDL_GetDisplayForWindow(vWindow.reinterpret())
+	val vMode = SDL_GetCurrentDisplayMode(vDisplay) ?: return 16u
+	val vHz = vMode.pointed.refresh_rate
+	return if (vHz > 0f) (1000f / vHz).toUInt().coerceAtLeast(1u) else 16u
+}
 
 /** Single-window compatibility wrapper — the pre-multi-window entry point.
    Closing the window exits the app, exactly as before. */
