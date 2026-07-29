@@ -8,6 +8,8 @@ import androidx.compose.ui.graphics.skiaCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.ResolvedTextDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -24,12 +26,14 @@ import org.jetbrains.skia.paragraph.Alignment as SkAlignment
 import org.jetbrains.skia.paragraph.DecorationLineStyle as SkDecorationLineStyle
 import org.jetbrains.skia.paragraph.DecorationStyle as SkDecorationStyle
 import org.jetbrains.skia.paragraph.Direction as SkDirection
+import org.jetbrains.skia.paragraph.HeightMode as SkHeightMode
 import org.jetbrains.skia.paragraph.Paragraph as SkParagraph
 import org.jetbrains.skia.paragraph.ParagraphBuilder as SkParagraphBuilder
 import org.jetbrains.skia.paragraph.ParagraphStyle
 import org.jetbrains.skia.paragraph.RectHeightMode
 import org.jetbrains.skia.paragraph.RectWidthMode
 import org.jetbrains.skia.paragraph.Shadow as SkShadow
+import org.jetbrains.skia.paragraph.TextIndent as SkTextIndent
 import org.jetbrains.skia.paragraph.TextStyle as SkTextStyle
 
 // ==================
@@ -96,6 +100,20 @@ internal class SkiaParagraphOps(
 	private val defaultFont = SkFont(baseTypeface ?: SkiaFonts.defaultTypeface, fontPx)
 	private val layoutWidth: Float =
 		if (widthConstraint.isFinite() && widthConstraint > 0f) widthConstraint else INTRINSIC_WIDTH
+
+	/** Resolve the paragraph line height to px for a run of [runSizePx], mirroring
+	   upstream's `lineHeight.toPx(density, fontSize)`: `em` is relative to the run's
+	   font size, `sp` scales by density. Null when unspecified (keep skiko default
+	   line spacing — the pre-existing behaviour, so untouched text doesn't shift). */
+	private fun resolveLineHeightPx(runSizePx: Float): Float? {
+		val lh = style.lineHeight
+		if (!lh.isSpecified) return null
+		return when {
+			lh.isEm -> runSizePx * lh.value
+			lh.isSp -> lh.value * density
+			else -> null
+		}
+	}
 
 	private var paragraph: SkParagraph = build(style.color, style.shadow, style.textDecoration)
 
@@ -203,11 +221,35 @@ internal class SkiaParagraphOps(
 	//  Compose style/span -> skiko build
 
 	private fun build(color: Color, shadow: Shadow?, decoration: TextDecoration?): SkParagraph {
-		val baseStyle = makeTextStyle(baseFamily, baseVariations, fontPx, color, style.fontStyle, decoration, shadow)
+		val baseStyle = makeTextStyle(
+			baseFamily, baseVariations, fontPx, color, style.fontStyle, decoration, shadow,
+			style.baselineShift, style.background,
+		)
 		val pStyle = ParagraphStyle().apply {
+			// https://youtrack.jetbrains.com/issue/CMP-6589 — tabs expand like upstream.
+			replaceTabCharacters = true
 			alignment = style.textAlign.toSkAlignment()
 			direction = if (style.textDirection == androidx.compose.ui.text.style.TextDirection.Rtl) SkDirection.RTL else SkDirection.LTR
 			textStyle = baseStyle
+			// Line-height trim (mirrors upstream ParagraphBuilder.textStyleToParagraphStyle):
+			// trim-based mode only when lineHeight actually adds leading (> fontSize);
+			// otherwise DISABLE_ALL, matching upstream's default (with no extra leading
+			// this leaves single-line metrics at the font's own ascent/descent).
+			val baseLineHeightPx = resolveLineHeightPx(fontPx)
+			heightMode = if (baseLineHeightPx != null && baseLineHeightPx > fontPx) {
+				(style.lineHeightStyle ?: LineHeightStyle.Default).trim.toSkHeightMode()
+			} else {
+				SkHeightMode.DISABLE_ALL
+			}
+			style.textIndent?.let { ti ->
+				val em = fontPx
+				fun tuPx(v: androidx.compose.ui.unit.TextUnit): Float = when {
+					!v.isSpecified -> 0f
+					v.isEm -> em * v.value
+					else -> v.value * density
+				}
+				textIndent = SkTextIndent(tuPx(ti.firstLine), tuPx(ti.restLine))
+			}
 			if (maxLines != Int.MAX_VALUE) {
 				maxLinesCount = maxLines
 				ellipsis = if (ellipsize) "…" else ""
@@ -266,6 +308,8 @@ internal class SkiaParagraphOps(
 		var segColor = color
 		var fontStyle = style.fontStyle
 		var deco = decoration
+		var baselineShift = style.baselineShift
+		var background = style.background
 		active.forEach { range ->
 			val sp = range.item
 			if (sp.color.isSpecified) segColor = sp.color
@@ -275,13 +319,16 @@ internal class SkiaParagraphOps(
 			sp.textDecoration?.let { deco = it }
 			sp.fontFamily.projectFontName()?.let { family = it }
 			sp.fontFamily.projectFontVariations()?.let { variations = it }
+			sp.baselineShift?.let { baselineShift = it }
+			if (sp.background.isSpecified) background = sp.background
 		}
-		return makeTextStyle(family, variations, size, segColor, fontStyle, deco, shadow)
+		return makeTextStyle(family, variations, size, segColor, fontStyle, deco, shadow, baselineShift, background)
 	}
 
 	private fun makeTextStyle(
 		family: String?, variations: List<FontVariation.Setting>?, sizePx: Float,
 		color: Color, fontStyle: FontStyle?, decoration: TextDecoration?, shadow: Shadow?,
+		baselineShift: BaselineShift?, background: Color,
 	): SkTextStyle {
 		val ts = SkTextStyle()
 		val argb = (if (color.isSpecified) color else Color.Black).toArgb()
@@ -292,12 +339,21 @@ internal class SkiaParagraphOps(
 		ts.fontEdging = RASTER_EDGING
 		ts.fontHinting = RASTER_HINTING
 		ts.subpixel = RASTER_SUBPIXEL
+		// Per-run line height (upstream: res.height = lineHeight / fontSize), set only
+		// when lineHeight is specified so untouched text keeps skiko's default spacing.
+		resolveLineHeightPx(sizePx)?.let { ts.height = it / sizePx }
+		// Span/base background fill behind the run.
+		if (background.isSpecified) ts.background = SkPaint().also { it.color = background.toArgb() }
 		// Register + resolve to a provider alias so skiko's shaper maps codepoints
 		// through the exact typeface (icon fonts would otherwise fall back to
 		// Noto Sans and render private-use glyphs as tofu).
 		val (tf, alias) = SkiaFonts.resolve(family, variations)
 		tf?.let { ts.typeface = it }
 		ts.fontFamilies = arrayOf(alias)
+		// Superscript / subscript: shift the baseline by a multiple of the font ascent.
+		// MUST run after the typeface + fontSize are set — `fontMetrics` is undefined
+		// without a resolved font, and skiko's setBaselineShift rejects the NaN.
+		baselineShift?.let { ts.baselineShift = it.multiplier * ts.fontMetrics.ascent }
 		if (fontStyle == FontStyle.Italic) ts.fontStyle = SkFontStyle.ITALIC
 		decoration?.takeUnless { it == TextDecoration.None }?.let {
 			ts.decorationStyle = SkDecorationStyle(
@@ -314,6 +370,14 @@ internal class SkiaParagraphOps(
 		}
 		return ts
 	}
+}
+
+private fun LineHeightStyle.Trim.toSkHeightMode(): SkHeightMode = when (this) {
+	LineHeightStyle.Trim.Both -> SkHeightMode.DISABLE_ALL
+	LineHeightStyle.Trim.FirstLineTop -> SkHeightMode.DISABLE_FIRST_ASCENT
+	LineHeightStyle.Trim.LastLineBottom -> SkHeightMode.DISABLE_LAST_DESCENT
+	LineHeightStyle.Trim.None -> SkHeightMode.ALL
+	else -> SkHeightMode.DISABLE_ALL
 }
 
 private fun TextAlign.toSkAlignment(): SkAlignment = when (this) {

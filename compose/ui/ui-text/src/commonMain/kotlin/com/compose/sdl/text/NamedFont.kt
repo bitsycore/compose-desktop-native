@@ -38,12 +38,18 @@ class NamedFont(
 	override val loadingStrategy: FontLoadingStrategy = FontLoadingStrategy.Blocking
 
 	override fun equals(other: Any?): Boolean =
-		other is NamedFont && other.name == name && other.weight == weight && other.style == style
+		other is NamedFont && other.name == name && other.weight == weight && other.style == style &&
+			other.axes == axes && other.variationSettings == variationSettings
 
 	override fun hashCode(): Int {
 		var h = name.hashCode()
 		h = 31 * h + weight.hashCode()
 		h = 31 * h + style.hashCode()
+		// Axis settings (Material Symbols FILL/wght/GRAD/opsz) are part of identity —
+		// without them two axis-differing icon fonts compare equal and collide in the
+		// FontFamily → typeface cache, rendering one icon's axes for the other.
+		h = 31 * h + (axes?.hashCode() ?: 0)
+		h = 31 * h + variationSettings.hashCode()
 		return h
 	}
 
