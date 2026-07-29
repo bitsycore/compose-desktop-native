@@ -1,5 +1,6 @@
 package com.compose.sdl.graphics
 
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 
 // ==================
@@ -17,6 +18,15 @@ import androidx.compose.ui.graphics.ImageBitmap
    renderer internals. */
 interface EncodedImageDecoder {
 	fun decode(inBytes: ByteArray): ImageBitmap?
+
+	/** Intrinsic (viewport) size of an SVG document, or null if it can't be
+	   parsed. Used by the resolution-independent SvgPainter for layout. */
+	fun svgIntrinsicSize(inBytes: ByteArray): Size? = null
+
+	/** Rasterise an SVG at a specific PIXEL size (resolution-independent draw).
+	   Default falls back to the intrinsic-size [decode] for impls that don't
+	   support size-driven rendering. */
+	fun decodeSvgAt(inBytes: ByteArray, inWidthPx: Int, inHeightPx: Int): ImageBitmap? = decode(inBytes)
 }
 
 /** Volatile: written by the render backend on the main thread, read by the
@@ -28,3 +38,12 @@ var encodedImageDecoder: EncodedImageDecoder? = null
  *  has initialised yet or the bytes aren't a supported image. */
 fun decodeEncodedImageBitmap(inBytes: ByteArray): ImageBitmap? =
 	encodedImageDecoder?.decode(inBytes)
+
+/** Intrinsic size of an SVG document via the active decoder, or null. */
+fun svgIntrinsicSize(inBytes: ByteArray): Size? =
+	encodedImageDecoder?.svgIntrinsicSize(inBytes)
+
+/** Rasterise an SVG at [inWidthPx]×[inHeightPx] via the active decoder — the
+ *  resolution-independent draw path used by the resources SvgPainter. */
+fun decodeSvgAt(inBytes: ByteArray, inWidthPx: Int, inHeightPx: Int): ImageBitmap? =
+	encodedImageDecoder?.decodeSvgAt(inBytes, inWidthPx, inHeightPx)
