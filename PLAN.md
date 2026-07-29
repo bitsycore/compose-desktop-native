@@ -153,7 +153,7 @@ left as a bigger follow-up, not done blind.
 |:------:|----------|-------------------------------------------------------------------------------|------------------------|------------|
 |   ✅   | **P3.1** | System/default + generic-family font resolution via `FontMgr.default`         | **High** (correctness) | parity     |
 |   ⏸️    | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High                   | parity     |
-|   🟡   | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
+|   ✅   | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
 |   🟡   | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction)            | Med                    | manual RSS |
 |   ⏸️    | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs       | Low                    | compile    |
 
@@ -162,16 +162,16 @@ through the per-OS concrete-name alias table (upstream `GenericFontFamiliesMappi
 `SkiaFonts.genericFamilyAliases`) via `FontMgr.matchFamilyStyle`, instead of
 falling back to the sans-serif default. Named system families already worked.
 
-**P3.3 (project path done; official path deferred):** `SkiaImageCache` now
-rasterises SVG / Android-vector at the DESTINATION pixel size (size-keyed raster
-cache + `rasterizeSvgAt`, canvas-scaled from intrinsic), so vectors drawn through
-the project `ImageLoader` path stay crisp when scaled. **Remaining:** the demo /
-most apps load vectors via the OFFICIAL `painterResource` → `:components-resources`
-→ `SkiaEncodedImageDecoder`, whose hook returns a fixed `ImageBitmap` (its
-dimensions become the painter's INTRINSIC size, so simply rasterising bigger
-would break layout). True resolution independence there needs a size-driven
-`SVGPainter` (vendor upstream `DesktopSvgResources`) wired into the resources
-pipeline for the SVG/XML kinds — an L-effort vendored-module change, deferred.
+**P3.3 done (both paths).** (a) Project `ImageLoader` path: `SkiaImageCache`
+rasterises SVG/Android-vector at the DESTINATION pixel size (`rasterizeSvgAt`,
+size-keyed cache). (b) OFFICIAL `painterResource` path: `SvgElement.toSvgPainter`
+now returns a size-driven `SvgPainter` (reports intrinsic size for layout,
+re-rasterises at the draw size via new `EncodedImageDecoder.svgIntrinsicSize` /
+`decodeSvgAt` hooks) instead of a fixed `BitmapPainter` — matching upstream
+desktop's `SVGPainter`. XML `<vector>` was already scalable (parsed to
+`ImageVector` via the vendored `XmlVectorParser`). P3.5's `loadImageBitmap(InputStream)`
+/ `loadSvgPainter(InputStream)` are inherently JVM-only (no `java.io.InputStream`
+on K/N), so those exact signatures are N/A on native.
 
 **P3.2 deferred (large + low parity-harness impact):** the text engine
 (`SkiaParagraphEngine`/`SkiaFonts`) reads `TextStyle.fontFamily` DIRECTLY via
@@ -213,16 +213,18 @@ noted in §5/§6.
 |   🟡   | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files            | Low (maintenance) | build              |
 |   ✅   | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md   | Low               | n/a                |
 |   ✅   | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low               | build              |
-|   🟡   | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter  | Low               | parity             |
+|   ✅   | **P4.5** | Vendor thin `Ripple.skiko.kt` (already vendored); real date/time formatter | Low            | parity             |
 
-**P4.5 (date formatter done; Ripple + mirror-drift deferred):** the material3
-`PlatformDateFormat.native` English-ISO stub is replaced with a real
+**P4.5 (date formatter done; Ripple already vendored; mirror-drift deferred):**
+the material3 `PlatformDateFormat.native` English-ISO stub is replaced with a real
 pattern/skeleton formatter (honours the requested CLDR pattern, so DatePicker /
 TimePicker headlines read "Jul 29, 2026" / "July 2026"; field names stay English
-— full CLDR name localization needs ICU data we don't bundle). Still deferred:
-vendoring the thin `Ripple.skiko.kt` (the project shim works — pure cleanliness)
-and converting byte-identical foundation `.native.kt` mirrors to `SET_FOLDER`
-directives (tooling nicety).
+— full CLDR name localization needs ICU data we don't bundle). The thin
+`Ripple.skiko.kt` turned out to be **already vendored** (material3 manifest,
+`src/vendor/native/.../internal/ripple/Ripple.skiko.kt`) — no project shim to
+replace. Still deferred (tooling nicety, zero runtime impact): converting
+byte-identical foundation `.native.kt` mirrors to `SET_FOLDER macosMain`
+directives so drift-tracking covers them.
 
 **P4.3 done:** RENDERER.md's biggest inaccuracy is fixed — it claimed text was
 "upstream's own `SkiaParagraph`, vendored verbatim" with "upstream
@@ -247,10 +249,15 @@ remaining bulk (the main loop, `WindowInstance`, and the probe/virtual-frame
 timing cluster) is deeply intertwined and left in place — extracting it needs
 visibility surgery on many top-level privates for marginal gain.
 
-**P4.1 / P4.5 deferred:** P4.1 (reverse the two manual vendors) is macOS-gated
-(`verify-mac` — shadow lighting + hit-test coords). P4.5 needs a vendor re-sync
-+ material3 build verification (Ripple) and a real `kotlinx-datetime` reimpl
-(date formatter).
+**P4.1 deferred (the last substantive item — risky maintenance, no parity/perf
+win):** reversing the two manual vendors restores upstream RenderNode shadows via
+`SkiaGraphicsContext.setLightingInfo` + relocates `prepareTransformationMatrix`.
+Our current hand-rolled `NativeShadowCanvas` shadows already render, and macOS
+profiling shows the shadow path costs nothing (`draw`=0.08 ms), so this buys only
+vendoring cleanliness — while risking a shadow-lighting or hit-test-coordinate
+regression that a quick smoke test wouldn't catch. It needs a full `verify-mac` +
+parity pass (shadow lighting + hit-test agreement) as a focused follow-up, not a
+blind late-session edit. **P4.5 done** (see above).
 
 ---
 
