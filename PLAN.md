@@ -165,7 +165,7 @@ noted in §5/§6.
 | Status | ID | Item | Impact | Verify |
 |:------:|----|------|--------|--------|
 | ⏸️ | **P4.1** | Reverse the two second-renderer manual vendors | Med (maintenance) | verify-mac, parity |
-| ⏸️ | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files | Low (maintenance) | build |
+| 🟡 | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files | Low (maintenance) | build |
 | ✅ | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md | Low | n/a |
 | ✅ | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low | build |
 | ⏸️ | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter | Low | parity |
@@ -185,12 +185,18 @@ to deleted modules (`renderer-sdl3`), the removed backend ("SDL3 backend",
 `GradientBridge`, `DrawShape`, `ComposeOwner`, `IconFont`, `Popup.native`,
 `BrushScreen`.
 
-**P4.1 / P4.2 / P4.5 deferred:** P4.1 (reverse the two manual vendors) is
-macOS-gated (`verify-mac` — shadow lighting + hit-test coords). P4.2 (decompose
-the 1131-line `ComposeWindow.kt`) is a large mechanical refactor with real
-breakage risk done blind — pure maintenance, no perf/correctness gain. P4.5
-needs a vendor re-sync + material3 build verification (Ripple) and a real
-`kotlinx-datetime` reimpl (date formatter).
+**P4.2 partly done:** extracted three self-contained units out of the
+1131-line `ComposeWindow.kt` (now **978 lines**) as pure compiler-verified
+moves — `FrameProfiler.kt` (+ `kForceRender`), `WindowArchitectureOwner.kt`,
+`WindowInputHelpers.kt` (`BackNavigationInput` + `dispatchTypedText`). The
+remaining bulk (the main loop, `WindowInstance`, and the probe/virtual-frame
+timing cluster) is deeply intertwined and left in place — extracting it needs
+visibility surgery on many top-level privates for marginal gain.
+
+**P4.1 / P4.5 deferred:** P4.1 (reverse the two manual vendors) is macOS-gated
+(`verify-mac` — shadow lighting + hit-test coords). P4.5 needs a vendor re-sync
++ material3 build verification (Ripple) and a real `kotlinx-datetime` reimpl
+(date formatter).
 
 ---
 
