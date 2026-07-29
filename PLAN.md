@@ -139,11 +139,37 @@ left as a bigger follow-up, not done blind.
 ### Phase 3 — Font & image parity
 | Status | ID       | Item                                                                          | Impact                 | Verify     |
 |:------:|----------|-------------------------------------------------------------------------------|------------------------|------------|
-|   🟡   | **P3.1** | System/default + generic-family font resolution via `FontMgr.default`         | **High** (correctness) | parity     |
+|   ✅   | **P3.1** | System/default + generic-family font resolution via `FontMgr.default`         | **High** (correctness) | parity     |
 |   ⏸️    | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High                   | parity     |
-|   ⏸️    | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
+|   🟡   | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
 |   🟡   | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction)            | Med                    | manual RSS |
 |   ⏸️    | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs       | Low                    | compile    |
+
+**P3.1 done:** generic families (serif/cursive/monospace/sans-serif) now resolve
+through the per-OS concrete-name alias table (upstream `GenericFontFamiliesMapping`,
+`SkiaFonts.genericFamilyAliases`) via `FontMgr.matchFamilyStyle`, instead of
+falling back to the sans-serif default. Named system families already worked.
+
+**P3.3 (project path done; official path deferred):** `SkiaImageCache` now
+rasterises SVG / Android-vector at the DESTINATION pixel size (size-keyed raster
+cache + `rasterizeSvgAt`, canvas-scaled from intrinsic), so vectors drawn through
+the project `ImageLoader` path stay crisp when scaled. **Remaining:** the demo /
+most apps load vectors via the OFFICIAL `painterResource` → `:components-resources`
+→ `SkiaEncodedImageDecoder`, whose hook returns a fixed `ImageBitmap` (its
+dimensions become the painter's INTRINSIC size, so simply rasterising bigger
+would break layout). True resolution independence there needs a size-driven
+`SVGPainter` (vendor upstream `DesktopSvgResources`) wired into the resources
+pipeline for the SVG/XML kinds — an L-effort vendored-module change, deferred.
+
+**P3.2 deferred (large + low parity-harness impact):** the text engine
+(`SkiaParagraphEngine`/`SkiaFonts`) reads `TextStyle.fontFamily` DIRECTLY via
+`projectFontName()`/`projectFontVariations()` and never consults the
+`FontFamily.Resolver` typeface (the resolver returns a no-op
+`TypefaceResult.Immutable(Unit)`). Making resource-`Font` lists + weight-matching
++ async work therefore means rewiring the load-bearing font path to consume the
+resolver's typeface — high regression risk, and the parity harness (shared
+screens use `NamedFont` / bundled fonts) wouldn't even exercise it. Left as the
+one genuinely-L, high-risk item.
 
 **P3.1 (concrete names done):** unbundled family names now resolve against the
 OS font set via `FontMgr.matchFamilyStyle` (e.g. `FontFamily("Arial")`) instead
@@ -175,7 +201,16 @@ noted in §5/§6.
 |   🟡   | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files            | Low (maintenance) | build              |
 |   ✅   | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md   | Low               | n/a                |
 |   ✅   | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low               | build              |
-|   ⏸️    | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter  | Low               | parity             |
+|   🟡   | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter  | Low               | parity             |
+
+**P4.5 (date formatter done; Ripple + mirror-drift deferred):** the material3
+`PlatformDateFormat.native` English-ISO stub is replaced with a real
+pattern/skeleton formatter (honours the requested CLDR pattern, so DatePicker /
+TimePicker headlines read "Jul 29, 2026" / "July 2026"; field names stay English
+— full CLDR name localization needs ICU data we don't bundle). Still deferred:
+vendoring the thin `Ripple.skiko.kt` (the project shim works — pure cleanliness)
+and converting byte-identical foundation `.native.kt` mirrors to `SET_FOLDER`
+directives (tooling nicety).
 
 **P4.3 done:** RENDERER.md's biggest inaccuracy is fixed — it claimed text was
 "upstream's own `SkiaParagraph`, vendored verbatim" with "upstream
