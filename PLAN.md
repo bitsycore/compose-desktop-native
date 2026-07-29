@@ -132,11 +132,34 @@ left as a bigger follow-up, not done blind.
 ### Phase 3 — Font & image parity
 | Status | ID | Item | Impact | Verify |
 |:------:|----|------|--------|--------|
-| ⬜ | **P3.1** | System/default + generic-family font resolution via `FontMgr.default` | **High** (correctness) | parity |
-| ⬜ | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High | parity |
-| ⬜ | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector` | Med | parity |
-| ⬜ | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction) | Med | manual RSS |
-| ⬜ | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs | Low | compile |
+| 🟡 | **P3.1** | System/default + generic-family font resolution via `FontMgr.default` | **High** (correctness) | parity |
+| ⏸️ | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High | parity |
+| ⏸️ | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector` | Med | parity |
+| 🟡 | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction) | Med | manual RSS |
+| ⏸️ | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs | Low | compile |
+
+**P3.1 (concrete names done):** unbundled family names now resolve against the
+OS font set via `FontMgr.matchFamilyStyle` (e.g. `FontFamily("Arial")`) instead
+of silently becoming Noto Sans. **Remaining:** generic families
+(`serif`/`cursive`/…) still fall through to the bundled default — proper
+generic→concrete mapping needs the per-OS alias table from upstream
+`PlatformFont.skiko.kt` (folded into P3.2).
+
+**P3.4 (images done):** `SkiaImageCache` is now a bounded (256) access-order
+LRU that closes the evicted image — long-running apps showing many distinct
+runtime images (`registerMemoryResource`) no longer grow image memory without
+limit; on-screen images stay hot, an evicted one re-decodes on next use.
+**Font cache deferred:** bounding `SkiaFonts.resolveCache` is low-value (few
+family+axes combos) and messy — evicted typefaces stay referenced by live
+paragraphs + registered in the `TypefaceFontProvider` (no clean unregister), so
+eviction wouldn't free memory. Skipped deliberately.
+
+**P3.2 / P3.3 / P3.5 deferred (large / needs runtime verification):** the async
+`FontListFontFamily` resolver, resolution-independent SVG (`SVGDOM` +
+size-driven `DrawCache`) / XML→`ImageVector`, and the public
+`loadImageBitmap`/`loadSvgPainter`/`loadXmlImageVector` stream APIs are all
+L-effort and need visual/parity verification — not done blind. Vendor targets
+noted in §5/§6.
 
 ### Phase 4 — Vendoring cleanup & docs
 | Status | ID | Item | Impact | Verify |

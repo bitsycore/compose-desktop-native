@@ -5,6 +5,7 @@ import com.compose.sdl.icons.IconFont
 import com.compose.sdl.res.composeResourceReader
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.FontMgr
+import org.jetbrains.skia.FontStyle as SkiaFontStyle
 import org.jetbrains.skia.FontVariation as SkiaFontVariation
 import org.jetbrains.skia.Typeface
 import org.jetbrains.skia.paragraph.FontCollection
@@ -58,7 +59,19 @@ internal object SkiaFonts {
 	private fun baseTypeface(family: String?): Typeface? =
 		baseCache.getOrPut(family) {
 			val bytes = family?.let { IconFont.bytesFor(it) }
-			if (bytes != null) fontMgr.makeFromData(Data.makeFromBytes(bytes), 0) else defaultTypeface
+			when {
+				bytes != null -> fontMgr.makeFromData(Data.makeFromBytes(bytes), 0)
+				// Not bundled: resolve against the OS font set by family name
+				// (e.g. "Arial", "Times New Roman"), so a requested system font
+				// no longer silently becomes Noto Sans. Generic families
+				// ("generic:*") aren't real OS names, so they fall through to the
+				// bundled default — proper generic→concrete mapping needs the
+				// per-OS alias table (P3.2, not done here).
+				family != null ->
+					runCatching { fontMgr.matchFamilyStyle(family, SkiaFontStyle.NORMAL) }.getOrNull()
+						?: defaultTypeface
+				else -> defaultTypeface
+			}
 		}
 
 	private fun variationsKey(variations: List<ComposeFontVariation.Setting>): String =

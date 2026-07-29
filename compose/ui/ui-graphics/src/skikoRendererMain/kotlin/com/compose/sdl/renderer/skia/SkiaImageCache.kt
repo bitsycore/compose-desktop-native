@@ -26,10 +26,17 @@ import org.jetbrains.skia.svg.SVGDOM
    NOTE: this source set isn't compiled on the mingwX64 host, so it is built
    only on macOS / Linux — keep it to the Skiko APIs already used elsewhere in
    this module. */
+private const val MAX_CACHED_IMAGES = 256
+
 class SkiaImageCache {
 
-	// Value is null when a decode failed — cached to avoid retrying each frame.
-	private val fCache = HashMap<String, Image?>()
+	// Bounded access-order LRU. Value is null when a decode failed — cached to
+	// avoid retrying each frame. Bounding + closing the least-recently-used image
+	// stops long-running apps that show many distinct runtime images
+	// (registerMemoryResource — e.g. downloaded PNGs) from growing image memory
+	// without limit (issue #2). On-screen images stay hot; an evicted one just
+	// re-decodes on next use.
+	private val fCache = LinkedHashMap<String, Image?>()
 
 	fun intrinsicSize(inPath: String, inKind: ResourceKind): androidx.compose.ui.geometry.Size {
 		val vImg = get(inPath, inKind) ?: return androidx.compose.ui.geometry.Size.Unspecified
@@ -37,9 +44,19 @@ class SkiaImageCache {
 	}
 
 	private fun get(inPath: String, inKind: ResourceKind): Image? {
-		if (fCache.containsKey(inPath)) return fCache[inPath]
+		if (fCache.containsKey(inPath)) {
+			// Re-insert to mark most-recently-used (LinkedHashMap keeps first =
+			// least-recently-used for eviction below).
+			val vExisting = fCache.remove(inPath)
+			fCache[inPath] = vExisting
+			return vExisting
+		}
 		val vImage = decode(inPath, inKind)
 		fCache[inPath] = vImage
+		if (fCache.size > MAX_CACHED_IMAGES) {
+			val vEldest = fCache.keys.firstOrNull()
+			if (vEldest != null) fCache.remove(vEldest)?.close()
+		}
 		return vImage
 	}
 
