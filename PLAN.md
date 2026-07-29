@@ -47,22 +47,30 @@ leftmost column in every phase table below.
 
 **Phase 0 status (branch `perf/phase0-quickwins`):** P0.1–P0.3, P0.5, P0.7
 **DONE + verified** — compiled (`:ui-text`, `:desktop-native-window` mingwX64) +
-`:ui-graphics` `klibApiCheck` green. P0.4 + P0.6 deferred (macOS-only, need
-`verify-mac` on a Mac host).
+`:ui-graphics` `klibApiCheck` green. **P0.4 + P0.6 now CLOSED as non-issues after
+macOS Metal measurement (2026-07-29)** — see §12.
 
 | Status | ID       | Item                                                                                | Impact         | Verify               |
 |:------:|----------|-------------------------------------------------------------------------------------|----------------|----------------------|
 |   ✅   | **P0.1** | Fix vsync double-pacing (GL + Metal report `vsyncEnabled`)                          | **High**       | profiler FPS, manual |
 |   ✅   | **P0.2** | Add missing `else` in the pace block (kill the pending-spin)                        | Med            | profiler CPU         |
 |   ✅   | **P0.3** | Delete dead `DrawStats` so the profiler stops lying                                 | Med            | `CDN_PROFILE=1`      |
-|   ⏸️    | **P0.4** | Drop per-frame full-surface `clear()` to first-frame-only (after P0.6)              | Med            | verify-mac           |
+|   ❌   | **P0.4** | ~~Drop per-frame full-surface `clear()` to first-frame-only~~ — WON'T FIX (§12)      | Med → none     | verify-mac           |
 |   ✅   | **P0.5** | Set `FontRasterizationSettings` (edging/hinting/subpixel) on text styles            | Med            | parity, verify-mac   |
-|   ⏸️    | **P0.6** | Stop the per-frame Metal drawable reacquire in `ensureSize` (macOS — owner will do) | **High** (mac) | verify-mac, profiler |
+|   ❌   | **P0.6** | ~~Stop the per-frame Metal drawable reacquire~~ — WON'T FIX, inherent + not a cost (§12) | ~~High (mac)~~ none | verify-mac, profiler |
 |   ✅   | **P0.7** | Explicit open/close of native paragraph resources (was: GC nudge)                   | Med (memory)   | manual RSS watch     |
 
-**Deferred rationale:** P0.6 (and the P0.4 clear that depends on it) is a
-macOS-only Metal change — this host is Windows, so it can't be verified here and
-`verify-mac` gates any renderer change.
+**P0.4 / P0.6 resolution (measured on macOS Metal, ProMotion 120 Hz):** both
+rested on a false premise — that Metal could reuse one persistent drawable/
+surface across frames like GL reuses its FBO. It can't: a `CAMetalDrawable` is a
+single-use, per-frame resource from a ~3-deep pool, so the per-frame reacquire in
+`ensureSize` is **inherent to the Metal model and matches upstream skiko's
+`MetalRedrawer`**. Profiling (§12) shows the reacquire + clear cost nothing
+measurable: `present=0.1 ms`, `draw=0.05 ms`, real `layout=0.02 ms`, RSS flat at
+~108 MB, **zero `nextDrawable` starvation**. The ~6.7 ms that looked like a cost
+was pure vsync pacing (the `nextDrawable()` block) mis-attributed to the "layout"
+phase — now split out as `acquire` (§12). No autorelease-pool fix needed either
+(RSS is stable across a force-render soak).
 
 **P0.7 note:** the fix is deterministic native-resource lifecycle, *not* a GC
 tweak. `SkiaParagraphOps` now closes the previous `SkParagraph` + the
@@ -618,8 +626,8 @@ after Phase 0 and Phase 1 — those two phases should recover most of the gap.
 |--------------------|---------------------------------------------------------------------------------|---------------------------|
 | P0.1 vsync         | ~30 FPS cap while animating (16 ms delay on vsync-blocked present)              | true refresh rate         |
 | P1.1/P1.2 text     | every visible `Text` re-shapes (HarfBuzz+bidi+break) each frame, ≥2× on measure | shape once, cache         |
-| P0.6 Metal         | fresh drawable + RT/Surface rebuild every frame                                 | reacquire in present only |
-| P0.4 clear         | full-screen opaque fill every frame (2× area Retina)                            | first-frame only          |
+| ~~P0.6 Metal~~     | *(closed §12 — reacquire is inherent to Metal, costs nothing measurable)*        | no change                 |
+| ~~P0.4 clear~~     | *(closed §12 — depended on P0.6; per-frame drawable can't skip its clear)*        | no change                 |
 | P1.3/P2.2 snapshot | ~5 `sendApplyNotifications` per iteration                                       | ~1 per frame              |
 | P0.5 raster        | skia raw defaults (blurry on Win/Linux)                                         | upstream per-OS hinting   |
 | P3.1/P3.2 fonts    | non-bundled families → Noto Sans; no static weight/async                        | system + full resolver    |
@@ -628,3 +636,49 @@ after Phase 0 and Phase 1 — those two phases should recover most of the gap.
 **Do Phase 0 + Phase 1 first.** They are small, and they target the two things
 that actually cost the gap — everything else is correctness/parity/maintenance
 that can follow.
+
+---
+
+## 12. macOS Metal measurement (2026-07-29) — what the profiler actually shows
+
+First real profiling pass on a Mac (Apple Silicon, ProMotion 120 Hz),
+`:demo` `CDN_FORCERENDER=1` on Metal. Two things had to be fixed before any
+number could be trusted:
+
+**Build blocker (fixed).** `kotlin.incremental.native=true` in
+`gradle.properties` broke the executable link on macOS (and would on any native
+target): per-file native incremental compilation fails to emit a `value class`'s
+box/unbox helpers into the declaring file's cache unit when only *other* files
+box the value, so `ld` dies with undefined symbols
+(`androidx.compose.material3.NavigationItemIconPosition`'s box constructor,
+referenced from `ShortNavigationBar` / `WideNavigationRail`). The demo/apidemo
+executable link had never run since those M3-expressive APIs were vendored
+(Phase 0 verified on Windows only did klib compiles + `klibApiCheck`). Fix:
+`kotlin.incremental.native=false` (comment in `gradle.properties`).
+
+**Profiler blocker (fixed).** The `"  layout"` phase charged everything since
+`"pump"`, which *includes* `ensureSize()` — where Metal's `nextDrawable()` blocks
+on vsync. So the vsync wait read as ~6.7 ms of "layout." Split out a dedicated
+`acquire` phase after `ensureSize` (`ComposeWindow.renderFrame`). This is the
+completion of P0.3's intent — the profiler now tells the truth.
+
+**Steady-state numbers (avg ms/frame, corrected profiler):**
+
+| Screen     | acquire (vsync) | layout | draw | present | events | total real CPU |
+|------------|:---------------:|:------:|:----:|:-------:|:------:|:--------------:|
+| Counter    | 6.67            | 0.02   | 0.05 | 0.12    | 0.09   | ~0.33          |
+| LazyColumn | 6.67            | 0.02   | 0.08 | 0.13    | 0.08   | ~0.34          |
+| Full app   | 6.77            | 0.03   | 0.07 | 0.10    | 0.03   | ~0.28          |
+
+RSS flat at ~108 MB over a 10 s force-render soak; **zero `nextDrawable`
+starvation** messages.
+
+**Conclusion.** On macOS/Metal there is **no steady-state perf gap** — the app
+runs at the 120 Hz refresh with ~0.3 ms of real CPU work per frame; the rest is
+correct vsync pacing (`acquire`). Real layout is 0.02–0.03 ms even for LazyColumn
+and the full sidebar app, so the Phase-1 text-reshape work already landed
+(P0.7/P1.1/P1.3) is not a macOS bottleneck, and the Metal-path items (P0.6/P0.4,
+and a speculative autorelease-pool fix) buy nothing measurable — all closed. The
+"performance not as good as the original" symptom, to the extent it remains, must
+be chased on **Windows (GL)** or in a **specific heavy interaction** (measure
+with the `acquire`-corrected profiler there), not in the macOS steady state.

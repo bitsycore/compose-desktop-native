@@ -896,6 +896,11 @@ internal class WindowInstance(
 
 		backend.updateWindowSize()
 		vRender.ensureSize(backend.pixelWidth, backend.pixelHeight)
+		// Charge the GPU back-buffer acquire to its own phase. On Metal this is
+		// where nextDrawable() blocks on vsync (the natural frame pacing), so
+		// folding it into "layout" made the profiler read the vsync wait as
+		// layout cost — a ~6-7ms phantom that hid the real (tiny) layout time.
+		FrameProfiler.phase("  acquire")
 		host.setConstraints(backend.pixelWidth, backend.pixelHeight)
 		// Deliver any state written by this iteration's frame-clock continuations
 		// (withFrameNanos animations — notably smooth wheel scrolling) BEFORE we lay
