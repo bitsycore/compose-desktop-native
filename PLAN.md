@@ -164,11 +164,33 @@ noted in §5/§6.
 ### Phase 4 — Vendoring cleanup & docs
 | Status | ID | Item | Impact | Verify |
 |:------:|----|------|--------|--------|
-| ⬜ | **P4.1** | Reverse the two second-renderer manual vendors | Med (maintenance) | verify-mac, parity |
-| ⬜ | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files | Low (maintenance) | build |
-| ⬜ | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md | Low | n/a |
-| ⬜ | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low | build |
-| ⬜ | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter | Low | parity |
+| ⏸️ | **P4.1** | Reverse the two second-renderer manual vendors | Med (maintenance) | verify-mac, parity |
+| ⏸️ | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files | Low (maintenance) | build |
+| ✅ | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md | Low | n/a |
+| ✅ | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low | build |
+| ⏸️ | **P4.5** | Vendor thin `Ripple.skiko.kt`; real cross-platform date/time formatter | Low | parity |
+
+**P4.3 done:** RENDERER.md's biggest inaccuracy is fixed — it claimed text was
+"upstream's own `SkiaParagraph`, vendored verbatim" with "upstream
+`PlatformFont`/`FontCache` replacing the port's name-to-bytes engine", which is
+the opposite of reality. Now describes the reduced local port
+(`SkiaParagraph.native.kt` + `SkiaParagraphEngine`) that keeps the port's own
+`SkiaFonts` model; the §5 B6.3 row is downgraded to Partial; the "leg" framing
+is dropped throughout; the LazyColumn perf number is marked historical (vs the
+removed SDL leg); and §6 native-resource lifecycle now reflects P0.7/P1.1/P3.4.
+
+**P4.4 done:** purged the factually-wrong residue in code comments — references
+to deleted modules (`renderer-sdl3`), the removed backend ("SDL3 backend",
+"Skia or SDL3", "SDL renderer's per-vertex gradient sampler") across
+`GradientBridge`, `DrawShape`, `ComposeOwner`, `IconFont`, `Popup.native`,
+`BrushScreen`.
+
+**P4.1 / P4.2 / P4.5 deferred:** P4.1 (reverse the two manual vendors) is
+macOS-gated (`verify-mac` — shadow lighting + hit-test coords). P4.2 (decompose
+the 1131-line `ComposeWindow.kt`) is a large mechanical refactor with real
+breakage risk done blind — pure maintenance, no perf/correctness gain. P4.5
+needs a vendor re-sync + material3 build verification (Ripple) and a real
+`kotlinx-datetime` reimpl (date formatter).
 
 ---
 

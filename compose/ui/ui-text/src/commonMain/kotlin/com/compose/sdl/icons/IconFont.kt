@@ -32,9 +32,9 @@ object IconFont {
 		fFonts[inFamily] = inBytes
 	}
 
-	/** Register an ICON font family (Material Symbols et al.) — variable-axis,
-	   drawn one glyph at a time on the SDL3 backend. Same byte store as
-	   register(), but also flags the family as an icon font. */
+	/** Register an ICON font family (Material Symbols et al.) — variable-axis.
+	   Same byte store as register(), but also flags the family as an icon
+	   font. */
 	fun registerIcon(inFamily: String, inBytes: ByteArray) {
 		fFonts[inFamily] = inBytes
 		fIconFamilies += inFamily

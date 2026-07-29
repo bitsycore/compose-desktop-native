@@ -27,7 +27,7 @@ import com.compose.sdl.window.PopupOutsideDismiss
 
 /**
  Native actuals for the vendored upstream Popup.kt (expect class PopupProperties +
- expect fun Popup). This desktop/SDL renderer hosts overlay content at the composition
+ expect fun Popup). This desktop renderer hosts overlay content at the composition
  root via the project's PopupHostState (no OS popup window). Behaviour flags on
  PopupProperties are accepted for source-compat; outside-click dismissal / modality are
  the caller's responsibility (Dialog draws a scrim, DropdownMenu installs a click-catcher).

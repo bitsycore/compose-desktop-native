@@ -18,9 +18,9 @@ layout, source-set hierarchy, and vendoring rules see [CLAUDE.md](CLAUDE.md).
 > windowing / input / platform layer only. Below, references to "the SDL leg", a
 > second `RenderBackend` actual, `-Prenderer=sdl3`, and the SDL-leg fidelity work
 > are **historical** — kept because the convergence decisions still explain the
-> Skia leg's shape.
+> Skia renderer's shape.
 
-Rendering goes through one `RenderBackend`, implemented once: the **Skia leg**
+Rendering goes through one `RenderBackend`, implemented once: the **Skia renderer**
 (`skikoRendererMain`). It draws through upstream Compose Multiplatform's own Skia
 stack, vendored verbatim: `SkiaBackedCanvas`, `SkiaBackedPaint`, `SkiaShader`,
 `actual class GraphicsLayer` backed by `org.jetbrains.skiko.node.RenderNode`,
@@ -28,19 +28,23 @@ stack, vendored verbatim: `SkiaBackedCanvas`, `SkiaBackedPaint`, `SkiaShader`,
 upstream. macOS/Linux link the official Skiko klibs; mingwX64 links the
 bitsycore skiko **fork** (`skikoRendererMingwMain`, Route 1a).
 
-The text pipeline is now upstream's own `SkiaParagraph` (skparagraph, vendored
-verbatim); glyph rasterization is Skia. GPU path per platform: Metal (macOS),
-OpenGL (Linux + Windows), with a CPU-raster `Software` fallback.
+The text pipeline drives Skia's `skparagraph` (HarfBuzz shaping + skunicode
+bidi) through a project seam: a skiko-free `SkiaParagraph` actual in nativeMain
+over `SkiaParagraphEngine` in skikoRendererMain — a **reduced local port** of
+upstream's `ParagraphBuilder`/`ParagraphLayouter`, keeping the port's own
+`SkiaFonts` (name→bytes + variable-axis) font model rather than upstream's
+`PlatformFont`/`FontCache`. Glyph rasterization is Skia. GPU path per platform:
+Metal (macOS), OpenGL (Linux + Windows), with a CPU-raster `Software` fallback.
 
 The seam is kept as narrow and low as possible. Code flows
 `Common (upstream) -> shared native engine -> Skia actual`. What we
 minimize is hand-rolled actual surface, not actual-side line count: a fat
-vendored-upstream actual (the Skia leg carrying upstream's whole GraphicsLayer
+vendored-upstream actual (the Skia renderer carrying upstream's whole GraphicsLayer
 stack) is preferred over a thin hand-written one.
 
 ## 2. The retained-layer engine (the model we copied)
 
-Upstream skiko skips work at three levels. The Skia leg has all three.
+Upstream skiko skips work at three levels. The Skia renderer has all three.
 
 - **L1 frame scheduling.** A frame schedules the next only if still dirty.
   Ours: `ComposeWindow.shouldRender()` gates `renderFrame()`; the loop blocks on
@@ -72,11 +76,12 @@ The compositing-strategy contract (`requiresLayer()`, from
 
 ## 3. Current state
 
-- **Skia leg runs upstream's engine.** Canvas (`SkiaBackedCanvas`) and
+- **Skia renderer runs upstream's engine.** Canvas (`SkiaBackedCanvas`) and
   GraphicsLayer/GraphicsContext (`org.jetbrains.skiko.node.RenderNode`) are
-  vendored verbatim. The Skia leg gets real display-list caching and correct
-  clip/shadow/renderEffect for free from upstream. After this landed, Skia
-  `draw` on LazyColumn fell from 1.75 ms to 0.2 ms.
+  vendored verbatim. The Skia renderer gets real display-list caching and correct
+  clip/shadow/renderEffect for free from upstream. (Historical: after this
+  landed, Skia `draw` on LazyColumn fell from 1.75 ms to 0.2 ms, measured
+  against the since-removed SDL renderer leg — no live baseline remains.)
 - **Parity is a golden-master against JVM** (about 2% median, dominated by the
   shared text engine's small metric delta). See TOOLING.md for how to read it.
 - **Memory is stable.** The historical composition leak is fixed (see section 6)
@@ -96,13 +101,15 @@ The compositing-strategy contract (`requiresLayer()`, from
   upstream does? If not, what real platform constraint forces the difference?"
   Valid answers name a constraint (e.g. no windowing/input toolkit in K/N ->
   SDL3). "It was easier" is not valid.
-- **Text is now upstream's engine (B6.3 done).** Skia-leg text draws through
-  upstream's own `SkiaParagraph` (skparagraph), vendored verbatim — the
-  font-subsystem replacement landed: upstream `PlatformFont`/`FontCache`/
-  `FontCollection` back a `data.kres`-fed font supply, replacing the port's
-  name-to-bytes engine. glyph rasterization stays Skia. This subsumes the P3.1
-  metrics work (measurement is now upstream's, so the numbers match by
-  construction).
+- **Text drives Skia `skparagraph` through a reduced local port (B6.3).** The
+  `SkiaParagraph` actual (nativeMain, skiko-free) drives skiko's `skparagraph`
+  via `SkiaParagraphEngine` (skikoRendererMain) — a trimmed reimplementation of
+  upstream's `ParagraphBuilder`/`ParagraphLayouter`, **not** a verbatim vendor.
+  It keeps the port's own `SkiaFonts` (name→bytes + variable-axis) model rather
+  than upstream `PlatformFont`/`FontCache`/`FontCollection`. Shaping (HarfBuzz),
+  bidi, and glyph rasterization are Skia's, so metrics track JVM closely (P3.1).
+  Known gap: overlapping `SpanStyle` ranges resolve more simply than upstream's
+  priority model. Full-engine vendoring remains open (see §6).
 - **Module split (`:ui-graphics` / `:ui-text`) is done.** The blocker — the
   `sdl3` cinterop being a shared substrate that Kotlin/Native can't cleanly
   share across a module boundary — was resolved by extracting a non-upstream
@@ -123,10 +130,10 @@ The compositing-strategy contract (`requiresLayer()`, from
 | Item | Status |
 |------|--------|
 | Guardrails (parity gate, verify-mac runbook, drift + vendor-clean checks) | Done |
-| B2: Skia leg on upstream GraphicsLayer/GraphicsContext | Done |
-| B6.1: Skia leg on upstream `SkiaBackedCanvas` + paint/shader | Done |
+| B2: Skia renderer on upstream GraphicsLayer/GraphicsContext | Done |
+| B6.1: Skia renderer on upstream `SkiaBackedCanvas` + paint/shader | Done |
 | B6.2: upstream `GraphicsLayer` + delete transient port cluster | Done |
-| B6.3: upstream text (`SkiaParagraph`) on the Skia leg | Done |
+| B6.3: Skia `skparagraph` via reduced local port (keeps port `SkiaFonts`; not a verbatim vendor) | Partial |
 | B5: engine-convergence deltas audit | Done (clean wins spent by B6) |
 | P2.2: composition memory leak | Fixed + soak-gated |
 | P2.3: outsets / blur / renderEffect | Done via upstream `SkiaGraphicsLayer` |
@@ -164,9 +171,15 @@ remembering.
     accessibility or complex-script roadmap.
   - D6: `Focusability` / `PlatformVelocityTracker` are byte-equal to upstream;
     vendoring them saves nothing.
-- **Native-resource lifecycle.** Wire `GraphicsLayer`/RenderNode +
-  `SdlImageBitmap.close()` fully into cache eviction and the renderer
-  `destroy()` chain; demote the periodic GC nudge once ownership covers it.
+- **Native-resource lifecycle (partly done).** Paragraph resources are now
+  closed deterministically (P0.7 / P1.1: the previous `SkParagraph` +
+  `ParagraphBuilder` are closed on rebuild, the intrinsics throwaway is
+  `dispose()`d, and a color-only repaint reuses the paragraph), and
+  `SkiaImageCache` is a bounded LRU that closes evicted images (P3.4). Still
+  GC-collected: the top-level paragraph a live `Text` holds (Compose exposes no
+  `Paragraph` dispose seam) and measure-time typefaces. The periodic
+  `GC.collect()` nudge stays as the backstop for those until a frame-idle
+  lazy-close (or an upstream dispose seam) lands. See [PLAN.md](PLAN.md).
 
 ## 7. Hard-won learnings (do not relearn)
 

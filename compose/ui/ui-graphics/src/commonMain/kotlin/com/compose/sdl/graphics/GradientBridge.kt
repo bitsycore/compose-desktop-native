@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.TileMode
 // LinearGradient / RadialGradient / SweepGradient field accessors
 // `internal`, which keeps `androidx.compose.ui.graphics.LinearGradient.colors`
 // etc. out of the public ABI. Sealed-class scope forces the concrete
-// gradient classes to live in `androidx.compose.ui.graphics`, but our
-// renderer-skia / renderer-sdl3 modules can't read the resulting `internal`
-// fields directly. The extensions below sit in :core (same module as the
-// internal fields, so the bodies CAN read them) and are themselves public,
-// so :renderer-skia / :renderer-sdl3 import them and reach gradient state
+// gradient classes to live in `androidx.compose.ui.graphics`, but the Skia
+// renderer code in skikoRendererMain can't read the resulting `internal`
+// fields directly. The extensions below sit in this module's commonMain (same
+// module as the internal fields, so the bodies CAN read them) and are
+// themselves public, so the renderer imports them and reaches gradient state
 // through them.
 
 // ============

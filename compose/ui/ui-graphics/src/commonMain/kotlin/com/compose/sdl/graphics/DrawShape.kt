@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.LayoutDirection
  * Internal helper invoked by the project's `BackgroundNode.draw()` body
  * (Phase 8 chain-driven draw). Resolves the [Shape] into a project
  * [Outline] and dispatches to the appropriate `DrawScope.drawXxx`. The
- * receiver [DrawScope] is the renderer's wrap scope (Skia or SDL3) —
- * any of its `drawRect / drawRoundRect / drawPath` calls becomes a
- * concrete paint operation on the backend canvas.
+ * receiver [DrawScope] is the Skia renderer's wrap scope — any of its
+ * `drawRect / drawRoundRect / drawPath` calls becomes a concrete paint
+ * operation on the backend canvas.
  *
  * Note `Shape.createOutline` is the upstream three-arg signature
  * (`size`, `layoutDirection`, `density`); project shapes implement it

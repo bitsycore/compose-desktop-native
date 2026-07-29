@@ -315,10 +315,10 @@ internal class ComposeOwner(
 			containsControls: Boolean,
 		): Long = originalTimeoutMillis
 	}
-	// Created behind a per-renderer factory seam (B2 / P1.3): SDL uses the project
-	// record/replay GraphicsContext; the Skia leg swaps in upstream's SkiaGraphicsContext
-	// at P1.6. SharedTransitionLayout overlays and rememberGraphicsLayer() create layers
-	// through this context. See com/compose/sdl/graphics/GraphicsContextFactory.kt.
+	// The Skia renderer uses upstream's SkiaGraphicsContext, created via
+	// GraphicsContextFactory. SharedTransitionLayout overlays and
+	// rememberGraphicsLayer() create layers through this context.
+	// See com/compose/sdl/graphics/GraphicsContextFactory.kt.
 	override val graphicsContext: GraphicsContext =
 		com.compose.sdl.graphics.createGraphicsContext()
 	override val textToolbar: TextToolbar = object : TextToolbar {

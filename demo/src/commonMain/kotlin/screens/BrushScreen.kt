@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Foundation / ui.graphics — Brush gradients painted through Modifier.background.
-// Exercises the SDL renderer's per-vertex gradient sampler (linear / radial / sweep).
+// Exercises the Skia renderer's gradient shaders (linear / radial / sweep).
 @Composable
 internal fun BrushScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
