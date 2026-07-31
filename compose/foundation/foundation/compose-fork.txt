@@ -517,6 +517,11 @@ skikoMain/kotlin/ -> src/vendor/native/kotlin/
 !skikoMain/kotlin/androidx/compose/foundation/BasicContextMenuRepresentation.skiko.kt
 !skikoMain/kotlin/androidx/compose/foundation/Clickable.skiko.kt
 !skikoMain/kotlin/androidx/compose/foundation/DarkTheme.skiko.kt
+# Scrollbar.skiko.kt + v2/Scrollbar.skiko.kt are MANUALLY VENDORED to
+# src/nativeMain/.../foundation/{,v2}/ (VENDOR-BASE headers there): the flat
+# native source set can't hold the v2 `expect fun runBlockingIfPossible` and its
+# actual together, so it's inlined to runBlocking. Refused here so sync doesn't
+# shadow the hand-vendored copies.
 !skikoMain/kotlin/androidx/compose/foundation/Scrollbar.skiko.kt
 !skikoMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.skiko.kt
 !skikoMain/kotlin/androidx/compose/foundation/text/CupertinoTextFieldPointerModifier.skiko.kt
