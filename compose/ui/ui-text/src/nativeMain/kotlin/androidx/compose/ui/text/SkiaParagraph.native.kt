@@ -94,6 +94,7 @@ internal expect fun buildParagraphOps(
 	ellipsize: Boolean,
 	density: Float,
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+	placeholders: List<AnnotatedString.Range<Placeholder>>,
 ): NativeParagraphOps
 
 internal class SkiaParagraph(

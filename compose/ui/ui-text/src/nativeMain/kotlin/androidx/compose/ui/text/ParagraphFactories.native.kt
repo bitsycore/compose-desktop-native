@@ -27,9 +27,10 @@ private fun makeSkiaParagraph(
 	ellipsize: Boolean,
 	density: Float,
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+	placeholders: List<AnnotatedString.Range<Placeholder>>,
 ): Paragraph = SkiaParagraph(
 	text, style, width,
-	buildParagraphOps(text, style, width, maxLines, ellipsize, density, spanStyles),
+	buildParagraphOps(text, style, width, maxLines, ellipsize, density, spanStyles, placeholders),
 )
 
 /** [min, max] intrinsic width from a throwaway unbounded skiko layout. */
@@ -38,6 +39,7 @@ internal expect fun paragraphIntrinsicWidths(
 	style: TextStyle,
 	density: Float,
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+	placeholders: List<AnnotatedString.Range<Placeholder>>,
 ): FloatArray
 
 /** Carries text+style for the intrinsics-based Paragraph factories; intrinsic
@@ -49,8 +51,9 @@ internal class NativeParagraphIntrinsics(
 	val paragraphStyle: TextStyle,
 	val density: Float,
 	val spanStyles: List<AnnotatedString.Range<SpanStyle>> = emptyList(),
+	val placeholders: List<AnnotatedString.Range<Placeholder>> = emptyList(),
 ) : ParagraphIntrinsics {
-	private val widths = paragraphIntrinsicWidths(paragraphText, paragraphStyle, density, spanStyles)
+	private val widths = paragraphIntrinsicWidths(paragraphText, paragraphStyle, density, spanStyles, placeholders)
 	override val minIntrinsicWidth: Float = widths[0]
 	override val maxIntrinsicWidth: Float = widths[1]
 	override val hasStaleResolvedFonts: Boolean = false
@@ -69,7 +72,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles, placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -78,7 +81,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles, placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -87,7 +90,7 @@ actual fun ParagraphIntrinsics(
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles(), placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -97,7 +100,7 @@ actual fun ParagraphIntrinsics(
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	softWrap: Boolean,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles())
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles(), placeholders)
 
 // AnnotatedString.Annotation is a sealed interface (SpanStyle, ParagraphStyle,
 // LinkAnnotation, StringAnnotation, TtsAnnotation, …). Only SpanStyle affects
@@ -120,7 +123,7 @@ actual fun Paragraph(
 	width: Float,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -132,7 +135,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -144,7 +147,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = makeSkiaParagraph(text, style, widthFrom(constraints), maxLines, ellipsis, density.density, spanStyles)
+): Paragraph = makeSkiaParagraph(text, style, widthFrom(constraints), maxLines, ellipsis, density.density, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -157,7 +160,7 @@ actual fun Paragraph(
 	maxLines: Int,
 	overflow: TextOverflow,
 ): Paragraph = makeSkiaParagraph(
-	text, style, widthFrom(constraints), maxLines, overflow == TextOverflow.Ellipsis, density.density, spanStyles,
+	text, style, widthFrom(constraints), maxLines, overflow == TextOverflow.Ellipsis, density.density, spanStyles, placeholders,
 )
 
 actual fun Paragraph(
@@ -167,7 +170,7 @@ actual fun Paragraph(
 	width: Float,
 ): Paragraph {
 	val i = paragraphIntrinsics as NativeParagraphIntrinsics
-	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, width, maxLines, ellipsis, i.density, i.spanStyles)
+	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, width, maxLines, ellipsis, i.density, i.spanStyles, i.placeholders)
 }
 
 actual fun Paragraph(
@@ -177,7 +180,7 @@ actual fun Paragraph(
 	ellipsis: Boolean,
 ): Paragraph {
 	val i = paragraphIntrinsics as NativeParagraphIntrinsics
-	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines, ellipsis, i.density, i.spanStyles)
+	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines, ellipsis, i.density, i.spanStyles, i.placeholders)
 }
 
 actual fun Paragraph(
@@ -189,6 +192,6 @@ actual fun Paragraph(
 	val i = paragraphIntrinsics as NativeParagraphIntrinsics
 	return makeSkiaParagraph(
 		i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines,
-		overflow == TextOverflow.Ellipsis, i.density, i.spanStyles,
+		overflow == TextOverflow.Ellipsis, i.density, i.spanStyles, i.placeholders,
 	)
 }

@@ -23,6 +23,9 @@ import org.jetbrains.skia.FontHinting as SkFontHinting
 import org.jetbrains.skia.FontStyle as SkFontStyle
 import org.jetbrains.skia.Paint as SkPaint
 import org.jetbrains.skia.paragraph.Alignment as SkAlignment
+import org.jetbrains.skia.paragraph.BaselineMode
+import org.jetbrains.skia.paragraph.PlaceholderAlignment
+import org.jetbrains.skia.paragraph.PlaceholderStyle
 import org.jetbrains.skia.paragraph.DecorationLineStyle as SkDecorationLineStyle
 import org.jetbrains.skia.paragraph.DecorationStyle as SkDecorationStyle
 import org.jetbrains.skia.paragraph.Direction as SkDirection
@@ -86,6 +89,7 @@ internal class SkiaParagraphOps(
 	private val density: Float,
 	private val spanStyles: List<AnnotatedString.Range<SpanStyle>>,
 	private val ellipsize: Boolean,
+	private val placeholders: List<AnnotatedString.Range<Placeholder>> = emptyList(),
 ) : NativeParagraphOps {
 
 	private val fontPx: Float =
@@ -259,7 +263,7 @@ internal class SkiaParagraphOps(
 		// (the paragraph owns its own native data and outlives the builder).
 		val pb = SkParagraphBuilder(pStyle, SkiaFonts.fontCollection)
 		try {
-			if (spanStyles.isEmpty()) {
+			if (spanStyles.isEmpty() && placeholders.isEmpty()) {
 				pb.pushStyle(baseStyle)
 				pb.addText(text)
 				pb.popStyle()
@@ -283,19 +287,49 @@ internal class SkiaParagraphOps(
 	}
 
 	private fun appendWithSpans(pb: SkParagraphBuilder, color: Color, shadow: Shadow?, decoration: TextDecoration?) {
+		val len = text.length
 		val points = buildList {
-			add(0); add(text.length)
-			spanStyles.forEach { add(it.start.coerceIn(0, text.length)); add(it.end.coerceIn(0, text.length)) }
+			add(0); add(len)
+			spanStyles.forEach { add(it.start.coerceIn(0, len)); add(it.end.coerceIn(0, len)) }
+			placeholders.forEach { add(it.start.coerceIn(0, len)); add(it.end.coerceIn(0, len)) }
 		}.distinct().sorted()
 		for (i in 0 until points.size - 1) {
 			val segStart = points[i]
 			val segEnd = points[i + 1]
 			if (segStart >= segEnd) continue
+			// A placeholder replaces its text range with a single reserved box:
+			// emit it once at its start and skip the covered text (upstream
+			// ParagraphBuilder.makeOps / addPlaceholder). Cut points include every
+			// placeholder boundary, so a segment is fully inside or fully outside.
+			val ph = placeholders.firstOrNull { it.start <= segStart && it.end > segStart }
+			if (ph != null) {
+				if (ph.start == segStart) pb.addPlaceholder(placeholderStyle(ph.item, segStart))
+				continue
+			}
 			val active = spanStyles.filter { it.start <= segStart && it.end >= segEnd }
 			pb.pushStyle(segmentStyle(color, shadow, decoration, active))
 			pb.addText(text.substring(segStart, segEnd))
 			pb.popStyle()
 		}
+	}
+
+	/** Map a Compose [Placeholder] to a skiko PlaceholderStyle. Width/height are
+	   resolved against the font size active at [atOffset] (em is relative to it),
+	   mirroring upstream ParagraphBuilder. */
+	private fun placeholderStyle(p: Placeholder, atOffset: Int): PlaceholderStyle {
+		val runFontPx = spanStyles
+			.filter { it.start <= atOffset && it.end > atOffset && it.item.fontSize.isSpecified }
+			.lastOrNull()?.item?.fontSize?.let { (it.value * density).coerceAtLeast(1f) } ?: fontPx
+		fun tuPx(v: androidx.compose.ui.unit.TextUnit): Float = when {
+			!v.isSpecified -> runFontPx
+			v.isEm -> runFontPx * v.value
+			else -> v.value * density
+		}
+		return PlaceholderStyle(
+			tuPx(p.width), tuPx(p.height),
+			p.placeholderVerticalAlign.toSkPlaceholderAlignment(),
+			BaselineMode.ALPHABETIC, 0f,
+		)
 	}
 
 	private fun segmentStyle(
@@ -372,6 +406,17 @@ internal class SkiaParagraphOps(
 	}
 }
 
+private fun PlaceholderVerticalAlign.toSkPlaceholderAlignment(): PlaceholderAlignment = when (this) {
+	PlaceholderVerticalAlign.AboveBaseline -> PlaceholderAlignment.ABOVE_BASELINE
+	PlaceholderVerticalAlign.TextTop -> PlaceholderAlignment.TOP
+	PlaceholderVerticalAlign.TextBottom -> PlaceholderAlignment.BOTTOM
+	PlaceholderVerticalAlign.TextCenter -> PlaceholderAlignment.MIDDLE
+	PlaceholderVerticalAlign.Top -> PlaceholderAlignment.TOP
+	PlaceholderVerticalAlign.Bottom -> PlaceholderAlignment.BOTTOM
+	PlaceholderVerticalAlign.Center -> PlaceholderAlignment.MIDDLE
+	else -> PlaceholderAlignment.ABOVE_BASELINE
+}
+
 private fun LineHeightStyle.Trim.toSkHeightMode(): SkHeightMode = when (this) {
 	LineHeightStyle.Trim.Both -> SkHeightMode.DISABLE_ALL
 	LineHeightStyle.Trim.FirstLineTop -> SkHeightMode.DISABLE_FIRST_ASCENT
@@ -403,7 +448,8 @@ internal actual fun buildParagraphOps(
 	ellipsize: Boolean,
 	density: Float,
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
-): NativeParagraphOps = SkiaParagraphOps(text, style, width, maxLines, density, spanStyles, ellipsize)
+	placeholders: List<AnnotatedString.Range<Placeholder>>,
+): NativeParagraphOps = SkiaParagraphOps(text, style, width, maxLines, density, spanStyles, ellipsize, placeholders)
 
 /** Actual for `expect fun paragraphIntrinsicWidths` — [min, max] from an
  *  unbounded layout. */
@@ -412,8 +458,9 @@ internal actual fun paragraphIntrinsicWidths(
 	style: TextStyle,
 	density: Float,
 	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
+	placeholders: List<AnnotatedString.Range<Placeholder>>,
 ): FloatArray {
-	val ops = SkiaParagraphOps(text, style, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density, spanStyles, false)
+	val ops = SkiaParagraphOps(text, style, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density, spanStyles, false, placeholders)
 	try {
 		return floatArrayOf(ops.minIntrinsicWidth, ops.maxIntrinsicWidth)
 	} finally {
