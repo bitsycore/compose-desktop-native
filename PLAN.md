@@ -736,3 +736,53 @@ and a speculative autorelease-pool fix) buy nothing measurable — all closed. T
 "performance not as good as the original" symptom, to the extent it remains, must
 be chased on **Windows (GL)** or in a **specific heavy interaction** (measure
 with the `acquire`-corrected profiler there), not in the macOS steady state.
+
+---
+
+## 13. Release-readiness pass toward 1.0.0 (2026-07-31)
+
+Goal restated by the user: **stable, vendored as much as possible, as close to
+Compose as possible.** Driven by the API-coverage tool + three parallel audits
+(vendoring completeness, text-input/IME, true upstream divergences).
+
+**Where we stand.**
+- **API coverage vs upstream: 99%** (`compose-coverage.py`, 8665/8751 decls).
+  Remaining misses are AppKit/UIKit/web host actuals (N/A for SDL desktop),
+  `ImageComposeScene`/`renderComposeScene` (test util), and the `ui-text.platform`
+  font layer (== the deferred P3.2 resolver).
+- **Vendoring is already near-maximal**: zero rule-1 violations, zero manual-vendor
+  drift, no vendorable DIAGNOSTIC GAPS. commonMain is 100% vendored; the only
+  non-vendor `androidx.compose.*` files are documented manual vendors. The
+  "vendor as much as possible" goal is effectively met.
+
+**Closed this pass (commits):**
+- `androidx.compose.foundation` **Scrollbar** vendored (Vertical/Horizontal +
+  ScrollbarAdapter + v2 adapters) — exact upstream desktop API, +34 coverage decls.
+- **Inline-content placeholders** — `Text`/`BasicText` `inlineContent` now reserves
+  space (was collapsing); the divergence audit's top functional gap.
+- **IME candidate window** positioned on focus-gain (not just first TEXT_EDITING).
+- (plus §12's build/profiler fixes and the text/font/SVG/date parity work.)
+
+**Verified NOT broken (audit corrected earlier assumptions):**
+- Right-click **text context menu** (Cut/Copy/Paste/Select-All) already works —
+  `isNewContextMenuInitiallyEnabled=false` on native, so the default path uses the
+  real vendored `CommonContextMenuArea`. The no-op only affects the new API.
+- **Text input** is fully wired (modern `PlatformTextInputModifierNode` + real SDL
+  IME bridge: commit + preedit composition + candidate rect). Not the NoOp service.
+- Overscroll / magnifier / selection-handle / `getRangeForRect` / `isLineEllipsized`
+  no-ops all **match upstream desktop** — not gaps.
+
+**Known 1.0 gaps left, with rationale (all deferred deliberately):**
+| Gap | Why deferred |
+|-----|--------------|
+| **P3.2** resource-`Font`/async font resolver | Engine reads `TextStyle.fontFamily` directly, bypassing `FontFamily.Resolver`; rewiring the load-bearing font path is high-risk and the parity harness wouldn't exercise it. |
+| **Drag OUT of the window** + drag ghost | Platform-limited: SDL3 has no portable "start OS drag" (needs NSDraggingSession/DoDragDrop/XDND per OS). Drop-IN works. Document as a known 1.0 limitation. |
+| Per-focus `SDL_StartTextInput/StopTextInput` | Always-on start feeds the `dispatchTypedText` fallback; removing it risks that path for edge-case IME-state-leak correctness. |
+| `CalendarLocale` real locale | No user-visible effect until `PlatformDateFormat` localizes month/weekday NAMES (needs ICU data we don't bundle); date PATTERN is already honored. |
+| Semantics / a11y pipeline | Large; out of scope for a desktop 1.0. |
+| P4.1 RenderNode shadows, P1.2, P2.2 | See §1/§7 — risky maintenance / non-goal / blocked, no parity or perf win. |
+
+**Bottom line:** the port is at 99% upstream API coverage with maximal vendoring;
+the remaining deltas are either platform-inherent (SDL drag-out), deliberately
+project-owned (SDL/skiko bridges), or large-and-risky (font resolver, a11y). None
+block a desktop 1.0 for the common app surface.
