@@ -786,3 +786,33 @@ Compose as possible.** Driven by the API-coverage tool + three parallel audits
 the remaining deltas are either platform-inherent (SDL drag-out), deliberately
 project-owned (SDL/skiko bridges), or large-and-risky (font resolver, a11y). None
 block a desktop 1.0 for the common app surface.
+
+### 13a. Second hardening pass (2026-07-31, cont.)
+
+Another fidelity/vendoring/perf sweep (coverage tool + two parallel audits):
+
+- **Fidelity is clean.** The 1076 "extra" decls are dominated by umbrella-repo
+  modules the coverage tool can't compare (resources, tooling-preview) and
+  version-skew where our vendored ref is newer than the tool's upstream dump
+  (material3's 467 — AppBarWithSearch/BasicAlertDialog/BottomAppBar are all
+  vendored-verbatim, confirmed). No invented divergent public surface to remove.
+- **Scrollbar fully vendored.** Migrated the demo to the vendored
+  `androidx.compose.foundation.VerticalScrollbar` and **deleted** the ~200-line
+  `com.compose.sdl.scrollbar` reimpl (verified the vendored one renders a
+  correctly-sized thumb under Option-B density). apidemo keeps its app-level copy.
+- **Vendoring is maximal** except one L-effort structural move: giving `:foundation`
+  a `skikoRenderer` source set would unblock two real fidelity gaps at once —
+  `StringHelpers.skiko` (ICU grapheme/word breaks vs our pure-K/N walker) and
+  `DragAndDropSource.skiko` (cached drag ghost). Every other refused file is
+  correctly refused (JVM/Darwin/AWT deps, iOS-only surface, or the architectural
+  scene-layer reimpl). One convergence candidate remains: `LayerTransformationMatrix`
+  dedup (== P4.1's Matrices half).
+- **Perf: the double-shape (P1.2) is done** — measured cold text frames were
+  15–23 ms dominated by shaping; every measured `Text` shaped twice (intrinsics +
+  final). Now the intrinsics pass's shaped paragraph is reused for the final
+  layout (re-break, no re-shape), halving per-measure shaping on scroll-in/nav.
+  Force-render steady-state can't show it (no re-measure) and the cold frame is
+  dominated by first-frame overhead, but it's upstream-faithful and pixel-identical
+  in parity. Other perf items (synthetic-hover re-dispatch, event-loop allocation,
+  per-frame shadow paint) left as evaluated-and-skipped: unmeasured micro-opts
+  (events phase 0.03 ms, draw 0.08 ms) or a real stale-hover correctness risk.
