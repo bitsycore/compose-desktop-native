@@ -31,9 +31,19 @@ object ImeBridge {
 	var request: PlatformTextInputMethodRequest? = null
 		private set
 
+	// Invoked when a text-input session becomes active (a field gains focus) or
+	// inactive (focus lost). The window wires this to place the OS IME candidate
+	// window at the focused field's rect on focus-gain — otherwise the candidate
+	// popup is only positioned on the first TEXT_EDITING event, mis-placing it for
+	// the first keystroke. Repointed per window in installGlobals().
+	var onSessionActiveChange: ((active: Boolean) -> Unit)? = null
+
 	// Set / cleared by ComposeOwner.textInputSession as fields gain / lose focus.
 	fun setRequest(inRequest: PlatformTextInputMethodRequest?) {
+		val wasActive = request != null
 		request = inRequest
+		val nowActive = inRequest != null
+		if (wasActive != nowActive) onSessionActiveChange?.invoke(nowActive)
 	}
 
 	// SDL_EVENT_TEXT_INPUT: commit text, replacing any active composition. Returns

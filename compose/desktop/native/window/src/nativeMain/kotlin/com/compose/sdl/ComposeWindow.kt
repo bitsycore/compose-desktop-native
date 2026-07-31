@@ -736,6 +736,12 @@ internal class WindowInstance(
 		// Register bundled generic fonts (FontFamily.Monospace → NotoSansMono) once
 		// data.kres is loadable; idempotent, no-op if the font isn't bundled.
 		com.compose.sdl.text.registerGenericFonts()
+		// Position the OS IME candidate window the moment a field in THIS window
+		// gains focus, not only on the first TEXT_EDITING event (repointed per
+		// window here so multi-window focus targets the right SDL window).
+		com.compose.sdl.text.input.ImeBridge.onSessionActiveChange = { active ->
+			if (active) updateImeArea()
+		}
 	}
 
 	// ============
