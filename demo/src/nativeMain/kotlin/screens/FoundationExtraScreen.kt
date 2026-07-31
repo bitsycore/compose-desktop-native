@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.sp
 import com.compose.sdl.icons.IconFontIcon
 import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
-import com.compose.sdl.scrollbar.HorizontalScrollbar
-import com.compose.sdl.scrollbar.VerticalScrollbar
-import com.compose.sdl.scrollbar.rememberScrollbarAdapter
+import androidx.compose.foundation.HorizontalScrollbar
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.rememberScrollbarAdapter
 import com.compose.sdl.text.IconText
 
 // Foundation — AnimatedVisibility, BoxWithConstraints, desktop scrollbars.
