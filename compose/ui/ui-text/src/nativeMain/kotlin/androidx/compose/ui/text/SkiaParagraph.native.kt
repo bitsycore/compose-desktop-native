@@ -79,6 +79,11 @@ internal interface NativeParagraphOps {
 
 	fun rebuildAndPaint(canvas: Canvas, color: Color, shadow: Shadow?, decoration: TextDecoration?)
 
+	/** Re-break the ALREADY-SHAPED paragraph at a new width (skiko reuses the
+	   cached shaped runs — no HarfBuzz re-shape). Used to reuse the intrinsics
+	   pass's shaped paragraph for the final layout instead of shaping twice. */
+	fun relayout(width: Float)
+
 	/** Explicitly free the underlying native paragraph. Call when the ops is
 	   discarded (e.g. an intrinsics-only throwaway) so the native memory is
 	   released deterministically instead of waiting for a GC-driven Cleaner. */

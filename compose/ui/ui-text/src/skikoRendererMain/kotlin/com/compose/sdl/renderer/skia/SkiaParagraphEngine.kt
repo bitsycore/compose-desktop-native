@@ -102,7 +102,9 @@ internal class SkiaParagraphOps(
 			?: style.fontWeight?.let { listOf(FontVariation.weight(it.weight)) }
 	private val baseTypeface = SkiaFonts.resolve(baseFamily, baseVariations).first
 	private val defaultFont = SkFont(baseTypeface ?: SkiaFonts.defaultTypeface, fontPx)
-	private val layoutWidth: Float =
+	// var so relayout() (intrinsics-reuse fast path) can re-break at the final
+	// width and keep rebuildAndPaint()'s re-layout consistent with it.
+	private var layoutWidth: Float =
 		if (widthConstraint.isFinite() && widthConstraint > 0f) widthConstraint else INTRINSIC_WIDTH
 
 	/** Resolve the paragraph line height to px for a run of [runSizePx], mirroring
@@ -274,6 +276,13 @@ internal class SkiaParagraphOps(
 		} finally {
 			pb.close()
 		}
+	}
+
+	override fun relayout(width: Float) {
+		val newWidth = if (width.isFinite() && width > 0f) width else INTRINSIC_WIDTH
+		if (newWidth == layoutWidth) return
+		layoutWidth = newWidth
+		paragraph.layout(newWidth)
 	}
 
 	override fun dispose() {
@@ -451,19 +460,3 @@ internal actual fun buildParagraphOps(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 ): NativeParagraphOps = SkiaParagraphOps(text, style, width, maxLines, density, spanStyles, ellipsize, placeholders)
 
-/** Actual for `expect fun paragraphIntrinsicWidths` — [min, max] from an
- *  unbounded layout. */
-internal actual fun paragraphIntrinsicWidths(
-	text: String,
-	style: TextStyle,
-	density: Float,
-	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
-	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): FloatArray {
-	val ops = SkiaParagraphOps(text, style, Float.POSITIVE_INFINITY, Int.MAX_VALUE, density, spanStyles, false, placeholders)
-	try {
-		return floatArrayOf(ops.minIntrinsicWidth, ops.maxIntrinsicWidth)
-	} finally {
-		ops.dispose()
-	}
-}

@@ -33,15 +33,6 @@ private fun makeSkiaParagraph(
 	buildParagraphOps(text, style, width, maxLines, ellipsize, density, spanStyles, placeholders),
 )
 
-/** [min, max] intrinsic width from a throwaway unbounded skiko layout. */
-internal expect fun paragraphIntrinsicWidths(
-	text: String,
-	style: TextStyle,
-	density: Float,
-	spanStyles: List<AnnotatedString.Range<SpanStyle>>,
-	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): FloatArray
-
 /** Carries text+style for the intrinsics-based Paragraph factories; intrinsic
    widths come from an unbounded skiko layout. `density` is the LocalDensity
    scalar (dpr on Retina): it converts sp → pixels so intrinsic widths land in
@@ -53,10 +44,31 @@ internal class NativeParagraphIntrinsics(
 	val spanStyles: List<AnnotatedString.Range<SpanStyle>> = emptyList(),
 	val placeholders: List<AnnotatedString.Range<Placeholder>> = emptyList(),
 ) : ParagraphIntrinsics {
-	private val widths = paragraphIntrinsicWidths(paragraphText, paragraphStyle, density, spanStyles, placeholders)
-	override val minIntrinsicWidth: Float = widths[0]
-	override val maxIntrinsicWidth: Float = widths[1]
+	// Shape ONCE here (unbounded, no line cap). The shaped paragraph is RETAINED
+	// and reused by Paragraph(this, …) for the final layout — skiko re-breaks at
+	// the final width without re-shaping — so measured text shapes once, not twice
+	// (the P1.2 double-shape: cold text frames were dominated by shaping).
+	val ops: NativeParagraphOps = buildParagraphOps(
+		paragraphText, paragraphStyle, Float.POSITIVE_INFINITY, Int.MAX_VALUE, false, density, spanStyles, placeholders,
+	)
+	override val minIntrinsicWidth: Float = ops.minIntrinsicWidth
+	override val maxIntrinsicWidth: Float = ops.maxIntrinsicWidth
 	override val hasStaleResolvedFonts: Boolean = false
+}
+
+/** Build the final Paragraph from a pre-shaped intrinsics. Reuse the intrinsics'
+   shaped paragraph (just re-break at [width]) when there's no line cap / ellipsis
+   — those are baked into the paragraph at build time and need a fresh build. */
+private fun paragraphFromIntrinsics(
+	i: NativeParagraphIntrinsics, width: Float, maxLines: Int, ellipsize: Boolean,
+): Paragraph {
+	if (maxLines == Int.MAX_VALUE && !ellipsize) {
+		i.ops.relayout(width)
+		return SkiaParagraph(i.paragraphText, i.paragraphStyle, width, i.ops)
+	}
+	return makeSkiaParagraph(
+		i.paragraphText, i.paragraphStyle, width, maxLines, ellipsize, i.density, i.spanStyles, i.placeholders,
+	)
 }
 
 private fun widthFrom(constraints: Constraints): Float =
@@ -168,30 +180,24 @@ actual fun Paragraph(
 	maxLines: Int,
 	ellipsis: Boolean,
 	width: Float,
-): Paragraph {
-	val i = paragraphIntrinsics as NativeParagraphIntrinsics
-	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, width, maxLines, ellipsis, i.density, i.spanStyles, i.placeholders)
-}
+): Paragraph =
+	paragraphFromIntrinsics(paragraphIntrinsics as NativeParagraphIntrinsics, width, maxLines, ellipsis)
 
 actual fun Paragraph(
 	paragraphIntrinsics: ParagraphIntrinsics,
 	constraints: Constraints,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph {
-	val i = paragraphIntrinsics as NativeParagraphIntrinsics
-	return makeSkiaParagraph(i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines, ellipsis, i.density, i.spanStyles, i.placeholders)
-}
+): Paragraph =
+	paragraphFromIntrinsics(paragraphIntrinsics as NativeParagraphIntrinsics, widthFrom(constraints), maxLines, ellipsis)
 
 actual fun Paragraph(
 	paragraphIntrinsics: ParagraphIntrinsics,
 	constraints: Constraints,
 	maxLines: Int,
 	overflow: TextOverflow,
-): Paragraph {
-	val i = paragraphIntrinsics as NativeParagraphIntrinsics
-	return makeSkiaParagraph(
-		i.paragraphText, i.paragraphStyle, widthFrom(constraints), maxLines,
-		overflow == TextOverflow.Ellipsis, i.density, i.spanStyles, i.placeholders,
+): Paragraph =
+	paragraphFromIntrinsics(
+		paragraphIntrinsics as NativeParagraphIntrinsics, widthFrom(constraints), maxLines,
+		overflow == TextOverflow.Ellipsis,
 	)
-}
