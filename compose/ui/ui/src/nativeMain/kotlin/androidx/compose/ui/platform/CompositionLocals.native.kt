@@ -26,9 +26,18 @@ actual val LocalLifecycleOwner get() = androidx.lifecycle.compose.LocalLifecycle
 // a background performance optimization the SDL single-threaded main loop
 // doesn't drive).
 
+/** No screen reader integration on the SDL desktop backend (no NSAccessibility /
+   UIA / AT-SPI bridge). Default to a non-throwing inactive reader so vendored
+   code that reads this local (e.g. accessibility-gated behaviour) degrades to
+   "no reader present" instead of crashing the app. */
+@OptIn(InternalComposeUiApi::class)
+private object InactivePlatformScreenReader : PlatformScreenReader {
+	override val isActive: Boolean get() = false
+}
+
 @InternalComposeUiApi
 val LocalPlatformScreenReader = staticCompositionLocalOf<PlatformScreenReader> {
-	error("CompositionLocal LocalPlatformScreenReader not present")
+	InactivePlatformScreenReader
 }
 
 @InternalComposeUiApi

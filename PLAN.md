@@ -238,12 +238,14 @@ re-vendoring.** The debt is **completing native-actual stubs**.
 - [ ] **P1** `SkiaParagraphEngine.kt:150-164` span segmentation drops partial `SpanStyle`
       overlaps (keeps only fully-covering `start<=segStart && end>=segEnd`). Documented
       divergence (`b63-upstream-text-mingw.md`) — widen to true interval segmentation.
-- [ ] **P1** Accessibility absent — `ComposeOwner.kt:~340` builds a `semanticsOwner` never
-      traversed to any OS a11y API; `CompositionLocals.native.kt:30 LocalPlatformScreenReader`
-      default **throws** (`error(...)`); `SemanticsRegion.native.kt intersect()/difference()`
+- [~] **P1** Accessibility absent — `ComposeOwner.kt:~340` builds a `semanticsOwner` never
+      traversed to any OS a11y API; `SemanticsRegion.native.kt intersect()/difference()`
       hardcode `false`. Not vendorable (NSAccessibility/UIA/AT-SPI). **Decision for 1.0.0:
-      out of scope for desktop** — but provide a **non-throwing no-op `PlatformScreenReader`**
-      so a11y queries don't crash the app. (P0 for the no-op, a11y pipeline is P2/out.)
+      out of scope for desktop.** The full a11y pipeline stays P2/out.
+      - [x] **P0** No-op `PlatformScreenReader` — `CompositionLocals.native.kt`
+        `LocalPlatformScreenReader` default no longer throws (`error(...)`); it returns an
+        `InactivePlatformScreenReader` (`isActive = false`) so a11y-gated vendored code
+        degrades to "no reader present" instead of crashing. **DONE** — builds + runs clean.
 - [ ] **P2** `SkiaFonts.kt` fidelity: `resolveCache` unbounded (font-cache half of P3.4
       deferred); variation key passes `null` density (`:65,78`) so density-dependent `opsz`
       in sp resolves wrong. `NamedFont.equals/hashCode` axis identity reportedly fixed —
