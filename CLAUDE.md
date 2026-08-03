@@ -13,8 +13,9 @@ context — read it first, then look at the files it points to.
 - [TOOLING.md](TOOLING.md) — build/vendor/verify scripts and workflows
   (build-sdl, sync + drift checks, parity, probe, profiler, coverage,
   verify-mac) + the version map and the ref-bump / release runbooks.
-- [TODO.md](TODO.md) — audited list of no-ops, stubs, and hardcodes left in the
-  port, with severity, plus what's missing for a stable 1.12 release.
+- [PLAN.md](PLAN.md) §2 — audited list of no-ops, stubs, and hardcodes left in the
+  port, with P0/P1/P2 severity, plus the road-to-1.0.0 fidelity / SDL / release work
+  (this subsumes the former TODO.md, which was never committed).
 - This file — architecture, module layout, vendoring rules, source-set
   hierarchy, density flow, conventions, and common pitfalls.
 

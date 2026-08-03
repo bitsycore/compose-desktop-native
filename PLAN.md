@@ -372,11 +372,10 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging; publish from
       Windows.
 - [ ] **P1** Version bump to `1.0.0` across published coords once the above are green.
-- [ ] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map links `PLAN.md` (this file
-      — restored), `RENDERER.md`, and `TODO.md`. `RENDERER.md` + `TODO.md` are deleted in
-      tree. Restore both or de-link them from `CLAUDE.md`. (TODO.md never existed at HEAD —
-      its content is subsumed by §2 here; either recreate it as the stub audit or drop the
-      link.)
+- [x] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map links `PLAN.md` (this file
+      — restored), `RENDERER.md`, and `TODO.md`. **DONE:** `RENDERER.md` restored from
+      history; `CLAUDE.md` line-1 `ean` typo fixed; the `TODO.md` link (never committed at
+      HEAD) repointed to PLAN.md §2, which subsumes the stub audit.
 
 ---
 
