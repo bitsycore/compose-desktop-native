@@ -36,9 +36,11 @@ internal actual fun isCopyKeyEvent(keyEvent: KeyEvent): Boolean =
 /** No selection magnifier on desktop — mobile-only affordance. */
 internal actual fun Modifier.selectionMagnifier(manager: SelectionManager): Modifier = this
 
-/** Desktop text-context-menu doesn't add SelectionContainer-specific
-   items yet. TODO(CMP-7819): wire the paste-into-selection / clear
-   / select-all extras through here when the toolbar lands. */
+/** NO-OP by design: this seam belongs to the NEW text-context-menu API
+   (ComposeFoundationFlags.isNewContextMenuEnabled), which is false on native, so
+   it's never reached. The working SelectionContainer right-click menu (Copy /
+   SelectAll) goes through the vendored LEGACY CommonContextMenuArea path via
+   SelectionManager.contextMenuBuilder. */
 internal actual fun Modifier.addSelectionContainerTextContextMenuComponents(
 	selectionManager: SelectionManager
 ): Modifier = this

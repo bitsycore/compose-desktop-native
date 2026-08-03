@@ -20,7 +20,11 @@ internal actual fun TextFieldSelectionManager.isSelectionHandleInVisibleBound(
 	isStartHandle: Boolean,
 ): Boolean = isSelectionHandleInVisibleBoundDefault(isStartHandle)
 
-// TODO(CMP-7819): wire text-field context-menu components when the desktop toolbar lands.
+// NO-OP by design: this seam belongs to the NEW text-context-menu API
+// (ComposeFoundationFlags.isNewContextMenuEnabled = false on native), so it's
+// unreachable. The working legacy-field right-click menu goes through the vendored
+// CommonContextMenuArea path (TextFieldSelectionManager.contextMenuBuilder → Cut /
+// Copy / Paste / SelectAll).
 internal actual fun Modifier.addBasicTextFieldTextContextMenuComponents(
 	manager: TextFieldSelectionManager,
 	coroutineScope: CoroutineScope,

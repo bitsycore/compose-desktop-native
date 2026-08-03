@@ -15,7 +15,10 @@ import kotlinx.coroutines.CoroutineScope
 /**
  Byte-close mirror of upstream macosMain — desktop tap / selection gestures
  delegate to the default helpers baked into TextFieldSelectionState.
- addBasicTextFieldTextContextMenuComponents = no-op (TODO CMP-7819).
+ addBasicTextFieldTextContextMenuComponents is a NO-OP by design: it belongs to
+ the NEW text-context-menu API (ComposeFoundationFlags.isNewContextMenuEnabled),
+ which is false on native. The working right-click Cut/Copy/Paste/SelectAll menu
+ goes through the vendored LEGACY CommonContextMenuArea path instead.
  ClipboardPasteState uses our project Clipboard's plaintext presence — no
  NSPasteboard access on native.
 */
