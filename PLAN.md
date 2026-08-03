@@ -14,19 +14,46 @@ skiko-fork divergences), **completing native-actual stubs**, and the release mec
       needs on-Windows confirmation (WIN-SMOKE).
 - [ ] Text vertical metrics on Windows match the Windows fidelity reference
       (skiko-on-JVM Compose Desktop), not a bug vs it.
-- [ ] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited,
-      each item either fixed or accepted-with-rationale.
-- [~] Native-actual fidelity blockers closed: float pointer coords **DONE** (§2); text
-      context menu still open (P0). Date/time localization is P1 polish (formatter already
-      works — see §2). Screen-reader no-op **DONE** (§2).
-- [ ] Vendor hygiene stays clean: zero drift, zero commonMain rule-1 violations
-      (already true — keep it true through the ref bump).
+- [~] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited —
+      **audited + documented** (§1c; feasibility doc recovered, FreeType-scaler lead
+      recorded); the fixes themselves are fork-side/Windows, pending WIN-SMOKE.
+- [~] Native-actual fidelity blockers closed: float pointer coords **DONE**, screen-reader
+      no-op **DONE**, text context menu **RECONCILED — already works** via the legacy path
+      (§2). Date/time localization is P1 polish (formatter already works).
+- [x] Vendor hygiene stays clean: zero drift (all 10 manual vendors match pin), zero
+      commonMain rule-1 violations, zero vendored files touched this session — verified via
+      `check-vendor-drift.py`.
 - [~] SDL static lib slimmed to the used subsystem surface (§3) — **DONE + verified on
       macOS/Metal**; other hosts pending WIN-SMOKE.
 - [ ] Refs re-pinned to Compose **1.12.0 stable**, JVM parity versions bumped, WIN-SMOKE
       fidelity pass green on a real Windows host.
 - [x] `CLAUDE.md` documentation map consistent with tree — RENDERER.md restored, line-1
       typo fixed, TODO.md link repointed to §2.
+
+## Landed toward 1.0.0 (this pass — all build + run verified on macOS/Metal)
+
+Everything below is committed; details + file refs are in the sections that follow.
+
+1. **Tab tofu fix** (§1a P0) — normalize `\t`→space before shaping so the Windows fork
+   can't render `.notdef`. Platform-independent, length-preserving.
+2. **HiDPI caret quantization fix** (§2 P0) — pointer/wheel coords carried as `Float`
+   end-to-end instead of truncated to `Int`.
+3. **Screen-reader no-op** (§2 P0) — `LocalPlatformScreenReader` defaults to inactive
+   instead of throwing.
+4. **SDL slimming** (§3) — 10 unused subsystems disabled in `build-all.py`; 6 now-dead
+   macOS frameworks dropped from `sdl3.def`. Rebuilt; demo + apidemo link, demo runs.
+5. **Context menu reconciled** (§2 P0) — confirmed already working via the vendored legacy
+   path; the 3 "NOP" seams are vestigial (disabled new API) — misleading TODOs corrected.
+6. **`CDN_TEXT_METRICS` diagnostic** (§1b) — env-gated line-metrics dump; macOS baseline
+   captured, hypothesis sharpened (fork likely drops lineHeight leading).
+7. **Doc hygiene** (§5) — restored `RENDERER.md` + `SKIKO-MINGW-FEASIBILITY.md`, fixed the
+   `CLAUDE.md` typo + stale links; all doc links now resolve. Fork FreeType-scaler lead
+   recorded. Vendor drift verified clean.
+
+**Not done — needs a Windows host** (WIN-SMOKE): confirm the tab + vertical-metrics fixes on
+the shipped mingwX64 binary, and any fork-side scaler/FontMgr/gamma fix. **Deliberately
+deferred** (large/structural, rationale in-section): RTL, `PlatformFontLoader`, grapheme
+source-set move, date CLDR, brush/gradient text, and the Compose 1.12.0-stable re-pin.
 
 ---
 
