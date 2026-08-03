@@ -149,7 +149,14 @@ remembering.
 - **WIN-SMOKE (pre-ship, Windows only).** The Mac runbook cannot cover the
   shipped mingwX64 binary, the Windows-only `PrintWindow` probe, or the
   common-metadata publish job. Run these on a Windows host before any release.
-  This is the only outstanding verification.
+  This is the only outstanding verification. It now also owns two fork-fidelity
+  checks (both stem from the fork's flat extern-C surface not wiring every
+  `ParagraphStyle` setter): **(1)** tab characters render clean, not `.notdef`
+  boxes — fixed platform-independently by normalizing `\t`→space before shaping
+  (PLAN.md §1a); **(2)** vertical text metrics — run `CDN_TEXT_METRICS=1` native
+  vs skiko-JVM-Windows and confirm the paragraph line box matches (the fork may
+  drop lineHeight leading, rendering text tighter than macOS/JVM; PLAN.md §1b).
+  The full road-to-1.0.0 fidelity/SDL/release checklist is in [PLAN.md](PLAN.md).
 - **Stabilization at Compose 1.12.0 stable.** The vendored refs are pinned to
   `v1.12.0-beta03+dev4483` (no clean beta03 tag exists yet, and it is not on
   Maven). The native side leads the JVM parity leg (forced to beta02, the latest

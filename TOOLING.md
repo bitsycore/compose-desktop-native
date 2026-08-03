@@ -21,6 +21,15 @@ python3 scripts/build-sdl/build-all.py sdl3       # rebuild the step
 Needs `git`, `cmake`, and Python 3 on every host (`ninja` is fetched when
 absent). Run it once per machine, or after bumping the pinned version.
 
+The static lib is built **slim**: the port uses SDL only for video/window,
+events, clipboard, file dialogs, GL/Metal contexts, the CPU-raster `SDL_Render`
+blit, filesystem, cursor, locale, theme, and text input/IME. `build-all.py`
+disables every unused subsystem — audio, joystick, haptic, hidapi, sensor,
+power, camera, GPU, offscreen, virtual-joystick (all zero-reference), plus
+tests/examples and the Windows D3D12 driver. If a consumer app ever needs one of
+these (e.g. SDL audio), re-enable its `-DSDL_*` flag in `build-all.py` and
+rebuild — a build-time change, no code edit.
+
 ## Vendoring upstream Compose
 
 Most `androidx.compose.*` code is copied byte for byte from
@@ -109,6 +118,21 @@ CDN_PROFILE=1 CDN_FORCERENDER=1 ./demo/build/bin/macosArm64/debugExecutable/demo
 
 Note: `present` is vsync-blocking, so profile on the target refresh rate before
 drawing conclusions about a frame-rate gap.
+
+### Text metrics diagnostic
+
+Set `CDN_TEXT_METRICS=1` and run any app to dump, per built paragraph, the font
+scaler's `ascent`/`descent`/`leading`, the resolved `familyName` + `fontPx`, and
+the resulting paragraph line box (`paraHeight`, `line0[ascent/descent/baseline/
+height]`). Its job is the mac-vs-Windows vertical-spacing question (PLAN.md §1b):
+the SAME `NotoSans.ttf` bytes go through a different Skia `FontMgr` scaler per
+host (CoreText / fontconfig-FreeType / DirectWrite), which can pick different
+metric tables. Run it on native AND on the JVM parity app on the SAME host and
+diff the lines — Windows-native must match skiko-JVM-Windows.
+
+```bash
+CDN_TEXT_METRICS=1 demo.kexe --screen=Buttons --screenshot=/tmp/b.bmp
+```
 
 ### Demo probes
 
