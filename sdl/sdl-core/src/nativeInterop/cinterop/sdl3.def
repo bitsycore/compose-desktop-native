@@ -11,13 +11,16 @@ headerFilter = SDL3/**
 
 staticLibraries = libSDL3.a
 
+# Matches the SLIM build's libs/SDL3/lib/pkgconfig/sdl3.pc `Libs:` line (source of
+# truth). The audio/gamepad/haptic/camera frameworks (CoreAudio, AudioToolbox,
+# AVFoundation, GameController, ForceFeedback, CoreHaptics) dropped out once those
+# subsystems were disabled in build-all.py — regenerate the .pc and re-sync this
+# list if the SDL feature set ever changes.
 linkerOpts.osx = \
 	-framework CoreMedia -framework CoreVideo -framework Cocoa \
 	-weak_framework UniformTypeIdentifiers \
-	-framework IOKit -framework ForceFeedback -framework Carbon \
-	-framework CoreAudio -framework AudioToolbox -framework AVFoundation \
-	-framework Foundation -framework GameController -framework Metal \
-	-framework QuartzCore -weak_framework CoreHaptics \
+	-framework IOKit -framework Carbon \
+	-framework Foundation -framework Metal -framework QuartzCore \
 	-lpthread -lm
 
 # The -L multi-arch dirs + fontconfig/GL/X11 serve the SKIA renderer (font

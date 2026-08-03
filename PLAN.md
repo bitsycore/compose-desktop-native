@@ -355,10 +355,13 @@ joystick.
       `:apidemo` links clean too. **PENDING:** both apps on Linux + Windows hosts (fold into
       WIN-SMOKE §5). If audio/gamepad is ever needed by a consumer app, re-enable the flag
       and rebuild the static lib (build-time only).
-- [ ] **P2** Prune now-unreferenced macOS frameworks from `sdl3.def:14-21` (`CoreAudio`,
-      `AudioToolbox`, `AVFoundation`, `CoreMedia`, `GameController`, `ForceFeedback`, weak
-      `CoreHaptics`). Verify against the regenerated `sdl3-static.pc` `Libs.private`
-      (`build-all.py:350-353` prints it — source of truth) before trimming.
+- [x] **P2** Prune now-unreferenced macOS frameworks from `sdl3.def`. **DONE:** verified
+      against the regenerated `libs/SDL3/lib/pkgconfig/sdl3.pc` `Libs:` line (source of
+      truth), which after slimming no longer references `CoreAudio`, `AudioToolbox`,
+      `AVFoundation`, `GameController`, `ForceFeedback`, or weak `CoreHaptics` — removed all
+      six from `linkerOpts.osx` (kept `CoreMedia`, which the `.pc` still lists). Demo relinks
+      clean. (Left Linux `linkerOpts` alone — those `-l` entries serve Skia/GL/X11, not the
+      disabled SDL subsystems.)
 - [ ] **P2** (higher-risk, flag-don't-apply) Render-driver pruning to software-only. Only
       the CPU-raster fallback uses `SDL_Render`; GL/Metal go direct. But
       `SDL_CreateRenderer(window, null)` (`SDL3Backend.kt:117`) lets SDL pick the first
