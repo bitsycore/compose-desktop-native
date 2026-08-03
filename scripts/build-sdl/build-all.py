@@ -312,11 +312,22 @@ def buildSdl3(inHost, inCc, inCxx):
 		"-DSDL_SHARED=OFF", "-DSDL_STATIC=ON",
 		"-DSDL_TESTS=OFF", "-DSDL_TEST_LIBRARY=OFF", "-DSDL_EXAMPLES=OFF",
 		"-DSDL_INSTALL_TESTS=OFF",
+		# Subsystems with zero references in this project (see PLAN.md §3): the
+		# port uses SDL only for video/window, events, clipboard, file dialogs,
+		# GL/Metal contexts, the CPU-raster SDL_Render blit, filesystem, cursor,
+		# locale, theme, and text input/IME. Everything below has no call site
+		# and nothing depends on it transitively — disabling them shrinks the
+		# static lib and drops the matching system-framework deps.
+		"-DSDL_AUDIO=OFF", "-DSDL_JOYSTICK=OFF", "-DSDL_HAPTIC=OFF",
+		"-DSDL_HIDAPI=OFF", "-DSDL_SENSOR=OFF", "-DSDL_POWER=OFF",
+		"-DSDL_CAMERA=OFF", "-DSDL_GPU=OFF", "-DSDL_OFFSCREEN=OFF",
+		"-DSDL_VIRTUAL_JOYSTICK=OFF",
 		"-DCMAKE_CXX_FLAGS=" + kSizeFlags,
 	]
 	if inHost == "windows":
-		# Kill the D3D12 driver + GPU subsystem (K/N mingw dxgi1_6.h too old).
-		vExtra += ["-DSDL_RENDER_D3D12=OFF", "-DSDL_GPU=OFF"]
+		# Kill the D3D12 driver (K/N mingw dxgi1_6.h too old); SDL_GPU is now
+		# disabled for every host in the shared list above.
+		vExtra += ["-DSDL_RENDER_D3D12=OFF"]
 	if inHost == "linux":
 		# SDL3's CMake feature-detection sees glibc's memfd_create and
 		# posix_spawn_file_actions_addchdir_np on modern hosts (>= 2.27 /

@@ -292,19 +292,19 @@ Filesystem, Cursor, Locale, System theme, Text input/IME, OpenURL, timing/hints.
 Gamepad), Haptic, HIDAPI, Sensor, Power, Camera, GPU API, Offscreen video driver, virtual
 joystick.
 
-- [ ] **P1** Add to `build-all.py` (`vExtra`):
-      ```python
-      vExtra += [
-          "-DSDL_AUDIO=OFF", "-DSDL_JOYSTICK=OFF", "-DSDL_HAPTIC=OFF",
-          "-DSDL_HIDAPI=OFF", "-DSDL_SENSOR=OFF", "-DSDL_POWER=OFF",
-          "-DSDL_CAMERA=OFF", "-DSDL_GPU=OFF", "-DSDL_OFFSCREEN=OFF",
-          "-DSDL_VIRTUAL_JOYSTICK=OFF", "-DSDL_DISABLE_INSTALL_DOCS=ON",
-      ]
-      ```
-      Promote `-DSDL_GPU=OFF` from the Windows-only branch to the shared list; keep the
-      per-host `-DSDL_RENDER_D3D12=OFF` (Windows).
-- [ ] **P1** After the flag change, rebuild + run `:demo` and `:apidemo` on each host to
-      confirm no regression.
+- [x] **P1** Added to `build-all.py` shared `vExtra`: `-DSDL_AUDIO=OFF`,
+      `-DSDL_JOYSTICK=OFF`, `-DSDL_HAPTIC=OFF`, `-DSDL_HIDAPI=OFF`, `-DSDL_SENSOR=OFF`,
+      `-DSDL_POWER=OFF`, `-DSDL_CAMERA=OFF`, `-DSDL_GPU=OFF`, `-DSDL_OFFSCREEN=OFF`,
+      `-DSDL_VIRTUAL_JOYSTICK=OFF`. Promoted `-DSDL_GPU=OFF` from the Windows-only branch to
+      the shared list; kept the per-host `-DSDL_RENDER_D3D12=OFF` (Windows). (Skipped
+      `-DSDL_DISABLE_INSTALL_DOCS` — not a real SDL3 option; the build's `cmake --install`
+      is relied upon.) All ten confirmed zero-reference by grep before disabling.
+- [~] **P1** After the flag change, rebuild + run apps to confirm no regression.
+      **DONE on macOS/Metal:** `build-all.py` rebuilt libSDL3.a clean with the new flags,
+      `:demo` links + runs to a settled screenshot (TextField screen, no visual regression).
+      **PENDING:** `:apidemo` on macOS, and both apps on Linux + Windows hosts (fold into
+      WIN-SMOKE §5). If audio/gamepad is ever needed by a consumer app, re-enable the flag
+      and rebuild the static lib (build-time only).
 - [ ] **P2** Prune now-unreferenced macOS frameworks from `sdl3.def:14-21` (`CoreAudio`,
       `AudioToolbox`, `AVFoundation`, `CoreMedia`, `GameController`, `ForceFeedback`, weak
       `CoreHaptics`). Verify against the regenerated `sdl3-static.pc` `Libs.private`
