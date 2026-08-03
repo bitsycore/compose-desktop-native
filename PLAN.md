@@ -8,6 +8,12 @@ macOS/Metal; the remaining 1.0.0 work is **cross-platform rendering fidelity** (
 skiko-fork divergences), **completing native-actual stubs**, and the release mechanics
 (1.12.0-stable re-pin + WIN-SMOKE).
 
+**Status / handoff:** the macOS/Linux-verifiable work is done and committed on `main` (see
+**"Landed toward 1.0.0"** below — don't redo it). The remaining blockers need a **Windows host**
+→ jump to **"▶ Continuing on Windows (mingwX64) — START HERE"**. This file is self-contained: it
+has the build/run commands, the exact confirm steps, the macOS baseline data to diff against, and
+per-task fixes. So on Windows you can say **"continue PLAN.md"** and have everything.
+
 ## Definition of done for 1.0.0
 
 - [~] No text tofu on any platform — Windows tab regression fixed in Kotlin (§1a);
@@ -57,6 +63,76 @@ Everything below is committed; details + file refs are in the sections that foll
 the shipped mingwX64 binary, and any fork-side scaler/FontMgr/gamma fix. **Deliberately
 deferred** (large/structural, rationale in-section): RTL, `PlatformFontLoader`, grapheme
 source-set move, date CLDR, brush/gradient text, and the Compose 1.12.0-stable re-pin.
+
+---
+
+## ▶ Continuing on Windows (mingwX64) — START HERE
+
+**Read this before doing anything.** This file is the single source of truth for the road to
+1.0.0. Everything in **"Landed toward 1.0.0"** above is **already implemented and committed on
+`main`** — do NOT redo it, just verify it on this host. Every open `[ ]` / `[~]` below is
+remaining work. The macOS/Linux side is done and verified; the remaining blockers need a **real
+Windows host** — the mingwX64 build cross-compiled from mac/Linux fails at cinterop, and the
+bitsycore skiko **fork** can only be rebuilt on Windows.
+
+**The Windows fidelity reference is skiko-on-JVM Compose Desktop on THIS Windows host**
+(`gradlew :demo:run` — also DirectWrite/system fonts), NOT macOS. mac↔Windows metric deltas are
+expected in upstream Compose Desktop too, so "matches Windows-JVM" is the acceptance bar, not
+"matches macOS".
+
+### Build / run (Windows shell, repo root)
+
+```bat
+gradlew.bat :demo:runDebugExecutableMingwX64      :: native demo (the port under test)
+gradlew.bat :apidemo:runDebugExecutableMingwX64   :: native apidemo (has the Session/Override buttons)
+gradlew :demo:run                                 :: JVM Compose Desktop = the FIDELITY REFERENCE
+gradlew :apidemo:run                              :: JVM apidemo reference
+```
+
+- The bridge plugin auto-drops `skiko-windows-x64.dll` next to the exe (`installWindowsSkiaDll`).
+  Fork coords `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (override `-PskikoMingwVersion`).
+- `:demo` CLI flags (native AND jvm): `--screen=<Name>`, `--screenshot=<path.bmp>` (capture at
+  quiescence then quit), `--gpu=auto|software|skia.opengl`. `CDN_TEXT_METRICS=1` env var dumps
+  text metrics (§1b). `CDN_PROFILE=1` frame profiler. `:apidemo` has NO screenshot CLI — drive it
+  by hand for the button-metrics visual.
+- If an IC-cache error appears after any module churn: delete `demo\build\kotlin-native-ic-cache`.
+
+### Ordered Windows work (do top-to-bottom; full detail in the numbered sections below)
+
+1. **[§1a] Confirm the tab fix.** Build native demo; render text with a literal tab (e.g. the
+   `--screen=TextField` field, type `a<Tab>b`). Must show a space, NOT a `.notdef`/tofu box. The
+   Kotlin fix (`SkiaParagraphEngine.shapedText`, committed) normalizes `\t`→space before shaping,
+   so it should already pass. If tofu persists, a tab is reaching skiko via a path that bypasses
+   `SkiaParagraphEngine.build()` — trace it.
+
+2. **[§1b] Confirm/resolve vertical metrics — THE user-reported bug** (apidemo Session/Override
+   look "fitted" on Windows vs extra top-space on mac). Run BOTH and diff:
+   ```bat
+   set CDN_TEXT_METRICS=1
+   gradlew.bat :demo:runDebugExecutableMingwX64 --args="--screen=Buttons --screenshot=%TEMP%\b.bmp"
+   gradlew :demo:run --args="--screen=Buttons --screenshot=%TEMP%\bj.bmp"
+   ```
+   For the fontPx=30 labels ("Filled Button"/"OutlinedButton"/"TextButton"), compare `paraHeight`
+   and `line0.height` against the **macOS baseline in §1b**:
+   - Windows-native ≈ **48** (matches mac + JVM) → correct-by-reference, NOT a bug → tick §1b, done.
+   - Windows-native ≈ **41** (tight to the font box) while JVM = 48 → the fork is DROPPING the
+     lineHeight leading. **Fix (preferred, fork):** wire the `ParagraphStyle` height/strut path
+     through the fork's extern-C surface + rebuild the DLL (same class as the tab flag).
+     **Fix (fallback, Kotlin, no fork rebuild):** apply an explicit `StrutStyle` in
+     `SkiaParagraphEngine.build()` so leading is applied regardless of the fork.
+
+3. **[§1c] Audit the fork FontMgr / gamma / ICU.** Render CJK + emoji + control chars on native
+   Windows; if glyph fallback breaks, the fork's `FontMgr.default` is likely an empty FreeType
+   manager (the fork builds with `skia_use_freetype`). Capture the fork's REAL `args.gn`
+   (`SK_GAMMA_*`, ICU packaging, freetype-vs-dwrite) into the fork repo so drift is auditable.
+
+4. **[§5] WIN-SMOKE gate** (pre-ship): (1) the §1b metrics dump, (2) tab/control-char render clean,
+   (3) the Windows-only `PrintWindow` probe (`scripts/probe/`), (4) `gradlew
+   :<module>:compileCommonMainKotlinMetadata` (only the Windows job compiles common metadata).
+
+5. **[§5] apiDump + publish FROM Windows** (host-specific; only the Windows job carries the full
+   mingwX64 variant table). Then, when Compose **1.12.0 stable** ships, do the re-pin + version
+   bump. Release runbook: [TOOLING.md](TOOLING.md).
 
 ---
 
@@ -156,6 +232,18 @@ macOS↔Windows delta is expected upstream behavior.
       ≈ 41, the fork drops lineHeight leading (fork fix: wire `heightMode`/strut, like
       `replaceTabCharacters`); a Kotlin fallback is a manual `StrutStyle`. If Windows-native
       == Windows-JVM, it's correct-by-reference.
+
+      **macOS baseline raw lines** (`CDN_TEXT_METRICS=1 demo --screen=Buttons`, DPR 2) — diff
+      Windows-native + Windows-JVM against these; the fontPx=30 rows are the cleanest signal:
+      ```
+      text='Filled Button'  fontPx=30.0  ascent=-32.070007 descent=8.789978 leading=0.0  paraHeight=48.0  line0[ascent=37.674 descent=10.326 baseline=37.674 height=48.0]
+      text='OutlinedButton' fontPx=30.0  ascent=-32.070007 descent=8.789978 leading=0.0  paraHeight=48.0  line0[ascent=37.674 descent=10.326 baseline=37.674 height=48.0]
+      text='TextButton'     fontPx=30.0  ascent=-32.070007 descent=8.789978 leading=0.0  paraHeight=48.0  line0[ascent=37.674 descent=10.326 baseline=37.674 height=48.0]
+      text='Outlined'       fontPx=28.0  ascent=-29.932007 descent=8.203980 leading=0.0  paraHeight=40.0  line0[ascent=31.395 descent=8.605  baseline=31.364 height=40.0]
+      ```
+      (family='Noto Sans' on all.) Expectation if correct: `fontPx`, `paraHeight`, `line0.height`
+      match JVM-Windows exactly; the raw `ascent`/`descent` may differ from these macOS numbers
+      because the Windows scaler is FreeType (§1c), but the LINE BOX must still match JVM-Windows.
 - [ ] **P1** If Windows-native != Windows-JVM: fix in the fork (out of tree) — build its
       `FontMgr.default`/scaler to match official skiko-windows (DirectWrite:
       `skia_use_dwrite` / system fontmgr) so `makeFromData` typefaces get the same
