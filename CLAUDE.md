@@ -7,9 +7,16 @@ context — read it first, then look at the files it points to.
 
 - [README.md](README.md) — public overview + quickstart (bridge plugin,
   `nativeComposeWindow`, sample apps).
-- [RENDERER.md](RENDERER.md) — the rendering layer: architecture, the retained-
-  layer engine, convergence decisions, learnings, and open work. Read it before
-  touching any renderer, graphics-actual, or layer-engine code.
+- Renderer — one Skia `RenderBackend` (Metal on macOS / OpenGL on Linux+Windows /
+  CPU-raster fallback) driving upstream's vendored GraphicsLayer + Canvas engine.
+  Retained per-node display lists: transform / alpha / clip changes REPLAY without
+  re-recording (only a content change or resize re-records; dirty-region rendering
+  is a non-goal). Text is a reduced-local port over Skia `skparagraph`. Read these
+  before touching renderer / graphics-actual / layer-engine code:
+  `SkiaRenderBackend.kt`, `RenderBackend.kt`, `GpuMode.kt`, `ComposeRootHost.kt`
+  (root host + snapshot-observation sweep — omitting `clearInvalidObservations()`
+  once leaked the whole graph), `ComposeOwner.kt`, and `SkiaParagraph.native.kt` /
+  `SkiaParagraphEngine.kt`. Open renderer/fidelity work lives in [PLAN.md](PLAN.md).
 - [TOOLING.md](TOOLING.md) — build/vendor/verify scripts and workflows
   (build-sdl, sync + drift checks, parity, probe, profiler, coverage,
   verify-mac) + the version map and the ref-bump / release runbooks.
@@ -34,7 +41,7 @@ Rendering is **Skia everywhere** behind one `RenderBackend` — Metal / OpenGL
   an embedded GNU import lib, published to GitHub Packages as
   `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (override with
   `-PskikoMingwVersion`). The runtime DLL is auto-provisioned next to the exe by
-  the bridge plugin (`installWindowsSkiaDll`). See SKIKO-MINGW-FEASIBILITY.md.
+  the bridge plugin (`installWindowsSkiaDll`).
 
 Windowing, input, audio, filesystem access, and the OS-integration surface
 (file dialogs, clipboard, "open in Finder/Explorer"…) all go through
@@ -536,7 +543,7 @@ profiler. Quick rules of thumb:
 - Slow frame → **profiler** first (`CDN_PROFILE=1`), optimize second.
 - Any renderer change → the **`verify-mac`** runbook gates it before commit.
 
-See [RENDERER.md](RENDERER.md) for the renderer work these support.
+Open renderer / fidelity / release work is tracked in [PLAN.md](PLAN.md).
 
 ## Conventions
 

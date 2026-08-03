@@ -15,8 +15,8 @@ skiko-fork divergences), **completing native-actual stubs**, and the release mec
 - [ ] Text vertical metrics on Windows match the Windows fidelity reference
       (skiko-on-JVM Compose Desktop), not a bug vs it.
 - [~] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited —
-      **audited + documented** (§1c; feasibility doc recovered, FreeType-scaler lead
-      recorded); the fixes themselves are fork-side/Windows, pending WIN-SMOKE.
+      **audited + documented** (§1c; FreeType-scaler lead recorded from the fork build
+      notes in git history); the fixes themselves are fork-side/Windows, pending WIN-SMOKE.
 - [~] Native-actual fidelity blockers closed: float pointer coords **DONE**, screen-reader
       no-op **DONE**, text context menu **RECONCILED — already works** via the legacy path
       (§2). Date/time localization is P1 polish (formatter already works).
@@ -27,8 +27,10 @@ skiko-fork divergences), **completing native-actual stubs**, and the release mec
       macOS/Metal**; other hosts pending WIN-SMOKE.
 - [ ] Refs re-pinned to Compose **1.12.0 stable**, JVM parity versions bumped, WIN-SMOKE
       fidelity pass green on a real Windows host.
-- [x] `CLAUDE.md` documentation map consistent with tree — RENDERER.md restored, line-1
-      typo fixed, TODO.md link repointed to §2.
+- [x] `CLAUDE.md` documentation map consistent with tree — line-1 typo fixed; the stale
+      historical docs `RENDERER.md` + `SKIKO-MINGW-FEASIBILITY.md` removed (current renderer
+      essentials inlined into CLAUDE.md, the rest is in git history); all dead doc links
+      (TODO.md / RENDERER.md / SKIKO) removed or repointed to PLAN.md.
 
 ## Landed toward 1.0.0 (this pass — all build + run verified on macOS/Metal)
 
@@ -46,9 +48,10 @@ Everything below is committed; details + file refs are in the sections that foll
    path; the 3 "NOP" seams are vestigial (disabled new API) — misleading TODOs corrected.
 6. **`CDN_TEXT_METRICS` diagnostic** (§1b) — env-gated line-metrics dump; macOS baseline
    captured, hypothesis sharpened (fork likely drops lineHeight leading).
-7. **Doc hygiene** (§5) — restored `RENDERER.md` + `SKIKO-MINGW-FEASIBILITY.md`, fixed the
-   `CLAUDE.md` typo + stale links; all doc links now resolve. Fork FreeType-scaler lead
-   recorded. Vendor drift verified clean.
+7. **Doc hygiene** (§5) — removed the stale historical `RENDERER.md` +
+   `SKIKO-MINGW-FEASIBILITY.md` (renderer essentials folded into `CLAUDE.md`; rest in git
+   history), fixed the `CLAUDE.md` typo + all dead doc links; extracted the fork
+   FreeType-scaler lead into §1c before deleting. Vendor drift verified clean.
 
 **Not done — needs a Windows host** (WIN-SMOKE): confirm the tab + vertical-metrics fixes on
 the shipped mingwX64 binary, and any fork-side scaler/FontMgr/gamma fix. **Deliberately
@@ -173,9 +176,9 @@ macOS↔Windows delta is expected upstream behavior.
       `SkiaFonts.kt:38,44,50` wire it as both the paragraph default manager and the loader.
       An empty manager breaks glyph FALLBACK for missing codepoints (CJK/emoji on Windows),
       distinct from the tab bug. **Confirm** which `SkFontMgr` the fork's `FontMgr.default`
-      returns on native Windows (the feasibility doc noted the fork hand-wrote windowsMain
-      actuals because "linux is a stub"). **Fix (fork):** ensure it returns a real
-      DirectWrite manager matching skiko-JVM-Windows.
+      returns on native Windows (the fork build notes — git history — noted it hand-wrote
+      windowsMain actuals because "linux is a stub"). **Fix (fork):** ensure it returns a real
+      DirectWrite (or FreeType-with-system-enumeration) manager matching skiko-JVM-Windows.
 - [~] **P1** `FontMgrWithFallback` — ANALYZED, deliberately NOT changing blindly. The port
       does `setDefaultFontManager(fontMgr)` [system] + `setAssetFontManager(provider)`
       [bundled] (`SkiaFonts.kt:49-52`). This is **functionally equivalent** for missing-glyph
@@ -188,8 +191,8 @@ macOS↔Windows delta is expected upstream behavior.
       stub → no system fallback), which is the item below and is not fixable in Kotlin.
       **Decision:** leave the Kotlin as-is; fix the fork's `FontMgr.default`. Re-open only if
       a CJK/emoji fallback bug is actually observed on macOS/Linux.
-- [ ] **P2** ICU/unicode data packaged differently in the fork (T3). Recovered feasibility
-      doc notes it had to force-export `uloc_getDefault_skiko` / `uloc_toLanguageTag_skiko`.
+- [ ] **P2** ICU/unicode data packaged differently in the fork (T3). The fork build notes
+      (git history) show it had to force-export `uloc_getDefault_skiko` / `uloc_toLanguageTag_skiko`.
       Control-char/whitespace classification (U+00A0, U+200B, U+0009 pre-replacement) can
       diverge. **Confirm:** render those control codepoints, Windows-only tofu check.
 - [ ] **P2** Text gamma/AA edges: a Skia **build-time constant**
@@ -203,18 +206,18 @@ macOS↔Windows delta is expected upstream behavior.
       (Metal) — channel order + Y-flip, matched to buffers. Windows uses OpenGL
       (`PlatformGpu.kt:20`), same backend as Linux, so GL-vs-Metal can't explain a
       Windows-vs-Linux gap at all. Deprioritized — no action.
-- [x] **P1** Recover + re-commit the fork's Skia build config. **DONE:**
-      `SKIKO-MINGW-FEASIBILITY.md` (402 lines, deleted in `bdb5c64d`) restored to the tree —
-      also fixes the broken `CLAUDE.md:37` link to it. **Key lead for 1b/1c:** the fork's
-      Route-1a recipe builds Skia with **`skia_use_freetype`** (`:220`; `:209` pairs it with
-      FreeType), i.e. the Windows text scaler is **FreeType**, not DirectWrite and not macOS
-      CoreText — a concrete reason the SAME NotoSans bytes yield different ascent/descent on
-      Windows (different metric-table selection) AND why fork `FontMgr.default` may not
-      enumerate Windows system fonts for glyph fallback (FreeType has no system fontmgr
-      without fontconfig). **CAVEAT:** this is the *recommended recipe* in the doc, not a
-      verified dump of the shipped `0.150.1-mingw.1` GN args — confirm against the actual
-      fork build (`SK_GAMMA_*`, ICU packaging still unlisted). Whoever rebuilds the fork
-      should paste the real `args.gn` into this doc so drift is auditable.
+- [~] **P1** The fork's Skia build config (GN args). **Lead extracted from git history**
+      (the old `SKIKO-MINGW-FEASIBILITY.md`, deleted as stale — its build recipe lives in
+      `git show bdb5c64d^:SKIKO-MINGW-FEASIBILITY.md`): the fork's Route-1a recipe builds Skia
+      with **`skia_use_freetype`**, i.e. the Windows text scaler is **FreeType**, not
+      DirectWrite and not macOS CoreText — a concrete reason the SAME NotoSans bytes yield
+      different ascent/descent on Windows (different metric-table selection) AND why fork
+      `FontMgr.default` may not enumerate Windows system fonts for glyph fallback (FreeType
+      has no system fontmgr without fontconfig). **CAVEAT:** that's the *recommended recipe*,
+      not a verified dump of the shipped `0.150.1-mingw.1` GN args. **REMAINING:** whoever
+      rebuilds the fork should capture the real `args.gn` (`SK_GAMMA_*`, ICU packaging,
+      freetype-vs-dwrite) alongside the fork sources so drift is auditable — NOT as a doc in
+      this repo (kept lean); a comment in the fork repo or `build-sdl.properties`-style pin.
 
 ---
 
@@ -413,7 +416,8 @@ specific. Retained-layer engine is byte-for-byte upstream — not the gap.
       frame, matches upstream `MetalRedrawer`).
 - [ ] **P2** P2.2 upstream `GlobalSnapshotManager` invalidation-driven scheduling —
       deferred; coalescing half done by P1.3; full manager is skiko-windowing-coupled
-      (RENDERER §8 non-goal). Leave deferred unless a Windows-GL perf gap surfaces.
+      (an explicit renderer non-goal — skiko-windowing-coupled). Leave deferred unless a
+      Windows-GL perf gap surfaces.
 - [ ] **P2** `SkiaImageCache` font-cache half of P3.4 — evicted typefaces stay referenced by
       live paragraphs + `TypefaceFontProvider` (no clean unregister) so eviction frees no
       memory. Native-resource lifecycle backstop is the periodic `GC.collect()` nudge (top-
@@ -456,10 +460,12 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging; publish from
       Windows.
 - [ ] **P1** Version bump to `1.0.0` across published coords once the above are green.
-- [x] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map links `PLAN.md` (this file
-      — restored), `RENDERER.md`, and `TODO.md`. **DONE:** `RENDERER.md` restored from
-      history; `CLAUDE.md` line-1 `ean` typo fixed; the `TODO.md` link (never committed at
-      HEAD) repointed to PLAN.md §2, which subsumes the stub audit.
+- [x] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map referenced `RENDERER.md`,
+      `SKIKO-MINGW-FEASIBILITY.md`, and `TODO.md`. **DONE:** removed `RENDERER.md` +
+      `SKIKO-MINGW-FEASIBILITY.md` (stale/historical — current renderer essentials inlined in
+      CLAUDE.md's doc map, the rest recoverable from git history); fixed the `CLAUDE.md`
+      line-1 `ean` typo; dropped the `TODO.md` link (never committed) → its content is PLAN.md
+      §2. `git grep` confirms no remaining links to any deleted doc.
 
 ---
 
