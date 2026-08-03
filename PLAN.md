@@ -1,818 +1,389 @@
-# PLAN.md — Performance & Upstream-Parity Plan
+# ROAD TO 1.0.0
 
-Audited plan for closing the performance and feature-parity gap between
-**ComposeNativeSDL3** and upstream Compose Multiplatform, after the removal of
-the second (non-Skia) SDL renderer. This is the actionable companion to
-[RENDERER.md](RENDERER.md) (which is partly stale — see §8) and
+**Objective:** get ComposeNativeSDL3 **as close to upstream Compose Multiplatform as
+possible** — vendor every file we can instead of rewriting, stay performant, and look
+faithful (ideally pixel-identical across macOS / Linux / Windows). The port is already at
+99% upstream API coverage with maximal vendoring and no steady-state perf gap on
+macOS/Metal; the remaining 1.0.0 work is **cross-platform rendering fidelity** (Windows
+skiko-fork divergences), **completing native-actual stubs**, and the release mechanics
+(1.12.0-stable re-pin + WIN-SMOKE).
 
-> **Headline conclusion.** The retained-layer render engine is **already
-> byte-for-byte upstream** and is *not* where the performance gap lives. Two
-> subsystems account for almost all of the observed "not as fast as the
-> original" symptom:
->
-> 1. **The hand-rolled SDL frame driver** in `:desktop-native-window` — a
->    vsync-reporting bug double-paces every GPU window to ~30 FPS, plus a
->    per-frame Metal surface reacquire, a redundant full-surface clear, and
->    over-eager snapshot-apply.
-> 2. **The text engine** — every `Text` re-shapes (HarfBuzz + bidi +
->    line-break) on **every paint**, because our `Paragraph` actual rebuilds
->    the skia paragraph instead of caching it like upstream.
->
-> Fixing the frame-pacing bug (Phase 0, ~1 line each) and the paragraph cache
-> (Phase 1) is expected to recover the bulk of the gap.
+## Definition of done for 1.0.0
 
-> **Update (2026-07-29, macOS execution pass).** Phases 0–1 landed; macOS Metal
-> measurement (§12) then showed there is **no steady-state perf gap** on
-> macOS/Metal (P0.4/P0.6 closed as non-issues). The remaining work is FEATURE
-> PARITY, and this pass closed the high-value, low-risk parity gaps: lineHeight /
-> LineHeightStyle / textIndent / baselineShift / span-background in the text
-> engine (Material3 typography sets lineHeight almost everywhere — parity harness
-> Buttons dropped ~16% → 1.6% differing), generic font-family resolution
-> (serif/cursive/…), a real DatePicker/TimePicker date formatter, NamedFont axis
-> identity, and size-driven SVG on the project image path. The genuinely-large /
-> high-risk items (P3.2 font-resolver rewire, P3.3 official-path `SVGPainter`,
-> P4.1 RenderNode-shadow revert) stay deferred with rationale in their sections.
+- [ ] No text tofu on any platform (Windows tab-character regression fixed).
+- [ ] Text vertical metrics on Windows match the Windows fidelity reference
+      (skiko-on-JVM Compose Desktop), not a bug vs it.
+- [ ] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited,
+      each item either fixed or accepted-with-rationale.
+- [ ] Native-actual fidelity blockers closed: text context menu (P0), float pointer
+      coords (P0). Date/time localization is P1 polish (formatter already works — see §2).
+- [ ] Vendor hygiene stays clean: zero drift, zero commonMain rule-1 violations
+      (already true — keep it true through the ref bump).
+- [ ] SDL static lib slimmed to the used subsystem surface; every app still builds/runs.
+- [ ] Refs re-pinned to Compose **1.12.0 stable**, JVM parity versions bumped, WIN-SMOKE
+      fidelity pass green on a real Windows host.
+- [ ] `CLAUDE.md` documentation map consistent with tree (this file restored; TODO.md
+      restored or de-linked).
 
 ---
 
-## 0. How to read this plan
+## 1. Cross-platform FIDELITY (headline)
 
-Every item has an **ID** (`P0.1`…), an **impact** (High/Med/Low), an **effort**
-(S ≤ half-day / M ≤ 2 days / L > 2 days), and a **verify** hook (which tooling
-gates it — see [TOOLING.md](TOOLING.md)). Items are grouped into workstreams
-(WS-A…WS-H) but sequenced into phases (§1). File references are
-`path:line` against the tree as audited.
+All Windows divergences live **below Kotlin** — the mingw source set reuses
+`src/skikoRendererMain/kotlin` byte-for-byte (`compose/ui/ui/build.gradle.kts:102-113`),
+the only mingw-unique file is `PlatformGpu.mingw.kt` (13 lines, GPU only). So every
+divergence is in the **fork's Skia binary**, in **`FontMgr.default`'s per-OS impl**, or in
+the **GPU backend**. The fork is external (`bitsycore/skiko`,
+`com.bitsycore.skiko:skiko:0.150.1-mingw.1`) and its GN args are **not verifiable from this
+tree** — recovering them is a prerequisite for several fixes below.
 
-**Golden rule for this whole plan:** *prefer vendoring upstream skiko code over
-hand-rolling* (CLAUDE.md philosophy). Several items below are literally "delete
-our reduced local port and vendor the upstream file."
+**Fidelity reference for Windows is skiko-on-JVM Compose Desktop on Windows** (also
+DirectWrite), NOT macOS/Linux. macOS↔Windows metric deltas partly exist in upstream
+Compose Desktop too (per-platform font backends). Reframe V-items as "match JVM-Windows"
+acceptance tests, not "bugs vs macOS".
 
----
+### 1a. Windows tab-character tofu — HIGH CONFIDENCE (root cause traced)
 
-## 1. Phasing (do them in this order)
+Kotlin sets `ParagraphStyle.replaceTabCharacters = true`
+(`compose/ui/ui-text/src/skikoRendererMain/kotlin/.../renderer/skia/SkiaParagraphEngine.kt:234-236`,
+exact mirror of upstream `ParagraphBuilder.skiko.kt:625`, CMP-6589). Works on
+macOS/Linux (official skiko honors the flag → `U+0009` replaced by space before shaping).
+On Windows the same call runs against the fork's flat extern-C DLL, which evidently does
+**not** wire the setter → raw `\t` reaches HarfBuzz → NotoSans has no tab glyph → `.notdef`
+box. Font fallback is a **red herring**: no font has a tab glyph, only tab→space
+replacement cures it.
 
-### Phase 0 — Quick wins (all S, mostly 1–3 lines, high leverage)
-The cheapest, highest-impact changes. Land these first, measure, then continue.
+- [ ] **P0** Confirm: on the fork, render a literal `\t` string and check for the box;
+      confirm `replaceTabCharacters` either isn't exported or its ParagraphStyle field
+      offset doesn't match m150.
+- [x] **P0** Fix (ship now, author project code): in
+      `.../SkiaParagraphEngine.kt`, feed skiko a normalized copy — added
+      `private val shapedText = if (text.indexOf('\t') >= 0) text.replace('\t', ' ') else text`,
+      used at `addText` (no-span path) and via `shapedText.substring(segStart, segEnd)`
+      (span path); `text` kept for ALL length/index queries (`getRectsForRange`,
+      `getCursorRect`, `wordBoundary`, `lineMetrics`, span cut-points). Length-preserving so
+      every offset consumer stays correct; this is exactly what Skia's flag does internally →
+      upstream-faithful; makes behavior platform-independent (no fork rebuild needed).
+      Kept `replaceTabCharacters = true` (harmless/redundant elsewhere).
+      **DONE** — compiles clean on macosArm64. Windows tofu render still needs on-device
+      confirmation (WIN-SMOKE §5).
+- [ ] **P2** Long-term true fix (fork, out of tree): wire
+      `ParagraphStyle::setReplaceTabCharacters` through the fork's extern-C surface,
+      rebuild/republish `skiko-windows-x64.dll`, bump `-PskikoMingwVersion`. Do this *in
+      addition to* the Kotlin fix, not instead — it keeps the port thin. Can't be verified
+      in-tree.
 
-**Status legend:** ✅ done · 🟡 partial · ⏸️ deferred · ⬜ todo. Status is the
-leftmost column in every phase table below.
+### 1b. macOS-vs-Windows vertical text metrics — HIGH CONFIDENCE root cause, "is it a bug?" UNCONFIRMED
 
-**Phase 0 status (branch `perf/phase0-quickwins`):** P0.1–P0.3, P0.5, P0.7
-**DONE + verified** — compiled (`:ui-text`, `:desktop-native-window` mingwX64) +
-`:ui-graphics` `klibApiCheck` green. **P0.4 + P0.6 now CLOSED as non-issues after
-macOS Metal measurement (2026-07-29)** — see §12.
+The vertical-layout code path is **identical** on all targets. The lineHeight/HeightMode
+path is a byte-faithful port of upstream and is NOT the cause: m3 `labelLarge` has
+lineHeight 20sp > fontSize 14sp with `LineHeightStyle.Default.trim == Both` →
+`HeightMode.DISABLE_ALL`, which collapses the single-line box to `fontAscent + fontDescent`
+of the font itself (`SkiaParagraphEngine.kt:244-249`, matches upstream
+`ParagraphBuilder.skiko.kt:631-646`). So box height is driven entirely by the font's
+reported ascent/descent.
 
-| Status | ID       | Item                                                                                | Impact         | Verify               |
-|:------:|----------|-------------------------------------------------------------------------------------|----------------|----------------------|
-|   ✅   | **P0.1** | Fix vsync double-pacing (GL + Metal report `vsyncEnabled`)                          | **High**       | profiler FPS, manual |
-|   ✅   | **P0.2** | Add missing `else` in the pace block (kill the pending-spin)                        | Med            | profiler CPU         |
-|   ✅   | **P0.3** | Delete dead `DrawStats` so the profiler stops lying                                 | Med            | `CDN_PROFILE=1`      |
-|   ❌   | **P0.4** | ~~Drop per-frame full-surface `clear()` to first-frame-only~~ — WON'T FIX (§12)      | Med → none     | verify-mac           |
-|   ✅   | **P0.5** | Set `FontRasterizationSettings` (edging/hinting/subpixel) on text styles            | Med            | parity, verify-mac   |
-|   ❌   | **P0.6** | ~~Stop the per-frame Metal drawable reacquire~~ — WON'T FIX, inherent + not a cost (§12) | ~~High (mac)~~ none | verify-mac, profiler |
-|   ✅   | **P0.7** | Explicit open/close of native paragraph resources (was: GC nudge)                   | Med (memory)   | manual RSS watch     |
+Root cause: **`FontMgr.default` resolves to a different Skia font scaler per build** for
+the *same* `font/NotoSans.ttf` bytes (`SkiaFonts.kt:38,44,50`) — CoreText on macOS,
+fontconfig/FreeType on Linux, DirectWrite (or FreeType, unverified) in the fork on Windows.
+Different backends select different metric tables (hhea `ascender/descender` vs OS/2
+`sTypoAscender/Descender` vs `usWinAscent/Descent`) and honor the OS/2 `USE_TYPO_METRICS`
+fs_selection bit differently. NotoSans is the textbook case (large top-heavy ascent).
+`SkiaParagraphEngine.kt:147-148` read `-defaultFont.metrics.ascent`/`.descent`;
+`:150-169 lineMetrics()` forwards skiko's numbers verbatim; `SkiaParagraph.native.kt:116,148-153`
+consume them. Contributors V2 (hinting Normal on Windows grid-fits vertically, CoreText
+ignores it) and V3 (subpixel/edging) are secondary and per-scaler.
 
-**P0.4 / P0.6 resolution (measured on macOS Metal, ProMotion 120 Hz):** both
-rested on a false premise — that Metal could reuse one persistent drawable/
-surface across frames like GL reuses its FBO. It can't: a `CAMetalDrawable` is a
-single-use, per-frame resource from a ~3-deep pool, so the per-frame reacquire in
-`ensureSize` is **inherent to the Metal model and matches upstream skiko's
-`MetalRedrawer`**. Profiling (§12) shows the reacquire + clear cost nothing
-measurable: `present=0.1 ms`, `draw=0.05 ms`, real `layout=0.02 ms`, RSS flat at
-~108 MB, **zero `nextDrawable` starvation**. The ~6.7 ms that looked like a cost
-was pure vsync pacing (the `nextDrawable()` block) mis-attributed to the "layout"
-phase — now split out as `acquire` (§12). No autorelease-pool fix needed either
-(RSS is stable across a force-render soak).
+**Hypothesis, not confirmed:** whether Windows-native actually *diverges from
+Windows-JVM*. If it matches JVM-Windows it's correct-by-reference (not a bug), and the
+macOS↔Windows delta is expected upstream behavior.
 
-**P0.7 note:** the fix is deterministic native-resource lifecycle, *not* a GC
-tweak. `SkiaParagraphOps` now closes the previous `SkParagraph` + the
-`ParagraphBuilder` on rebuild, skips the rebuild entirely when paint attributes
-are unchanged (static text shapes once at measure, never on paint), and the
-intrinsics-only throwaway is `dispose()`d. This removes the per-paint native
-churn that ballooned RSS (issue #2). The 10 s `GC.collect()` in
-`ComposeWindow.kt` stays as a genuine backstop for measure-time paragraph
-churn (Compose holds `Paragraph` by GC, no dispose seam) — it can likely be
-removed after an RSS check, but that's left as a follow-up. This also delivers
-most of **P1.1** (see below).
+- [ ] **P0** Confirm FIRST (author temp logging): in `SkiaParagraphEngine.kt` after
+      `build(...)`, print `defaultFont.metrics.{ascent,descent,leading}`, `paragraph.height`,
+      `paragraph.lineMetrics[0].{ascent,descent,baseline,height}`, plus
+      `baseTypeface.familyName` + `fontPx`, for a fixed button label. Compare
+      macOS-native / Linux-native / Windows-native / **skiko-JVM-Windows**. Expectation:
+      `fontPx`+lineHeight+heightMode identical, `metrics.ascent` differs by scaler.
+      **Acceptance test:** Windows-native == skiko-JVM-Windows.
+- [ ] **P1** If Windows-native != Windows-JVM: fix in the fork (out of tree) — build its
+      `FontMgr.default`/scaler to match official skiko-windows (DirectWrite:
+      `skia_use_dwrite` / system fontmgr) so `makeFromData` typefaces get the same
+      metric-table selection. Then Windows-native matches Windows-JVM, mac stays matching
+      mac-JVM — both upstream-faithful.
+- [ ] **P2** (Optional, STRONGER than upstream) If cross-platform pixel-identity is
+      wanted over matching each host's stock Compose Desktop: build a single
+      FreeType/`SkFontMgr_Custom_Empty`-backed `SkFontMgr` used on ALL native targets for
+      the bundled fonts, so NotoSans yields identical ascent/descent everywhere.
+      Intentional departure from per-platform upstream behavior — decide deliberately.
+- [ ] **DO NOT** "fix" by injecting a default `LineHeightStyle` or clamping ascent in
+      `SkiaParagraphEngine.kt` — that desyncs from upstream `DISABLE_ALL` and masks, not
+      resolves, the metric divergence.
 
-### Phase 1 — The text engine (the big steady-state perf win)
-| Status | ID       | Item                                                               | Impact   | Verify           |
-|:------:|----------|--------------------------------------------------------------------|----------|------------------|
-|   ✅   | **P1.1** | Cache the built skia paragraph; stop reshaping on every paint      | **High** | parity, profiler |
-|   ⏸️    | **P1.2** | Reuse one layouter for intrinsics + final layout (no double-shape) | High     | parity           |
-|   ✅   | **P1.3** | Coalesce `Snapshot.sendApplyNotifications()` toward once/frame     | Med      | profiler CPU     |
+### 1c. Other fork-vs-official divergences
 
-**P1.1 done:** the paragraph is built once at measure and never re-shaped when
-color/shadow/decoration are unchanged (P0.7); a color-only change on
-single-style, undecorated text now re-applies the foreground paint via skia's
-`updateForegroundPaint` + `markDirty` + re-layout (no HarfBuzz re-shape),
-mirroring upstream `ParagraphLayouter.setColor`. Spanned/decorated text and
-shadow/decoration changes still take the full rebuild (colours are baked
-per-run there).
-
-**P1.3 done:** the global snapshot write-observer now only *schedules* a frame
-(`markAllNeedFrame`) instead of calling `sendApplyNotifications()` inline on
-every state write — the apply is coalesced to the once-per-iteration calls
-(loop top / before each pump / before layout). Mirrors upstream
-`GlobalSnapshotManager`.
-
-**P1.2 deferred (evaluated):** reusing the intrinsics-pass paragraph for the
-final layout is blocked by `maxLines`/ellipsis being baked at *build* time (the
-unbounded intrinsics paragraph can't be re-laid-out with a line cap), and
-holding a live paragraph per `ParagraphIntrinsics` trades the clean
-build-then-`dispose()` (P0.7) for longer-lived native memory. Net win needs a
-profiler measurement of the double-shape cost first — not done blind.
-
-### Phase 2 — Frame-pacing correctness & the on-demand model
-| Status | ID       | Item                                                                  | Impact | Verify               |
-|:------:|----------|-----------------------------------------------------------------------|--------|----------------------|
-|   ✅   | **P2.1** | FPS-lock to real display refresh (`SDL_GetCurrentDisplayMode`)        | Med    | manual multi-monitor |
-|   ⏸️    | **P2.2** | Adopt upstream `GlobalSnapshotManager` invalidation-driven scheduling | Med    | probe, parity        |
-|   ✅   | **P2.3** | Bound the idle `SDL_WaitEventTimeout` and fix woken-event latency     | Low    | manual idle CPU      |
-
-**P2.1 done:** the non-vsync fallback pacing now derives its frame cap from the
-rendered window's real display refresh (`SDL_GetDisplayForWindow` +
-`SDL_GetCurrentDisplayMode`), min across non-vsync windows, instead of a
-hardcoded 16 ms — so a 144 Hz panel on a Software/vsync-unavailable path isn't
-capped to 60. No `sdl3.def` change (the cinterop binds all of SDL3). Post-P0.1
-this path is only hit when vsync is unavailable.
-
-**P2.3 done:** idle `SDL_WaitEventTimeout` raised 10 ms → 100 ms (a real event
-still wakes it immediately; the timeout only bounds async-work re-checks while
-truly idle), cutting idle wakeups.
-
-**P2.2 deferred (evaluated):** the *coalescing* half of the upstream
-`GlobalSnapshotManager` model is already delivered by P1.3 (write-observer
-schedules, doesn't apply inline). Vendoring the full manager /
-`FrameRecomposer` invalidation-driven scheduler is a larger, skiko-windowing-
-coupled change (RENDERER.md §8 non-goal) needing probe/parity verification —
-left as a bigger follow-up, not done blind.
-
-### Phase 3 — Font & image parity
-| Status | ID       | Item                                                                          | Impact                 | Verify     |
-|:------:|----------|-------------------------------------------------------------------------------|------------------------|------------|
-|   ✅   | **P3.1** | System/default + generic-family font resolution via `FontMgr.default`         | **High** (correctness) | parity     |
-|   ⏸️    | **P3.2** | `FontListFontFamily` / resource-`Font` / async resolver (real font selection) | High                   | parity     |
-|   ✅   | **P3.3** | Resolution-independent SVG (size-driven `DrawCache`) + XML→`ImageVector`      | Med                    | parity     |
-|   🟡   | **P3.4** | Bound `SkiaImageCache` + `SkiaFonts.resolveCache` (LRU / eviction)            | Med                    | manual RSS |
-|   ⏸️    | **P3.5** | `loadImageBitmap` / `loadSvgPainter` / `loadXmlImageVector` public APIs       | Low                    | compile    |
-
-**P3.1 done:** generic families (serif/cursive/monospace/sans-serif) now resolve
-through the per-OS concrete-name alias table (upstream `GenericFontFamiliesMapping`,
-`SkiaFonts.genericFamilyAliases`) via `FontMgr.matchFamilyStyle`, instead of
-falling back to the sans-serif default. Named system families already worked.
-
-**P3.3 done (both paths).** (a) Project `ImageLoader` path: `SkiaImageCache`
-rasterises SVG/Android-vector at the DESTINATION pixel size (`rasterizeSvgAt`,
-size-keyed cache). (b) OFFICIAL `painterResource` path: `SvgElement.toSvgPainter`
-now returns a size-driven `SvgPainter` (reports intrinsic size for layout,
-re-rasterises at the draw size via new `EncodedImageDecoder.svgIntrinsicSize` /
-`decodeSvgAt` hooks) instead of a fixed `BitmapPainter` — matching upstream
-desktop's `SVGPainter`. XML `<vector>` was already scalable (parsed to
-`ImageVector` via the vendored `XmlVectorParser`). P3.5's `loadImageBitmap(InputStream)`
-/ `loadSvgPainter(InputStream)` are inherently JVM-only (no `java.io.InputStream`
-on K/N), so those exact signatures are N/A on native.
-
-**P3.2 deferred (large + low parity-harness impact):** the text engine
-(`SkiaParagraphEngine`/`SkiaFonts`) reads `TextStyle.fontFamily` DIRECTLY via
-`projectFontName()`/`projectFontVariations()` and never consults the
-`FontFamily.Resolver` typeface (the resolver returns a no-op
-`TypefaceResult.Immutable(Unit)`). Making resource-`Font` lists + weight-matching
-+ async work therefore means rewiring the load-bearing font path to consume the
-resolver's typeface — high regression risk, and the parity harness (shared
-screens use `NamedFont` / bundled fonts) wouldn't even exercise it. Left as the
-one genuinely-L, high-risk item.
-
-**P3.1 (concrete names done):** unbundled family names now resolve against the
-OS font set via `FontMgr.matchFamilyStyle` (e.g. `FontFamily("Arial")`) instead
-of silently becoming Noto Sans. **Remaining:** generic families
-(`serif`/`cursive`/…) still fall through to the bundled default — proper
-generic→concrete mapping needs the per-OS alias table from upstream
-`PlatformFont.skiko.kt` (folded into P3.2).
-
-**P3.4 (images done):** `SkiaImageCache` is now a bounded (256) access-order
-LRU that closes the evicted image — long-running apps showing many distinct
-runtime images (`registerMemoryResource`) no longer grow image memory without
-limit; on-screen images stay hot, an evicted one re-decodes on next use.
-**Font cache deferred:** bounding `SkiaFonts.resolveCache` is low-value (few
-family+axes combos) and messy — evicted typefaces stay referenced by live
-paragraphs + registered in the `TypefaceFontProvider` (no clean unregister), so
-eviction wouldn't free memory. Skipped deliberately.
-
-**P3.2 / P3.3 / P3.5 deferred (large / needs runtime verification):** the async
-`FontListFontFamily` resolver, resolution-independent SVG (`SVGDOM` +
-size-driven `DrawCache`) / XML→`ImageVector`, and the public
-`loadImageBitmap`/`loadSvgPainter`/`loadXmlImageVector` stream APIs are all
-L-effort and need visual/parity verification — not done blind. Vendor targets
-noted in §5/§6.
-
-### Phase 4 — Vendoring cleanup & docs
-| Status | ID       | Item                                                                    | Impact            | Verify             |
-|:------:|----------|-------------------------------------------------------------------------|-------------------|--------------------|
-|   ⏸️    | **P4.1** | Reverse the two second-renderer manual vendors                          | Med (maintenance) | verify-mac, parity |
-|   🟡   | **P4.2** | Decompose `ComposeWindow.kt` (1131 lines) into focused files            | Low (maintenance) | build              |
-|   ✅   | **P4.3** | Reconcile the "text vendored verbatim" doc claim; rewrite RENDERER.md   | Low               | n/a                |
-|   ✅   | **P4.4** | Purge residual "second renderer / SDL renderer" language in code + docs | Low               | build              |
-|   ✅   | **P4.5** | Vendor thin `Ripple.skiko.kt` (already vendored); real date/time formatter | Low            | parity             |
-
-**P4.5 (date formatter done; Ripple already vendored; mirror-drift deferred):**
-the material3 `PlatformDateFormat.native` English-ISO stub is replaced with a real
-pattern/skeleton formatter (honours the requested CLDR pattern, so DatePicker /
-TimePicker headlines read "Jul 29, 2026" / "July 2026"; field names stay English
-— full CLDR name localization needs ICU data we don't bundle). The thin
-`Ripple.skiko.kt` turned out to be **already vendored** (material3 manifest,
-`src/vendor/native/.../internal/ripple/Ripple.skiko.kt`) — no project shim to
-replace. Still deferred (tooling nicety, zero runtime impact): converting
-byte-identical foundation `.native.kt` mirrors to `SET_FOLDER macosMain`
-directives so drift-tracking covers them.
-
-**P4.3 done:** RENDERER.md's biggest inaccuracy is fixed — it claimed text was
-"upstream's own `SkiaParagraph`, vendored verbatim" with "upstream
-`PlatformFont`/`FontCache` replacing the port's name-to-bytes engine", which is
-the opposite of reality. Now describes the reduced local port
-(`SkiaParagraph.native.kt` + `SkiaParagraphEngine`) that keeps the port's own
-`SkiaFonts` model; the §5 B6.3 row is downgraded to Partial; the "leg" framing
-is dropped throughout; the LazyColumn perf number is marked historical (vs the
-removed SDL leg); and §6 native-resource lifecycle now reflects P0.7/P1.1/P3.4.
-
-**P4.4 done:** purged the factually-wrong residue in code comments — references
-to deleted modules (`renderer-sdl3`), the removed backend ("SDL3 backend",
-"Skia or SDL3", "SDL renderer's per-vertex gradient sampler") across
-`GradientBridge`, `DrawShape`, `ComposeOwner`, `IconFont`, `Popup.native`,
-`BrushScreen`.
-
-**P4.2 partly done:** extracted three self-contained units out of the
-1131-line `ComposeWindow.kt` (now **978 lines**) as pure compiler-verified
-moves — `FrameProfiler.kt` (+ `kForceRender`), `WindowArchitectureOwner.kt`,
-`WindowInputHelpers.kt` (`BackNavigationInput` + `dispatchTypedText`). The
-remaining bulk (the main loop, `WindowInstance`, and the probe/virtual-frame
-timing cluster) is deeply intertwined and left in place — extracting it needs
-visibility surgery on many top-level privates for marginal gain.
-
-**P4.1 deferred (the last substantive item — risky maintenance, no parity/perf
-win):** reversing the two manual vendors restores upstream RenderNode shadows via
-`SkiaGraphicsContext.setLightingInfo` + relocates `prepareTransformationMatrix`.
-Our current hand-rolled `NativeShadowCanvas` shadows already render, and macOS
-profiling shows the shadow path costs nothing (`draw`=0.08 ms), so this buys only
-vendoring cleanliness — while risking a shadow-lighting or hit-test-coordinate
-regression that a quick smoke test wouldn't catch. It needs a full `verify-mac` +
-parity pass (shadow lighting + hit-test agreement) as a focused follow-up, not a
-blind late-session edit. **P4.5 done** (see above).
+- [ ] **P1** `FontMgr.default` may be an empty/stub manager on the fork (T1/V1 root).
+      `SkiaFonts.kt:38,44,50` wire it as both the paragraph default manager and the loader.
+      An empty manager breaks glyph FALLBACK for missing codepoints (CJK/emoji on Windows),
+      distinct from the tab bug. **Confirm** which `SkFontMgr` the fork's `FontMgr.default`
+      returns on native Windows (the feasibility doc noted the fork hand-wrote windowsMain
+      actuals because "linux is a stub"). **Fix (fork):** ensure it returns a real
+      DirectWrite manager matching skiko-JVM-Windows.
+- [ ] **P1** Port doesn't use `FontMgrWithFallback` (upstream `PlatformFont.skiko.kt:303`
+      wraps the provider: `setDefaultFontManager(FontMgrWithFallback(fontProvider))`). The
+      port does `setDefaultFontManager(fontMgr)` + `setAssetFontManager(provider)`
+      (`SkiaFonts.kt:49-52`). Genuine upstream-fidelity gap for missing-glyph fallback (NOT
+      the tab fix). **Fix (author project code):** wrap the provider in
+      `FontMgrWithFallback` in `SkiaFonts.kt`.
+- [ ] **P2** ICU/unicode data packaged differently in the fork (T3). Recovered feasibility
+      doc notes it had to force-export `uloc_getDefault_skiko` / `uloc_toLanguageTag_skiko`.
+      Control-char/whitespace classification (U+00A0, U+200B, U+0009 pre-replacement) can
+      diverge. **Confirm:** render those control codepoints, Windows-only tofu check.
+- [ ] **P2** Text gamma/AA edges: a Skia **build-time constant**
+      (`SK_GAMMA_EXPONENT`/`SK_GAMMA_CONTRAST`/`SK_GAMMA_APPLY_TO_A8`), NOT a GL-vs-Metal
+      runtime difference. If Windows AA looks different it's the fork's Skia gamma flags.
+      Document the fork's values; align to official skiko-windows.
+- [x] **GL-vs-Metal AA/gamma/color-space — RULED OUT as a primary cause.** Both bridges
+      create the surface `colorSpace = null` (`SkiaGLBridge.kt:68-74`,
+      `SkiaMetalBridge.kt:133-139`) — identical un-color-managed legacy blending. Only
+      deltas are cosmetic-correct: `RGBA_8888`/`BOTTOM_LEFT` (GL) vs `BGRA_8888`/`TOP_LEFT`
+      (Metal) — channel order + Y-flip, matched to buffers. Windows uses OpenGL
+      (`PlatformGpu.kt:20`), same backend as Linux, so GL-vs-Metal can't explain a
+      Windows-vs-Linux gap at all. Deprioritized — no action.
+- [ ] **P1** Recover + re-commit the fork's Skia build config (GN args: DirectWrite vs
+      `skia_use_freetype`, `SK_GAMMA_*`, ICU packaging). Root inputs for 1c/T1/T3/V1,
+      invisible from this tree. `git show bdb5c64d^:SKIKO-MINGW-FEASIBILITY.md` has them;
+      pin into a doc so drift is auditable.
 
 ---
 
-## 2. WS-A — Frame pacing & the SDL main loop
+## 2. VENDORING & upstream-fidelity debt
 
-The loop (`compose/desktop/native/window/…/ComposeWindow.kt:158-273`) is
-**already render-on-demand and idle-blocking** — `shouldRender()`
-(`:921-922`) gates rendering on invalidation, and the idle branch blocks in
-`SDL_WaitEventTimeout` (`:253`). The user's premise "spinning when too fast" is
-only partly true; the real defects are below.
+Vendor hygiene is **release-ready**: `check-vendor-drift.py` reports all 10 manual vendors
+match pin `v1.12.0-beta03+dev4483`; zero commonMain rule-1 violations (the 3 authored
+`androidx.compose.*` files in commonMain are all provenance-tracked Rule-3 vendors). The
+macosMain DIAGNOSTIC GAP families (`ui/ui` 12, `foundation` 23: `CoreTextField.macos.kt`,
+`SelectionManager.macos.kt`, `PlatformClipboard.macos.kt`, …) are **correctly excluded**
+(AppKit/NSView; the port uses SDL) — keep them in gaps. **Do not spend 1.0.0 effort
+re-vendoring.** The debt is **completing native-actual stubs**.
 
-### P0.1 — VSync double-pacing (CONFIRMED bug) · High · S
-`SDL3Backend.vsyncEnabled` defaults `false` (`SDL3Backend.kt:44`) and is set
-**only** on the Software path (`SDL3Backend.kt:118`). The GL path calls
-`SDL_GL_SetSwapInterval(1)` (`SDL3Backend.kt:96`) but never flips `vsyncEnabled`;
-the Metal path (`SDL3Backend.kt:98-104`) relies on `nextDrawable()` blocking but
-also never flips it. Result: in the pace block (`ComposeWindow.kt:231`)
-`vAllVsync` is forced `false` for every GPU window, so after presenting an
-already-vsync-blocked frame the loop *also* runs `SDL_Delay(16u)`
-(`ComposeWindow.kt:249`) → effective ~30 FPS while animating.
+### P0 — blocks fidelity/correctness
 
-**Fix:**
-- GL branch (`SDL3Backend.kt:96`): capture the result of
-  `SDL_GL_SetSwapInterval(1)` (and/or read back `SDL_GL_GetSwapInterval`); set
-  `vsyncEnabled = true` on success, leave `false` if the driver refused.
-- Metal branch (`SDL3Backend.kt:98-104`): set `vsyncEnabled = true` (CAMetalLayer
-  blocks on `nextDrawable` by default — `SkiaMetalBridge.kt:116-117`).
+- [ ] **P0** Text context menu (right-click copy/paste/select-all) — three native actuals
+      NOP it (upstream TODO CMP-7819):
+      `foundation/.../text/selection/SelectionActuals.native.kt:42`
+      (`addSelectionContainerTextContextMenuComponents`),
+      `.../text/selection/TextFieldSelectionManager.native.kt:23` +
+      `.../text/input/internal/selection/TextFieldSelectionState.native.kt`
+      (`addBasicTextFieldTextContextMenuComponents`, legacy + state-based). Upstream ships
+      these in `desktopMain` (AWT `ContextMenu.desktop.kt`) — not vendorable verbatim.
+      **Fix (author):** reimplement the ContextMenu composable structure against SDL
+      right-click + the existing project popup layer. *(Note §13 audit claims the vendored
+      `CommonContextMenuArea` already gives a working right-click menu — reconcile: confirm
+      whether these three seams are actually reached before building. Confirm FIRST.)*
+- [ ] **P1** DatePicker/TimePicker localization — VERIFIED current state:
+      `material3/.../internal/PlatformDateFormat.native.kt` is a real kotlinx-datetime
+      formatter that DOES honor CLDR patterns/skeletons (renders "Jul 29, 2026" /
+      "July 2026" correctly — the agent's "always yyyy-MM-dd" finding was stale). Genuine
+      remaining gaps, all narrower than a correctness blocker: field NAMES English-only
+      (`:29 weekdayNames`, `:147-154 MONTH_NAMES/ABBR` — no CLDR data bundled), `:27
+      firstDayOfWeek=1` fixed Sunday, `:67 is24HourFormat()=true` fixed, `:46 parse()`
+      ISO-8601-only. Upstream `darwinMain` uses `NSDateFormatter` (not portable). **Fix
+      (author):** bundle a CLDR subset or K/N i18n lib for localized names + locale-aware
+      first-day/24h; also unblocks `CalendarLocale.native.kt:20` (fixed `"en"`). Ships
+      readable English dates today — polish, not a P0 gate.
+- [ ] **P0** Float pointer coordinates — `ui/.../com/compose/sdl/SDL3EventMapper.kt:85,94,103,153-154`
+      `.toInt()`-truncate SDL's Float `mb.x`/`mb.y` (events already carry `x:Float` at
+      lines 57-58) before DPR multiply in `ComposeWindow.kt`. On 2× displays a click at
+      logical 100.9 → physical 200 not ~201, quantizing caret to 2px steps near glyph
+      edges. **Fix (author):** widen pointer x/y to `Float` through the pipeline; loss is
+      only at the `.toInt()` bridge.
 
-Then the loop takes the `SDL_Delay(1u)` courtesy-yield path instead of stacking
-16 ms. **This is the single biggest steady-state FPS win.** All cinterop symbols
-already exist — no `sdl3.def` change.
+### P1 — quality / parity
 
-### P0.2 — Pending-spin gap · Med · S
-The pace block (`ComposeWindow.kt:248-255`) has no `else`: if nothing rendered
-this iteration *but* `vAppPending == true` (app recomposer has work), neither
-`SDL_Delay` nor `SDL_WaitEventTimeout` runs — the loop spins at full speed until
-composition settles. Add an `else { SDL_Delay(1u) }` (or the P2.1 frame-time) so
-a pending-but-not-yet-renderable state still yields. This is the actual
-"busy-loop when too fast" the user senses.
+- [ ] **P1** RTL text unsupported — `ui-text/.../SkiaParagraph.native.kt:112`
+      `textDirection = ResolvedTextDirection.Ltr` fixed field; `getParagraphDirection()`
+      (`:202`) always Ltr. Bidi run direction (`:204`) does read box direction (partial
+      machinery). Root cause: `text/intl/Locale.native.kt isRtl()` unimplemented. Fix
+      (author) tied to P1.2 engine.
+- [ ] **P1** `PlatformFontLoader` NOP — `ui-text/.../font/FontFamilyResolver.native.kt`
+      `SdlPlatformFontLoader.loadBlocking`/`awaitLoad` NOP;
+      `PlatformFontFamilyTypefaceAdapter.resolve` returns `Immutable(Unit)`. Raw androidx
+      `Font(bytes)`/`ResourceFont` don't load (compose-resources `Font()` works). Upstream
+      `SkiaFontLoader.skiko.kt` is the vendorable reference. This is the long-deferred P3.2
+      font resolver — **high-risk L**, parity harness wouldn't exercise it. Scope
+      deliberately for 1.0.0 (accept-and-document vs attempt).
+- [ ] **P1** `CharHelpers.skiko.kt` grapheme-break logic — the ONE cheap selective-vendor
+      win from the hand-rolled text engine. Fixes `findPrecedingBreak`/`findFollowingBreak`
+      splitting emoji/combining marks in `StringHelpers.native.kt:31` +
+      `CharHelpers.native.kt:14`. (Giving `:foundation` a `skikoRenderer` source set would
+      unblock this + `DragAndDropSource.skiko` — L-effort structural move, per §13a.)
+- [ ] **P1** `Serif`/`Cursive` generic families collapse to sans — `buildSrc`
+      `downloadNotoFonts` fetches Sans+SansMono only. **Fix:** register a serif/cursive font
+      the same way `generic:monospace` is wired.
+- [ ] **P1** Document the hand-rolled text engine (`SkiaParagraphEngine.kt`) as an
+      **accepted architectural deviation** — the 17-file upstream `skikoMain` text stack is
+      unselected in `ui-text/compose-fork.txt` (all in DIAGNOSTIC GAPS), forced by the flat
+      nativeMain source-set layout (MEMORY note). It's the single biggest "not upstream"
+      surface and the root of RTL / stroke-DrawStyle / grapheme stubs. Record rationale so
+      nobody "fixes" the gap list.
 
-### P2.1 — FPS-lock to real display refresh · Med · M
-`SDL3FrameClock.kt` is a timestamp passthrough (`SDL_GetTicksNS`) with no notion
-of the panel refresh; the fallback cap is a hardcoded 16 ms
-(`ComposeWindow.kt:249`) — wrong on 144 Hz (caps to 60) and 30 Hz panels. Query
-once per window and cache, refresh on `SDL_EVENT_WINDOW_DISPLAY_CHANGED`:
-```kotlin
-val disp  = SDL_GetDisplayForWindow(window)
-val mode  = SDL_GetCurrentDisplayMode(disp)      // SDL_DisplayMode*, .refresh_rate (Hz)
-val frameMs = if (mode.refresh_rate > 0f) (1000f / mode.refresh_rate) else 16f
-```
-Use `frameMs` as the non-vsync fallback delay. **No `sdl3.def` change** — the
-`.def` binds all of SDL3 (`headerFilter = SDL3/**`); the symbols are confirmed
-present in the commonized klib.
+### P1/P2 — reduced-coverage + accessibility
 
-### P2.3 — Idle wake tuning · Low · S
-`SDL_WaitEventTimeout(null, 10)` (`ComposeWindow.kt:253`) polls every 10 ms and
-leaves the woken event in the queue (adds ~1 iteration of latency). Raise the
-timeout (100–250 ms — a real event wakes it immediately regardless) to cut idle
-wakeups. Keep it a `null` peek so `pollEvents()` still owns dispatch.
+- [ ] **P1** Text paint path handles only `SolidColor`
+      (`SkiaParagraph.native.kt:253-256`) — no brush/gradient text fill, `drawStyle`
+      (stroke), or non-`SrcOver` blendMode. Part of the reduced style coverage; extend on
+      the local engine.
+- [ ] **P1** `SkiaParagraphEngine.kt:150-164` span segmentation drops partial `SpanStyle`
+      overlaps (keeps only fully-covering `start<=segStart && end>=segEnd`). Documented
+      divergence (`b63-upstream-text-mingw.md`) — widen to true interval segmentation.
+- [ ] **P1** Accessibility absent — `ComposeOwner.kt:~340` builds a `semanticsOwner` never
+      traversed to any OS a11y API; `CompositionLocals.native.kt:30 LocalPlatformScreenReader`
+      default **throws** (`error(...)`); `SemanticsRegion.native.kt intersect()/difference()`
+      hardcode `false`. Not vendorable (NSAccessibility/UIA/AT-SPI). **Decision for 1.0.0:
+      out of scope for desktop** — but provide a **non-throwing no-op `PlatformScreenReader`**
+      so a11y queries don't crash the app. (P0 for the no-op, a11y pipeline is P2/out.)
+- [ ] **P2** `SkiaFonts.kt` fidelity: `resolveCache` unbounded (font-cache half of P3.4
+      deferred); variation key passes `null` density (`:65,78`) so density-dependent `opsz`
+      in sp resolves wrong. `NamedFont.equals/hashCode` axis identity reportedly fixed —
+      re-verify.
 
----
+### P2 — cosmetic / edge
 
-## 3. WS-B — Renderer per-frame overhead
-
-The layer engine (`ComposeOwner`, `GraphicsLayerOwnerLayer`,
-`SkiaGraphicsLayer.skiko.kt`) is upstream-identical and correct — record-once /
-replay-clean works. Do **not** touch it. The overhead is around it:
-
-### P0.6 — Per-frame Metal surface reacquire · High (mac) · M
-`ensureSize` is called every rendered frame (`ComposeWindow.kt:938`), and on
-Metal (`SkiaMetalBridge.kt:97-149`) it **unconditionally** tears down
-`fSurface`+`fRT` and calls `vLayer.nextDrawable()` (`:118-126`) even when the
-size is unchanged. `nextDrawable()` can block ~16 ms; rebuilding the
-`BackendRenderTarget`+`Surface` each frame is real work. The GL/Software bridges
-already short-circuit on unchanged size (`SkiaGLBridge.kt:51`,
-`SkiaSurfaceBridge.kt:35`) — Metal must too. **Fix:** move `nextDrawable()` out
-of `ensureSize` into the present path and make `ensureSize` a true no-op when
-dimensions are unchanged; reuse the RT/Surface wrap across frames where the
-drawable allows.
-
-### P0.4 — Per-frame full-surface clear · Med · S
-`SkiaRenderBackend.beginFrame` clears the whole physical backbuffer
-(`SkiaRenderBackend.kt:82-91`) every frame. The root content is opaque and fills
-the window, so on GPU this is a redundant full-screen fill (2× area on Retina).
-The clear only guards against uninitialised drawable memory on the *first* frame
-of a fresh drawable — which is only "every frame" *because* of the P0.6 bug.
-**Do P0.6 first, then** reduce this to a first-frame-only clear.
-
-### P1.3 — Coalesce snapshot-apply · Med · M
-`Snapshot.sendApplyNotifications()` fires ~5× per loop iteration
-(`ComposeWindow.kt:163, 197, 224, 947` + the per-write global observer at
-`:144-147`). Upstream coalesces to ~once/frame (CONFLATED channel + CAS in
-`GlobalSnapshotManager.skiko.kt`). Consolidate — but carefully: the pre-layout
-apply at `:940-947` is documented as needed for scroll. This pairs with P2.2.
-
-### P0.7 — Explicit open/close of native paragraph resources · Med (memory) · S — ✅ DONE
-The root cause of the native-memory balloon (issue #2) and the reason the 10 s
-`GC.collect()` nudge (`ComposeWindow.kt`) existed: `SkiaParagraphOps.rebuildAndPaint`
-allocated a fresh `SkParagraph` (+ `ParagraphBuilder` + styles) on **every paint**
-and dropped the old one **without closing it** — so native paragraphs piled up
-until a GC ran. The intrinsics path (`paragraphIntrinsicWidths`) also built a
-throwaway paragraph it never freed. Fix (deterministic lifecycle, not a GC tweak):
-- `rebuildAndPaint` re-shapes only when a paint attribute (color/shadow/decoration)
-  actually changed, and closes the previous `SkParagraph` when it does. Static
-  text now shapes once at measure and never re-shapes on paint.
-- `build()` closes the `ParagraphBuilder` in a `finally` (the paragraph owns its
-  own native data and outlives the builder).
-- `NativeParagraphOps.dispose()` added; it closes the paragraph **and** the
-  per-ops `SkFont`, and the intrinsics-only throwaway (built per text measure)
-  is now `dispose()`d instead of leaking both to GC.
-
-Explicit `close()` also cancels skiko's own GC-driven `Cleaner` for that object,
-so nothing double-frees. **Limit:** the *top-level* paragraph a `Text` keeps
-while on screen still frees via skiko's Cleaner on GC — Compose holds `Paragraph`
-by GC with no dispose seam, so there's no non-GC signal for "this text went
-away" (upstream relies on JVM GC the same way). The 10 s `GC.collect()` therefore
-**stays** as the backstop for that navigation-time churn; it is no longer the
-mechanism for the per-frame/per-measure churn (that's now explicit). Fully
-removing it would need a frame-idle lazy-close refactor (close idle paragraphs,
-rebuild on next access) — tracked under **P1.1** (see Phase 1).
-
-### P0.3 — Dead `DrawStats` blinds the profiler · Med · S
-Nothing writes `DrawStats.*` anymore (they were bumped by the removed SDL
-canvas); the profiler still *reads* them (`ComposeWindow.kt:343-347`) so
-`CDN_PROFILE=1` prints zeros for all draw work — it can't answer "what inside
-draw costs the time," the exact question this plan needs. **Either delete
-`DrawStats` + the profiler suffix, or re-wire the counters into
-`SkiaBackedCanvas` (geometry / saveLayer-mask realizations / text runs / image
-blits).** Do this early — it gates measuring every other renderer item.
-
-### Renderer allocation churn (secondary) · Low-Med · S
-`drawDropShadow` (`SkiaBackedCanvas.skiko.kt:522-557`) allocates a fresh
-`SkPaint` + Gaussian `MaskFilter` per record — bounded to dirty layers, but a
-scrolling list of elevated cards reallocates every frame. Pool a paint keyed by
-(elevation, colors), **or** better: adopt upstream RenderNode shadows (see P4.1
-— the `setLightingInfo` path we dropped) and delete the hand-rolled
-`NativeShadowCanvas` contract entirely.
+- [ ] **P2** `BlendMode.Multiply` renders wrong — opaque cyan×yellow reads back blue;
+      likely Metal premultiply in graphics-layer flatten, not the `toSkia()` map. Isolate on
+      the Skia draw path.
+- [ ] **P2** Drag-OUT of window NOP — `ui/.../draganddrop/Sdl3DragAndDropOwner.kt:39`
+      `requestDragAndDropTransfer`; `DragAndDropSource.native.kt:36` no drag-shadow. SDL3
+      has no portable start-drag → needs NSDraggingSession/DoDragDrop/XDND per-OS.
+      Drop-INTO works. Accepted 1.0 gap (SDL platform limit) — document.
+- [ ] **P2** `NativeStringDelegate.native.kt:17` `toUpper/toLowerCase` ignore `locale`
+      (Turkish i). Upstream `darwin` unvendorable (NSString).
+- [ ] **P2** Prefetch scheduler NOP — `platform/PrefetchLocals.native.kt:18`, lazy lists
+      skip ahead-of-time composition (scroll-in jank).
+- [ ] **P2** `ClipboardPasteState.hasClip` aliased to `hasText`
+      (`TextFieldSelectionState.native.kt:43`) — image-only clipboard undetected.
+- [ ] **P2** `ComposeOwner.kt` gaps: `autofill`/`autofillManager` null (`:324`),
+      `hapticFeedBack` NOP (`:279`), deprecated `clipboardManager` NOP (`:287`, real
+      `LocalClipboard` works), `textToolbar` stub (`:311`, touch-gated). No multi-monitor
+      enumeration (`SDL_GetDisplays` unused). Most match upstream desktop — verify, then
+      leave or fill.
+- [ ] **P2** `installGlobals()` calls `registerGenericFonts()` every frame
+      (`ComposeWindow.kt:771-779`) — hoist to init (perf/cleanliness).
 
 ---
 
-## 4. WS-C — Text engine (`:ui-text`)
+## 3. SDL slimming
 
-This is the largest *steady-state* perf gap and several correctness gaps.
+Static lib built from source per host (`scripts/build-sdl/build-all.py`, ref
+`release-3.4.12`); linked into the exe via `sdl3.def` (`staticLibraries=libSDL3.a`). Today
+only tests/examples + Windows D3D12/GPU are off (`build-all.py:311-319`). `SDL_Init` uses
+**`SDL_INIT_VIDEO` only** (`SDL3Backend.kt:49`).
 
-### P1.1 — Cache the built paragraph; stop reshaping on paint · High · M
-`SkiaParagraph.native.kt:238-257` → `ops.rebuildAndPaint(...)` →
-`SkiaParagraphEngine.kt:120-123` calls `build()` **unconditionally**, which
-rebuilds a `ParagraphBuilder`, re-pushes styles, re-adds text, and re-runs
-`.layout(width)` (`SkiaParagraphEngine.kt:128-148`). **Every `paint()` of every
-`Text` re-shapes** (HarfBuzz + bidi + line-break) each frame it's visible.
+**USED (keep ON):** Video/window, Events, Clipboard, Dialog (file open/save — no cheaper
+substitute; Linux uses portal/zenity, keep deps), OpenGL + Metal contexts, Render (2D CPU-
+raster blit path: `SkiaSurfaceBridge` uploads to `SDL_Texture` + `SDL_RenderPresent`),
+Filesystem, Cursor, Locale, System theme, Text input/IME, OpenURL, timing/hints.
 
-Upstream lays out **once** and caches the `SkParagraph` in `ParagraphLayouter`
-(`ParagraphLayouter.skiko.kt` `paragraphCache`), re-running `.layout()` only when
-width or a paint-affecting style changed, and `paint()` reuses the cached layout.
-The reason ours rebuilds is that color/shadow/decoration arrive at *paint* time
-(`rebuildAndPaint`) rather than baked at build — upstream mutates the existing
-paragraph (`setColor`/`setTextStyle`) instead.
+**UNUSED (disable — zero references, no transitive need):** Audio, Joystick (→disables
+Gamepad), Haptic, HIDAPI, Sensor, Power, Camera, GPU API, Offscreen video driver, virtual
+joystick.
 
-**Fix:** cache the built paragraph in `SkiaParagraphOps`; only re-layout on
-width change; for color/shadow/decoration changes, update the foreground paint
-without re-shaping. **Vendor `ParagraphLayouter.skiko.kt`** — this is the file
-`SkiaParagraphEngine.build()` is a "reduced local version of" (its own header,
-`SkiaParagraphEngine.kt:40-42`).
+- [ ] **P1** Add to `build-all.py` (`vExtra`):
+      ```python
+      vExtra += [
+          "-DSDL_AUDIO=OFF", "-DSDL_JOYSTICK=OFF", "-DSDL_HAPTIC=OFF",
+          "-DSDL_HIDAPI=OFF", "-DSDL_SENSOR=OFF", "-DSDL_POWER=OFF",
+          "-DSDL_CAMERA=OFF", "-DSDL_GPU=OFF", "-DSDL_OFFSCREEN=OFF",
+          "-DSDL_VIRTUAL_JOYSTICK=OFF", "-DSDL_DISABLE_INSTALL_DOCS=ON",
+      ]
+      ```
+      Promote `-DSDL_GPU=OFF` from the Windows-only branch to the shared list; keep the
+      per-host `-DSDL_RENDER_D3D12=OFF` (Windows).
+- [ ] **P1** After the flag change, rebuild + run `:demo` and `:apidemo` on each host to
+      confirm no regression.
+- [ ] **P2** Prune now-unreferenced macOS frameworks from `sdl3.def:14-21` (`CoreAudio`,
+      `AudioToolbox`, `AVFoundation`, `CoreMedia`, `GameController`, `ForceFeedback`, weak
+      `CoreHaptics`). Verify against the regenerated `sdl3-static.pc` `Libs.private`
+      (`build-all.py:350-353` prints it — source of truth) before trimming.
+- [ ] **P2** (higher-risk, flag-don't-apply) Render-driver pruning to software-only. Only
+      the CPU-raster fallback uses `SDL_Render`; GL/Metal go direct. But
+      `SDL_CreateRenderer(window, null)` (`SDL3Backend.kt:117`) lets SDL pick the first
+      driver — with only software present it picks software (fine) but couples the fallback
+      to that assumption. **Conservative: leave render drivers alone.**
 
-### P1.2 — Double-shape on measure · High · M (pairs with P1.1)
-`NativeParagraphIntrinsics` (`ParagraphFactories.native.kt:47-57`) builds a
-throwaway `SkiaParagraphOps` just to read min/max intrinsic widths
-(`SkiaParagraphEngine.kt:248-256`), then the real `Paragraph` shapes *again*.
-Every measured text shapes ≥ 2×. Upstream reuses one `ParagraphLayouter` for
-intrinsics and final layout. Fold into the P1.1 layouter.
-
-### P0.5 — `FontRasterizationSettings` never set · Med · S
-`makeTextStyle` (`SkiaParagraphEngine.kt:189-218`) never sets `ts.fontEdging` /
-`ts.fontHinting` / `ts.subpixel`. Upstream applies per-OS defaults to every
-`SkTextStyle` (`ParagraphBuilder.skiko.kt:189-191`,
-`FontRasterizationSettings.skiko.kt:77-110` — e.g. Windows AntiAlias+Normal+
-subpixel, Linux AntiAlias+Slight). Text currently renders with skia's raw
-defaults → blurrier/less-hinted, especially on Windows/Linux. Three assignments +
-a per-OS constant; **vendor `FontRasterizationSettings.skiko.kt`.** Cheapest
-visible-quality win.
-
-### Reduced style coverage · Med · M
-`makeTextStyle`/`build` omit features upstream's `ParagraphBuilder.skiko.kt`
-applies: **lineHeight / `LineHeightStyle` trim**, **textIndent**,
-**baselineShift**, **background span color**, **`TextGeometricTransform`**,
-**localeList**, **brush/gradient text fill + drawStyle/blendMode** (our paint
-path handles only `SolidColor`, `SkiaParagraph.native.kt:253-256`). lineHeight
-especially is common. Fix by vendoring more of `ParagraphBuilder.skiko.kt`.
-
-### Placeholders / inline content not built · Med · M
-`SkiaParagraphOps` never calls `addPlaceholder`; `placeholderRects()` reads
-`rectsForPlaceholders` (`SkiaParagraphEngine.kt:104-105`) but nothing adds one,
-and `placeholders` is dropped at every factory (`ParagraphFactories.native.kt`).
-`InlineTextContent` (chips in `Text`, `ClickableText`) renders no reserved space.
-
-### Span segmentation drops partial overlaps · Low-Med · S
-`appendWithSpans` (`SkiaParagraphEngine.kt:150-164`, `:159`) keeps only spans
-fully covering a segment (`start <= segStart && end >= segEnd`) — partially
-overlapping `SpanStyle`s vanish on boundary segments. This is the documented
-span-model divergence (memory `b63-upstream-text-mingw.md`). Merge per-cut like
-upstream.
-
-### Stubbed `Paragraph` methods · Low-Med · S each
-`getRangeForRect` hardcoded `TextRange.Zero` (`SkiaParagraph.native.kt:216-217`,
-breaks rect-based selection); `isLineEllipsized` always `false` (`:155`);
-`fillBoundingBoxes` no-op (`:224-226`, matches an upstream limitation — OK).
+**Do NOT** add `-DSDL_DISABLE_INSTALL` — the build relies on `cmake --install`
+(`build-all.py:342`) to stage `libSDL3.a` + headers. `SDL_DYNAMIC_API` auto-disables for
+static builds (no flag needed). **Risk:** a future consumer app needing SDL audio/gamepad
+requires a static-lib rebuild (build-time, not a code change).
 
 ---
 
-## 5. WS-D — Fonts (`:ui-text`)
+## 4. Performance
 
-Typeface caching itself is healthy (`SkiaFonts.baseCache` + `resolveCache`,
-`SkiaFonts.kt:53-55`; no per-frame `makeClone`). The gaps are in *what can be
-resolved*.
+Prior PLAN Phases 0–3 landed; §12 measurement showed **no steady-state perf gap on
+macOS/Metal**. Remaining perf question (if any) is Windows-GL or heavy-interaction
+specific. Retained-layer engine is byte-for-byte upstream — not the gap.
 
-### P3.1 — No system/default fonts · High (correctness) · M
-`baseTypeface()` (`SkiaFonts.kt:36,58-62`) resolves only via
-`IconFont.bytesFor(family)`; anything unrecognised falls back to the single
-bundled `NotoSans.ttf` (`:40-43`). Upstream resolves `GenericFontFamily`
-(SansSerif/Serif/Monospace/Cursive) and named families through
-`FontMgr.default.matchFamilyStyle(...)` with per-OS alias tables
-(`PlatformFont.skiko.kt:373-420`). We *do* set
-`fontCollection.setDefaultFontManager(FontMgr.default)` (`SkiaFonts.kt:48`) so
-the shaper can glyph-fall-back for CJK/emoji — but there's no way to *select* a
-system family by name, and `Serif`/`Cursive` are silently ignored. **Fix:** route
-unknown/generic families through `FontMgr.default.matchFamilyStyle`; vendor the
-`GenericFontFamiliesMapping` alias table from `PlatformFont.skiko.kt`.
-
-### P3.2 — `FontListFontFamily` / resource `Font`s unsupported · High · L
-`FontFamilyResolver.native.kt:38-51` returns `null` for `FontListFontFamily` and
-a placeholder for everything else; `SdlPlatformFontLoader.loadBlocking` returns
-`Unit` (`:30-34`). The standard upstream API — `Font(resource, weight, style)`,
-`FontFamily(font1, font2, …)`, async `Font`s — is a no-op; real selection is
-string-name lookup in `SkiaFonts`/`NamedFont` only. Async loading
-(`AsyncFontListLoader`, `AsyncTypefaceCache`) is entirely missing. **Fix:** the
-commonMain `FontListFontFamilyTypefaceAdapter.kt` is source-set-compatible —
-vendor it to get weight-matching (static multi-file families) + async for free.
-This also fixes the "`FontWeight` only maps to the `wght` axis" gap
-(`SkiaParagraphEngine.kt:61-63,179`).
-
-### Smaller font items · S each
-- `NamedFont.equals/hashCode` ignore `axes`/`variationSettings`
-  (`NamedFont.kt:40-48`) — two axis-differing fonts compare equal (latent cache
-  collision once P3.2 lands).
-- `resolveCache` is unbounded (`SkiaFonts.kt`) — bound it (upstream uses LRU 16).
-  Folded into P3.4.
-- Variation key passes `null` density (`SkiaFonts.kt:65,78`) → density-dependent
-  axes (e.g. `opsz` in sp) resolve wrong; thread real density.
+- [ ] **P2** WON'T-FIX confirmed, keep as-is (don't relitigate): P0.4 per-frame full-surface
+      clear + P0.6 per-frame Metal drawable reacquire (`CAMetalDrawable` single-use per
+      frame, matches upstream `MetalRedrawer`).
+- [ ] **P2** P2.2 upstream `GlobalSnapshotManager` invalidation-driven scheduling —
+      deferred; coalescing half done by P1.3; full manager is skiko-windowing-coupled
+      (RENDERER §8 non-goal). Leave deferred unless a Windows-GL perf gap surfaces.
+- [ ] **P2** `SkiaImageCache` font-cache half of P3.4 — evicted typefaces stay referenced by
+      live paragraphs + `TypefaceFontProvider` (no clean unregister) so eviction frees no
+      memory. Native-resource lifecycle backstop is the periodic `GC.collect()` nudge (top-
+      level `Paragraph` a live `Text` holds has no Compose dispose seam). Accept for 1.0 or
+      add a provider-unregister path.
+- [ ] **P2** P4.1 second-renderer manual-vendor reversal (restore upstream RenderNode
+      shadows via `SkiaGraphicsContext.setLightingInfo` + relocate
+      `prepareTransformationMatrix`; deltas D2–D6). Buys vendoring cleanliness at
+      shadow-lighting/hit-test regression risk (current `NativeShadowCanvas` shadows render,
+      draw=0.08ms). Low ROI — deferred, needs full verify-mac + parity.
+- [ ] **P2** Profile the shipped **Windows-GL** binary (`CDN_PROFILE=1`) under heavy
+      interaction before ship (present phase is vsync-capped by display refresh — profile on
+      the target monitor). Only open perf unknown.
 
 ---
 
-## 6. WS-E — Images (`:ui-graphics`)
+## 5. API coverage / release mechanics
 
-Resource-image caching is *good* (`SkiaImageCache` caches decoded `Image`s by
-path, caches decode failures, shares texture between measure+draw). Two real
-gaps:
+API coverage vs upstream is **99%** (8665/8751 decls via `compose-coverage.py`). Misses are
+AppKit/UIKit/web host actuals (N/A), `ImageComposeScene`/`renderComposeScene` (test util),
+and the `ui-text.platform` font layer (= P3.2 font resolver). The 1076 "extra" decls are
+umbrella-repo modules the tool can't compare + version skew, not invented surface.
 
-### P3.3 — SVG / XML-vector rasterised once at fixed size · Med · L
-`SkiaImageCache.kt:46-54,101-112` rasterises SVG via `SVGDOM` into a fixed-size
-offscreen and caches the *raster*; the resources path does the same
-(`ImageResources.native.kt:33-37`). Scaled-up icons render blurry. Upstream keeps
-a live `SVGDOM` and re-renders into a size-driven `DrawCache`
-(`DesktopSvgResources.desktop.kt:60-137`) and parses `<vector>` XML into a
-scalable `ImageVector` (`DesktopXmlVectorResources.desktop.kt`). **Fix:** vendor
-`DesktopSvgResources.desktop.kt` (`SVGPainter` + `DrawCache`, portable); for XML
-use the upstream parser front-ended by the project's pure-Kotlin `DomXmlParser`
-(the `javax.xml` dep is the only blocker).
-
-### P3.4 — Unbounded caches leak memory · Med · S-M
-`SkiaImageCache` is a plain `HashMap<String, Image?>` (`SkiaImageCache.kt:32`) —
-no eviction. A long-running app showing many distinct runtime images
-(`registerMemoryResource`, `ResourceIO.kt:227-234`) grows GPU/CPU image memory
-forever. Add LRU eviction. (Same treatment for `SkiaFonts.resolveCache`.)
-
-### P3.5 — Missing public stream APIs · Low · M
-`loadImageBitmap(InputStream)` / `loadSvgPainter` / `loadXmlImageVector` don't
-exist; apps porting from Compose Desktop that call them won't compile. Vendor the
-trivial `ImageResources.desktop.kt` `loadImageBitmap` + the SVG/XML painters from
-P3.3.
-
-### At parity (no action)
-`drawImageRect` re-wraps the bitmap into a skia `Image` per draw
-(`SkiaBackedCanvas.skiko.kt:315`) — but **upstream does exactly the same**; not a
-regression. A future win (beating upstream) would cache the skia `Image` on the
-`SkiaBackedImageBitmap`. Formats are at parity (both via `Image.makeFromEncoded`).
+- [ ] **P0** Re-pin refs to Compose **1.12.0 stable** when it ships (currently
+      `v1.12.0-beta03+dev4483` — no clean beta03 tag on Maven). Bump both
+      `scripts/compose-fork/compose.properties` refs, re-sync (`scripts/compose-fork/sync.sh`),
+      let the build surface breakage.
+- [ ] **P0** Bump `vComposeJvmVersion` in `:demo` / `:apidemo` / `:material-symbols` (JVM
+      parity leg currently forced to beta02 by documented skew — native leads).
+- [ ] **P1** Run `check-vendor-drift.py` after the ref bump — re-stamp `VENDOR-BASE` on the
+      10 manual vendors, hand-reconcile any that actually changed base..pin.
+- [ ] **P0** WIN-SMOKE fidelity pass (Windows host only, pre-ship gate): the Mac runbook
+      cannot cover the shipped mingwX64 binary. Assert: (1) NotoSans `FontMetrics` dump
+      native-vs-JVM-Windows (§1b acceptance), (2) `\t`/control-char render clean (§1a),
+      (3) the Windows-only `PrintWindow` probe, (4) the common-metadata publish job.
+- [ ] **P0** apiDump is **host-specific** — do NOT commit macOS dumps. Only the **Windows
+      publish job compiles common metadata** (owns the root KotlinMultiplatform publications
+      — the only host declaring every target, so only its `.module` files carry the full
+      variant table; macOS-published roots left v0.1.15 without mingwX64 variants). Test
+      `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging; publish from
+      Windows.
+- [ ] **P1** Version bump to `1.0.0` across published coords once the above are green.
+- [ ] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map links `PLAN.md` (this file
+      — restored), `RENDERER.md`, and `TODO.md`. `RENDERER.md` + `TODO.md` are deleted in
+      tree. Restore both or de-link them from `CLAUDE.md`. (TODO.md never existed at HEAD —
+      its content is subsumed by §2 here; either recreate it as the stub audit or drop the
+      link.)
 
 ---
 
-## 7. WS-F — Vendoring cleanup
+## Accepted 1.0.0 gaps (documented, not fixed)
 
-Drift tripwire is green (8 `VENDOR-BASE` files, all match the pin
-`COMPOSE_CORE_REF = v1.12.0-beta03+dev4483`). The opportunities:
-
-### P4.1 — Reverse the two second-renderer-driven manual vendors · Med · S-M
-Both local edits existed to serve *both* renderer legs; with one leg they may be
-reversible:
-- `GraphicsLayerOwnerLayer.kt:17-26` — dropped the trailing
-  `SkiaGraphicsContext.setLightingInfo`; our shadows went via
-  `NativeShadowCanvas`. Re-sync verbatim and let upstream RenderNode shadows +
-  `setLightingInfo` back in (also kills the `drawDropShadow` paint alloc, WS-B).
-- `LayerTransformationMatrix.kt:5-16` — a rename/relocation of
-  `Matrices.skiko.kt`'s `prepareTransformationMatrix` to `nativeMain`; RENDERER's
-  own "P1.5" says to reverse it once the Skia leg owns `Matrices.skiko`.
-
-**Gate both on `verify-mac` + parity** (hit-test coord agreement, shadow
-lighting). Follow-up: audit whether the `NativeShadowCanvas` / `NativePainterCanvas`
-/ `ShapeClipCanvas` seams in `:ui-graphics/commonMain` can collapse now that only
-the skiko canvas exists (`ShapeClipCanvas` is already dead — its own doc says the
-Skia backend doesn't implement it; `NativeFinishableCanvas.finish()` is a no-op).
-
-### P4.5 — Small vendoring wins · S each
-- Vendor `Ripple.skiko.kt` (15-line thin actual; a DIAGNOSTIC GAP in
-  `material3/compose-fork.txt`) instead of the project shim.
-- material3 date/time: `PlatformDateFormat.native.kt:14-20` is an English-ISO
-  stub (ignores locale + pattern → DatePicker/TimePicker wrong everywhere).
-  Neither upstream actual is cross-platform on K/N — write a
-  `kotlinx-datetime`-based formatter honouring the requested pattern/skeleton.
-- Audit foundation `.native.kt` text/selection files that are byte-identical
-  mirrors of `macosMain` (e.g. `CoreTextField.native.kt`,
-  `TextFieldCoreModifier.native.kt`) → convert to `SET_FOLDER macosMain →
-  src/vendor/native` directives so drift-tracking covers them.
-
-### Not worth it (recorded so nobody re-investigates)
-The `:ui-graphics`/`:foundation`/`:material3` DIAGNOSTIC GAPS are dominated by
-`androidMain`/`desktopMain`/`webMain` actuals inapplicable to our targets or
-already covered by project `.native.kt` actuals. Vendoring headroom is
-concentrated in **text** (`:ui-text`, WS-C/WS-D) and the two reversible manual
-vendors — not in graphics/foundation.
-
----
-
-## 8. WS-G — `ComposeWindow.kt` decomposition (`:desktop-native-window`)
-
-The file is 1131 lines mixing six responsibilities. **The bloat is mostly
-organizational, not per-frame cost** — the perf items are in WS-A/WS-B; splitting
-files won't move FPS by itself. But two extractions coincide with perf fixes and
-should be done together:
-
-- Per-window pump (`ComposeWindow.kt:217-236`) → a `WindowInstance.pumpAndRender()`
-  returning `(rendered, vsync)`, so the P0.1/P0.2 pace logic lives in one place.
-- `installGlobals()` (`:771-779`) calls `registerGenericFonts()` **every frame** —
-  hoist to `init` (one-time).
-
-**P4.2 extraction map** (mechanical, Low impact):
-
-| Extract                                                                        | New file                                                      |
-|--------------------------------------------------------------------------------|---------------------------------------------------------------|
-| `WindowInstance` (SDL window + renderer + composition + events + FPS + render) | `WindowInstance.kt`                                           |
-| `WindowArchitectureOwner`                                                      | `WindowArchitectureOwner.kt`                                  |
-| `BackNavigationInput` + `dispatchTypedText`                                    | `WindowInputHelpers.kt`                                       |
-| `FrameProfiler`                                                                | `FrameProfiler.kt`                                            |
-| Virtual-frame/screenshot timing flags                                          | `FrameTiming.kt` (co-locate the P2.1 `DisplayRefresh` helper) |
-| The 60-line composition-local seeding block                                    | `WindowCompositionLocals.kt`                                  |
-
-Also reduce `pollEvents()` allocation churn (`SDL3EventMapper.kt:65-75` allocates
-a fresh list + an `AppEvent` per event every iteration — GC pressure that feeds
-the P0.7 GC nudge) by reusing a buffer.
-
-### Optional larger convergence (evaluate, don't commit blindly)
-Upstream's `FrameDispatcher` (skiko), `GlobalSnapshotManager.skiko.kt`, and
-`FrameRecomposer.skiko.kt` encode exactly the invalidation-driven scheduling the
-port hand-rolls. **P2.2** adopts the portable `GlobalSnapshotManager` pattern
-(coalesced apply + write-observer-as-frame-trigger) — recommended.
-`FrameRecomposer` is `@InternalComposeUiApi` and skiko-windowing-coupled; weigh
-against RENDERER.md §8's "don't vendor the ComposeScene stack" non-goal. Treat
-`FrameDispatcher` as a *reference* — our multi-window shared-SDL-queue loop
-doesn't map 1:1 to its per-scope coroutine.
-
----
-
-## 9. WS-H — Documentation debt
-
-### P4.3 — RENDERER.md is stale (still two-renderer framing) · Low · S
-Rewrite these specifically:
-- Lines 13-21, 23-39, 55-60: drop the "Skia **leg** vs SDL leg" framing — there
-  is one renderer now.
-- Line 79 ("Skia `draw` … fell from 1.75 ms to 0.2 ms") compares against the
-  removed SDL leg — mark historical, there's no live baseline.
-- Line 192 (§7): where vsync-capping is treated as expected — call out the P0.1
-  double-pacing bug instead.
-- Add a new section: the current perf gap is the **frame driver + text reshape**,
-  not the layer engine. Note the dead `DrawStats` profiler fields (also
-  TOOLING.md).
-- Reconcile lines 99-105 / 129: the "B6.3 done — upstream `SkiaParagraph`
-  vendored verbatim" claim is an **overstatement**. Reality is a *reduced local
-  port* (`SkiaParagraph.native.kt`, `SkiaParagraphEngine.kt`) — downgrade the
-  claim or scope full skiko-text vendoring (WS-C) as an open L-item.
-
-### P4.4 — Residual second-renderer language in code · Low · S
-Comments/dead code referencing the removed leg: `ComposeOwner.kt:318`,
-`SDL3Backend.kt:43`, `GraphicsContextFactory.kt:9`, `Popup.native.kt:30`
-("per-renderer factory seam"), `GradientBridge.kt:20,23` (`renderer-sdl3`),
-`DrawShape.kt:8,21` ("Skia or SDL3"), `demo/…/BrushScreen.kt:17`. Inline the
-per-renderer seams (one leg → no abstraction needed) and fix comments.
-
----
-
-## 10. Verification strategy
-
-Per [TOOLING.md](TOOLING.md) — gate each workstream:
-- **Any renderer / layout / text change** → `verify-mac` runbook before commit,
-  and `scripts/parity/parity.py` (native-vs-JVM) as the broad net.
-- **A specific interaction** (selection, scroll, drag) → `scripts/probe/`.
-- **Perf claims** → `CDN_PROFILE=1` — **but land P0.3 first**, or the profiler
-  reports zeros for draw work and can't confirm anything.
-- **Memory items (P3.4, P0.7)** → watch RSS while navigating (issue #2 repro).
-- **Font/image parity (P3.x)** → parity harness + eyeball scaled SVG/icons and
-  Serif/CJK text.
-
-Suggested measurement baseline before Phase 0: record FPS + `CDN_PROFILE=1`
-frame breakdown on `:demo` (a scrolling `LazyColumn` screen) and `:apidemo`
-(the drag-heavy screen), on GL (Windows/Linux) and Metal (macOS). Re-measure
-after Phase 0 and Phase 1 — those two phases should recover most of the gap.
-
----
-
-## 11. Expected impact summary
-
-| Change             | Where the time goes today                                                       | After                     |
-|--------------------|---------------------------------------------------------------------------------|---------------------------|
-| P0.1 vsync         | ~30 FPS cap while animating (16 ms delay on vsync-blocked present)              | true refresh rate         |
-| P1.1/P1.2 text     | every visible `Text` re-shapes (HarfBuzz+bidi+break) each frame, ≥2× on measure | shape once, cache         |
-| ~~P0.6 Metal~~     | *(closed §12 — reacquire is inherent to Metal, costs nothing measurable)*        | no change                 |
-| ~~P0.4 clear~~     | *(closed §12 — depended on P0.6; per-frame drawable can't skip its clear)*        | no change                 |
-| P1.3/P2.2 snapshot | ~5 `sendApplyNotifications` per iteration                                       | ~1 per frame              |
-| P0.5 raster        | skia raw defaults (blurry on Win/Linux)                                         | upstream per-OS hinting   |
-| P3.1/P3.2 fonts    | non-bundled families → Noto Sans; no static weight/async                        | system + full resolver    |
-| P3.3 SVG           | icons blurry when scaled                                                        | resolution-independent    |
-
-**Do Phase 0 + Phase 1 first.** They are small, and they target the two things
-that actually cost the gap — everything else is correctness/parity/maintenance
-that can follow.
-
----
-
-## 12. macOS Metal measurement (2026-07-29) — what the profiler actually shows
-
-First real profiling pass on a Mac (Apple Silicon, ProMotion 120 Hz),
-`:demo` `CDN_FORCERENDER=1` on Metal. Two things had to be fixed before any
-number could be trusted:
-
-**Build blocker (fixed).** `kotlin.incremental.native=true` in
-`gradle.properties` broke the executable link on macOS (and would on any native
-target): per-file native incremental compilation fails to emit a `value class`'s
-box/unbox helpers into the declaring file's cache unit when only *other* files
-box the value, so `ld` dies with undefined symbols
-(`androidx.compose.material3.NavigationItemIconPosition`'s box constructor,
-referenced from `ShortNavigationBar` / `WideNavigationRail`). The demo/apidemo
-executable link had never run since those M3-expressive APIs were vendored
-(Phase 0 verified on Windows only did klib compiles + `klibApiCheck`). Fix:
-`kotlin.incremental.native=false` (comment in `gradle.properties`).
-
-**Profiler blocker (fixed).** The `"  layout"` phase charged everything since
-`"pump"`, which *includes* `ensureSize()` — where Metal's `nextDrawable()` blocks
-on vsync. So the vsync wait read as ~6.7 ms of "layout." Split out a dedicated
-`acquire` phase after `ensureSize` (`ComposeWindow.renderFrame`). This is the
-completion of P0.3's intent — the profiler now tells the truth.
-
-**Steady-state numbers (avg ms/frame, corrected profiler):**
-
-| Screen     | acquire (vsync) | layout | draw | present | events | total real CPU |
-|------------|:---------------:|:------:|:----:|:-------:|:------:|:--------------:|
-| Counter    | 6.67            | 0.02   | 0.05 | 0.12    | 0.09   | ~0.33          |
-| LazyColumn | 6.67            | 0.02   | 0.08 | 0.13    | 0.08   | ~0.34          |
-| Full app   | 6.77            | 0.03   | 0.07 | 0.10    | 0.03   | ~0.28          |
-
-RSS flat at ~108 MB over a 10 s force-render soak; **zero `nextDrawable`
-starvation** messages.
-
-**Conclusion.** On macOS/Metal there is **no steady-state perf gap** — the app
-runs at the 120 Hz refresh with ~0.3 ms of real CPU work per frame; the rest is
-correct vsync pacing (`acquire`). Real layout is 0.02–0.03 ms even for LazyColumn
-and the full sidebar app, so the Phase-1 text-reshape work already landed
-(P0.7/P1.1/P1.3) is not a macOS bottleneck, and the Metal-path items (P0.6/P0.4,
-and a speculative autorelease-pool fix) buy nothing measurable — all closed. The
-"performance not as good as the original" symptom, to the extent it remains, must
-be chased on **Windows (GL)** or in a **specific heavy interaction** (measure
-with the `acquire`-corrected profiler there), not in the macOS steady state.
-
----
-
-## 13. Release-readiness pass toward 1.0.0 (2026-07-31)
-
-Goal restated by the user: **stable, vendored as much as possible, as close to
-Compose as possible.** Driven by the API-coverage tool + three parallel audits
-(vendoring completeness, text-input/IME, true upstream divergences).
-
-**Where we stand.**
-- **API coverage vs upstream: 99%** (`compose-coverage.py`, 8665/8751 decls).
-  Remaining misses are AppKit/UIKit/web host actuals (N/A for SDL desktop),
-  `ImageComposeScene`/`renderComposeScene` (test util), and the `ui-text.platform`
-  font layer (== the deferred P3.2 resolver).
-- **Vendoring is already near-maximal**: zero rule-1 violations, zero manual-vendor
-  drift, no vendorable DIAGNOSTIC GAPS. commonMain is 100% vendored; the only
-  non-vendor `androidx.compose.*` files are documented manual vendors. The
-  "vendor as much as possible" goal is effectively met.
-
-**Closed this pass (commits):**
-- `androidx.compose.foundation` **Scrollbar** vendored (Vertical/Horizontal +
-  ScrollbarAdapter + v2 adapters) — exact upstream desktop API, +34 coverage decls.
-- **Inline-content placeholders** — `Text`/`BasicText` `inlineContent` now reserves
-  space (was collapsing); the divergence audit's top functional gap.
-- **IME candidate window** positioned on focus-gain (not just first TEXT_EDITING).
-- (plus §12's build/profiler fixes and the text/font/SVG/date parity work.)
-
-**Verified NOT broken (audit corrected earlier assumptions):**
-- Right-click **text context menu** (Cut/Copy/Paste/Select-All) already works —
-  `isNewContextMenuInitiallyEnabled=false` on native, so the default path uses the
-  real vendored `CommonContextMenuArea`. The no-op only affects the new API.
-- **Text input** is fully wired (modern `PlatformTextInputModifierNode` + real SDL
-  IME bridge: commit + preedit composition + candidate rect). Not the NoOp service.
-- Overscroll / magnifier / selection-handle / `getRangeForRect` / `isLineEllipsized`
-  no-ops all **match upstream desktop** — not gaps.
-
-**Known 1.0 gaps left, with rationale (all deferred deliberately):**
-| Gap | Why deferred |
-|-----|--------------|
-| **P3.2** resource-`Font`/async font resolver | Engine reads `TextStyle.fontFamily` directly, bypassing `FontFamily.Resolver`; rewiring the load-bearing font path is high-risk and the parity harness wouldn't exercise it. |
-| **Drag OUT of the window** + drag ghost | Platform-limited: SDL3 has no portable "start OS drag" (needs NSDraggingSession/DoDragDrop/XDND per OS). Drop-IN works. Document as a known 1.0 limitation. |
-| Per-focus `SDL_StartTextInput/StopTextInput` | Always-on start feeds the `dispatchTypedText` fallback; removing it risks that path for edge-case IME-state-leak correctness. |
-| `CalendarLocale` real locale | No user-visible effect until `PlatformDateFormat` localizes month/weekday NAMES (needs ICU data we don't bundle); date PATTERN is already honored. |
-| Semantics / a11y pipeline | Large; out of scope for a desktop 1.0. |
-| P4.1 RenderNode shadows, P1.2, P2.2 | See §1/§7 — risky maintenance / non-goal / blocked, no parity or perf win. |
-
-**Bottom line:** the port is at 99% upstream API coverage with maximal vendoring;
-the remaining deltas are either platform-inherent (SDL drag-out), deliberately
-project-owned (SDL/skiko bridges), or large-and-risky (font resolver, a11y). None
-block a desktop 1.0 for the common app surface.
-
-### 13a. Second hardening pass (2026-07-31, cont.)
-
-Another fidelity/vendoring/perf sweep (coverage tool + two parallel audits):
-
-- **Fidelity is clean.** The 1076 "extra" decls are dominated by umbrella-repo
-  modules the coverage tool can't compare (resources, tooling-preview) and
-  version-skew where our vendored ref is newer than the tool's upstream dump
-  (material3's 467 — AppBarWithSearch/BasicAlertDialog/BottomAppBar are all
-  vendored-verbatim, confirmed). No invented divergent public surface to remove.
-- **Scrollbar fully vendored.** Migrated the demo to the vendored
-  `androidx.compose.foundation.VerticalScrollbar` and **deleted** the ~200-line
-  `com.compose.sdl.scrollbar` reimpl (verified the vendored one renders a
-  correctly-sized thumb under Option-B density). apidemo keeps its app-level copy.
-- **Vendoring is maximal** except one L-effort structural move: giving `:foundation`
-  a `skikoRenderer` source set would unblock two real fidelity gaps at once —
-  `StringHelpers.skiko` (ICU grapheme/word breaks vs our pure-K/N walker) and
-  `DragAndDropSource.skiko` (cached drag ghost). Every other refused file is
-  correctly refused (JVM/Darwin/AWT deps, iOS-only surface, or the architectural
-  scene-layer reimpl). One convergence candidate remains: `LayerTransformationMatrix`
-  dedup (== P4.1's Matrices half).
-- **Perf: the double-shape (P1.2) is done** — measured cold text frames were
-  15–23 ms dominated by shaping; every measured `Text` shaped twice (intrinsics +
-  final). Now the intrinsics pass's shaped paragraph is reused for the final
-  layout (re-break, no re-shape), halving per-measure shaping on scroll-in/nav.
-  Force-render steady-state can't show it (no re-measure) and the cold frame is
-  dominated by first-frame overhead, but it's upstream-faithful and pixel-identical
-  in parity. Other perf items (synthetic-hover re-dispatch, event-loop allocation,
-  per-frame shadow paint) left as evaluated-and-skipped: unmeasured micro-opts
-  (events phase 0.03 ms, draw 0.08 ms) or a real stale-hover correctness risk.
+Drag-OUT of window (SDL platform limit; drop-IN works), full accessibility pipeline (out of
+scope for desktop 1.0 — but ship the non-throwing `PlatformScreenReader` no-op), the
+hand-rolled text engine as an architectural deviation (§2 P1), per-focus
+`SDL_StartTextInput/StopTextInput`, `loadImageBitmap`/`loadSvgPainter` (JVM `InputStream`
+signatures, N/A on K/N).

@@ -102,6 +102,15 @@ internal class SkiaParagraphOps(
 			?: style.fontWeight?.let { listOf(FontVariation.weight(it.weight)) }
 	private val baseTypeface = SkiaFonts.resolve(baseFamily, baseVariations).first
 	private val defaultFont = SkFont(baseTypeface ?: SkiaFonts.defaultTypeface, fontPx)
+	// Skia's ParagraphStyle.replaceTabCharacters (set below) expands U+0009 to a space
+	// before shaping (CMP-6589). The Windows skiko fork's flat extern-C surface doesn't
+	// wire that setter, so a raw tab reaches HarfBuzz, finds no glyph in the font, and
+	// renders as a .notdef box. Normalise the SHAPED text here instead — this is exactly
+	// what the flag does internally, so it's upstream-faithful and platform-independent.
+	// It's length-preserving, so every offset query (getRectsForRange / getCursorRect /
+	// wordBoundary / lineMetrics / span cut points) keeps operating on the original [text].
+	private val shapedText: String =
+		if (text.indexOf('\t') >= 0) text.replace('\t', ' ') else text
 	// var so relayout() (intrinsics-reuse fast path) can re-break at the final
 	// width and keep rebuildAndPaint()'s re-layout consistent with it.
 	private var layoutWidth: Float =
@@ -267,7 +276,7 @@ internal class SkiaParagraphOps(
 		try {
 			if (spanStyles.isEmpty() && placeholders.isEmpty()) {
 				pb.pushStyle(baseStyle)
-				pb.addText(text)
+				pb.addText(shapedText)
 				pb.popStyle()
 			} else {
 				appendWithSpans(pb, color, shadow, decoration)
@@ -317,7 +326,7 @@ internal class SkiaParagraphOps(
 			}
 			val active = spanStyles.filter { it.start <= segStart && it.end >= segEnd }
 			pb.pushStyle(segmentStyle(color, shadow, decoration, active))
-			pb.addText(text.substring(segStart, segEnd))
+			pb.addText(shapedText.substring(segStart, segEnd))
 			pb.popStyle()
 		}
 	}
