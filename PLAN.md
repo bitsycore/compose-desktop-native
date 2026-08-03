@@ -10,20 +10,23 @@ skiko-fork divergences), **completing native-actual stubs**, and the release mec
 
 ## Definition of done for 1.0.0
 
-- [ ] No text tofu on any platform (Windows tab-character regression fixed).
+- [~] No text tofu on any platform — Windows tab regression fixed in Kotlin (§1a);
+      needs on-Windows confirmation (WIN-SMOKE).
 - [ ] Text vertical metrics on Windows match the Windows fidelity reference
       (skiko-on-JVM Compose Desktop), not a bug vs it.
 - [ ] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited,
       each item either fixed or accepted-with-rationale.
-- [ ] Native-actual fidelity blockers closed: text context menu (P0), float pointer
-      coords (P0). Date/time localization is P1 polish (formatter already works — see §2).
+- [~] Native-actual fidelity blockers closed: float pointer coords **DONE** (§2); text
+      context menu still open (P0). Date/time localization is P1 polish (formatter already
+      works — see §2). Screen-reader no-op **DONE** (§2).
 - [ ] Vendor hygiene stays clean: zero drift, zero commonMain rule-1 violations
       (already true — keep it true through the ref bump).
-- [ ] SDL static lib slimmed to the used subsystem surface; every app still builds/runs.
+- [~] SDL static lib slimmed to the used subsystem surface (§3) — **DONE + verified on
+      macOS/Metal**; other hosts pending WIN-SMOKE.
 - [ ] Refs re-pinned to Compose **1.12.0 stable**, JVM parity versions bumped, WIN-SMOKE
       fidelity pass green on a real Windows host.
-- [ ] `CLAUDE.md` documentation map consistent with tree (this file restored; TODO.md
-      restored or de-linked).
+- [x] `CLAUDE.md` documentation map consistent with tree — RENDERER.md restored, line-1
+      typo fixed, TODO.md link repointed to §2.
 
 ---
 
@@ -271,8 +274,12 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       `LocalClipboard` works), `textToolbar` stub (`:311`, touch-gated). No multi-monitor
       enumeration (`SDL_GetDisplays` unused). Most match upstream desktop — verify, then
       leave or fill.
-- [ ] **P2** `installGlobals()` calls `registerGenericFonts()` every frame
-      (`ComposeWindow.kt:771-779`) — hoist to init (perf/cleanliness).
+- [x] **P2** `installGlobals()` → `registerGenericFonts()`: VERIFIED not a hot-path cost —
+      `registerGenericFonts()` already early-returns on a `fRegistered` flag
+      (`GenericFonts.kt:20-26`), so the per-event call is a single boolean check, not a
+      re-register. Original premise inaccurate; no change needed. (Minor residue: the
+      `ImeBridge.onSessionActiveChange` lambda is reassigned per event — negligible, left
+      as-is since it repoints per active window.)
 
 ---
 
@@ -300,9 +307,9 @@ joystick.
       `-DSDL_DISABLE_INSTALL_DOCS` — not a real SDL3 option; the build's `cmake --install`
       is relied upon.) All ten confirmed zero-reference by grep before disabling.
 - [~] **P1** After the flag change, rebuild + run apps to confirm no regression.
-      **DONE on macOS/Metal:** `build-all.py` rebuilt libSDL3.a clean with the new flags,
-      `:demo` links + runs to a settled screenshot (TextField screen, no visual regression).
-      **PENDING:** `:apidemo` on macOS, and both apps on Linux + Windows hosts (fold into
+      **DONE on macOS/Metal:** `build-all.py` rebuilt libSDL3.a clean with the new flags;
+      `:demo` links + runs to a settled screenshot (TextField screen, no visual regression);
+      `:apidemo` links clean too. **PENDING:** both apps on Linux + Windows hosts (fold into
       WIN-SMOKE §5). If audio/gamepad is ever needed by a consumer app, re-enable the flag
       and rebuild the static lib (build-time only).
 - [ ] **P2** Prune now-unreferenced macOS frameworks from `sdl3.def:14-21` (`CoreAudio`,
