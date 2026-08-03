@@ -81,6 +81,14 @@ private val RASTER_HINTING: SkFontHinting = when (FontRasterizationSettings.Plat
 @OptIn(ExperimentalTextApi::class)
 private val RASTER_SUBPIXEL: Boolean = FontRasterizationSettings.PlatformDefault.subpixelPositioning
 
+// CDN_TEXT_METRICS=1 — dump the font + paragraph line metrics for each built
+// paragraph (PLAN.md §1b confirm-first). Compares the SAME NotoSans bytes across
+// backends: on macOS the FontMgr scaler is CoreText, on Linux fontconfig/FreeType,
+// on the Windows fork DirectWrite/FreeType — different scalers pick different
+// ascent/descent tables, which is the suspected cause of the mac-vs-Windows
+// vertical-spacing delta. Acceptance test: Windows-native must match skiko-JVM-Windows.
+private val kTextMetricsDebug: Boolean = platform.posix.getenv("CDN_TEXT_METRICS") != null
+
 internal class SkiaParagraphOps(
 	private val text: String,
 	private val style: TextStyle,
@@ -281,10 +289,25 @@ internal class SkiaParagraphOps(
 			} else {
 				appendWithSpans(pb, color, shadow, decoration)
 			}
-			return pb.build().also { it.layout(layoutWidth) }
+			return pb.build().also { it.layout(layoutWidth); if (kTextMetricsDebug) dumpMetrics(it) }
 		} finally {
 			pb.close()
 		}
+	}
+
+	/** CDN_TEXT_METRICS diagnostic — see [kTextMetricsDebug]. Prints the font scaler's
+	   ascent/descent/leading and the resulting paragraph line box so the numbers can be
+	   compared native-vs-JVM per platform. */
+	private fun dumpMetrics(p: SkParagraph) {
+		val m = defaultFont.metrics
+		val lm = p.lineMetrics.firstOrNull()
+		val label = text.take(24).replace('\n', '⏎')
+		println(
+			"CDN_TEXT_METRICS text='$label' family='${(baseTypeface ?: SkiaFonts.defaultTypeface)?.familyName}' " +
+			"fontPx=$fontPx ascent=${m.ascent} descent=${m.descent} leading=${m.leading} " +
+			"paraHeight=${p.height} line0[ascent=${lm?.ascent} descent=${lm?.descent} " +
+			"baseline=${lm?.baseline} height=${lm?.height}]"
+		)
 	}
 
 	override fun relayout(width: Float) {

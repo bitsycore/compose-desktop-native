@@ -101,13 +101,31 @@ ignores it) and V3 (subpixel/edging) are secondary and per-scaler.
 Windows-JVM*. If it matches JVM-Windows it's correct-by-reference (not a bug), and the
 macOS↔Windows delta is expected upstream behavior.
 
-- [ ] **P0** Confirm FIRST (author temp logging): in `SkiaParagraphEngine.kt` after
-      `build(...)`, print `defaultFont.metrics.{ascent,descent,leading}`, `paragraph.height`,
-      `paragraph.lineMetrics[0].{ascent,descent,baseline,height}`, plus
-      `baseTypeface.familyName` + `fontPx`, for a fixed button label. Compare
-      macOS-native / Linux-native / Windows-native / **skiko-JVM-Windows**. Expectation:
-      `fontPx`+lineHeight+heightMode identical, `metrics.ascent` differs by scaler.
-      **Acceptance test:** Windows-native == skiko-JVM-Windows.
+- [~] **P0** Confirm FIRST — diagnostic **LANDED**: `SkiaParagraphEngine.kt` now dumps
+      `defaultFont.metrics.{ascent,descent,leading}`, `paragraph.height`,
+      `lineMetrics[0].{ascent,descent,baseline,height}`, `familyName` + `fontPx` per built
+      paragraph when `CDN_TEXT_METRICS=1` (mirrors the `CDN_PROFILE` env-flag convention).
+      Run `CDN_TEXT_METRICS=1 <app> --screen=Buttons` (native) and the JVM parity app on the
+      SAME host, diff the lines. macOS baseline captured (see below). **REMAINING (Windows
+      host):** compare Windows-native vs **skiko-JVM-Windows**. Expectation: `fontPx` +
+      lineHeight + heightMode identical, `metrics.ascent` differs by scaler.
+      **Acceptance test:** Windows-native == skiko-JVM-Windows (→ correct-by-reference, not a
+      bug); if they differ, it's a fork scaler fix (next item).
+
+      **macOS baseline captured (`--screen=Buttons`, DPR 2):** for the fontPx=30 button
+      labels ("Filled Button" / "OutlinedButton" / "TextButton"): font metrics
+      `ascent=-32.07 descent=8.79 leading=0` (font box = **40.86px**), but the line box is
+      `line0[ascent=37.67 descent=10.33 height=48.0]`, `paraHeight=48`. So macOS DOES apply
+      the lineHeight leading (48 > 40.86) and distributes it **asymmetrically — ~5.6px above,
+      ~1.5px below** → exactly the "extra space on top of the text" the report describes.
+      **SHARPENED HYPOTHESIS:** this is NOT a mac bug — it's correct lineHeight distribution.
+      The likely Windows story is the MIRROR of §1a: the fork's flat extern-C surface doesn't
+      wire the `ParagraphStyle` height/strut path, so Windows renders **tight to the font box
+      (~41px, no leading)** = the "fitted to text" look. **Sharpened WIN-SMOKE check:** for the
+      SAME label, compare `paraHeight` + `line0.height`. If macOS/JVM = 48 but Windows-native
+      ≈ 41, the fork drops lineHeight leading (fork fix: wire `heightMode`/strut, like
+      `replaceTabCharacters`); a Kotlin fallback is a manual `StrutStyle`. If Windows-native
+      == Windows-JVM, it's correct-by-reference.
 - [ ] **P1** If Windows-native != Windows-JVM: fix in the fork (out of tree) — build its
       `FontMgr.default`/scaler to match official skiko-windows (DirectWrite:
       `skia_use_dwrite` / system fontmgr) so `makeFromData` typefaces get the same
@@ -131,12 +149,18 @@ macOS↔Windows delta is expected upstream behavior.
       returns on native Windows (the feasibility doc noted the fork hand-wrote windowsMain
       actuals because "linux is a stub"). **Fix (fork):** ensure it returns a real
       DirectWrite manager matching skiko-JVM-Windows.
-- [ ] **P1** Port doesn't use `FontMgrWithFallback` (upstream `PlatformFont.skiko.kt:303`
-      wraps the provider: `setDefaultFontManager(FontMgrWithFallback(fontProvider))`). The
-      port does `setDefaultFontManager(fontMgr)` + `setAssetFontManager(provider)`
-      (`SkiaFonts.kt:49-52`). Genuine upstream-fidelity gap for missing-glyph fallback (NOT
-      the tab fix). **Fix (author project code):** wrap the provider in
-      `FontMgrWithFallback` in `SkiaFonts.kt`.
+- [~] **P1** `FontMgrWithFallback` — ANALYZED, deliberately NOT changing blindly. The port
+      does `setDefaultFontManager(fontMgr)` [system] + `setAssetFontManager(provider)`
+      [bundled] (`SkiaFonts.kt:49-52`). This is **functionally equivalent** for missing-glyph
+      fallback on macOS/Linux/Windows-JVM: skiko's shaper tries the asset provider (bundled
+      Noto + aliases) first, then the default/system manager for CJK/emoji fallback, which
+      resolves because the system FontMgr has those fonts. Rewriting to
+      `setDefaultFontManager(FontMgrWithFallback(provider))` risks a macOS fallback
+      regression with no observable gain, and I can't visually verify CJK/emoji fallback on
+      this host. **The real gap is Windows-fork-only** (fork `FontMgr.default` may be an empty
+      stub → no system fallback), which is the item below and is not fixable in Kotlin.
+      **Decision:** leave the Kotlin as-is; fix the fork's `FontMgr.default`. Re-open only if
+      a CJK/emoji fallback bug is actually observed on macOS/Linux.
 - [ ] **P2** ICU/unicode data packaged differently in the fork (T3). Recovered feasibility
       doc notes it had to force-export `uloc_getDefault_skiko` / `uloc_toLanguageTag_skiko`.
       Control-char/whitespace classification (U+00A0, U+200B, U+0009 pre-replacement) can
@@ -171,18 +195,22 @@ re-vendoring.** The debt is **completing native-actual stubs**.
 
 ### P0 — blocks fidelity/correctness
 
-- [ ] **P0** Text context menu (right-click copy/paste/select-all) — three native actuals
-      NOP it (upstream TODO CMP-7819):
-      `foundation/.../text/selection/SelectionActuals.native.kt:42`
-      (`addSelectionContainerTextContextMenuComponents`),
-      `.../text/selection/TextFieldSelectionManager.native.kt:23` +
-      `.../text/input/internal/selection/TextFieldSelectionState.native.kt`
-      (`addBasicTextFieldTextContextMenuComponents`, legacy + state-based). Upstream ships
-      these in `desktopMain` (AWT `ContextMenu.desktop.kt`) — not vendorable verbatim.
-      **Fix (author):** reimplement the ContextMenu composable structure against SDL
-      right-click + the existing project popup layer. *(Note §13 audit claims the vendored
-      `CommonContextMenuArea` already gives a working right-click menu — reconcile: confirm
-      whether these three seams are actually reached before building. Confirm FIRST.)*
+- [~] **P0** Text context menu (right-click copy/paste/select-all) — **RECONCILED: already
+      works, no reimplementation.** Static trace confirmed the menu is wired end-to-end
+      through the vendored LEGACY path: text-level `ContextMenuArea` (`ContextMenu.native.kt`)
+      → `CommonContextMenuArea` (`vendor/common/.../text/CommonContextMenuArea.kt`) → (native
+      `ComposeFoundationFlags.isNewContextMenuEnabled = false`, so the legacy branch) →
+      `contextmenu.ContextMenuArea` → `contextMenuGestures`/`onRightClickDown`
+      (`isSecondaryPressed`) → `ContextMenuPopup` → `Popup.native.kt` (hosted by
+      `LocalPopupHost` at the app root). Items are real: `TextFieldSelectionManager` /
+      `SelectionManager.contextMenuBuilder` emit Cut/Copy/Paste/SelectAll with real actions.
+      SDL right-click → `PointerButton.Secondary` (`SDL3EventMapper.kt`) →
+      `isSecondaryPressed` (`PointerEventBridge`). The three "NOP" seams belong to the
+      DISABLED *new* context-menu API and are unreachable — **DONE:** their misleading
+      `TODO(CMP-7819)` comments corrected to say so, in all three files.
+      **REMAINING:** an interactive right-click smoke check (no headless driver here — fold
+      into manual/WIN-SMOKE). Known limitation, not a breakage: Paste enablement is
+      plain-text-only (`ClipboardPasteState.hasClip = hasText`, see P2 below).
 - [ ] **P1** DatePicker/TimePicker localization — VERIFIED current state:
       `material3/.../internal/PlatformDateFormat.native.kt` is a real kotlinx-datetime
       formatter that DOES honor CLDR patterns/skeletons (renders "Jul 29, 2026" /
@@ -222,9 +250,16 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       splitting emoji/combining marks in `StringHelpers.native.kt:31` +
       `CharHelpers.native.kt:14`. (Giving `:foundation` a `skikoRenderer` source set would
       unblock this + `DragAndDropSource.skiko` — L-effort structural move, per §13a.)
-- [ ] **P1** `Serif`/`Cursive` generic families collapse to sans — `buildSrc`
-      `downloadNotoFonts` fetches Sans+SansMono only. **Fix:** register a serif/cursive font
-      the same way `generic:monospace` is wired.
+- [~] **P1** `Serif`/`Cursive` generic families — RE-SCOPED after reading `SkiaFonts.kt`.
+      They do NOT silently collapse to sans: `baseTypeface()` routes `generic:serif` /
+      `generic:cursive` through `resolveGeneric()` → `fontMgr.matchFamilyStyle()` over a
+      per-OS candidate list (`genericFamilyAliases`: Times/Noto Serif/… on each host), only
+      falling back to the bundled default if NONE is installed. So serif/cursive already
+      render as a real serif/cursive wherever the OS ships one (all three target OSes do).
+      The only true gap is **cross-platform pixel-identity** / a host with no serif installed,
+      which needs a BUNDLED Noto Serif — an app-level opt-in (buildSrc `downloadNotoFonts` +
+      data.kres size cost), not a library correctness bug. **Decision:** leave library
+      resolution as-is; offer bundled-serif as an opt-in later if an app needs it.
 - [ ] **P1** Document the hand-rolled text engine (`SkiaParagraphEngine.kt`) as an
       **accepted architectural deviation** — the 17-file upstream `skikoMain` text stack is
       unselected in `ui-text/compose-fork.txt` (all in DIAGNOSTIC GAPS), forced by the flat
