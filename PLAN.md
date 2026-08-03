@@ -176,10 +176,18 @@ macOS↔Windows delta is expected upstream behavior.
       (Metal) — channel order + Y-flip, matched to buffers. Windows uses OpenGL
       (`PlatformGpu.kt:20`), same backend as Linux, so GL-vs-Metal can't explain a
       Windows-vs-Linux gap at all. Deprioritized — no action.
-- [ ] **P1** Recover + re-commit the fork's Skia build config (GN args: DirectWrite vs
-      `skia_use_freetype`, `SK_GAMMA_*`, ICU packaging). Root inputs for 1c/T1/T3/V1,
-      invisible from this tree. `git show bdb5c64d^:SKIKO-MINGW-FEASIBILITY.md` has them;
-      pin into a doc so drift is auditable.
+- [x] **P1** Recover + re-commit the fork's Skia build config. **DONE:**
+      `SKIKO-MINGW-FEASIBILITY.md` (402 lines, deleted in `bdb5c64d`) restored to the tree —
+      also fixes the broken `CLAUDE.md:37` link to it. **Key lead for 1b/1c:** the fork's
+      Route-1a recipe builds Skia with **`skia_use_freetype`** (`:220`; `:209` pairs it with
+      FreeType), i.e. the Windows text scaler is **FreeType**, not DirectWrite and not macOS
+      CoreText — a concrete reason the SAME NotoSans bytes yield different ascent/descent on
+      Windows (different metric-table selection) AND why fork `FontMgr.default` may not
+      enumerate Windows system fonts for glyph fallback (FreeType has no system fontmgr
+      without fontconfig). **CAVEAT:** this is the *recommended recipe* in the doc, not a
+      verified dump of the shipped `0.150.1-mingw.1` GN args — confirm against the actual
+      fork build (`SK_GAMMA_*`, ICU packaging still unlisted). Whoever rebuilds the fork
+      should paste the real `args.gn` into this doc so drift is auditable.
 
 ---
 
