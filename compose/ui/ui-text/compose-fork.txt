@@ -1,3 +1,17 @@
+# ACCEPTED DEVIATION — do NOT try to "fill" the skikoMain text-engine gaps below.
+# The upstream skikoMain text stack (ParagraphBuilder / ParagraphLayouter /
+# PlatformFont / FontCache / SkiaParagraph.skiko + siblings, ~17 files) is
+# intentionally UNSELECTED (it shows up in the DIAGNOSTIC GAPS tail). The port
+# instead ships a reduced local engine: a skiko-free SkiaParagraph.native.kt over
+# SkiaParagraphEngine.kt (skikoRendererMain), which keeps the project's own
+# SkiaFonts (name->bytes + variable-axis) font model instead of upstream's
+# PlatformFont/FontCache/FontCollection. Reason: the flat nativeMain source-set
+# layout can't host upstream's skiko/nonJvm-split actuals as-is (see the memory
+# note "flat nativeMain vs upstream skiko+nonJvm hierarchy"). This is the single
+# biggest "not upstream" surface and the root of the RTL / stroke-DrawStyle /
+# grapheme reductions — those are tracked in PLAN.md §2, not fixed by vendoring
+# these files. If you select them, expect the source-set hierarchy to fight you.
+
 SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
 SET_FOLDER=compose/ui/ui-text/src
 

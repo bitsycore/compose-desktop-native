@@ -298,12 +298,12 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       which needs a BUNDLED Noto Serif — an app-level opt-in (buildSrc `downloadNotoFonts` +
       data.kres size cost), not a library correctness bug. **Decision:** leave library
       resolution as-is; offer bundled-serif as an opt-in later if an app needs it.
-- [ ] **P1** Document the hand-rolled text engine (`SkiaParagraphEngine.kt`) as an
-      **accepted architectural deviation** — the 17-file upstream `skikoMain` text stack is
-      unselected in `ui-text/compose-fork.txt` (all in DIAGNOSTIC GAPS), forced by the flat
-      nativeMain source-set layout (MEMORY note). It's the single biggest "not upstream"
-      surface and the root of RTL / stroke-DrawStyle / grapheme stubs. Record rationale so
-      nobody "fixes" the gap list.
+- [x] **P1** Document the hand-rolled text engine as an **accepted architectural
+      deviation** — **DONE:** rationale header added to the top of
+      `ui-text/compose-fork.txt` (the exact place someone would go to "fill" the gaps),
+      explaining the reduced local engine, the flat-source-set reason, and that RTL /
+      stroke-DrawStyle / grapheme reductions are tracked here (§2), not fixed by vendoring.
+      Also reflected in `SkiaParagraphEngine.kt`'s header and CLAUDE.md's renderer summary.
 
 ### P1/P2 — reduced-coverage + accessibility
 
