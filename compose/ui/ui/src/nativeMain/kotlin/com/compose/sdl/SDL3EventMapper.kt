@@ -23,7 +23,7 @@ sealed class AppEvent {
 	/** IME preedit / composition (SDL_EVENT_TEXT_EDITING). Empty text = composition
 	   cleared, so it's dispatched even when blank (unlike committed TextInput). */
 	data class TextEditing(val text: String, val windowId: UInt = 0u) : AppEvent()
-	data class MouseWheel(val x: Int, val y: Int, val deltaX: Float, val deltaY: Float, val windowId: UInt = 0u) : AppEvent()
+	data class MouseWheel(val x: Float, val y: Float, val deltaX: Float, val deltaY: Float, val windowId: UInt = 0u) : AppEvent()
 	/** The pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). The loop clears
 	   the window's hover state so a widget doesn't stay highlighted after the cursor
 	   exits (SDL then sends no motion, so nothing else would clear it). */
@@ -82,7 +82,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_MOUSE_BUTTON_DOWN -> {
 			val mb = e.button
 			AppEvent.Pointer(LegacyPointerEvent(
-				x = mb.x.toInt(), y = mb.y.toInt(),
+				x = mb.x, y = mb.y,
 				type = PointerEventType.Press,
 				button = mapButton(mb.button)
 			), mb.windowID)
@@ -91,7 +91,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_MOUSE_BUTTON_UP -> {
 			val mb = e.button
 			AppEvent.Pointer(LegacyPointerEvent(
-				x = mb.x.toInt(), y = mb.y.toInt(),
+				x = mb.x, y = mb.y,
 				type = PointerEventType.Release,
 				button = mapButton(mb.button)
 			), mb.windowID)
@@ -100,7 +100,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_MOUSE_MOTION -> {
 			val mm = e.motion
 			AppEvent.Pointer(LegacyPointerEvent(
-				x = mm.x.toInt(), y = mm.y.toInt(),
+				x = mm.x, y = mm.y,
 				type = PointerEventType.Move
 			), mm.windowID)
 		}
@@ -150,8 +150,8 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_MOUSE_WHEEL -> {
 			val mw = e.wheel
 			AppEvent.MouseWheel(
-				x = mw.mouse_x.toInt(),
-				y = mw.mouse_y.toInt(),
+				x = mw.mouse_x,
+				y = mw.mouse_y,
 				deltaX = mw.x,
 				deltaY = mw.y,
 				windowId = mw.windowID,

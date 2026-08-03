@@ -191,12 +191,14 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       (author):** bundle a CLDR subset or K/N i18n lib for localized names + locale-aware
       first-day/24h; also unblocks `CalendarLocale.native.kt:20` (fixed `"en"`). Ships
       readable English dates today — polish, not a P0 gate.
-- [ ] **P0** Float pointer coordinates — `ui/.../com/compose/sdl/SDL3EventMapper.kt:85,94,103,153-154`
-      `.toInt()`-truncate SDL's Float `mb.x`/`mb.y` (events already carry `x:Float` at
-      lines 57-58) before DPR multiply in `ComposeWindow.kt`. On 2× displays a click at
-      logical 100.9 → physical 200 not ~201, quantizing caret to 2px steps near glyph
-      edges. **Fix (author):** widen pointer x/y to `Float` through the pipeline; loss is
-      only at the `.toInt()` bridge.
+- [x] **P0** Float pointer coordinates — `SDL3EventMapper.kt` `.toInt()`-truncated SDL's
+      Float `mb.x`/`mb.y`/`mm.x`/`mm.y` and the wheel `mouse_x/y` before the DPR multiply in
+      `ComposeWindow.kt`. On 2× displays a click at logical 100.9 → physical 200 not ~201,
+      quantizing the caret to 2px steps near glyph edges. **DONE:** widened
+      `LegacyPointerEvent.x/y` and `AppEvent.MouseWheel.x/y` to `Float`, dropped the
+      `.toInt()` at the three mapper construction sites, and removed the now-redundant
+      `.toFloat()` at the two `ComposeWindow` read sites. Consumers fully contained (verified
+      by grep). Builds + runs clean on macosArm64.
 
 ### P1 — quality / parity
 

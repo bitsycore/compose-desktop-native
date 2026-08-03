@@ -763,8 +763,8 @@ internal class WindowInstance(
 		// SDL3 delivers mouse coords in logical points on HiDPI — multiply by
 		// DPR so hit-testing lands in the pixel space layout uses.
 		val vDpr = backend.pixelDensity
-		val vPx = inEvent.event.x.toFloat() * vDpr
-		val vPy = inEvent.event.y.toFloat() * vDpr
+		val vPx = inEvent.event.x * vDpr
+		val vPy = inEvent.event.y * vDpr
 		if (inEvent.event.type == PointerEventType.Press) {
 			popupHost?.notifyOutsidePress(vPx.toInt(), vPy.toInt())
 		}
@@ -789,7 +789,7 @@ internal class WindowInstance(
 		needsFrame = true
 		installGlobals()
 		val vDpr = backend.pixelDensity
-		host.onWheel(inEvent.x.toFloat() * vDpr, inEvent.y.toFloat() * vDpr, inEvent.deltaX, inEvent.deltaY, SDL_GetTicks().toLong())
+		host.onWheel(inEvent.x * vDpr, inEvent.y * vDpr, inEvent.deltaX, inEvent.deltaY, SDL_GetTicks().toLong())
 	}
 
 	fun onKeyEvent(inEvent: AppEvent.Key) {
