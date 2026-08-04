@@ -18,8 +18,6 @@ per-task fixes. So on Windows you can say **"continue PLAN.md"** and have everyt
 
 - [~] No text tofu on any platform — Windows tab regression fixed in Kotlin (§1a);
       needs on-Windows confirmation (WIN-SMOKE).
-- [ ] Text vertical metrics on Windows match the Windows fidelity reference
-      (skiko-on-JVM Compose Desktop), not a bug vs it.
 - [~] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited —
       **audited + documented** (§1c; FreeType-scaler lead recorded from the fork build
       notes in git history); the fixes themselves are fork-side/Windows, pending WIN-SMOKE.
