@@ -16,11 +16,13 @@ per-task fixes. So on Windows you can say **"continue PLAN.md"** and have everyt
 
 ## Definition of done for 1.0.0
 
-- [~] No text tofu on any platform — Windows tab regression fixed in Kotlin (§1a);
-      needs on-Windows confirmation (WIN-SMOKE).
-- [~] Fork-vs-official divergence surface (FontMgr, gamma, ICU) documented + audited —
-      **audited + documented** (§1c; FreeType-scaler lead recorded from the fork build
-      notes in git history); the fixes themselves are fork-side/Windows, pending WIN-SMOKE.
+- [x] No text tofu on any platform — Windows tab fix **CONFIRMED on-device** (§1a, 2026-08-04:
+      literal `\t`→space, no `.notdef`); CJK / color-emoji / control chars render clean too (§1c).
+- [x] Fork-vs-official divergence surface (FontMgr, gamma, ICU) **audited on native Windows**
+      (2026-08-04): metrics == JVM (§1b), FontMgr fallback works (CJK + color emoji, §1c), ICU
+      classification works (§1c). Net — the fork's Skia matches upstream; the only deltas are its
+      thin extern-C bindings, handled in shared Kotlin (LineMetrics reconstruction). No fork-side
+      fix needed for 1.0.
 - [~] Native-actual fidelity blockers closed: float pointer coords **DONE**, screen-reader
       no-op **DONE**, text context menu **RECONCILED — already works** via the legacy path
       (§2). Date/time localization is P1 polish (formatter already works).
@@ -57,10 +59,23 @@ Everything below is committed; details + file refs are in the sections that foll
    history), fixed the `CLAUDE.md` typo + all dead doc links; extracted the fork
    FreeType-scaler lead into §1c before deleting. Vendor drift verified clean.
 
-**Not done — needs a Windows host** (WIN-SMOKE): confirm the tab + vertical-metrics fixes on
-the shipped mingwX64 binary, and any fork-side scaler/FontMgr/gamma fix. **Deliberately
-deferred** (large/structural, rationale in-section): RTL, `PlatformFontLoader`, grapheme
-source-set move, date CLDR, brush/gradient text, and the Compose 1.12.0-stable re-pin.
+**Windows pass (2026-08-04, this host — DPR 1).** On a real Windows host at last: (8) tab fix
+**CONFIRMED on-device** (§1a); (9) vertical metrics **RESOLVED** — native `--metricsprobe` heights
+== JVM `--metrics` exactly, feared "dropped leading" DISPROVEN (§1b); (10) fork `LineMetrics.
+ascent/descent` mis-decode **FIXED in shared Kotlin** (`SkiaParagraphOps.lineMetrics()`, guarded
+no-op on official skiko) — repairs Windows caret/selection; (11) fork FontMgr/ICU **AUDITED** — CJK
++ color-emoji + control-char fallback all work → the "empty FreeType stub" fear DISPROVEN (§1c);
+(12) `FontRasterizationSettings.native.kt` verified to mirror upstream VERBATIM + given a
+`VENDOR-BASE` provenance line; rasterization stays upstream-faithful per-OS (user decision). Net:
+the fork's Skia matches upstream — the only deltas are its thin extern-C bindings, fixed in shared
+Kotlin, **zero fork rebuild**.
+
+**Still not done — WIN-SMOKE interactive + release** (§5): interactive caret-height check (the one
+behavioral consequence of the LineMetrics fix), the `PrintWindow` probe, `compileCommonMainKotlin
+Metadata`, apiDump + publish FROM Windows, and the Compose 1.12.0-stable re-pin. **Deliberately
+deferred** (large/structural, rationale in-section): RTL, `PlatformFontLoader`, grapheme source-set
+move, date CLDR, brush/gradient text — plus the big **vendor-the-upstream-skiko-text-engine
+refactor (§6)**, sequenced after these fixes land.
 
 ---
 
@@ -95,34 +110,50 @@ gradlew :apidemo:run                              :: JVM apidemo reference
   by hand for the button-metrics visual.
 - If an IC-cache error appears after any module churn: delete `demo\build\kotlin-native-ic-cache`.
 
+### ✅ Windows session results (2026-08-04, this host — DPR 1.0)
+
+Items 1–3 below are **DONE + verified on the shipped mingwX64 demo binary**; findings folded into
+§1a/§1b/§1c. Only 4–5 (WIN-SMOKE interactive gate + apiDump/publish) remain. TL;DR:
+
+- **§1a tab fix — CONFIRMED.** `--screen=BasicText` with `"start>a\tb<end\tcols\tand\tthere"`
+  rendered `start>a b<end cols and there` — every `\t` a SPACE, zero `.notdef`. (Structural proof
+  too: the whole module has exactly 2 `.addText(` sites, both `shapedText`.)
+- **§1b vertical metrics — RESOLVED, the feared bug is DISPROVEN.** Native `--metricsprobe` vs JVM
+  `--metrics` (same host, NotoSans, density 1): **every paragraph height + non-M3 baseline matches
+  JVM EXACTLY** (size 11→24). Leading is NOT dropped. Two residual deltas found (details in §1b):
+  (a) the fork's `LineMetrics.ascent/descent` are mis-decoded — **fixed in Kotlin** this session;
+  (b) M3 baseline drifts ≤0.77px (halfLeading, a shared-engine omission on ALL platforms, sub-pixel).
+- **§1c FontMgr/ICU — the "empty FreeType stub" fear is DISPROVEN.** Native render of CJK
+  (你好世界 日本語 한국어) + **full-COLOR emoji** (😀🎉🚀❤) + control chars (nbsp/zwsp/en-dash) = zero
+  tofu. Color emoji + CJK fallback prove `FontMgr.default` is a real DirectWrite-backed system
+  manager, not an empty custom FreeType one. Remaining §1c work is doc-only (capture `args.gn`).
+
+Reference commands actually used (both probes print `metrics:` lines; native runs a real window):
+```bat
+demo\build\bin\mingwX64\debugExecutable\demo.exe --metricsprobe    :: native/fork metrics
+gradlew :demo:run --args="--metrics"                               :: JVM/upstream metrics
+set CDN_TEXT_METRICS=1 && ...demo.exe --screen=Buttons             :: raw per-paragraph dump
+```
+(The JVM leg's screenshot flag is `--screenshot-all=<dir>`, not the native `--screenshot=<file>`.)
+
 ### Ordered Windows work (do top-to-bottom; full detail in the numbered sections below)
 
-1. **[§1a] Confirm the tab fix.** Build native demo; render text with a literal tab (e.g. the
-   `--screen=TextField` field, type `a<Tab>b`). Must show a space, NOT a `.notdef`/tofu box. The
-   Kotlin fix (`SkiaParagraphEngine.shapedText`, committed) normalizes `\t`→space before shaping,
-   so it should already pass. If tofu persists, a tab is reaching skiko via a path that bypasses
-   `SkiaParagraphEngine.build()` — trace it.
+1. **[§1a] Confirm the tab fix — ✅ DONE** (see session results above). Rendered a literal-tab
+   string on the fork; all `\t`→space, no tofu. The `SkiaParagraphEngine.shapedText` normalization
+   holds; no bypass path exists (2 `.addText(` sites, both `shapedText`).
 
-2. **[§1b] Confirm/resolve vertical metrics — THE user-reported bug** (apidemo Session/Override
-   look "fitted" on Windows vs extra top-space on mac). Run BOTH and diff:
-   ```bat
-   set CDN_TEXT_METRICS=1
-   gradlew.bat :demo:runDebugExecutableMingwX64 --args="--screen=Buttons --screenshot=%TEMP%\b.bmp"
-   gradlew :demo:run --args="--screen=Buttons --screenshot=%TEMP%\bj.bmp"
-   ```
-   For the fontPx=30 labels ("Filled Button"/"OutlinedButton"/"TextButton"), compare `paraHeight`
-   and `line0.height` against the **macOS baseline in §1b**:
-   - Windows-native ≈ **48** (matches mac + JVM) → correct-by-reference, NOT a bug → tick §1b, done.
-   - Windows-native ≈ **41** (tight to the font box) while JVM = 48 → the fork is DROPPING the
-     lineHeight leading. **Fix (preferred, fork):** wire the `ParagraphStyle` height/strut path
-     through the fork's extern-C surface + rebuild the DLL (same class as the tab flag).
-     **Fix (fallback, Kotlin, no fork rebuild):** apply an explicit `StrutStyle` in
-     `SkiaParagraphEngine.build()` so leading is applied regardless of the fork.
+2. **[§1b] Confirm/resolve vertical metrics — ✅ RESOLVED (feared bug DISPROVEN).** Used the
+   `--metricsprobe` (native) vs `--metrics` (JVM) pair, NOT the screenshot diff (the JVM leg has no
+   `--screenshot=<file>`; it dumps the same `metrics:` table). Every paragraph HEIGHT matches JVM
+   exactly (leading applied identically) → correct-by-reference. Only a ≤0.77px M3-baseline drift
+   remains (halfLeading, all platforms). Separately fixed the fork's broken `LineMetrics.ascent/
+   descent` in Kotlin. Full data in §1b.
 
-3. **[§1c] Audit the fork FontMgr / gamma / ICU.** Render CJK + emoji + control chars on native
-   Windows; if glyph fallback breaks, the fork's `FontMgr.default` is likely an empty FreeType
-   manager (the fork builds with `skia_use_freetype`). Capture the fork's REAL `args.gn`
-   (`SK_GAMMA_*`, ICU packaging, freetype-vs-dwrite) into the fork repo so drift is auditable.
+3. **[§1c] Audit the fork FontMgr / gamma / ICU — ✅ AUDITED (fallback WORKS).** CJK + color emoji +
+   control chars all render with zero tofu on the fork → `FontMgr.default` is a real system
+   (DirectWrite) manager with working glyph fallback, NOT an empty FreeType stub. Remaining: capture
+   the fork's REAL `args.gn` (`SK_GAMMA_*`, ICU packaging, freetype-vs-dwrite) into the fork repo so
+   drift is auditable (doc-only, not a code blocker).
 
 4. **[§5] WIN-SMOKE gate** (pre-ship): (1) the §1b metrics dump, (2) tab/control-char render clean,
    (3) the Windows-only `PrintWindow` probe (`scripts/probe/`), (4) `gradlew
@@ -160,9 +191,10 @@ On Windows the same call runs against the fork's flat extern-C DLL, which eviden
 box. Font fallback is a **red herring**: no font has a tab glyph, only tab→space
 replacement cures it.
 
-- [ ] **P0** Confirm: on the fork, render a literal `\t` string and check for the box;
-      confirm `replaceTabCharacters` either isn't exported or its ParagraphStyle field
-      offset doesn't match m150.
+- [x] **P0** Confirm — ✅ DONE (Windows 2026-08-04): rendered a literal-tab string on the fork
+      (`--screen=BasicText`); every `\t` shows a SPACE, no `.notdef`. The fork renders everything
+      else clean too, so tab→space was the only gap. Structural backstop: the module has exactly 2
+      `.addText(` sites, both `shapedText` — no raw tab can reach skiko.
 - [x] **P0** Fix (ship now, author project code): in
       `.../SkiaParagraphEngine.kt`, feed skiko a normalized copy — added
       `private val shapedText = if (text.indexOf('\t') >= 0) text.replace('\t', ' ') else text`,
@@ -180,7 +212,37 @@ replacement cures it.
       addition to* the Kotlin fix, not instead — it keeps the port thin. Can't be verified
       in-tree.
 
-### 1b. macOS-vs-Windows vertical text metrics — HIGH CONFIDENCE root cause, "is it a bug?" UNCONFIRMED
+### 1b. macOS-vs-Windows vertical text metrics — ✅ RESOLVED (Windows 2026-08-04): heights match JVM, feared bug DISPROVEN
+
+**WINDOWS RESULT (2026-08-04).** All targets render through the SAME Skia, so metrics are expected
+to be similar — and they are. Native `--metricsprobe` (fork) vs JVM `--metrics` (upstream skiko) on
+this host (NotoSans, density 1) print IDENTICAL paragraph heights and non-M3 baselines for every
+size 11→24 (`cell`/`one`/`three`/`oneM3`/`threeM3`, `base1`/`base3` all match). The fork does NOT
+drop lineHeight leading — the hypothesis below is disproven. Two small deltas remained, both
+handled in SHARED Kotlin (no fork rebuild, keeping fork-reliance minimal):
+
+  1. **Fork `LineMetrics.ascent/descent` mis-decode → FIXED in Kotlin (this session).**
+     `CDN_TEXT_METRICS` showed the fork's per-line `ascent`/`descent` constant (18.837/5.163)
+     regardless of `fontPx`, while `baseline`/`height`/`width` are correct (mac scales them:
+     37.674@30px). This is the fork's flat extern-C LineMetrics binding, NOT a Skia difference.
+     Lines stack contiguously so true ascent = `baseline - lineTop`; `SkiaParagraphOps.lineMetrics()`
+     now rebuilds ascent/descent from the reliable baseline+height when they're internally
+     inconsistent (guard `|ascent-(baseline-lineTop)|>0.5` = no-op on official skiko). Repairs caret
+     height / getLineTop/Bottom / vertical hit-test on Windows. **Behavioral caret check → WIN-SMOKE.**
+  2. **M3 baseline drift ≤0.77px (halfLeading) — SHARED-engine omission, all platforms.** `base1M3`
+     differs native-vs-JVM by ≤0.77px in the 11→24 sweep (size 14 → 0.28px, sub-pixel), 2.19px in
+     the contrived `boundary 24/25` case. Root cause is NOT the fork: `SkiaParagraphEngine` maps
+     `LineHeightStyle.trim`→HeightMode but never wires `halfLeading`/`LineHeightStyle.Alignment`, so
+     macOS-native drifts from JVM by the same amount (parity tolerated it as sub-pixel). Fixable in
+     shared Kotlin (`textStyle.halfLeading` from the alignment); deferred pending a cross-platform
+     parity re-check (can't run mac parity from a Windows host).
+
+Native-fork metricsprobe vs JVM `--metrics` (this host) — identical except `base?M3`:
+```
+size=14 lh=20 cell=19 one=19 three=59 base1=14.898 base3=54.898 oneM3=20 threeM3=60 base1M3: 15.682 fork / 15.398 jvm
+size=24 lh=30 cell=33 one=33 three=93 base1=25.968 base3=85.968 oneM3=30 threeM3=90 base1M3: 23.546 fork / 24.312 jvm
+boundary 24/25 m3=25  base: 19.622 fork / 21.812 jvm
+```
 
 The vertical-layout code path is **identical** on all targets. The lineHeight/HeightMode
 path is a byte-faithful port of upstream and is NOT the cause: m3 `labelLarge` has
@@ -205,7 +267,8 @@ ignores it) and V3 (subpixel/edging) are secondary and per-scaler.
 Windows-JVM*. If it matches JVM-Windows it's correct-by-reference (not a bug), and the
 macOS↔Windows delta is expected upstream behavior.
 
-- [~] **P0** Confirm FIRST — diagnostic **LANDED**: `SkiaParagraphEngine.kt` now dumps
+- [x] **P0** Confirm FIRST — ✅ RESOLVED (Windows 2026-08-04; heights == JVM, see WINDOWS RESULT
+      above). Diagnostic **LANDED**: `SkiaParagraphEngine.kt` dumps
       `defaultFont.metrics.{ascent,descent,leading}`, `paragraph.height`,
       `lineMetrics[0].{ascent,descent,baseline,height}`, `familyName` + `fontPx` per built
       paragraph when `CDN_TEXT_METRICS=1` (mirrors the `CDN_PROFILE` env-flag convention).
@@ -242,11 +305,10 @@ macOS↔Windows delta is expected upstream behavior.
       (family='Noto Sans' on all.) Expectation if correct: `fontPx`, `paraHeight`, `line0.height`
       match JVM-Windows exactly; the raw `ascent`/`descent` may differ from these macOS numbers
       because the Windows scaler is FreeType (§1c), but the LINE BOX must still match JVM-Windows.
-- [ ] **P1** If Windows-native != Windows-JVM: fix in the fork (out of tree) — build its
-      `FontMgr.default`/scaler to match official skiko-windows (DirectWrite:
-      `skia_use_dwrite` / system fontmgr) so `makeFromData` typefaces get the same
-      metric-table selection. Then Windows-native matches Windows-JVM, mac stays matching
-      mac-JVM — both upstream-faithful.
+- [x] **P1** ~~If Windows-native != Windows-JVM: fix in the fork~~ — **N/A (2026-08-04):** heights
+      MATCH JVM-Windows exactly, so no fork scaler/FontMgr change is needed for vertical metrics.
+      The `makeFromData` typefaces already get the same metric-table selection as skiko-JVM-Windows.
+      The one residual (M3 halfLeading) is a shared-Kotlin fix, not a fork one.
 - [ ] **P2** (Optional, STRONGER than upstream) If cross-platform pixel-identity is
       wanted over matching each host's stock Compose Desktop: build a single
       FreeType/`SkFontMgr_Custom_Empty`-backed `SkFontMgr` used on ALL native targets for
@@ -258,14 +320,13 @@ macOS↔Windows delta is expected upstream behavior.
 
 ### 1c. Other fork-vs-official divergences
 
-- [ ] **P1** `FontMgr.default` may be an empty/stub manager on the fork (T1/V1 root).
-      `SkiaFonts.kt:38,44,50` wire it as both the paragraph default manager and the loader.
-      An empty manager breaks glyph FALLBACK for missing codepoints (CJK/emoji on Windows),
-      distinct from the tab bug. **Confirm** which `SkFontMgr` the fork's `FontMgr.default`
-      returns on native Windows (the fork build notes — git history — noted it hand-wrote
-      windowsMain actuals because "linux is a stub"). **Fix (fork):** ensure it returns a real
-      DirectWrite (or FreeType-with-system-enumeration) manager matching skiko-JVM-Windows.
-- [~] **P1** `FontMgrWithFallback` — ANALYZED, deliberately NOT changing blindly. The port
+- [x] **P1** ~~`FontMgr.default` may be an empty/stub manager on the fork~~ — **DISPROVEN
+      (Windows 2026-08-04).** Native render of CJK (你好世界 日本語 한국어) + **full-COLOR emoji**
+      (😀🎉🚀❤) + control chars = zero tofu. Color emoji + CJK fallback are impossible with an empty
+      custom FreeType manager, so the fork's `FontMgr.default` IS a real DirectWrite-backed system
+      manager with working glyph enumeration/fallback. No fork change needed. `SkiaFonts.kt` wiring
+      stays as-is.
+- [x] **P1** `FontMgrWithFallback` — ANALYZED + fallback now VERIFIED on Windows. The port
       does `setDefaultFontManager(fontMgr)` [system] + `setAssetFontManager(provider)`
       [bundled] (`SkiaFonts.kt:49-52`). This is **functionally equivalent** for missing-glyph
       fallback on macOS/Linux/Windows-JVM: skiko's shaper tries the asset provider (bundled
@@ -273,18 +334,28 @@ macOS↔Windows delta is expected upstream behavior.
       resolves because the system FontMgr has those fonts. Rewriting to
       `setDefaultFontManager(FontMgrWithFallback(provider))` risks a macOS fallback
       regression with no observable gain, and I can't visually verify CJK/emoji fallback on
-      this host. **The real gap is Windows-fork-only** (fork `FontMgr.default` may be an empty
-      stub → no system fallback), which is the item below and is not fixable in Kotlin.
-      **Decision:** leave the Kotlin as-is; fix the fork's `FontMgr.default`. Re-open only if
-      a CJK/emoji fallback bug is actually observed on macOS/Linux.
-- [ ] **P2** ICU/unicode data packaged differently in the fork (T3). The fork build notes
-      (git history) show it had to force-export `uloc_getDefault_skiko` / `uloc_toLanguageTag_skiko`.
-      Control-char/whitespace classification (U+00A0, U+200B, U+0009 pre-replacement) can
-      diverge. **Confirm:** render those control codepoints, Windows-only tofu check.
-- [ ] **P2** Text gamma/AA edges: a Skia **build-time constant**
+      this host. **The real gap was thought to be Windows-fork-only** (fork `FontMgr.default`
+      empty stub → no system fallback) — but that's **DISPROVEN (2026-08-04):** CJK + color-emoji
+      fallback works on native Windows too (item above). So the setDefault/setAsset wiring is fine
+      on ALL targets. **Decision:** leave the Kotlin as-is; nothing to fix in the fork here. Re-open
+      only if a CJK/emoji fallback bug is actually observed.
+- [x] **P2** ~~ICU/unicode data packaged differently in the fork~~ — **VERIFIED OK (2026-08-04).**
+      Rendered U+00A0 (nbsp → visible space), U+200B (zwsp → zero-width/collapsed), en-dash, and
+      U+0009 (tab, pre-replacement) on native Windows: all classified/handled correctly, no tofu.
+      The force-exported `uloc_*_skiko` symbols do their job; skunicode classification works. (This
+      is also why HarfBuzz shaping + skparagraph bidi work at all — ICU data is present via
+      icudtl.dat.)
+- [~] **P2** Text gamma/AA edges: a Skia **build-time constant**
       (`SK_GAMMA_EXPONENT`/`SK_GAMMA_CONTRAST`/`SK_GAMMA_APPLY_TO_A8`), NOT a GL-vs-Metal
-      runtime difference. If Windows AA looks different it's the fork's Skia gamma flags.
-      Document the fork's values; align to official skiko-windows.
+      runtime difference. **Note (2026-08-04):** native Windows text AA looked clean in the render
+      (no visible AA anomaly), so no fork gamma fix is pursued for 1.0. Still worth capturing the
+      fork's values in the fork repo (see the args.gn item below). **Kotlin-side rasterization
+      settled:** the `RASTER_EDGING/HINTING/SUBPIXEL` in `SkiaParagraphEngine` come from
+      `FontRasterizationSettings.PlatformDefault`, which was verified (2026-08-04) to reproduce
+      upstream Compose Desktop's per-OS defaults VERBATIM (Win/mac=Normal hinting, Linux=Slight).
+      **User decision:** keep the upstream-faithful per-OS behavior (match each platform's stock
+      CMP), NOT a forced uniform cross-platform look. So there is no SDL_TTF-era gamma hack left to
+      strip — Skia is configured exactly as upstream does it.
 - [x] **GL-vs-Metal AA/gamma/color-space — RULED OUT as a primary cause.** Both bridges
       create the surface `colorSpace = null` (`SkiaGLBridge.kt:68-74`,
       `SkiaMetalBridge.kt:133-139`) — identical un-color-managed legacy blending. Only
@@ -554,6 +625,47 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       §2. `git grep` confirms no remaining links to any deleted doc.
 
 ---
+
+## 6. Vendor the upstream skiko text engine (next major refactor — approved 2026-08-04)
+
+**Goal:** honour "VENDOR ALL WE CAN". Delete the hand-rolled reduced text engine
+(`SkiaParagraph.native.kt` + `NativeParagraphOps` seam + `SkiaParagraphEngine.kt` +
+`FontRasterizationSettings.native.kt` port) and vendor upstream's skiko text subsystem VERBATIM.
+
+**Why it was hand-rolled (the REAL reason, not SDL_TTF):** `Paragraph` is `expect sealed interface`
+(`vendor/common/…/Paragraph.kt:56`) whose `actual` sits in the **skiko-FREE `nativeMain`**, so a
+sealed implementer can't touch skiko → the hand seam. `nativeMain` is skiko-free because it's the
+shared parent of the **official-skiko** (mac/linux, `libs.skiko`) and **fork-skiko** (mingw,
+`com.bitsycore.skiko:skiko`) legs — two different artifacts, so the shared parent can carry neither.
+
+**Why it's feasible NOW (all-skiko + srcDir reuse):** every native leg already reaches
+`src/skikoRendererMain/kotlin` (mingw via `kotlin.srcDir(...)` in `skikoRendererMingwSharedMain`,
+`ui-text/build.gradle.kts:54`), and the fork exposes the SAME `org.jetbrains.skia.*` Kotlin API. So
+the `Paragraph` **actual + engine can move DOWN into the skiko source set** (served to all targets)
+instead of skiko-free `nativeMain` — which lets upstream's skiko files compile as-is.
+
+**Plan (spike on a branch, verify on THIS Windows host — build + render mingwX64):**
+1. Move the `Paragraph`/`ParagraphIntrinsics` **actuals** into `skikoRendererMain` (reused by mingw
+   via the existing `srcDir`). Confirm the `expect sealed` actual is accepted there for every leaf
+   target (the b63 memo hit a sealed-in-`nativeMain` wall — test whether hosting the actual in the
+   skiko set clears it; the sealed same-module rule is per-target-compilation, which should hold).
+2. Vendor VERBATIM into `src/vendor/skikoRenderer/`: `SkiaParagraph.skiko.kt`,
+   `ParagraphBuilder.skiko.kt`, `SkiaParagraphIntrinsics.skiko.kt`, `SkiaTextPaint.skiko.kt`,
+   `ParagraphLayouter.skiko.kt`, `PlatformFont.skiko.kt`, `FontRasterizationSettings.skiko.kt`,
+   `TextStyle.skiko.kt`; add them to `ui-text/compose-fork.txt`; delete the hand-rolled files.
+3. Reconcile the ~7 hierarchy-crossing `expect/actual` pairs the inverted layout needed; keep the
+   `SkiaFonts` family/variable-axis model (it's the port's real value-add) behind upstream's seams.
+4. **Fork-only Rule-3 edit:** upstream's code calls `paragraph.lineMetrics` — the fork's extern-C
+   binding mis-decodes ascent/descent (§1b finding). Either carry the guarded reconstruction (from
+   `SkiaParagraphOps.lineMetrics()`) into the vendored `SkiaParagraph.skiko.kt` as a Rule-3 edit, or
+   fix it in the fork DLL. **Bonus:** vendoring `ParagraphBuilder.skiko.kt` verbatim wires
+   `halfLeading` → the §1b M3-baseline drift disappears for free.
+5. Verify: mingwX64 build + `--screen=BasicText/Buttons/AnnotatedString` render clean +
+   `--metricsprobe` == JVM `--metrics`. Then macOS/Linux verify + parity (needs those hosts).
+
+**Sequencing:** AFTER the current shared-Kotlin fixes land (this session). If the sealed-actual move
+proves infeasible, fall back to keeping the seam but at least converting the hand files to tracked
+Rule-3 vendors (like `FontRasterizationSettings.native.kt` now has a `VENDOR-BASE` line).
 
 ## Accepted 1.0.0 gaps (documented, not fixed)
 
