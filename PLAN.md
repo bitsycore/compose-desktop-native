@@ -439,7 +439,10 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       `Font(bytes)`/`ResourceFont` don't load (compose-resources `Font()` works). Upstream
       `SkiaFontLoader.skiko.kt` is the vendorable reference. This is the long-deferred P3.2
       font resolver — **high-risk L**, parity harness wouldn't exercise it. Scope
-      deliberately for 1.0.0 (accept-and-document vs attempt).
+      deliberately for 1.0.0 (accept-and-document vs attempt). **NOW ALSO GATES §6** — the
+      2026-08-04 spike found the verbatim engine-vendor routes font resolution through this NOP, so
+      implementing this loader (so `SkiaFonts`' icon/variable-axis model rides upstream's seam) and
+      the §6 engine-vendor are ONE effort. Do them together, with macOS/Linux verification.
 - [ ] **P1** `CharHelpers.skiko.kt` grapheme-break logic — the ONE cheap selective-vendor
       win from the hand-rolled text engine. Fixes `findPrecedingBreak`/`findFollowingBreak`
       splitting emoji/combining marks in `StringHelpers.native.kt:31` +
@@ -643,6 +646,28 @@ shared parent of the **official-skiko** (mac/linux, `libs.skiko`) and **fork-ski
 `ui-text/build.gradle.kts:54`), and the fork exposes the SAME `org.jetbrains.skia.*` Kotlin API. So
 the `Paragraph` **actual + engine can move DOWN into the skiko source set** (served to all targets)
 instead of skiko-free `nativeMain` — which lets upstream's skiko files compile as-is.
+
+**⚠️ SPIKE FINDING (2026-08-04) — the real gate is the FONT LOADER, not the source-set move.**
+A read-only feasibility map (no code changed) found two layers:
+- **Layer 1 — source-set / sealed move: FEASIBLE.** The `actual sealed interface Paragraph`
+  (`vendor/native/Paragraph.native.kt:36`, signature-only mirror) + its implementer + the 11 factory
+  actuals can move to `skikoRendererMain` (all leaves reach it; sealed same-source-set holds). Just
+  mechanical.
+- **Layer 2 — font model: THIS is the blocker, and it's the SAME task as §2-P1 `PlatformFontLoader`.**
+  Upstream's engine (`SkiaParagraphIntrinsics.skiko.kt:38,61`) resolves typefaces through
+  `FontFamily.Resolver` → `PlatformFontLoader`. The port's `SdlPlatformFontLoader`
+  (`font/FontFamilyResolver.native.kt:30-49`) is a **NOP** (`loadBlocking`/`awaitLoad`→`Unit`,
+  `resolve`→`Immutable(Unit)`). The port's hand-rolled engine exists precisely to BYPASS that NOP by
+  resolving through `SkiaFonts` (icon fonts + variable axes + data.kres bytes). So vendoring the
+  upstream engine verbatim routes font resolution through the NOP → **all text goes blank/tofu**
+  until the loader is real.
+- **Consequence:** the verbatim engine-vendor REQUIRES first implementing upstream's font-loader path
+  (vendor `SkiaFontLoader.skiko.kt` as the reference) so the port's `SkiaFonts` icon/variable-axis
+  model rides upstream's `PlatformFontLoader`/`FontLoadResult` seam. This is the deferred high-risk P1
+  in §2 — it and this §6 are one effort. **Intermediate option:** vendor the engine files but keep
+  `SkiaFonts` via a Rule-3 edit at the one resolve call site (vendors most files verbatim, 1–2 stay
+  hand-reconciled). **Verification needs macOS + Linux hosts** (parity), so this is a dedicated
+  effort, not a Windows-only session — do it with mac access, on its own branch.
 
 **Plan (spike on a branch, verify on THIS Windows host — build + render mingwX64):**
 1. Move the `Paragraph`/`ParagraphIntrinsics` **actuals** into `skikoRendererMain` (reused by mingw
