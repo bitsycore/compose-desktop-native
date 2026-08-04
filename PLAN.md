@@ -613,8 +613,9 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       cannot cover the shipped mingwX64 binary. Assert: (1) NotoSans `FontMetrics` dump
       native-vs-JVM-Windows (§1b acceptance) — **✅ DONE 2026-08-04 (`--metricsprobe`==`--metrics`)**;
       (2) `\t`/control-char render clean (§1a) — **✅ DONE**; (3) the Windows-only `PrintWindow`
-      probe — pending (interactive); (4) the common-metadata publish job — **❌ RED, see the
-      metadata-compile blocker below**. Remaining: (3) + the interactive caret-height check for the
+      probe — pending (interactive); (4) the common-metadata publish job — compile gate now
+      **✅ GREEN (2026-08-04, see the fix below)**; the actual publish + downstream-consume smoke
+      still owed. Remaining: (3) `PrintWindow` probe + the interactive caret-height check for the
       §1b LineMetrics fix.
 - [ ] **P0** apiDump is **host-specific** — do NOT commit macOS dumps. Only the **Windows
       publish job compiles common metadata** (owns the root KotlinMultiplatform publications
@@ -622,8 +623,9 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       variant table; macOS-published roots left v0.1.15 without mingwX64 variants). Test
       `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging; publish from
       Windows.
-- [ ] **P0** **NEW BLOCKER (found 2026-08-04) — common-metadata compile is RED → blocks the Windows
-      publish.** Running `:material3:compileCommonMainKotlinMetadata` (or the aggregate) fails at
+- [x] **P0** **FIXED (2026-08-04) — common-metadata compile is now GREEN** (`compileCommonMainKotlin
+      Metadata` across all modules → BUILD SUCCESSFUL). Was RED, blocking the Windows publish.
+      Running `:material3:compileCommonMainKotlinMetadata` (or the aggregate) had failed at
       `:foundation:compileNativeMainKotlinMetadata` (pulled in via `:foundation:allMetadataJar`):
       `Scrollbar.skiko.kt` + `v2/Scrollbar.skiko.kt` — `Declaration annotated with
       '@OptionalExpectation' can only be used in common module sources`
@@ -643,6 +645,15 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       suppress; or (b) a KGP-level relaxation of the native metadata compilation. Needs a real
       publish + downstream-consume verification after. Dedicated effort — likely THE reason the
       Windows metadata publish never went green.
+      **FIX APPLIED (2026-08-04):** the root turned out narrower — sync.py ALREADY injects the K2
+      `@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE", "LESS_VISIBLE_TYPE_ACCESS_IN_INLINE")`
+      into every `src/vendor/` .kt (`sync.py:313`), so the regenerated tree was fine. The only gap
+      was the two COMMITTED manual vendors in `src/nativeMain` that sync doesn't regenerate:
+      `foundation/…/Scrollbar.skiko.kt` + `v2/Scrollbar.skiko.kt`. Added the identical `@file:Suppress`
+      to both (provenance comment updated; `check-vendor-drift` still clean). Full
+      `compileCommonMainKotlinMetadata` now green. **Remaining before publish:** run the actual
+      publish + a downstream-consume smoke (the compile gate is necessary, not proof the `.module`
+      variant table is complete).
 - [ ] **P1** Version bump to `1.0.0` across published coords once the above are green.
 - [x] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map referenced `RENDERER.md`,
       `SKIKO-MINGW-FEASIBILITY.md`, and `TODO.md`. **DONE:** removed `RENDERER.md` +

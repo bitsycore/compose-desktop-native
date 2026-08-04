@@ -1,5 +1,6 @@
 // VENDOR-BASE: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/v2/Scrollbar.skiko.kt @ v1.12.0-beta03+dev4483
 // MANUAL VENDOR: expect fun runBlockingIfPossible inlined to runBlocking (flat native source set can't hold expect+actual together).
+// Also carries the K2 @file:Suppress below (same as sync.py injects into src/vendor) so the native metadata compile / Windows publish accepts the orphaned JVM annotation.
 /*
  * Copyright 2023 The Android Open Source Project
  *
@@ -15,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE", "LESS_VISIBLE_TYPE_ACCESS_IN_INLINE")
 @file:JvmName("Scrollbar_desktopKt")
 
 package androidx.compose.foundation.v2
