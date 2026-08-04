@@ -609,16 +609,40 @@ umbrella-repo modules the tool can't compare + version skew, not invented surfac
       parity leg currently forced to beta02 by documented skew — native leads).
 - [ ] **P1** Run `check-vendor-drift.py` after the ref bump — re-stamp `VENDOR-BASE` on the
       10 manual vendors, hand-reconcile any that actually changed base..pin.
-- [ ] **P0** WIN-SMOKE fidelity pass (Windows host only, pre-ship gate): the Mac runbook
+- [~] **P0** WIN-SMOKE fidelity pass (Windows host only, pre-ship gate): the Mac runbook
       cannot cover the shipped mingwX64 binary. Assert: (1) NotoSans `FontMetrics` dump
-      native-vs-JVM-Windows (§1b acceptance), (2) `\t`/control-char render clean (§1a),
-      (3) the Windows-only `PrintWindow` probe, (4) the common-metadata publish job.
+      native-vs-JVM-Windows (§1b acceptance) — **✅ DONE 2026-08-04 (`--metricsprobe`==`--metrics`)**;
+      (2) `\t`/control-char render clean (§1a) — **✅ DONE**; (3) the Windows-only `PrintWindow`
+      probe — pending (interactive); (4) the common-metadata publish job — **❌ RED, see the
+      metadata-compile blocker below**. Remaining: (3) + the interactive caret-height check for the
+      §1b LineMetrics fix.
 - [ ] **P0** apiDump is **host-specific** — do NOT commit macOS dumps. Only the **Windows
       publish job compiles common metadata** (owns the root KotlinMultiplatform publications
       — the only host declaring every target, so only its `.module` files carry the full
       variant table; macOS-published roots left v0.1.15 without mingwX64 variants). Test
       `gradlew :<module>:compileCommonMainKotlinMetadata` before tagging; publish from
       Windows.
+- [ ] **P0** **NEW BLOCKER (found 2026-08-04) — common-metadata compile is RED → blocks the Windows
+      publish.** Running `:material3:compileCommonMainKotlinMetadata` (or the aggregate) fails at
+      `:foundation:compileNativeMainKotlinMetadata` (pulled in via `:foundation:allMetadataJar`):
+      `Scrollbar.skiko.kt` + `v2/Scrollbar.skiko.kt` — `Declaration annotated with
+      '@OptionalExpectation' can only be used in common module sources`
+      (`OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE`). **Root cause:** upstream keeps these
+      `.skiko.kt` files in `skikoMain`, which INCLUDES the JVM-desktop target, so `@JvmName`/
+      `@JvmStatic`/`@file:JvmName` resolve; the port vendors them into **native-only `nativeMain`**
+      (no JVM target under it), so those JVM annotations are orphaned and the *metadata* compile
+      rejects them (per-target compile tolerates them — that's why the APPS build fine, but the
+      publish's `allMetadataJar` recompiles nativeMain metadata and dies). `:ui` and below pass;
+      `:foundation` is the first break. **Blast radius:** 14 vendored native files use `@Jvm*`
+      (`grep -rE "@file:JvmName|@JvmName|@JvmStatic" .../src/vendor/native .../src/nativeMain`); 11
+      are in the GITIGNORED, sync-regenerated `src/vendor/native/` tree, so per-file edits DON'T
+      survive a re-sync. **Fix (build/sync-level, not per-file):** either (a) a `sync.sh`
+      post-step that injects `@file:Suppress("OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE")`
+      (or strips `@Jvm*`, which are no-ops with no JVM library target) into vendored native files —
+      there's precedent: `components-resources/…/ResourceState.blocking.kt` already carries that
+      suppress; or (b) a KGP-level relaxation of the native metadata compilation. Needs a real
+      publish + downstream-consume verification after. Dedicated effort — likely THE reason the
+      Windows metadata publish never went green.
 - [ ] **P1** Version bump to `1.0.0` across published coords once the above are green.
 - [x] **P0** Doc-hygiene blocker: `CLAUDE.md` documentation map referenced `RENDERER.md`,
       `SKIKO-MINGW-FEASIBILITY.md`, and `TODO.md`. **DONE:** removed `RENDERER.md` +
