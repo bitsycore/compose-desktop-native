@@ -174,11 +174,28 @@ internal class SkiaParagraphOps(
 					0.0, 0.0, 0.0, a + d, 0),
 			)
 		}
+		// The Windows skiko fork's flat extern-C LineMetrics surface mis-decodes the
+		// per-line ascent/descent — it returns stale values that don't scale with the
+		// font size — while baseline, height, width and left stay correct. Lines stack
+		// contiguously, so the true ascent of a line is (baseline - lineTop); when the
+		// reported ascent disagrees with that by more than a rounding epsilon, rebuild
+		// ascent/descent from the reliable baseline + cumulative line height. Official
+		// skiko is self-consistent (the disagreement is ~0), so this is a no-op there and
+		// only repairs the fork — keeping caret height, getLineTop/getLineBottom and
+		// vertical hit-testing correct on Windows.
+		var lineTop = 0.0
 		return metrics.map {
+			var ascent = it.ascent
+			var descent = it.descent
+			if (kotlin.math.abs(ascent - (it.baseline - lineTop)) > 0.5) {
+				ascent = it.baseline - lineTop
+				descent = it.height - ascent
+			}
+			lineTop += it.height
 			LineMetricData(
 				startIndex = it.startIndex, endIndex = it.endIndex,
 				endExcludingWhitespaces = it.endExcludingWhitespaces, endIncludingNewline = it.endIncludingNewline,
-				isHardBreak = it.isHardBreak, ascent = it.ascent, descent = it.descent, baseline = it.baseline,
+				isHardBreak = it.isHardBreak, ascent = ascent, descent = descent, baseline = it.baseline,
 				left = it.left, right = it.left + it.width, width = it.width, height = it.height,
 				lineNumber = it.lineNumber,
 			)
