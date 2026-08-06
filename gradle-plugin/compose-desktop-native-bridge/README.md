@@ -19,13 +19,8 @@ runtime klibs serve every target.
 // settings.gradle.kts
 pluginManagement {
     repositories {
-        // GitHub Packages requires authentication even for public packages.
-        maven("https://maven.pkg.github.com/bitsycore/compose-desktop-native") {
-            credentials {
-                username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
-                password = providers.gradleProperty("gpr.token").orNull ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
+        // Port artifacts + bridge plugin, no authentication needed.
+        maven("https://maven.bitsycore.com/releases")
         gradlePluginPortal()
         mavenCentral()
     }
@@ -37,16 +32,19 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        maven("https://maven.pkg.github.com/bitsycore/compose-desktop-native") {
-            credentials { /* same */ }
+        maven("https://maven.bitsycore.com/releases") {
             content { excludeGroup("com.bitsycore.skiko") }
         }
         // Windows (mingwX64) renders through the bitsycore skiko fork, published to
         // its OWN GitHub Packages repo as com.bitsycore.skiko:skiko / :skiko-mingwx64.
+        // GitHub Packages requires authentication even for public packages.
         // (macOS/Linux use the official org.jetbrains.skiko from Maven Central, so this
         // repo is scoped to just the fork group.) Omit only if you build no mingwX64.
         maven("https://maven.pkg.github.com/bitsycore/skiko") {
-            credentials { /* same */ }
+            credentials {
+                username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
+                password = providers.gradleProperty("gpr.token").orNull ?: System.getenv("GITHUB_TOKEN")
+            }
             content { includeGroup("com.bitsycore.skiko") }
         }
         google()
@@ -54,6 +52,10 @@ dependencyResolutionManagement {
     }
 }
 ```
+
+> The port is also published to GitHub Packages
+> (`https://maven.pkg.github.com/bitsycore/compose-desktop-native`) as an
+> authenticated fallback — same coordinates, needs a PAT with `read:packages`.
 
 ```kotlin
 // module build.gradle.kts — official coords, everywhere.

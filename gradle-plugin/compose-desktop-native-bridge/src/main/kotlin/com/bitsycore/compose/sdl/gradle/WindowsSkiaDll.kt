@@ -27,7 +27,7 @@ import org.gradle.api.tasks.Copy
 // rather than re-publishing it from the fork.
 
 private const val SKIKO_MINGW_VERSION_PROPERTY = "skikoMingwVersion"
-private const val DEFAULT_SKIKO_MINGW_VERSION = "0.150.1-mingw.1"
+private const val DEFAULT_SKIKO_MINGW_VERSION = "0.150.1-mingw.2"
 
 /**
  * Provisions skiko-windows-x64.dll AND icudtl.dat next to the mingwX64

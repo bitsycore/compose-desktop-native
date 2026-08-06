@@ -42,6 +42,14 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
+        maven {
+            name = "Bitsycore"
+            url = uri("https://maven.bitsycore.com/releases")
+            credentials {
+                username = System.getenv("BITSYCORE_MAVEN_USER")
+                password = System.getenv("BITSYCORE_MAVEN_TOKEN")
+            }
+        }
     }
     publications.withType<MavenPublication>().configureEach {
         pom {

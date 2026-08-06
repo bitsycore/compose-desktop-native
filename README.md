@@ -80,7 +80,8 @@ commonMain.dependencies {
 
 ### Building from your own project: the bridge plugin
 
-The klibs publish to GitHub Packages under per-area coordinates that mirror
+The klibs publish to [maven.bitsycore.com](https://maven.bitsycore.com/releases)
+(no auth) and GitHub Packages (authenticated fallback) under per-area coordinates that mirror
 upstream — `com.bitsycore.compose.ui:ui`, `com.bitsycore.compose.foundation:foundation`,
 … (the `com.bitsycore` fork of each `org.jetbrains.compose.*`). Apply
 the bridge Gradle plugin once, declare the **official** Compose Multiplatform

@@ -7,6 +7,9 @@ on:
   push:
     tags:
       - 'v*'
+  # Manual fallback: run with --ref <tag> so github.ref_name is the tag itself
+  # (PUBLISH_VERSION is derived from it).
+  workflow_dispatch:
 
 # Never overlap two publish runs for the same tag.
 concurrency:
@@ -222,6 +225,33 @@ jobs:
             fi
           done
           echo "::error::Publish failed after 3 attempts"
+          exit 1
+
+      # Second target: the self-hosted Reposilite instance. Same publications,
+      # task names derived from the matrix by swapping the repository name.
+      # The releases repo has redeployment enabled, so a plain retry after a
+      # mid-upload failure is safe (no GitHub-Packages-style 409 poisoning).
+      - name: Publish to maven.bitsycore.com
+        shell: bash
+        env:
+          BITSYCORE_MAVEN_USER: ${{ secrets.BITSYCORE_MAVEN_USER }}
+          BITSYCORE_MAVEN_TOKEN: ${{ secrets.BITSYCORE_MAVEN_TOKEN }}
+        run: |
+          set -e
+          BITSY_TASKS=$(echo "${{ matrix.tasks }}" | sed 's/GitHubPackagesRepository/BitsycoreRepository/g')
+          for attempt in 1 2 3; do
+            echo "::group::Bitsycore publish attempt $attempt"
+            if ./gradlew $BITSY_TASKS --continue --no-daemon --stacktrace; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if [ $attempt -lt 3 ]; then
+              echo "::warning::Bitsycore publish attempt $attempt failed — retrying"
+              sleep 30
+            fi
+          done
+          echo "::error::Bitsycore publish failed after 3 attempts"
           exit 1
 
       # Release binaries for the host target — the binary plus the data.kres
