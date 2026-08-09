@@ -37,17 +37,17 @@ import androidx.compose.ui.window.Popup
    Popups register via the `Popup` composable in androidx.compose.ui.window.
    Re-registration on each composition keeps the captured-state lambdas fresh;
    DisposableEffect's onDispose runs when the parent removes the popup from the
-   tree, removing the entry from the host — unless the hosted content opted
+   tree, removing the entry from the host - unless the hosted content opted
    into an exit transition via PopupExitHandle, in which case removal is
    deferred until the content finished animating out (see PopupExitHandle).
 
-   Lives in :ui (not :foundation) — the whole `ui.window` pair (Dialog + Popup +
+   Lives in :ui (not :foundation) - the whole `ui.window` pair (Dialog + Popup +
    PopupHost) uses only androidx.compose.ui.layout.Layout for positioning, no
    foundation.background / .layout.Box / .layout.offset. */
 class PopupHostState internal constructor() {
 
 	internal class Entry(val id: Any, var content: @Composable () -> Unit) {
-		/** Exit deferral — set (from the hosted content, via PopupExitHandle) when
+		/** Exit deferral - set (from the hosted content, via PopupExitHandle) when
 		   the popup wants to play an exit animation before actual removal.
 		   `exiting` flips to true when the owning Popup composable disposes; the
 		   hosted content observes it, plays its animation, then finish()es. */
@@ -67,7 +67,7 @@ class PopupHostState internal constructor() {
 	}
 
 	/** Called when the owning Popup composable leaves the composition. Entries
-	   whose hosted content registered an exit transition are NOT removed —
+	   whose hosted content registered an exit transition are NOT removed -
 	   they switch to `exiting` and stay composed (the host composition owns
 	   them) until the content calls PopupExitHandle.finish(). */
 	internal fun remove(inId: Any) {
@@ -79,7 +79,7 @@ class PopupHostState internal constructor() {
 		}
 	}
 
-	/** Unconditional removal — the end of an exit transition. */
+	/** Unconditional removal - the end of an exit transition. */
 	internal fun forceRemove(inId: Any) {
 		entries.removeAll { it.id === inId }
 	}
@@ -88,7 +88,7 @@ class PopupHostState internal constructor() {
 	//  Outside-press dismissal (event-level, non-consuming)
 	//  A popup registers its content's window rect + onDismiss here. The window's
 	//  press dispatch calls notifyOutsidePress BEFORE resolving the click and
-	//  does NOT consume it — so a press outside an open menu/tooltip both
+	//  does NOT consume it - so a press outside an open menu/tooltip both
 	//  dismisses it AND reaches whatever is under it (no dead "first click").
 	//  This replaces the old fullscreen click-catcher, which swallowed that click.
 
@@ -121,13 +121,13 @@ class PopupHostState internal constructor() {
 }
 
 val LocalPopupHost = compositionLocalOf<PopupHostState> {
-	error("No PopupHostState in composition — popups must be hosted by composeWindow(...).")
+	error("No PopupHostState in composition - popups must be hosted by composeWindow(...).")
 }
 
 fun createPopupHostState(): PopupHostState = PopupHostState()
 
 // ==================
-// MARK: PopupExitHandle — deferred close for exit animations
+// MARK: PopupExitHandle - deferred close for exit animations
 // ==================
 
 /** Handle a hosted popup's CONTENT uses to defer its removal for an exit
@@ -136,27 +136,27 @@ fun createPopupHostState(): PopupHostState = PopupHostState()
 
    Contract: call [enableExitTransition] while composing; when the owning
    Popup composable disposes, the host flips [isExiting] instead of removing
-   the entry. The hosted content (still composed — it lives in the HOST's
+   the entry. The hosted content (still composed - it lives in the HOST's
    composition, not the owner's) observes that, plays its animation, and MUST
    end with [finish], which actually removes the entry. */
 class PopupExitHandle internal constructor(
-	private val fHost: PopupHostState,       // owning host — target of finish()
+	private val fHost: PopupHostState,       // owning host - target of finish()
 	private val fEntry: PopupHostState.Entry, // the entry this handle controls
 ) {
 	/** True once the owning Popup left the composition and the host is waiting
-	   for this entry's exit animation. Observable — recomposes the content. */
+	   for this entry's exit animation. Observable - recomposes the content. */
 	val isExiting: State<Boolean> get() = fEntry.exiting
 
 	/** Opt in to exit deferral. Idempotent; call from a SideEffect. */
 	fun enableExitTransition() { fEntry.hasExitTransition = true }
 
-	/** Ends the deferral — the entry is removed from the host for real. */
+	/** Ends the deferral - the entry is removed from the host for real. */
 	fun finish() { fHost.forceRemove(fEntry.id) }
 }
 
 /** Per-entry handle, provided by PopupLayer around each hosted content. Null
    outside a popup layer. NB: safe to expose through the caller-locals rewrap
-   in Popup (CompositionLocalProvider(callerContext)) — the caller never
+   in Popup (CompositionLocalProvider(callerContext)) - the caller never
    provides this local, so the layer's per-entry value stays visible. */
 val LocalPopupExitHandle = staticCompositionLocalOf<PopupExitHandle?> { null }
 
@@ -185,7 +185,7 @@ fun PopupLayer(inHost: PopupHostState) {
 
 /** Registers an event-level "dismiss on press outside [inX,inY,inW,inH]" with the
    popup host so the dismissing press is NOT consumed (it still reaches whatever
-   is under it — no dead first click). */
+   is under it - no dead first click). */
 @Composable
 fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest: () -> Unit) {
 	val vHost = LocalPopupHost.current
@@ -201,7 +201,7 @@ fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest
 /** Overlay anchored at an absolute window position. Used by Tooltip / ContextMenu.
    Closes on a press outside its bounds via the host's event-level dismissal.
    `x`/`y` are LAYOUT PIXELS (matches `LayoutCoordinates.positionInRoot`), not
-   `Dp` — layout runs in physical pixels under the Option-B density flow. */
+   `Dp` - layout runs in physical pixels under the Option-B density flow. */
 @Composable
 fun PositionedPopup(
 	x: Int,
@@ -211,7 +211,7 @@ fun PositionedPopup(
 ) {
 	Popup(onDismissRequest = onDismissRequest) {
 		var vSize by remember { mutableStateOf(IntSize.Zero) }
-		// Absolute-position child via a plain Layout — no `Modifier.offset` (that
+		// Absolute-position child via a plain Layout - no `Modifier.offset` (that
 		// lives in :foundation). The parent Popup layer fills the window, so we
 		// report the window's constraints and place the child at (x, y).
 		Layout(

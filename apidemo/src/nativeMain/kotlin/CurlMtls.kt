@@ -11,7 +11,7 @@ import kotlin.time.TimeSource
 // MARK: Client-certificate (mTLS) sending via libcurl
 // ==================
 // Ktor's native engines expose no client-certificate API, so a request that
-// carries a client certificate is sent here instead — straight through the
+// carries a client certificate is sent here instead - straight through the
 // libcurl that ktor-client-curl already bundles (package `libcurl`, embedded
 // static archive; Schannel on Windows, OpenSSL on macOS/Linux). This is the
 // same TLS stack the default engine uses, so behaviour matches; we just get to
@@ -19,7 +19,7 @@ import kotlin.time.TimeSource
 //
 // The transfer is synchronous (curl_easy_perform) and runs on Dispatchers.Default
 // from HttpRunner.run(); cancellation is best-effort (an in-flight perform can't
-// be interrupted — the result is simply discarded if the caller cancelled).
+// be interrupted - the result is simply discarded if the caller cancelled).
 
 /** A client certificate readied for libcurl: the CURLOPT_SSLCERT value plus the
 other SSL options to set, and a cleanup to run once the request is done.
@@ -40,7 +40,7 @@ Throws with a user-facing message if the cert/key can't be loaded. */
 expect fun prepareClientCert(inReq: ApiRequest): PreparedCert
 
 // ChainCert / TlsChain and the sweepTempClientCerts / inspectTlsChain /
-// curlSendWithClientCert expects live in commonMain (TlsCommon.kt) — the UI
+// curlSendWithClientCert expects live in commonMain (TlsCommon.kt) - the UI
 // consumes them from shared code; the per-OS ClientCert*.kt actuals below the
 // native tree actualize sweepTempClientCerts directly.
 
@@ -75,7 +75,7 @@ private class CurlSink {
     val headerRaw = StringBuilder()     // raw response header lines, all responses incl. redirects
 }
 
-/** Body write callback — appends each chunk to the sink's buffer. */
+/** Body write callback - appends each chunk to the sink's buffer. */
 @OptIn(ExperimentalForeignApi::class)
 private fun onCurlBody(
     inBuffer: CPointer<ByteVar>,
@@ -89,7 +89,7 @@ private fun onCurlBody(
     return vLen.convert()
 }
 
-/** Header callback — one parsed header line per call; accumulated for parsing. */
+/** Header callback - one parsed header line per call; accumulated for parsing. */
 @OptIn(ExperimentalForeignApi::class)
 private fun onCurlHeader(
     inBuffer: CPointer<ByteVar>,
@@ -114,7 +114,7 @@ private fun onCurlDiscard(
 ): size_t =
     (inSize * inCount)
 
-/** Open a TLS connection to the request's URL (handshake only — no body) and
+/** Open a TLS connection to the request's URL (handshake only - no body) and
 return the server's certificate chain via CURLINFO_CERTINFO. Reuses the
 request's client certificate if it has one (so mTLS endpoints work too).
 inReq is already var-resolved. */
@@ -294,7 +294,7 @@ actual fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse {
             headers = parseRawHeaders(vSink.headerRaw.toString()),
             body = when {
                 vIsImage -> ""
-                vBinary -> "(${vCt ?: "binary"} · ${vBytes.size} bytes — not shown; use Save as…)"
+                vBinary -> "(${vCt ?: "binary"} · ${vBytes.size} bytes - not shown; use Save as…)"
                 else -> vBytes.decodeToString()
             },
             bytes = vBytes,
@@ -314,7 +314,7 @@ actual fun curlSendWithClientCert(inReq: ApiRequest): ApiResponse {
 private fun errorResponse(inMessage: String, inMs: Long): ApiResponse =
     ApiResponse(
         status = 0,
-        statusText = "—",
+        statusText = "-",
         timeMs = inMs,
         sizeBytes = 0,
         headers = emptyList(),
@@ -341,8 +341,8 @@ private fun requestBodyBytes(inReq: ApiRequest): CurlBody? {
 }
 
 /** Parse libcurl's accumulated raw header text into ordered key/value pairs,
-keeping only the final response's block (a new "HTTP/" status line — emitted
-per redirect hop — resets what we've gathered). */
+keeping only the final response's block (a new "HTTP/" status line - emitted
+per redirect hop - resets what we've gathered). */
 private fun parseRawHeaders(inRaw: String): List<Pair<String, String>> {
     var vCurrent = mutableListOf<Pair<String, String>>()
     for (vRawLine in inRaw.split("\r\n", "\n")) {

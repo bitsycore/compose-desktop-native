@@ -6,7 +6,7 @@ import kotlin.contracts.contract
 
 // Native actual for vendored commonMain `Synchronization.kt`. Same body
 // as upstream's `Synchronization.skiko.kt` but without `@PublishedApi` on
-// the synchronized fn — upstream's annotation triggers a visibility
+// the synchronized fn - upstream's annotation triggers a visibility
 // mismatch under our K2 toolchain (`SynchronizedObject` is plain `internal
 // actual`, not `@PublishedApi`). The behaviour is identical to the
 // vendored `androidx.compose.foundation.platform.Synchronization.native.kt`.

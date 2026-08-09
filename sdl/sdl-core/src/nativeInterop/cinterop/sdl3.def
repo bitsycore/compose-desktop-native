@@ -1,12 +1,12 @@
 headers = SDL3/SDL.h
 headerFilter = SDL3/**
 
-# libSDL3.a is baked into the cinterop klib — apps get SDL3 auto-linked
+# libSDL3.a is baked into the cinterop klib - apps get SDL3 auto-linked
 # just by depending on :ui, with no per-app -L/-l plumbing. The static
 # archive location comes from :ui build.gradle.kts (-libraryPath) because
 # .def files can't reference $rootDir. The linker options below list the
 # system frameworks / libs SDL3's static build depends on (see the Libs
-# line in libs/SDL3/lib/pkgconfig/sdl3.pc after build-all.py runs) —
+# line in libs/SDL3/lib/pkgconfig/sdl3.pc after build-all.py runs) -
 # cinterop propagates them through the klib to the final app link.
 
 staticLibraries = libSDL3.a
@@ -14,7 +14,7 @@ staticLibraries = libSDL3.a
 # Matches the SLIM build's libs/SDL3/lib/pkgconfig/sdl3.pc `Libs:` line (source of
 # truth). The audio/gamepad/haptic/camera frameworks (CoreAudio, AudioToolbox,
 # AVFoundation, GameController, ForceFeedback, CoreHaptics) dropped out once those
-# subsystems were disabled in build-all.py — regenerate the .pc and re-sync this
+# subsystems were disabled in build-all.py - regenerate the .pc and re-sync this
 # list if the SDL feature set ever changes.
 linkerOpts.osx = \
 	-framework CoreMedia -framework CoreVideo -framework Cocoa \
@@ -24,7 +24,7 @@ linkerOpts.osx = \
 	-lpthread -lm
 
 # The -L multi-arch dirs + fontconfig/GL/X11 serve the SKIA renderer (font
-# matching, GL backend, windowing) — K/N's LLD sysroot doesn't include the
+# matching, GL backend, windowing) - K/N's LLD sysroot doesn't include the
 # host's multi-arch dir, and carrying them here means apps (including bridge
 # consumers) need NO linker flags of their own (the extra -l is harmless, and
 # LLD skips missing -L dirs).

@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import kotlin.math.floor
 
 // ==================
-// MARK: SkiaParagraph — nativeMain Paragraph over a skiko-backed ops seam
+// MARK: SkiaParagraph - nativeMain Paragraph over a skiko-backed ops seam
 // ==================
 //
 // `Paragraph` is a sealed interface whose actual is declared in nativeMain, so
@@ -80,7 +80,7 @@ internal interface NativeParagraphOps {
 	fun rebuildAndPaint(canvas: Canvas, color: Color, shadow: Shadow?, decoration: TextDecoration?)
 
 	/** Re-break the ALREADY-SHAPED paragraph at a new width (skiko reuses the
-	   cached shaped runs — no HarfBuzz re-shape). Used to reuse the intrinsics
+	   cached shaped runs - no HarfBuzz re-shape). Used to reuse the intrinsics
 	   pass's shaped paragraph for the final layout instead of shaping twice. */
 	fun relayout(width: Float)
 

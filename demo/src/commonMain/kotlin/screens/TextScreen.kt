@@ -28,11 +28,11 @@ internal fun TextScreen() {
 
         Section("Font weights", "fontWeight drives the variable font's wght axis (Thin → Black)") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Thin 100 — the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Thin, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text("Normal 400 — the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text("Medium 500 — the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text("Bold 700 — the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text("Black 900 — the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Thin 100 - the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Thin, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Normal 400 - the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Medium 500 - the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Bold 700 - the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Black 900 - the quick brown fox", fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
             }
         }
 
@@ -78,7 +78,7 @@ internal fun TextScreen() {
             }
         }
 
-        Section("softWrap = false", "Overflows horizontally — Surface clips, content cropped at the right edge") {
+        Section("softWrap = false", "Overflows horizontally - Surface clips, content cropped at the right edge") {
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = MaterialTheme.colorScheme.background,

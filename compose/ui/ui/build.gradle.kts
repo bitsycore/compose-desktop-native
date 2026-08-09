@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :ui — the Compose core + the Skia rendering pipeline + the SDL bridges
+// :ui - the Compose core + the Skia rendering pipeline + the SDL bridges
 // (all native targets). androidx.compose.ui.graphics.* / .text.* were split out
 // to :ui-graphics / :ui-text, and the sdl3 cinterop now lives in :sdl-core;
 // :ui depends on both.
@@ -8,10 +8,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // Source-set hierarchy:
 //   commonMain
 //     └── nativeMain                        (vendored .native.kt + project SDL3 wrappers)
-//           ├── skikoRendererMain           (Skia pipeline; OFFICIAL Skiko — macOS/Linux)
+//           ├── skikoRendererMain           (Skia pipeline; OFFICIAL Skiko - macOS/Linux)
 //           │     ├── skikoRendererMacosMain    (macOS Metal bridge)  → macosArm64
 //           │     └── skikoRendererLinuxMain    (Linux OpenGL)        → linuxX64/Arm64
-//           └── skikoRendererMingwSharedMain (Skia pipeline; the bitsycore skiko FORK —
+//           └── skikoRendererMingwSharedMain (Skia pipeline; the bitsycore skiko FORK -
 //                 └── skikoRendererMingwMain    mingwX64 has no official Skiko klib) → mingwX64
 //
 // SDL3 stays as the windowing / input / platform layer (the single `sdl3`
@@ -68,7 +68,7 @@ kotlin {
             kotlin.srcDir("src/vendor/native/kotlin")
             dependencies {
                 // The sdl3 cinterop now lives in :sdl-core; expose it (api) so :ui's
-                // SDL platform + renderer code — and :desktop-native-window downstream — see sdl3.*
+                // SDL platform + renderer code - and :desktop-native-window downstream - see sdl3.*
                 // and inherit SDL3's static-lib + linker-opt propagation.
                 api(project(":sdl-core"))
             }
@@ -81,7 +81,7 @@ kotlin {
 
         val skikoRendererMain = create("skikoRendererMain") {
             dependsOn(nativeMain.get())
-            // src/vendor/skikoRenderer/kotlin — upstream `skikoMain` files
+            // src/vendor/skikoRenderer/kotlin - upstream `skikoMain` files
             // (Skia-tied actuals like BlendMode.skiko.kt) vendored verbatim.
             kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
             dependencies {

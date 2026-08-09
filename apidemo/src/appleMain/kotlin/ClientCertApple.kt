@@ -9,7 +9,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 // macOS: Ktor bundles an OpenSSL-backed libcurl, which reads PEM / DER / PKCS#12
-// certificate and key files directly — no certificate-store dance needed.
+// certificate and key files directly - no certificate-store dance needed.
 
 /** Point libcurl straight at the certificate / key files. */
 actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
@@ -26,7 +26,7 @@ actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
 actual fun sweepTempClientCerts() {}
 
 /** Continue the server's chain with intermediates / roots pulled from the
-macOS Keychain — same UX as the Windows path does via the trust store.
+macOS Keychain - same UX as the Windows path does via the trust store.
 Falls back to the name-only placeholder if Apple's APIs can't resolve
 the chain (e.g. the server's leaf doesn't parse, or its issuer isn't
 in any keychain). */
@@ -43,7 +43,7 @@ actual fun extendChain(inServerCerts: List<List<Pair<String, String>>>): List<Ch
 // ============
 
 /** Build the chain by handing the leaf to SecTrust + evaluating against
-an SSL policy — Apple then walks Keychain, pulling intermediates and
+an SSL policy - Apple then walks Keychain, pulling intermediates and
 the root in. Returns the resolved chain with fromServer=true for the
 first inServerCount entries (those came down on the wire) and false
 for anything the OS added. */
@@ -53,7 +53,7 @@ private fun osChainApple(
     inServerCount: Int,
     inServerCerts: List<List<Pair<String, String>>>,
 ): List<ChainCert> {
-    // Parse every cert the server presented, not just the leaf — Apple's
+    // Parse every cert the server presented, not just the leaf - Apple's
     // chain builder uses them as candidate intermediates when stitching to
     // a root, instead of relying solely on AIA-fetch which is off by default.
     val vServerCerts = inServerCerts.mapNotNull {
@@ -82,7 +82,7 @@ private fun osChainApple(
     }
     val vTrust = vTrustVar.value!!
 
-    // Evaluate even if it fails — we still want the partial chain back so
+    // Evaluate even if it fails - we still want the partial chain back so
     // the UI can show what it could resolve. SecTrustEvaluateWithError
     // stops at the highest cert it found.
     val vErr = nativeHeap.alloc<CFErrorRefVar>()
@@ -137,7 +137,7 @@ private fun createSecCertificate(inDer: ByteArray): SecCertificateRef? {
     return vCert
 }
 
-/** CFArray of SecCertificateRef — the input to SecTrustCreateWithCertificates. */
+/** CFArray of SecCertificateRef - the input to SecTrustCreateWithCertificates. */
 @OptIn(ExperimentalForeignApi::class)
 private fun createCFArray(inCerts: List<SecCertificateRef>): CFArrayRef {
     val vPtrs = nativeHeap.allocArray<COpaquePointerVar>(inCerts.size)
@@ -147,7 +147,7 @@ private fun createCFArray(inCerts: List<SecCertificateRef>): CFArrayRef {
     return vArr
 }
 
-/** Apple's "subject summary" — basically the CN, but falls back to the
+/** Apple's "subject summary" - basically the CN, but falls back to the
 organisation when no CN is present (matches what Keychain Access
 displays in its cert list). */
 @OptIn(ExperimentalForeignApi::class)
@@ -157,7 +157,7 @@ private fun secSubjectSummary(inCert: SecCertificateRef): String? {
     return vNs?.toString()
 }
 
-/** PEM string for a SecCertificate — base64 of the DER bytes wrapped
+/** PEM string for a SecCertificate - base64 of the DER bytes wrapped
 with -----BEGIN CERTIFICATE-----/-----END----- headers. */
 @OptIn(ExperimentalForeignApi::class, ExperimentalEncodingApi::class)
 private fun secCertPem(inCert: SecCertificateRef): String? {

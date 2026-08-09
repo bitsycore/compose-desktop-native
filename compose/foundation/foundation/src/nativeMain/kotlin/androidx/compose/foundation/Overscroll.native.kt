@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalAccessorScope
 
 // ==================
-// MARK: Overscroll actuals — desktop no-op
+// MARK: Overscroll actuals - desktop no-op
 // ==================
 
 /**

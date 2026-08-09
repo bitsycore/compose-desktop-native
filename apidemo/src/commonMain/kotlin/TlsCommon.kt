@@ -4,14 +4,14 @@ package apidemo
 // MARK: TLS chain / client-certificate seam
 // ==================
 // The real implementations drive the bundled libcurl directly (CurlMtls.kt,
-// nativeMain) — Ktor's engines expose no client-cert / CERTINFO API. The jvm
+// nativeMain) - Ktor's engines expose no client-cert / CERTINFO API. The jvm
 // parity app has no bundled libcurl, so its actuals report the feature as
 // native-only instead.
 
 /** One certificate in the chain: its CURLINFO_CERTINFO-style fields (Subject /
 Issuer / the PEM under "Cert" / dates …) and whether the server actually
-presented it. Derived certs — an issuer resolved from the OS store, or a
-name-only placeholder — have fromServer = false and are drawn dotted. */
+presented it. Derived certs - an issuer resolved from the OS store, or a
+name-only placeholder - have fromServer = false and are drawn dotted. */
 class ChainCert(val fields: List<Pair<String, String>>, val fromServer: Boolean)
 
 /** The server's TLS certificate chain. error is set instead when it couldn't be

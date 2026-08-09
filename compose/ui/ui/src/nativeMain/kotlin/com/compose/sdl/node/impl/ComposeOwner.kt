@@ -56,7 +56,7 @@ import androidx.collection.IntObjectMap
 import androidx.collection.mutableIntObjectMapOf
 
 // ==================
-// MARK: ComposeOwner — real Owner driving the vendored layout engine
+// MARK: ComposeOwner - real Owner driving the vendored layout engine
 // ==================
 
 /**
@@ -106,7 +106,7 @@ internal class ComposeOwner(
 	}
 
 	// Attaches the root subtree to this owner. Call once after construction,
-	// before the first measure pass — mirrors a platform Owner attaching when
+	// before the first measure pass - mirrors a platform Owner attaching when
 	// its view enters the hierarchy.
 	fun attach() {
 		root.attach(this)
@@ -125,9 +125,9 @@ internal class ComposeOwner(
 	}
 
 	// ============
-	//  Layout-driving members — forward to the delegate
+	//  Layout-driving members - forward to the delegate
 
-	// affectsLookahead MUST reach the delegate's lookahead entry points —
+	// affectsLookahead MUST reach the delegate's lookahead entry points -
 	// dropping it starves the lookahead pass, and anything built on
 	// LookaheadScope (SharedTransitionLayout, animateContentSize-style
 	// intermediate layouts) dies with "LookaheadDelegate has not been
@@ -169,7 +169,7 @@ internal class ComposeOwner(
 		// Drop the detached node's read-observation scopes, exactly as upstream
 		// RootNodeOwner.onDetach does. Without this, every disposed node's measure/
 		// layout/draw observation scopes accumulate in the snapshot observer forever
-		// — the baseline composition-machinery leak the P2.2 soak caught.
+		// - the baseline composition-machinery leak the P2.2 soak caught.
 		snapshotObserver.clear(node)
 	}
 
@@ -205,7 +205,7 @@ internal class ComposeOwner(
 	)
 
 	// ============
-	//  OwnedLayerManager — retained-layer bookkeeping (mirrors upstream
+	//  OwnedLayerManager - retained-layer bookkeeping (mirrors upstream
 	//  OwnedLayerManagerImpl). dirtyLayers are re-recorded once per frame in
 	//  [renderRoot] before the tree is drawn; clean layers replay their cached
 	//  display list. invalidate() asks the window to schedule a frame.
@@ -227,7 +227,7 @@ internal class ComposeOwner(
 		// Mirrors upstream OwnedLayerManagerImpl exactly. The CRITICAL detail: when a
 		// layer clears its dirty flag DURING drawing (updateDisplayList sets isDirty
 		// = false in the renderRoot loop), we must NOT remove it from dirtyLayers here
-		// — that would shrink the list mid-iteration (IndexOutOfBounds). renderRoot's
+		// - that would shrink the list mid-iteration (IndexOutOfBounds). renderRoot's
 		// dirtyLayers.clear() after the loop handles it instead.
 		if (!isDirty) {
 			if (!isDrawingContent) {
@@ -250,7 +250,7 @@ internal class ComposeOwner(
 	}
 
 	// Both Owner and OwnedLayerManager declare voteFrameRate with a default, so an
-	// explicit override is required. We render at a fixed vsync cadence — no voting.
+	// explicit override is required. We render at a fixed vsync cadence - no voting.
 	override fun voteFrameRate(frameRate: Float) {}
 
 	// Draw the tree: re-record dirty layers' display lists, then walk the root so
@@ -279,7 +279,7 @@ internal class ComposeOwner(
 
 	// ============
 	//  No-op subsystems (focus / semantics / input / clipboard / text / …).
-	//  Same reduced impls as StubOwner — refined in B5 (semantics/input) / B6.
+	//  Same reduced impls as StubOwner - refined in B5 (semantics/input) / B6.
 
 	override val layoutNodes: IntObjectMap<LayoutNode> = mutableIntObjectMapOf()
 	@Suppress("DEPRECATION")
@@ -358,7 +358,7 @@ internal class ComposeOwner(
 	override val semanticsOwner: SemanticsOwner = SemanticsOwner(this@ComposeOwner.root, androidx.compose.ui.semantics.EmptySemanticsModifier(), this@ComposeOwner.layoutNodes)
 	override val focusOwner: FocusOwner = androidx.compose.ui.focus.FocusOwnerImpl(
 		platformFocusOwner = object : androidx.compose.ui.focus.PlatformFocusOwner {
-			// The SDL window always owns/accepts focus, so grant owner focus — returning false
+			// The SDL window always owns/accepts focus, so grant owner focus - returning false
 			// here denies the very first focus request (performRequestFocus, previousActiveNode==null).
 			override fun requestOwnerFocus(focusDirection: androidx.compose.ui.focus.FocusDirection?, previouslyFocusedRect: androidx.compose.ui.geometry.Rect?): Boolean = true
 			override fun clearOwnerFocus() {}
@@ -399,17 +399,17 @@ internal class ComposeOwner(
 	override val modifierLocalManager: ModifierLocalManager = ModifierLocalManager(this)
 	// Drives node-level animations (scroll fling, animateScrollToItem, Animatable inside
 	// Modifier.Nodes). These call withFrameNanos on the MonotonicFrameClock in their coroutine
-	// scope, which derives from this owner's coroutineContext — so it MUST carry a frame clock,
+	// scope, which derives from this owner's coroutineContext - so it MUST carry a frame clock,
 	// or every node animation hangs (e.g. mouse-wheel smooth scroll never applies). ComposeWindow
 	// pumps it once per frame via ComposeRootHost.sendAnimationFrame.
 	internal val animationFrameClock = androidx.compose.runtime.BroadcastFrameClock()
 
-	// Modifier.Node coroutine scopes derive from this — hover's emitEnter/emitExit launch here,
+	// Modifier.Node coroutine scopes derive from this - hover's emitEnter/emitExit launch here,
 	// and node animations await frames on animationFrameClock. Dispatcher is the SDL main
 	// dispatcher (installed by ComposeWindow, drained each frame).
 	override val coroutineContext: CoroutineContext =
 		kotlinx.coroutines.Dispatchers.Main + animationFrameClock
-	// End-of-apply-changes listeners — the focus system (FocusInvalidationManager) and other
+	// End-of-apply-changes listeners - the focus system (FocusInvalidationManager) and other
 	// engine parts register here to defer work until changes are applied; without this the
 	// focus invalidation never flushes and requestFocus() (e.g. focus-on-click) never sticks.
 	private val fEndApplyChangesListeners = mutableListOf<() -> Unit>()

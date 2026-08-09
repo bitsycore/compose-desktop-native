@@ -14,10 +14,10 @@ import kotlin.experimental.ExperimentalNativeApi
  * maps `PlatformDefault` to skiko enums itself, in SkiaParagraphEngine). It lives
  * in the skiko-FREE `nativeMain` because vendored `TextStyle.native.kt` references
  * `FontRasterizationSettings.PlatformDefault`, and `nativeMain` is the shared parent
- * of the official-skiko (mac/linux) and fork-skiko (mingw) legs — so it can't carry
+ * of the official-skiko (mac/linux) and fork-skiko (mingw) legs - so it can't carry
  * skiko. `PlatformDefault` reproduces upstream's per-OS defaults VERBATIM (verified
  * against the pin): anti-aliased + subpixel everywhere, hinting Slight on Linux and
- * Normal on Windows/macOS (macOS ignores hinting). This split — and the hand port —
+ * Normal on Windows/macOS (macOS ignores hinting). This split - and the hand port -
  * goes away if the port hosts the `Paragraph` actual in the skiko source set and
  * vendors upstream's skiko text files verbatim (PLAN.md §6).
  */

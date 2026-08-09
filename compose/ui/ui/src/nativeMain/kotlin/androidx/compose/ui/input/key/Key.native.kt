@@ -7,10 +7,10 @@ package androidx.compose.ui.input.key
 // ==================
 
 /**
- * Project [Key] actual — assigns a unique sequential Long to each named
+ * Project [Key] actual - assigns a unique sequential Long to each named
  * key. SDL3EventMapper picks the right `Key.X` by switch on SDL scancode
  * (`kKeyForScancode` in `SDL3EventMapper.kt`). Comparison works because
- * Key is a value class — `Key(42L) == Key(42L)`.
+ * Key is a value class - `Key(42L) == Key(42L)`.
  */
 @kotlin.jvm.JvmInline
 actual value class Key(actual val keyCode: Long) {

@@ -39,7 +39,7 @@ internal fun ButtonsScreen() {
             }
         }
 
-        Section("TextButton", "No background, no border — text-only affordance") {
+        Section("TextButton", "No background, no border - text-only affordance") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = {}) {
                     Text("Text", color = MaterialTheme.colorScheme.primary)

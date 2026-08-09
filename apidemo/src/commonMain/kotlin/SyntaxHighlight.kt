@@ -7,11 +7,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import kotlinx.serialization.Serializable
 
 // ==================
-// MARK: BodyFormat — viewer/highlighter selection
+// MARK: BodyFormat - viewer/highlighter selection
 // ==================
 
 /** Format of a body payload as shown in the viewer, and (for a TEXT request body)
-the type the user picks on the right of the Body tab — it drives both syntax
+the type the user picks on the right of the Body tab - it drives both syntax
 highlighting and the sent Content-Type. RAW disables highlighting and falls back
 to the selectable BasicTextField; other values pick a tokeniser. */
 @Serializable
@@ -68,7 +68,7 @@ data class SyntaxPalette(
     val punct: Color,
 ) {
     companion object {
-        /** Light-on-dark — VS Code Dark+. */
+        /** Light-on-dark - VS Code Dark+. */
         val Dark = SyntaxPalette(
             key = Color(0xFF9CDCFE),
             string = Color(0xFFCE9178),
@@ -79,7 +79,7 @@ data class SyntaxPalette(
             punct = Color(0xFFCCCCCC),
         )
 
-        /** Dark-on-light — VS Code Light+. Higher contrast on white. */
+        /** Dark-on-light - VS Code Light+. Higher contrast on white. */
         val Light = SyntaxPalette(
             key = Color(0xFF0451A5),
             string = Color(0xFFA31515),
@@ -113,13 +113,13 @@ fun highlight(
 }
 
 // ==================
-// MARK: JSON tokeniser — single-pass, error-tolerant
+// MARK: JSON tokeniser - single-pass, error-tolerant
 // ==================
 
 /** Tokeniser for JSON. Walks the string once and emits style spans for
 strings, numbers, booleans, null, punctuation. Distinguishes "keys"
 (strings followed by ':') from string values by peeking after each
-string. Error-tolerant — malformed JSON still highlights as best
+string. Error-tolerant - malformed JSON still highlights as best
 effort rather than throwing. */
 private fun highlightJson(inText: String, inP: SyntaxPalette): AnnotatedString = buildAnnotatedString {
     val vN = inText.length
@@ -224,7 +224,7 @@ private fun highlightXml(inText: String, inP: SyntaxPalette): AnnotatedString = 
                     append(inText.substring(vTagStart, vJ))
                     pop()
                 }
-                // Attributes — name="value" pairs.
+                // Attributes - name="value" pairs.
                 while (vJ < vGt - 1) {
                     val vC2 = inText[vJ]
                     when {
@@ -271,7 +271,7 @@ private fun highlightXml(inText: String, inP: SyntaxPalette): AnnotatedString = 
 }
 
 // ==================
-// MARK: YAML tokeniser — line-based
+// MARK: YAML tokeniser - line-based
 // ==================
 
 /** Tokeniser for YAML. Walks line by line because YAML's grammar is
@@ -320,7 +320,7 @@ private fun highlightYaml(inText: String, inP: SyntaxPalette): AnnotatedString =
     }
 }
 
-/** Render the value portion of a YAML line — applies string / number /
+/** Render the value portion of a YAML line - applies string / number /
 keyword / list-marker colours where applicable. */
 private fun AnnotatedString.Builder.appendYamlValue(inSeg: String, inP: SyntaxPalette) {
     val vTrimmed = inSeg.trimStart()
@@ -378,7 +378,7 @@ private fun findUnquotedHash(inLine: String): Int {
 }
 
 /** Locate the colon that separates a YAML key from its value at the
-current indent level — the FIRST unquoted ':' that's followed by
+current indent level - the FIRST unquoted ':' that's followed by
 either whitespace or end-of-line. Returns -1 if the line has no key. */
 private fun indexOfKeyColon(inLine: String): Int {
     var vInSingle = false

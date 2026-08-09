@@ -39,7 +39,7 @@ private const val kLogoResourcePath = "composeResources/demo.generated.resources
 // ==================
 
 /** Round-trips text AND PNG images through the OS clipboard via LocalClipboard
-   (suspend, ClipEntry-typed) — on native over SDL3's SDL_[GS]etClipboardText /
+   (suspend, ClipEntry-typed) - on native over SDL3's SDL_[GS]etClipboardText /
    SDL_[GS]etClipboardData("image/png"), on JVM over the AWT clipboard.
    ClipEntry construction/reading has NO common upstream API (each platform
    actual differs), so this screen goes through demo.shim.DemoClipboard.
@@ -59,13 +59,13 @@ internal fun ClipboardScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Clipboard",
-            "LocalClipboard (suspend, ClipEntry-typed) over the SDL3 system clipboard — " +
+            "LocalClipboard (suspend, ClipEntry-typed) over the SDL3 system clipboard - " +
                 "SDL_[GS]etClipboardText for plain text and SDL_[GS]etClipboardData(\"image/png\") " +
                 "for images. Copy here and paste into another app (or vice-versa).",
         )
 
         // ============
-        //  Text copy — demoClipEntryOfText (ClipEntry.withPlainText on native,
+        //  Text copy - demoClipEntryOfText (ClipEntry.withPlainText on native,
         //  AWT StringSelection on JVM).
         Section("Copy text", "scope.launch { clipboard.setClipEntry(demoClipEntryOfText(...)) }") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -85,7 +85,7 @@ internal fun ClipboardScreen() {
         }
 
         // ============
-        //  Image copy — reads the bundled compose_logo PNG bytes and puts
+        //  Image copy - reads the bundled compose_logo PNG bytes and puts
         //  them on the clipboard under MIME "image/png". Paste into any
         //  image-aware app (Preview / Paint / a browser tab) to verify.
         Section(
@@ -95,7 +95,7 @@ internal fun ClipboardScreen() {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Preview of the source image — same PNG the copy button ships.
+                    // Preview of the source image - same PNG the copy button ships.
                     val vSource by produceState<ImageBitmap?>(null) {
                         val vBytes = runCatching { readResourceBytes(kLogoResourcePath) }.getOrNull()
                         value = vBytes?.let { demoDecodeImage(it) }
@@ -127,7 +127,7 @@ internal fun ClipboardScreen() {
         }
 
         // ============
-        //  Paste — surfaces whatever's on the clipboard: text OR image.
+        //  Paste - surfaces whatever's on the clipboard: text OR image.
         Section("Paste", "clipboard.getClipEntry()?.demoPlainText() / .demoPngImage()") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -181,7 +181,7 @@ internal fun ClipboardScreen() {
         }
 
         // ============
-        //  The modern Clipboard has no non-composable entry point — capture
+        //  The modern Clipboard has no non-composable entry point - capture
         //  LocalClipboard.current + rememberCoroutineScope() in composition
         //  and pass both into any plain function or event callback.
         Section(
@@ -206,7 +206,7 @@ internal fun ClipboardScreen() {
 
 /** Non-composable helper: receives the Clipboard + a CoroutineScope captured
    from composition at the call site. This is the idiomatic way to reach the
-   clipboard from event handlers, coroutines, or utility functions — the
+   clipboard from event handlers, coroutines, or utility functions - the
    modern Clipboard is intentionally suspend-only. */
 private fun copyFromPlainFunction(scope: CoroutineScope, clipboard: Clipboard) {
     scope.launch {

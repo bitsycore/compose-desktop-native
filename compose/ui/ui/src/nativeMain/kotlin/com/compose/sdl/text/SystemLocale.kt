@@ -26,7 +26,7 @@ import sdl3.SDL_free
  * after the first NON-EMPTY read: the list is stable for a session, and SDL
  * requires its subsystem initialized, so a pre-init read returns empty and is
  * retried rather than cached. Runtime locale changes (SDL_EVENT_LOCALE_CHANGED)
- * are not reflected — matching upstream, whose Locale.current is not reactive.
+ * are not reflected - matching upstream, whose Locale.current is not reactive.
  */
 
 private var cachedTags: List<String>? = null

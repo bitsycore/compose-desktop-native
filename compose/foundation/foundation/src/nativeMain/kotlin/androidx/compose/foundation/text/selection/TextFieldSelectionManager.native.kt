@@ -4,11 +4,11 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 
 // ==================
-// MARK: TextFieldSelectionManager — native actuals
+// MARK: TextFieldSelectionManager - native actuals
 // ==================
 
 /**
- Byte-identical mirror of upstream macosMain — magnification and toolbar
+ Byte-identical mirror of upstream macosMain - magnification and toolbar
  context-menu components are desktop no-ops. `isSelectionHandleInVisibleBound`
  delegates to the default-inside-visible-rect check (defined in the vendored
  TextFieldSelectionManager.kt).

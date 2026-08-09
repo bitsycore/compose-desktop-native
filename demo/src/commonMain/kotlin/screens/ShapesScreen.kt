@@ -20,7 +20,7 @@ internal fun ShapesScreen() {
             Box(modifier = Modifier.size(120.dp, 40.dp).background(MaterialTheme.colorScheme.primary))
         }
 
-        Section("RoundedCornerShape — radius 4 / 12 / 24 dp") {
+        Section("RoundedCornerShape - radius 4 / 12 / 24 dp") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.size(80.dp, 40.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)))
                 Box(modifier = Modifier.size(80.dp, 40.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)))

@@ -73,7 +73,7 @@ fun HorizontalSplitPane(
 
 		Box(modifier = Modifier.width(with(vDensity) { vClampedFirstPx.toDp() }).fillMaxHeight()) { first() }
 
-		// Solid divider that fills its own slot — what you see is exactly what
+		// Solid divider that fills its own slot - what you see is exactly what
 		// you can grab. Hover or an in-progress drag just changes the colour (no
 		// size change → no layout shift, and no flicker when the pointer briefly
 		// leaves the slot mid-drag).

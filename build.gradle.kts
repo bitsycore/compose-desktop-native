@@ -12,7 +12,7 @@ plugins {
 apiValidation {
     @OptIn(ExperimentalBCVApi::class)
     klib { enabled = true }
-    // demo/apidemo: apps, no published API. sdl-core: naked SDL cinterop — its
+    // demo/apidemo: apps, no published API. sdl-core: naked SDL cinterop - its
     // "API" is the generated sdl3.* bindings (per-OS, can't infer macos), not our
     // surface. material-symbols: auto-generated icon codepoint maps + its jvm
     // dump trips BCV's ASM on newer JDKs (class file major 69). Track the
@@ -63,7 +63,7 @@ allprojects {
 // ==================
 
 // Every library module (everything except the two demo apps) auto-registers a
-// MavenPublication via the kotlin-multiplatform plugin — one per target + one
+// MavenPublication via the kotlin-multiplatform plugin - one per target + one
 // for the shared kotlinMultiplatform metadata. The CI publish workflow runs on
 // three hosts (macOS / Linux / Windows) and each invokes only the publication
 // tasks Gradle actually generated for its own targets, so the group of hosts
@@ -84,7 +84,7 @@ val kPublishedLibs = setOf(
 
 // -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
 // apps make for the published Maven coordinate. Library modules keep resolving
-// each other as `project(...)` — the substitution only fires at the
+// each other as `project(...)` - the substitution only fires at the
 // app→library boundary, so the swap validates end-to-end consumption of the
 // published klibs without touching the source of `implementation(project(...))`.
 // Version defaults to 0.1.0 (matches the git tag) but can be pinned via -PconsumeVersion=….
@@ -153,7 +153,7 @@ subprojects {
             publications.withType<MavenPublication>().configureEach {
                 pom {
                     name.set("${rootProject.name} ${project.name}")
-                    description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) — ${project.name}")
+                    description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) - ${project.name}")
                     url.set("https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"}")
                     licenses {
                         license {
@@ -170,7 +170,7 @@ subprojects {
 // FULL-COMMONIZATION BRIDGE (repo-wide): a module may declare the OFFICIAL
 // Maven Compose artifacts in its commonMain so metadata + jvm resolve them
 // (e.g. :material-symbols' common API); every NATIVE target configuration
-// swaps those modules for the port's project equivalents — the Maven
+// swaps those modules for the port's project equivalents - the Maven
 // artifacts ship no mingwX64/linux klibs. org.jetbrains.compose.runtime is
 // deliberately NOT here: the port uses the official runtime klibs everywhere.
 val vNativeTargetTokens = listOf("mingwX64", "linuxX64", "linuxArm64", "macosArm64")
@@ -194,10 +194,10 @@ allprojects {
                 substitute(module("org.jetbrains.compose.animation:animation-core")).using(project(":animation-core"))
                 substitute(module("org.jetbrains.compose.material3:material3")).using(project(":material3"))
                 // navigation3-ui: the JB Maven artifact has no K/N desktop
-                // klibs — the port vendors it as :navigation3-ui.
+                // klibs - the port vendors it as :navigation3-ui.
                 substitute(module("org.jetbrains.androidx.navigation3:navigation3-ui")).using(project(":navigation3-ui"))
                 // components-resources: the official resources runtime ships no
-                // mingwX64/linux klibs — the port vendors it as :components-resources.
+                // mingwX64/linux klibs - the port vendors it as :components-resources.
                 substitute(module("org.jetbrains.compose.components:components-resources")).using(project(":components-resources"))
             }
         }
@@ -205,7 +205,7 @@ allprojects {
 }
 
 // Whether the current host can build the mingwX64 target. Kotlin/Native can
-// only cross-compile the mingwX64 sdl3 cinterop from a Windows host — it needs
+// only cross-compile the mingwX64 sdl3 cinterop from a Windows host - it needs
 // the Windows SDL3 headers under libs/ (produced by scripts/build-sdl/build-all.py
 // run on a Windows host). Declaring `mingwX64()` on a non-Windows host is safe
 // for pure-Kotlin modules but blows up the moment the sdl3 cinterop tries to

@@ -17,7 +17,7 @@ import com.compose.sdl.LocalComposeNativeWindow
 // ==================
 
 /** Extra demo windows opened from this screen. The app composition in MainNative.kt
-   declares one keyed Window() per id in this list — the list IS the windows'
+   declares one keyed Window() per id in this list - the list IS the windows'
    lifetime (multi-window, Compose Desktop style). Each window is keyed by its
    own id, so closing one removes exactly THAT id (a count would always drop the
    last-declared window, closing the wrong one). */
@@ -34,10 +34,10 @@ internal fun WindowScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Window",
-            "ComposeNativeWindow handle — read live state, retitle, resize, minimize, fullscreen, close.",
+            "ComposeNativeWindow handle - read live state, retitle, resize, minimize, fullscreen, close.",
         )
 
-        Section("Multi-window", "nativeComposeApp hosts several Window()s — each click composes one more") {
+        Section("Multi-window", "nativeComposeApp hosts several Window()s - each click composes one more") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -47,7 +47,7 @@ internal fun WindowScreen() {
             }
         }
 
-        Section("Live state", "Refreshes automatically — every property is snapshot-backed") {
+        Section("Live state", "Refreshes automatically - every property is snapshot-backed") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Title:      ${window.title}", fontSize = 13.sp)
                 Text("Size:       ${window.width} × ${window.height} pt  (${window.pixelWidth} × ${window.pixelHeight} px)", fontSize = 13.sp)
@@ -83,7 +83,7 @@ internal fun WindowScreen() {
             }
         }
 
-        Section("Resize", "SDL_SetWindowSize — both axes in logical points") {
+        Section("Resize", "SDL_SetWindowSize - both axes in logical points") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { window.setSize(800, 600) }) {
                     Text("800 × 600", color = MaterialTheme.colorScheme.onPrimary)

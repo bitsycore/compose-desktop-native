@@ -23,7 +23,7 @@ import org.jetbrains.skia.Paint as SkPaint
 import org.jetbrains.skia.Typeface as SkTypeface
 
 // ==================
-// MARK: renderMaterialSymbol — JVM actual (Skiko direct)
+// MARK: renderMaterialSymbol - JVM actual (Skiko direct)
 // ==================
 
 /** Draws the glyph straight through Skiko (Compose Desktop's rendering
@@ -34,7 +34,7 @@ import org.jetbrains.skia.Typeface as SkTypeface
    Deliberately NOT the upstream Font(variationSettings) + BasicText route:
    the published desktop artifacts ignore variationSettings at typeface load,
    and even where they don't, FontCache keys typefaces by identity/weight/
-   style WITHOUT the variation settings — every axes combination of the same
+   style WITHOUT the variation settings - every axes combination of the same
    resource collapses onto the first one loaded. Skiko-direct sidesteps both.
 
    The app supplies the font on the JVM classpath at the style's
@@ -44,7 +44,7 @@ private val baseTypefaces = HashMap<String, SkTypeface?>()
 private val variantTypefaces = HashMap<String, SkTypeface>()
 
 /** The style's font as loaded from the classpath (no axes applied), null when
-   the app didn't bundle it — warned once, icon renders blank. */
+   the app didn't bundle it - warned once, icon renders blank. */
 private fun baseTypeface(style: MaterialSymbolsIcon): SkTypeface? {
     if (style.Family in baseTypefaces) return baseTypefaces[style.Family]
     val bytes = MaterialSymbolsIcon::class.java.classLoader

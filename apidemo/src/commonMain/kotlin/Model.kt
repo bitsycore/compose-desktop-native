@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 // ==================
 
 /** A "pack" is a savable collection of requests plus its environment variables
-— the export/import unit. Variables are referenced as {{name}} in any URL,
+- the export/import unit. Variables are referenced as {{name}} in any URL,
 query value, header or body and substituted just before the request is sent
 (see resolveVars in Tools.kt). Packs may be empty; the rich starter set lives
 in defaultSession(). */
@@ -27,7 +27,7 @@ data class Pack(
 )
 
 /** A client-certificate (mutual TLS) configuration. Lives on a request today and
-— with the pack tree — on the session / packs too (inherited downward). Maps
+- with the pack tree - on the session / packs too (inherited downward). Maps
 to libcurl's CURLOPT_SSLCERT / SSLCERTTYPE / SSLKEY / SSLKEYTYPE / KEYPASSWD. */
 @Serializable
 data class CertConfig(
@@ -39,7 +39,7 @@ data class CertConfig(
 )
 
 /** The starter SESSION loaded on first launch (and on demand from the session
-menu) — a guided tour of every feature against httpbin.org: the inheritance
+menu) - a guided tour of every feature against httpbin.org: the inheritance
 ladder (session → pack → sub-pack → request, for variables / query params /
 headers / client cert, innermost wins), loose root requests, a nested sub-pack,
 per-request overrides, a client-cert pack, and a linked-copy pack. Each /get or
@@ -47,7 +47,7 @@ per-request overrides, a client-cert pack, and a linked-copy pack. Each /get or
 inherited result is visible in the response. Loaded as an unsaved session. */
 fun defaultSession(): Session = Session(
     activePack = 0,
-    // ── Session level — the base of every inheritance ladder ──
+    // ── Session level - the base of every inheritance ladder ──
     globalEnv = listOf(
         KeyVal("baseUrl", "https://httpbin.org"),
         KeyVal("token", "session-token-abc"),
@@ -64,7 +64,7 @@ fun defaultSession(): Session = Session(
     ),                // every request gets ?trace=session (echoed in /get args)
     // No session-level cert: it would route every request through mTLS and fail
     // without a real cert file. Client certs are shown on the "Secure (mTLS)" pack.
-    // ── Loose requests at the session root (in no pack — inherit session only) ──
+    // ── Loose requests at the session root (in no pack - inherit session only) ──
     root = Pack(
         isRoot = true, name = "", requests = listOf(
             ApiRequest(name = "Ping (loose)", method = ReqMethod.GET, url = "{{baseUrl}}/get"),
@@ -72,7 +72,7 @@ fun defaultSession(): Session = Session(
         )
     ),
     packs = listOf(
-        // ── Methods — pack header/param/var inherited by its requests, plus a
+        // ── Methods - pack header/param/var inherited by its requests, plus a
         //    nested sub-pack and per-request overrides of each kind. ──
         SavedPack(
             pack = Pack(
@@ -92,15 +92,15 @@ fun defaultSession(): Session = Session(
                 ),               // overrides the session's apiVer for this pack
                 requests = listOf(
                     ApiRequest(
-                        name = "GET — echoes inherited", method = ReqMethod.GET, url = "{{baseUrl}}/get",
+                        name = "GET - echoes inherited", method = ReqMethod.GET, url = "{{baseUrl}}/get",
                         params = listOf(KeyVal("q", "compose"))
                     ),         // own q + inherited trace=session + source=methods
                     ApiRequest(
-                        name = "GET — overrides query param", method = ReqMethod.GET, url = "{{baseUrl}}/get",
+                        name = "GET - overrides query param", method = ReqMethod.GET, url = "{{baseUrl}}/get",
                         params = listOf(KeyVal("trace", "request"))
                     ),     // request's trace wins over the session's
                     ApiRequest(
-                        name = "POST — overrides header",
+                        name = "POST - overrides header",
                         method = ReqMethod.POST,
                         url = "{{baseUrl}}/post",
                         headers = listOf(KeyVal("Accept", "text/plain")), // request's Accept wins over the pack's
@@ -109,17 +109,17 @@ fun defaultSession(): Session = Session(
                         body = "{\n  \"user\": \"{{user}}\",\n  \"api\": \"{{apiVer}}\"\n}"
                     ),
                     ApiRequest(
-                        name = "POST — overrides {{user}} var", method = ReqMethod.POST, url = "{{baseUrl}}/anything",
+                        name = "POST - overrides {{user}} var", method = ReqMethod.POST, url = "{{baseUrl}}/anything",
                         variables = listOf(
                             KeyVal(
                                 "user",
                                 "request-user"
                             )
-                        ),   // request var beats session/pack — see body echo
+                        ),   // request var beats session/pack - see body echo
                         bodyType = BodyType.TEXT, bodyFormat = BodyFormat.JSON, body = "{ \"who\": \"{{user}}\" }"
                     ),
                     ApiRequest(
-                        name = "PUT — replace",
+                        name = "PUT - replace",
                         method = ReqMethod.PUT,
                         url = "{{baseUrl}}/put",
                         bodyType = BodyType.TEXT,
@@ -132,7 +132,7 @@ fun defaultSession(): Session = Session(
                         bodyType = BodyType.TEXT, bodyFormat = BodyFormat.JSON, body = "{ \"hello\": \"world\" }"
                     ),
                 ),
-                // Nested sub-pack — inherits Session → Methods → here (apiVer becomes v3,
+                // Nested sub-pack - inherits Session → Methods → here (apiVer becomes v3,
                 // plus its own X-Nested header; trace / source / Accept still flow down).
                 subPacks = listOf(
                     Pack(
@@ -141,7 +141,7 @@ fun defaultSession(): Session = Session(
                         headers = listOf(KeyVal("X-Nested", "true")),
                         requests = listOf(
                             ApiRequest(
-                                name = "GET — deep inheritance",
+                                name = "GET - deep inheritance",
                                 method = ReqMethod.GET,
                                 url = "{{baseUrl}}/anything/{{apiVer}}"
                             ),
@@ -150,7 +150,7 @@ fun defaultSession(): Session = Session(
                 )
             )
         ),
-        // ── Auth & status — uses the inherited {{token}} / {{user}} / {{password}} ──
+        // ── Auth & status - uses the inherited {{token}} / {{user}} / {{password}} ──
         SavedPack(
             pack = Pack(
                 name = "Auth & status", color = 2, requests = listOf(
@@ -170,7 +170,7 @@ fun defaultSession(): Session = Session(
                 )
             )
         ),
-        // ── Formats — response viewer (JSON / XML / HTML / image) ──
+        // ── Formats - response viewer (JSON / XML / HTML / image) ──
         SavedPack(
             pack = Pack(
                 name = "Formats", color = 3, requests = listOf(
@@ -183,7 +183,7 @@ fun defaultSession(): Session = Session(
                 )
             )
         ),
-        // ── Secure (mTLS) — a PACK-LEVEL client cert, inherited by its requests.
+        // ── Secure (mTLS) - a PACK-LEVEL client cert, inherited by its requests.
         //    Open a request's Cert tab to see the inherited cert (source pill +
         //    Override). Set real cert paths to actually send; the example paths
         //    won't load. The second request overrides with its own cert. ──
@@ -303,7 +303,7 @@ fun ApiRequest.bodyContentType(): String? = when (bodyType) {
 }
 
 // ==================
-// MARK: Response (runtime only — not part of a pack)
+// MARK: Response (runtime only - not part of a pack)
 // ==================
 
 class ApiResponse(

@@ -1,11 +1,11 @@
 package androidx.compose.foundation.text.input.internal
 
 // ==================
-// MARK: createTextFieldKeyEventHandler — native actual
+// MARK: createTextFieldKeyEventHandler - native actual
 // ==================
 
 /**
- Mirrors upstream macosMain / desktopMain / iosMain / webMain — all
+ Mirrors upstream macosMain / desktopMain / iosMain / webMain - all
  delegate to `createSkikoTextFieldKeyEventHandler` from the already-vendored
  `TextFieldKeyEventHandler.skiko.kt`.
 */

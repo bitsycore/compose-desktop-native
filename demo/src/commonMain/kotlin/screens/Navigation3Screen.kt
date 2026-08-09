@@ -22,7 +22,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 
 // ==================
-// MARK: Navigation 3 screen (shared — native + JVM)
+// MARK: Navigation 3 screen (shared - native + JVM)
 // ==================
 // Demonstrates androidx.navigation3-runtime + the vendored navigation3-ui NavDisplay:
 // a NavBackStack of NavKey routes, pushed/popped by the UI, rendered through the
@@ -30,12 +30,12 @@ import androidx.navigation3.ui.NavDisplay
 //
 // This USED to freeze on native: androidx.lifecycle's KMP LifecycleRegistry
 // enforces main-thread access through Dispatchers.Main.immediate, and the SDL
-// Main dispatcher had no true immediate — the check deadlocked inside
+// Main dispatcher had no true immediate - the check deadlocked inside
 // setContent. Fixed in Sdl3MainDispatcher (immediate runs inline on the SDL
 // main thread); see NAV_FIX.md for the full investigation.
 //
 // Shell contract (demo.shell.App): each screen is hosted in a
-// Box(fillMaxSize().verticalScroll()) — so a screen is a plain Column that flows
+// Box(fillMaxSize().verticalScroll()) - so a screen is a plain Column that flows
 // naturally (NO fillMaxSize / own verticalScroll / weight, which fight the scroll host),
 // and since the app root isn't a Surface, text sets its color explicitly.
 
@@ -52,15 +52,15 @@ fun Navigation3Screen() {
 	val current = backStack.lastOrNull() ?: Nav3Home
 	val canGoBack = backStack.size > 1
 
-	// The ViewModel shared by ALL detail entries — scoped to the WINDOW owner
+	// The ViewModel shared by ALL detail entries - scoped to the WINDOW owner
 	// (LocalViewModelStoreOwner outside the NavDisplay entries), the desktop
 	// analog of Android's activityViewModels(). The window owner is
 	// saved-state-enabled at construction (enableSavedStateHandles in
 	// WindowArchitectureOwner), so ViewModels in this scope may take a
-	// SavedStateHandle — no ad-hoc child owner needed. NOTE: creating a NEW
+	// SavedStateHandle - no ad-hoc child owner needed. NOTE: creating a NEW
 	// owner here with rememberViewModelStoreOwner() and the default
 	// savedStateRegistryOwner would throw when this screen composes at RESUMED
-	// (sidebar flow) — saved-state scopes can only attach to owners whose
+	// (sidebar flow) - saved-state scopes can only attach to owners whose
 	// lifecycle is still ≤ CREATED, same contract as on Android.
 	val totals = androidx.lifecycle.viewmodel.compose.viewModel { Nav3TotalsViewModel() }
 
@@ -74,7 +74,7 @@ fun Navigation3Screen() {
 			// event.targetState = the state this event lands in (ON_CREATE →
 			// CREATED, ON_START → STARTED, …). Reading lifecycle.currentState
 			// here instead would show RESUMED for the catch-up replay a late
-			// observer receives — the registry itself never moved.
+			// observer receives - the registry itself never moved.
 			println("Navigation3 demo: window lifecycle $event -> ${event.targetState}")
 		}
 		lifecycleOwner.lifecycle.addObserver(observer)
@@ -98,14 +98,14 @@ fun Navigation3Screen() {
 				}
 			}
 			Text(
-				"Navigation 3 — depth ${backStack.size}",
+				"Navigation 3 - depth ${backStack.size}",
 				style = MaterialTheme.typography.titleMedium,
 				color = MaterialTheme.colorScheme.onSurface,
 			)
 		}
 		HorizontalDivider()
 		NavDisplay(
-			// Order matters: the saveable decorator must wrap the viewmodel one —
+			// Order matters: the saveable decorator must wrap the viewmodel one -
 			// it provides each entry's own SavedStateRegistryOwner (still
 			// INITIALIZED) that enableSavedStateHandles() requires; reversed, the
 			// VM decorator captures the window's registry owner (already RESUMED)
@@ -160,7 +160,7 @@ fun Navigation3Screen() {
 	}
 }
 
-// Home destination — a list; tapping a card pushes a Detail route.
+// Home destination - a list; tapping a card pushes a Detail route.
 @Composable
 private fun Nav3HomeContent(totals: Nav3TotalsViewModel, onOpen: (Int) -> Unit) {
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -177,7 +177,7 @@ private fun Nav3HomeContent(totals: Nav3TotalsViewModel, onOpen: (Int) -> Unit) 
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
 		)
 		Text(
-			"Total increments across ALL details: ${totals.total} — one shared ViewModel " +
+			"Total increments across ALL details: ${totals.total} - one shared ViewModel " +
 				"(screen-scoped store owner), unlike the per-entry counters below.",
 			style = MaterialTheme.typography.bodyMedium,
 			color = MaterialTheme.colorScheme.tertiary,
@@ -212,14 +212,14 @@ private class Nav3DetailViewModel : androidx.lifecycle.ViewModel() {
 }
 
 // SHARED ViewModel: one instance for ALL detail entries. It lives in the
-// WINDOW's ViewModelStore (the activityViewModels() analog) — pushing/popping
+// WINDOW's ViewModelStore (the activityViewModels() analog) - pushing/popping
 // details never touches it, so it accumulates the total across every
 // Nav3Detail; it clears when the window closes.
 private class Nav3TotalsViewModel : androidx.lifecycle.ViewModel() {
 	var total by androidx.compose.runtime.mutableStateOf(0)
 }
 
-// Detail destination — reads its id off the route instance, pops on Back.
+// Detail destination - reads its id off the route instance, pops on Back.
 @Composable
 private fun Nav3DetailContent(id: Int, totals: Nav3TotalsViewModel, onBack: () -> Unit) {
 	val vm = androidx.lifecycle.viewmodel.compose.viewModel { Nav3DetailViewModel() }
@@ -250,13 +250,13 @@ private fun Nav3DetailContent(id: Int, totals: Nav3TotalsViewModel, onBack: () -
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
 		)
 		Text(
-			"ViewModel counter: ${vm.counter} — lives in this entry's ViewModelStore " +
+			"ViewModel counter: ${vm.counter} - lives in this entry's ViewModelStore " +
 				"(viewModelStoreNavEntryDecorator); popping the entry clears it.",
 			style = MaterialTheme.typography.bodyMedium,
 			color = MaterialTheme.colorScheme.primary,
 		)
 		Text(
-			"Shared total across all details: ${totals.total} — the SAME " +
+			"Shared total across all details: ${totals.total} - the SAME " +
 				"Nav3TotalsViewModel instance every detail entry sees.",
 			style = MaterialTheme.typography.bodyMedium,
 			color = MaterialTheme.colorScheme.tertiary,

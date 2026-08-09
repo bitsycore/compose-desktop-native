@@ -12,14 +12,14 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastFold
 
 // ==================
-// MARK: Scrollable — native actuals (mouse-wheel config + platform fling)
+// MARK: Scrollable - native actuals (mouse-wheel config + platform fling)
 // ==================
 
 /* Native actuals for the vendored upstream `Scrollable.kt` `expect`s. Matches Compose Desktop's
    WINDOWS config (DesktopScrollable.desktop.kt → WindowsWinUIConfig), which is what the app is
    compared against:
 
-     - each wheel unit scrolls a FRACTION of the viewport (bounds / 20), not a fixed dp — this is
+     - each wheel unit scrolls a FRACTION of the viewport (bounds / 20), not a fixed dp - this is
        what makes a wheel click move a natural amount regardless of list length;
      - smooth scrolling ON, so MouseWheelScrollingLogic tweens each accumulated delta over up to
        ~100ms instead of jumping in one frame (the "velocity" feel: spin fast and pending notches
@@ -27,7 +27,7 @@ import androidx.compose.ui.util.fastFold
      - wheel is NEVER treated as "precise" (Windows animates even free-spinning wheels), so every
        notch stays on the smooth path.
 
-   The smooth animation is the whole feel — Compose Desktop does NOT fling on the wheel (its
+   The smooth animation is the whole feel - Compose Desktop does NOT fling on the wheel (its
    default FlingBehavior is a ScrollableDefaultFlingBehavior, so `shouldBeTriggeredByMouseWheel`
    is false). We match that: no synthetic wheel fling. */
 
@@ -50,7 +50,7 @@ private object Sdl3ScrollConfig : ScrollConfig {
 	override fun Density.calculateMouseWheelScroll(event: PointerEvent, bounds: IntSize): Offset {
 		val vTotal = event.changes.fastFold(Offset.Zero) { acc, c -> acc + c.scrollDelta }
 		// WindowsWinUIConfig formula: viewport-proportional * scrollAmount (sign kept as SDL
-		// delivers it — the scrollDelta arriving here is already SDL-oriented, see
+		// delivers it - the scrollDelta arriving here is already SDL-oriented, see
 		// feedScrollToProcessor).
 		return Offset(
 			vTotal.x * (bounds.width / 20f) * kWheelLinesPerNotch,
@@ -63,11 +63,11 @@ internal actual fun CompositionLocalConsumerModifierNode.platformScrollConfig():
 
 // Fallback for AbstractScrollableNode.defaultFlingBehavior (used when the caller provides no
 // flingBehavior). A ScrollableDefaultFlingBehavior so updateDensity keeps working AND so
-// `shouldBeTriggeredByMouseWheel` stays false — no wheel fling, matching Compose Desktop.
+// `shouldBeTriggeredByMouseWheel` stays false - no wheel fling, matching Compose Desktop.
 internal actual fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
 	DefaultFlingBehavior(splineBasedDecay(Density(1f)))
 
-// Natural platform fling decay — identical to Compose Desktop's Scrollable.desktop.kt: a plain
+// Natural platform fling decay - identical to Compose Desktop's Scrollable.desktop.kt: a plain
 // DefaultFlingBehavior (spline decay). It IS a ScrollableDefaultFlingBehavior, so touch drags
 // fling but the mouse wheel does not (its smooth tween handles the wheel feel).
 @Composable

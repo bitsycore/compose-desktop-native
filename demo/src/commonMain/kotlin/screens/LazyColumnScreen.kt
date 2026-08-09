@@ -29,8 +29,8 @@ internal fun LazyColumnScreen() {
         ScreenTitle("LazyColumn", "DSL: items / item / itemsIndexed inside a verticalScroll viewport")
 
         Section(
-            "items(count) — 100 rows",
-            "Mouse-wheel over the list area to scroll. Header item pinned at the top of the list (it scrolls with content — sticky headers TBD).",
+            "items(count) - 100 rows",
+            "Mouse-wheel over the list area to scroll. Header item pinned at the top of the list (it scrolls with content - sticky headers TBD).",
         ) {
             val state = rememberLazyListState()
             Surface(
@@ -46,7 +46,7 @@ internal fun LazyColumnScreen() {
                 ) {
                     item {
                         Text(
-                            "LazyColumn — first item (a header)",
+                            "LazyColumn - first item (a header)",
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(vertical = 6.dp),
@@ -76,7 +76,7 @@ internal fun LazyColumnScreen() {
                                 )
                             }
                             Text(
-                                "Item $i — generated via LazyColumn.items(100) { i -> … }",
+                                "Item $i - generated via LazyColumn.items(100) { i -> … }",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
                             )
@@ -88,7 +88,7 @@ internal fun LazyColumnScreen() {
 
         Section(
             "itemsIndexed(list)",
-            "Use itemsIndexed when you need (index, element) — same API as upstream",
+            "Use itemsIndexed when you need (index, element) - same API as upstream",
         ) {
             val names = remember { listOf("Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta") }
             Surface(

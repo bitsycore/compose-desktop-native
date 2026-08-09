@@ -32,7 +32,7 @@ internal fun ModifiersScreen() {
             }
         }
 
-        Section("clip(RoundedCornerShape(12.dp))", "Clips children only — the background here already follows the shape") {
+        Section("clip(RoundedCornerShape(12.dp))", "Clips children only - the background here already follows the shape") {
             Box(
                 modifier = Modifier
                     .size(width = 160.dp, height = 60.dp)
@@ -44,7 +44,7 @@ internal fun ModifiersScreen() {
             }
         }
 
-        Section("offset(x = 20.dp, y = 10.dp)", "Visual nudge only — doesn't change measured size or sibling layout") {
+        Section("offset(x = 20.dp, y = 10.dp)", "Visual nudge only - doesn't change measured size or sibling layout") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Swatch("A")
                 Box(modifier = Modifier.offset(x = 20.dp, y = 10.dp)) { Swatch("B") }
@@ -70,7 +70,7 @@ internal fun ModifiersScreen() {
             }
         }
 
-        Section("padding overloads", "symmetric / per-axis / per-side — padding insets the content") {
+        Section("padding overloads", "symmetric / per-axis / per-side - padding insets the content") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(
                     modifier = Modifier
@@ -104,7 +104,7 @@ internal fun ModifiersScreen() {
 
         Section(
             "Opacity via Color alpha",
-            "There's no Modifier.alpha() — fade by lowering the colour's alpha channel (Color.copy(alpha = …)). " +
+            "There's no Modifier.alpha() - fade by lowering the colour's alpha channel (Color.copy(alpha = …)). " +
                 "The label keeps full alpha, showing it's per-colour, not a node-wide fade.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -120,8 +120,8 @@ internal fun ModifiersScreen() {
         }
 
         Section(
-            "Modifier.alpha — node-wide opacity",
-            "Fades the whole subtree as one layer (background, border, AND text together) — contrast with the per-colour fade above, where only the fill faded.",
+            "Modifier.alpha - node-wide opacity",
+            "Fades the whole subtree as one layer (background, border, AND text together) - contrast with the per-colour fade above, where only the fill faded.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 for (vA in listOf(1f, 0.6f, 0.3f)) {

@@ -29,7 +29,7 @@ internal fun CanvasScreen() {
             "Canvas + DrawScope",
             "Custom-drawn shapes via Canvas {} and Modifier.drawBehind {} on a shared DrawScope. " +
                 "Skia draws natively (Canvas.drawArc etc.); SDL3 tessellates each primitive into triangles " +
-                "for SDL_RenderGeometry. Gradient brushes work on both — Skia via Shader/Gradient, SDL3 via " +
+                "for SDL_RenderGeometry. Gradient brushes work on both - Skia via Shader/Gradient, SDL3 via " +
                 "per-vertex colour interpolation on the tessellated geometry.",
         )
 
@@ -81,7 +81,7 @@ internal fun CanvasScreen() {
 
         Section(
             "Modifier.drawBehind { ... }",
-            "Same DrawScope, attached to an existing node — paints between its background/border and its children.",
+            "Same DrawScope, attached to an existing node - paints between its background/border and its children.",
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 // Concentric circles painted behind a text label.

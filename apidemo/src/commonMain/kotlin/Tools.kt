@@ -20,8 +20,8 @@ fun substituteVars(inText: String, inVars: List<KeyVal>): String {
     return kVarRegex.replace(inText) { vMatch -> vMap[vMatch.groupValues[1]] ?: vMatch.value }
 }
 
-/** Apply variable substitution across every field that actually gets sent — URL,
-query params, headers and body — returning a fully-resolved request. The
+/** Apply variable substitution across every field that actually gets sent - URL,
+query params, headers and body - returning a fully-resolved request. The
 original (template) request is left untouched. */
 fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
     val vActive = inVars.any { it.enabled && it.key.isNotBlank() }
@@ -54,7 +54,7 @@ fun resolveVars(inReq: ApiRequest, inVars: List<KeyVal>): ApiRequest {
 }
 
 /** The distinct {{names}} referenced anywhere in the request that have no enabled
-variable to fill them — surfaced as a warning in the editor. */
+variable to fill them - surfaced as a warning in the editor. */
 fun unresolvedVars(inReq: ApiRequest, inVars: List<KeyVal>): List<String> {
     val vDefined = inVars
         .filter { it.enabled && it.key.isNotBlank() }

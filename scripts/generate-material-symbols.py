@@ -70,7 +70,7 @@ def main():
 	vSb.append("// MARK: MaterialSymbols (codepoints)")
 	vSb.append("// ==================")
 	vSb.append("")
-	vSb.append("/** GENERATED — do not edit by hand. Regenerate with")
+	vSb.append("/** GENERATED - do not edit by hand. Regenerate with")
 	vSb.append("   scripts/generate-material-symbols.py (downloads Google's .codepoints")
 	vSb.append("   file for the Material Symbols variable font and emits every glyph as a")
 	vSb.append("   const). The codepoints are identical across the outlined / rounded /")

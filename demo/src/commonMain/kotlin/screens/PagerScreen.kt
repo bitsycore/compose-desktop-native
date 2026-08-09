@@ -18,11 +18,11 @@ private val PageColors = listOf(
 	Color(0xFF5E35B1), Color(0xFF1E88E5), Color(0xFF00897B), Color(0xFFF4511E),
 )
 
-// Foundation — HorizontalPager / VerticalPager (drag to page).
+// Foundation - HorizontalPager / VerticalPager (drag to page).
 @Composable
 internal fun PagerScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		ScreenTitle("Pager", "foundation.pager — drag pages horizontally / vertically, snap per page.")
+		ScreenTitle("Pager", "foundation.pager - drag pages horizontally / vertically, snap per page.")
 
 		Section("HorizontalPager", "One full-width page at a time") {
 			val vState = rememberPagerState { PageColors.size }

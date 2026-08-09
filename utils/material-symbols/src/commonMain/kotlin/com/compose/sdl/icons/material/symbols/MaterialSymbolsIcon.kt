@@ -11,21 +11,21 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // ==================
-// MARK: MaterialSymbolsIcon — COMMON API
+// MARK: MaterialSymbolsIcon - COMMON API
 // ==================
 
 /** The public Material Symbols surface, declared in commonMain so consumers'
    shared code (and the IDE's common analysis) resolve it directly. Rendering
    goes through the internal expect below:
 
-     native  — the port's IconFont pipeline (:foundation IconFontIcon; the
-               SDL3 / Skia renderer split is handled inside :ui — this module
+     native  - the port's IconFont pipeline (:foundation IconFontIcon; the
+               SDL3 / Skia renderer split is handled inside :ui - this module
                never sees it). Fonts come from data.kres.
-     jvm     — upstream Compose Desktop: a classpath ResourceFont carrying the
+     jvm     - upstream Compose Desktop: a classpath ResourceFont carrying the
                variable-font axes via FontVariation.Settings + BasicText.
 
    The app owns the font files for both stacks (data.kres Zip task on native,
-   jvm resources at font/<Style>.ttf on JVM — see :demo's build file). */
+   jvm resources at font/<Style>.ttf on JVM - see :demo's build file). */
 sealed class MaterialSymbolsIcon {
 
     /** Font-family key the glyphs render under (also the install/cache key). */
@@ -86,7 +86,7 @@ object MaterialIconAxisDefaults {
     const val OpticalSize: Int = 24
 }
 
-/** Per-stack glyph renderer — receives the tint already resolved. */
+/** Per-stack glyph renderer - receives the tint already resolved. */
 @Composable
 internal expect fun renderMaterialSymbol(
     style: MaterialSymbolsIcon,

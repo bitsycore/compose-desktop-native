@@ -8,7 +8,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 // ==================
-// MARK: PlatformDateFormat — native project actual
+// MARK: PlatformDateFormat - native project actual
 // ==================
 
 /**
@@ -18,7 +18,7 @@ import kotlinx.datetime.toLocalDateTime
  CLDR-style pattern / skeleton (so DatePicker/TimePicker headlines read
  "Jul 29, 2026" / "July 2026" instead of a raw ISO date). Field VALUES are
  localized by the requested TimeZone.UTC calendar; field NAMES (month / weekday)
- stay English — full CLDR name localization needs ICU data we don't bundle.
+ stay English - full CLDR name localization needs ICU data we don't bundle.
 */
 @OptIn(ExperimentalTime::class)
 internal actual class PlatformDateFormat actual constructor(

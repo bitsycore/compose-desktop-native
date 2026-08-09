@@ -9,17 +9,17 @@ import sdl3.SDL_GetTicks
 // MARK: FrameProfiler
 // ==================
 
-/** CDN_PROFILE=1 — per-phase timings, printed every ~2s of rendered frames.
+/** CDN_PROFILE=1 - per-phase timings, printed every ~2s of rendered frames.
    A named-phase SINGLETON so both the main loop (events / app / pump / render)
    AND renderFrame's sub-steps (render.layout / render.draw / render.present)
    report into one line. `mark()` resets the stopwatch; `phase(name)` charges
    the elapsed since the last mark/phase to that name. Measure first, optimize
-   second — see ROADMAP.md. */
+   second - see ROADMAP.md. */
 @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 internal object FrameProfiler {
 	// null until first checked; then true/false for the run's lifetime.
 	private var fEnabled: Boolean? = null
-	// Output file — resolved once from CDN_PROFILE. Writing to a file (not
+	// Output file - resolved once from CDN_PROFILE. Writing to a file (not
 	// stdout) lets GUI-subsystem apps (the demo links --subsystem,windows, so
 	// it has no console) be profiled too. CDN_PROFILE=1 → "cdn_profile.log" in
 	// the cwd; CDN_PROFILE=<path> → that path.

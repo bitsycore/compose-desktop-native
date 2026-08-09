@@ -21,7 +21,7 @@ import demo.shim.demoReadFilePaths
 import demo.shim.demoReadText
 
 // ==================
-// MARK: DragAndDropScreen — Modifier.dragAndDropTarget over SDL_EVENT_DROP_*
+// MARK: DragAndDropScreen - Modifier.dragAndDropTarget over SDL_EVENT_DROP_*
 // ==================
 
 /** Modifier.dragAndDropTarget receives OS drops from other apps. On this

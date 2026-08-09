@@ -23,7 +23,7 @@ fun main() = application {
         // The shared App installs a persist-then-close hook (InstallWindowHooks).
         onCloseRequest = { if (jvmOnCloseRequest?.invoke() != false) exitApplication() },
         onPreviewKeyEvent = { jvmOnKeyShortcut?.invoke(it) ?: false },
-        title = "API Manager — JVM (upstream Compose)",
+        title = "API Manager - JVM (upstream Compose)",
         icon = vIcon,
         state = rememberWindowState(width = 1240.dp, height = 820.dp),
     ) {

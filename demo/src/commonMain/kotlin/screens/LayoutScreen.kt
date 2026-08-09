@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun LayoutScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ScreenTitle("Layout", "Row / Column / Box — Arrangement and Alignment")
+        ScreenTitle("Layout", "Row / Column / Box - Arrangement and Alignment")
 
         Section(
             "Row with Modifier.weight(...)",

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-One-shot dependency setup — builds every native dependency this project links
+One-shot dependency setup - builds every native dependency this project links
 into the executable as a STATIC library, installing each into <repo>/libs/.
-Runs on macOS, Linux, and Windows with plain Python 3 — no Git Bash, curl or
+Runs on macOS, Linux, and Windows with plain Python 3 - no Git Bash, curl or
 cygpath needed. Replaces the former build-*.sh scripts.
 
 Builds SDL3 (windowing / input / platform) as a static library:
@@ -102,7 +102,7 @@ def run(inArgs, inCwd=None):
 
 
 def forceRmtree(inPath):
-	"""rm -rf equivalent that clears read-only bits before retrying — git
+	"""rm -rf equivalent that clears read-only bits before retrying - git
 	object files in cloned trees are read-only on Windows and would make a
 	plain shutil.rmtree fail."""
 	vPath = Path(inPath)
@@ -190,7 +190,7 @@ def setupToolchain(inHost):
 
 
 def extraCmakeArgs(inHost):
-	"""Host-specific extra CMake arguments. The port targets macosArm64 only —
+	"""Host-specific extra CMake arguments. The port targets macosArm64 only -
 	force the arch so a universal-arch host build stays trimmed and matches
 	the K/N target."""
 	if inHost == "macos":
@@ -198,7 +198,7 @@ def extraCmakeArgs(inHost):
 	return []
 
 # ==================
-# MARK: Manifest — build-sdl.properties
+# MARK: Manifest - build-sdl.properties
 # ==================
 # One file at scripts/build-sdl/build-sdl.properties defines the URL + ref for
 # every static library this script pulls. Format is `KEY=value`, with
@@ -209,7 +209,7 @@ def manifestValue(inKey, inHost):
 	  1. Environment variable of that name  (highest priority)
 	  2. KEY_<host> in build-sdl.properties  (only when host matches)
 	  3. KEY        in build-sdl.properties  (base)
-	Returns "" if none set — pair with requireManifest to make the key
+	Returns "" if none set - pair with requireManifest to make the key
 	mandatory. MANIFEST_FILE can be pointed at a different file for testing."""
 	vEnv = os.environ.get(inKey, "")
 	if vEnv:
@@ -235,7 +235,7 @@ def requireManifest(inKey, inHost):
 	"""manifestValue, or fail with a clear error if the key resolves empty."""
 	vVal = manifestValue(inKey, inHost)
 	if not vVal:
-		raise SystemExit("ERROR: " + inKey + " not defined — add it to "
+		raise SystemExit("ERROR: " + inKey + " not defined - add it to "
 			+ str(kToolsDir / "build-sdl.properties") + " or export it as an env var")
 	return vVal
 
@@ -294,7 +294,7 @@ def buildSdl3(inHost, inCc, inCxx):
 	when static is recorded in libs/SDL3/lib/pkgconfig/sdl3-static.pc
 	(Libs.private) after this runs; the app's linker line has to include those.
 
-	On Windows SDL >= 3.4 needs a working C++ compiler (GameInput backend) —
+	On Windows SDL >= 3.4 needs a working C++ compiler (GameInput backend) -
 	see setupToolchain. The D3D12 render driver and SDL_GPU subsystem are
 	forced OFF because K/N's mingw dxgi1_6.h is too old for SDL >= 3.4's
 	IDXGIFactory6 / DXGI_GPU_PREFERENCE_* usage. D3D11 (default Windows
@@ -316,7 +316,7 @@ def buildSdl3(inHost, inCc, inCxx):
 		# port uses SDL only for video/window, events, clipboard, file dialogs,
 		# GL/Metal contexts, the CPU-raster SDL_Render blit, filesystem, cursor,
 		# locale, theme, and text input/IME. Everything below has no call site
-		# and nothing depends on it transitively — disabling them shrinks the
+		# and nothing depends on it transitively - disabling them shrinks the
 		# static lib and drops the matching system-framework deps.
 		"-DSDL_AUDIO=OFF", "-DSDL_JOYSTICK=OFF", "-DSDL_HAPTIC=OFF",
 		"-DSDL_HIDAPI=OFF", "-DSDL_SENSOR=OFF", "-DSDL_POWER=OFF",
@@ -418,7 +418,7 @@ def main():
 
 	vHost = detectHost()
 	if vHost == "unknown":
-		raise SystemExit("ERROR: unsupported host — this script runs on macOS, Linux, and Windows.")
+		raise SystemExit("ERROR: unsupported host - this script runs on macOS, Linux, and Windows.")
 	print(">> host: " + vHost)
 	os.environ["BUILD_SDL_HOST"] = vHost
 	vCc, vCxx = setupToolchain(vHost)

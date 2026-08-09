@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.GraphicsContext
 import androidx.compose.ui.graphics.SkiaGraphicsContext
 
 // ==================
-// MARK: createGraphicsContext — Skia renderer actual (B6.2)
+// MARK: createGraphicsContext - Skia renderer actual (B6.2)
 // ==================
 
 /** The Skia leg uses upstream's SkiaGraphicsContext, which owns a skiko

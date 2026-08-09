@@ -19,7 +19,7 @@ import org.jetbrains.skia.svg.SVGDOM
    (no GrContext), so it is safe on the resources pipeline's Dispatchers.Default
    workers.
 
-   B6.1: produces an UPSTREAM ImageBitmap (Image.toComposeImageBitmap) — the Skia
+   B6.1: produces an UPSTREAM ImageBitmap (Image.toComposeImageBitmap) - the Skia
    renderer uses upstream's SkiaBackedCanvas/SkiaImageAsset, so the offscreen +
    ImageBitmap-backed paths go through upstream's own actuals (the project
    SkiaImageBitmap / SkiaOffscreenRenderer are retired). */

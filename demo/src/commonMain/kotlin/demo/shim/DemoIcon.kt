@@ -9,13 +9,13 @@ import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 
 // ==================
-// MARK: DemoIcon — platform-neutral icon token
+// MARK: DemoIcon - platform-neutral icon token
 // ==================
 
 /** A platform-neutral icon reference for the shared demo screens. Now that
    :material-symbols exposes its API from commonMain (native draws through the
    port's IconFont pipeline, JVM through upstream variable-font text), the
-   token resolves to a Material Symbols codepoint on BOTH stacks — the same
+   token resolves to a Material Symbols codepoint on BOTH stacks - the same
    glyphs render everywhere, which is exactly what the parity build compares. */
 enum class DemoIcon {
     Home, Search, Person, Settings, Add, Edit, Favorite, Star, Close, Image,
@@ -24,7 +24,7 @@ enum class DemoIcon {
     ExpandMore, ExpandLess,
 }
 
-/** Renders [icon] via MaterialSymbolsOutlined — the portable stand-in for
+/** Renders [icon] via MaterialSymbolsOutlined - the portable stand-in for
    material3's Icon(imageVector, …). Color.Unspecified tint falls back to
    material3's LocalContentColor inside MaterialSymbolsOutlined. */
 @Composable

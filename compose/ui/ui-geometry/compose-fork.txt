@@ -12,5 +12,5 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/compose/ui/geometry/Size.kt -> src/vendor/common/kotlin/androidx/compose/ui/geometry/Size.kt
 
 # >>> ---- DIAGNOSTIC GAPS ---- <<<<
-#   (none — every source set under SET_FOLDER is vendored)
+#   (none - every source set under SET_FOLDER is vendored)
 # <<< ---- DIAGNOSTIC GAPS ---- >>>>

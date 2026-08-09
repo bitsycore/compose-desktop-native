@@ -32,7 +32,7 @@ fun formatBody(inText: String, inFormat: BodyFormat): String =
 
 // Minimal XML re-indenter: a newline between adjacent tags, one tab per
 // nesting level (rendered at the editor's tab size). Declarations (<?…?>), comments / doctype (<!…>), self-closing tags and
-// single-line <a>text</a> elements don't change depth. Best-effort — content
+// single-line <a>text</a> elements don't change depth. Best-effort - content
 // with a literal '>' inside attributes or CDATA may not round-trip, hence the
 // runCatching guard at the call site.
 private fun formatXml(inText: String): String {

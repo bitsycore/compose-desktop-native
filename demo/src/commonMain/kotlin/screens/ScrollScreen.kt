@@ -67,7 +67,7 @@ internal fun ScrollScreen() {
                                     )
                                 }
                                 Text(
-                                    "Row $i — scroll to see all 40 items",
+                                    "Row $i - scroll to see all 40 items",
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 14.sp,
                                 )
@@ -80,7 +80,7 @@ internal fun ScrollScreen() {
 
         Section(
             "App-shell scrolling",
-            "Shrink the window vertically — the sidebar AND the main content area both gain scrollbars.",
+            "Shrink the window vertically - the sidebar AND the main content area both gain scrollbars.",
         ) {
             Text(
                 "Both panes were wrapped in verticalScroll(rememberScrollState()) inside App().",

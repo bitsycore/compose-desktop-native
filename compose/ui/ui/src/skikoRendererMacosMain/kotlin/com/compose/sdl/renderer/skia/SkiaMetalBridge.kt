@@ -22,7 +22,7 @@ import platform.QuartzCore.CAMetalLayer
 import sdl3.SDL_Metal_GetLayer
 
 // ==================
-// MARK: SkiaMetalBridge — Skia GPU on top of an SDL3 Metal view.
+// MARK: SkiaMetalBridge - Skia GPU on top of an SDL3 Metal view.
 // ==================
 
 /** Per-frame flow:
@@ -35,7 +35,7 @@ import sdl3.SDL_Metal_GetLayer
 
    Unlike GL where the same FBO is reused, Metal hands out a fresh drawable
    per frame, so we tear the BackendRenderTarget + Surface down every frame
-   (cheap — the DirectContext + device + queue persist). */
+   (cheap - the DirectContext + device + queue persist). */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
     private var fDevice: MTLDeviceProtocol? = null
@@ -68,7 +68,7 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
         val vLayer = interpretObjCPointer<CAMetalLayer>(vLayerPtr.rawValue)
         // CAMetalLayer.device is typed via a forward-declared MTLDevice in
         // QuartzCore headers (objcnames.protocols.MTLDeviceProtocol), which
-        // Kotlin/Native can't unify with platform.Metal.MTLDeviceProtocol —
+        // Kotlin/Native can't unify with platform.Metal.MTLDeviceProtocol -
         // bridge through the pointer.
         vLayer.device = interpretObjCPointer<objcnames.protocols.MTLDeviceProtocol>(vDevice.objcPtr())
         vLayer.pixelFormat = MTLPixelFormatBGRA8Unorm
@@ -114,7 +114,7 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
 
         // Per-frame: drop the previous frame's drawable wrappers and grab a
         // fresh one. nextDrawable() may block (~16ms vsync) when 3 drawables
-        // are already in flight — that's the natural pacing mechanism.
+        // are already in flight - that's the natural pacing mechanism.
         fSurface?.close()
         fRT?.close()
         fSurface = null

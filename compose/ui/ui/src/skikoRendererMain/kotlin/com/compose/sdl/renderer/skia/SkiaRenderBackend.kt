@@ -35,7 +35,7 @@ internal class SkiaRenderBackend(
 
     init {
         // skiko's paragraph engine always supports variable-font axes (Material
-        // Symbols FILL/wght/GRAD/opsz) — silence the icon capability warning.
+        // Symbols FILL/wght/GRAD/opsz) - silence the icon capability warning.
         TextRendererCapabilities.supportsFontVariations = true
 
         // Install the resource-bytes reader the Skia font/image actuals read
@@ -44,7 +44,7 @@ internal class SkiaRenderBackend(
 
         // Encoded-image decode (painterResource / SVG in :components-resources).
         // Registered at CONSTRUCTION, not first frame: the official resources
-        // pipeline decodes during COMPOSITION, which runs before beginFrame —
+        // pipeline decodes during COMPOSITION, which runs before beginFrame -
         // and on Dispatchers.Default workers, which the CPU-raster Skia decoder
         // tolerates. Without this the first painterResource on a Skia build
         // dies with "Image decode failed" (issue #1).
@@ -56,7 +56,7 @@ internal class SkiaRenderBackend(
     // B6.1: the Skia leg draws through upstream SkiaBackedCanvas; its port draw
     // contracts (text/painter/shadow) forward to the port renderers via this global
     // drawer. It is per-WINDOW state (each window has its own text renderer + image
-    // cache), so it must be re-pointed at THIS backend before every frame — exactly
+    // cache), so it must be re-pointed at THIS backend before every frame - exactly
     // Setting it once in the ctor left it dangling at a CLOSED window's (destroyed)
     // image cache after a multi-window teardown → crash on the surviving window's
     // next frame, so it is re-pointed at THIS backend before every frame.

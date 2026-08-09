@@ -1,5 +1,5 @@
 // COPY of the port's SplitPane (package com.compose.sdl.widgets) so the SAME
-// implementation runs on the jvm parity target — the port modules are
+// implementation runs on the jvm parity target - the port modules are
 // native-only, so apidemo's commonMain cannot reference them directly.
 // Keep in sync with the original when it changes.
 package apidemo.compat
@@ -66,7 +66,7 @@ fun HorizontalSplitPane(
 
         Box(modifier = Modifier.width(with(vDensity) { vClampedFirstPx.toDp() }).fillMaxHeight()) { first() }
 
-        // Solid divider that fills its own slot — what you see is exactly what
+        // Solid divider that fills its own slot - what you see is exactly what
         // you can grab. Hover or an in-progress drag just changes the colour (no
         // size change → no layout shift, and no flicker when the pointer briefly
         // leaves the slot mid-drag).

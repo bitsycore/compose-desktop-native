@@ -19,7 +19,7 @@
 // VENDOR-BASE: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/node/GraphicsLayerOwnerLayer.skiko.kt @ v1.12.0-beta03+dev4483
 // Change vs upstream: dropped the trailing `SkiaGraphicsContext.setLightingInfo`
 // extension + LIGHT_* constants (skiko-only shadow lighting; our shadows go via
-// NativeShadowCanvas). The class body is unchanged — it is the real OwnedLayer
+// NativeShadowCanvas). The class body is unchanged - it is the real OwnedLayer
 // (dirty-gated record/replay over a per-renderer GraphicsLayer), replacing the
 // immediate-mode ProjectOwnedLayer. `!`-refused in compose-fork.txt; reconcile
 // upstream changes by hand (run scripts/compose-fork/check-vendor-drift.py at each

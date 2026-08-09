@@ -30,7 +30,7 @@ import sdl3.SDL_GetBasePath
 // by the demo's Gradle Zip task (".kres" = a zip with a project-specific
 // extension so the bundle reads as a single opaque blob next to the binary).
 // At runtime we open the archive once via SDL_GetBasePath(), parse its
-// central directory, then serve each resource by a positioned read per entry —
+// central directory, then serve each resource by a positioned read per entry -
 // no whole-archive memory load.
 //
 // File IO goes through okio's FileHandle (a multiplatform positioned-read API)
@@ -40,7 +40,7 @@ import sdl3.SDL_GetBasePath
 //
 // Supports STORED (method 0) and DEFLATED (method 8) entries. Deflated
 // entries are inflated on read via the system zlib (raw deflate stream,
-// no zlib/gzip wrapper). ZIP64 is not supported — the resource set is
+// no zlib/gzip wrapper). ZIP64 is not supported - the resource set is
 // small enough that the standard 4 GB / 65535-entry limits don't apply.
 
 private class ComposeResourceArchive(private val fHandle: FileHandle) {
@@ -90,7 +90,7 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 
 	/** Decompress a raw-deflate stream (no zlib/gzip header) into a buffer
 	   of the known uncompressed length. windowBits = -MAX_WBITS (-15) is
-	   what zlib calls "raw deflate" — matches the zip entry payload. */
+	   what zlib calls "raw deflate" - matches the zip entry payload. */
 	@OptIn(ExperimentalForeignApi::class)
 	private fun inflateRawDeflate(inRaw: ByteArray, inOutLen: Int): ByteArray? {
 		val vOut = ByteArray(inOutLen)
@@ -227,7 +227,7 @@ private val kArchive: ComposeResourceArchive? by lazy {
 /** Lets an app feed the image pipeline bytes it produced at runtime (e.g. a
    downloaded PNG) under a synthetic path, so painterResource(key) / Image(...)
    render it through the same decode + cache path as bundled drawables. Use a
-   unique key per distinct content — renderers cache decoded textures by path,
+   unique key per distinct content - renderers cache decoded textures by path,
    so reusing a key keeps showing the first bytes. */
 private val kMemoryResources = mutableMapOf<String, ByteArray>()
 
@@ -235,7 +235,7 @@ fun registerMemoryResource(inKey: String, inBytes: ByteArray) { kMemoryResources
 
 fun removeMemoryResource(inKey: String) { kMemoryResources.remove(inKey) }
 
-/** Reads a resource's raw bytes — an in-memory resource if registered under the
+/** Reads a resource's raw bytes - an in-memory resource if registered under the
    path, otherwise the bundled entry inside data.kres. Null when neither exists. */
 fun loadComposeResourceBytes(inRelativePath: String): ByteArray? =
 	kMemoryResources[inRelativePath] ?: kArchive?.readBytes(inRelativePath)

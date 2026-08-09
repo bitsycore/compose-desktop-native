@@ -3,10 +3,10 @@ package demo.shim
 import androidx.compose.ui.platform.ClipEntry
 
 // ==================
-// MARK: DemoClipboard — portable ClipEntry construction / reading
+// MARK: DemoClipboard - portable ClipEntry construction / reading
 // ==================
 
-/* Upstream Compose has no COMMON way to build or read a ClipEntry — every
+/* Upstream Compose has no COMMON way to build or read a ClipEntry - every
    platform actual differs. This port mirrors upstream's macOS actual
    (ClipEntry.withPlainText / getPlainText / getImage), while upstream JVM
    desktop wraps an AWT Transferable and exposes nothing text-typed. Shared

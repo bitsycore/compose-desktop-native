@@ -29,7 +29,7 @@ internal fun LazyExtraScreen() {
 		ScreenTitle(
 			"LazyRow + LazyVerticalGrid",
 			"LazyRow scrolls horizontally, LazyVerticalGrid arranges items in a column-grid. Both " +
-				"reuse the LazyList scope (item, items, itemsIndexed). Not yet virtualised — every " +
+				"reuse the LazyList scope (item, items, itemsIndexed). Not yet virtualised - every " +
 				"item composes each frame; the surrounding scroll modifier clips.",
 		)
 
@@ -52,7 +52,7 @@ internal fun LazyExtraScreen() {
 			}
 		}
 
-		Section("LazyVerticalGrid — GridCells.Fixed(4)", "16 cells in 4 columns.") {
+		Section("LazyVerticalGrid - GridCells.Fixed(4)", "16 cells in 4 columns.") {
 			LazyVerticalGrid(
 				columns = GridCells.Fixed(4),
 				modifier = Modifier.fillMaxWidth().height(220.dp),
@@ -75,8 +75,8 @@ internal fun LazyExtraScreen() {
 		}
 
 		Section(
-			"LazyVerticalGrid — GridCells.Adaptive(minSize = 96.dp)",
-			"Column count adapts to the parent width — wider window → more columns.",
+			"LazyVerticalGrid - GridCells.Adaptive(minSize = 96.dp)",
+			"Column count adapts to the parent width - wider window → more columns.",
 		) {
 			LazyVerticalGrid(
 				columns = GridCells.Adaptive(96.dp),

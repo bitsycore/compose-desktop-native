@@ -1,6 +1,6 @@
-// :ui-text — androidx.compose.ui.text.* split out of :ui (upstream layout).
+// :ui-text - androidx.compose.ui.text.* split out of :ui (upstream layout).
 // AnnotatedString / TextStyle / Paragraph / FontFamily + the B6.3 skiko text
-// engine (SkiaParagraph / SkiaParagraphOps / SkiaFonts, IconFont). SDL-free —
+// engine (SkiaParagraph / SkiaParagraphOps / SkiaFonts, IconFont). SDL-free -
 // depends on :ui-graphics (Canvas), skiko, and the low ui primitives.
 
 plugins {

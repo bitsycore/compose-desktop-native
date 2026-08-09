@@ -125,7 +125,7 @@ internal fun CertCard(inIndex: Int, inCert: ChainCert) {
         vSubject?.let { CertLine("Subject", it) }
         if (vSelfSigned) CertLine("Issuer", "Self-signed", kSelfSignedColor)
         else vIssuer?.let { CertLine("Issuer", it) }
-        // Hosts this cert is valid for — the field that actually has to match the URL.
+        // Hosts this cert is valid for - the field that actually has to match the URL.
         (certField(vFields, "X509v3 Subject Alternative Name")
             ?: certField(vFields, "Subject Alternative Name")
             ?: vParsed?.sans?.takeIf { it.isNotEmpty() }?.joinToString(", "))
@@ -141,7 +141,7 @@ internal fun CertCard(inIndex: Int, inCert: ChainCert) {
 
 internal val kSelfSignedColor = Color(0xFF3FB950L)
 
-/** Copy button — rounded, hover overlay, real click that copies inText and shows
+/** Copy button - rounded, hover overlay, real click that copies inText and shows
 a green check. Icon-only (per cert) flashes a small floating "Copied" bubble
 for 2s; the labelled variant (Copy chain) flips its label to "Copied" instead.
 Uses a non-catching Popup so it never dismisses the dialog or eats clicks. */
@@ -218,7 +218,7 @@ format the platform backends emit:
 "CN=R3, O=Let's Encrypt, C=US"        (Windows CertGetNameStringA)
 "/C=US/O=Let's Encrypt/CN=R3"          (OpenSSL X509_NAME_oneline)
 "CN = R3, O = Let's Encrypt, C = US"   (OpenSSL X509_NAME_print_ex
-default, with spaces — what
+default, with spaces - what
 libcurl on macOS emits)
 Null when there's no CN. */
 internal fun cnOf(inDn: String): String? {

@@ -103,7 +103,7 @@ internal fun FocusRequesterScreen() {
 		}
 
 		// ============
-		//  onFocusChanged standalone — observes focus without itself being focusable
+		//  onFocusChanged standalone - observes focus without itself being focusable
 		var vObserved by remember { mutableStateOf("idle") }
 		Section("onFocusChanged standalone", "Wraps a focusable child; the observed text updates without making the wrapper focusable.") {
 			Box(

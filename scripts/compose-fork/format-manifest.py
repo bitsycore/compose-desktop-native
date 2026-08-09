@@ -10,7 +10,7 @@
 # last-active-wins.
 #
 # Idempotent: running on an already-canonical manifest changes nothing. Purely a
-# re-layout — the set of active upstream→dest pairs (what sync.sh consumes) is
+# re-layout - the set of active upstream→dest pairs (what sync.sh consumes) is
 # preserved, so the vendored tree is byte-identical.
 #
 # Usage:
@@ -58,7 +58,7 @@ def header_for(module):
 		'#',
 		'# Format:  <upstream-path-under-clone>  <dest-relative-to-this-module>',
 		'# Grouped by androidx package (alphabetical). Uncommented = vendored, commented =',
-		'# candidate. Never hand-edit the vendored files — change this manifest / the ref',
+		'# candidate. Never hand-edit the vendored files - change this manifest / the ref',
 		'# and re-run sync.sh.',
 		'',
 	]
@@ -104,7 +104,7 @@ def upstream_to_dest(up):
 
 def upstream_modules_in(text):
 	"""Set of `compose/<area>/<module>` prefixes referenced by any line (active or
-	commented) in the manifest. Used to bound `discover()` — a manifest only
+	commented) in the manifest. Used to bound `discover()` - a manifest only
 	auto-grows within its already-referenced upstream modules."""
 	prefixes = set()
 	for line in text.splitlines():
@@ -209,7 +209,7 @@ def run_one(path, check, cmp_ref):
 			' (0 new files)' if cmp_ref else ''))
 		return 0
 	if check:
-		sys.stderr.write('%s is NOT canonical — run format-manifest.py\n' % path)
+		sys.stderr.write('%s is NOT canonical - run format-manifest.py\n' % path)
 		return 1
 	with open(path, 'w', encoding='utf-8', newline='\n') as f:
 		f.write(new)

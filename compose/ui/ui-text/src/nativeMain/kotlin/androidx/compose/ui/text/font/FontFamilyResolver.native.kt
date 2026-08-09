@@ -1,12 +1,12 @@
 package androidx.compose.ui.text.font
 
 // ==================
-// MARK: FontFamilyResolver — native actuals for vendored expects
+// MARK: FontFamilyResolver - native actuals for vendored expects
 // ==================
 
 /**
  * Project-side actuals for the vendored `FontFamilyResolver.kt` (commonMain):
- *   * `internal expect class PlatformFontFamilyTypefaceAdapter()` — the "everything-
+ *   * `internal expect class PlatformFontFamilyTypefaceAdapter()` - the "everything-
  *     that-isn't-a-FontListFontFamily" adapter. Upstream's skiko actual routes
  *     `Default`, `SansSerif`, `Serif`, `Monospace`, `Cursive`, and `LoadedFontFamily`
  *     through `SkiaFontLoader` to produce a real `SkTypeface`. Our text renderer
@@ -15,14 +15,14 @@ package androidx.compose.ui.text.font
  *     against its registered font table, so the resolver's typeface is never
  *     consulted. A no-op adapter (returns an [TypefaceResult.Immutable] wrapping
  *     `Unit`) is enough to keep the resolver stack compiling / not throwing.
- *   * `fun createFontFamilyResolver()` — top-level factory declared in
+ *   * `fun createFontFamilyResolver()` - top-level factory declared in
  *     `FontFamilyResolver.skiko.kt` upstream. Provides an [FontFamilyResolverImpl]
  *     with a project [SdlPlatformFontLoader] + default resolve interceptor +
  *     the no-op platform adapter above.
  *
  * TODO: wire a real SDL3 typeface pipeline (register bytes → font handle,
  *   resolve via TextMeasurer's registered names) so `TypefaceResult.Immutable.value`
- *   becomes a usable handle. Today it's a stand-in — only the deprecated
+ *   becomes a usable handle. Today it's a stand-in - only the deprecated
  *   `TextLayoutResult.load()` path reads `.value`.
  */
 
@@ -44,7 +44,7 @@ internal actual class PlatformFontFamilyTypefaceAdapter actual constructor() :
 		createDefaultTypeface: (TypefaceRequest) -> Any,
 	): TypefaceResult? {
 		if (typefaceRequest.fontFamily is FontListFontFamily) return null
-		// Return a placeholder typeface — renderer reads `TextStyle.fontFamily`
+		// Return a placeholder typeface - renderer reads `TextStyle.fontFamily`
 		// directly (via NamedFont / FontListFontFamily) and never consumes `.value`.
 		return TypefaceResult.Immutable(Unit)
 	}

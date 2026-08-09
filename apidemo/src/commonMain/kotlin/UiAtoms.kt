@@ -35,7 +35,7 @@ width so request names line up. */
 @Composable
 internal fun MethodTag(inMethod: ReqMethod) {
     val vCol = methodColor(inMethod)
-    // No background — just the coloured method name, fixed width so the request
+    // No background - just the coloured method name, fixed width so the request
     // names still line up in the sidebar list.
     Box(
         modifier = Modifier.width(46.dp).padding(vertical = 2.dp),
@@ -53,7 +53,7 @@ internal fun RowDropBar() {
     Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(c.accent, RoundedCornerShape(1.dp)))
 }
 
-/** Tab indices listed in inDots get a small accent dot after their label — used
+/** Tab indices listed in inDots get a small accent dot after their label - used
 to flag a tab that holds content (e.g. a non-empty request body). */
 @Composable
 internal fun TabBar(inTabs: List<String>, inSelected: Int, inDots: Set<Int> = emptySet(), inOnSelect: (Int) -> Unit) {
@@ -90,7 +90,7 @@ internal fun TogglePill(inLabel: String, inSelected: Boolean, inOnClick: () -> U
     ) { Text(inLabel, color = if (inSelected) c.onAccent else c.dim, fontSize = 12.sp) }
 }
 
-/** Compact single-line (or fixed-height multi-line) input — a BasicTextField in
+/** Compact single-line (or fixed-height multi-line) input - a BasicTextField in
 a slim bordered box, much shorter than the 56 dp Material OutlinedTextField. */
 @Composable
 internal fun ThinField(
@@ -177,7 +177,7 @@ internal fun OutlinedAction(inIcon: Int, inLabel: String, inOnClick: () -> Unit)
 
 /** Filled red icon+label button for destructive / stop actions (delete, cancel, quit).
 Uses the m3 Button so its size + ripple + interaction match every other
-Button in the app — previously handrolled Box + background + clickable + padding
+Button in the app - previously handrolled Box + background + clickable + padding
 gave it a different height / horizontal padding, and the Discard button sat
 next to a Button ("Save first…") looking noticeably smaller in dialogs. */
 @Composable

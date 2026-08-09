@@ -18,7 +18,7 @@ interface SkiaBridge {
     fun ensureSize(inWidth: Int, inHeight: Int): Boolean
     fun present()
     fun destroy()
-    // Snapshot of the current frame as a Skia Image (may be GPU-backed —
+    // Snapshot of the current frame as a Skia Image (may be GPU-backed -
     // call makeRasterFrame for a CPU-side copy).
     fun snapshot(): Image?
     // Returns (width, height, bgra-bytes) for the current frame, or null if

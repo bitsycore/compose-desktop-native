@@ -11,7 +11,7 @@ package com.compose.sdl.icons
    for that family, opens a typeface, and caches it per (family, size).
 
    This lives outside androidx.compose.* because it's a project-original
-   abstraction — upstream Compose Multiplatform uses Font(R.font.x) /
+   abstraction - upstream Compose Multiplatform uses Font(R.font.x) /
    FontFamily for the same purpose, but that machinery is too heavy for this
    subset (it pulls in real ImageVector + resource codegen). The renderer-
    level fontFamily on LayoutNode is just a String, and this registry tells
@@ -20,19 +20,19 @@ object IconFont {
 
 	private val fFonts = mutableMapOf<String, ByteArray>()
 	// Families that render as single variable-axis glyphs (Material Symbols),
-	// vs ordinary text fonts — icon families are drawn one codepoint at a time,
+	// vs ordinary text fonts - icon families are drawn one codepoint at a time,
 	// while text families (e.g. a bundled monospace) go through normal
 	// full-string rendering.
 	private val fIconFamilies = mutableSetOf<String>()
 
 	/** Register a TEXT font family's bytes (rendered as full strings; e.g. a
-	   bundled monospace). Idempotent — a second call with the same family
+	   bundled monospace). Idempotent - a second call with the same family
 	   replaces the previous bytes. */
 	fun register(inFamily: String, inBytes: ByteArray) {
 		fFonts[inFamily] = inBytes
 	}
 
-	/** Register an ICON font family (Material Symbols et al.) — variable-axis.
+	/** Register an ICON font family (Material Symbols et al.) - variable-axis.
 	   Same byte store as register(), but also flags the family as an icon
 	   font. */
 	fun registerIcon(inFamily: String, inBytes: ByteArray) {
@@ -44,7 +44,7 @@ object IconFont {
 	   fall back to the default font when this returns null. */
 	fun bytesFor(inFamily: String): ByteArray? = fFonts[inFamily]
 
-	/** True only for families registered via registerIcon() — icon fonts that
+	/** True only for families registered via registerIcon() - icon fonts that
 	   need single-glyph (variable-axis) rendering, not text fonts. */
 	fun isIconFamily(inFamily: String): Boolean = inFamily in fIconFamilies
 

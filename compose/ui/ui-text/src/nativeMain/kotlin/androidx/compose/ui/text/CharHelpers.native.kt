@@ -1,14 +1,14 @@
 package androidx.compose.ui.text
 
 // ==================
-// MARK: CharHelpers — native actuals (naive)
+// MARK: CharHelpers - native actuals (naive)
 // ==================
 
 /**
  * Surrogate-pair-aware grapheme-cluster boundary iteration. Upstream's
  * skiko path uses ICU's BreakIterator; we approximate with single
  * surrogate-pair walks. Combining characters / emoji ZWJ sequences
- * collapse to one code point at a time — sufficient for cursor stepping
+ * collapse to one code point at a time - sufficient for cursor stepping
  * in BasicTextField's existing ASCII/BMP-heavy use cases.
  */
 internal actual fun String.findPrecedingBreak(index: Int): Int {

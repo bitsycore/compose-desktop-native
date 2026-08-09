@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 
-// Material3 — FloatingActionButton family, IconButton variants, elevated/tonal buttons.
+// Material3 - FloatingActionButton family, IconButton variants, elevated/tonal buttons.
 @Composable
 internal fun FabScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

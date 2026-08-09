@@ -21,7 +21,7 @@ private val CarouselColors = listOf(
 	Color(0xFF7C4DFF), Color(0xFF448AFF), Color(0xFF26A69A), Color(0xFFFFB300), Color(0xFFEF5350),
 )
 
-// Material3 — the carousel family (drag horizontally).
+// Material3 - the carousel family (drag horizontally).
 @Composable
 internal fun M3CarouselScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

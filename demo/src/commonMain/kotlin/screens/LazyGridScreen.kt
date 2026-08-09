@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Foundation / lazy — LazyVerticalGrid + LazyRow. Both are nested inside the
+// Foundation / lazy - LazyVerticalGrid + LazyRow. Both are nested inside the
 // screen's own verticalScroll, so each is given a bounded size (a lazy list with
 // unbounded main-axis space would fail to measure).
 @Composable
@@ -22,7 +22,7 @@ internal fun LazyGridScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle(
 			"Lazy Grid & Row",
-			"androidx.compose.foundation.lazy — LazyVerticalGrid (fixed columns) and a horizontally-scrolling LazyRow.",
+			"androidx.compose.foundation.lazy - LazyVerticalGrid (fixed columns) and a horizontally-scrolling LazyRow.",
 		)
 
 		val vColors = listOf(
@@ -30,7 +30,7 @@ internal fun LazyGridScreen() {
 			Color(0xFFEC407A), Color(0xFF29B6F6), Color(0xFFAB47BC), Color(0xFFFF7043),
 		)
 
-		Section("LazyVerticalGrid", "GridCells.Fixed(4) — 24 cells, only visible rows composed") {
+		Section("LazyVerticalGrid", "GridCells.Fixed(4) - 24 cells, only visible rows composed") {
 			Box(Modifier.fillMaxWidth().height(260.dp)) {
 				LazyVerticalGrid(
 					columns = GridCells.Fixed(4),

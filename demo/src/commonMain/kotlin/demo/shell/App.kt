@@ -39,12 +39,12 @@ import demo.shim.DemoIcon
 import demo.shim.blend
 
 // ==================
-// MARK: App shell — sidebar + content
+// MARK: App shell - sidebar + content
 // ==================
 
 /** Platform-neutral showcase shell. The sidebar dropdown switches between the
    categories returned by allCategories() (common Core + Material 3, plus whatever
-   getPlatformCategories() contributes). Nothing here touches project-only APIs —
+   getPlatformCategories() contributes). Nothing here touches project-only APIs -
    the same code runs on native today and on a future jvm target. */
 @Composable
 fun App(isJvm: Boolean = false) {
@@ -57,7 +57,7 @@ fun App(isJvm: Boolean = false) {
     val contentScroll = rememberScrollState()
 
     Row(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        // Sidebar (vertically scrollable — try resizing the window short).
+        // Sidebar (vertically scrollable - try resizing the window short).
         Column(
             modifier = Modifier
                 .width(190.dp)
@@ -94,7 +94,7 @@ fun App(isJvm: Boolean = false) {
             }
         }
 
-        // Content (vertically scrollable — long screens fit a short window).
+        // Content (vertically scrollable - long screens fit a short window).
         Box(
             modifier = Modifier
                 .fillMaxSize()

@@ -9,7 +9,7 @@ For architecture, source-set layout, and vendoring rules, see
 ## Native libraries
 
 SDL3 is built from source as a static library and linked straight into the
-executable — the windowing, input, and platform-integration layer. One script
+executable - the windowing, input, and platform-integration layer. One script
 does it on every OS. Output lands in the gitignored `libs/`; the version is
 pinned in `scripts/build-sdl/build-sdl.properties`.
 
@@ -24,11 +24,11 @@ absent). Run it once per machine, or after bumping the pinned version.
 The static lib is built **slim**: the port uses SDL only for video/window,
 events, clipboard, file dialogs, GL/Metal contexts, the CPU-raster `SDL_Render`
 blit, filesystem, cursor, locale, theme, and text input/IME. `build-all.py`
-disables every unused subsystem — audio, joystick, haptic, hidapi, sensor,
+disables every unused subsystem - audio, joystick, haptic, hidapi, sensor,
 power, camera, GPU, offscreen, virtual-joystick (all zero-reference), plus
 tests/examples and the Windows D3D12 driver. If a consumer app ever needs one of
 these (e.g. SDL audio), re-enable its `-DSDL_*` flag in `build-all.py` and
-rebuild — a build-time change, no code edit.
+rebuild - a build-time change, no code edit.
 
 ## Vendoring upstream Compose
 
@@ -128,7 +128,7 @@ height]`). Its job is the mac-vs-Windows vertical-spacing question (PLAN.md §1b
 the SAME `NotoSans.ttf` bytes go through a different Skia `FontMgr` scaler per
 host (CoreText / fontconfig-FreeType / DirectWrite), which can pick different
 metric tables. Run it on native AND on the JVM parity app on the SAME host and
-diff the lines — Windows-native must match skiko-JVM-Windows.
+diff the lines - Windows-native must match skiko-JVM-Windows.
 
 ```bash
 CDN_TEXT_METRICS=1 demo.kexe --screen=Buttons --screenshot=/tmp/b.bmp
@@ -162,7 +162,7 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 mingwX64 renders through Skia via the **bitsycore skiko fork**, consumed from
 GitHub Packages as `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (macOS/Linux use
 official Skiko). The runtime `skiko-windows-x64.dll` is auto-provisioned next
-to the executable by the bridge plugin — no manual copy. The fork itself is
+to the executable by the bridge plugin - no manual copy. The fork itself is
 published by a separate GitHub Actions workflow in the fork repo, out of band
 from this repo's release flow.
 
@@ -182,7 +182,7 @@ single file to edit; know which axis you are changing.
 
 | Version | Where | Notes |
 |---------|-------|-------|
-| Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Groups mirror upstream per area (`com.bitsycore.compose.<area>:<module>`, e.g. `com.bitsycore.compose.ui:ui`); project-only modules use `com.bitsycore.compose.sdl` and `:desktop-native-window` is `com.bitsycore.compose` — see `groupFor()` in the root build. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
+| Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Groups mirror upstream per area (`com.bitsycore.compose.<area>:<module>`, e.g. `com.bitsycore.compose.ui:ui`); project-only modules use `com.bitsycore.compose.sdl` and `:desktop-native-window` is `com.bitsycore.compose` - see `groupFor()` in the root build. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
 | JVM parity forcing | `vComposeJvmVersion` in `demo`, `apidemo`, and `material-symbols` `build.gradle.kts`. | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published. |
 | Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
@@ -216,12 +216,12 @@ Run this on each upstream bump; it is the flow that keeps the sync tax low.
    KotlinMultiplatform publications live there; a macOS-only publish leaves the
    roots without mingwX64 variants (this bit v0.1.15).
 3. Refresh the klib API baselines: on a Windows host (JDK 21, matching CI) run
-   `./gradlew apiDump` and commit any diff. Not a hard gate yet — the API is
-   pre-stable and `apiCheck` isn't wired — but regenerating each release keeps
+   `./gradlew apiDump` and commit any diff. Not a hard gate yet - the API is
+   pre-stable and `apiCheck` isn't wired - but regenerating each release keeps
    the baselines honest so the eventual gate is a no-op. `macosArm64` is inferred
    from the linux/mingw ABIs (accurate for the target-independent Compose
    surface); `:sdl-core` (cinterop) and `:material-symbols` (generated icon maps)
-   are excluded via `apiValidation.ignoredProjects`. Best host: Windows — it
+   are excluded via `apiValidation.ignoredProjects`. Best host: Windows - it
    builds the mingw slice (the fork's unique surface) for real and only infers
    macos; the macos ABI is target-independent for the tracked pure-Kotlin modules.
 4. `git tag vX.Y.Z && git push origin vX.Y.Z`. This triggers `.github/workflows/publish.yml`.

@@ -4,7 +4,7 @@ import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.DpSize
 
 // ==================
-// MARK: DefaultViewConfiguration — project default (upstream has this inside
+// MARK: DefaultViewConfiguration - project default (upstream has this inside
 //   PlatformContext.skiko.kt, which we can't vendor because it needs ComposeScene
 //   / CanvasLayersComposeScene).
 // ==================

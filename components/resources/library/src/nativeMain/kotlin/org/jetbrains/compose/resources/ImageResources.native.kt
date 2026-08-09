@@ -19,7 +19,7 @@ import com.compose.sdl.graphics.svgIntrinsicSize
 import kotlin.math.roundToInt
 
 // ==================
-// MARK: Image actuals — Skia decode via the :ui-graphics hook
+// MARK: Image actuals - Skia decode via the :ui-graphics hook
 // ==================
 
 /** Decoding goes through the :ui-graphics Skia hook the SDL backend registers
@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
    drawables ship at a single density, so no decode-time rescale applies. */
 internal actual fun ByteArray.toImageBitmap(resourceDensity: Int, targetDensity: Int): ImageBitmap =
 	decodeEncodedImageBitmap(this)
-		?: error("Image decode failed — is the render backend initialised before painterResource ran?")
+		?: error("Image decode failed - is the render backend initialised before painterResource ran?")
 
 /** SVG element = the raw document bytes; rendering is size-driven (see SvgPainter). */
 internal actual class SvgElement(val bytes: ByteArray)

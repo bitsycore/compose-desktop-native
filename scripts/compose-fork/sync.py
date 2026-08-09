@@ -282,7 +282,7 @@ def sparse_prefixes(text, variables):
 		if repo is None:
 			continue  # a commented preamble line before SET_REPO contributes nothing
 		# Any `<area>/<module>/src/...` token (per-file OR folder directive) maps to
-		# that module dir — generalises beyond compose/ (e.g. navigation3/navigation3-ui);
+		# that module dir - generalises beyond compose/ (e.g. navigation3/navigation3-ui);
 		# the sparse dir is everything before `/src/`.
 		if '/src/' in tok:
 			prefixes.setdefault(repo, set()).add(tok.split('/src/', 1)[0])
@@ -426,7 +426,7 @@ def iter_directives(text):
 			yield parts[0], parts[1], (parts[0].endswith('/') or parts[1].endswith('/'))
 
 
-# The manifest's active (repo, SET_FOLDER) — the repo in effect at the FIRST active
+# The manifest's active (repo, SET_FOLDER) - the repo in effect at the FIRST active
 # SET_FOLDER (root '' if none). --gaps walks that root inside that repo's clone.
 def active_repo_and_root(text, variables):
 	repo = None
@@ -591,7 +591,7 @@ def report_gaps(manifests, variables, quiet_skips=False):
 				gap_body.append('%s%s -> %s' % (EXP_PREFIX, rel, gap_dest(rel)))
 				count += 1
 		if not count:
-			gap_body.append('#   (none — every source set under SET_FOLDER is vendored)')
+			gap_body.append('#   (none - every source set under SET_FOLDER is vendored)')
 
 		# The GAPS block is ALWAYS emitted (a stable trailing section), even when empty.
 		new = '\n'.join(body).rstrip('\n') + '\n\n' + GAP_START + '\n' + '\n'.join(gap_body) + '\n' + GAP_END + '\n'
@@ -655,7 +655,7 @@ def main():
 		return
 
 	# ---- 1.5 canonicalize + discover each selected manifest (non-fatal). Skipped for
-	#      manifests written in the SET_FOLDER / `->` folder style — format-manifest.py
+	#      manifests written in the SET_FOLDER / `->` folder style - format-manifest.py
 	#      is per-file + compose/-specific and would drop those directives.
 	fmt = os.path.join(HERE, 'format-manifest.py')
 	if os.path.isfile(fmt):
@@ -716,7 +716,7 @@ def main():
 		#      didn't write is a leftover from a renamed/dropped manifest entry (e.g.
 		#      ArcSpline.native.kt lingering after the dest moved to ArcSpline.nonJvm.kt)
 		#      and shadows/conflicts with the current tree. The vendor dir is fully
-		#      regenerated output — nothing hand-made lives there — so deleting is safe.
+		#      regenerated output - nothing hand-made lives there - so deleting is safe.
 		#      Non-.kt files (README etc.) are kept; emptied directories are pruned.
 		removed = 0
 		vendor_root = os.path.join(module_dir, 'src', 'vendor')

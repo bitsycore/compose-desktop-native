@@ -1,7 +1,7 @@
 package apidemo
 
 // Linux: Ktor bundles an OpenSSL-backed libcurl, which reads PEM / DER / PKCS#12
-// certificate and key files directly — no certificate-store dance needed.
+// certificate and key files directly - no certificate-store dance needed.
 
 /** Point libcurl straight at the certificate / key files. */
 actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
@@ -17,6 +17,6 @@ actual fun prepareClientCert(inReq: ApiRequest): PreparedCert =
 /** No temporary certificate store off Windows. */
 actual fun sweepTempClientCerts() {}
 
-/** No OS-store issuer resolution here — just continue with the name-only issuer. */
+/** No OS-store issuer resolution here - just continue with the name-only issuer. */
 actual fun extendChain(inServerCerts: List<List<Pair<String, String>>>): List<ChainCert> =
     serverChainWithIssuerName(inServerCerts)

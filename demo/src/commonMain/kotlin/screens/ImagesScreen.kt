@@ -27,7 +27,7 @@ internal fun ImagesScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Images / Resources",
-            "composeResources bundled next to the binary, loaded via generated Res.* accessors — " +
+            "composeResources bundled next to the binary, loaded via generated Res.* accessors - " +
                 "PNG, JPG, SVG, Android vector XML, and raw bytes.",
         )
 
@@ -65,7 +65,7 @@ internal fun ImagesScreen() {
             }
         }
 
-        Section("Raw bytes", "Res.readBytes(\"files/notice.txt\") — no decoding, just the file") {
+        Section("Raw bytes", "Res.readBytes(\"files/notice.txt\") - no decoding, just the file") {
             var vText by remember { mutableStateOf("(loading…)") }
             LaunchedEffect(Unit) {
                 vText = runCatching { Res.readBytes("files/notice.txt").decodeToString() }

@@ -10,7 +10,7 @@ import java.io.File
 
 /** JVM (Compose Desktop) actual: DragAndDropEvent exposes the payload through
  * the AWT flavor system via the awtTransferable extension (throws when the
- * event carries no transferable — hence the runCatching). */
+ * event carries no transferable - hence the runCatching). */
 
 actual fun DragAndDropEvent.demoReadFilePaths(): List<String> {
     val transferable = runCatching { awtTransferable }.getOrNull() ?: return emptyList()

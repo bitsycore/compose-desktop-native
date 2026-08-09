@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 
 // ==================
-// MARK: NamedFont — project name-based Font
+// MARK: NamedFont - project name-based Font
 // ==================
 
 /**
@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
  * The SDL3 / Skia text renderer looks up the actual bytes at draw time via
  * [com.compose.sdl.text.TextMeasurer]'s registered font table.
  *
- * Upstream's `FontFamily.Named` project extension is retired — vendored `FontFamily`
+ * Upstream's `FontFamily.Named` project extension is retired - vendored `FontFamily`
  * is a `sealed class` whose only `FontListFontFamily` / `GenericFontFamily` /
  * `LoadedFontFamily` branches don't accept project subclasses. Instead, we route
  * name-based lookups through the standard `Font → FontFamily` chain: pass
@@ -32,7 +32,7 @@ class NamedFont(
 	val variationSettings: FontVariation.Settings = FontVariation.Settings(weight, style),
 	// Raw variable-font axis settings (Material Symbols FILL/wght/GRAD/opsz),
 	// threaded through the family so the skiko text engine can apply them via
-	// FontFamily.projectFontVariations() — icons render on the standard text path.
+	// FontFamily.projectFontVariations() - icons render on the standard text path.
 	val axes: List<FontVariation.Setting>? = null,
 ) : Font {
 	override val loadingStrategy: FontLoadingStrategy = FontLoadingStrategy.Blocking
@@ -45,7 +45,7 @@ class NamedFont(
 		var h = name.hashCode()
 		h = 31 * h + weight.hashCode()
 		h = 31 * h + style.hashCode()
-		// Axis settings (Material Symbols FILL/wght/GRAD/opsz) are part of identity —
+		// Axis settings (Material Symbols FILL/wght/GRAD/opsz) are part of identity -
 		// without them two axis-differing icon fonts compare equal and collide in the
 		// FontFamily → typeface cache, rendering one icon's axes for the other.
 		h = 31 * h + (axes?.hashCode() ?: 0)
@@ -56,7 +56,7 @@ class NamedFont(
 	override fun toString(): String = "NamedFont(name=$name, weight=$weight, style=$style)"
 }
 
-/** Convenience factory — the vendored `FontFamily(vararg fonts)` factory wraps into a
+/** Convenience factory - the vendored `FontFamily(vararg fonts)` factory wraps into a
  *  `FontListFontFamily`. Replaces the deleted project extension `FontFamily.Named(name)`. */
 fun namedFontFamily(
 	name: String,

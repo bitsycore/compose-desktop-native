@@ -11,7 +11,7 @@ import okio.FileSystem
 // MARK: Platform seams (native = com.compose.sdl / SDL3, jvm = AWT + upstream desktop)
 // ==================
 // The port modules are native-only, so shared code can't call com.compose.sdl
-// directly — every SDL-backed API the app uses goes through these expects.
+// directly - every SDL-backed API the app uses goes through these expects.
 // Signatures mirror the native originals so the native actuals are pure
 // delegation (same pattern as :demo's demo.shim package).
 
@@ -21,7 +21,7 @@ expect fun appDataDir(inOrg: String, inApp: String): String?
 /** Open the OS file manager showing the given path. Fire-and-forget. */
 expect fun revealInFileManager(inPath: String, inOnResult: ((Boolean) -> Unit)? = null)
 
-/** "Explorer" / "Finder" / "Files" — for menu labels. */
+/** "Explorer" / "Finder" / "Files" - for menu labels. */
 expect fun fileManagerName(): String
 
 /** Async save-file dialog; the callback gets the chosen absolute path or null. */
@@ -54,7 +54,7 @@ inFontPx (already density-scaled). Used by the body gutter so its line
 numbers stay aligned with the wrapped body text. */
 expect fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inFamilyName: String?): Int
 
-/** Editor tab width in spaces — how wide a typed '\t' renders. On the native
+/** Editor tab width in spaces - how wide a typed '\t' renders. On the native
 stack this drives the project text pipeline (TextLayoutConfig); the jvm
 parity app only stores the preference. */
 expect var editorTabWidth: Int
@@ -63,10 +63,10 @@ expect var editorTabWidth: Int
 //  Infrastructure
 
 /** okio's FileSystem.SYSTEM is declared per-platform, not in its common
-metadata — surface it through a seam. */
+metadata - surface it through a seam. */
 internal expect val systemFileSystem: FileSystem
 
-/** The app's Ktor client: Curl on native (bundled libcurl — same TLS stack as
+/** The app's Ktor client: Curl on native (bundled libcurl - same TLS stack as
 the mTLS path), CIO on the jvm parity target. */
 expect fun createApiHttpClient(): HttpClient
 

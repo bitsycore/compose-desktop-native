@@ -22,7 +22,7 @@ import kotlinx.coroutines.delay
    translation, and the cacheKey opt-in that pre-renders a subtree into
    a texture and reuses it across frames.
    The same modifier API is implemented in both the Skia and SDL3
-   renderers — Skia uses canvas transforms + raster surface caching,
+   renderers - Skia uses canvas transforms + raster surface caching,
    SDL3 uses SDL_RenderTextureRotated + per-node target textures. */
 @Composable
 internal fun GraphicsLayerScreen() {
@@ -77,7 +77,7 @@ internal fun GraphicsLayerScreen() {
 			}
 		}
 
-		Section("Alpha", "Layer-level opacity — overlapping content fades as one unit.") {
+		Section("Alpha", "Layer-level opacity - overlapping content fades as one unit.") {
 			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
 				for (vA in listOf(1f, 0.75f, 0.5f, 0.25f, 0.1f)) {
 					Box(

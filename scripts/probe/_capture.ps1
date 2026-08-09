@@ -1,5 +1,5 @@
 param([string]$proc, [string]$out)
-# Capture a window's CLIENT area by process name, via PrintWindow — works even
+# Capture a window's CLIENT area by process name, via PrintWindow - works even
 # when the window is occluded or not focused (unlike a screen grab). Used by the
 # probe driver to screenshot native app windows deterministically.
 Add-Type -AssemblyName System.Drawing

@@ -15,7 +15,7 @@ import java.io.File
 import java.util.zip.Inflater
 
 // ==================
-// MARK: App icon — packaging (runtime .rgba blobs) + Windows .exe embed
+// MARK: App icon - packaging (runtime .rgba blobs) + Windows .exe embed
 // ==================
 //
 // The consumer analog of the repo-internal apidemo icon setup. From the PNGs
@@ -29,7 +29,7 @@ import java.util.zip.Inflater
 //     windres, and links the resource object into the .exe (Explorer / pinned
 //     taskbar icon).
 //
-// Everything is self-contained Kotlin — no Python / Pillow dependency for
+// Everything is self-contained Kotlin - no Python / Pillow dependency for
 // consumers. The only external tool is `windres` (mingw-w64 binutils), needed
 // solely for the optional Windows .exe embed.
 
@@ -65,7 +65,7 @@ internal fun installAppIcon(inProject: Project, inExt: ComposeDesktopNativeExten
 
 	// Bundle the blobs into every consumer data.kres zip (ResourcePackaging's
 	// package<Variant>ComposeResources<Target>). matching{}.configureEach keeps
-	// this lazy — zips are registered for targets that may not exist.
+	// this lazy - zips are registered for targets that may not exist.
 	inProject.tasks.matching { it.name.startsWith("package") && it.name.contains("ComposeResources") }
 		.configureEach { zip ->
 			zip.dependsOn(vRgbaTask)
@@ -170,7 +170,7 @@ abstract class CompileWindowsIconResourceTask : DefaultTask() {
 }
 
 // ==================
-// MARK: IconCodec — PNG decode + RGBA blob + .ico assembly (pure Kotlin)
+// MARK: IconCodec - PNG decode + RGBA blob + .ico assembly (pure Kotlin)
 // ==================
 
 internal object IconCodec {
@@ -260,7 +260,7 @@ internal object IconCodec {
 		return Triple(vWidth, vHeight, vOut)
 	}
 
-	/** An 8-byte little-endian [width][height] header + straight-alpha RGBA — the
+	/** An 8-byte little-endian [width][height] header + straight-alpha RGBA - the
 	   format the runtime (WindowIcon.kt / SDL3Backend) reads. */
 	fun rgbaBlob(inW: Int, inH: Int, inRgba: ByteArray): ByteArray {
 		val vOut = ByteArray(8 + inRgba.size)
@@ -270,7 +270,7 @@ internal object IconCodec {
 		return vOut
 	}
 
-	/** A multi-resolution .ico embedding each PNG verbatim (PNG-payload entries —
+	/** A multi-resolution .ico embedding each PNG verbatim (PNG-payload entries -
 	   read by every modern Windows shell). */
 	fun buildIco(inPngFiles: List<File>): ByteArray {
 		data class Img(val w: Int, val h: Int, val bytes: ByteArray)

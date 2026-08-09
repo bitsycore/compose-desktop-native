@@ -16,7 +16,7 @@ import java.util.Properties
  * name (org.jetbrains.compose.ui:ui → com.bitsycore.compose.ui:ui, …), so each
  * value is the full `group:artifact`. Mirrors the repo-internal
  * FULL-COMMONIZATION BRIDGE (root build.gradle.kts): ui-graphics / ui-text are
- * their own modules (upstream layout). The runtime is deliberately absent — the
+ * their own modules (upstream layout). The runtime is deliberately absent - the
  * official org.jetbrains.compose.runtime klibs serve every target, never
  * substituted.
  */
@@ -49,14 +49,14 @@ private const val versionProperty = "composeDesktopNative.version"
 /**
  * Gradle property ("false") disabling the dependency substitution while keeping
  * the rest of the plugin (data.kres packaging, app icon, `compose.desktop.native`
- * DSL). For builds that already provide the port modules another way — the port
+ * DSL). For builds that already provide the port modules another way - the port
  * repo itself sets it: its root build substitutes the official coords to
  * PROJECT modules, and the published klibs don't exist for dev versions.
  */
 private const val substitutionProperty = "composeDesktopNative.substitution"
 
 // ==================
-// MARK: composeDesktopNative { } — version info exposed to the consumer
+// MARK: composeDesktopNative { } - version info exposed to the consumer
 // ==================
 
 /**
@@ -107,7 +107,7 @@ open class ComposeDesktopNativeBridgeExtension(
  *
  * Apply in settings.gradle.kts (covers every project) or in a single module's
  * build.gradle.kts. The substituted version defaults to the plugin's own
- * version — override with `composeDesktopNative.version` in gradle.properties.
+ * version - override with `composeDesktopNative.version` in gradle.properties.
  * The official Compose versions the port tracks are exposed via the
  * `composeDesktopNative` extension (see [ComposeDesktopNativeBridgeExtension]).
  */
@@ -167,7 +167,7 @@ private fun installBridge(project: Project) {
 					substitutions.substitute(substitutions.module(official))
 						.using(substitutions.module("$forkCoord:$version"))
 						.because(
-							"Compose Desktop Native bridge — the official artifact ships no " +
+							"Compose Desktop Native bridge - the official artifact ships no " +
 								"mingwX64/linux Kotlin/Native klibs"
 						)
 				}

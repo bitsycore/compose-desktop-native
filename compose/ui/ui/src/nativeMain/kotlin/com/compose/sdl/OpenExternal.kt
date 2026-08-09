@@ -15,7 +15,7 @@ import sdl3.SDL_OpenURL
 // MARK: Open external (URLs / file manager)
 // ==================
 
-/** OS handoffs run OFF the SDL main loop thread: SDL_OpenURL is synchronous —
+/** OS handoffs run OFF the SDL main loop thread: SDL_OpenURL is synchronous -
    ShellExecuteEx + per-thread COM init on Windows (a cold Explorer start
    blocks for a second+), NSWorkspace on macOS, fork/exec of xdg-open on
    Linux. Called from a click handler on the main thread it froze the whole
@@ -25,7 +25,7 @@ import sdl3.SDL_OpenURL
 private val fOpenExternalScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 /** Opens a URL or file:// URI with the OS's default handler (browser, file
-   manager, …) via SDL_OpenURL — asynchronously, so the UI keeps pumping while
+   manager, …) via SDL_OpenURL - asynchronously, so the UI keeps pumping while
    the handler app starts. [inOnResult] (optional) is invoked on the main
    thread with SDL_OpenURL's success flag. */
 @OptIn(ExperimentalForeignApi::class)

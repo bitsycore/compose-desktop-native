@@ -11,14 +11,14 @@ package com.compose.sdl
  *
  * Each list holds data.kres resource paths of PRE-DECODED `.rgba` icon blobs
  * (produced by the bridge plugin's `icon { }` packaging, or by
- * `scripts/make-app-icon.py rgba` — i.e. an 8-byte
+ * `scripts/make-app-icon.py rgba` - i.e. an 8-byte
  * `[width u32-le][height u32-le]` header + straight-alpha RGBA pixels). List
  * one path per size you bundle; the largest becomes the base and the rest are
  * attached as alternate resolutions SDL chooses from (title bar vs taskbar vs
  * Alt-Tab), so the icon stays crisp at every size.
  *
  * On Windows the runtime icon set here complements the icon EMBEDDED in the
- * `.exe` (Explorer / pinned taskbar) — see the app / bridge-plugin Gradle setup.
+ * `.exe` (Explorer / pinned taskbar) - see the app / bridge-plugin Gradle setup.
  */
 class AppWindowIcon(
 	val light: List<String>,

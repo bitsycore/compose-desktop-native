@@ -43,7 +43,7 @@ internal fun AnnotatedStringScreen() {
 		ScreenTitle(
 			"AnnotatedString + Text(AnnotatedString)",
 			"Each contiguous-style segment renders as a separate BasicText in a horizontal Row. " +
-				"Single-line — no soft-wrap across runs. Per-glyph multi-line layout would need a " +
+				"Single-line - no soft-wrap across runs. Per-glyph multi-line layout would need a " +
 				"custom Layout that walks the runs and breaks them by width.",
 		)
 
@@ -91,7 +91,7 @@ internal fun AnnotatedStringScreen() {
 				}
 			}
 		}
-		Section("FontWeight sweep", "Thin / Light / Normal / Medium / SemiBold / Bold / Black — uses the wght FontVariation under the hood.") {
+		Section("FontWeight sweep", "Thin / Light / Normal / Medium / SemiBold / Bold / Black - uses the wght FontVariation under the hood.") {
 			vCard { Text(vWeights, color = vOnSurface, fontSize = 18.sp) }
 		}
 

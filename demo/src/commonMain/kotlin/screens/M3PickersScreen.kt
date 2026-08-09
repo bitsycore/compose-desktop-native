@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-// Material3 — date and time pickers.
+// Material3 - date and time pickers.
 @Composable
 internal fun M3PickersScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -22,7 +22,7 @@ internal fun M3PickersScreen() {
 		}
 
 		Section("DateRangePicker", "Start + end date selection") {
-			// The range picker scrolls its months in an internal LazyColumn —
+			// The range picker scrolls its months in an internal LazyColumn -
 			// it must get a BOUNDED height (the screen's outer scroll column
 			// would otherwise measure it with infinite max height and crash).
 			DateRangePicker(

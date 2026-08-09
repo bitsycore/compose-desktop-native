@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :foundation — androidx.compose.foundation.* AND androidx.compose.animation.*
+// :foundation - androidx.compose.foundation.* AND androidx.compose.animation.*
 // (non-core) vendored VERBATIM from upstream. Sits on :ui (which still owns
 // androidx.compose.ui.*, the Skia renderer, cinterops) + :animation-core.
 //
@@ -14,12 +14,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 // module boundary is coalesced.
 //
 // Provenance = foundation/compose-fork.txt + scripts/compose-fork/compose.properties.
-// Never hand-edit files under foundation/src/vendor/ — change the manifest and
+// Never hand-edit files under foundation/src/vendor/ - change the manifest and
 // re-run `bash scripts/compose-fork/sync.sh :foundation`.
 //
 // Note on DarkTheme: foundation declares `internal expect fun _isSystemInDarkTheme()`,
 // and its actual lives here as a plain nativeMain kt file (see
-// src/nativeMain/kotlin/androidx/compose/foundation/DarkTheme.native.kt) — a single
+// src/nativeMain/kotlin/androidx/compose/foundation/DarkTheme.native.kt) - a single
 // stub returning false. The upstream skiko per-renderer actuals were dropped
 // when :foundation was split from :ui: expect/actual must live in the same
 // module, and duplicating the skikoRenderer source-set hierarchy on

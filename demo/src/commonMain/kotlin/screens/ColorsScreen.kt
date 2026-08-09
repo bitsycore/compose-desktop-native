@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // ==================
-// MARK: Colors screen — Material palette swatches
+// MARK: Colors screen - Material palette swatches
 // ==================
 
 @Preview

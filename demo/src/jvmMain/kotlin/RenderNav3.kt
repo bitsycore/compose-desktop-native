@@ -10,7 +10,7 @@ import org.jetbrains.skia.EncodedImageFormat
 import screens.Navigation3Screen
 import java.io.File
 
-// Headless render of the shared Navigation3Screen against UPSTREAM Compose Desktop —
+// Headless render of the shared Navigation3Screen against UPSTREAM Compose Desktop -
 // a diagnostic to eyeball the JVM output (the windowed app can't be screenshotted here).
 // Run: ./gradlew :demojvm:renderNav3
 @OptIn(ExperimentalComposeUiApi::class)

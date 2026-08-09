@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Compose API coverage + fidelity — one script, two questions, per upstream module:
+Compose API coverage + fidelity - one script, two questions, per upstream module:
 
   1. COVERAGE  how much of each upstream module's public API do we also expose?
      (per-module and per-package tables with percentages)
   2. FIDELITY  do we expose anything under the mirrored package prefixes that
-     upstream does NOT have? (invented / divergent public surface — the old
+     upstream does NOT have? (invented / divergent public surface - the old
      compose-fidelity-check.py, now folded in)
 
 Both sides are Kotlin binary-compatibility-validator klib dumps, so "covered"
@@ -15,7 +15,7 @@ carries a trailing `// <decl-id>|<mangle>` comment and we compare normalised
 
 Inputs
   ours:      **/api/*.klib.api in this repo      (regenerate: ./gradlew apiDump)
-  upstream:  the ref clones scripts/compose-fork/sync.sh maintains —
+  upstream:  the ref clones scripts/compose-fork/sync.sh maintains -
                ../cmp-ref          JetBrains/compose-multiplatform-core  ($CMP_REF)
                ../cmp-ref-<name>   any other repo                        ($CMP_REF_<NAME>)
 
@@ -27,7 +27,7 @@ Usage
   python3 scripts/compose-coverage.py --extras           # list every divergent decl
   python3 scripts/compose-coverage.py --all              # with --packages: include packages upstream lacks
 
-Output is informational, not a hard gate (exit 0 unless inputs are missing) —
+Output is informational, not a hard gate (exit 0 unless inputs are missing) -
 review divergences against CLAUDE.md's vendoring/fidelity rules. Known quirks
 of upstream's checked-in dumps: some lag their own sources or were generated
 with different BCV versions/filters (e.g. material3 misses recent experimental
@@ -45,11 +45,11 @@ from pathlib import Path
 kRoot = Path(__file__).resolve().parent.parent
 
 # ==================
-# MARK: Targets — add a line here to track a new upstream repo / module
+# MARK: Targets - add a line here to track a new upstream repo / module
 # ==================
 # repo      last path segment of the upstream repo URL. Resolves to the sync.sh
 #           ref clone: ../cmp-ref for compose-multiplatform-core, ../cmp-ref-<repo>
-#           for anything else — overridable via CMP_REF / CMP_REF_<REPO>.
+#           for anything else - overridable via CMP_REF / CMP_REF_<REPO>.
 # upstream  module dir inside that repo; its api/<name>.klib.api is the reference.
 # ours      module dir in THIS repo whose dump mirrors it. Several upstream
 #           modules may map to one of ours (ui-graphics / ui-text merge into :ui).
@@ -80,7 +80,7 @@ kTargets = [
 # Packages under these prefixes are MIRRORED surface: anything we expose here
 # that no upstream target has is divergent/invented API and shows up in the
 # fidelity report. Project packages (com.compose.sdl.*, material symbols, ...)
-# are deliberately absent — they never count as divergent.
+# are deliberately absent - they never count as divergent.
 kMirroredPrefixes = (
 	"androidx.compose.",
 	"androidx.navigation3.",
@@ -125,7 +125,7 @@ def declIds(inPath):
 	comments have no `|` and no `<pkg>/<name>` shape, so requiring both filters
 	them out. Declarations gated by a `// Targets: [...]` section that shares
 	no target with kOurTargets (ios / js / wasm-only API) can never exist on
-	this port: they land in skippedIds — out of the coverage denominator but
+	this port: they land in skippedIds - out of the coverage denominator but
 	still known-upstream for the fidelity check."""
 	vIds = set()
 	vSkipped = set()
@@ -159,7 +159,7 @@ def declIds(inPath):
 					vSkipped.add(vId)
 				else:
 					vIds.add(vId)
-		# Track blocks on the code part only — mangle comments contain `{}`.
+		# Track blocks on the code part only - mangle comments contain `{}`.
 		for _ in range(vCode.count("{")):
 			vScopes.append(vEffective)
 		for _ in range(vCode.count("}")):
@@ -286,7 +286,7 @@ def main():
 	vDivergent = vOursMirrored - vAllUpstream - vSkippedUnion
 
 	# ============
-	#  Warnings — a target whose module has no local dump reports fake 0%
+	#  Warnings - a target whose module has no local dump reports fake 0%
 	for vRepo, vModule in vMissingRefs:
 		print(f"!! upstream dump missing: {refCloneDir(vRepo) / vModule}/api/*.klib.api "
 			+ "-- re-run scripts/compose-fork/sync.sh (target skipped)", file=sys.stderr)

@@ -4,7 +4,7 @@ package com.compose.sdl.icons
 // MARK: MaterialSymbols (codepoints)
 // ==================
 
-/** GENERATED — do not edit by hand. Regenerate with
+/** GENERATED - do not edit by hand. Regenerate with
 scripts/generate-material-symbols.py (downloads Google's .codepoints
 file for the Material Symbols variable font and emits every glyph as a
 const). The codepoints are identical across the outlined / rounded /

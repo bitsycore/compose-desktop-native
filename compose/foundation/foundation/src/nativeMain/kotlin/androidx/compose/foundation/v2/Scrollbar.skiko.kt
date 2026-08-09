@@ -503,7 +503,7 @@ internal class SliderAdapter(
 
 // Because k/js and k/wasm don't have runBlocking. This port targets only
 // native desktop (macos/linux/mingw), which all have runBlocking, so the
-// upstream expect/actual is inlined here — our flat native source set can't
+// upstream expect/actual is inlined here - our flat native source set can't
 // hold the expect (in this .skiko.kt) and its actual in the same set.
 internal fun runBlockingIfPossible(block: suspend CoroutineScope.() -> Unit) =
 	kotlinx.coroutines.runBlocking(block = block)

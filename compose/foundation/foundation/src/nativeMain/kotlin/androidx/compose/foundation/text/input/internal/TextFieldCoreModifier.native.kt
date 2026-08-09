@@ -7,11 +7,11 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 
 // ==================
-// MARK: TextFieldCoreModifier — native actuals
+// MARK: TextFieldCoreModifier - native actuals
 // ==================
 
 /**
- Byte-identical mirror of upstream macosMain — both delegate to the default
+ Byte-identical mirror of upstream macosMain - both delegate to the default
  selection-highlight and cursor draw helpers baked into the vendored
  TextFieldCoreModifier.kt.
 */

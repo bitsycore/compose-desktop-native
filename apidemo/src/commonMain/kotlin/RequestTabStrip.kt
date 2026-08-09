@@ -33,7 +33,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 
 /** Strip of open requests above the editor. Each tab is clickable to select
 and drag-reorderable. While dragging, the grabbed tab lifts (zIndex),
-fades, and follows the cursor via a graphicsLayer translation — its
+fades, and follows the cursor via a graphicsLayer translation - its
 neighbours don't shuffle; the reorder commits on drop, to the slot whose
 neighbours' centres the cursor passed. key(tab) keeps each tab's
 LayoutNode stable so the drag session survives the reorder. */
@@ -57,7 +57,7 @@ internal fun RequestTabStrip(
     var vDragTarget by remember { mutableStateOf(-1) }
 
     // One shared context menu, anchored to the tab that opened it (m3 DropdownMenu
-    // is parent-anchored, not cursor-anchored — the old x/y capture is gone).
+    // is parent-anchored, not cursor-anchored - the old x/y capture is gone).
     var vMenu by remember { mutableStateOf(false) }
     var vMenuTab by remember { mutableStateOf<StripTab?>(null) }
 
@@ -89,7 +89,7 @@ internal fun RequestTabStrip(
                         .onGloballyPositioned { vLeft[vKey] = it.x }
                         .onSizeChanged { vWidth[vKey] = it.width }
                     // NOTE: `alpha` and `translationX` MUST be on the same graphicsLayer.
-                    // `Modifier.alpha` expands to `graphicsLayer(alpha, clip = true)` — clip is
+                    // `Modifier.alpha` expands to `graphicsLayer(alpha, clip = true)` - clip is
                     // applied in the ALPHA layer's local coord space (before any child layer's
                     // translation), so `.alpha().graphicsLayer(translationX = X)` clips the drag
                     // ghost inside its original bounds and the ghost disappears as it slides. One
@@ -103,7 +103,7 @@ internal fun RequestTabStrip(
                         .pointerInput(vKey) {
                             // Accumulate the per-frame delta rather than reading change.position.
                             // The tab wears a graphicsLayer(translationX = vDragDx) while dragging,
-                            // which transforms the modifier's local pointer frame — so position.x
+                            // which transforms the modifier's local pointer frame - so position.x
                             // would compensate for the translation each frame and the tab would
                             // trail the mouse by roughly half its offset. dragAmount is the
                             // root-frame delta and doesn't feed back through the layer transform.
@@ -143,7 +143,7 @@ internal fun RequestTabStrip(
                             )
                         }
                         // Middle-click closes the tab; right-click opens the tab menu. Compose
-                        // has no first-class match for either — inline pointerInput checks the
+                        // has no first-class match for either - inline pointerInput checks the
                         // pressed PointerButton at each Press.
                         .pointerInput(vTab) {
                             awaitPointerEventScope {

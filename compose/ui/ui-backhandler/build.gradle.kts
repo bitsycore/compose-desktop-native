@@ -1,4 +1,4 @@
-// :ui-backhandler — androidx.compose.ui.backhandler.*, vendored from upstream (split of :ui, CMP layout).
+// :ui-backhandler - androidx.compose.ui.backhandler.*, vendored from upstream (split of :ui, CMP layout).
 // Publication artifactId: desktop-ui-backhandler.
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)

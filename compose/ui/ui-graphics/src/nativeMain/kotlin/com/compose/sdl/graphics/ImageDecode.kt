@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 
 /** Decodes an ENCODED image (png / jpg / webp / bmp / gif / svg bytes) into a
    drawable [ImageBitmap]. The active renderer registers its implementation at
-   backend construction — the Skia backend goes through Image.makeFromEncoded /
+   backend construction - the Skia backend goes through Image.makeFromEncoded /
    SVGDOM (SkiaEncodedImageDecoder). :components-resources' actuals share this
    hook.
 
@@ -34,7 +34,7 @@ interface EncodedImageDecoder {
 @kotlin.concurrent.Volatile
 var encodedImageDecoder: EncodedImageDecoder? = null
 
-/** Decode via the active renderer's registered decoder — null when no renderer
+/** Decode via the active renderer's registered decoder - null when no renderer
  *  has initialised yet or the bytes aren't a supported image. */
 fun decodeEncodedImageBitmap(inBytes: ByteArray): ImageBitmap? =
 	encodedImageDecoder?.decode(inBytes)
@@ -43,7 +43,7 @@ fun decodeEncodedImageBitmap(inBytes: ByteArray): ImageBitmap? =
 fun svgIntrinsicSize(inBytes: ByteArray): Size? =
 	encodedImageDecoder?.svgIntrinsicSize(inBytes)
 
-/** Rasterise an SVG at [inWidthPx]×[inHeightPx] via the active decoder — the
+/** Rasterise an SVG at [inWidthPx]×[inHeightPx] via the active decoder - the
  *  resolution-independent draw path used by the resources SvgPainter. */
 fun decodeSvgAt(inBytes: ByteArray, inWidthPx: Int, inHeightPx: Int): ImageBitmap? =
 	encodedImageDecoder?.decodeSvgAt(inBytes, inWidthPx, inHeightPx)

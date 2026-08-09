@@ -18,7 +18,7 @@ internal class NodeApplier(root: LayoutNode) : AbstractApplier<LayoutNode>(root)
 		// LayoutNode is only attached to its parent (and thus to the Owner) AFTER its own
 		// `modifier` update block has run. That ordering is what lets LayoutNode stage the
 		// modifier as `pendingModifier` and apply it during attach() via the
-		// `applyingModifierOnAttach` fast-path — which creates the whole node chain, syncs
+		// `applyingModifierOnAttach` fast-path - which creates the whole node chain, syncs
 		// aggregateChildKindSet, updates NodeChain.head, and only then runs attach lifecycles
 		// head->tail. Attaching top-down instead routes every fresh modifier through the
 		// incremental Differ path, where a node's onAttach can run while NodeChain.head and the

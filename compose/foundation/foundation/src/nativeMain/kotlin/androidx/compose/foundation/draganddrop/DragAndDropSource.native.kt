@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
  * actuals here provide:
  *
  * - A start detector that fires on any primary-button drag via the standard
- *   `detectDragGestures` — no touch-vs-mouse distinction. Matches upstream's
+ *   `detectDragGestures` - no touch-vs-mouse distinction. Matches upstream's
  *   intent (drag begins on first pointer movement) for the mouse-only desktop
  *   use case.
  * - A no-op drag-shadow callback: the visual ghost of the dragged content
@@ -54,7 +54,7 @@ internal actual object DragAndDropSourceDefaults {
 
 internal actual class CacheDrawScopeDragShadowCallback actual constructor() {
     actual fun drawDragShadow(drawScope: DrawScope) {
-        // Skipped — see file header.
+        // Skipped - see file header.
     }
 
     actual fun cachePicture(scope: CacheDrawScope): DrawResult {

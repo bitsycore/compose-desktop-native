@@ -10,13 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-// Material3 — the navigation-drawer family (modal / dismissible / permanent) + Scrim.
+// Material3 - the navigation-drawer family (modal / dismissible / permanent) + Scrim.
 @Composable
 internal fun M3DrawersScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle("Drawers", "Modal / Dismissible / Permanent navigation drawers, drawer items, Scrim.")
 
-		Section("ModalNavigationDrawer", "Slides over the content with a scrim — open with the button") {
+		Section("ModalNavigationDrawer", "Slides over the content with a scrim - open with the button") {
 			val vState = rememberDrawerState(DrawerValue.Closed)
 			val vScope = rememberCoroutineScope()
 			Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
@@ -56,7 +56,7 @@ internal fun M3DrawersScreen() {
 			}
 		}
 
-		Section("PermanentNavigationDrawer", "Always visible — desktop-style side navigation") {
+		Section("PermanentNavigationDrawer", "Always visible - desktop-style side navigation") {
 			Box(modifier = Modifier.fillMaxWidth().height(220.dp)) {
 				PermanentNavigationDrawer(
 					drawerContent = {
@@ -72,7 +72,7 @@ internal fun M3DrawersScreen() {
 			}
 		}
 
-		Section("Scrim", "The standalone dimming layer modal components use — click to hide") {
+		Section("Scrim", "The standalone dimming layer modal components use - click to hide") {
 			var vVisible by remember { mutableStateOf(true) }
 			Box(modifier = Modifier.fillMaxWidth().height(90.dp)) {
 				Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

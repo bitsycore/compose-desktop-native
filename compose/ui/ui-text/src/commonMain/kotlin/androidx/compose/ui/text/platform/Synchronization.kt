@@ -1,7 +1,7 @@
 /*
  * Manually vendored from
  *     compose/ui/ui-text/src/commonMain/kotlin/androidx/compose/ui/text/platform/Synchronization.kt
- * with @PublishedApi added to `SynchronizedObject` — same reason as
+ * with @PublishedApi added to `SynchronizedObject` - same reason as
  * ui/platform/Synchronization.kt in this module. The entry in
  * compose/ui/compose-fork.txt is commented out so this file survives
  * `scripts/compose-fork/sync.sh`.

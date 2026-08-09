@@ -17,7 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Foundation — the undecorated editable text primitive below material3's
+// Foundation - the undecorated editable text primitive below material3's
 // TextField / OutlinedTextField, in both the value-based and the newer
 // state-based (TextFieldState) forms, plus the masked secure variant.
 @Composable
@@ -25,7 +25,7 @@ internal fun BasicTextFieldScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle("BasicTextField", "BasicTextField (value + state), BasicSecureTextField.")
 
-		Section("BasicTextField — value based", "The classic value / onValueChange form") {
+		Section("BasicTextField - value based", "The classic value / onValueChange form") {
 			var value by remember { mutableStateOf("Type here…") }
 			Field {
 				BasicTextField(
@@ -38,7 +38,7 @@ internal fun BasicTextFieldScreen() {
 			Text("value = \"$value\"", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
 		}
 
-		Section("BasicTextField — state based", "The newer TextFieldState form (rememberTextFieldState)") {
+		Section("BasicTextField - state based", "The newer TextFieldState form (rememberTextFieldState)") {
 			val state = rememberTextFieldState("Edit me")
 			Field {
 				BasicTextField(

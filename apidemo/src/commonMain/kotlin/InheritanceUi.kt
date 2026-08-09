@@ -22,7 +22,7 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 /** A request tab pairing an inherited (read-only, source-tagged) list with the
 request's own editable list: Override copies an inherited entry down, and own
 rows that shadow an inherited one get an OverrideMark. Used by Query / Var /
-Headers — the only differences are the key case-sensitivity and the labels. */
+Headers - the only differences are the key case-sensitivity and the labels. */
 @Composable
 internal fun InheritedEditableTab(
     inInherited: List<InheritedKv>,
@@ -131,7 +131,7 @@ internal fun SourceTag(inLabel: String, inPath: String) {
     }
 }
 
-/** The tiny marker shown on an own value that shadows an inherited one — hover for
+/** The tiny marker shown on an own value that shadows an inherited one - hover for
 "Overrides <key> from <path>". */
 @Composable
 internal fun OverrideMark(inKey: String, inPath: String) {

@@ -1,4 +1,4 @@
-// Self-contained settings — this build is INCLUDED by the root build
+// Self-contained settings - this build is INCLUDED by the root build
 // (pluginManagement.includeBuild in the repo's settings.gradle.kts) so
 // :apidemo dogfoods the plugin from source. Being a separate build (not a
 // subproject), it declares its own repositories and wires the repo's shared

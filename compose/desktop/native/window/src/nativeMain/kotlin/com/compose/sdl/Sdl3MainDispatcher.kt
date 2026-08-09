@@ -12,7 +12,7 @@ import sdl3.SDL_GetCurrentThreadID
 
 /** Single-threaded Main dispatcher driven by the SDL3 main loop. Kotlin/Native
    ships no Dispatchers.Main on Linux/Windows targets (and the Darwin one
-   posts to GCD's main queue, which only drains when the run loop pumps —
+   posts to GCD's main queue, which only drains when the run loop pumps -
    our SDL_Delay-based loop doesn't reliably pump it). nativeComposeWindow
    installs this dispatcher via kotlinx.coroutines.test.setMain at startup
    and resets it on shutdown, so app code can withContext(Dispatchers.Main)
@@ -24,13 +24,13 @@ import sdl3.SDL_GetCurrentThreadID
    (Dispatchers.IO, Default, etc.) are safe.
 
    `immediate` is a REAL immediate dispatcher: its isDispatchNeeded() returns
-   false when already on the SDL main thread, so work runs inline — matching
+   false when already on the SDL main thread, so work runs inline - matching
    Android's Main.immediate / Swing's EDT semantics. This is load-bearing:
    androidx.lifecycle's KMP LifecycleRegistry enforces main-thread access by
    round-tripping through Dispatchers.Main.immediate (MainDispatcherChecker);
    with a queue-only Main that trip can never complete from the main thread
    while the loop is inside setContent, deadlocking the app at 0% CPU (this
-   froze Navigation3's NavDisplay — rememberLifecycleOwner — on mingwX64,
+   froze Navigation3's NavDisplay - rememberLifecycleOwner - on mingwX64,
    see NAV_FIX.md). The BASE dispatcher intentionally KEEPS always-queue
    semantics so LaunchedEffect / recomposer ordering is unchanged: state
    writes land at the loop's drainPending(), observable on the same frame. */
@@ -38,7 +38,7 @@ internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 
 	private val fQueue = Channel<Runnable>(Channel.UNLIMITED)
 
-	// The SDL main thread — the dispatcher is constructed by nativeComposeApp
+	// The SDL main thread - the dispatcher is constructed by nativeComposeApp
 	// on the thread that then runs the loop.
 	private val fMainThreadId = SDL_GetCurrentThreadID()
 

@@ -20,7 +20,7 @@ import java.net.URI
 // ==================
 
 /**
- * Per-app knobs for [registerComposeFontBundling]. EVERYTHING is opt-in — with no
+ * Per-app knobs for [registerComposeFontBundling]. EVERYTHING is opt-in - with no
  * flag set the call registers no tasks and stages nothing.
  */
 class ComposeFontBundlingConfig {
@@ -31,7 +31,7 @@ class ComposeFontBundlingConfig {
 	var bundleNotoSans: Boolean = false
 
 	/**
-	 * Always bundle font/NotoSansMono.ttf — for apps that load the mono font through
+	 * Always bundle font/NotoSansMono.ttf - for apps that load the mono font through
 	 * their own seam (apidemo's body font, Fonts.kt), invisible to auto-detection.
 	 */
 	var bundleNotoSansMono: Boolean = false
@@ -51,7 +51,7 @@ class ComposeFontBundlingConfig {
 	/**
 	 * Subset each bundled Material Symbols font to the glyphs the sources reference
 	 * (scripts/subset-material-symbols.py picks the codepoints; the subset task uses
-	 * hb-subset when present, else fontTools via Python — auto-installed — and only
+	 * hb-subset when present, else fontTools via Python - auto-installed - and only
 	 * bundles the full font if neither is available). Needs [bundleMaterialSymbols];
 	 * still gated by -PsubsetIcons.
 	 */
@@ -74,11 +74,11 @@ private val kMonospaceRegex = Regex("\\bFontFamily\\.Monospace\\b")
 
 /**
  * Wires the app font pipeline shared by :demo and :apidemo. Everything is OPT-IN via
- * [ComposeFontBundlingConfig] — a bare call is a no-op.
+ * [ComposeFontBundlingConfig] - a bare call is a no-op.
  *
  * - Registers downloadNotoFonts (Noto Sans + Noto Sans Mono variable fonts →
  *   build/fonts/) when a Noto font is bundled.
- * - Adds the opted-in font/ entries to every data.kres Zip task — the bridge plugin's
+ * - Adds the opted-in font/ entries to every data.kres Zip task - the bridge plugin's
  *   package<Variant>ComposeResources<Target> tasks or an app's own copy* tasks
  *   (matching{} is lazy: the plugin's tasks appear in its afterEvaluate). Material
  *   Symbols fonts are hb-subset to the used glyphs when subsetting is enabled.
@@ -142,7 +142,7 @@ fun Project.registerComposeFontBundling(configure: ComposeFontBundlingConfig.() 
 		addFontEntries(this, vNotoFiles, vDownloadNotoFonts, vUsedStyles, vSubsetTasksByStyle)
 	}
 	tasks.withType<ProcessResources>().matching { it.name == "jvmProcessResources" }.configureEach {
-		// Full fonts on JVM — Skiko applies the variable axes itself (Typeface.makeClone).
+		// Full fonts on JVM - Skiko applies the variable axes itself (Typeface.makeClone).
 		addFontEntries(this, vNotoFiles, vDownloadNotoFonts, vUsedStyles, emptyMap())
 	}
 }
@@ -182,7 +182,7 @@ private fun Project.detectUsedStyles(): List<String> {
 // ==================
 
 /**
- * Adds the font/ entries (Notos + used Material Symbols styles) to inTask — a data.kres
+ * Adds the font/ entries (Notos + used Material Symbols styles) to inTask - a data.kres
  * Zip or jvmProcessResources. inSubsetTasksByStyle maps styles to hb-subset tasks whose
  * output replaces the full font; pass an empty map to stage the full fonts.
  */
@@ -304,21 +304,21 @@ private fun Project.registerSubsetTask(
 				)
 			}
 
-			// 1. hb-subset (harfbuzz) — fastest path when it is on PATH.
+			// 1. hb-subset (harfbuzz) - fastest path when it is on PATH.
 			if (runCmd("hb-subset", vInputFile.absolutePath, "-o", vOut.absolutePath, "--unicodes=$vUnicodes").first
 				&& vOut.length() > 0L
 			) {
 				logShrink("hb-subset"); return@doLast
 			}
 
-			// 2. fontTools (pyftsubset) via Python — the portable fallback. Python is
+			// 2. fontTools (pyftsubset) via Python - the portable fallback. Python is
 			//    already a build prerequisite (SDL build + vendor sync) and fontTools is
 			//    variable-font-aware, so the FILL/wght/GRAD/opsz axes survive. It is
 			//    auto-installed if missing, so no manual harfbuzz install is ever required.
 			val vPython = listOf("python3", "python", "py").firstOrNull { runCmd(it, "--version").first }
 			if (vPython != null) {
 				if (!runCmd(vPython, "-c", "import fontTools").first) {
-					logger.lifecycle("[subset $inStyle] fontTools not present — installing it via pip…")
+					logger.lifecycle("[subset $inStyle] fontTools not present - installing it via pip…")
 					// --user (no root) → --break-system-packages (PEP 668) → plain.
 					listOf(listOf("--user"), listOf("--break-system-packages"), emptyList<String>())
 						.firstOrNull { vExtra ->
@@ -336,7 +336,7 @@ private fun Project.registerSubsetTask(
 				logger.warn("[subset $inStyle] fontTools subset failed :\n$vFtOut")
 			}
 
-			// 3. Last resort : the full font — correct, just larger.
+			// 3. Last resort : the full font - correct, just larger.
 			vInputFile.copyTo(vOut, overwrite = true)
 			logger.warn(
 				"[subset $inStyle] no working subsetter found (hb-subset or python3+fontTools) : " +

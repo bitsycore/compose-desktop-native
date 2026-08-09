@@ -10,7 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 
 // ==================
-// MARK: IconText — icon-font text on the standard text path
+// MARK: IconText - icon-font text on the standard text path
 // ==================
 
 /**
@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.TextUnit
  Now just a [BasicText]: the icon font family and its variable axes are threaded
  through [namedFontFamily] (`axes = …`), which the skiko text engine reads via
  `FontFamily.projectFontVariations()` and applies to the typeface. So icons
- measure + draw through the same skiko `skparagraph` path as ordinary text — no
+ measure + draw through the same skiko `skparagraph` path as ordinary text - no
  separate renderer/measurer seam.
 
  Material `Icon(codepoint = …, fontFamily = …)` uses this; Text / BasicText /

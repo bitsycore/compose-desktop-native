@@ -3,7 +3,7 @@ package demo.shim
 import androidx.compose.ui.graphics.ImageBitmap
 
 // ==================
-// MARK: demoDecodeImage — encoded-bytes → ImageBitmap shim
+// MARK: demoDecodeImage - encoded-bytes → ImageBitmap shim
 // ==================
 
 /** Compose has no commonMain ByteArray → ImageBitmap decoder. Each platform

@@ -1,7 +1,7 @@
 # Probe driver
 
 Launches a native compose-desktop-native app window, sends **window-relative**
-synthetic input, and captures the client area — for reproducing visual bugs
+synthetic input, and captures the client area - for reproducing visual bugs
 deterministically (this is the packaged form of the rigs that caught the
 square-on-click and TLS-chain regressions).
 

@@ -1,7 +1,7 @@
 package androidx.compose.ui.input.pointer
 
 // ==================
-// MARK: PointerIcon actuals — SDL3 cursors
+// MARK: PointerIcon actuals - SDL3 cursors
 // ==================
 
 /**

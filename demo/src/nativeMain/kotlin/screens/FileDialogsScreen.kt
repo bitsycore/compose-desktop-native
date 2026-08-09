@@ -23,12 +23,12 @@ import com.compose.sdl.showSaveFileDialog
 
 /** The OS-native Open / Save As dialogs, via SDL3. The result handler runs on
    the compose main-loop thread, so writing snapshot state from it (as below)
-   is picked up on the next frame — no manual thread hop needed. No upstream
+   is picked up on the next frame - no manual thread hop needed. No upstream
    Compose Multiplatform analog; this is a Native · Desktop feature. */
 @Composable
 internal fun FileDialogsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		ScreenTitle("File dialogs", "SDL3 native Open / Save As dialogs — showOpenFileDialog / showSaveFileDialog.")
+		ScreenTitle("File dialogs", "SDL3 native Open / Save As dialogs - showOpenFileDialog / showSaveFileDialog.")
 
 		var result by remember { mutableStateOf("(no selection yet)") }
 

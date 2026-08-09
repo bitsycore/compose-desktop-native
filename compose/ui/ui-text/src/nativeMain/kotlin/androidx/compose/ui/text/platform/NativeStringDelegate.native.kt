@@ -9,7 +9,7 @@ import androidx.compose.ui.text.intl.Locale
 // for locale-aware case mapping. We don't have java.util.Locale on
 // linux/windows, and our project `Locale.native.kt` doesn't expose a
 // platformLocale either. Use the locale-independent Kotlin stdlib
-// `uppercase()` / `lowercase()` here — sufficient for the small number
+// `uppercase()` / `lowercase()` here - sufficient for the small number
 // of locales we ever care about (basic Latin) and matches the way
 // vendored `AnnotatedString.toUpperCase` is invoked at the renderers
 // (case mapping is non-load-bearing in our text pipeline).

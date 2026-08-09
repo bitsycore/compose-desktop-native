@@ -23,7 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.PopupPositionProvider
 
-// Foundation — the undecorated text primitive below material3's Text, plus the
+// Foundation - the undecorated text primitive below material3's Text, plus the
 // foundation selection + tooltip plumbing. The companion BasicTextField screen
 // covers editable text.
 @Composable
@@ -31,9 +31,9 @@ internal fun BasicTextScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle("BasicText", "BasicText, SelectionContainer / DisableSelection, BasicTooltipBox.")
 
-		Section("BasicText", "The undecorated foundation text primitive — style passed explicitly") {
+		Section("BasicText", "The undecorated foundation text primitive - style passed explicitly") {
 			BasicText(
-				"BasicText — no material styling, style passed explicitly.",
+				"BasicText - no material styling, style passed explicitly.",
 				style = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
 			)
 		}
@@ -50,7 +50,7 @@ internal fun BasicTextScreen() {
 			}
 		}
 
-		Section("BasicTooltipBox", "Foundation tooltip plumbing — hover the button") {
+		Section("BasicTooltipBox", "Foundation tooltip plumbing - hover the button") {
 			BasicTooltipBox(
 				positionProvider = AboveAnchor,
 				state = rememberBasicTooltipState(),

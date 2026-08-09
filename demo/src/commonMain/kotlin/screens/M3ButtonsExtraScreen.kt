@@ -13,13 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 
-// Material3 — ButtonGroup, SplitButton, toggle buttons, icon-toggle family, multi-choice segments.
+// Material3 - ButtonGroup, SplitButton, toggle buttons, icon-toggle family, multi-choice segments.
 @Composable
 internal fun M3ButtonsExtraScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle("Buttons extra", "ButtonGroup, SplitButton, ToggleButton variants, icon toggles.")
 
-		Section("ButtonGroup", "DSL strip — items overflow into a menu when space runs out") {
+		Section("ButtonGroup", "DSL strip - items overflow into a menu when space runs out") {
 			var vStar by remember { mutableStateOf(false) }
 			ButtonGroup(
 				overflowIndicator = { vMenuState ->

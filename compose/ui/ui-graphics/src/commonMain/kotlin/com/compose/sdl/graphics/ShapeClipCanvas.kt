@@ -18,7 +18,7 @@ import androidx.compose.ui.geometry.RoundRect
 
  The render nodes check `canvas is NativeShapeClipCanvas` when a layer has an
  `Outline.Rounded` clip and route here; otherwise they fall back to `clipPath`. The pushed clip is scoped to the enclosing `Canvas.save()` /
- `Canvas.restore()` — the backend composites and pops it on the matching
+ `Canvas.restore()` - the backend composites and pops it on the matching
  `restore()`.
 */
 interface NativeShapeClipCanvas {

@@ -24,7 +24,7 @@
 // infoList index to the valid range. Upstream assumes that if the drag position never
 // resolves ON or BEFORE any selectable, at least one slot is anchored on a text (odd).
 // That assumption breaks when a mouse-down starts a NEW selection AFTER every selectable
-// in the container — both slots stay UNASSIGNED and get defaulted to lastSlot = 2N by
+// in the container - both slots stay UNASSIGNED and get defaulted to lastSlot = 2N by
 // SelectionLayoutBuilder.build(), so startSlot / 2 == infoList.size (OOB). Repro:
 // apidemo response viewer, drag-select in the empty area below the last body block.
 

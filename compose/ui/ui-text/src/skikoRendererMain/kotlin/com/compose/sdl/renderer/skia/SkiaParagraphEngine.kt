@@ -40,7 +40,7 @@ import org.jetbrains.skia.paragraph.TextIndent as SkTextIndent
 import org.jetbrains.skia.paragraph.TextStyle as SkTextStyle
 
 // ==================
-// MARK: SkiaParagraphOps — skiko skparagraph impl behind the nativeMain seam
+// MARK: SkiaParagraphOps - skiko skparagraph impl behind the nativeMain seam
 // ==================
 //
 // Lives in the skiko source set (skiko on classpath) and implements the
@@ -61,7 +61,7 @@ private const val INTRINSIC_WIDTH = 100_000f
 // upstream ParagraphBuilder.skiko.kt (which sets these on every SkTextStyle).
 // The values come from the port's FontRasterizationSettings.PlatformDefault
 // (per-OS). Without them skiko falls back to its raw defaults and text renders
-// less crisp — noticeably so on Windows/Linux. Computed once (platform is fixed).
+// less crisp - noticeably so on Windows/Linux. Computed once (platform is fixed).
 
 @OptIn(ExperimentalTextApi::class)
 private val RASTER_EDGING: SkFontEdging = when (FontRasterizationSettings.PlatformDefault.smoothing) {
@@ -81,10 +81,10 @@ private val RASTER_HINTING: SkFontHinting = when (FontRasterizationSettings.Plat
 @OptIn(ExperimentalTextApi::class)
 private val RASTER_SUBPIXEL: Boolean = FontRasterizationSettings.PlatformDefault.subpixelPositioning
 
-// CDN_TEXT_METRICS=1 — dump the font + paragraph line metrics for each built
+// CDN_TEXT_METRICS=1 - dump the font + paragraph line metrics for each built
 // paragraph (PLAN.md §1b confirm-first). Compares the SAME NotoSans bytes across
 // backends: on macOS the FontMgr scaler is CoreText, on Linux fontconfig/FreeType,
-// on the Windows fork DirectWrite/FreeType — different scalers pick different
+// on the Windows fork DirectWrite/FreeType - different scalers pick different
 // ascent/descent tables, which is the suspected cause of the mac-vs-Windows
 // vertical-spacing delta. Acceptance test: Windows-native must match skiko-JVM-Windows.
 private val kTextMetricsDebug: Boolean = platform.posix.getenv("CDN_TEXT_METRICS") != null
@@ -113,7 +113,7 @@ internal class SkiaParagraphOps(
 	// Skia's ParagraphStyle.replaceTabCharacters (set below) expands U+0009 to a space
 	// before shaping (CMP-6589). The Windows skiko fork's flat extern-C surface doesn't
 	// wire that setter, so a raw tab reaches HarfBuzz, finds no glyph in the font, and
-	// renders as a .notdef box. Normalise the SHAPED text here instead — this is exactly
+	// renders as a .notdef box. Normalise the SHAPED text here instead - this is exactly
 	// what the flag does internally, so it's upstream-faithful and platform-independent.
 	// It's length-preserving, so every offset query (getRectsForRange / getCursorRect /
 	// wordBoundary / lineMetrics / span cut points) keeps operating on the original [text].
@@ -127,7 +127,7 @@ internal class SkiaParagraphOps(
 	/** Resolve the paragraph line height to px for a run of [runSizePx], mirroring
 	   upstream's `lineHeight.toPx(density, fontSize)`: `em` is relative to the run's
 	   font size, `sp` scales by density. Null when unspecified (keep skiko default
-	   line spacing — the pre-existing behaviour, so untouched text doesn't shift). */
+	   line spacing - the pre-existing behaviour, so untouched text doesn't shift). */
 	private fun resolveLineHeightPx(runSizePx: Float): Float? {
 		val lh = style.lineHeight
 		if (!lh.isSpecified) return null
@@ -142,7 +142,7 @@ internal class SkiaParagraphOps(
 
 	// The paint attributes the current [paragraph] was built with. Compose paints
 	// with paint-time color/shadow/decoration; when they match what we already
-	// laid out (the common case — static text), paint reuses the existing native
+	// laid out (the common case - static text), paint reuses the existing native
 	// paragraph instead of re-shaping. The constructor above builds with the
 	// style values, so seed these to match.
 	private var builtColor: Color = style.color
@@ -175,13 +175,13 @@ internal class SkiaParagraphOps(
 			)
 		}
 		// The Windows skiko fork's flat extern-C LineMetrics surface mis-decodes the
-		// per-line ascent/descent — it returns stale values that don't scale with the
-		// font size — while baseline, height, width and left stay correct. Lines stack
+		// per-line ascent/descent - it returns stale values that don't scale with the
+		// font size - while baseline, height, width and left stay correct. Lines stack
 		// contiguously, so the true ascent of a line is (baseline - lineTop); when the
 		// reported ascent disagrees with that by more than a rounding epsilon, rebuild
 		// ascent/descent from the reliable baseline + cumulative line height. Official
 		// skiko is self-consistent (the disagreement is ~0), so this is a no-op there and
-		// only repairs the fork — keeping caret height, getLineTop/getLineBottom and
+		// only repairs the fork - keeping caret height, getLineTop/getLineBottom and
 		// vertical hit-testing correct on Windows.
 		var lineTop = 0.0
 		return metrics.map {
@@ -223,9 +223,9 @@ internal class SkiaParagraphOps(
 		val colorChanged = color != builtColor
 		// Fast path (mirrors upstream ParagraphLayouter): a color-only change on
 		// single-style, undecorated text re-applies the foreground paint without
-		// re-shaping (HarfBuzz + line-break stay cached). Anything else — a
+		// re-shaping (HarfBuzz + line-break stay cached). Anything else - a
 		// shadow/decoration change, or color on spanned/decorated text where the
-		// colour is baked per-run — takes the full rebuild, closing the previous
+		// colour is baked per-run - takes the full rebuild, closing the previous
 		// native paragraph so it doesn't leak to GC (issue #2).
 		val canUpdateForeground = colorChanged && !shadowOrDecoChanged &&
 			spanStyles.isEmpty() && text.isNotEmpty() &&
@@ -266,7 +266,7 @@ internal class SkiaParagraphOps(
 			style.baselineShift, style.background,
 		)
 		val pStyle = ParagraphStyle().apply {
-			// https://youtrack.jetbrains.com/issue/CMP-6589 — tabs expand like upstream.
+			// https://youtrack.jetbrains.com/issue/CMP-6589 - tabs expand like upstream.
 			replaceTabCharacters = true
 			alignment = style.textAlign.toSkAlignment()
 			direction = if (style.textDirection == androidx.compose.ui.text.style.TextDirection.Rtl) SkDirection.RTL else SkDirection.LTR
@@ -312,7 +312,7 @@ internal class SkiaParagraphOps(
 		}
 	}
 
-	/** CDN_TEXT_METRICS diagnostic — see [kTextMetricsDebug]. Prints the font scaler's
+	/** CDN_TEXT_METRICS diagnostic - see [kTextMetricsDebug]. Prints the font scaler's
 	   ascent/descent/leading and the resulting paragraph line box so the numbers can be
 	   compared native-vs-JVM per platform. */
 	private fun dumpMetrics(p: SkParagraph) {
@@ -427,7 +427,7 @@ internal class SkiaParagraphOps(
 		ts.color = argb
 		ts.fontSize = sizePx
 		// Match upstream text rasterization (edging / hinting / subpixel) instead
-		// of skiko's raw defaults — see the RASTER_* defaults above.
+		// of skiko's raw defaults - see the RASTER_* defaults above.
 		ts.fontEdging = RASTER_EDGING
 		ts.fontHinting = RASTER_HINTING
 		ts.subpixel = RASTER_SUBPIXEL
@@ -443,7 +443,7 @@ internal class SkiaParagraphOps(
 		tf?.let { ts.typeface = it }
 		ts.fontFamilies = arrayOf(alias)
 		// Superscript / subscript: shift the baseline by a multiple of the font ascent.
-		// MUST run after the typeface + fontSize are set — `fontMetrics` is undefined
+		// MUST run after the typeface + fontSize are set - `fontMetrics` is undefined
 		// without a resolved font, and skiko's setBaselineShift rejects the NaN.
 		baselineShift?.let { ts.baselineShift = it.multiplier * ts.fontMetrics.ascent }
 		if (fontStyle == FontStyle.Italic) ts.fontStyle = SkFontStyle.ITALIC

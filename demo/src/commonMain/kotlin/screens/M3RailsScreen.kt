@@ -17,7 +17,7 @@ private val RailItems = listOf(
 	"Settings" to DemoIcon.Settings,
 )
 
-// Material3 — WideNavigationRail / ModalWideNavigationRail / ShortNavigationBar.
+// Material3 - WideNavigationRail / ModalWideNavigationRail / ShortNavigationBar.
 @Composable
 internal fun M3RailsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

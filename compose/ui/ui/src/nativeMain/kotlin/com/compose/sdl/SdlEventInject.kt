@@ -47,7 +47,7 @@ fun injectMouseEvent(inType: Int, inX: Float, inY: Float) {
 
 /** Test-only: push a synthetic SDL_EVENT_TEXT_INPUT (typed character[s]). SDL_TextInputEvent.text
    is a const char* that SDL does NOT copy on push, so the UTF-8 buffer is allocated on nativeHeap
-   and intentionally leaked — it must stay valid until the event is polled next frame. */
+   and intentionally leaked - it must stay valid until the event is polled next frame. */
 @OptIn(ExperimentalForeignApi::class)
 fun injectTextInput(inText: String) {
 	val vBytes = inText.encodeToByteArray()

@@ -22,7 +22,7 @@ internal fun TextFieldScreen() {
         )
 
         var single by remember { mutableStateOf("") }
-        // Pre-filled so the floating label (and the border cutout behind it —
+        // Pre-filled so the floating label (and the border cutout behind it -
         // the ClipOp.Difference path in the SDL canvas) is visible at rest.
         var outlined by remember { mutableStateOf("user@example.com") }
         var withError by remember { mutableStateOf("abc") }
@@ -76,7 +76,7 @@ internal fun TextFieldScreen() {
             "cursor; Up / Down move between wrapped lines while preserving the preferred " +
             "x-column. Selection rectangles span all wrapped rows."
         ) }
-        Section("Soft-wrap", "Long text wraps at word boundaries — field grows vertically to fit") {
+        Section("Soft-wrap", "Long text wraps at word boundaries - field grows vertically to fit") {
             OutlinedTextField(
                 value = soft,
                 onValueChange = { soft = it },
@@ -86,7 +86,7 @@ internal fun TextFieldScreen() {
         }
 
         var oneLine by remember { mutableStateOf("singleLine = true; Return does nothing, no wrap") }
-        Section("singleLine = true", "Return is suppressed; wrap is disabled — text overflows past the field width") {
+        Section("singleLine = true", "Return is suppressed; wrap is disabled - text overflows past the field width") {
             TextField(
                 value = oneLine,
                 onValueChange = { oneLine = it },
@@ -96,7 +96,7 @@ internal fun TextFieldScreen() {
             )
         }
 
-        Section("Raw BasicTextField", "No chrome — bare cursor + text") {
+        Section("Raw BasicTextField", "No chrome - bare cursor + text") {
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = MaterialTheme.colorScheme.surface,

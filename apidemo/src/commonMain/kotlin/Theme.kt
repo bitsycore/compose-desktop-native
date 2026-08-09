@@ -4,7 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // ==================
-// MARK: Theme — the app's legacy colour slots, derived from the active palette
+// MARK: Theme - the app's legacy colour slots, derived from the active palette
 // ==================
 // AppColors is the app's own colour vocabulary (used by the custom widgets). It
 // is now DERIVED from the selected Voltic M3 ColorScheme via appColorsFromScheme

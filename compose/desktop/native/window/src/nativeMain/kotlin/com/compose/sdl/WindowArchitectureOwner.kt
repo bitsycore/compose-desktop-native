@@ -13,11 +13,11 @@ import androidx.lifecycle.enableSavedStateHandles
    default ViewModel factory), so viewModel(), SavedStateHandle and
    rememberSaveable-backed registries all resolve against the WINDOW scope.
 
-   The lifecycle registry uses createUnsafe (no main-thread enforcement) —
+   The lifecycle registry uses createUnsafe (no main-thread enforcement) -
    same as the root owner this replaces; the SDL loop is single-threaded
    anyway. RESUMED from construction; destroy() moves to DESTROYED and clears
    the ViewModelStore (onCleared runs). SavedState restores from nothing (no
-   process-death persistence on desktop — upstream desktop passes null too). */
+   process-death persistence on desktop - upstream desktop passes null too). */
 internal class WindowArchitectureOwner :
 	androidx.lifecycle.LifecycleOwner,
 	androidx.lifecycle.ViewModelStoreOwner,
@@ -41,13 +41,13 @@ internal class WindowArchitectureOwner :
 	init {
 		savedStateController.performAttach()
 		savedStateController.performRestore(null)
-		// SavedStateHandle support for WINDOW-scoped ViewModels — must run while
+		// SavedStateHandle support for WINDOW-scoped ViewModels - must run while
 		// the lifecycle is still ≤ CREATED; upstream desktop's ComposeContainer
 		// calls this at the same point. With it, `viewModel { ... }` against the
 		// window owner (the activityViewModels() analog) can take a
 		// SavedStateHandle instead of needing a saved-state-less child owner.
 		enableSavedStateHandles()
-		// CREATED (not RESUMED) until the first composition is done — code that
+		// CREATED (not RESUMED) until the first composition is done - code that
 		// runs enableSavedStateHandles() during composition (nav3's decorators,
 		// rememberViewModelStoreOwner, …) requires INITIALIZED/CREATED, and
 		// upstream desktop windows likewise compose first and resume after.
@@ -55,7 +55,7 @@ internal class WindowArchitectureOwner :
 	}
 
 	/** Focus/visibility-driven state (see WindowInstance.onActivationEvent).
-	   Ignored once destroyed — a stray SDL event during teardown must not
+	   Ignored once destroyed - a stray SDL event during teardown must not
 	   resurrect the registry. */
 	fun setLifecycleState(inState: androidx.lifecycle.Lifecycle.State) {
 		if (lifecycle.currentState != androidx.lifecycle.Lifecycle.State.DESTROYED &&

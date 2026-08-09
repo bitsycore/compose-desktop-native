@@ -127,13 +127,13 @@ compose.desktop.native {
 }
 
 // ==================
-// MARK: Fonts (shared pipeline — buildSrc ComposeFontBundling.kt)
+// MARK: Fonts (shared pipeline - buildSrc ComposeFontBundling.kt)
 // ==================
 
 registerComposeFontBundling {
     bundleNotoSans = true
     // The mono body font is loaded through the app's own seam (Fonts.kt), not via
-    // FontFamily.Monospace call sites — auto-detection can't see it, bundle explicitly.
+    // FontFamily.Monospace call sites - auto-detection can't see it, bundle explicitly.
     bundleNotoSansMono = true
     bundleMaterialSymbols = true
     enableIconSubsetting = true

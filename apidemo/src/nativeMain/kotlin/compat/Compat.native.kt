@@ -28,7 +28,7 @@ import io.ktor.client.engine.curl.*
 import okio.FileSystem
 
 // ==================
-// MARK: Native actuals — pure delegation to the port's SDL-backed APIs
+// MARK: Native actuals - pure delegation to the port's SDL-backed APIs
 // ==================
 
 actual fun appDataDir(inOrg: String, inApp: String): String? =
@@ -55,7 +55,7 @@ actual fun removeMemoryImage(inKey: String) = removeMemoryResource(inKey)
 actual fun memoryImagePainter(inKey: String, inSvg: Boolean): Painter =
     painterResource(inKey, if (inSvg) ResourceKind.Svg else ResourceKind.Raster)
 
-// Cached resolver for wrappedRowCount — the skiko engine resolves fonts by name
+// Cached resolver for wrappedRowCount - the skiko engine resolves fonts by name
 // (projectFontName), so this is just the required non-null Paragraph argument.
 private val mRowCountFontResolver = createFontFamilyResolver()
 

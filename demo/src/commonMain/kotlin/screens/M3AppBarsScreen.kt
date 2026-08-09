@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 
-// Material3 — the full top/bottom app-bar family + the AppBarRow/Column DSL.
+// Material3 - the full top/bottom app-bar family + the AppBarRow/Column DSL.
 @Composable
 internal fun M3AppBarsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -28,7 +28,7 @@ internal fun M3AppBarsScreen() {
 			)
 		}
 
-		Section("MediumTopAppBar / LargeTopAppBar", "Two-row title bars (collapsed state shown — no scroll linkage here)") {
+		Section("MediumTopAppBar / LargeTopAppBar", "Two-row title bars (collapsed state shown - no scroll linkage here)") {
 			MediumTopAppBar(title = { Text("MediumTopAppBar") }, navigationIcon = { BarIcon(DemoIcon.Menu) })
 			LargeTopAppBar(title = { Text("LargeTopAppBar") }, navigationIcon = { BarIcon(DemoIcon.Menu) })
 		}

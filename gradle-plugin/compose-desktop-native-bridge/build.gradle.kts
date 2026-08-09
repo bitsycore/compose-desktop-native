@@ -1,4 +1,4 @@
-// compose-desktop-native-bridge — the CONSUMER-side bridge, published as a Gradle plugin.
+// compose-desktop-native-bridge - the CONSUMER-side bridge, published as a Gradle plugin.
 //
 // Dependency-substitution rules cannot travel inside a Maven artifact (they
 // are always configured in the consuming build), so the FULL-COMMONIZATION
@@ -6,17 +6,17 @@
 // settings plugin instead: apply `com.bitsycore.compose-desktop-native.bridge`
 // once, declare the OFFICIAL org.jetbrains.compose coordinates in commonMain,
 // and every native configuration (mingwX64 / linuxX64 / linuxArm64 /
-// macosArm64) swaps them for the published com.bitsycore.compose.sdl klibs —
+// macosArm64) swaps them for the published com.bitsycore.compose.sdl klibs -
 // the official artifacts keep serving every platform CMP already supports.
 //
 // This is an INCLUDED build (pluginManagement.includeBuild in the repo's
-// settings.gradle.kts), not a subproject — :apidemo applies the plugin from
+// settings.gradle.kts), not a subproject - :apidemo applies the plugin from
 // source. The root build's allprojects/subprojects blocks don't reach it, so
 // coordinates + publishing are declared here.
 //
 // Published by the WINDOWS publish job (host-independent jar):
 //   :compose-desktop-native-bridge:publishAllPublicationsToGitHubPackagesRepository
-// (composite task addressing — the leading path segment is the included
+// (composite task addressing - the leading path segment is the included
 // build's name).
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -54,7 +54,7 @@ publishing {
     publications.withType<MavenPublication>().configureEach {
         pom {
             name.set("ComposeDesktopNative ${project.name}")
-            description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) — ${project.name}")
+            description.set("Compose Multiplatform on SDL3 (Kotlin/Native, no JVM) - ${project.name}")
             url.set("https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "bitsycore/ComposeDesktopNative"}")
             licenses {
                 license {

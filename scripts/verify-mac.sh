@@ -77,7 +77,7 @@ perf_check() { # $1=leg $2=screen
 
 # ============
 #  One leg = build + probes + parity + perf.
-run_leg() { # $1=label (Skia everywhere now — the SDL renderer leg was removed)
+run_leg() { # $1=label (Skia everywhere now - the SDL renderer leg was removed)
 	local leg="$1"
 
 	note "[$leg] build :demo + :apidemo ($TARGET)"

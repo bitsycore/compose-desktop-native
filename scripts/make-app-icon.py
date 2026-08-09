@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# make-app-icon.py — turn app-icon PNGs into the two artefacts the port needs:
+# make-app-icon.py - turn app-icon PNGs into the two artefacts the port needs:
 #
 #   rgba : decode each PNG to a raw straight-alpha RGBA blob (8-byte header
 #          [width u32-le][height u32-le] + width*height*4 bytes) that the
@@ -10,7 +10,7 @@
 #          read straight from the source PNGs) for windres to embed as the
 #          executable's icon resource.
 #
-# Pure standard library (zlib only) — no Pillow / ImageMagick dependency, one
+# Pure standard library (zlib only) - no Pillow / ImageMagick dependency, one
 # process for the whole set (spawning per file is slow on Windows).
 
 import struct
@@ -53,7 +53,7 @@ def paeth(inA, inB, inC):
 
 def decodePngToRgba(inData):
 	# Returns (width, height, rgba_bytes). Handles 8-bit RGBA (color type 6)
-	# and RGB (color type 2, opaque alpha added) — the only formats the icon
+	# and RGB (color type 2, opaque alpha added) - the only formats the icon
 	# pack ships. Non-interlaced only.
 	vWidth = vHeight = 0
 	vBitDepth = vColorType = vInterlace = 0
@@ -123,7 +123,7 @@ def decodePngToRgba(inData):
 
 
 def pngSize(inData):
-	# Width/height straight from IHDR — no full decode needed for the .ico.
+	# Width/height straight from IHDR - no full decode needed for the .ico.
 	for vType, vPayload in readChunks(inData):
 		if vType == b"IHDR":
 			vW, vH = struct.unpack(">II", vPayload[:8])

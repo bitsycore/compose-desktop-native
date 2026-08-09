@@ -5,13 +5,13 @@ import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.tasks.Copy
 
 // ==================
-// MARK: Windows Skia leg — runtime DLL + ICU data provisioning
+// MARK: Windows Skia leg - runtime DLL + ICU data provisioning
 // ==================
 //
 // The mingwX64 target renders through Skia (the SDL renderer was removed); the
 // app links against the bitsycore skiko fork, whose Kotlin/Native binding calls into
-// a runtime skiko-windows-x64.dll. Unlike the JVM — where skiko-awt bundles its
-// native lib inside the jar and a runtime loader extracts + LoadLibrary's it —
+// a runtime skiko-windows-x64.dll. Unlike the JVM - where skiko-awt bundles its
+// native lib inside the jar and a runtime loader extracts + LoadLibrary's it -
 // Kotlin/Native has NO runtime native-lib loader: the DLL is imported by the PE
 // and must physically sit next to the .exe at process start. So it cannot ride
 // the `implementation` klib dependency to the output dir; this resolves the DLL
@@ -20,7 +20,7 @@ import org.gradle.api.tasks.Copy
 //
 // Text rendering goes through Skia's skparagraph (HarfBuzz + skunicode). On
 // Windows, Skia loads its ICU data (icudtl.dat) from a file next to the binary at
-// runtime — without it ParagraphBuilder fatal-aborts (check(fUnicode)). Unlike
+// runtime - without it ParagraphBuilder fatal-aborts (check(fUnicode)). Unlike
 // macOS/Linux skiko, which bake the ICU data in, the Windows build ships it as a
 // sidecar. The official skiko-awt-runtime-windows-x64 jar already contains a
 // compatible icudtl.dat (same Skia base as the fork), so we source it from there
@@ -32,7 +32,7 @@ private const val DEFAULT_SKIKO_MINGW_VERSION = "0.150.1-mingw.2"
 /**
  * Provisions skiko-windows-x64.dll AND icudtl.dat next to the mingwX64
  * executable(s). mingwX64 always renders through Skia (the SDL renderer was
- * removed), so this is unconditional — the task hooks are lazy and only fire for
+ * removed), so this is unconditional - the task hooks are lazy and only fire for
  * mingw link/run, so projects without a mingwX64 target simply never resolve
  * either artifact. The DLL version is overridable via -PskikoMingwVersion; the
  * ICU data is taken from the matching official skiko runtime (version = the
@@ -56,7 +56,7 @@ internal fun installWindowsSkiaDll(inProject: Project) {
 	)
 
 	// icudtl.dat rides inside the official skiko-awt-runtime-windows-x64 jar; pull
-	// just that jar (non-transitive — we don't want the whole skiko-awt graph) and
+	// just that jar (non-transitive - we don't want the whole skiko-awt graph) and
 	// extract the one file below.
 	val vIcuConfig = inProject.configurations.create("skikoWindowsIcuData") {
 		it.isCanBeConsumed = false
@@ -92,8 +92,8 @@ internal fun installWindowsSkiaDll(inProject: Project) {
 			task.includeEmptyDirs = false
 		}
 		// finalizedBy the link (a plain build stages the sidecars) and dependsOn from
-		// run (the exe finds them before launch). finalizedBy — not dependsOn on link/
-		// package — avoids the link<->package ordering cycle the bridge sets up for
+		// run (the exe finds them before launch). finalizedBy - not dependsOn on link/
+		// package - avoids the link<->package ordering cycle the bridge sets up for
 		// data.kres.
 		inProject.tasks.matching { it.name == "link${vVariant}ExecutableMingwX64" }
 			.configureEach { it.finalizedBy(vProvision, vProvisionIcu) }

@@ -23,7 +23,7 @@ jobs:
       # Each host runs only the publish tasks Gradle actually generated for it.
       # WINDOWS also publishes the shared kotlinMultiplatform metadata modules
       # (see its matrix entry) + the jvm jar + the bridge plugin.
-      # `target` is the Gradle K/N target token (Capitalised) — one per host,
+      # `target` is the Gradle K/N target token (Capitalised) - one per host,
       # used for :demo / :apidemo linkReleaseExecutable<Target>. linuxArm64 is
       # skipped for the app build because SDL3 static libs on the ubuntu runner
       # are host-arch only; cross-compile would fail at link time.
@@ -49,7 +49,7 @@ jobs:
             # WINDOWS owns the root KotlinMultiplatform metadata modules: it is
             # the ONLY host that declares every target (vHostSupportsMingw is
             # host-gated), so only its generated .module files carry the full
-            # variant table — the macOS-published roots of v0.1.15 had NO
+            # variant table - the macOS-published roots of v0.1.15 had NO
             # mingwX64 variants and Windows consumers could not resolve them.
             # The host-independent jvm jar (:material-symbols) and the bridge
             # plugin ride along on the same job.
@@ -102,13 +102,13 @@ jobs:
 
       # windows-2022 runners pre-install Chocolatey's mingw-w64 at C:\mingw64.
       # SDL3 >= 3.4 needs a C++ compiler for its GameInput backend (K/N's
-      # bundled mingw is C-only) — this pre-install covers that. The setjmp
+      # bundled mingw is C-only) - this pre-install covers that. The setjmp
       # intrinsic K/N's LLD can't resolve is aliased to msvcrt's _setjmpex at
       # link time via --defsym in sdl3.def.
 
       # Build the static SDL3 lib (scripts/build-sdl/build-sdl.properties). Every
       # target renders through Skia now, so all platforms need only base SDL3 for
-      # the main loop (windowing / input / audio / filesystem) — the from-scratch
+      # the main loop (windowing / input / audio / filesystem) - the from-scratch
       # SDL renderer and its SDL3_ttf / SDL3_image / FreeType deps were removed.
       # Cached against the manifest + scripts so version bumps invalidate cleanly;
       # bump the `v3` key when the toolchain (runner OS, compiler flavour, K/N
@@ -125,7 +125,7 @@ jobs:
         shell: bash
         run: python3 scripts/build-sdl/build-all.py
 
-      # src/vendor/ trees are gitignored — a fresh checkout has zero vendored
+      # src/vendor/ trees are gitignored - a fresh checkout has zero vendored
       # androidx.compose.* files. Sync copies them in from the upstream refs
       # pinned in scripts/compose-fork/compose.properties. Needs python3 + git;
       # both are pre-installed on every runner.
@@ -138,7 +138,7 @@ jobs:
       # SEQUENTIALLY from the first one. So when an upload dies mid-publication
       # (the v0.1.13 macOS run lost DNS mid-publish), a blind retry hits 409
       # Conflict on the first already-uploaded file and aborts BEFORE reaching
-      # the missing tail files — the version is poisoned and can never
+      # the missing tail files - the version is poisoned and can never
       # complete. A 409 is therefore only benign when the publication had
       # already completed; you can't tell from the 409 alone. The fix: between
       # attempts, DELETE this host's package versions for the current release
@@ -160,7 +160,7 @@ jobs:
             linux)   SUFFIXES="-linuxx64 -linuxarm64" ;;
             windows) SUFFIXES="_ROOT_ -mingwx64" ;;
           esac
-          # Published group per module — mirrors the per-area com.bitsycore groups
+          # Published group per module - mirrors the per-area com.bitsycore groups
           # in root build.gradle.kts. Project-only modules (sdl-core, material-symbols)
           # fall through to com.bitsycore.compose.sdl; the GitHub Packages Maven
           # package name is "<group>.<artifact>".
@@ -202,7 +202,7 @@ jobs:
                 -H "Authorization: Bearer $GITHUB_TOKEN" \
                 "https://api.github.com/users/$OWNER/packages/maven/$pkg/versions/$vid")
               if [ "$code" != "204" ]; then
-                # Deleting the LAST version of a package is refused (400) —
+                # Deleting the LAST version of a package is refused (400) -
                 # a package new in this release: drop the whole package.
                 code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
                   -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -219,7 +219,7 @@ jobs:
             fi
             echo "::endgroup::"
             if [ $attempt -lt 3 ]; then
-              echo "::warning::Publish attempt $attempt failed — cleaning this host's $VER packages and retrying"
+              echo "::warning::Publish attempt $attempt failed - cleaning this host's $VER packages and retrying"
               cleanup_host_versions || true
               sleep 30
             fi
@@ -247,19 +247,19 @@ jobs:
             fi
             echo "::endgroup::"
             if [ $attempt -lt 3 ]; then
-              echo "::warning::Bitsycore publish attempt $attempt failed — retrying"
+              echo "::warning::Bitsycore publish attempt $attempt failed - retrying"
               sleep 30
             fi
           done
           echo "::error::Bitsycore publish failed after 3 attempts"
           exit 1
 
-      # Release binaries for the host target — the binary plus the data.kres
+      # Release binaries for the host target - the binary plus the data.kres
       # (bundled composeResources + fonts + subset icon-font). Each app's
-      # linkReleaseExecutable<Target> auto-runs its data.kres zip task —
+      # linkReleaseExecutable<Target> auto-runs its data.kres zip task -
       # :demo's own copy<Variant>ComposeResources<Target>, :apidemo's
-      # bridge-plugin package<Variant>ComposeResources<Target> — so data.kres
-      # is produced next to the .kexe / .exe. On Linux only linuxX64 is built —
+      # bridge-plugin package<Variant>ComposeResources<Target> - so data.kres
+      # is produced next to the .kexe / .exe. On Linux only linuxX64 is built -
       # linuxArm64 is skipped since the SDL3 static libs on the ubuntu runner
       # are host-arch (x64).
       - name: Build demo + apidemo release binaries
@@ -274,7 +274,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Lower-case first letter — gradle target tokens are Capitalised but
+          # Lower-case first letter - gradle target tokens are Capitalised but
           # the build/bin dir uses the plain target name (macosArm64 etc).
           target_dir=$(echo "${{ matrix.target }}" | awk '{print tolower(substr($0,1,1)) substr($0,2)}')
           version="${GITHUB_REF_NAME#v}"
@@ -283,8 +283,8 @@ jobs:
             src="$app/build/bin/$target_dir/releaseExecutable"
             zip_path="$(pwd)/dist/$app-$version-$target_dir.zip"
             files=("$src/$app.${{ matrix.exe_ext }}" "$src/data.kres")
-            # Windows Skia leg ships two runtime sidecars next to the exe — the
-            # skiko fork DLL and Skia's ICU data (icudtl.dat) — provisioned by the
+            # Windows Skia leg ships two runtime sidecars next to the exe - the
+            # skiko fork DLL and Skia's ICU data (icudtl.dat) - provisioned by the
             # bridge plugin after linkReleaseExecutableMingwX64. The exe cannot run
             # without them, so include them (and fail loudly if a provision regressed).
             if [ "${{ matrix.exe_ext }}" = "exe" ]; then

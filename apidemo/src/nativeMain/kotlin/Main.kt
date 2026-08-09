@@ -4,10 +4,10 @@ import com.compose.sdl.AppWindowIcon
 import com.compose.sdl.nativeComposeWindow
 
 // ==================
-// MARK: Entry point (native — SDL window shell)
+// MARK: Entry point (native - SDL window shell)
 // ==================
 
-// The voltic window/taskbar icon — pre-decoded .rgba blobs bundled into data.kres
+// The voltic window/taskbar icon - pre-decoded .rgba blobs bundled into data.kres
 // under icon/ by the bridge plugin (compose.desktop.native { icon {} }); the
 // backend uses the largest as the base and the rest as alternate sizes.
 private val kAppIcon = AppWindowIcon(

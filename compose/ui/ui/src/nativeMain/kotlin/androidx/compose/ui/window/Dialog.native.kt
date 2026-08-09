@@ -30,7 +30,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 // ==================
-// MARK: Dialog — native actuals for vendored ui.window.Dialog expects
+// MARK: Dialog - native actuals for vendored ui.window.Dialog expects
 // ==================
 
 /*
@@ -41,26 +41,26 @@ import kotlin.time.Duration.Companion.seconds
  scrim behind the content for modality.
 
  dismissOnBackPress / dismissOnClickOutside: `dismissOnClickOutside` is
- wired — the scrim itself intercepts clicks and calls `onDismissRequest`.
+ wired - the scrim itself intercepts clicks and calls `onDismissRequest`.
  `dismissOnBackPress` registers a BackHandler on the window's
- NavigationEventDispatcher — an unconsumed ESC completes a back navigation
+ NavigationEventDispatcher - an unconsumed ESC completes a back navigation
  (ComposeWindow's BackNavigationInput), which dismisses the topmost dialog.
  usePlatformDefaultWidth is accepted but has no effect (there is no platform
  default width on desktop).
 
  Appearance/disappearance animations mirror upstream `Dialog.skiko.kt`'s
  DialogAppearanceController: when `animateTransition` is on (default =
- SkikoComposeUiFlags.isDialogAnimationEnabled, true — same flag upstream
+ SkikoComposeUiFlags.isDialogAnimationEnabled, true - same flag upstream
  desktop uses), the dialog content fades 0.2→1 alpha, scales 0.95→1 and
  slides up 10dp over a 0.2s ease-out, with the scrim alpha following the
  same curve. On dismissal the curve plays back over 0.1s (scaled by how far
  the appearance got). Upstream keeps its ComposeSceneLayer alive after the
  owner's composition leaves to animate out; here the equivalent is the popup
- host's exit deferral — the hosted content (which lives in the HOST
+ host's exit deferral - the hosted content (which lives in the HOST
  composition, so it survives the caller disposing the Dialog) registers a
  PopupExitHandle, observes `isExiting`, animates, then finish()es the entry.
 
- Lives in :ui (not :foundation) — the whole ui.window pair is :ui-only, using
+ Lives in :ui (not :foundation) - the whole ui.window pair is :ui-only, using
  Layout + drawBehind for the scrim instead of Box + Modifier.background.
 */
 
@@ -74,7 +74,7 @@ private const val kAnimatedLayerScale = 0.05f
 private const val kAppearanceDurationSeconds = 0.2
 private const val kDisappearanceDurationSeconds = 0.1
 
-/** Alpha ramp shared by the dialog content and the scrim — upstream's
+/** Alpha ramp shared by the dialog content and the scrim - upstream's
    `contentAlpha(progress)`: starts at 0.2, ends at 1. */
 private fun dialogContentAlpha(inProgress: Float): Float =
 	kAnimatedLayerInitialAlpha + (1f - kAnimatedLayerInitialAlpha) * inProgress
@@ -83,14 +83,14 @@ private fun dialogContentAlpha(inProgress: Float): Float =
 // useSoftwareKeyboardInset / scrimColor / animateTransition) that vendored
 // material3 file `internal/BasicEdgeToEdgeDialog.skiko.kt` passes explicitly.
 // scrimColor + animateTransition are honoured (scrim fill / appearance
-// animation); the two insets flags are accept-and-ignore — no OS window
+// animation); the two insets flags are accept-and-ignore - no OS window
 // insets, no soft keyboard on this desktop renderer.
 //
 // NB: NOT marked @ExperimentalComposeUiApi. The expect `DialogProperties` in
 // commonMain isn't marked experimental (see ui/src/vendor/…/Dialog.kt), and
 // annotating the actual with an experimental marker cascades opt-in to every
 // widget that has `properties: DialogProperties = DialogProperties()` as a
-// param default — notably m3's AlertDialog, whose default value on the expect
+// param default - notably m3's AlertDialog, whose default value on the expect
 // signature transitively requires opt-in of ExperimentalComposeUiApi at every
 // call site. Users would see "This API is experimental" pointed at their own
 // `AlertDialog(...)` line even though upstream AlertDialog isn't experimental.
@@ -99,11 +99,11 @@ actual class DialogProperties actual constructor(
 	actual val dismissOnClickOutside: Boolean,
 	actual val usePlatformDefaultWidth: Boolean,
 ) {
-	/** Scrim fill colour — upstream skiko default: 60% black. */
+	/** Scrim fill colour - upstream skiko default: 60% black. */
 	var scrimColor: Color = kDefaultScrimColor
 		private set
 
-	/** Whether the dialog appearance animates — upstream default is the
+	/** Whether the dialog appearance animates - upstream default is the
 	   SkikoComposeUiFlags.isDialogAnimationEnabled flag (true). */
 	var animateTransition: Boolean = SkikoComposeUiFlags.isDialogAnimationEnabled
 		private set
@@ -129,8 +129,8 @@ actual fun Dialog(
 	properties: DialogProperties,
 	content: @Composable () -> Unit,
 ) {
-	// ESC (→ back navigation) dismisses the dialog. Registered here — not only
-	// in Popup — because a dialog with dismissOnClickOutside=false passes a
+	// ESC (→ back navigation) dismisses the dialog. Registered here - not only
+	// in Popup - because a dialog with dismissOnClickOutside=false passes a
 	// null onDismissRequest to the popup but must still honour back-press.
 	// Composition order makes the most recently opened dialog the topmost
 	// enabled handler, so nested dialogs dismiss innermost-first.
@@ -156,12 +156,12 @@ actual fun Dialog(
 		// 0 → 1 over 0.2s ease-out on show, back → 0 over 0.1s on dismissal
 		// (upstream DialogAppearanceController). Progress reads inside
 		// graphicsLayer / drawBehind blocks only invalidate the layer /
-		// redraw — no relayout per frame.
+		// redraw - no relayout per frame.
 		var vProgress by remember {
 			mutableFloatStateOf(if (properties.animateTransition) 0f else 1f)
 		}
 		// Exit deferral: this content composes in the popup HOST's composition,
-		// so it survives the caller disposing the Dialog — the host flips
+		// so it survives the caller disposing the Dialog - the host flips
 		// isExiting instead of removing the entry (see PopupExitHandle).
 		val vExitHandle = LocalPopupExitHandle.current
 		val vExiting = properties.animateTransition &&
@@ -182,7 +182,7 @@ actual fun Dialog(
 		if (vExiting) {
 			LaunchedEffect(Unit) {
 				val vDurationScale = coroutineContext[MotionDurationScale]?.scaleFactor ?: 1f
-				// Play back from wherever the appearance got to — upstream scales
+				// Play back from wherever the appearance got to - upstream scales
 				// the 0.1s by the initial progress too.
 				val vInitial = vProgress
 				try {
@@ -200,16 +200,16 @@ actual fun Dialog(
 
 		// Scrim + centering, expressed as a single Layout that fills the window
 		// constraints, draws the scrim in the background, and centers the
-		// content. Replaces the old Box(fillMaxSize().background()) — Box
+		// content. Replaces the old Box(fillMaxSize().background()) - Box
 		// and Modifier.background both live in :foundation, but ui.window has
 		// no business pulling those in, so we do the same via ui-only
 		// primitives (Layout + drawBehind).
 		Layout(
 			content = {
 				// Inner wrapper so the animated layer applies to the dialog
-				// content only — the scrim must not scale/slide with it. Also
+				// content only - the scrim must not scale/slide with it. Also
 				// carries a pointer consumer so a press on the content area
-				// that lands OUTSIDE any interactive child (a Button etc. —
+				// that lands OUTSIDE any interactive child (a Button etc. -
 				// those consume their press first) is still swallowed here
 				// and does NOT bubble to the outer scrim's consumer / trigger
 				// a dismiss. Descendants keep receiving their normal pointer
@@ -257,7 +257,7 @@ actual fun Dialog(
 				// event that reaches this outer Layout so events cannot
 				// bleed through to sibling subtrees (the main UI under the
 				// popup). Compose's PointerInputEventProcessor hits BOTH
-				// popup and main-content subtrees on every event — without
+				// popup and main-content subtrees on every event - without
 				// this, a click on the scrim would silently fire clickables
 				// underneath. When dismissOnClickOutside is set, an un-
 				// consumed Press here (content descendants had first crack
@@ -292,7 +292,7 @@ actual fun Dialog(
 	}
 }
 
-// Suppress unused-import warnings — these types (Rect, Size, IntSize) are
+// Suppress unused-import warnings - these types (Rect, Size, IntSize) are
 // referenced through drawContext.canvas.drawRect / size which use them
 // implicitly at call sites the compiler picks up via receivers.
 @Suppress("unused") private val vSuppressUnused: Any = listOf(Rect.Zero, Size.Zero, IntSize.Zero)

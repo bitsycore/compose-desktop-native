@@ -6,7 +6,7 @@ import sdl3.SDL_GetTicksNS
 
 /** MonotonicFrameClock for the SDL main loop, with upstream frame semantics:
 
-   - withFrameNanos ALWAYS suspends until the NEXT sendFrame — never completes
+   - withFrameNanos ALWAYS suspends until the NEXT sendFrame - never completes
      with a stale frame. Deferred animations (AnimatedVisibility's enter/exit
      size + fade, SharedTransition bounds) are registered during the
      measure/draw pass AFTER the recomposition that starts a Transition; the
@@ -31,7 +31,7 @@ internal class SDL3FrameClock : MonotonicFrameClock {
 	}
 
 	// Coroutines (recomposer / composition animations) currently suspended in withFrameNanos
-	// awaiting the next sendFrame — the "an animation is still running" half of the window's
+	// awaiting the next sendFrame - the "an animation is still running" half of the window's
 	// quiescence signal (see WindowInstance.hasInvalidations).
 	val hasAwaiters: Boolean get() = broadcast.hasAwaiters
 }

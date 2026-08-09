@@ -7,7 +7,7 @@ import androidx.compose.ui.text.input.CommitTextCommand
 import androidx.compose.ui.text.input.SetComposingTextCommand
 
 // ==================
-// MARK: ImeBridge — SDL text events <-> the active text-input session
+// MARK: ImeBridge - SDL text events <-> the active text-input session
 // ==================
 
 /**
@@ -19,7 +19,7 @@ import androidx.compose.ui.text.input.SetComposingTextCommand
  * falls back to the synthetic-KeyEvent path (dispatchTypedText).
  *
  * Committed text goes through CommitTextCommand, not a synthetic key, because a
- * commit must REPLACE the current composing region with the final text — the
+ * commit must REPLACE the current composing region with the final text - the
  * synthetic-key path has no notion of a composition and would leave the preedit in
  * place. For plain (non-composing) Latin typing CommitTextCommand simply inserts,
  * so the committed-text path is unchanged.
@@ -33,7 +33,7 @@ object ImeBridge {
 
 	// Invoked when a text-input session becomes active (a field gains focus) or
 	// inactive (focus lost). The window wires this to place the OS IME candidate
-	// window at the focused field's rect on focus-gain — otherwise the candidate
+	// window at the focused field's rect on focus-gain - otherwise the candidate
 	// popup is only positioned on the first TEXT_EDITING event, mis-placing it for
 	// the first keystroke. Repointed per window in installGlobals().
 	var onSessionActiveChange: ((active: Boolean) -> Unit)? = null

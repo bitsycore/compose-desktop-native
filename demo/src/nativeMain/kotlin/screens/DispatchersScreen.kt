@@ -61,7 +61,7 @@ internal fun DispatchersScreen() {
                                 delay(1_500)
                                 "fetched on ${threadHint()} after 1.5s"
                             }
-                            // Back on Main here — state writes are visible to
+                            // Back on Main here - state writes are visible to
                             // the next composition.
                             withContext(Dispatchers.Main) {
                                 vResult = vData
@@ -130,7 +130,7 @@ internal fun DispatchersScreen() {
     }
 }
 
-/** Tiny helper to label which thread we're observing — K/N doesn't expose
+/** Tiny helper to label which thread we're observing - K/N doesn't expose
    Thread.currentThread() in commonMain. We just attach the current
    monotonic timestamp so the printed string differs each call. */
 private fun threadHint(): String {

@@ -1,5 +1,5 @@
 // COPY of the port's Scrollbar (package com.compose.sdl.scrollbar) so the SAME
-// implementation runs on the jvm parity target — the port modules are
+// implementation runs on the jvm parity target - the port modules are
 // native-only, so apidemo's commonMain cannot reference them directly.
 // Keep in sync with the original when it changes.
 package apidemo.compat
@@ -41,7 +41,7 @@ import kotlin.math.roundToInt
 /** A faithful subset of Compose Desktop's scrollbar (androidx.compose.foundation).
 You overlay a VerticalScrollbar / HorizontalScrollbar on a scrollable and feed
 it a ScrollbarAdapter built from the same ScrollState. This project's Box has
-no BoxScope (so no Modifier.align) — pin the bar with the Box's
+no BoxScope (so no Modifier.align) - pin the bar with the Box's
 contentAlignment; the fillMaxSize content fills the rest:
 
 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
@@ -100,7 +100,7 @@ interface ScrollbarAdapter {
 
 /** Adapter for a virtualized LazyColumn / LazyRow. A lazy list only knows the
 size of its VISIBLE items, so exact pixel geometry of off-screen content is
-unknowable — we estimate it from the average visible item size × total item
+unknowable - we estimate it from the average visible item size × total item
 count (the same approach as Compose Desktop). Accurate enough for a thumb
 whose length/position track the scroll position; the estimate self-corrects
 as items of different sizes scroll through the viewport. */
@@ -131,7 +131,7 @@ private class LazyListScrollbarAdapter(private val state: LazyListState) : Scrol
         // Within a viewport, scroll by EXACT pixels so a drag stays smooth. A lazy
         // list's pixel geometry is only ESTIMATED (average visible item size), and
         // that estimate drifts as differently-sized items scroll through the
-        // viewport — so index-snapping every frame makes the thumb jump. scrollBy
+        // viewport - so index-snapping every frame makes the thumb jump. scrollBy
         // sidesteps the estimate entirely. This is what Compose Desktop's own
         // LazyListScrollbarAdapter does, and for the same reason.
         if (abs(vDistance) <= viewportSize) {
@@ -184,7 +184,7 @@ private fun Scrollbar(
     val vHovered by vHoverSource.collectIsHoveredAsState()
     var vDraggingThumb by remember { mutableStateOf(false) }
     // onSizeChanged reports PHYSICAL pixels (Option-B density flow), so every
-    // int/px carried through here — vTrackPx, vThumbLen, vThumbPos — is in
+    // int/px carried through here - vTrackPx, vThumbLen, vThumbPos - is in
     // physical pixels. Passing them into `.dp` doubles again through
     // density.toPx() on Retina, which visibly bloated the thumb (filled the
     // whole track) and made drag/track-click positions land 2× too far down.
@@ -230,13 +230,13 @@ private fun Scrollbar(
         Box(modifier = vThumbMod)
 
         // ============
-        //  Drag the thumb / page on track click — handled on the track so the
+        //  Drag the thumb / page on track click - handled on the track so the
         //  coordinates have a stable (non-moving) origin. The press is CONSUMED:
         //  a scrollbar owns the pointer input it handles, so content sharing this
         //  region (the scrollable beneath, or a parent that also reads pointer
         //  input) never reacts to the same press. Geometry is read LIVE from the
-        //  adapter at press time — not from the captured render metrics above,
-        //  which go stale between pointerInput relaunches — so a grab after a
+        //  adapter at press time - not from the captured render metrics above,
+        //  which go stale between pointerInput relaunches - so a grab after a
         //  wheel-scroll still hit-tests against the thumb's current position.
         Box(
             modifier = Modifier
@@ -246,7 +246,7 @@ private fun Scrollbar(
                         val vDown = awaitFirstDown(requireUnconsumed = false)
                         vDown.consume()
 
-                        // Live geometry — stable for the drag's duration (content /
+                        // Live geometry - stable for the drag's duration (content /
                         // viewport / track sizes don't change mid-drag).
                         val vContentPx = adapter.contentSize
                         val vViewportPx = adapter.viewportSize
@@ -262,7 +262,7 @@ private fun Scrollbar(
 
                         // Map a track-relative thumb-top to a scroll offset. The
                         // target uses the LIVE max scroll (read fresh each move),
-                        // not the press-time value — the adapter compares it against
+                        // not the press-time value - the adapter compares it against
                         // its live scrollOffset, and mixing a stale scale with a live
                         // one makes the delta run away (grab at the bottom, drag up,
                         // and the list overshoots to the middle).

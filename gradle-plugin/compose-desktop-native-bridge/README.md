@@ -3,14 +3,14 @@
 `com.bitsycore.compose-desktop-native.bridge` lets an app declare the **official Compose
 Multiplatform coordinates once in `commonMain`** and run on every platform CMP
 supports **plus** the port's Kotlin/Native desktop targets (mingwX64,
-linuxX64, linuxArm64, macosArm64 — no JVM).
+linuxX64, linuxArm64, macosArm64 - no JVM).
 
 Gradle dependency-substitution rules cannot ship inside a Maven artifact, so
 this plugin carries them instead: on every configuration belonging to a native
 desktop target it substitutes the official `org.jetbrains.compose.*`
 coordinates for the published `com.bitsycore.compose.sdl:*` klibs. All other
 targets (android / jvm / iOS / wasm) keep resolving the official artifacts
-untouched. `org.jetbrains.compose.runtime` is never substituted — the official
+untouched. `org.jetbrains.compose.runtime` is never substituted - the official
 runtime klibs serve every target.
 
 ## Usage
@@ -55,10 +55,10 @@ dependencyResolutionManagement {
 
 > The port is also published to GitHub Packages
 > (`https://maven.pkg.github.com/bitsycore/compose-desktop-native`) as an
-> authenticated fallback — same coordinates, needs a PAT with `read:packages`.
+> authenticated fallback - same coordinates, needs a PAT with `read:packages`.
 
 ```kotlin
-// module build.gradle.kts — official coords, everywhere.
+// module build.gradle.kts - official coords, everywhere.
 // Applying the plugin HERE exposes the `composeDesktopNative` extension, which
 // reports the exact Compose versions the port tracks, so you never hand-match
 // them against compose.properties.
@@ -92,12 +92,12 @@ just removes the drift.
 The plugin applies at either level:
 
 ```kotlin
-// settings.gradle.kts — every module of the build
+// settings.gradle.kts - every module of the build
 plugins { id("com.bitsycore.compose-desktop-native.bridge") version "<v>" }
 ```
 
 ```kotlin
-// build.gradle.kts — this module only (compose-plugin style)
+// build.gradle.kts - this module only (compose-plugin style)
 plugins { id("com.bitsycore.compose-desktop-native.bridge") }
 ```
 
@@ -118,7 +118,7 @@ val material3 = project.extra["composeDesktopNative.composeMaterial3"] as String
 val runtime = project.extra["composeDesktopNative.composeRuntime"] as String
 ```
 
-## compose.desktop.native — the application block for native
+## compose.desktop.native - the application block for native
 
 The native counterpart of `compose.desktop { application { mainClass } }`:
 
@@ -130,7 +130,7 @@ compose.desktop {
 ```
 
 Declares an executable with that entry point on every Kotlin/Native desktop
-target — no `targets.withType<KotlinNativeTarget> { binaries.executable { … } }`
+target - no `targets.withType<KotlinNativeTarget> { binaries.executable { … } }`
 boilerplate. If you declare your own `binaries.executable { }` (e.g. for extra
 linker flags), it keeps everything it configures; `entryPoint` only fills in
 where the executable didn't set one, so the two compose.
@@ -154,7 +154,7 @@ compose.desktop {
 }
 ```
 
-The plugin (no Python / native tooling needed — pure-Kotlin codec):
+The plugin (no Python / native tooling needed - pure-Kotlin codec):
 
 - decodes each PNG to a raw RGBA blob and bundles it into `data.kres` under
   `<resourceDir>/<pngBaseName>.rgba`. Your app selects it at runtime, matched
@@ -170,7 +170,7 @@ The plugin (no Python / native tooling needed — pure-Kotlin codec):
   ) { App() }
   ```
 
-  List one path per size you supply — the largest becomes the base and the rest
+  List one path per size you supply - the largest becomes the base and the rest
   become alternate resolutions SDL picks from (title bar / taskbar / Alt-Tab).
   The runtime icon uses core SDL only, so it works on every target.
 
@@ -178,16 +178,16 @@ The plugin (no Python / native tooling needed — pure-Kotlin codec):
   `exeIcon` is unset), compiles it with `windres` (mingw-w64 binutils), and links
   it into the `.exe` so Explorer and the pinned taskbar show it. Set
   `embedWindowsIcon.set(false)` to skip this (e.g. if `windres` isn't installed).
-  The resource object is linked into every mingw executable — the one the plugin
+  The resource object is linked into every mingw executable - the one the plugin
   creates via `native { entryPoint }` and hand-declared
   `binaries.executable { }` ones alike.
 
 The runtime window icon and the `.exe` icon can differ: point `light` at a
 background-less mark (looks right in the taskbar) and `exeIcon` at the full
-branded icon with a background (stays legible in Explorer) — the same split
+branded icon with a background (stays legible in Explorer) - the same split
 apidemo uses.
 
-## composeResources — zero setup
+## composeResources - zero setup
 
 If the module also applies the official `org.jetbrains.compose` plugin, the
 bridge completes the resources story on the native desktop targets: it
@@ -195,7 +195,7 @@ registers a `package<Variant>ComposeResources<Target>` task per native
 executable that bundles the Compose plugin's prepared resources into
 `data.kres` next to the binary (a STORED zip the port's runtime reads via
 SDL_GetBasePath). Files under `src/commonMain/composeResources/` + the
-generated `Res.*` accessors then work exactly like on every other platform —
+generated `Res.*` accessors then work exactly like on every other platform -
 drawables, strings (`values/*.xml`), fonts, raw files:
 
 ```kotlin
@@ -210,7 +210,7 @@ overrides follow the default hierarchy (a `mingwX64Main` resource beats a
 
 `data.kres` entries are STORED by default (the runtime reads an entry with one
 fseek+fread). Pass `-PcompressResources=true` (or set it in `gradle.properties`)
-to DEFLATE them for a smaller distributable — the runtime inflates on read.
+to DEFLATE them for a smaller distributable - the runtime inflates on read.
 
 ## Notes
 
@@ -218,7 +218,7 @@ to DEFLATE them for a smaller distributable — the runtime inflates on read.
   from the same tag). Override with `composeDesktopNative.version=<x>` in
   `gradle.properties` when mixing releases.
 - `composeDesktopNative.substitution=false` disables the substitution half while
-  keeping the packaging / icon / `compose.desktop.native` DSL — for builds that
+  keeping the packaging / icon / `compose.desktop.native` DSL - for builds that
   already provide the port modules another way (the port repo itself uses this:
   its root build substitutes the official coords to project modules).
 - Use `composeDesktopNative.compose` / `.composeMaterial3` / `.composeRuntime`
@@ -229,5 +229,5 @@ to DEFLATE them for a smaller distributable — the runtime inflates on read.
   release the plugin shipped with; no need to read `compose.properties` by hand.
 - Requires Gradle 8.8+ when applied in settings (`gradle.lifecycle.beforeProject`).
 - App windowing/main-loop (`com.bitsycore.compose:desktop-native-window`) and the icon
-  font module (`material-symbols`) are the port's own APIs — depend on them
+  font module (`material-symbols`) are the port's own APIs - depend on them
   directly; no substitution involved.

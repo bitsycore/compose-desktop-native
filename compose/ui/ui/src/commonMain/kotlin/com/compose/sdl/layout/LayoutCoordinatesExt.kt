@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.IntOffset
 // ==================
 
 /** Logical-point X of this layout in the window. Project-only sugar that
-   reads `positionInWindow().x` and rounds to Int — matches the project's
+   reads `positionInWindow().x` and rounds to Int - matches the project's
    old `Modifier.onGloballyPositioned: (IntOffset) -> Unit` payload. Guards
    `isAttached`: a menu/tooltip anchor can be read while its node is mid-recycle,
    and positionInWindow() throws on a detached coordinator. */

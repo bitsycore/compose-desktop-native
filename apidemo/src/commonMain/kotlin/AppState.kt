@@ -15,7 +15,7 @@ internal class HistoryEntry(
     val request: ApiRequest
 )
 
-/** One request plus its live session state — response, in-flight job (for
+/** One request plus its live session state - response, in-flight job (for
 cancel) and which sub-tabs show. Stable identity lets the sidebar and the
 open-tab strip reference the same request without index juggling. */
 internal class ReqState(inInitial: ApiRequest) {
@@ -82,7 +82,7 @@ internal class PackState(
         inOpenTabs.forEach { vIdx -> requests.getOrNull(vIdx)?.let { add(it) } }
     }
     var active by mutableStateOf(requests.getOrNull(inActive)?.takeIf { it in openTabs } ?: openTabs.firstOrNull())
-    var expanded by mutableStateOf(true)   // sidebar fold state (transient — not part of the pack file)
+    var expanded by mutableStateOf(true)   // sidebar fold state (transient - not part of the pack file)
     var envOpen by mutableStateOf(false)   // whether this pack's env tab is open in the strip (transient)
 
     fun toPack(): Pack = Pack(
@@ -112,7 +112,7 @@ internal const val kSessionTabKey = "session-settings"
 internal class StripTab(val pack: PackState?, val req: ReqState?, val isSession: Boolean = false)
 
 /** Identity of a strip tab. A linked pack shares the source's ReqState objects,
-so the key must include the pack — otherwise the source's and linked's tabs
+so the key must include the pack - otherwise the source's and linked's tabs
 for the same request collide (double selection, duplicate key()). Data class →
 structural equality, so compare keys with == (not ===). */
 internal data class TabKey(val pack: PackState?, val req: ReqState?)
@@ -138,7 +138,7 @@ internal class TreeDrag {
     var dy by mutableStateOf(0f)            // draw-only follow offset for the grabbed element
     var pressRel by mutableStateOf(0)       // relY at capture (cursor = grabbed-element top + relY)
 
-    // A press doesn't become a drag until the pointer moves past kDragSlop — so a
+    // A press doesn't become a drag until the pointer moves past kDragSlop - so a
     // plain click (which carries a pixel or two of jitter) still selects / opens.
     var engaged by mutableStateOf(false)
 

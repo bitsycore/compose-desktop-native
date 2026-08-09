@@ -13,13 +13,13 @@ machine-readable provenance line near their header:
 recording the exact upstream ref the file was last reconciled against. This script
 compares each to the CURRENT pin for its repo (COMPOSE_CORE_REF by default) from
 scripts/compose-fork/compose.properties. If they differ, the manual vendor MAY be
-stale — upstream could have changed that file since it was reconciled — and must be
+stale - upstream could have changed that file since it was reconciled - and must be
 re-checked by hand. Exits non-zero if any file is stale, so it can gate a ref bump.
 
 Deeper (optional) check: if the repo's local clone is found (../cmp-ref[-core] for the
 core repo, ../cmp-ref-compose-multiplatform for COMPOSE_REF), it runs
 `git diff <base>..<pin> -- <path>` and reports whether the upstream file ACTUALLY changed
-between the recorded base and the current pin — turning "might be stale" into
+between the recorded base and the current pin - turning "might be stale" into
 "did / didn't change".
 
 Run at each pin bump (see RENDERER.md §9 ref-bump runbook).
@@ -61,7 +61,7 @@ def find_clone(var: str):
 
 def upstream_changed(clone: Path, path: str, base: str, pin: str):
     """True if <path> differs between base..pin in the clone; None if it couldn't run
-    (including the path not existing at the pin — a rename/move needs human eyes)."""
+    (including the path not existing at the pin - a rename/move needs human eyes)."""
     try:
         present = subprocess.run(
             ["git", "-C", str(clone), "ls-tree", "--name-only", pin, "--", path],
@@ -84,7 +84,7 @@ def main() -> int:
     entries = []
     for f in REPO.rglob("*.kt"):
         if "/src/vendor/" in f.as_posix():
-            continue  # gitignored verbatim re-sync tree — not manual vendors
+            continue  # gitignored verbatim re-sync tree - not manual vendors
         try:
             text = f.read_text(encoding="utf-8", errors="ignore")
         except Exception:
@@ -100,7 +100,7 @@ def main() -> int:
     used_vars = sorted({var for _, var, _, _ in entries})
     for var in used_vars:
         print(f"check-vendor-drift: pin {var} = {pins.get(var, '(NOT IN compose.properties!)')}"
-              f"  clone = {find_clone(var) or '(none — ref-compare only)'}")
+              f"  clone = {find_clone(var) or '(none - ref-compare only)'}")
     print()
 
     stale = []

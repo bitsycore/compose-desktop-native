@@ -5,7 +5,7 @@ checks: launch it, send window-relative input (click / hover / hold / move),
 and capture the client area via PrintWindow (works even when occluded).
 
 Built from the ad-hoc rigs used to reproduce the square-on-click and TLS-chain
-bugs — window-CLIENT-relative and process-addressed, so it doesn't care where
+bugs - window-CLIENT-relative and process-addressed, so it doesn't care where
 the window lands or whether it's focused.
 
 Examples:

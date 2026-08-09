@@ -30,9 +30,9 @@ executable for macOS (arm64), Linux (x64/arm64), and Windows (mingwX64), using
 
 | Platform | Gradle target | Renderer |
 |----------|---------------|----------|
-| macOS arm64 | `macosArm64` | Skia (Metal) — official Skiko |
-| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia (OpenGL) — official Skiko |
-| Windows | `mingwX64` | Skia — bitsycore Skiko fork |
+| macOS arm64 | `macosArm64` | Skia (Metal) - official Skiko |
+| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia (OpenGL) - official Skiko |
+| Windows | `mingwX64` | Skia - bitsycore Skiko fork |
 
 ## Quickstart
 
@@ -82,7 +82,7 @@ commonMain.dependencies {
 
 The klibs publish to [maven.bitsycore.com](https://maven.bitsycore.com/releases)
 (no auth) and GitHub Packages (authenticated fallback) under per-area coordinates that mirror
-upstream — `com.bitsycore.compose.ui:ui`, `com.bitsycore.compose.foundation:foundation`,
+upstream - `com.bitsycore.compose.ui:ui`, `com.bitsycore.compose.foundation:foundation`,
 … (the `com.bitsycore` fork of each `org.jetbrains.compose.*`). Apply
 the bridge Gradle plugin once, declare the **official** Compose Multiplatform
 coordinates, and the plugin swaps in the port's klibs on native desktop targets
@@ -109,7 +109,7 @@ commonMain.dependencies {
 **Two GitHub Packages repos are needed.** A consumer declares the port's repo
 (`bitsycore/compose-desktop-native`) **and** the skiko fork's (`bitsycore/skiko`).
 The Windows (mingwX64) target renders through the bitsycore skiko fork, and
-GitHub Packages binds each package name to a **single** repository — so
+GitHub Packages binds each package name to a **single** repository - so
 `com.bitsycore.skiko` can't be mirrored into the port's repo, it stays in its
 own. Scope them with `includeGroup`/`excludeGroup("com.bitsycore.skiko")`
 (macOS/Linux pull the official skiko from Maven Central instead; if you build no

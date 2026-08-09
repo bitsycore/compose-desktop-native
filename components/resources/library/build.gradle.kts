@@ -1,10 +1,10 @@
-// :components-resources — the official Compose Multiplatform resources runtime
+// :components-resources - the official Compose Multiplatform resources runtime
 // (org.jetbrains.compose.components:components-resources), vendored because the
 // Maven artifact ships no mingwX64/linux klibs. Public API is byte-for-byte
 // upstream (painterResource / stringResource / Font / qualifiers / Res codegen
 // compatibility); the platform actuals are this port's: data.kres reading,
 // image decode via :ui's Skia decoder, SDL locale/theme environment. Apps' JVM
-// targets keep using the official Maven artifact — this module is native-only.
+// targets keep using the official Maven artifact - this module is native-only.
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
@@ -40,7 +40,7 @@ kotlin {
 		}
 		nativeMain {
 			kotlin.srcDir("src/vendor/native/kotlin")
-			// src/nativeMain/kotlin also holds the Font / Image resource actuals —
+			// src/nativeMain/kotlin also holds the Font / Image resource actuals -
 			// pure project code that delegates to the project font registry
 			// (IconFont / NamedFont) and the :ui-graphics Skia decoder
 			// (decodeEncodedImageBitmap). Skiko-free, so a single native set covers

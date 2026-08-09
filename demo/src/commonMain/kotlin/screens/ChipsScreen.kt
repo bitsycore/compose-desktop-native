@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 
-// Material3 — Assist / Suggestion / Filter / Input chips.
+// Material3 - Assist / Suggestion / Filter / Input chips.
 @Composable
 internal fun ChipsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -25,7 +25,7 @@ internal fun ChipsScreen() {
 			}
 		}
 
-		Section("FilterChip", "Selectable — toggles a tonal fill + checkmark") {
+		Section("FilterChip", "Selectable - toggles a tonal fill + checkmark") {
 			var vA by remember { mutableStateOf(true) }
 			var vB by remember { mutableStateOf(false) }
 			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -46,7 +46,7 @@ internal fun ChipsScreen() {
 			}
 		}
 
-		Section("InputChip", "A discrete entry — click to remove") {
+		Section("InputChip", "A discrete entry - click to remove") {
 			var vChips by remember { mutableStateOf(listOf("Kotlin", "Native", "SDL3", "Compose")) }
 			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
 				for (vChip in vChips) {

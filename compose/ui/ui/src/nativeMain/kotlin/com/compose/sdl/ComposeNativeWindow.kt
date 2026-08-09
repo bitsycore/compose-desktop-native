@@ -48,7 +48,7 @@ class ComposeNativeWindow constructor(
     // ============
     //  State
 
-    /** Logical (point) width — the same units layout uses. */
+    /** Logical (point) width - the same units layout uses. */
     val width: Int get() = fWidth
     val height: Int get() = fHeight
     /** Physical (pixel) back-buffer size; on Retina this is `width * pixelDensity`. */
@@ -82,7 +82,7 @@ class ComposeNativeWindow constructor(
         fTitle = inTitle
     }
 
-    /** Logical size in points — SDL fires AppEvent.WindowResized which
+    /** Logical size in points - SDL fires AppEvent.WindowResized which
        updates the size getters via onResized(). */
     fun setSize(inWidth: Int, inHeight: Int) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
@@ -118,7 +118,7 @@ class ComposeNativeWindow constructor(
 
     /** Asks composeWindow's main loop to break out at the next frame.
        Same effect as the user closing the window via the OS. Bypasses any
-       onCloseRequest handler — this is the "really quit now" path. */
+       onCloseRequest handler - this is the "really quit now" path. */
     fun close() { fCloseRequested = true }
 
     // ============
@@ -137,13 +137,13 @@ class ComposeNativeWindow constructor(
 
     private var fOnKeyShortcut: ((KeyEvent) -> Boolean)? = null
 
-    /** Register a handler for key events the focused node didn't consume — for
+    /** Register a handler for key events the focused node didn't consume - for
        app-wide shortcuts (Ctrl+S, etc.). Receives every unconsumed key (and all
        keys when nothing is focused). Return true if handled. Pass null to clear. */
     fun setOnKeyShortcut(inHandler: ((KeyEvent) -> Boolean)?) { fOnKeyShortcut = inHandler }
 
     // ============
-    //  Framework hooks — driven by composeWindow's main loop (which lives in
+    //  Framework hooks - driven by composeWindow's main loop (which lives in
     //  the :desktop-native-window module, so these are public rather than internal). Not
     //  intended for app code.
 
@@ -180,5 +180,5 @@ interface ComposeWindowScope {
 }
 
 val LocalComposeNativeWindow = staticCompositionLocalOf<ComposeNativeWindow> {
-    error("No ComposeNativeWindow in scope — wrap your composable with composeWindow { ... }")
+    error("No ComposeNativeWindow in scope - wrap your composable with composeWindow { ... }")
 }

@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.IntRect
 // ==================
 
 /**
- * Stub actual — no semantics pipeline today. Tracks the last `set` rect
+ * Stub actual - no semantics pipeline today. Tracks the last `set` rect
  * so [bounds] reads work, but [intersect] / [difference] are always
  * no-ops.
  */

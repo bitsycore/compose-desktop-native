@@ -10,22 +10,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Material3 — Card / ElevatedCard / OutlinedCard container variants.
+// Material3 - Card / ElevatedCard / OutlinedCard container variants.
 @Composable
 internal fun CardsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle(
 			"Cards",
-			"material3 Card / ElevatedCard / OutlinedCard — surface containers with tonal + shadow elevation.",
+			"material3 Card / ElevatedCard / OutlinedCard - surface containers with tonal + shadow elevation.",
 		)
 
 		Section("Card", "Filled surface container with a subtle shadow") {
 			Card(modifier = Modifier.fillMaxWidth()) {
-				CardBody("Filled Card", "The default container — a filled surface at low tonal elevation.")
+				CardBody("Filled Card", "The default container - a filled surface at low tonal elevation.")
 			}
 		}
 
-		Section("ElevatedCard", "Larger drop shadow — reads as lifted") {
+		Section("ElevatedCard", "Larger drop shadow - reads as lifted") {
 			ElevatedCard(modifier = Modifier.fillMaxWidth()) {
 				CardBody("Elevated Card", "Higher shadow elevation to separate it from the background.")
 			}
@@ -33,7 +33,7 @@ internal fun CardsScreen() {
 
 		Section("OutlinedCard", "Bordered, minimal fill") {
 			OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-				CardBody("Outlined Card", "A 1.dp outline instead of a shadow — good on busy backgrounds.")
+				CardBody("Outlined Card", "A 1.dp outline instead of a shadow - good on busy backgrounds.")
 			}
 		}
 	}

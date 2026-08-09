@@ -8,11 +8,11 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import com.compose.sdl.loadComposeResourceBytes
 
 // ==================
-// MARK: ResourceReader — data.kres actual
+// MARK: ResourceReader - data.kres actual
 // ==================
 
 /** The platform reader for this port: every app ships its composeResources
-   content inside data.kres (a STORED zip next to the executable — see the
+   content inside data.kres (a STORED zip next to the executable - see the
    apps' Zip tasks), and :ui's ResourceIO serves entries by exact path with an
    fseek+fread. The paths the generated Res accessors produce
    ("composeResources/<package>/drawable/x.png") are stored verbatim in

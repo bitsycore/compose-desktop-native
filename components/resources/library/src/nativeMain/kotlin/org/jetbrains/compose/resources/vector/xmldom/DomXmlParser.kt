@@ -1,23 +1,23 @@
 package org.jetbrains.compose.resources.vector.xmldom
 
 // ==================
-// MARK: DomXmlParser — pure-Kotlin replacement for upstream's Darwin parser
+// MARK: DomXmlParser - pure-Kotlin replacement for upstream's Darwin parser
 // ==================
 
 /* Upstream's nativeMain DomXmlParser is built on Foundation's NSXMLParser and
    only compiles on Darwin; this port also targets mingwX64/linux, so the same
    `parse(xml): Element` entry point is implemented as a small recursive-descent
-   XML parser instead (project file — the upstream one is excluded in
+   XML parser instead (project file - the upstream one is excluded in
    compose-fork.txt).
 
-   Scope: exactly what XmlVectorParser + the resource string XMLs need —
+   Scope: exactly what XmlVectorParser + the resource string XMLs need -
    elements, namespaced attributes (xmlns scoping, getAttributeNS,
    lookupPrefix), text nodes (textContent), comments / prolog / DOCTYPE /
    CDATA skipping, and the five predefined entities plus numeric character
    references. No DTD expansion, no processing-instruction handling beyond
-   skipping — malformed input throws MalformedXMLException like upstream. */
+   skipping - malformed input throws MalformedXMLException like upstream. */
 // VENDOR-BASE(COMPOSE_REF): components/resources/library/src/nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt @ v1.12.0-beta03+dev4483
-// (fresh REIMPL, not a copy-edit — the base ref marks the upstream API it tracks)
+// (fresh REIMPL, not a copy-edit - the base ref marks the upstream API it tracks)
 
 internal fun parse(xml: String): Element {
 	val vParser = XmlDomParser(xml)
@@ -59,7 +59,7 @@ private class ElementImpl(
 	override val nodeName: String get() = if (fPrefix.isEmpty()) localName else "$fPrefix:$localName"
 	override val childNodes: NodeList get() = NodeListImpl(children)
 
-	// Concatenated descendant text — what DOM's textContent does.
+	// Concatenated descendant text - what DOM's textContent does.
 	override val textContent: String?
 		get() = buildString {
 			for (vChild in children) {
@@ -88,7 +88,7 @@ private class ElementImpl(
 }
 
 // ============
-//  The parser — one pass over the string with a cursor.
+//  The parser - one pass over the string with a cursor.
 private class XmlDomParser(private val fXml: String) {
 	private var fPos = 0
 
@@ -114,7 +114,7 @@ private class XmlDomParser(private val fXml: String) {
 		val vQName = readName()
 		if (vQName.isEmpty()) throw MalformedXMLException("empty element name at $fPos")
 
-		// Attributes (collect raw first — xmlns declarations shape the scope
+		// Attributes (collect raw first - xmlns declarations shape the scope
 		// that THIS element's own prefix resolves against).
 		val vRawAttrs = ArrayList<Pair<String, String>>()   // qualifiedName to value
 		while (true) {
@@ -217,7 +217,7 @@ private class XmlDomParser(private val fXml: String) {
 		fPos = vEnd + inToken.length
 	}
 
-	/* DOCTYPE may nest an internal subset in [ ] — skip to the matching '>'. */
+	/* DOCTYPE may nest an internal subset in [ ] - skip to the matching '>'. */
 	private fun skipDoctype() {
 		var vDepth = 0
 		while (fPos < fXml.length) {

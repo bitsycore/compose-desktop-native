@@ -29,7 +29,7 @@ internal fun PathScreen() {
 	val vPrimary = MaterialTheme.colorScheme.primary
 	val vSecondary = MaterialTheme.colorScheme.secondary
 
-	// Build paths once and reuse — Path is mutable but compose-stable
+	// Build paths once and reuse - Path is mutable but compose-stable
 	// while the commands don't change.
 	val vTriangle = remember {
 		Path().apply {
@@ -78,7 +78,7 @@ internal fun PathScreen() {
 				"fans (works for convex shapes).",
 		)
 
-		Section("drawPath — fill", "Triangle, star, and oval-via-Path.addOval (5 fills).") {
+		Section("drawPath - fill", "Triangle, star, and oval-via-Path.addOval (5 fills).") {
 			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
 				Canvas(modifier = Modifier.size(80.dp)) { drawPath(vTriangle, vPrimary) }
 				Canvas(modifier = Modifier.size(80.dp)) { drawPath(vStar, vSecondary) }
@@ -93,7 +93,7 @@ internal fun PathScreen() {
 			}
 		}
 
-		Section("drawPath — stroke", "Same paths, stroked. Quad/Cubic bezier curves at the end.") {
+		Section("drawPath - stroke", "Same paths, stroked. Quad/Cubic bezier curves at the end.") {
 			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
 				Canvas(modifier = Modifier.size(80.dp)) {
 					drawPath(vTriangle, vPrimary, style = Stroke(width = 3f))

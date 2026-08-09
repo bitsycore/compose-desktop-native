@@ -1,4 +1,4 @@
-// :ui-geometry — androidx.compose.ui.geometry.*, vendored from upstream (split of :ui, CMP layout).
+// :ui-geometry - androidx.compose.ui.geometry.*, vendored from upstream (split of :ui, CMP layout).
 // Publication artifactId: desktop-ui-geometry.
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)

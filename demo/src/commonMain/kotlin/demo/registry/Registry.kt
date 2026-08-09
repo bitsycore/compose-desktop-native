@@ -17,7 +17,7 @@ data class DemoScreen(val name: String, val content: @Composable () -> Unit)
    fresh id. */
 data class DemoCategory(val id: String, val label: String, val screens: List<DemoScreen>)
 
-/** Shared, platform-neutral registries — these compile against upstream Compose
+/** Shared, platform-neutral registries - these compile against upstream Compose
    on a future jvm target unchanged. Screens migrate into these lists as they're
    moved to commonMain. */
 val CoreScreens: List<DemoScreen> = listOf(

@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 
-// Material3 — the remaining odds and ends: Scaffold, Snackbar, secure fields,
+// Material3 - the remaining odds and ends: Scaffold, Snackbar, secure fields,
 // exposed dropdown, segmented list, sliders extra, expressive theme.
 @Composable
 internal fun M3MiscScreen() {
@@ -39,7 +39,7 @@ internal fun M3MiscScreen() {
 			) { Text("Item deleted") }
 		}
 
-		Section("BasicAlertDialog", "Undecorated dialog shell — bring your own Surface") {
+		Section("BasicAlertDialog", "Undecorated dialog shell - bring your own Surface") {
 			var vOpen by remember { mutableStateOf(false) }
 			Button(onClick = { vOpen = true }) { Text("Open basic dialog") }
 			if (vOpen) {
@@ -135,7 +135,7 @@ internal fun M3MiscScreen() {
 		}
 
 		Section("ScrollField", "Vertically-snapping value field (drag it)") {
-			// ScrollField is a VerticalPager inside — it MUST get a bounded
+			// ScrollField is a VerticalPager inside - it MUST get a bounded
 			// height (the screen's outer scroll column measures children with
 			// infinite max height, which scrollables reject).
 			Box(modifier = Modifier.width(120.dp).height(ScrollFieldDefaults.ScrollFieldHeight)) {

@@ -49,7 +49,7 @@ internal fun OptionsMenu(
                 Text("Light mode", color = if (!inDark) c.accent else c.text, fontSize = 13.sp)
             }, onClick = { if (inDark) inOnToggleTheme(); vOpen = false })
             HorizontalDivider(color = c.border)
-            // Palette picker — a swatch of each theme's primary + a check on the active one.
+            // Palette picker - a swatch of each theme's primary + a check on the active one.
             Box(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 6.dp, bottom = 2.dp)) {
                 Text("Theme", color = c.dim, fontSize = 11.sp)
             }
@@ -86,7 +86,7 @@ internal fun OptionsMenu(
 // MARK: Method picker (dropdown)
 // ==================
 
-/** Panel 2 — one unified bar: a method dropdown (coloured label + unfold arrows),
+/** Panel 2 - one unified bar: a method dropdown (coloured label + unfold arrows),
 a borderless URL field that melts into the bar, and Send (or Cancel). */
 @Composable
 internal fun UrlBar(
@@ -126,7 +126,7 @@ internal fun UrlBar(
             }
         }
 
-        // Borderless URL field — no box, so it reads as part of the bar.
+        // Borderless URL field - no box, so it reads as part of the bar.
         Box(
             modifier = Modifier.weight(1f).alpha(if (inReadOnly) 0.55f else 1f).onKeyEvent { ev ->
                 if (ev.type == KeyEventType.KeyDown && (ev.key == Key.Enter || ev.key == Key.NumPadEnter)) {
@@ -154,8 +154,8 @@ internal fun UrlBar(
         }
 
         // Inspect the server's TLS certificate chain (handshake-only probe).
-        // During the probe the lock glyph swaps to a spinner IN PLACE — same
-        // box, padding and size — so the bar doesn't shift.
+        // During the probe the lock glyph swaps to a spinner IN PLACE - same
+        // box, padding and size - so the bar doesn't shift.
         val vLockHoverSrc = remember { MutableInteractionSource() }
         val vLockHover by vLockHoverSrc.collectIsHoveredAsState()
         TooltipBox(
@@ -185,7 +185,7 @@ internal fun UrlBar(
         }
 
         // Send and Cancel are the same Material Button (same MinHeight + padding)
-        // so the bar never changes height when toggling — Cancel is just red.
+        // so the bar never changes height when toggling - Cancel is just red.
         if (inLoading) Button(
             onClick = inOnCancel,
             colors = ButtonDefaults.buttonColors(

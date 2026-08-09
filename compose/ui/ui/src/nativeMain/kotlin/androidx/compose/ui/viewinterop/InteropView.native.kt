@@ -5,7 +5,7 @@ package androidx.compose.ui.viewinterop
 // Native actual for vendored commonMain InteropView.kt. Mirrors upstream
 // macosMain / webMain / iosMain actuals which all resolve to Any (those
 // platforms don't host a native View hierarchy). Our nativeMain serves
-// macos+linux+windows and none expose interop — same shape applies.
+// macos+linux+windows and none expose interop - same shape applies.
 //
 // (Upstream's skikoMain actual carries the full TypedInteropViewHolder
 // infrastructure built on InteropContainer / InteropViewHolder / etc.,

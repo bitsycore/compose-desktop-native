@@ -19,14 +19,14 @@ import org.gradle.api.tasks.bundling.ZipEntryCompression
  * other platform's packaging (jvm classpath, Android assets, …). What the
  * native desktop targets need is the port's runtime bundle: `data.kres`, a
  * STORED zip next to the executable that the runtime opens via
- * SDL_GetBasePath() and reads entry-by-entry (fseek+fread — hence no
+ * SDL_GetBasePath() and reads entry-by-entry (fseek+fread - hence no
  * compression). This registers one Zip task per native executable link task,
  * zipping the Compose plugin's PREPARED resources (values*.xml are converted
- * to .cvr there — zipping the raw source dir would break stringResource)
+ * to .cvr there - zipping the raw source dir would break stringResource)
  * under the same `composeResources/<res-package>/` prefix the generated
  * accessors carry.
  *
- * IMPLEMENTATION NOTE — conventions, not KGP types: applied from settings,
+ * IMPLEMENTATION NOTE - conventions, not KGP types: applied from settings,
  * this plugin lives in a classloader that is a PARENT of the project's
  * buildscript loader, so KGP / Compose plugin classes are structurally
  * invisible to it. Link tasks (`link<Variant>Executable<Target>`), binary
@@ -45,7 +45,7 @@ internal fun installResourcePackaging(project: Project) {
 }
 
 /** The port's desktop targets and each one's default-hierarchy source sets,
-   most specific first — a target-level resource overrides a commonMain one. */
+   most specific first - a target-level resource overrides a commonMain one. */
 private val desktopTargets = mapOf(
 	"MingwX64" to listOf("mingwX64Main", "mingwMain", "nativeMain", "commonMain"),
 	"LinuxX64" to listOf("linuxX64Main", "linuxMain", "nativeMain", "commonMain"),
@@ -56,16 +56,16 @@ private val desktopTargets = mapOf(
 private fun registerDataKresTasks(project: Project) {
 	// The zips are PRE-REGISTERED lazily for every desktop target/variant and
 	// wired to their link task via matching{}.configureEach: executables may
-	// be declared after this afterEvaluate runs — notably by the bridge's OWN
+	// be declared after this afterEvaluate runs - notably by the bridge's OWN
 	// compose.desktop.native { entryPoint } DSL, which also materialises in
 	// afterEvaluate. (A name pre-scan raced that and silently packaged
-	// nothing — the "data.kres not found" crash; and Gradle forbids
+	// nothing - the "data.kres not found" crash; and Gradle forbids
 	// registering tasks from inside another task's configuration callback,
 	// so the zip cannot be created reactively either.) An unrealised
 	// registered task costs nothing: if the target has no executable, the
 	// link task never appears and the zip never runs. All content wiring
 	// happens in the zip's own configuration action, which only executes on
-	// realisation — by then the Compose plugin's prepare tasks and the final
+	// realisation - by then the Compose plugin's prepare tasks and the final
 	// compose.resources config exist.
 	for ((target, sourceSets) in desktopTargets) {
 		for (variant in listOf("Debug", "Release")) {
@@ -81,7 +81,7 @@ private fun registerDataKresTasks(project: Project) {
 					)
 				)
 				// STORED by default: the runtime's reader hands raw bytes straight
-				// to the decoders — an entry is one fseek+fread. -PcompressResources=true
+				// to the decoders - an entry is one fseek+fread. -PcompressResources=true
 				// switches to DEFLATED for a smaller distributable (the reader also
 				// inflates raw-deflate entries, via the system zlib, at a small
 				// read-time cost).
@@ -107,7 +107,7 @@ private fun registerDataKresTasks(project: Project) {
 	}
 }
 
-/** The package the generated accessors carry in their resource paths —
+/** The package the generated accessors carry in their resource paths -
    compose.resources.packageOfResClass (read REFLECTIVELY: the ResourcesExtension
    class lives in the project's buildscript loader, invisible from here), or
    the Compose plugin's documented default `{group}.{module}.generated.resources`

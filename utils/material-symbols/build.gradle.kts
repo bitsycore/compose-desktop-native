@@ -1,20 +1,20 @@
-// :material-symbols — codepoint constants + all three Material Symbols style
+// :material-symbols - codepoint constants + all three Material Symbols style
 // composables (Outlined / Rounded / Sharp) in one module, for BOTH stacks:
 //
-//   commonMain  — the MaterialSymbols codepoints + the PUBLIC API
+//   commonMain  - the MaterialSymbols codepoints + the PUBLIC API
 //                 (MaterialSymbols<Style> objects, axis defaults) so
 //                 consumers' shared code and IDE analysis resolve it.
-//   nativeMain  — actual renderer over the port's IconFont pipeline
+//   nativeMain  - actual renderer over the port's IconFont pipeline
 //                 (:foundation IconFontIcon; IconFont itself handles the
-//                 SDL3 / Skia renderer split — this module never sees it).
-//   jvmMain     — actual renderer over Skiko directly (Typeface.makeClone
+//                 SDL3 / Skia renderer split - this module never sees it).
+//   jvmMain     - actual renderer over Skiko directly (Typeface.makeClone
 //                 per axes combination + TextLine on the native canvas);
-//                 the upstream Font(variationSettings) route is unusable —
+//                 the upstream Font(variationSettings) route is unusable -
 //                 its FontCache drops the settings from the cache key.
 //
 // commonMain compiles against the OFFICIAL Maven Compose artifacts (metadata
 // + jvm resolve them); the NATIVE target configurations substitute ui /
-// material3 for the port's project modules — the FULL-COMMONIZATION BRIDGE
+// material3 for the port's project modules - the FULL-COMMONIZATION BRIDGE
 // declared once in the root build (the Maven artifacts ship no mingw/linux
 // klibs). The runtime is the official klib everywhere, never substituted.
 //
@@ -29,7 +29,7 @@ import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    // Compose compiler only — the multiplatform-resources plugin would scan
+    // Compose compiler only - the multiplatform-resources plugin would scan
     // composeResources/ and fail because the .ttf is generated at build time,
     // not present at configuration time. We bundle the font(s) through each
     // consumer app's own Zip task (see apidemo/demo build.gradle.kts), not via
@@ -40,10 +40,10 @@ plugins {
 // Skip mingwX64 on non-Windows hosts; see root build.gradle.kts.
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
-// JVM stack version — the dev build matching the pinned COMPOSE_CORE_REF
+// JVM stack version - the dev build matching the pinned COMPOSE_CORE_REF
 // (scripts/compose-fork/compose.properties): byte-exact parity with the
 // vendored sources, and (unlike published beta01) its desktop loadTypeface
-// applies Font.variationSettings — required for the icon axes on JVM.
+// applies Font.variationSettings - required for the icon axes on JVM.
 // material3 rides its own release train (same +dev build, different base).
 // Gradle orders "+dev" BELOW the plain version, so force the core-repo
 // groups on jvm configurations (mirrors :demo's forcing).
@@ -77,7 +77,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // The official runtime klibs — the SAME artifact/version the port
+            // The official runtime klibs - the SAME artifact/version the port
             // itself uses (:ui pins it); resolves for metadata, jvm AND native.
             api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
             // Official Maven coordinates for the API surface (Modifier / Color
@@ -94,12 +94,12 @@ kotlin {
             api("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
         }
         nativeMain.dependencies {
-            // The native actual draws via com.compose.sdl.icons.IconFontIcon —
+            // The native actual draws via com.compose.sdl.icons.IconFontIcon -
             // project code in :foundation (which api-depends on :ui).
             api(project(":foundation"))
         }
         jvmMain.dependencies {
-            // BasicText for the JVM actual — same version as :demo's jvm
+            // BasicText for the JVM actual - same version as :demo's jvm
             // parity target.
             api("org.jetbrains.compose.foundation:foundation:$vComposeJvmVersion")
         }

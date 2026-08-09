@@ -24,7 +24,7 @@ import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.rememberScrollbarAdapter
 import com.compose.sdl.text.IconText
 
-// Foundation — AnimatedVisibility, BoxWithConstraints, desktop scrollbars.
+// Foundation - AnimatedVisibility, BoxWithConstraints, desktop scrollbars.
 @Composable
 internal fun FoundationExtraScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -35,7 +35,7 @@ internal fun FoundationExtraScreen() {
 			// One unspaced Column child: the Section column's spacedBy(10) would
 			// otherwise keep a NON-animated gap around the AnimatedVisibility node
 			// and drop it abruptly when the node unmounts at exit end (inherent
-			// upstream behaviour — spacing applies to zero-height children too).
+			// upstream behaviour - spacing applies to zero-height children too).
 			// The gap lives INSIDE the animated content instead, so it expands and
 			// shrinks with it.
 			Column {
@@ -104,7 +104,7 @@ internal fun FoundationExtraScreen() {
 		Section("SharedTransitionLayout", "sharedElement morphs the box between its two states") {
 			SharedTransitionLayout {
 				var vBig by remember { mutableStateOf(false) }
-				// Unspaced Column, gap carried inside each AnimatedVisibility — see
+				// Unspaced Column, gap carried inside each AnimatedVisibility - see
 				// the AnimatedVisibility section above for why (spacedBy around an
 				// AV node collapses non-animated when the node unmounts).
 				Column {

@@ -79,7 +79,7 @@ internal fun PackColorPicker(inSelected: Int, inOnPick: (Int) -> Unit) {
 // MARK: Add-pack menu (header '+')
 // ==================
 
-/** The header '+' — a small menu to add a pack to the open session, either blank
+/** The header '+' - a small menu to add a pack to the open session, either blank
 or imported from a .json file. Importing a pack always lands it in the session. */
 @Composable
 internal fun AddPackMenu(inOnNewRequest: () -> Unit, inOnNew: () -> Unit, inOnImport: () -> Unit) {
@@ -131,7 +131,7 @@ internal fun ellipsizeMiddle(inText: String, inMax: Int = 46): String {
 }
 
 /** Header dropdown for the one open session. Shows its file name with the full
-path underneath when it has a file (so you can see it's saved — file-backed
+path underneath when it has a file (so you can see it's saved - file-backed
 sessions auto-save), or "Untitled session" with a dot when it has no file yet.
 Menu: Save / Save as… / Rename / Reveal / Open… / New + a recent list. */
 @Composable
@@ -240,7 +240,7 @@ internal fun SessionMenu(
                 HorizontalDivider(color = c.border)
                 // Aligned to the icon column (the DropdownMenuItem's 16dp pad), so
                 // it lines up with the recent items' file icon. Padding goes on a
-                // wrapping Box — a leaf Text's own start padding isn't applied to its
+                // wrapping Box - a leaf Text's own start padding isn't applied to its
                 // draw position by this layout engine.
                 Box(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 6.dp, bottom = 2.dp)) {
                     Text("Recent", color = c.dim, fontSize = 11.sp)
@@ -263,7 +263,7 @@ internal fun SessionMenu(
                                     Text(fileLeaf(vPath), color = c.text, fontSize = 12.sp)
                                     Text(ellipsizeMiddle(vPath, 32), color = c.dim, fontSize = 10.sp, softWrap = false)
                                 }
-                                // Reveal this session's folder — its own hover + tooltip so it
+                                // Reveal this session's folder - its own hover + tooltip so it
                                 // reads as a separate action from "open the session".
                                 TooltipBox(
                                     positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
@@ -332,7 +332,7 @@ internal class PackOps(
 
 /** Renders a pack then its sub-packs recursively, each indented by its depth.
 inSiblings is the list this pack belongs to (top-level vPacks, or a parent's
-subPacks) — used to position the pack-reorder drop bars by index. */
+subPacks) - used to position the pack-reorder drop bars by index. */
 @Composable
 internal fun PackTree(
     inPack: PackState,
@@ -519,7 +519,7 @@ internal fun PackSection(
                 Text(inPack.name, color = c.text, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${inPack.requests.size}", color = c.dim, fontSize = 11.sp)
             }
-            // + (new request) and ⋮ (pack menu) — both reveal on hover only, so the
+            // + (new request) and ⋮ (pack menu) - both reveal on hover only, so the
             // header width never shifts (alpha, not conditional layout). A linked
             // copy mirrors its source's requests, so it has no "new request".
             Row(
@@ -573,7 +573,7 @@ internal fun PackSection(
         }
 
         // ============
-        //  Pack body — request list (expanded, or always for the loose root).
+        //  Pack body - request list (expanded, or always for the loose root).
         //  Rows drag within and across packs via the shared controller; the drop
         //  bar shows here whenever this pack is the resolved target.
         if (inPack.expanded || inHeaderless) {
@@ -584,7 +584,7 @@ internal fun PackSection(
             val vBarBefore = if (vIsTarget) vOthers.getOrNull(inDrag.dropIndex) else null
             val vBarAtEnd = vIsTarget && inDrag.dropIndex >= vOthers.size
             // The loose root has no header, so register the body box as its drop
-            // anchor — that gives an empty root a region to target while dragging.
+            // anchor - that gives an empty root a region to target while dragging.
             var vBodyMod = Modifier.fillMaxWidth().padding(start = 10.dp, top = 2.dp, bottom = 4.dp)
             if (inHeaderless) vBodyMod = vBodyMod
                 .onGloballyPositioned { inDrag.headTop[inPack] = it.y }
@@ -605,7 +605,7 @@ internal fun PackSection(
                     key(vRs) {
                         val vDragged = vRs === inDrag.dragReq && vMoving
                         var vMod: Modifier = Modifier
-                        // Linked copies mirror the source's requests — read-only, so
+                        // Linked copies mirror the source's requests - read-only, so
                         // their rows neither register geometry (would clobber the
                         // source's) nor drag.
                         if (!inPack.isLinked) vMod = vMod
@@ -616,7 +616,7 @@ internal fun PackSection(
                         if (vDragged) vMod =
                             vMod.zIndex(1f).graphicsLayer(alpha = 0.65f, translationX = 0f, translationY = inDrag.dy)
                         if (!inPack.isLinked) vMod = vMod.pointerInput(vRs) {
-                            // Same graphicsLayer feedback concern as the pack drag —
+                            // Same graphicsLayer feedback concern as the pack drag -
                             // accumulate dragAmount instead of reading change.position.
                             detectDragGestures(
                                 onDragStart = { offset ->
@@ -706,7 +706,7 @@ internal fun RequestRow(
     ) {
         MethodTag(vReq.method)
         Text(vReq.name, color = c.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-        // Overflow (vertical-dots) menu — always laid out so the row width
+        // Overflow (vertical-dots) menu - always laid out so the row width
         // never changes; only its opacity toggles on hover / while open. Delete
         // lives inside this menu (no separate button on the row).
         Box(modifier = Modifier.alpha(if (vHover || vMenu) 1f else 0f)) {

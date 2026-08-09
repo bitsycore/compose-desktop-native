@@ -45,8 +45,8 @@ internal class NativeParagraphIntrinsics(
 	val placeholders: List<AnnotatedString.Range<Placeholder>> = emptyList(),
 ) : ParagraphIntrinsics {
 	// Shape ONCE here (unbounded, no line cap). The shaped paragraph is RETAINED
-	// and reused by Paragraph(this, …) for the final layout — skiko re-breaks at
-	// the final width without re-shaping — so measured text shapes once, not twice
+	// and reused by Paragraph(this, …) for the final layout - skiko re-breaks at
+	// the final width without re-shaping - so measured text shapes once, not twice
 	// (the P1.2 double-shape: cold text frames were dominated by shaping).
 	val ops: NativeParagraphOps = buildParagraphOps(
 		paragraphText, paragraphStyle, Float.POSITIVE_INFINITY, Int.MAX_VALUE, false, density, spanStyles, placeholders,
@@ -58,7 +58,7 @@ internal class NativeParagraphIntrinsics(
 
 /** Build the final Paragraph from a pre-shaped intrinsics. Reuse the intrinsics'
    shaped paragraph (just re-break at [width]) when there's no line cap / ellipsis
-   — those are baked into the paragraph at build time and need a fresh build. */
+   - those are baked into the paragraph at build time and need a fresh build. */
 private fun paragraphFromIntrinsics(
 	i: NativeParagraphIntrinsics, width: Float, maxLines: Int, ellipsize: Boolean,
 ): Paragraph {

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Immutable
  * NSLocale on linux/windows and don't want to introduce platform-specific
  * actuals for each leg, so we use a plain BCP47 language tag parser
  * (language[-script][-region]). Good enough for downstream text style
- * APIs that only need to roundtrip the tag — no actual locale-aware
+ * APIs that only need to roundtrip the tag - no actual locale-aware
  * collation / character direction is wired through yet.
  *
  * `Locale.current` reads the OS preferred locale via SDL (see
@@ -19,7 +19,7 @@ import androidx.compose.runtime.Immutable
  * 3 string translation selection; it falls back to en-US before SDL init.
  *
  * If/when proper RTL detection is needed, plug a `Locale.isRtl()` actual
- * (which is a separate expect on skikoMain — we leave that one
+ * (which is a separate expect on skikoMain - we leave that one
  * deferred since we don't render RTL text yet either).
  */
 @Immutable

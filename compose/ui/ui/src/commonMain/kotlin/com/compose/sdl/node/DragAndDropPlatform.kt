@@ -3,7 +3,7 @@ package com.compose.sdl.node
 import androidx.compose.ui.draganddrop.DragAndDropManager
 
 // ==================
-// MARK: DragAndDropPlatform — SDL event pump hooks
+// MARK: DragAndDropPlatform - SDL event pump hooks
 // ==================
 
 /** Platform hooks the :desktop-native-window layer's event loop uses to feed SDL_EVENT_DROP_*
@@ -13,7 +13,7 @@ import androidx.compose.ui.draganddrop.DragAndDropManager
  * target isn't drag-and-drop-capable.
  *
  * Kept as top-level extensions rather than methods on DragAndDropManager
- * because that interface is vendored — the pump surface stays a project
+ * because that interface is vendored - the pump surface stays a project
  * concern. */
 
 internal expect fun createPlatformDragAndDropManager(): DragAndDropManager

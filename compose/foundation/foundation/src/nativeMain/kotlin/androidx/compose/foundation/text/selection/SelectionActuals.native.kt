@@ -11,13 +11,13 @@ import androidx.compose.ui.text.style.ResolvedTextDirection
 import androidx.compose.ui.unit.DpSize
 
 // ==================
-// MARK: Selection engine — native actuals
+// MARK: Selection engine - native actuals
 // ==================
 
 /*
  Actuals for the `expect` declarations upstream distributes across
  macosMain / iosMain / webMain / desktopMain / androidMain (never
- nativeMain/skikoMain — those source sets don't carry these). Our flat
+ nativeMain/skikoMain - those source sets don't carry these). Our flat
  nativeMain covers the whole cross-platform native surface, so we
  hand-write them here.
 
@@ -27,13 +27,13 @@ import androidx.compose.ui.unit.DpSize
 */
 
 /** Cmd on macOS, Ctrl elsewhere. We don't know which platform at compile
-   time — accept both, matches Ctrl+C on Windows/Linux and Cmd+C on macOS.
+   time - accept both, matches Ctrl+C on Windows/Linux and Cmd+C on macOS.
    Also honours the dedicated Copy key. */
 internal actual fun isCopyKeyEvent(keyEvent: KeyEvent): Boolean =
 	keyEvent.key == Key.Copy ||
 	(keyEvent.key == Key.C && (keyEvent.isMetaPressed || keyEvent.isCtrlPressed))
 
-/** No selection magnifier on desktop — mobile-only affordance. */
+/** No selection magnifier on desktop - mobile-only affordance. */
 internal actual fun Modifier.selectionMagnifier(manager: SelectionManager): Modifier = this
 
 /** NO-OP by design: this seam belongs to the NEW text-context-menu API
@@ -49,7 +49,7 @@ internal actual fun Modifier.addSelectionContainerTextContextMenuComponents(
 internal actual val FirstLongPressSelectionAdjustment: SelectionAdjustment
 	get() = SelectionAdjustment.Word
 
-/** Mobile-style draggable selection handle. Desktop never shows one —
+/** Mobile-style draggable selection handle. Desktop never shows one -
    mouse drag directly extends the selection, no handle bubble.
    TODO: If touch input lands (SDL_EVENT_FINGER_*), route to a real
    handle Composable driven by SelectionHandleInfo. */
@@ -63,5 +63,5 @@ internal actual fun SelectionHandle(
 	lineHeight: Float,
 	modifier: Modifier,
 ) {
-	// no-op — no handle rendered
+	// no-op - no handle rendered
 }

@@ -11,12 +11,12 @@ import androidx.compose.ui.input.pointer.PointerType
 import com.compose.sdl.node.impl.ComposeOwner
 
 // ==================
-// MARK: feedPointerToProcessor — native actual
+// MARK: feedPointerToProcessor - native actual
 // ==================
 
 /** Held-button state across events. Upstream's `isChangedToDown` (TapGestureDetector) rejects a
    mouse down unless `buttons.isPrimaryPressed`, and drag/scroll gestures need the held button to
-   persist across Move events, so the synthesized PointerInputEvent must carry a live button mask —
+   persist across Move events, so the synthesized PointerInputEvent must carry a live button mask -
    not just the changed button. A single mouse => module-level flags are enough. */
 private var fPrimaryDown = false
 private var fSecondaryDown = false
@@ -76,7 +76,7 @@ internal fun feedPointerToProcessor(
 }
 
 // ==================
-// MARK: feedScrollToProcessor — native actual
+// MARK: feedScrollToProcessor - native actual
 // ==================
 
 /** Builds a Scroll-type PointerInputEvent carrying scrollDelta and drives the processor. The

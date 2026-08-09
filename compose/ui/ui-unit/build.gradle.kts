@@ -1,4 +1,4 @@
-// :ui-unit — androidx.compose.ui.unit.*, vendored from upstream (split of :ui, CMP layout).
+// :ui-unit - androidx.compose.ui.unit.*, vendored from upstream (split of :ui, CMP layout).
 // Publication artifactId: desktop-ui-unit.
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)

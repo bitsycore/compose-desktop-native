@@ -47,7 +47,7 @@ data class SavedPack(
 )
 
 /** A whole session, the export/import unit for the working set: every open pack
-(self-contained — full content embedded) plus the shared global env and which
+(self-contained - full content embedded) plus the shared global env and which
 pack was active. Only one session is open at a time. */
 @Serializable
 data class Session(
@@ -94,20 +94,20 @@ fun loadAppState(): AppState {
     }
 }
 
-/** Write the app state. Best-effort — failures are swallowed (it's a cache of
+/** Write the app state. Best-effort - failures are swallowed (it's a cache of
 the session, not the user's exported .json packs). */
 fun saveAppState(inState: AppState) {
     val vPath = stateFilePath() ?: return
     try {
         systemFileSystem.write(vPath.toPath()) { writeUtf8(fStateJson.encodeToString(inState)) }
     } catch (_: Throwable) {
-        // ignore — nothing the user can act on, and packs can still be exported
+        // ignore - nothing the user can act on, and packs can still be exported
     }
 }
 
 /** Open the per-user app-data folder where the state file lives in the OS file
 manager. Revealing the state file opens its containing folder, which SDL has
-already created even when nothing's been saved yet. Fire-and-forget — the
+already created even when nothing's been saved yet. Fire-and-forget - the
 reveal launches off the main thread (see revealInFileManager). */
 fun openSettingsFolder() {
     val vPath = stateFilePath() ?: return

@@ -81,7 +81,7 @@ internal fun WidgetsScreen() {
         }
 
         // VerticalSlider (expressive)
-        Section("VerticalSlider", "The vertical orientation — drag the thumb up/down.") {
+        Section("VerticalSlider", "The vertical orientation - drag the thumb up/down.") {
             val vState = rememberSliderState(value = 0.4f)
             Box(modifier = Modifier.height(160.dp)) {
                 VerticalSlider(state = vState)

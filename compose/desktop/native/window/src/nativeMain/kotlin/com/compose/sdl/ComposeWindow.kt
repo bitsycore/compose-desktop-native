@@ -48,7 +48,7 @@ import sdl3.SDL_SetWindowTitle
 import sdl3.SDL_WaitEventTimeout
 
 // ==================
-// MARK: Application entry — nativeComposeApp + Window()
+// MARK: Application entry - nativeComposeApp + Window()
 // ==================
 
 /**
@@ -60,7 +60,7 @@ import sdl3.SDL_WaitEventTimeout
          if (showTools) Window(onCloseRequest = { showTools = false }, title = "Tools") { ToolsUi() }
      }
 
- The app CONTENT is itself a composition (no UI tree — a Unit applier): each
+ The app CONTENT is itself a composition (no UI tree - a Unit applier): each
  `Window(...)` call materialises an SDL window + renderer + root host + its own
  recomposer/composition, and leaving the composition (state flips to false)
  tears the window down. One main loop pumps the shared SDL event queue and
@@ -82,7 +82,7 @@ interface ApplicationScope {
 
 /** Declares one native window for as long as this composable stays in the app
    composition. `onCloseRequest` fires when the user asks the window to close
-   (OS close button, or `window.close()` from content) — remove the state that
+   (OS close button, or `window.close()` from content) - remove the state that
    composes this Window to actually close it, or call exitApplication(). */
 @Composable
 fun ApplicationScope.Window(
@@ -135,10 +135,10 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	runBlocking {
 		runtime.scope = this
 
-		// App-level composition: no UI tree — it only declares Window()s.
+		// App-level composition: no UI tree - it only declares Window()s.
 		val appClock = SDL3FrameClock()
 		val appRecomposer = Recomposer(coroutineContext + appClock)
-		// The clock must be in the collector's context — runRecomposeAndApplyChanges
+		// The clock must be in the collector's context - runRecomposeAndApplyChanges
 		// awaits parent frames through it.
 		val appRecomposeJob = launch(appClock) { appRecomposer.runRecomposeAndApplyChanges() }
 		val appComposition = Composition(UnitApplier(), appRecomposer)
@@ -164,13 +164,13 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 		var vRenderedSinceGc = false
 		while (!runtime.exitRequested) {
 			FrameProfiler.mark()
-			// One virtual 16.6ms tick per loop iteration (no-op unless useVirtualFrameTime) —
+			// One virtual 16.6ms tick per loop iteration (no-op unless useVirtualFrameTime) -
 			// all windows' clocks share the same timestamp this iteration.
 			advanceVirtualFrame()
 			Snapshot.sendApplyNotifications()
 
 			// ============
-			//  Events — one shared SDL queue, routed by window id.
+			//  Events - one shared SDL queue, routed by window id.
 			val vEvents = pollEvents()
 			for (vEvent in vEvents) {
 				when (vEvent) {
@@ -200,7 +200,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			FrameProfiler.phase("events")
 
 			// ============
-			//  App composition pump — Window()s may appear / disappear here.
+			//  App composition pump - Window()s may appear / disappear here.
 			Snapshot.sendApplyNotifications()
 			appClock.sendFrame(frameClockNanos())
 			yield()
@@ -250,7 +250,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			FrameProfiler.frameDone(vAnyRendered)
 
 			// ============
-			//  Drain deferred native-resource disposals on the MAIN thread —
+			//  Drain deferred native-resource disposals on the MAIN thread -
 			//  textures/surfaces whose owner closed them or whose Cleaner fired
 			//  on a GC worker enqueue here (SDL calls aren't thread-safe). This
 			//  is the ownership path that makes the GC nudge below a mere
@@ -270,7 +270,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 				for (vW in runtime.windows) vW.resetFpsWindow()
 			} else {
 				// App composition has pending work but nothing rendered this
-				// iteration — yield briefly instead of spinning at full speed
+				// iteration - yield briefly instead of spinning at full speed
 				// until the composition settles into a renderable state.
 				SDL_Delay(1u)
 			}
@@ -278,7 +278,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			// ============
 			//  Native-memory nudge. Renderer resources (Skia surfaces / images /
 			//  fonts, SDL textures) are freed by Cleaners that only run when the
-			//  Kotlin/Native GC collects — and a Compose app's Kotlin heap is
+			//  Kotlin/Native GC collects - and a Compose app's Kotlin heap is
 			//  small enough that the allocation-driven scheduler can starve them
 			//  for minutes while the NATIVE heap balloons (issue #2: memory
 			//  "never released" while navigating). Collect periodically, only
@@ -317,13 +317,13 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 
 /** Set BEFORE nativeComposeApp/nativeComposeWindow: every window's composition then runs
    under an InfiniteAnimationPolicy that CANCELS infinite animations, so
-   rememberInfiniteTransition & co. freeze at their initial value — the same mechanism
+   rememberInfiniteTransition & co. freeze at their initial value - the same mechanism
    upstream's test rules use. Screenshot/parity runs enable it so looping screens can
    reach quiescence and capture deterministically. */
 var disableInfiniteAnimations: Boolean = false
 
 /** The cancelling policy: a coroutine that ends in CancellationException counts as
-   cancelled (not failed), so only the animation coroutine stops — nothing propagates. */
+   cancelled (not failed), so only the animation coroutine stops - nothing propagates. */
 private object CancelInfiniteAnimationsPolicy : androidx.compose.ui.platform.InfiniteAnimationPolicy {
 	override suspend fun <R> onInfiniteOperation(block: suspend () -> R): R =
 		throw CancellationException("infinite animations are disabled (disableInfiniteAnimations)")
@@ -331,7 +331,7 @@ private object CancelInfiniteAnimationsPolicy : androidx.compose.ui.platform.Inf
 
 /** Set BEFORE nativeComposeApp/nativeComposeWindow: the composition + animation frame
    clocks advance a VIRTUAL 16.6ms per main-loop iteration instead of reading SDL's
-   real-time ticks — the native mirror of the JVM parity leg's render(nanos) stepping.
+   real-time ticks - the native mirror of the JVM parity leg's render(nanos) stepping.
    Animations then progress by exact per-frame deltas, so anything time-raced (e.g. a
    bring-into-view scroll interrupted mid-flight) resolves identically on every run and
    screenshots become deterministic. Input timestamps and FPS stay on real time. */
@@ -347,12 +347,12 @@ private fun advanceVirtualFrame() {
 private fun frameClockNanos(): Long =
 	if (useVirtualFrameTime) virtualFrameNanos else SDL_GetTicksNS().toLong()
 
-// Timestamp for the owner's node-animation clock — real path keeps the pre-existing
+// Timestamp for the owner's node-animation clock - real path keeps the pre-existing
 // ms-resolution SDL_GetTicks base so non-screenshot behaviour is bit-for-bit unchanged.
 private fun animationClockNanos(): Long =
 	if (useVirtualFrameTime) virtualFrameNanos else SDL_GetTicks().toLong() * 1_000_000L
 
-// The window currently inside renderFrame — the loop is single-threaded, so a plain
+// The window currently inside renderFrame - the loop is single-threaded, so a plain
 // var is enough for onFrame probes to address "the window I'm being called for".
 private var renderingWindow: WindowInstance? = null
 
@@ -379,7 +379,7 @@ private fun displayFrameDelayMs(window: COpaquePointer?): UInt {
 	return if (vHz > 0f) (1000f / vHz).toUInt().coerceAtLeast(1u) else 16u
 }
 
-/** Single-window compatibility wrapper — the pre-multi-window entry point.
+/** Single-window compatibility wrapper - the pre-multi-window entry point.
    Closing the window exits the app, exactly as before. */
 fun nativeComposeWindow(
 	title: String = "ComposeNativeSDL3",
@@ -413,7 +413,7 @@ internal class ApplicationScopeImpl(val runtime: AppRuntime) : ApplicationScope 
 }
 
 /** Registry + lifecycle for the live windows. Windows are created by the app
-   composition (Window()'s remember) and destroyed by the LOOP — DisposableEffect
+   composition (Window()'s remember) and destroyed by the LOOP - DisposableEffect
    onDispose only schedules, because teardown disposes a composition and that
    must not run re-entrantly inside another composition's apply pass. */
 internal class AppRuntime {
@@ -441,7 +441,7 @@ internal class AppRuntime {
 		inContent: () -> (@Composable ComposeWindowScope.() -> Unit),
 	): WindowInstance {
 		val vWindow = WindowInstance(inTitle, inWidth, inHeight, inGpu, inIcon, inOnFrame, inContent)
-		// A Window() was declared either way — the "exit when the last window
+		// A Window() was declared either way - the "exit when the last window
 		// is gone" rule must also fire when every declared window failed to
 		// initialise (otherwise the loop would spin forever with none).
 		hadWindow = true
@@ -466,7 +466,7 @@ internal class AppRuntime {
 	}
 }
 
-// No-op applier for the app-level composition — it emits no UI nodes, only
+// No-op applier for the app-level composition - it emits no UI nodes, only
 // side effects (each Window() manages a native window).
 private class UnitApplier : AbstractApplier<Unit>(Unit) {
 	override fun insertTopDown(index: Int, instance: Unit) {}
@@ -477,7 +477,7 @@ private class UnitApplier : AbstractApplier<Unit>(Unit) {
 }
 
 // ==================
-// MARK: WindowInstance — one SDL window + renderer + composition
+// MARK: WindowInstance - one SDL window + renderer + composition
 // ==================
 
 internal class WindowInstance(
@@ -537,7 +537,7 @@ internal class WindowInstance(
 	private val backNavigationInput = BackNavigationInput()
 
 	// WINDOW-scoped architecture-components owner (Lifecycle + ViewModelStore +
-	// SavedStateRegistry) — the same trio upstream desktop's
+	// SavedStateRegistry) - the same trio upstream desktop's
 	// DefaultArchitectureComponentsOwner supplies through the window
 	// PlatformContext (compose/ui skikoMain PlatformOwnerProvider.skiko.kt).
 	// viewModel(), SavedStateHandle plumbing and navigation3's
@@ -563,7 +563,7 @@ internal class WindowInstance(
 				else -> androidx.lifecycle.Lifecycle.State.STARTED
 			}
 		)
-		// Shown / restored / focus-gained also invalidate the contents — keep
+		// Shown / restored / focus-gained also invalidate the contents - keep
 		// the pre-lifecycle RedrawNeeded behaviour of these SDL events.
 		needsFrame = true
 	}
@@ -598,7 +598,7 @@ internal class WindowInstance(
 		// CPU raster (Software) so the window still opens instead of failing.
 		var vRender = makeBackend(gpuMode)
 		if (vRender == null && gpuMode is GpuMode.Skia) {
-			println("GPU renderer ($gpuMode) unavailable — falling back to CPU raster (Software)")
+			println("GPU renderer ($gpuMode) unavailable - falling back to CPU raster (Software)")
 			gpuMode = GpuMode.Software
 			vRender = makeBackend(gpuMode)
 		}
@@ -611,7 +611,7 @@ internal class WindowInstance(
 		host = ComposeRootHost(inDensity = backend.pixelDensity)
 		host.attach()
 		// A layer whose content changed (OwnedLayer.invalidate) schedules a frame
-		// even when nothing else (recompose / relayout) is pending — retained layers
+		// even when nothing else (recompose / relayout) is pending - retained layers
 		// need this so a draw-only state change still repaints.
 		host.setInvalidationCallback { needsFrame = true }
 		facade = ComposeNativeWindow(backend, gpuMode, initialTitle)
@@ -622,7 +622,7 @@ internal class WindowInstance(
 		// setContent below).
 		installGlobals()
 
-		// Effect context for this window's composition — the screenshot flag injects the
+		// Effect context for this window's composition - the screenshot flag injects the
 		// infinite-animation-cancelling policy (see disableInfiniteAnimations above).
 		var vEffectContext = inScope.coroutineContext + frameClock
 		if (disableInfiniteAnimations) vEffectContext += CancelInfiniteAnimationsPolicy
@@ -646,7 +646,7 @@ internal class WindowInstance(
 				LocalComposeNativeWindow provides facade,
 				LocalPopupHost provides vPopupHost,
 				// Upstream vendored CompositionLocals.kt declares each of these as
-				// `staticCompositionLocalOf<T> { noLocalProvidedFor("…") }` — reading
+				// `staticCompositionLocalOf<T> { noLocalProvidedFor("…") }` - reading
 				// one without a Provider throws. Seed them all from the ComposeOwner.
 				androidx.compose.ui.platform.LocalDensity provides host.density,
 				androidx.compose.ui.platform.LocalLayoutDirection provides host.layoutDirection,
@@ -663,7 +663,7 @@ internal class WindowInstance(
 				androidx.compose.ui.platform.LocalFontFamilyResolver provides
 					com.compose.sdl.text.font.projectFontFamilyResolver,
 				androidx.compose.ui.platform.LocalUriHandler provides vUriHandler,
-				// Desktop windows have no system bars / notch / IME insets — the
+				// Desktop windows have no system bars / notch / IME insets - the
 				// interface's all-zero defaults are exactly right.
 				androidx.compose.ui.platform.LocalPlatformWindowInsets provides
 					object : androidx.compose.ui.platform.PlatformWindowInsets {},
@@ -681,7 +681,7 @@ internal class WindowInstance(
 				androidx.lifecycle.compose.LocalLifecycleOwner provides architectureOwner,
 				androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner provides architectureOwner,
 				androidx.savedstate.compose.LocalSavedStateRegistryOwner provides architectureOwner,
-				// Runtime-level host defaults — this window's navigation-event
+				// Runtime-level host defaults - this window's navigation-event
 				// owner (SearchBar / sheets back plumbing). The viewmodel store
 				// is provided through the plain LocalViewModelStoreOwner above
 				// instead: the google lifecycle artifacts this port ships have no
@@ -710,7 +710,7 @@ internal class WindowInstance(
 				}
 			}
 		}
-		// First composition done (setContent is synchronous) — promote the
+		// First composition done (setContent is synchronous) - promote the
 		// window lifecycle from CREATED to the focus/visibility-derived state.
 		// Composition itself runs at CREATED so enableSavedStateHandles()
 		// callers see a legal state, mirroring upstream desktop's
@@ -760,7 +760,7 @@ internal class WindowInstance(
 			PointerButton.Tertiary -> 2
 			else -> 0
 		}
-		// SDL3 delivers mouse coords in logical points on HiDPI — multiply by
+		// SDL3 delivers mouse coords in logical points on HiDPI - multiply by
 		// DPR so hit-testing lands in the pixel space layout uses.
 		val vDpr = backend.pixelDensity
 		val vPx = inEvent.event.x * vDpr
@@ -806,7 +806,7 @@ internal class WindowInstance(
 		installGlobals()
 		// A focused text field runs an IME session (ComposeOwner.textInputSession):
 		// commit through it so the text REPLACES any active composition. Falls back
-		// to synthesising typed KeyEvents when no field is focused — SDL key events
+		// to synthesising typed KeyEvents when no field is focused - SDL key events
 		// carry UNSHIFTED keycodes (no uppercase/numpad/dead keys), so committed
 		// text is the only layout-correct character source.
 		if (!com.compose.sdl.text.input.ImeBridge.commit(inEvent.text)) {
@@ -865,7 +865,7 @@ internal class WindowInstance(
 		facade.onResized()
 	}
 
-	/** OS light/dark theme changed — re-pick the theme-appropriate window icon
+	/** OS light/dark theme changed - re-pick the theme-appropriate window icon
 	   (no-op if this window has no icon configured or the choice is unchanged). */
 	fun onSystemThemeChanged() {
 		backend.applyThemeIcon()
@@ -889,7 +889,7 @@ internal class WindowInstance(
 
 	/** True while this window still has pending work: a state/layout/draw invalidation
 	   (needsFrame), recomposer work, or a composition/node animation awaiting the next
-	   frame. Sampled by windowHasInvalidations() from onFrame probes — the quiescence
+	   frame. Sampled by windowHasInvalidations() from onFrame probes - the quiescence
 	   signal for render-to-settle screenshot capture. */
 	fun hasInvalidations(): Boolean =
 		needsFrame || recomposer?.hasPendingWork == true ||
@@ -905,13 +905,13 @@ internal class WindowInstance(
 		// Charge the GPU back-buffer acquire to its own phase. On Metal this is
 		// where nextDrawable() blocks on vsync (the natural frame pacing), so
 		// folding it into "layout" made the profiler read the vsync wait as
-		// layout cost — a ~6-7ms phantom that hid the real (tiny) layout time.
+		// layout cost - a ~6-7ms phantom that hid the real (tiny) layout time.
 		FrameProfiler.phase("  acquire")
 		host.setConstraints(backend.pixelWidth, backend.pixelHeight)
 		// Deliver any state written by this iteration's frame-clock continuations
-		// (withFrameNanos animations — notably smooth wheel scrolling) BEFORE we lay
+		// (withFrameNanos animations - notably smooth wheel scrolling) BEFORE we lay
 		// out. Those writes happen in the per-window pump's sendFrame()/yield(), which
-		// is AFTER the loop's last sendApplyNotifications() — so without this the
+		// is AFTER the loop's last sendApplyNotifications() - so without this the
 		// relayout they trigger wasn't registered until the next frame, and the frame
 		// drew last frame's positions. That one-frame trail read as "the clip is a
 		// frame late" when scrolling (content briefly drawn past the viewport edge).
@@ -938,14 +938,14 @@ internal class WindowInstance(
 		FrameProfiler.phase("  present")
 		frameIndex++
 
-		// FPS — instantaneous inter-frame rate, EMA-smoothed, title refreshed
+		// FPS - instantaneous inter-frame rate, EMA-smoothed, title refreshed
 		// ~4x/sec. This shows within ~2 rendered frames of ANY activity rather
 		// than waiting for a full second of unbroken rendering to accumulate
 		// (the old fixed-window counter never got its first update: bursty
 		// interaction kept idling before 1s elapsed, and the idle-skip reset the
-		// window each time — so FPS only appeared during a long enough page
+		// window each time - so FPS only appeared during a long enough page
 		// transition). A dt outside 1..100ms is the first frame or a resume from
-		// idle (the gap isn't a real frame interval), so it's not sampled — the
+		// idle (the gap isn't a real frame interval), so it's not sampled - the
 		// title just holds the last active rate while idle.
 		val vNowMs = SDL_GetTicks()
 		val vDt = (vNowMs - fpsLastFrameMs).toInt()

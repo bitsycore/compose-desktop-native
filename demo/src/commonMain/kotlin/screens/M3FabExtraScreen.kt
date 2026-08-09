@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 
-// Material3 — FAB size/extended variants, the FAB menu, and floating toolbars.
+// Material3 - FAB size/extended variants, the FAB menu, and floating toolbars.
 @Composable
 internal fun M3FabExtraScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

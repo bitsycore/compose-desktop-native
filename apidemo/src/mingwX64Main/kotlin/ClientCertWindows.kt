@@ -11,14 +11,14 @@ import kotlin.io.encoding.Base64
 // Windows certificate store, referenced by SHA-1 thumbprint. So for a request
 // that carries a certificate we import the cert + private key into the standard
 // CurrentUser\MY ("Personal") store, hand curl "CurrentUser\MY\<thumbprint>",
-// and delete it again the instant the request finishes — nothing accumulates.
+// and delete it again the instant the request finishes - nothing accumulates.
 //
 // Our entries are tagged (friendly name + key-container name) with a unique
 // prefix so the startup sweep can clear crash leftovers without ever touching
 // the user's own certificates.
 //
 // Kotlin/Native maps several CryptoAPI LPCSTR params to String?, which makes the
-// CryptDecodeObjectEx route (numeric struct-type sentinels) unusable — so the
+// CryptDecodeObjectEx route (numeric struct-type sentinels) unusable - so the
 // RSA private key is parsed here (ASN.1) and laid out as a CryptoAPI
 // PRIVATEKEYBLOB directly, then handed to CryptImportKey. RSA (PKCS#1 or PKCS#8)
 // and PKCS#12 are handled; EC PEM/DER is reported as unsupported with a hint.
@@ -42,7 +42,7 @@ actual fun prepareClientCert(inReq: ApiRequest): PreparedCert {
     }
     return PreparedCert(
         sslCert = "$kStorePath\\$vThumb",
-        sslCertType = null,                 // store reference — not a file type
+        sslCertType = null,                 // store reference - not a file type
         sslKey = null,
         sslKeyType = null,
         keyPassword = null,
@@ -62,7 +62,7 @@ private fun importPemDerRsa(inCertBytes: ByteArray, inReq: ApiRequest): Pair<Str
     val vCertDer = derFromMaybePem(inCertBytes, "CERTIFICATE")
     val vKeyBytes = if (inReq.keyPath.isNotBlank()) readFileBytes(inReq.keyPath) else inCertBytes
     val vKeyDer = privateKeyDer(vKeyBytes)
-        ?: throw RuntimeException("No private key found — PEM/DER on Windows needs the RSA key (a key file, or a key block in the certificate file).")
+        ?: throw RuntimeException("No private key found - PEM/DER on Windows needs the RSA key (a key file, or a key block in the certificate file).")
     val vBlob = try {
         rsaKeyDerToBlob(vKeyDer)
     } catch (e: Throwable) {
@@ -374,7 +374,7 @@ private fun deleteContainer(inContainer: String) = memScoped {
     CryptAcquireContextW(vProv.ptr, inContainer, kProvName, PROV_RSA_FULL.toUInt(), CRYPT_DELETEKEYSET.toUInt())
 }
 
-/** Remove every temp cert we ever added (prefix-tagged) plus its container — for
+/** Remove every temp cert we ever added (prefix-tagged) plus its container - for
 clearing crash leftovers at startup. The user's own certs are never matched. */
 @OptIn(ExperimentalForeignApi::class)
 actual fun sweepTempClientCerts() {
@@ -417,7 +417,7 @@ private fun friendlyNameOf(inCert: CPointer<CERT_CONTEXT>): String? = memScoped 
 //  Chain extension via the OS certificate store
 // ============
 
-/** Continue the server's chain by asking the OS to build it from the leaf — this
+/** Continue the server's chain by asking the OS to build it from the leaf - this
 pulls intermediates/roots from the Windows store with full info. Falls back to
 a name-only issuer if the OS can't (or the leaf can't be parsed). */
 @OptIn(ExperimentalForeignApi::class)

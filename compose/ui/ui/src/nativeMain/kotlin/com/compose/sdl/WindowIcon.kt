@@ -10,14 +10,14 @@ import sdl3.SDL_SystemTheme
 import sdl3.SDL_Surface
 
 // ==================
-// MARK: Window icon — theme-aware, core-SDL only
+// MARK: Window icon - theme-aware, core-SDL only
 // ==================
-// The runtime window / taskbar icon is built entirely from CORE SDL — no image
-// decode (not even Skia's) — so it works on every target, even before the render
+// The runtime window / taskbar icon is built entirely from CORE SDL - no image
+// decode (not even Skia's) - so it works on every target, even before the render
 // backend is up (core `sdl3` is always linked). Icons are bundled as pre-decoded
 // RGBA blobs (produced by the bridge
 // plugin's icon {} packaging or scripts/make-app-icon.py): an 8-byte little-endian header
-// [width u32][height u32] followed by width*height*4 straight-alpha RGBA bytes —
+// [width u32][height u32] followed by width*height*4 straight-alpha RGBA bytes -
 // the exact memory layout of SDL_PIXELFORMAT_RGBA32, so filling the surface is a
 // per-row memcpy with no conversion.
 

@@ -29,7 +29,7 @@ import java.awt.datatransfer.StringSelection
 import java.io.File
 
 // ==================
-// MARK: JVM actuals — AWT + upstream Compose Desktop
+// MARK: JVM actuals - AWT + upstream Compose Desktop
 // ==================
 
 private val kIsWindows = System.getProperty("os.name").startsWith("Windows")
@@ -41,7 +41,7 @@ actual fun createApiHttpClient(): io.ktor.client.HttpClient =
     io.ktor.client.HttpClient(io.ktor.client.engine.cio.CIO)
 
 // ============
-//  Window hooks — the shared App installs them; MainJvm wires them into the
+//  Window hooks - the shared App installs them; MainJvm wires them into the
 //  upstream Window() (onCloseRequest / onPreviewKeyEvent).
 
 internal var jvmOnCloseRequest: (() -> Boolean)? = null
@@ -154,7 +154,7 @@ actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inF
         ).lineCount
     }.getOrDefault(1)
 
-/** The jvm parity app only stores the preference — upstream's text pipeline has
+/** The jvm parity app only stores the preference - upstream's text pipeline has
 no global tab-width knob. Backed by state so menu checkmarks recompose. */
 private var fTabWidth by mutableStateOf(4)
 actual var editorTabWidth: Int

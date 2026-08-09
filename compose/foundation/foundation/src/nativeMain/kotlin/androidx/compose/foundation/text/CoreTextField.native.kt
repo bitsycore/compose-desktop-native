@@ -16,11 +16,11 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 
 // ==================
-// MARK: CoreTextField / TextFieldKeyInput / TextFieldPointerModifier — native actuals
+// MARK: CoreTextField / TextFieldKeyInput / TextFieldPointerModifier - native actuals
 // ==================
 
 /**
- Byte-identical mirror of upstream macosMain — all three CoreTextField
+ Byte-identical mirror of upstream macosMain - all three CoreTextField
  expects delegate to default helpers baked into CoreTextField.kt /
  TextFieldPointerModifier.common.kt. `isTypedEvent` uses the desktop-shape
  filter (not ISO control, not AppKit reserved, not Meta/Ctrl).

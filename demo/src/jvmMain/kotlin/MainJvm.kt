@@ -28,7 +28,7 @@ import java.io.File
 
 // The JVM comparison app: the SAME shared App() + screens as :demo, on upstream
 // Compose Desktop. Interactive by default; a headless screenshot mode drives
-// the parity harness (scripts/parity — compares each screen native vs jvm).
+// the parity harness (scripts/parity - compares each screen native vs jvm).
 //
 //   --screenshot-all=<dir>   render every registered screen to <dir>/<Name>.png
 //   --width / --height       viewport size (default 1000 / 700)
@@ -53,7 +53,7 @@ fun main(args: Array<String>) {
     application {
         Window(
             onCloseRequest = ::exitApplication,
-            title = "ComposeDesktopNative — JVM (upstream Compose)",
+            title = "ComposeDesktopNative - JVM (upstream Compose)",
             state = rememberWindowState(width = 1000.dp, height = 700.dp),
         ) {
             MaterialTheme(colorScheme = darkColorScheme()) {
@@ -112,13 +112,13 @@ private fun screenshotAllScreens(outDir: File, width: Int, height: Int) {
 
 // P0.3 (RENDERER.md §8): the SAME default font the native leg bundles
 // (font/NotoSans.ttf, staged onto the JVM classpath by jvmProcessResources). Loading it
-// into the parity JVM leg collapses the font-drift baseline to (near) just rasterizer AA —
+// into the parity JVM leg collapses the font-drift baseline to (near) just rasterizer AA -
 // so the parity % measures real divergence, not "different default typeface". Null (→ no
 // alignment, harness still runs) if the resource is missing.
 private val notoSans: FontFamily? by lazy {
     val bytes = object {}.javaClass.getResourceAsStream("/font/NotoSans.ttf")?.readBytes()
     if (bytes == null) {
-        println("parity(jvm): /font/NotoSans.ttf not on classpath — font NOT aligned")
+        println("parity(jvm): /font/NotoSans.ttf not on classpath - font NOT aligned")
         null
     } else FontFamily(Font(identity = "NotoSans", data = bytes))
 }
@@ -146,7 +146,7 @@ private fun notoTypography(family: FontFamily): Typography {
     )
 }
 
-/** Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans — the same
+/** Upstream-Paragraph metrics for a font-size sweep at density 1 (NotoSans - the same
    font the native leg bundles). The JVM half of the metrics-alignment probe: MainNative's
    `--metricsprobe` prints the same table from SkiaParagraph; aligning the numbers kills
    the accumulating vertical text drift in parity (P3.1). Runs inside a headless scene so
@@ -174,7 +174,7 @@ private fun printParagraphMetrics() {
                 density = density,
                 fontFamilyResolver = resolver,
             )
-        // What the demo's Text actually resolves to on this leg — is lineHeightStyle set?
+        // What the demo's Text actually resolves to on this leg - is lineHeightStyle set?
         println("metrics: m3 bodyMedium = ${Typography().bodyMedium.fontSize}/${Typography().bodyMedium.lineHeight} lineHeightStyle=${Typography().bodyMedium.lineHeightStyle}")
         for (size in listOf(11, 12, 14, 16, 22, 24)) {
             val lh = size + 6
@@ -208,7 +208,7 @@ private fun printParagraphMetrics() {
     }
 }
 
-/** Same wrapper as MainNative's --screen path — plus NotoSans font-alignment (P0.3) so the
+/** Same wrapper as MainNative's --screen path - plus NotoSans font-alignment (P0.3) so the
    parity diff isn't dominated by the JVM's default typeface. */
 @Composable
 private fun ScreenHost(content: @Composable () -> Unit) {

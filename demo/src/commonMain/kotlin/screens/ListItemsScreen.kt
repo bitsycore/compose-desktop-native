@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import demo.shim.DemoIcon
 
-// Material3 — ListItem rows, HorizontalDivider / VerticalDivider, Badge / BadgedBox.
+// Material3 - ListItem rows, HorizontalDivider / VerticalDivider, Badge / BadgedBox.
 @Composable
 internal fun ListItemsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

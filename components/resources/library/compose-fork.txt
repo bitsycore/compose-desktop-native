@@ -1,9 +1,9 @@
-# Files vendored VERBATIM from JetBrains/compose-multiplatform (the umbrella repo —
+# Files vendored VERBATIM from JetBrains/compose-multiplatform (the umbrella repo -
 # NOT compose-multiplatform-core) into :components-resources. The official
 # org.jetbrains.compose.components:components-resources artifact publishes NO
 # mingwX64/linux variants, so the runtime library is vendored and the platform
 # actuals are project code:
-#   src/nativeMain      — ResourceReader (data.kres), getSystemEnvironment (SDL),
+#   src/nativeMain      - ResourceReader (data.kres), getSystemEnvironment (SDL),
 #                         pure-Kotlin DomXmlParser (upstream's is Darwin NSXMLParser),
 #                         and the Font/Image resource actuals: renderer-agnostic
 #                         project code (image decode via the :ui-graphics Skia
@@ -43,16 +43,16 @@ blockingMain/kotlin/ -> src/vendor/native/kotlin/
 nativeMain/kotlin/ -> src/vendor/native/kotlin/
 #     | nativeMain/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ImageResources.native.kt
 #     | nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
-# Darwin-only (Foundation NSXMLParser) — replaced by a pure-Kotlin project parser
+# Darwin-only (Foundation NSXMLParser) - replaced by a pure-Kotlin project parser
 # in src/nativeMain so mingwX64/linux compile.
 !nativeMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/DomXmlParser.kt
 
-# Portable pieces of upstream skikoMain (no Skia references — pure delegation /
-# runtime-only) — every native target gets them.
+# Portable pieces of upstream skikoMain (no Skia references - pure delegation /
+# runtime-only) - every native target gets them.
 skikoMain/kotlin/org/jetbrains/compose/resources/ImageDecoders.skiko.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ImageDecoders.skiko.kt
 skikoMain/kotlin/org/jetbrains/compose/resources/ResourceReader.skiko.kt -> src/vendor/native/kotlin/org/jetbrains/compose/resources/ResourceReader.skiko.kt
 
-# Skia-bound pieces — upstream's skikoMain actuals rely on Compose-Desktop Skia
+# Skia-bound pieces - upstream's skikoMain actuals rely on Compose-Desktop Skia
 # extensions (SystemFont / toComposeImageBitmap / nativeCanvas) this port's :ui
 # doesn't expose. The module's own Font/Image actuals (src/nativeMain/kotlin/)
 # use pure project APIs (IconFont / NamedFont / decodeEncodedImageBitmap)

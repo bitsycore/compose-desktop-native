@@ -5,7 +5,7 @@ import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.text.AnnotatedString
 
 // Native actuals for vendored commonMain `ClipboardUtils.kt`. Mirror the
-// macOS / iOS / wasm actuals — all plain-text-only since our ClipEntry
+// macOS / iOS / wasm actuals - all plain-text-only since our ClipEntry
 // carries a single optional `plainText` field. The SDL3 clipboard
 // (PlatformClipboard.native.kt) provides full read+write support on
 // every host platform so `isReadSupported` / `isWriteSupported` are

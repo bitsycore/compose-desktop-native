@@ -15,7 +15,7 @@ private val NavItems = listOf(
 	"Settings" to DemoIcon.Settings,
 )
 
-// Material3 — TabRow + Tab, NavigationBar, NavigationRail.
+// Material3 - TabRow + Tab, NavigationBar, NavigationRail.
 @Composable
 internal fun NavigationScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -36,7 +36,7 @@ internal fun NavigationScreen() {
 			}
 		}
 
-		Section("NavigationBar", "Bottom navigation — icon + label items") {
+		Section("NavigationBar", "Bottom navigation - icon + label items") {
 			var vSel by remember { mutableStateOf(0) }
 			// windowInsets(0): the demo root doesn't seed LocalPlatformWindowInsets
 			// (no system bars on desktop), so opt out of the default inset padding.
@@ -59,7 +59,7 @@ internal fun NavigationScreen() {
 			}
 		}
 
-		Section("NavigationRail", "Side navigation — vertical icon + label rail") {
+		Section("NavigationRail", "Side navigation - vertical icon + label rail") {
 			var vSel by remember { mutableStateOf(0) }
 			NavigationRail(modifier = Modifier.height(260.dp), windowInsets = WindowInsets(0, 0, 0, 0)) {
 				NavItems.forEachIndexed { vIndex, vItem ->

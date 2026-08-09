@@ -36,26 +36,26 @@ import sdl3.SDL_free
    bytes on demand and a paired cleanup that frees them.
 
    Combined in one file because macOS / Linux / mingwX64 all share this
-   source set — there's no meaningful per-target divergence. */
+   source set - there's no meaningful per-target divergence. */
 
 // ============
-//  `expect class NativeClipboard` — no native handle on linux/windows.
+//  `expect class NativeClipboard` - no native handle on linux/windows.
 //  `Any` matches upstream's wasmMain / iosMain actuals shape (they
-//  typealias to a platform-specific type — we typealias to Any since
+//  typealias to a platform-specific type - we typealias to Any since
 //  there's no portable one).
 actual typealias NativeClipboard = Any
 
 private val nativeClipboardSentinel: NativeClipboard = Any()
 
 // ============
-//  `expect class ClipMetadata` — opaque metadata. Single shared instance
-//  satisfies the type — we don't expose anything beyond presence.
+//  `expect class ClipMetadata` - opaque metadata. Single shared instance
+//  satisfies the type - we don't expose anything beyond presence.
 actual class ClipMetadata internal constructor()
 
 private val sharedClipMetadata = ClipMetadata()
 
 // ============
-//  `expect class ClipEntry` — plain-text or image bag.
+//  `expect class ClipEntry` - plain-text or image bag.
 //  Mirrors macos / desktop actuals: optional plainText + a `withPlainText`
 //  factory. Extended with `imageBytes` (PNG-encoded) + `withImage` / `getImage`
 //  for the SDL3 SDL_SetClipboardData / SDL_GetClipboardData image path.
@@ -77,7 +77,7 @@ actual class ClipEntry internal constructor() {
 		fun withPlainText(text: String): ClipEntry = ClipEntry().apply { plainText = text }
 
 		/** Wrap already-PNG-encoded image bytes for [Clipboard.setClipEntry].
-		 *  The caller owns the encoding — Skia can produce these via
+		 *  The caller owns the encoding - Skia can produce these via
 		 *  `Image.encodeToData(EncodedImageFormat.PNG)`, or the bytes may come
 		 *  from an app resource. */
 		fun withImage(pngBytes: ByteArray): ClipEntry = ClipEntry().apply { imageBytes = pngBytes }
@@ -85,7 +85,7 @@ actual class ClipEntry internal constructor() {
 }
 
 // ============
-//  SDL3 read / write primitives — text via SDL_[GS]etClipboardText, image
+//  SDL3 read / write primitives - text via SDL_[GS]etClipboardText, image
 //  via SDL_[GS]etClipboardData with MIME "image/png". SDL_SetClipboardData
 //  is callback-based (the app hands SDL a serve function that returns bytes
 //  when another app requests them), so the outbound image lives in a module-
@@ -95,7 +95,7 @@ private const val kImageMime = "image/png"
 
 // The bytes currently offered to the OS clipboard (from the last setClipEntry
 // call with an image). Held on nativeHeap because SDL keeps the callback alive
-// until the clipboard is cleared or another SDL_SetClipboardData replaces us —
+// until the clipboard is cleared or another SDL_SetClipboardData replaces us -
 // a Kotlin heap reference would break as soon as the caller's coroutine
 // returned. Read by [fClipboardDataCallback], freed by [fClipboardCleanupCallback].
 private var fOutgoingImagePtr: CPointer<ByteVar>? = null
@@ -161,7 +161,7 @@ private fun sdlReadImage(): ByteArray? = memScoped {
 // Publishes [bytes] to the OS clipboard under MIME "image/png". Copies the
 // bytes into a nativeHeap buffer so the callback can serve them even after
 // the coroutine that called setClipEntry has returned. Frees the previous
-// buffer (if any) — SDL will fire the cleanup callback for the previous
+// buffer (if any) - SDL will fire the cleanup callback for the previous
 // registration once this new one supersedes it, keeping the invariant.
 private fun sdlWriteImage(bytes: ByteArray) {
 	// Free any previously-held buffer proactively (the cleanup callback also
@@ -196,7 +196,7 @@ private fun sdlReadEntry(): ClipEntry? {
 	return ClipEntry.withPlainText(vText)
 }
 
-// Push whichever payload the entry carries. Image wins when both are set —
+// Push whichever payload the entry carries. Image wins when both are set -
 // text-and-image simultaneously has no portable OS-clipboard meaning.
 private fun sdlWriteEntry(entry: ClipEntry?) {
 	if (entry == null) { sdlWriteText(""); return }
@@ -205,7 +205,7 @@ private fun sdlWriteEntry(entry: ClipEntry?) {
 }
 
 // The SDL3-backed Clipboard implementation. Singleton because SDL's clipboard
-// is process-global — allocating a new one per Window() would only waste
+// is process-global - allocating a new one per Window() would only waste
 // memory. Consumed by :desktop-native-window when seeding LocalClipboard.
 private object SDL3Clipboard : Clipboard {
 	override suspend fun getClipEntry(): ClipEntry? = sdlReadEntry()

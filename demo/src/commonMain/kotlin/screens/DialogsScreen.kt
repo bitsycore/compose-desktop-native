@@ -19,7 +19,7 @@ internal fun DialogsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Dialogs + overlays",
-            "material3 AlertDialog, DropdownMenu, Snackbar, and TooltipBox — all on the popup host.",
+            "material3 AlertDialog, DropdownMenu, Snackbar, and TooltipBox - all on the popup host.",
         )
 
         // AlertDialog
@@ -58,7 +58,7 @@ internal fun DialogsScreen() {
         }
 
         // DropdownMenu
-        Section("DropdownMenu", "Anchored popup with selectable items — anchors below the trigger. Click outside to dismiss.") {
+        Section("DropdownMenu", "Anchored popup with selectable items - anchors below the trigger. Click outside to dismiss.") {
             var vExpanded by remember { mutableStateOf(false) }
             var vSelected by remember { mutableStateOf("None") }
             Row(
@@ -88,7 +88,7 @@ internal fun DialogsScreen() {
             val vHost = remember { SnackbarHostState() }
             val vScope = rememberCoroutineScope()
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { vScope.launch { vHost.showSnackbar("Saved — your changes are live.") } }) {
+                Button(onClick = { vScope.launch { vHost.showSnackbar("Saved - your changes are live.") } }) {
                     Text("Show simple", color = MaterialTheme.colorScheme.onPrimary)
                 }
                 Button(onClick = {
@@ -99,7 +99,7 @@ internal fun DialogsScreen() {
         }
 
         // Tooltip
-        Section("TooltipBox / PlainTooltip", "Hover the target — the tooltip appears anchored above it.") {
+        Section("TooltipBox / PlainTooltip", "Hover the target - the tooltip appears anchored above it.") {
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 TooltipBox(
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),

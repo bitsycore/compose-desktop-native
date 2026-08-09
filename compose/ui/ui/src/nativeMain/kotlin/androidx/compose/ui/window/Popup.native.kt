@@ -22,7 +22,7 @@ import com.compose.sdl.window.LocalPopupHost
 import com.compose.sdl.window.PopupOutsideDismiss
 
 // ==================
-// MARK: Popup — native actuals for the vendored expect
+// MARK: Popup - native actuals for the vendored expect
 // ==================
 
 /**
@@ -32,7 +32,7 @@ import com.compose.sdl.window.PopupOutsideDismiss
  PopupProperties are accepted for source-compat; outside-click dismissal / modality are
  the caller's responsibility (Dialog draws a scrim, DropdownMenu installs a click-catcher).
 
- Lives in :ui (not :foundation) — positioning goes through androidx.compose.ui.layout.Layout
+ Lives in :ui (not :foundation) - positioning goes through androidx.compose.ui.layout.Layout
  directly instead of Box + Modifier.fillMaxSize + Modifier.offset, so this pair stays
  in the module its package name suggests.
 */
@@ -69,7 +69,7 @@ actual class PopupProperties {
 
 	// Skiko-shape overload material3's Menu.skiko.kt / ModalBottomSheet.skiko.kt pass
 	// (usePlatformInsets / useSoftwareKeyboardInset / scrimColor / onKeyEvent /
-	// animateTransition / …). Accept-and-ignore — this desktop renderer has no
+	// animateTransition / …). Accept-and-ignore - this desktop renderer has no
 	// OS window insets, no soft keyboard, no scrim animation.
 	@Suppress("unused")
 	constructor(
@@ -185,7 +185,7 @@ fun Popup(
 	Popup(popupPositionProvider, onDismissRequest, properties, content)
 }
 
-/** Position-provider overload — the path upstream Tooltip / Menu / ExposedDropdown
+/** Position-provider overload - the path upstream Tooltip / Menu / ExposedDropdown
    components use. Positions the hosted content by asking [popupPositionProvider]
    for an offset, feeding it the REAL anchor bounds (captured by the zero-size probe
    below, whose parent layout is the popup's anchor) and the measured content size.
@@ -211,14 +211,14 @@ actual fun Popup(
 	// The anchor's window-space rect. Empty until the probe fills it after the first
 	// layout; the hosted content re-positions reactively when it does.
 	val vAnchorBounds = remember { mutableStateOf(IntRect(IntOffset.Zero, IntSize.Zero)) }
-	// The content's placed window rect, reported by the host layout — used to
+	// The content's placed window rect, reported by the host layout - used to
 	// dismiss the popup on a press OUTSIDE it (material3 DropdownMenu / menus rely
 	// on the platform Popup honouring dismissOnClickOutside).
 	val vPlaced = remember { mutableStateOf(IntRect(IntOffset.Zero, IntSize.Zero)) }
 
 	// Invisible zero-size probe rendered at the call site: its PARENT layout node is
 	// the popup's anchor (e.g. BasicTooltipBox's wrapper around the anchor content),
-	// so parentLayoutCoordinates gives the anchor bounds in window pixels — the same
+	// so parentLayoutCoordinates gives the anchor bounds in window pixels - the same
 	// coordinate space PopupPositionProvider expects.
 	Layout(
 		content = {},

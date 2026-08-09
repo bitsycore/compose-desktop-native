@@ -35,7 +35,7 @@ dependencyResolutionManagement {
         }
         // Route 1a: the bitsycore/skiko fork's mingwX64 klib + runtime DLL,
         // published by its CI to GitHub Packages. Scoped to com.bitsycore.skiko
-        // (the fork is republished under the bitsycore name — see the fork repo).
+        // (the fork is republished under the bitsycore name - see the fork repo).
         maven {
             name = "GitHubPackagesSkiko"
             url = uri("https://maven.pkg.github.com/bitsycore/skiko")

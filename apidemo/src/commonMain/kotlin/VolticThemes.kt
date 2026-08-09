@@ -9,7 +9,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // ==================
-// MARK: Voltic themes — selectable Material 3 palettes
+// MARK: Voltic themes - selectable Material 3 palettes
 // ==================
 // The three "voltic" brand palettes (Kotlin purple, orange, and a stock-M3
 // purple), each a full light + dark M3 ColorScheme plus an EXTENDED group that

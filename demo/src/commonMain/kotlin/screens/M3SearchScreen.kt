@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import demo.shim.DemoIcon
 import kotlinx.coroutines.launch
 
-// Material3 — the search-bar family (state-based + docked + app-bar-integrated).
+// Material3 - the search-bar family (state-based + docked + app-bar-integrated).
 @Composable
 internal fun M3SearchScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -84,7 +84,7 @@ internal fun M3SearchScreen() {
 			}
 		}
 
-		Section("Expanded variants", "Direct calls to the expanded morphologies — expand with the button") {
+		Section("Expanded variants", "Direct calls to the expanded morphologies - expand with the button") {
 			val vState = rememberSearchBarState()
 			val vText = rememberTextFieldState()
 			val vScope = rememberCoroutineScope()

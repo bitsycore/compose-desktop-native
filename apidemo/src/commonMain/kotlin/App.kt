@@ -87,7 +87,7 @@ internal fun App() {
     // Focus the saved active pack, but fall back to one that actually has tabs so
     // the strip shows whenever any tab is open.
     // The active pack/scope as a reference (a top-level pack, a sub-pack, or the
-    // loose root) — a reference (not an index) so sub-packs can be active.
+    // loose root) - a reference (not an index) so sub-packs can be active.
     var vActivePackRef by remember {
         mutableStateOf(
             vBoot.activePack.coerceIn(0, (vPacks.size - 1).coerceAtLeast(0)).let { vIdx ->
@@ -138,7 +138,7 @@ internal fun App() {
     // Variables a request sees: session, then each enclosing pack (inner overrides).
     fun effective(inP: PackState): List<KeyVal> = vGlobalEnv.toList() + scopeChain(inP).flatMap { it.variables }
 
-    // …plus the request's own variables (innermost — they win over everything above).
+    // …plus the request's own variables (innermost - they win over everything above).
     fun effectiveReqVars(inReq: ApiRequest, inP: PackState): List<KeyVal> = effective(inP) + inReq.variables
 
     // Query params a request inherits: session, then each enclosing pack (inner wins by key).
@@ -192,7 +192,7 @@ internal fun App() {
     //  the tooltip. inChain for a request = scopeChain(owningPack) (its own pack
     //  included); for a pack's settings = scopeChain(pack.parent) (ancestors only).
     // The full path of a scope for the source tooltip: "Methods" for a top-level
-    // pack, "Methods / Nested" for a sub-pack (root excluded — it's never inherited).
+    // pack, "Methods / Nested" for a sub-pack (root excluded - it's never inherited).
     fun scopePath(inP: PackState): String {
         val vParts = ArrayList<String>()
         var vCur: PackState? = inP
@@ -243,7 +243,7 @@ internal fun App() {
         val vGE = vGlobalEnv.toList()
         val vRootPack = vRoot.toPack()
         val vRootTabs = vRoot.openTabs.mapNotNull { vRs -> vRoot.requests.indexOf(vRs).takeIf { it >= 0 } }
-        // Open-tab state — persisted in app state only, not in the session file.
+        // Open-tab state - persisted in app state only, not in the session file.
         val vOpen = vPacks.map { vP -> vP.openTabs.mapNotNull { vRs -> vP.requests.indexOf(vRs).takeIf { it >= 0 } } }
         val vActiveReq = vActivePackRef?.let { it.requests.indexOf(it.active) } ?: -1
         saveAppState(
@@ -266,7 +266,7 @@ internal fun App() {
             )
         )
         // A session opened from / saved to a file auto-saves back to it on every
-        // change — once it has a file, it's always in sync (best-effort). The
+        // change - once it has a file, it's always in sync (best-effort). The
         // Session has no open-tab fields, so the file never carries them.
         vSessionPath?.let {
             exportSession(
@@ -315,7 +315,7 @@ internal fun App() {
     }
 
     // Open a request in a specific pack's context (a linked copy shares the
-    // source's ReqState objects, so the pack must be passed — packOf would
+    // source's ReqState objects, so the pack must be passed - packOf would
     // resolve to the source, not the linked copy).
     fun open(inRs: ReqState, inPack: PackState) {
         if (inRs !in inPack.openTabs) inPack.openTabs.add(inRs)
@@ -378,7 +378,7 @@ internal fun App() {
         val vTab = vFlat.getOrNull(inFrom) ?: return
         val vRs = vTab.req ?: return
         val vP = vTab.pack ?: return
-        // Flat index of this pack's first request tab — works for the root and any
+        // Flat index of this pack's first request tab - works for the root and any
         // (nested) pack without hand-computing offsets.
         val vReqStart = vFlat.indexOfFirst { it.pack === vP && it.req != null }
         if (vReqStart < 0) return
@@ -400,7 +400,7 @@ internal fun App() {
         vP.requests.add(vRs); vP.openTabs.add(vRs); vP.active = vRs; vP.dirty = true; vReqMsg = null; vSideTab = 0
     }
 
-    // A loose request at the session root (no pack — inherits session settings only).
+    // A loose request at the session root (no pack - inherits session settings only).
     fun newLooseRequest() {
         val vRs = ReqState(ApiRequest(name = "Request ${vRoot.requests.size + 1}"))
         vRoot.requests.add(vRs); vRoot.openTabs.add(vRs); vRoot.active = vRs
@@ -548,7 +548,7 @@ internal fun App() {
     }
 
     // A linked copy mirrors inP's requests read-only but gets its own (copied)
-    // variables / headers / cert — for running the same calls against another env.
+    // variables / headers / cert - for running the same calls against another env.
     fun createLinkedPack(inP: PackState) {
         val vSource = inP.linkedSource ?: inP   // link to the real source, never to another link
         val vAt = (vPacks.indexOf(inP) + 1).coerceIn(0, vPacks.size)
@@ -582,7 +582,7 @@ internal fun App() {
 
     // Move inRs out of inFrom into inTo at inIndex. inIndex counts inTo's rows
     // *excluding* the dragged request (so for a same-pack reorder it is already an
-    // index into the post-removal list — no shift needed; resolveReqDrop produces
+    // index into the post-removal list - no shift needed; resolveReqDrop produces
     // exactly this). A request that was open / active follows to the new pack so
     // its tab survives the move.
     fun moveRequest(inRs: ReqState, inFrom: PackState, inTo: PackState, inIndex: Int) {
@@ -746,7 +746,7 @@ internal fun App() {
     }
 
     // Commit the resolved request / pack drop, then clear the drag. A press that
-    // never passed the slop (engaged == false) is a click, not a drop — skip it.
+    // never passed the slop (engaged == false) is a click, not a drop - skip it.
     fun reqDropEnd() {
         val vRs = vTreeDrag.dragReq
         val vFrom = vTreeDrag.dragReqOwner
@@ -933,7 +933,7 @@ internal fun App() {
                     // ============
                     //  Sidebar (Pack panel)
                     Column(modifier = Modifier.fillMaxSize().background(vC.panel)) {
-                        // Sticky header — pack switcher + section tabs stay pinned while the list scrolls.
+                        // Sticky header - pack switcher + section tabs stay pinned while the list scrolls.
                         Column(
                             modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1039,7 +1039,7 @@ internal fun App() {
                                     }
                                     if (vPacks.isEmpty() && vRoot.requests.isEmpty()) {
                                         Text(
-                                            "Nothing here yet — use Add (+) for a request or pack, or Open above.",
+                                            "Nothing here yet - use Add (+) for a request or pack, or Open above.",
                                             color = vC.dim,
                                             fontSize = 12.sp
                                         )
@@ -1140,7 +1140,7 @@ internal fun App() {
                 },
                 second = {
                     // ============
-                    //  Main — unified tab strip over the editor (request) or pack env.
+                    //  Main - unified tab strip over the editor (request) or pack env.
                     val vTabs = stripTabs()
                     val vReqActive = vP?.active
                     val vEnvShown = vEnvActive && vP != null && vP.envOpen
@@ -1161,12 +1161,12 @@ internal fun App() {
                                         "Load default session"
                                     ) { loadDefaultSession() }
                                 }
-                            } else Text("Nothing open — click a request, a pack, or Session settings.", color = vC.dim)
+                            } else Text("Nothing open - click a request, a pack, or Session settings.", color = vC.dim)
                             Spacer(Modifier.weight(1f))
                         }
                     } else {
                         Column(modifier = Modifier.fillMaxSize().background(vC.bg)) {
-                            // Panel 1 — unified tab strip (session + pack-settings + request tabs).
+                            // Panel 1 - unified tab strip (session + pack-settings + request tabs).
                             RequestTabStrip(
                                 inTabs = vTabs,
                                 inActiveKey = when {
@@ -1263,7 +1263,7 @@ internal fun App() {
                                         inOnCert = { vP.cert = it; vP.dirty = true; persist() },
                                         inCertHelp = "Used by every request in this pack unless the request sets its own. Overrides the session cert.",
                                         inCertHeading = "Pack client certificate",
-                                        // What this pack inherits from above (session + ancestor packs — itself excluded).
+                                        // What this pack inherits from above (session + ancestor packs - itself excluded).
                                         inInheritedVars = sourcedVars(scopeChain(vP.parent)),
                                         inInheritedParams = sourcedParams(scopeChain(vP.parent)),
                                         inInheritedHeaders = sourcedHeaders(scopeChain(vP.parent)),
@@ -1286,13 +1286,13 @@ internal fun App() {
                                                 size = 14.dp
                                             )
                                             Text(
-                                                "Linked copy — read-only. Runs with this pack's Var/Header/Cert; edit the request in “${vP.linkedSource?.name ?: "source"}”.",
+                                                "Linked copy - read-only. Runs with this pack's Var/Header/Cert; edit the request in “${vP.linkedSource?.name ?: "source"}”.",
                                                 color = vC.dim,
                                                 fontSize = 11.sp
                                             )
                                         }
                                     }
-                                    // Panel 2 — unified method · url · send.
+                                    // Panel 2 - unified method · url · send.
                                     UrlBar(
                                         inReq = vReq,
                                         inLoading = vReqActive.loading,
@@ -1438,7 +1438,7 @@ internal fun App() {
                                 Text("Replace current session?", color = vC.text, fontSize = 16.sp)
                             }
                             Text(
-                                "This session hasn't been saved to a file — continuing will discard it. Save it first if you want to keep it.",
+                                "This session hasn't been saved to a file - continuing will discard it. Save it first if you want to keep it.",
                                 color = vC.dim,
                                 fontSize = 13.sp
                             )
@@ -1549,7 +1549,7 @@ internal fun App() {
                                 Text("Remove pack", color = vC.text, fontSize = 16.sp)
                             }
                             Text(
-                                "\"${vRmPack.name}\" will be removed from the session. Unsaved changes are lost — export it first to keep them.",
+                                "\"${vRmPack.name}\" will be removed from the session. Unsaved changes are lost - export it first to keep them.",
                                 color = vC.dim,
                                 fontSize = 13.sp
                             )

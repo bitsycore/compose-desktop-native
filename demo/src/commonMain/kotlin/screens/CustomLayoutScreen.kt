@@ -37,7 +37,7 @@ internal fun CustomLayoutScreen() {
 		Section(
 			"Custom Layout: staircase",
 			"A measure policy that places each child diagonally offset from the previous one. " +
-				"The lambda body uses the standard upstream shape — measure all measurables, call " +
+				"The lambda body uses the standard upstream shape - measure all measurables, call " +
 				"layout(w, h) { ... } with the placement block.",
 		) {
 			Layout(content = {
@@ -92,9 +92,9 @@ internal fun CustomLayoutScreen() {
 		}
 
 		Section(
-			"Modifier.layout — measure then offset",
+			"Modifier.layout - measure then offset",
 			"The modifier wraps the child's natural measure. Here the child reports its natural " +
-				"size to the parent but draws inset by 12 pixels — useful for nudging a single " +
+				"size to the parent but draws inset by 12 pixels - useful for nudging a single " +
 				"child without rewriting its parent's layout.",
 		) {
 			Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

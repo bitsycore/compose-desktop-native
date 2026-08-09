@@ -12,7 +12,7 @@ import demo.shim.DemoIcon
 private val TabLabels = listOf("Overview", "Details", "Settings")
 private val ManyTabs = listOf("One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight")
 
-// Material3 — the TabRow family + LeadingIconTab.
+// Material3 - the TabRow family + LeadingIconTab.
 @Composable
 internal fun M3TabsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

@@ -16,7 +16,7 @@ private val FlowWords = listOf(
 	"OpenGL", "Windows", "macOS", "Linux", "Wayland", "X11",
 )
 
-// Foundation — FlowRow / FlowColumn wrap their children onto new lines/columns.
+// Foundation - FlowRow / FlowColumn wrap their children onto new lines/columns.
 @Composable
 internal fun FlowLayoutScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

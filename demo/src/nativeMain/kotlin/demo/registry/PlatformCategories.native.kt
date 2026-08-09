@@ -14,7 +14,7 @@ import screens.*
 actual fun getPlatformCategories(): List<DemoCategory> = listOf(
     DemoCategory("core", "Core", listOf(
         // The one Core screen that can't be common: it demos the project's
-        // IconFontIcon / IconText glyph engine + desktop scrollbars — no upstream analog.
+        // IconFontIcon / IconText glyph engine + desktop scrollbars - no upstream analog.
         DemoScreen("FoundationExtra") { FoundationExtraScreen() },
     )),
     DemoCategory("native", "Native", listOf(

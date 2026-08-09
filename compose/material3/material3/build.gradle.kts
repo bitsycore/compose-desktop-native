@@ -1,9 +1,9 @@
-// :material3 — Material 3 widgets vendored VERBATIM from upstream
+// :material3 - Material 3 widgets vendored VERBATIM from upstream
 // androidx.compose.material3, into src/vendor/. Objective: eventually retire
 // the hand-written :material module in favour of this one.
 //
 // Provenance = material3/compose-fork.txt + scripts/compose-fork/compose.properties.
-// Never hand-edit files under material3/src/vendor/ — change the manifest and
+// Never hand-edit files under material3/src/vendor/ - change the manifest and
 // re-run `bash scripts/compose-fork/sync.sh :material3`.
 //
 // Publication artifactId (when set up): compose-desktop-native-material3.
@@ -37,10 +37,10 @@ kotlin {
 				// androidx.collection is used by material3 internals (MutableIntObjectMap, …).
 				// Already on the classpath via :ui's runtime; declare here for clarity.
 				implementation("androidx.collection:collection:1.5.0")
-				// androidx.graphics.shapes.* — MaterialShapes (RoundedPolygon /
+				// androidx.graphics.shapes.* - MaterialShapes (RoundedPolygon /
 				// Morph / CornerRounding) that WavyProgress / LoadingIndicator use.
 				implementation("androidx.graphics:graphics-shapes:1.1.0")
-				// kotlinx.datetime — DatePicker / TimePicker / CalendarModel.
+				// kotlinx.datetime - DatePicker / TimePicker / CalendarModel.
 				implementation(libs.kotlinx.datetime)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")

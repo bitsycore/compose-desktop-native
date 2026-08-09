@@ -40,7 +40,7 @@ internal fun AnimationScreen() {
 		)
 
 		// ============
-		//  animateDpAsState — toggle between two sizes
+		//  animateDpAsState - toggle between two sizes
 		var vBig by remember { mutableStateOf(false) }
 		val vSizeDp by animateDpAsState(
 			targetValue = if (vBig) 96.dp else 32.dp,
@@ -56,7 +56,7 @@ internal fun AnimationScreen() {
 		}
 
 		// ============
-		//  animateColorAsState — toggle background colour
+		//  animateColorAsState - toggle background colour
 		var vAlt by remember { mutableStateOf(false) }
 		val vBg by animateColorAsState(
 			targetValue = if (vAlt) vSecondary else vPrimary,
@@ -73,7 +73,7 @@ internal fun AnimationScreen() {
 		}
 
 		// ============
-		//  animateFloatAsState — spring
+		//  animateFloatAsState - spring
 		var vShifted by remember { mutableStateOf(false) }
 		val vOffset by animateFloatAsState(
 			targetValue = if (vShifted) 200f else 0f,
@@ -89,7 +89,7 @@ internal fun AnimationScreen() {
 				Box(
 					modifier = Modifier
 						// offset (not padding): a bouncy spring overshoots past its
-						// target, so vOffset dips below 0 on the return — padding rejects
+						// target, so vOffset dips below 0 on the return - padding rejects
 						// negatives ("Padding must be non-negative"), offset shows the bounce.
 						.offset(x = vOffset.dp)
 						.size(40.dp)
@@ -99,7 +99,7 @@ internal fun AnimationScreen() {
 		}
 
 		// ============
-		//  animateIntAsState — counter
+		//  animateIntAsState - counter
 		var vBumped by remember { mutableStateOf(0) }
 		val vTarget by animateIntAsState(
 			targetValue = vBumped,
@@ -122,7 +122,7 @@ internal fun AnimationScreen() {
 		}
 
 		// ============
-		//  InfiniteTransition — rotation + pulse
+		//  InfiniteTransition - rotation + pulse
 		val vTrans = rememberInfiniteTransition()
 		val vAngle by vTrans.animateFloat(
 			initialValue = 0f, targetValue = 360f,

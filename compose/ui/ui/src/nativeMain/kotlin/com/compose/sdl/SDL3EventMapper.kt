@@ -13,7 +13,7 @@ import sdl3.*
 // MARK: SDL3EventMapper
 // ==================
 
-/** Events carry the SDL window id they belong to (0 = unknown — injected test
+/** Events carry the SDL window id they belong to (0 = unknown - injected test
    events; the loop routes those to its first window). Quit is app-level. */
 sealed class AppEvent {
 	data object Quit : AppEvent()
@@ -36,7 +36,7 @@ sealed class AppEvent {
 	   regain). The render-on-demand main loop uses it to force a frame even
 	   though no state changed. */
 	data class RedrawNeeded(val windowId: UInt = 0u) : AppEvent()
-	/** The OS light/dark theme changed (SDL_EVENT_SYSTEM_THEME_CHANGED) — app
+	/** The OS light/dark theme changed (SDL_EVENT_SYSTEM_THEME_CHANGED) - app
 	   level, no window id. The loop re-applies each window's theme-aware icon. */
 	data object SystemThemeChanged : AppEvent()
 	/** Focus / visibility transitions driving the window's Lifecycle (Compose
@@ -114,11 +114,11 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED -> AppEvent.WindowResized(e.window.windowID)
 
 		// Per-window close (OS close button). SDL also fires QUIT after the
-		// LAST window's close request — the loop treats that as app exit only
+		// LAST window's close request - the loop treats that as app exit only
 		// when no window vetoed.
 		SDL_EVENT_WINDOW_CLOSE_REQUESTED -> AppEvent.WindowClose(e.window.windowID)
 
-		// Content invalidations — the idle-skipping main loop must render a
+		// Content invalidations - the idle-skipping main loop must render a
 		// frame after these even though no Compose state changed.
 		SDL_EVENT_WINDOW_EXPOSED,
 		SDL_EVENT_WINDOW_MAXIMIZED -> AppEvent.RedrawNeeded(e.window.windowID)
@@ -136,7 +136,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_WINDOW_HIDDEN,
 		SDL_EVENT_WINDOW_MINIMIZED -> AppEvent.WindowActivation(e.window.windowID, visible = false)
 
-		// Pointer left the window — clear hover (SDL sends no further motion).
+		// Pointer left the window - clear hover (SDL sends no further motion).
 		SDL_EVENT_WINDOW_MOUSE_LEAVE -> AppEvent.PointerExit(e.window.windowID)
 
 		SDL_EVENT_TEXT_INPUT -> {
@@ -197,7 +197,7 @@ private fun mapKey(inKk: SDL_KeyboardEvent, inType: KeyEventType): AppEvent.Key 
 		key = kKeyForKeycode(inKk.key.toInt()) ?: kKeyForScancode(vScancode),
 		type = inType,
 		// Deliberately 0: SDL keycodes are UNSHIFTED (lowercase only, no numpad
-		// digits, base layout chars) — deriving typed characters from them broke
+		// digits, base layout chars) - deriving typed characters from them broke
 		// Shift/caps and the numeric pad. Committed characters arrive through
 		// SDL_EVENT_TEXT_INPUT instead; ComposeRootHost.dispatchTextInput
 		// re-dispatches them as synthetic typed KeyEvents, and codePoint = 0
@@ -219,7 +219,7 @@ private fun mapButton(b: UByte): PointerButton = when (b.toInt()) {
 
 /** SDL_Keycode (layout-aware) → Key, for Latin LETTERS only. The keycode reflects
    the active layout, so this maps to the letter the user perceives regardless of
-   the key's physical position — the fix for Ctrl+<letter> shortcuts on AZERTY /
+   the key's physical position - the fix for Ctrl+<letter> shortcuts on AZERTY /
    QWERTZ. Uppercase is folded to lowercase (some SDL builds apply Shift to the
    keycode). Returns null for non-letters, which the caller resolves positionally
    via kKeyForScancode; non-Latin layouts also fall through to positional. */

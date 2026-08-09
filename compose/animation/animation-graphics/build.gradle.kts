@@ -1,9 +1,9 @@
-// :animation-graphics — androidx.compose.animation.graphics.*, vendored VERBATIM
+// :animation-graphics - androidx.compose.animation.graphics.*, vendored VERBATIM
 // from upstream into src/vendor/. Split out to mirror Compose Multiplatform's
 // module packaging (compose/animation/animation-graphics).
 //
 // Provenance = animation-graphics/compose-fork.txt + scripts/compose-fork/compose.properties.
-// Never hand-edit files under src/vendor/ — change the manifest and re-run
+// Never hand-edit files under src/vendor/ - change the manifest and re-run
 // `python scripts/compose-fork/sync.py compose/animation/animation-graphics`.
 //
 // Publication artifactId: desktop-animation-graphics.

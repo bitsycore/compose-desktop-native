@@ -20,7 +20,7 @@ import demo.generated.resources.heart
 import org.jetbrains.compose.resources.painterResource
 
 // ==================
-// MARK: Icons screen — material3 icon APIs
+// MARK: Icons screen - material3 icon APIs
 // ==================
 
 /** material3 icon APIs: Icon(painter) over compose resources and IconButton. */

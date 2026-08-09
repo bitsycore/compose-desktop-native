@@ -40,7 +40,7 @@ import kotlinx.cinterop.toKString
 
 fun main(args: Array<String>) {
     // Phase 9 B4 probes (`--pipetest=<path.bmp>` / `--inputtest`) were retired
-    // during the :ui/:foundation split — they lived in the retired SDL renderer
+    // during the :ui/:foundation split - they lived in the retired SDL renderer
     // but relied on foundation's Modifier.background / .clickable, which moved
     // to :foundation. Reachable via git history if anyone needs them again.
     if (args.any { it.startsWith("--pipetest") || it == "--inputtest" }) {
@@ -103,7 +103,7 @@ fun main(args: Array<String>) {
         runParagraphTest()
         return
     }
-    // Prints Paragraph cell/line metrics for a size sweep — compare against the JVM
+    // Prints Paragraph cell/line metrics for a size sweep - compare against the JVM
     // leg's `--metrics` output to align the native text metrics with upstream (P3.1).
     if (args.any { it == "--metricsprobe" }) {
         runMetricsProbe()
@@ -111,19 +111,19 @@ fun main(args: Array<String>) {
     }
     // Verifies the Dialog appearance animation (upstream Dialog.skiko.kt parity):
     // opens a real m3 AlertDialog via an injected click, dumps mid-animation and
-    // settled screenshots — the mid shots must show the dialog fainter and lower.
+    // settled screenshots - the mid shots must show the dialog fainter and lower.
     if (args.any { it == "--dialoganimtest" }) {
         runDialogAnimTest()
         return
     }
     // Traces AnimatedVisibility(fade+expand/shrink) frame-by-frame: the AV
     // container's animated size + the Y of a marker below it, across three
-    // toggles — diagnoses end-of-animation size snaps / instant transitions.
+    // toggles - diagnoses end-of-animation size snaps / instant transitions.
     if (args.any { it == "--animvistest" }) {
         runAnimVisTest()
         return
     }
-    // Composes the Navigation3 screen LATE (window already RESUMED) — the
+    // Composes the Navigation3 screen LATE (window already RESUMED) - the
     // normal sidebar flow, unlike --screen which composes during the first
     // (CREATED) composition. Guards the enableSavedStateHandles contract:
     // ViewModel store owners created at RESUMED must opt out of saved state.
@@ -163,14 +163,14 @@ fun main(args: Array<String>) {
     val vCli = parseArgs(args)
     val vTitle = buildString {
         append("ComposeDesktopNative Showcase")
-        if (vCli.screen != null) append(" — ").append(vCli.screen)
+        if (vCli.screen != null) append(" - ").append(vCli.screen)
         append(" [").append(vCli.gpu).append("]")
     }
 
     // Screenshot runs freeze infinite animations (rememberInfiniteTransition & co. cancel
     // at their initial value) so every screen can reach quiescence, and step the frame
     // clocks on VIRTUAL time (16.6ms/frame, like the JVM leg's render(nanos)) so animation
-    // races resolve identically every run — both must be set before the first window composes.
+    // races resolve identically every run - both must be set before the first window composes.
     if (vCli.screenshot != null) {
         com.compose.sdl.disableInfiniteAnimations = true
         com.compose.sdl.useVirtualFrameTime = true
@@ -178,7 +178,7 @@ fun main(args: Array<String>) {
 
     // Multi-window app shell: the showcase window plus any extra windows opened
     // from WindowScreen's "Multi-window" section (state-driven, Compose Desktop
-    // style — the count IS the windows' lifetime).
+    // style - the count IS the windows' lifetime).
     nativeComposeApp {
     Window(
         onCloseRequest = { exitApplication() },
@@ -211,7 +211,7 @@ fun main(args: Array<String>) {
         } else null,
     ) {
         // Material Symbols fonts auto-install on first use of the matching
-        // MaterialSymbolsOutlined / Rounded / Sharp composable — no setup
+        // MaterialSymbolsOutlined / Rounded / Sharp composable - no setup
         // needed here. Apps that want to preload the bytes at startup can
         // still call .install() explicitly.
         MaterialTheme(colorScheme = darkColorScheme()) {
@@ -222,7 +222,7 @@ fun main(args: Array<String>) {
                     println("Unknown --screen='${vCli.screen}'. Available: ${vAllScreens.joinToString { it.name }}")
                     Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
                 } else {
-                    // Single screen, no sidebar — SAME wrapper as the App's
+                    // Single screen, no sidebar - SAME wrapper as the App's
                     // content pane (verticalScroll ⇒ infinite max height!) so
                     // screenshot verification exercises the constraints screens
                     // actually get when navigated to interactively. A plain
@@ -244,7 +244,7 @@ fun main(args: Array<String>) {
             }
         }
     }
-    // Extra windows opened from WindowScreen — one Window() per id, keyed by id so
+    // Extra windows opened from WindowScreen - one Window() per id, keyed by id so
     // closing one (OS button or its Close button) removes exactly THAT window.
     for (vId in ExtraWindows) {
         key(vId) {
@@ -264,7 +264,7 @@ fun main(args: Array<String>) {
     }
 }
 
-/** Content of the demo's extra windows — each has its own composition, focus,
+/** Content of the demo's extra windows - each has its own composition, focus,
    input routing, and render loop; the counter proves per-window state. */
 @Composable
 private fun com.compose.sdl.ComposeWindowScope.ExtraWindowContent(inId: Int) {
@@ -290,7 +290,7 @@ private fun com.compose.sdl.ComposeWindowScope.ExtraWindowContent(inId: Int) {
 }
 
 /** Boots a window with a BackHandler, injects an Escape key through the live SDL
-   path, and asserts the handler fired — proving ComposeWindow's
+   path, and asserts the handler fired - proving ComposeWindow's
    BackNavigationInput drives the NavigationEventDispatcher (the mechanism that
    collapses an expanded m3 SearchBar on Escape). */
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
@@ -310,7 +310,7 @@ private fun runBackTest() {
                     com.compose.sdl.injectKey(41, false)
                     true
                 }
-                // Phase 2: click the text field to focus it, then Escape —
+                // Phase 2: click the text field to focus it, then Escape -
                 // the user-facing SearchBar scenario (field focused while
                 // the back handler should collapse the bar).
                 30 -> { com.compose.sdl.injectMouseEvent(1, 200f, 100f); true }
@@ -340,8 +340,8 @@ private fun runBackTest() {
         }
         MaterialTheme(colorScheme = darkColorScheme()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                // The NEW state-based field — the one m3 SearchBar's InputField
-                // uses — so the probe exercises its key handler, not the legacy
+                // The NEW state-based field - the one m3 SearchBar's InputField
+                // uses - so the probe exercises its key handler, not the legacy
                 // value-based one.
                 androidx.compose.foundation.text.BasicTextField(
                     state = androidx.compose.foundation.text.input.rememberTextFieldState(),
@@ -352,7 +352,7 @@ private fun runBackTest() {
 }
 
 /** Drives a SharedTransitionLayout shared-element morph both directions from
-   the frame counter (no clicks) — it requires the LOOKAHEAD pass, which dies
+   the frame counter (no clicks) - it requires the LOOKAHEAD pass, which dies
    with "LookaheadDelegate has not been measured yet" if the owner drops
    affectsLookahead measure/relayout requests. Reaching the end frame = PASS. */
 @OptIn(androidx.compose.animation.ExperimentalSharedTransitionApi::class)
@@ -407,7 +407,7 @@ private fun runSharedTest() {
 
 /** Boots TWO windows via nativeComposeApp, asserts both render, closes the
    second by flipping the state that composes its Window(), and asserts the app
-   keeps running on the first — the multi-window lifecycle end-to-end. */
+   keeps running on the first - the multi-window lifecycle end-to-end. */
 private fun runMultiWindowTest() {
     val vShowSecond = mutableStateOf(true)
     var vSecondFrames = 0
@@ -459,7 +459,7 @@ private fun runMultiWindowTest() {
 }
 
 /** Boots the REAL Search screen, clicks the first SearchBar's input field
-   (expands it), presses Escape, and writes esc_before.bmp / esc_after.bmp —
+   (expands it), presses Escape, and writes esc_before.bmp / esc_after.bmp -
    the expanded overlay must be visible in `before` and gone in `after`. */
 private fun runSearchEscTest() {
     fun snap(inBridge: com.compose.sdl.RenderBackend, inName: String) {
@@ -502,12 +502,12 @@ private fun runSearchEscTest() {
     }
 }
 
-/* Boots an empty window, then composes screens.Navigation3Screen() at frame 30 —
-   AFTER the window lifecycle reached RESUMED — mirroring the real sidebar flow.
+/* Boots an empty window, then composes screens.Navigation3Screen() at frame 30 -
+   AFTER the window lifecycle reached RESUMED - mirroring the real sidebar flow.
    Crashes here (e.g. enableSavedStateHandles' INITIALIZED/CREATED contract) never
    reproduce under --screen, which composes during the initial CREATED composition.
    PASS = a screenshot gets written and the app exits cleanly. */
-/** P2.2 soak — cycle through EVERY registered screen kCycles times in ONE process,
+/** P2.2 soak - cycle through EVERY registered screen kCycles times in ONE process,
    disposing each via a changing key() so composition + layer (skiko RenderNode)
    allocate-and-release is exercised repeatedly. After each full cycle, GC then
    record peak RSS (getrusage ru_maxrss). Peak RSS is monotonic, so after cycle 1 it
@@ -527,7 +527,7 @@ private fun runSoakTest() {
     val vScreens = if (vTarget != null) { val vS = vAll.first { it.name.equals(vTarget, ignoreCase = true) }; List(40) { vS } }
         else vAll
     val vIndex = mutableStateOf(0)
-    // CDN_SOAK_STATIC=1: mount ONE screen once, never remount — measure RSS every 120 frames.
+    // CDN_SOAK_STATIC=1: mount ONE screen once, never remount - measure RSS every 120 frames.
     // Isolates a per-FRAME leak (RSS climbs with no remounts) from a per-MOUNT leak.
     val vStatic = platform.posix.getenv("CDN_SOAK_STATIC")?.toKString() == "1"
     val kFramesPerScreen = if (vStatic) 120 else 3
@@ -542,7 +542,7 @@ private fun runSoakTest() {
         onFrame = { _, vFrame ->
             if (vFrame > 0 && vFrame % kFramesPerScreen == 0) {
                 if (vStatic) {
-                    // No remount — just pump frames on the one mounted screen.
+                    // No remount - just pump frames on the one mounted screen.
                     kotlin.native.runtime.GC.collect()
                     vRssPerCycleMb.add(currentResidentMb())
                     println("soaktest[static]: measure ${vRssPerCycleMb.size}: currentRSS=${vRssPerCycleMb.last()}MB")
@@ -565,7 +565,7 @@ private fun runSoakTest() {
                 if (vGrowth <= vCeiling) {
                     println("soaktest: PASS (current RSS grew ${vGrowth}MB over cycles 1->$kCycles, within ${vCeiling}MB ceiling)")
                 } else {
-                    println("soaktest: FAIL (current RSS grew ${vGrowth}MB > ${vCeiling}MB ceiling — possible leak)")
+                    println("soaktest: FAIL (current RSS grew ${vGrowth}MB > ${vCeiling}MB ceiling - possible leak)")
                 }
                 false
             } else true
@@ -581,7 +581,7 @@ private fun runSoakTest() {
                     .padding(24.dp),
             ) {
                 // key(vShown) forces a FULL dispose+recompose each advance (even when the
-                // target screen repeats) — the allocate/release churn we soak. Reading
+                // target screen repeats) - the allocate/release churn we soak. Reading
                 // vIndex.value (a State) is what triggers the recomposition each mount.
                 key(vShown) {
                     vScreens[vIndex.value].content()
@@ -594,7 +594,7 @@ private fun runSoakTest() {
 /** CURRENT resident set (MB): current RSS can DROP after GC, so it distinguishes a
    true leak (ratchets up) from K/N allocator high-water, unlike getrusage's
    monotonic peak. posix reads it from `ps`; mingw has no `ps`/popen and returns
-   -1 (the soak gate runs on macOS/Linux — see scripts/verify-mac.sh). */
+   -1 (the soak gate runs on macOS/Linux - see scripts/verify-mac.sh). */
 internal expect fun currentResidentMb(): Long
 
 /** --localetest: prints Locale.current / LocaleList.current (should reflect the OS
@@ -676,7 +676,7 @@ private fun runCursorTest() {
 
 /** --windowinfotest: prints LocalWindowInfo.isWindowFocused / containerSize /
    containerDpSize. containerSize starts Zero and becomes the window pixel size
-   after the first measure — proof it's fed from the live root constraints. */
+   after the first measure - proof it's fed from the live root constraints. */
 private fun runWindowInfoTest() {
     nativeComposeWindow(
         title = "windowinfotest",
@@ -696,7 +696,7 @@ private fun runWindowInfoTest() {
 
 /** --imetest: focuses a BasicTextField, injects an IME composition (SDL TEXT_EDITING
    "ni"), then a commit (SDL TEXT_INPUT "に"). Verifies the preedit shows a
-   composing region and the commit REPLACES it (not appends) — the real IME path. */
+   composing region and the commit REPLACES it (not appends) - the real IME path. */
 private fun runImeTest() {
     val vField = mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(""))
     nativeComposeWindow(
@@ -792,7 +792,7 @@ private fun runFontTest() {
     }
 }
 
-// A minimal 2x2 24bpp red BMP (no compression) — valid decoder input.
+// A minimal 2x2 24bpp red BMP (no compression) - valid decoder input.
 private fun tinyRedBmp(): ByteArray {
     fun le16(v: Int) = byteArrayOf((v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte())
     fun le32(v: Int) = byteArrayOf(
@@ -860,7 +860,7 @@ private fun runNav3Test() {
 
    Expected healthy trace: ~24 smooth frames per toggle ending exactly at 0/60,
    PLUS one 16px marker jump when the fully-shrunk node unmounts (exit end) or
-   mounts (enter start) — that's the parent's spacedBy(16) collapsing, inherent
+   mounts (enter start) - that's the parent's spacedBy(16) collapsing, inherent
    upstream behaviour (spacing applies to zero-height children too), NOT a bug. */
 private fun runAnimVisTest() {
     val vShown = mutableStateOf(true)
@@ -872,7 +872,7 @@ private fun runAnimVisTest() {
         width = 600,
         height = 500,
         onFrame = { _, vFrame ->
-            // Log only when something moved — keeps the trace readable.
+            // Log only when something moved - keeps the trace readable.
             val vLine = "size=$vAvSize markerY=$vMarkerY shown=${vShown.value}"
             if (vLine != vLastLog) {
                 println("animvistest: f=$vFrame $vLine")
@@ -888,7 +888,7 @@ private fun runAnimVisTest() {
         },
     ) {
         MaterialTheme(colorScheme = darkColorScheme()) {
-            // spacedBy mirrors the demo's Section column — the end-of-exit jump
+            // spacedBy mirrors the demo's Section column - the end-of-exit jump
             // reported on the FoundationExtra screen involves the spacing around
             // the AnimatedVisibility node collapsing when the node unmounts.
             Column(
@@ -928,7 +928,7 @@ private fun runAnimVisTest() {
    after it settles; then injects Escape and dumps mid-disappearance (0.1s reverse,
    via the popup host's exit deferral) + after. Visual check: mid shots must show the
    dialog semi-transparent, slightly scaled-down and shifted down vs the settled shot,
-   and exit_end must show no dialog at all — skiko-parity animation both ways. */
+   and exit_end must show no dialog at all - skiko-parity animation both ways. */
 private fun runDialogAnimTest() {
     fun snap(inBridge: com.compose.sdl.RenderBackend, inName: String) {
         val vSnap = inBridge.snapshotBgra() ?: return
@@ -983,7 +983,7 @@ private fun runDialogAnimTest() {
 /** Boots a real window, then builds an upstream Paragraph via the
    vendored factory (→ SkiaParagraph) for a long string constrained to a narrow width. Verifies it
    wrapped to multiple lines, has positive size, and that getHorizontalPosition/getOffsetForPosition
-   round-trip — proving the paragraph-engine measurement bridge works. */
+   round-trip - proving the paragraph-engine measurement bridge works. */
 private fun runParagraphTest() {
     nativeComposeWindow(
         title = "paragraphtest",
@@ -1014,7 +1014,7 @@ private fun runParagraphTest() {
 }
 
 /** Prints paragraph metrics (single-line cell, lineHeight-styled single + triple line,
-   first baseline) for a font-size sweep at density 1 — the native half of the
+   first baseline) for a font-size sweep at density 1 - the native half of the
    metrics-alignment probe. Mirror of MainJvm's `--metrics`; both must print the same
    numbers for the parity text drift to vanish. */
 private fun runMetricsProbe() {
@@ -1095,7 +1095,7 @@ private fun runClickTest() {
                 70 -> {
                     println(
                         if (vClicks > 0) "clicktest: PASS ($vClicks click(s) via upstream clickable)"
-                        else "clicktest: FAIL (0 clicks — upstream clickable did not fire)"
+                        else "clicktest: FAIL (0 clicks - upstream clickable did not fire)"
                     )
                     false
                 }
@@ -1117,7 +1117,7 @@ private fun runClickTest() {
 }
 
 /** Same injection harness as clicktest, but the target is a Material Switch (Modifier.toggleable
-   from the vendored foundation.selection). Asserts onCheckedChange flipped the state — proving
+   from the vendored foundation.selection). Asserts onCheckedChange flipped the state - proving
    toggleable rides the same verified upstream interaction path as clickable. */
 private fun runToggleTest() {
     var vChecked = false
@@ -1155,7 +1155,7 @@ private fun runToggleTest() {
 
 /** Boots a window with a real BasicTextField, clicks it to focus (focus-on-click via the
    FocusOwner), then injects TEXT_INPUT ("A","B") and a Backspace key through the live SDL path.
-   Asserts the field edits to "A" — proving click-to-focus + typing + editing keys route to the
+   Asserts the field edits to "A" - proving click-to-focus + typing + editing keys route to the
    focused field via ComposeRootHost.dispatchKeyEvent + the synthesised typed-key path. */
 private fun runKeyTest() {
     val vText = mutableStateOf("")
@@ -1197,7 +1197,7 @@ private fun runKeyTest() {
 
 /** Boots a tall Column wrapped in the vendored Modifier.verticalScroll, injects several wheel-down
    events through the live SDL path (→ processor → MouseWheelScrollingLogic), and asserts the
-   ScrollState offset advanced — proving upstream scrolling works end-to-end. */
+   ScrollState offset advanced - proving upstream scrolling works end-to-end. */
 private fun runScrollTest() {
     val vScroll = androidx.compose.foundation.ScrollState(0)
     nativeComposeWindow(
@@ -1225,7 +1225,7 @@ private fun runScrollTest() {
         MaterialTheme(colorScheme = darkColorScheme()) {
             Column(modifier = Modifier.fillMaxSize().verticalScroll(vScroll)) {
                 repeat(40) { i ->
-                    Text("Scroll row $i — lorem ipsum dolor sit", color = Color.White, fontSize = 16.sp)
+                    Text("Scroll row $i - lorem ipsum dolor sit", color = Color.White, fontSize = 16.sp)
                 }
             }
         }

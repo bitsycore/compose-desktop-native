@@ -61,7 +61,7 @@ internal fun InteractionSourceScreen() {
 						.background(vBg, RoundedCornerShape(8.dp))
 						.hoverable(vInter)
 						// clickable(interactionSource, indication) feeds Press/Release
-						// straight into the source — no need for a project-side helper.
+						// straight into the source - no need for a project-side helper.
 						.clickable(interactionSource = vInter, indication = null, onClick = {}),
 				) {
 					Box(modifier = Modifier.padding(12.dp)) {

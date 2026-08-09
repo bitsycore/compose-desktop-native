@@ -40,9 +40,9 @@ internal fun imageFileName(inContentType: String?): String = when {
 }
 
 internal fun statusColor(inStatus: Int): Color = when (inStatus) {
-    in 200..299 -> Color(0xFF36B37E) // success — green
-    in 300..399 -> Color(0xFF4C9AFF) // redirect — blue
-    in 400..499 -> Color(0xFFFF991F) // client error — orange (warning)
-    in 500..599 -> Color(0xFFFF5630) // server error — red
-    else -> Color(0xFFFF991F)        // unknown / pending — orange
+    in 200..299 -> Color(0xFF36B37E) // success - green
+    in 300..399 -> Color(0xFF4C9AFF) // redirect - blue
+    in 400..499 -> Color(0xFFFF991F) // client error - orange (warning)
+    in 500..599 -> Color(0xFFFF5630) // server error - red
+    else -> Color(0xFFFF991F)        // unknown / pending - orange
 }

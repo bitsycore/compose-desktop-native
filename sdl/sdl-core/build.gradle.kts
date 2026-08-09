@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-// :sdl-core — the SDL3 platform layer. Step 1: it owns the single `sdl3` cinterop
+// :sdl-core - the SDL3 platform layer. Step 1: it owns the single `sdl3` cinterop
 // (SDL_Window / SDL_Event / SDL_GetBasePath / clipboard / dialogs / GL+Metal
 // context / SDL_Renderer). Kept as its own module so :ui (and, later, the SDL
 // platform + Skia renderer moving here) stop bundling the cinterop, which is the

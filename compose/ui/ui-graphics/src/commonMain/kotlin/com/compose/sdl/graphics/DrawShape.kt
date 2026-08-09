@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.LayoutDirection
  * Internal helper invoked by the project's `BackgroundNode.draw()` body
  * (Phase 8 chain-driven draw). Resolves the [Shape] into a project
  * [Outline] and dispatches to the appropriate `DrawScope.drawXxx`. The
- * receiver [DrawScope] is the Skia renderer's wrap scope — any of its
+ * receiver [DrawScope] is the Skia renderer's wrap scope - any of its
  * `drawRect / drawRoundRect / drawPath` calls becomes a concrete paint
  * operation on the backend canvas.
  *
@@ -47,7 +47,7 @@ fun DrawScope.drawBackgroundShape(inColor: Color, inShape: Shape) {
 }
 
 /**
- * Mirror of [drawBackgroundShape] for borders — stroked instead of
+ * Mirror of [drawBackgroundShape] for borders - stroked instead of
  * filled. Inset by half the stroke width so the visual edge stays
  * inside the laid-out bounds.
  */

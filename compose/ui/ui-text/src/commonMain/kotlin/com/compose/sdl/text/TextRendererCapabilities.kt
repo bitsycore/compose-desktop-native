@@ -4,7 +4,7 @@ package com.compose.sdl.text
 // MARK: TextRendererCapabilities (project-only)
 // ==================
 
-/** No upstream equivalent — lives in com.compose.sdl.text per
+/** No upstream equivalent - lives in com.compose.sdl.text per
    FIDELITY relocate rule. Lightweight capability flag that the active text
    renderer publishes at startup so library code can warn when it asks for
    something the renderer can't deliver. Today the only consumer is the
@@ -13,7 +13,7 @@ package com.compose.sdl.text
    supportsFontVariations = true via Typeface.makeClone; a renderer that
    couldn't honour variable-font axes would leave it false.
 
-   `supportsFontVariations` is null until a renderer initialises — code
+   `supportsFontVariations` is null until a renderer initialises - code
    that warns on install() ignores the null case so it doesn't fire when
    the user calls install() before composeWindow() has spun up. */
 object TextRendererCapabilities {

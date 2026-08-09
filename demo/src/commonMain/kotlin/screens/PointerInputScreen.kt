@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // ==================
-// MARK: PointerInputScreen — stock Compose gestures
+// MARK: PointerInputScreen - stock Compose gestures
 // ==================
 
 /** Stock Compose pointer-input patterns: detectTapGestures for taps / long
@@ -53,7 +53,7 @@ internal fun PointerInputScreen() {
 			}
 		}
 
-		Section("Secondary / middle button", "awaitPointerEventScope + PointerEvent.button matching — upstream has no first-class right/middle-click gesture detector.") {
+		Section("Secondary / middle button", "awaitPointerEventScope + PointerEvent.button matching - upstream has no first-class right/middle-click gesture detector.") {
 			var vSecondary by remember { mutableStateOf("right-click me") }
 			var vMiddle by remember { mutableStateOf(0) }
 			Box(

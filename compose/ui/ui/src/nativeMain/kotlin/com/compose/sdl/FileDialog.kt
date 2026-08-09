@@ -9,7 +9,7 @@ import sdl3.SDL_ShowSaveFileDialog
 // ==================
 
 /** Wraps SDL3's native "Save As" / "Open" dialogs. SDL runs the callback on the
-   thread that pumps its events — i.e. the compose main-loop thread — so the
+   thread that pumps its events - i.e. the compose main-loop thread - so the
    result handler may safely touch snapshot state (the recomposer picks it up on
    the next frame).
 

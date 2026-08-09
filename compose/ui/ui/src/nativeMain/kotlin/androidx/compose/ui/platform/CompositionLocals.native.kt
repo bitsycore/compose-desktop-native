@@ -6,14 +6,14 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.InternalComposeUiApi
 
 // ==================
-// MARK: CompositionLocals — native actuals + project stubs
+// MARK: CompositionLocals - native actuals + project stubs
 // ==================
 
 /**
  * Project native actuals for the vendored commonMain CompositionLocals.kt.
  * Upstream ships these in `CompositionLocals.skiko.kt` next to
  * `ProvidePlatformCompositionLocals` (which needs PlatformContext + the
- * full scene engine — blocked here). We provide the `LocalLifecycleOwner`
+ * full scene engine - blocked here). We provide the `LocalLifecycleOwner`
  * actual plus the three internal-API composition locals that
  * `foundation-layout/WindowInsets.skiko.kt`, `material3`, and other vendored
  * files reference. Providers land in `ComposeWindow` when we wire real
@@ -22,7 +22,7 @@ import androidx.compose.ui.InternalComposeUiApi
 actual val LocalLifecycleOwner get() = androidx.lifecycle.compose.LocalLifecycleOwner
 
 // LocalPlatformPrefetchScheduler is provided by PrefetchLocals.native.kt (a
-// project stub predating this file — no-op scheduler default, since prefetch is
+// project stub predating this file - no-op scheduler default, since prefetch is
 // a background performance optimization the SDL single-threaded main loop
 // doesn't drive).
 

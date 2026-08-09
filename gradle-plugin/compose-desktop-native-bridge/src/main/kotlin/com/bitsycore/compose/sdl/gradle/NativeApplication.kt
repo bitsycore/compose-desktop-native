@@ -9,7 +9,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Nested
 
 // ==================
-// MARK: compose.desktop.native { } — the native counterpart of application { }
+// MARK: compose.desktop.native { } - the native counterpart of application { }
 // ==================
 
 /**
@@ -28,7 +28,7 @@ import org.gradle.api.tasks.Nested
  *
  * At runtime the app selects the bundled blobs itself:
  * `nativeComposeWindow(icon = AppWindowIcon(light = listOf("icon/app-128.rgba",
- * "icon/app-32.rgba"), dark = listOf("icon/app-dark-128.rgba", …)))` — the paths
+ * "icon/app-32.rgba"), dark = listOf("icon/app-dark-128.rgba", …)))` - the paths
  * are `<resourceDir>/<pngBaseName>.rgba`.
  *
  * The runtime window icon and the Windows `.exe` icon can differ: point [light]
@@ -43,7 +43,7 @@ abstract class NativeIconSpec {
 	abstract val dark: ConfigurableFileCollection
 
 	/** PNG files for the Windows `.exe` icon (Explorer / pinned taskbar). Falls
-	    back to [light] when empty — set it to use a different icon there. */
+	    back to [light] when empty - set it to use a different icon there. */
 	abstract val exeIcon: ConfigurableFileCollection
 
 	/** data.kres subfolder the `.rgba` blobs land in. Default `"icon"`. */
@@ -67,7 +67,7 @@ abstract class NativeIconSpec {
  * ```
  *
  * Declares an executable with the given entry point on every Kotlin/Native
- * DESKTOP target (mingwX64 / linuxX64 / linuxArm64 / macosArm64) — replacing
+ * DESKTOP target (mingwX64 / linuxX64 / linuxArm64 / macosArm64) - replacing
  * the hand-written `targets.withType<KotlinNativeTarget> { binaries.executable
  * { entryPoint = … } }` block. Hand-declared executables keep everything they
  * configure (linker flags, build types); [entryPoint] only fills in where the
@@ -148,7 +148,7 @@ private fun configureNativeExecutables(project: Project, ext: ComposeDesktopNati
 
 /** Adds the windres icon-resource object (produced by
    compileComposeNativeIconResource, wired as a link dependency in
-   installAppIcon) to the linker options of EVERY mingw executable — the ones
+   installAppIcon) to the linker options of EVERY mingw executable - the ones
    `native { entryPoint }` just created AND hand-configured
    `binaries.executable { }` ones, so apps that declare their own executables
    for custom linker flags still get the .exe icon. Runs in afterEvaluate,

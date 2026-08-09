@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Foundation — Modifier.shadow: elevation ladder, shapes, tints, backdrops.
+// Foundation - Modifier.shadow: elevation ladder, shapes, tints, backdrops.
 @Composable
 internal fun ShadowScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		ScreenTitle("Shadows", "Modifier.shadow — SDL renders stacked-ring falloff, Skia a Gaussian blur.")
+		ScreenTitle("Shadows", "Modifier.shadow - SDL renders stacked-ring falloff, Skia a Gaussian blur.")
 
 		Section("Elevation ladder", "1 → 24 dp on a light backdrop (shadows read best on light)") {
 			LightBackdrop {
@@ -103,7 +103,7 @@ internal fun ShadowScreen() {
 			}
 		}
 
-		Section("Interactive", "Drag the slider — elevation animates the blur + offset live") {
+		Section("Interactive", "Drag the slider - elevation animates the blur + offset live") {
 			var vElevation by remember { mutableStateOf(6f) }
 			LightBackdrop(height = 150.dp) {
 				Box(
@@ -129,7 +129,7 @@ internal fun ShadowScreen() {
 	}
 }
 
-// Light panel the shadow samples sit on — dark-theme backgrounds swallow
+// Light panel the shadow samples sit on - dark-theme backgrounds swallow
 // shadows, so most sections stage on this.
 @Composable
 private fun LightBackdrop(height: Dp = 120.dp, content: @Composable () -> Unit) {

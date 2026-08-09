@@ -21,7 +21,7 @@ import com.compose.sdl.icons.MaterialSymbols
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsOutlined
 
 // ==================
-// MARK: Panel 3 — request builder (Query / Headers / Body)
+// MARK: Panel 3 - request builder (Query / Headers / Body)
 // ==================
 
 /** Tabs to edit query params, headers and the body, a Preview toggle top-right,
@@ -63,7 +63,7 @@ internal fun RequestBuilder(
         }
 
         // Tabs, with the status message and a Preview toggle (icon only) on the
-        // same line — the toggle no longer needs its own row.
+        // same line - the toggle no longer needs its own row.
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 10.dp, top = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -98,7 +98,7 @@ internal fun RequestBuilder(
         }
         HorizontalDivider(color = c.border)
 
-        // Tab content — scrolls, except a Text body which fills the whole panel
+        // Tab content - scrolls, except a Text body which fills the whole panel
         // (so it stays one editable surface you can click anywhere in). Greyed when
         // read-only (a linked-copy request).
         val vScroll = rememberScrollState()
@@ -117,7 +117,7 @@ internal fun RequestBuilder(
             }
         }
 
-        // Body-type selector — only on the Body tab, pinned at the bottom. For a
+        // Body-type selector - only on the Body tab, pinned at the bottom. For a
         // Text body the format/type picker sits beside it; that type drives both the
         // syntax colours and the sent Content-Type.
         if (inRs.reqTab == 3) {
@@ -170,7 +170,7 @@ internal fun FormatButton(inOnClick: () -> Unit) {
     HoverIconBtn(MaterialSymbols.AutoFixHigh, "Format (pretty-print)", inOnClick)
 }
 
-/** Icon button with the toolbar's standard hover treatment — accent-tinted
+/** Icon button with the toolbar's standard hover treatment - accent-tinted
 background + accent icon on hover (matching the TLS chain button). inActive
 keeps it lit, for toggles such as the preview eye. */
 @Composable
@@ -212,7 +212,7 @@ internal fun HoverIconBtn(
 }
 
 /** Tab-size picker (2 / 4 / 8), shown left of the format button. Sets the global
-editor tab width via TextLayoutConfig — how wide a typed '\t' renders AND how
+editor tab width via TextLayoutConfig - how wide a typed '\t' renders AND how
 deep the formatter indents. Snapshot-backed, so the change is live. */
 @Composable
 internal fun TabSizeSelector() {
@@ -258,7 +258,7 @@ internal fun TabSizeSelector() {
     }
 }
 
-/** FILE body — pick a file; its path is stored in body and sent as raw bytes. */
+/** FILE body - pick a file; its path is stored in body and sent as raw bytes. */
 @Composable
 internal fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) -> Unit) {
     val c = LocalAppColors.current
@@ -271,7 +271,7 @@ internal fun FileBody(inReq: ApiRequest, inEdit: ((ApiRequest) -> ApiRequest) ->
     }
 }
 
-/** Client-certificate (mTLS) editor — certificate + optional separate key +
+/** Client-certificate (mTLS) editor - certificate + optional separate key +
 passphrase. PEM/DER are used directly by OpenSSL on macOS/Linux; on Windows
 they're imported into the certificate store for the request then removed
 (see CurlMtls). PKCS#12 bundles its own private key. */
@@ -331,7 +331,7 @@ internal fun CertConfigEditor(
                 }
             }
             Text(
-                inCert.keyPath.ifBlank { "Optional — only if the key is in a separate file." },
+                inCert.keyPath.ifBlank { "Optional - only if the key is in a separate file." },
                 color = if (inCert.keyPath.isNotBlank()) c.text else c.dim, fontSize = 12.sp,
             )
         }
@@ -402,7 +402,7 @@ internal fun RequestCertTab(
     }
 }
 
-/** Scope settings editor (Variables / Query / Headers / Cert sub-tabs) — shared by
+/** Scope settings editor (Variables / Query / Headers / Cert sub-tabs) - shared by
 the session settings tab and each pack's settings tab. Each sub-tab shows what
 the scope inherits from above (source-tagged, with Override) over its own
 editable list, mirroring the request panels. */
@@ -415,7 +415,7 @@ internal fun ScopeSettings(
     inParams: List<KeyVal>, inOnParams: (List<KeyVal>) -> Unit, inParamHelp: String,
     inHeaders: List<KeyVal>, inOnHeaders: (List<KeyVal>) -> Unit, inHeaderHelp: String,
     inCert: CertConfig?, inOnCert: (CertConfig?) -> Unit, inCertHelp: String, inCertHeading: String,
-    // What this scope inherits from above (empty for the session — it's the top).
+    // What this scope inherits from above (empty for the session - it's the top).
     inInheritedVars: List<InheritedKv> = emptyList(),
     inInheritedParams: List<InheritedKv> = emptyList(),
     inInheritedHeaders: List<InheritedKv> = emptyList(),

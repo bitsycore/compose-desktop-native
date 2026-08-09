@@ -1,9 +1,9 @@
-// :material-ripple — androidx.compose.material.ripple, vendored VERBATIM from
+// :material-ripple - androidx.compose.material.ripple, vendored VERBATIM from
 // upstream into src/vendor/. Split out of :material3 to mirror Compose
 // Multiplatform's module packaging.
 //
 // Provenance = material-ripple/compose-fork.txt + scripts/compose-fork/compose.properties.
-// Never hand-edit files under src/vendor/ — change the manifest and re-run
+// Never hand-edit files under src/vendor/ - change the manifest and re-run
 // `python scripts/compose-fork/sync.py compose/material/material-ripple`.
 //
 // Publication artifactId: desktop-material-ripple.

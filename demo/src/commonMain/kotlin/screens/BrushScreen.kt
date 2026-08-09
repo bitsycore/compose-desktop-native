@@ -13,14 +13,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Foundation / ui.graphics — Brush gradients painted through Modifier.background.
+// Foundation / ui.graphics - Brush gradients painted through Modifier.background.
 // Exercises the Skia renderer's gradient shaders (linear / radial / sweep).
 @Composable
 internal fun BrushScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		ScreenTitle(
 			"Brushes & Gradients",
-			"androidx.compose.ui.graphics.Brush — linear / horizontal / vertical / radial / sweep, painted via Modifier.background.",
+			"androidx.compose.ui.graphics.Brush - linear / horizontal / vertical / radial / sweep, painted via Modifier.background.",
 		)
 
 		val vStops = listOf(Color(0xFF7C4DFF), Color(0xFF18FFFF), Color(0xFF69F0AE))

@@ -15,14 +15,14 @@ import com.compose.sdl.icons.IconFont
 import com.compose.sdl.text.NamedFont
 
 // ==================
-// MARK: Font actuals — Skia text stack via the project font registry
+// MARK: Font actuals - Skia text stack via the project font registry
 // ==================
 
 /** The Skia text stack resolves fonts by FAMILY NAME through the project font
-   registry (IconFont.registerIcon — the general byte-font table, not just
+   registry (IconFont.registerIcon - the general byte-font table, not just
    icons). A font resource therefore loads its bytes through the resource
    reader, registers them under a per-resource family name, and returns a
-   [NamedFont] — `FontFamily(Font(Res.font.x))` then renders through the
+   [NamedFont] - `FontFamily(Font(Res.font.x))` then renders through the
    standard project pipeline. Weight/style are carried on the NamedFont;
    variation axes apply at draw time via Skia's axis support. */
 

@@ -12,7 +12,7 @@ import org.jetbrains.skia.paragraph.FontCollection
 import org.jetbrains.skia.paragraph.TypefaceFontProvider
 
 // ==================
-// MARK: SkiaFonts — font-resolution bridge for the skiko paragraph engine
+// MARK: SkiaFonts - font-resolution bridge for the skiko paragraph engine
 // ==================
 
 /**
@@ -27,7 +27,7 @@ import org.jetbrains.skia.paragraph.TypefaceFontProvider
  * UNIQUE alias, and [resolve] hands that alias back so the caller sets both
  * `TextStyle.typeface` AND `TextStyle.fontFamilies = [alias]`. That matters:
  * skiko's shaper maps codepoints→glyphs through `fontFamilies` (the
- * FontCollection), so an icon font MUST be reachable by its alias — otherwise a
+ * FontCollection), so an icon font MUST be reachable by its alias - otherwise a
  * bare `typeface` is ignored and private-use icon codepoints render as tofu.
  * (Mirrors upstream FontCache: register alias + set fontFamilies + typeface.)
  */

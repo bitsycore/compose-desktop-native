@@ -17,7 +17,7 @@ import org.jetbrains.skia.SurfaceOrigin
 import sdl3.SDL_GL_SwapWindow
 
 // ==================
-// MARK: SkiaGLBridge — Skia GPU on top of an SDL3 OpenGL context.
+// MARK: SkiaGLBridge - Skia GPU on top of an SDL3 OpenGL context.
 // ==================
 
 /** Requires the SDL window to have been created with SDL_WINDOW_OPENGL and

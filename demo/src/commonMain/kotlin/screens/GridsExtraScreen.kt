@@ -20,7 +20,7 @@ private val CellColors = listOf(
 	Color(0xFFFFCA28), Color(0xFFEC407A), Color(0xFF66BB6A),
 )
 
-// Foundation — the lazy grid variants beyond LazyVerticalGrid.
+// Foundation - the lazy grid variants beyond LazyVerticalGrid.
 @Composable
 internal fun GridsExtraScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -37,7 +37,7 @@ internal fun GridsExtraScreen() {
 			}
 		}
 
-		Section("LazyVerticalStaggeredGrid", "Masonry columns — item heights vary") {
+		Section("LazyVerticalStaggeredGrid", "Masonry columns - item heights vary") {
 			LazyVerticalStaggeredGrid(
 				columns = StaggeredGridCells.Fixed(3),
 				modifier = Modifier.fillMaxWidth().height(240.dp),
@@ -48,7 +48,7 @@ internal fun GridsExtraScreen() {
 			}
 		}
 
-		Section("LazyHorizontalStaggeredGrid", "Masonry rows — item widths vary") {
+		Section("LazyHorizontalStaggeredGrid", "Masonry rows - item widths vary") {
 			LazyHorizontalStaggeredGrid(
 				rows = StaggeredGridCells.Fixed(2),
 				modifier = Modifier.fillMaxWidth().height(120.dp),

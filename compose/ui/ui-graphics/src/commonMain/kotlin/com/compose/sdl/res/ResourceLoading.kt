@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.painter.Painter
    decode it. Resources under drawable/ are classified by file extension;
    those under files/ are always Raw (read-only bytes, not drawable). */
 enum class ResourceKind {
-	Raster,         // png / jpg / bmp / gif / webp … — decode to a bitmap
-	Svg,            // .svg — rasterise the vector
-	AndroidVector,  // android <vector> xml — converted to svg, then rasterised
-	Raw,            // arbitrary bytes — not drawable, only Res.readBytes
+	Raster,         // png / jpg / bmp / gif / webp … - decode to a bitmap
+	Svg,            // .svg - rasterise the vector
+	AndroidVector,  // android <vector> xml - converted to svg, then rasterised
+	Raw,            // arbitrary bytes - not drawable, only Res.readBytes
 }
 
 /** Picks a ResourceKind from a file extension. */
@@ -37,7 +37,7 @@ fun resourceKindForPath(path: String): ResourceKind {
    bytes. The active RenderBackend installs an implementation at startup.
    Actual drawing is done by the renderer
    directly off the LayoutNode painter leaf, reusing the backend's decode
-   cache — so a decoded texture is created once and shared by measure + draw. */
+   cache - so a decoded texture is created once and shared by measure + draw. */
 interface ImageLoader {
 	/** Intrinsic size of the decoded resource in logical points (matches upstream
 	   Painter.intrinsicSize). Size.Unspecified when the resource is missing or

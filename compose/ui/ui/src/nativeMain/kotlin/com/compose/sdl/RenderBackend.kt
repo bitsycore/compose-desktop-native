@@ -28,7 +28,7 @@ interface RenderBackend {
     /** Build this frame's platform Canvas and hand it to [inDraw], which walks the
        composition (host.drawRoot(canvas)) through the vendored coordinator /
        DrawModifierNode pipeline. Taking a (Canvas)->Unit instead of the host keeps
-       RenderBackend + its implementations independent of the node/host layer — the
+       RenderBackend + its implementations independent of the node/host layer - the
        decoupling that lets the renderers live in :ui-graphics (no ui-graphics→ui
        cycle). Default no-op. */
     fun drawRoot(inDraw: (canvas: androidx.compose.ui.graphics.Canvas) -> Unit) {}

@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-// Material3 — bottom sheets, swipe-to-dismiss, drag handles.
+// Material3 - bottom sheets, swipe-to-dismiss, drag handles.
 @Composable
 internal fun M3SheetsScreen() {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -38,7 +38,7 @@ internal fun M3SheetsScreen() {
 					scaffoldState = rememberBottomSheetScaffoldState(),
 					sheetContent = {
 						Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-							Text("Partially expanded sheet — drag the handle")
+							Text("Partially expanded sheet - drag the handle")
 							Text("Second line of sheet content")
 						}
 					},

@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontFamily
 // back to the default proportional font.
 const val kMonoFamily = "noto-mono"
 
-/** The raw family name string — used by wrappedRowCount, which measures via the
+/** The raw family name string - used by wrappedRowCount, which measures via the
 platform text pipeline (accepts a name string). Null when not bundled. */
 expect val monoFontFamilyName: String?
 

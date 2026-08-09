@@ -6,7 +6,7 @@ param(
     [int]$holdMs = 80       # press duration for 'hold'
 )
 # Window-CLIENT-relative synthetic input against a native app window, addressed
-# by process name — so probes don't depend on where the window landed or on it
+# by process name - so probes don't depend on where the window landed or on it
 # being the foreground window (it's raised to foreground first). Coordinates are
 # FRACTIONS of the client rect, so they're resolution/DPI independent.
 Add-Type @"

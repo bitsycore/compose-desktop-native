@@ -35,7 +35,7 @@ internal fun GestureScreen() {
 		)
 
 		// ============
-		//  detectTapGestures — onTap / onDoubleTap / onLongPress
+		//  detectTapGestures - onTap / onDoubleTap / onLongPress
 		var vTapLog by remember { mutableStateOf("(no gesture yet)") }
 		Section(
 			"detectTapGestures",
@@ -63,7 +63,7 @@ internal fun GestureScreen() {
 		}
 
 		// ============
-		//  detectDragGestures — drag a square around a parent box
+		//  detectDragGestures - drag a square around a parent box
 		var vDx by remember { mutableStateOf(0f) }
 		var vDy by remember { mutableStateOf(0f) }
 		Section(

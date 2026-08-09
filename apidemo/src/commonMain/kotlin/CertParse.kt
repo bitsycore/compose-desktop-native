@@ -6,7 +6,7 @@ import kotlin.io.encoding.Base64
 // MARK: Minimal X.509 / DER parser
 // ==================
 // Some TLS backends (notably Schannel on Windows) expose only Subject / Issuer /
-// the PEM through CURLINFO_CERTINFO — not the parsed fields (validity, serial,
+// the PEM through CURLINFO_CERTINFO - not the parsed fields (validity, serial,
 // SAN, algorithms). Since every backend gives us the PEM, we parse it ourselves
 // to fill in the detail. Just enough ASN.1 to walk a Certificate; anything odd
 // is swallowed and the field is simply omitted.
@@ -94,7 +94,7 @@ private fun pemToDer(inPem: String): ByteArray? {
     }
 }
 
-/** The friendly name (or dotted OID) of the first child OID of a SEQUENCE — used
+/** The friendly name (or dotted OID) of the first child OID of a SEQUENCE - used
 for signatureAlgorithm and subjectPublicKeyInfo's AlgorithmIdentifier. */
 private fun firstOidName(inB: ByteArray, inSeq: IntArray): String? {
     val vR = DerReader(inB, inSeq[1], inSeq[2])
@@ -139,7 +139,7 @@ private fun parseAsn1Time(inB: ByteArray, inTlv: IntArray): String? {
         if (inTlv[0] == 0x18)                                           // GeneralizedTime
         {
             vYear = vS.substring(0, 4); vRest = vS.substring(4)
-        } else                                                            // UTCTime — RFC 5280 pivot at 50
+        } else                                                            // UTCTime - RFC 5280 pivot at 50
         {
             val vYy = vS.substring(0, 2).toInt()
             vYear = (if (vYy >= 50) "19" else "20") + vS.substring(0, 2)

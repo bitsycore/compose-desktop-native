@@ -3,7 +3,7 @@ package androidx.compose.foundation
 import androidx.compose.ui.node.DelegatableNode
 
 // ==================
-// MARK: Clickable — native actuals
+// MARK: Clickable - native actuals
 // ==================
 
 /** Desktop/SDL values (mirror upstream desktop): no tap-indication delay, and the

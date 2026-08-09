@@ -4,13 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 
 // ==================
-// MARK: CalendarLocale — native project actuals
+// MARK: CalendarLocale - native project actuals
 // ==================
 
 /**
  Upstream's darwinMain / desktopMain provide these actuals from platform locale
  APIs (NSLocale on darwin, java.util.Locale on JVM). Our K/N native target has
- neither, so we ship a locale-agnostic stub — a single implicit "current" locale
+ neither, so we ship a locale-agnostic stub - a single implicit "current" locale
  the DatePicker / TimePicker use for formatting. All weekdays / month names
  rendered by material3 use its own l10n tables (vendored under
  material3.internal.l10n) keyed by this stub's identity, which resolves to the

@@ -13,14 +13,14 @@ class SDL3Backend(
     private val height: Int = 600,
     val gpuMode: GpuMode = GpuMode.Software,
     // Resource paths (inside data.kres) of the pre-decoded .rgba icon blobs.
-    // The first-listed size is irrelevant — the largest becomes the base and
+    // The first-listed size is irrelevant - the largest becomes the base and
     // the rest become alternate resolutions. Dark set falls back to light.
     private val iconLightResourcePaths: List<String> = emptyList(),
     private val iconDarkResourcePaths: List<String> = emptyList(),
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
-            "SDL3Backend received GpuMode.Auto — resolve via preferredGpuMode() first"
+            "SDL3Backend received GpuMode.Auto - resolve via preferredGpuMode() first"
         }
     }
 
@@ -32,10 +32,10 @@ class SDL3Backend(
     var renderer: COpaquePointer? = null; private set
     var glContext: COpaquePointer? = null; private set
     var metalView: COpaquePointer? = null; private set
-    // Logical (point) size — what layout / hit-testing / input events use.
+    // Logical (point) size - what layout / hit-testing / input events use.
     var windowWidth: Int = width; private set
     var windowHeight: Int = height; private set
-    // Physical (pixel) size of the back buffer — what bridges allocate.
+    // Physical (pixel) size of the back buffer - what bridges allocate.
     // On Retina with HIGH_PIXEL_DENSITY this is 2x the logical size.
     var pixelWidth: Int = width; private set
     var pixelHeight: Int = height; private set
@@ -52,7 +52,7 @@ class SDL3Backend(
         }
 
         // Deliver the mouse click that GIVES the window focus instead of
-        // swallowing it (SDL's default eats it — the first click on an
+        // swallowing it (SDL's default eats it - the first click on an
         // unfocused window would only activate it, and the button under the
         // cursor would never fire). Desktop apps expect click-through.
         SDL_SetHint("SDL_MOUSE_FOCUS_CLICKTHROUGH", "1")
@@ -107,8 +107,8 @@ class SDL3Backend(
                     println("SDL_Metal_CreateView failed: ${SDL_GetError()?.toKString()}")
                     return false
                 }
-                // CAMetalLayer presents on the vertical blank — nextDrawable
-                // blocks — so Metal is vsync-paced and the loop skips its delay.
+                // CAMetalLayer presents on the vertical blank - nextDrawable
+                // blocks - so Metal is vsync-paced and the loop skips its delay.
                 vsyncEnabled = true
             }
             is GpuMode.Software -> {
@@ -120,7 +120,7 @@ class SDL3Backend(
                     return false
                 }
                 SDL_SetRenderDrawBlendMode(renderer?.reinterpret(), SDL_BLENDMODE_BLEND)
-                // Pace presentation to the display — smooth + tear-free, and lets
+                // Pace presentation to the display - smooth + tear-free, and lets
                 // the main loop drop its manual SDL_Delay. Stays false if the
                 // driver can't vsync (e.g. the software renderer), so the loop
                 // keeps its fallback frame cap.
@@ -140,7 +140,7 @@ class SDL3Backend(
     /** Applies the theme-appropriate window icon via SDL_SetWindowIcon: the dark
        set when the OS is in dark mode and a dark set was supplied, otherwise the
        light set. No-op when no icon paths were configured or the current choice
-       is already applied — so it is safe to call at init and again on every
+       is already applied - so it is safe to call at init and again on every
        SDL_EVENT_SYSTEM_THEME_CHANGED. */
     fun applyThemeIcon() {
         val vWindow = window ?: return
@@ -161,7 +161,7 @@ class SDL3Backend(
         for (vSurf in vSurfaces) {
             if (vSurf != vBase) {
                 // AddSurfaceAlternateImage takes its OWN reference, so drop ours
-                // immediately — the base keeps the alternate alive until it (and
+                // immediately - the base keeps the alternate alive until it (and
                 // thus the icon SDL copied) is destroyed.
                 SDL_AddSurfaceAlternateImage(vBase, vSurf)
                 SDL_DestroySurface(vSurf)
@@ -172,14 +172,14 @@ class SDL3Backend(
         appliedIconKey = vKey
     }
 
-    /** Stable SDL identifier of this backend's window — events carry it, so the
+    /** Stable SDL identifier of this backend's window - events carry it, so the
        multi-window loop can route them to the right instance. 0 before init. */
     val windowId: UInt
         get() = window?.let { SDL_GetWindowID(it.reinterpret()) } ?: 0u
 
     /** Tears down this backend's window + renderer. inQuitSdl controls the
        process-wide SDL_Quit(): a multi-window app destroys each window with
-       false and calls SDL_Quit once (via the app runtime) after the last —
+       false and calls SDL_Quit once (via the app runtime) after the last -
        SDL_Quit shuts down ALL subsystems regardless of other live windows. */
     fun destroy(inQuitSdl: Boolean = true) {
         glContext?.let { SDL_GL_DestroyContext(it.reinterpret()) }

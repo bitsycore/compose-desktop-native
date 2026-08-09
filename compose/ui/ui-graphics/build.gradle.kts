@@ -1,6 +1,6 @@
-// :ui-graphics — androidx.compose.ui.graphics.* split out of :ui (upstream layout).
+// :ui-graphics - androidx.compose.ui.graphics.* split out of :ui (upstream layout).
 // Canvas / Paint / Path / Brush / Color / ImageBitmap / Shader / GraphicsLayer +
-// the Skia actuals (SkiaBackedCanvas, SkiaImageCache, …). SDL-free — image bytes
+// the Skia actuals (SkiaBackedCanvas, SkiaImageCache, …). SDL-free - image bytes
 // come through the composeResourceReader seam, so it depends only on skiko +
 // the low ui primitives, NOT on :sdl-core.
 

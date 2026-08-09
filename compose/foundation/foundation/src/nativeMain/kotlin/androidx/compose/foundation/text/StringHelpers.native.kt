@@ -12,7 +12,7 @@ package androidx.compose.foundation.text
 
  findPrecedingBreak / findFollowingBreak / findCodePointOrEmojiStartBefore
  walk on code-point boundaries (skip low surrogate pairs). No ICU grapheme-
- cluster support yet — combining marks / emoji ZWJ sequences will land at
+ cluster support yet - combining marks / emoji ZWJ sequences will land at
  codepoint boundaries. Good enough for basic caret navigation pending a
  proper break iterator.
 */

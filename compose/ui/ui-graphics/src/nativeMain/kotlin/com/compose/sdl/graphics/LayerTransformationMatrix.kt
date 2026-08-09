@@ -5,7 +5,7 @@ import kotlin.math.abs
 
 // Layer transform matrix builder for GraphicsLayerOwnerLayer (hit-testing /
 // coordinate mapping). Body vendored from compose-multiplatform-core
-// Matrices.skiko.kt `prepareTransformationMatrix` — pure Compose `Matrix` math,
+// Matrices.skiko.kt `prepareTransformationMatrix` - pure Compose `Matrix` math,
 // no Skia. It lives HERE in nativeMain (shared by both renderer legs) under a
 // distinct name so it is visible to GraphicsLayerOwnerLayer (also nativeMain);
 // the upstream `prepareTransformationMatrix` stays skikoRenderer-only in the

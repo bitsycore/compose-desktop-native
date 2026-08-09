@@ -19,24 +19,24 @@ import com.compose.sdl.icons.material.symbols.MaterialSymbolsRounded
 import com.compose.sdl.icons.material.symbols.MaterialSymbolsSharp
 
 // ==================
-// MARK: Material Symbols screen — variable-font icon engine showcase
+// MARK: Material Symbols screen - variable-font icon engine showcase
 // ==================
 
 /** The :material-symbols engine demos: the four variable-font axes (FILL /
    wght / GRAD / opsz), the animated fill transition, and the three style
    families. Runs the SAME shared code on native (IconFont over Skia) and JVM
-   (Skiko direct) — differences between the builds = port bugs. */
+   (Skiko direct) - differences between the builds = port bugs. */
 @Composable
 internal fun MaterialSymbolsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Material Symbols",
-            "MaterialSymbolsOutlined / Rounded / Sharp — drop the dependency, call the composable, " +
+            "MaterialSymbolsOutlined / Rounded / Sharp - drop the dependency, call the composable, " +
                 "font auto-installs. Four variable-font axes as direct parameters.",
         )
 
         // ============
-        //  Variable-font axes — each row pins everything except one axis.
+        //  Variable-font axes - each row pins everything except one axis.
         //  Both native (Skia) and the JVM build (Skiko Typeface.makeClone)
         //  honour the axes.
 
@@ -85,12 +85,12 @@ internal fun MaterialSymbolsScreen() {
         }
 
         // ============
-        //  Animated fill — the modern M3 selected-state icon transition:
+        //  Animated fill - the modern M3 selected-state icon transition:
         //  the FILL axis (and tint) animate on click instead of swapping
         //  between two static icons.
         Section(
             "Animated fill",
-            "Click an icon: animateFloatAsState drives the FILL axis (plus tint) — " +
+            "Click an icon: animateFloatAsState drives the FILL axis (plus tint) - " +
                 "the Material 3 selected-state transition, morphing the glyph instead of swapping it.",
         ) {
             Row(verticalAlignment = Alignment.CenterVertically,
@@ -149,7 +149,7 @@ internal fun MaterialSymbolsScreen() {
 
         Section(
             "Combined axes",
-            "All four axes set together — typical real-world use.",
+            "All four axes set together - typical real-world use.",
         ) {
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -268,7 +268,7 @@ internal fun MaterialSymbolsScreen() {
     }
 }
 
-/** One click-toggled icon: FILL 0↔1 and tint animate together — swap-free
+/** One click-toggled icon: FILL 0↔1 and tint animate together - swap-free
    selected-state feedback, the Material 3 expressive icon pattern. */
 @Composable
 private fun AnimatedFillIcon(codepoint: Int, label: String) {

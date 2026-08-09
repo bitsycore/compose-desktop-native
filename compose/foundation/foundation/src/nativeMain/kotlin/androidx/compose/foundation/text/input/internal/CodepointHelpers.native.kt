@@ -1,7 +1,7 @@
 package androidx.compose.foundation.text.input.internal
 
 // ==================
-// MARK: CodepointHelpers — native actuals
+// MARK: CodepointHelpers - native actuals
 // ==================
 
 internal actual fun CharSequence.codePointAt(index: Int): Int {

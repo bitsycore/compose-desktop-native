@@ -27,7 +27,7 @@ internal fun RecompositionScreen() {
 
         Section(
             "Scope-narrowing",
-            "Clicking + only invalidates the inner block — App, outer screen, sibling logs stay at #1",
+            "Clicking + only invalidates the inner block - App, outer screen, sibling logs stay at #1",
         ) {
             var counter by remember { mutableStateOf(0) }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -83,7 +83,7 @@ private fun InnerCounterBlock(counter: Int, onChange: (Int) -> Unit) {
 private fun SiblingBlock() {
     trackRecomposition("Recomposition/sibling")
     Text(
-        "This block doesn't read the counter — its log stays at #1.",
+        "This block doesn't read the counter - its log stays at #1.",
         color = MaterialTheme.colorScheme.onBackground,
         fontSize = 12.sp,
     )

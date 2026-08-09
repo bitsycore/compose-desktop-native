@@ -1,7 +1,7 @@
-// :desktop-native-window — the module apps depend on. Owns nativeComposeWindow() (main loop,
+// :desktop-native-window - the module apps depend on. Owns nativeComposeWindow() (main loop,
 // recomposer lifecycle, event dispatch, Snapshot apply notifications).
 // Renderer selection happens entirely inside :ui via source-set wiring
-// (skikoRendererMain — Skia-only) — this module just calls
+// (skikoRendererMain - Skia-only) - this module just calls
 // `createRenderBackend(...)` and `rendererPreferredGpuMode()` from :ui and
 // the right symbol resolves per target.
 // Publication artifactId (when set up): compose-desktop-native.
@@ -23,7 +23,7 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    // sdl3.* types are api-exposed via :ui → :sdl-core's cinterop klib — no
+    // sdl3.* types are api-exposed via :ui → :sdl-core's cinterop klib - no
     // separate sdl3 cinterop here.
 
     sourceSets {
@@ -35,13 +35,13 @@ kotlin {
             // Material widgets used to be re-exported from :material here; the
             // module was retired when :apidemo and :demo migrated to :material3.
             // Apps that want Material 3 widgets pull `implementation(project(":material3"))`
-            // themselves (:material3 doesn't need to be `api`-exposed — the
+            // themselves (:material3 doesn't need to be `api`-exposed - the
             // upstream vendored surface is stable and apps import it directly).
             api(project(":ui"))
             api(project(":foundation"))
             api(project(":animation-core"))
             implementation(libs.kotlinx.coroutines.core)
-            // setMain() / resetMain() — see Sdl3MainDispatcher.kt for usage.
+            // setMain() / resetMain() - see Sdl3MainDispatcher.kt for usage.
             implementation(libs.kotlinx.coroutines.test)
         }
     }
