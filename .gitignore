@@ -64,3 +64,4 @@ __pycache__/
 
 # Probe artifacts written to the repo root by demo --nav3test / --searchesctest / --dialoganimtest
 /*.bmp
+/local.properties
