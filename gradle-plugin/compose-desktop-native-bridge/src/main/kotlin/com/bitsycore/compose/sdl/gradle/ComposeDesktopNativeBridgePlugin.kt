@@ -21,9 +21,15 @@ import java.util.Properties
  * substituted. The table also covers the ECOSYSTEM libraries the port vendors
  * (Koin, Coil 3, Pulse MVI) - see the grouped entries below.
  *
- * NOTE every entry here must have a matching rule in the repo-internal
- * FULL-COMMONIZATION BRIDGE, and vice versa: the two are the consumer-side and
- * in-repo halves of the same swap.
+ * RELATIONSHIP TO THE REPO-INTERNAL FULL-COMMONIZATION BRIDGE (root
+ * build.gradle.kts): the two are NOT mirror images, and should not be made into
+ * one. This table must cover every coordinate the port PUBLISHES, because a
+ * consumer can declare any of them. The root build only needs a rule for the
+ * coordinates an IN-REPO module actually declares as a Maven coordinate in its
+ * commonMain; in-repo modules reach everything else through `project(...)`,
+ * which needs no substitution. So this table is legitimately the larger of the
+ * two (today: animation-graphics, material-ripple and ui-backhandler are here
+ * and not there). What IS an error is a published coordinate missing HERE.
  */
 private val bridgeTable = mapOf(
     "org.jetbrains.compose.ui:ui" to "com.bitsycore.compose.ui:ui",
