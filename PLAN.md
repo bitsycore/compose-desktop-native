@@ -737,7 +737,7 @@ signatures, N/A on K/N).
 
 ## 7. Post-1.12.0 open items (opened 2026-09-12)
 
-### 7a. JVM parity reference uses a DIFFERENT default font than native - ROOT-CAUSED, unfixed
+### 7a. JVM parity reference used a DIFFERENT default font than native - ✅ FIXED
 
 Symptom (apidemo, `SourceTag` in `InheritanceUi.kt`): the "Session" / "Pack" pill is
 `Box(padding(horizontal = 5.dp, vertical = 1.dp)) { Text(fontSize = 9.sp) }` - no explicit
@@ -761,13 +761,45 @@ This is a defect in the PARITY HARNESS, not (necessarily) in the renderer: every
 doesn't name a `fontFamily` is being compared against a different typeface, so any such
 difference is uninterpretable. It likely masks or manufactures other "port bugs".
 
-**Fix:** make the JVM leg default to the bundled NotoSans so both stacks rasterise the same
-typeface - add a `defaultFontFamily` expect/actual next to `monoFontFamily` (jvm actual loads
-`/font/NotoSans.ttf`, native actual returns null since it is already the default) and apply it
-through the shared theme's `Typography` / `LocalTextStyle`. THEN re-compare the pill: any
-residual offset is a genuine native text-metrics bug and belongs under §1b.
+**Fixed** by giving apidemo a `defaultFontFamily` expect/actual (`Fonts.kt`) that loads the
+bundled `font/NotoSans.ttf` on BOTH legs - native through `IconFont.register` +
+`namedFontFamily`, jvm from the classpath copy `jvmProcessResources` already stages - and
+stamping it across the M3 `Typography` (`withDefaultFontFamily`), since typography styles
+carry their own `fontFamily` and overriding `LocalTextStyle` alone would not reach them.
 
-Affects `:demo` identically (it bundles NotoSans the same way).
+This is the SAME treatment `:demo`'s parity leg already had (see the `notoSans` /
+`notoTypography` block in `demo/src/jvmMain/kotlin/MainJvm.kt`, commented "so the parity %
+measures real divergence, not 'different default typeface'"). apidemo had simply never been
+given it. Verified: the SourceTag pill is now vertically centred on both stacks.
+
+### 7a-bis. apidemo drift check is now mechanised - and two residuals found
+
+`:apidemo` had no way to capture itself, so drift could only be eyeballed. Both legs now take
+`--screenshot=<path>`:
+
+    apidemo.exe --screenshot=out.bmp                              # native: GPU readback
+    ./gradlew :apidemo:run --args=--screenshot=out.png            # jvm: ImageComposeScene
+
+Both render OFFSCREEN to quiescence (virtual 60fps clock, infinite animations frozen via
+upstream's `InfiniteAnimationPolicy`, capture after 3 quiet frames), mirroring `:demo`'s
+parity path. Neither needs a visible window, so the capture is immune to occlusion - a
+screen-scrape approach was tried first and grabbed whatever happened to be in front.
+
+First run after the font fix, 1240x820: **2.9% of pixels differ at all, 2.1% by >32/255.**
+Two residuals, neither a text-metrics bug:
+
+- **Constant ~2px vertical offset.** The whole native content sits 2px lower. Shifting the
+  JVM capture down 2px halves the significant difference (2.14% -> 1.05%), so this single
+  offset is about half of ALL remaining drift; the leftover ~1% is rasterizer AA. Find it in
+  the top bar / tab strip height, not in text layout - the offset is constant down the
+  window, it does not accumulate per row.
+- **Missing glyph in the session header.** The leading icon next to "Untitled session"
+  renders as a `.notdef` TOFU on jvm and as NOTHING on native - so the glyph is absent from
+  the subsetted Material Symbols font on both, and the two stacks just disagree on how to
+  draw a missing glyph. The gear icon beside it is fine, so the icon-font path works; this
+  is almost certainly `enableIconSubsetting` missing a NON-LITERAL `MaterialSymbols.<Name>`
+  reference that `findMaterialSymbolsUsage` cannot see. Check that call site, and consider
+  making the native side draw .notdef too so a missing glyph is never silent.
 
 ### 7b. Vendor Koin + Coil3 + Pulse MVI (requested 2026-09-12) - ✅ DONE
 

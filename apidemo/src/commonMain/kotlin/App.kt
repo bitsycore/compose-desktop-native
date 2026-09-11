@@ -915,7 +915,13 @@ internal fun App() {
     val vExtended = if (vDark) vPalette.scheme.darkExtended else vPalette.scheme.lightExtended
     val vC = appColorsFromScheme(vScheme)
 
-    MaterialTheme(colorScheme = vScheme) {
+    // PARITY: pin the default text family to the bundled NotoSans on BOTH stacks.
+    // Left alone, native resolves FontFamily.Default to the bundled font while the
+    // JVM leg resolves it to a system face, so every un-familied Text was being
+    // compared against a different typeface (see Fonts.kt).
+    val vTypography = MaterialTheme.typography.withDefaultFontFamily(defaultFontFamily)
+
+    MaterialTheme(colorScheme = vScheme, typography = vTypography) {
         CompositionLocalProvider(
             LocalAppColors provides vC,
             LocalVolticExtended provides vExtended,
