@@ -1,0 +1,24 @@
+# :coil:coil - the singleton ImageLoader facade. Upstream: linux + apple, no mingwX64.
+# Upstream source sets collapse onto this port: it has NO android, jvm or js
+# target, so nonAndroidMain / nonJvmCommonMain / nonJsCommonMain / nativeMain all
+# apply to EVERY target here. They land in TWO trees, not one: the non* sets keep
+# their own level (src/vendor/nonAndroid) ABOVE src/vendor/native, because some of
+# them declare `expect`s whose `actual`s live in upstream nativeMain - collapsing
+# both into one source set makes expect and actual siblings, which is an error. appleMain is macosArm64
+# only and nonAppleMain is linux + mingw, so those two keep their own trees (the
+# build file wires a `nonAppleMain` intermediate; appleMain comes from the default
+# hierarchy template).
+SET_REPO=https://github.com/coil-kt/coil@<COIL_REF>
+
+SET_FOLDER=coil/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/coil3/SingletonImageLoader.kt -> src/vendor/common/kotlin/coil3/SingletonImageLoader.kt
+nonAndroidMain/kotlin/ -> src/vendor/nonAndroid/kotlin/
+#     | nonAndroidMain/kotlin/coil3/SingletonImageLoader.nonAndroid.kt -> src/vendor/nonAndroid/kotlin/coil3/SingletonImageLoader.nonAndroid.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/coil3/SingletonImageLoader.android.kt -> src/vendor/android/kotlin/coil3/SingletonImageLoader.android.kt
+#     | androidMain/kotlin/coil3/singletonImageLoaders.android.kt -> src/vendor/android/kotlin/coil3/singletonImageLoaders.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

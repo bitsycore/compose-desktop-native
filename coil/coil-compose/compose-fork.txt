@@ -1,0 +1,15 @@
+# :coil:coil-compose - the public compose entry points. commonMain only.
+# Upstream publishes NEITHER mingwX64 NOR linux for the compose layer.
+SET_REPO=https://github.com/coil-kt/coil@<COIL_REF>
+
+SET_FOLDER=coil-compose/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/coil3/compose/SingletonAsyncImage.kt -> src/vendor/common/kotlin/coil3/compose/SingletonAsyncImage.kt
+#     | commonMain/kotlin/coil3/compose/SingletonAsyncImagePainter.kt -> src/vendor/common/kotlin/coil3/compose/SingletonAsyncImagePainter.kt
+#     | commonMain/kotlin/coil3/compose/SingletonSubcomposeAsyncImage.kt -> src/vendor/common/kotlin/coil3/compose/SingletonSubcomposeAsyncImage.kt
+#     | commonMain/kotlin/coil3/compose/singletonImageLoaders.kt -> src/vendor/common/kotlin/coil3/compose/singletonImageLoaders.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   (none - every source set under SET_FOLDER is vendored)
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

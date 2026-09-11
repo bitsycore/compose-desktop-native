@@ -17,6 +17,7 @@ kotlinxCoroutines = "1.11.0"
 kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 okio = "3.17.0"
+kotlinxIoOkio = "0.9.1"
 ktor = "3.5.1"
 koin = "4.2.2"
 coil = "3.6.2"
@@ -35,6 +36,8 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+# coil-network-ktor3 bridges ktor's kotlinx-io sinks onto okio.
+kotlinx-io-okio = { module = "org.jetbrains.kotlinx:kotlinx-io-okio", version.ref = "kotlinxIoOkio" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }

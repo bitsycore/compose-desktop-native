@@ -53,6 +53,13 @@ val kAreaGroups = mapOf(
     ":koin:koin-compose" to "com.bitsycore.koin",
     ":koin:koin-compose-viewmodel" to "com.bitsycore.koin",
     ":koin:koin-compose-navigation3" to "com.bitsycore.koin",
+    ":coil:coil-core" to "com.bitsycore.coil3",
+    ":coil:coil" to "com.bitsycore.coil3",
+    ":coil:coil-compose-core" to "com.bitsycore.coil3",
+    ":coil:coil-compose" to "com.bitsycore.coil3",
+    ":coil:coil-svg" to "com.bitsycore.coil3",
+    ":coil:coil-network-core" to "com.bitsycore.coil3",
+    ":coil:coil-network-ktor3" to "com.bitsycore.coil3",
     ":compose:desktop:native:desktop-native-window" to "com.bitsycore.compose",
 )
 fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
@@ -92,6 +99,8 @@ val kPublishedLibs = setOf(
     ":navigation3:navigation3-ui", ":components:resources:components-resources",
     ":koin:koin-core-viewmodel", ":koin:koin-compose",
     ":koin:koin-compose-viewmodel", ":koin:koin-compose-navigation3",
+    ":coil:coil-core", ":coil:coil", ":coil:coil-compose-core", ":coil:coil-compose",
+    ":coil:coil-svg", ":coil:coil-network-core", ":coil:coil-network-ktor3",
 )
 
 // -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
@@ -220,6 +229,15 @@ allprojects {
                 substitute(module("io.insert-koin:koin-compose")).using(project(":koin:koin-compose"))
                 substitute(module("io.insert-koin:koin-compose-viewmodel")).using(project(":koin:koin-compose-viewmodel"))
                 substitute(module("io.insert-koin:koin-compose-navigation3")).using(project(":koin:koin-compose-navigation3"))
+                // Coil 3: no mingwX64 upstream anywhere, and no linux for the
+                // compose layer either.
+                substitute(module("io.coil-kt.coil3:coil-core")).using(project(":coil:coil-core"))
+                substitute(module("io.coil-kt.coil3:coil")).using(project(":coil:coil"))
+                substitute(module("io.coil-kt.coil3:coil-compose-core")).using(project(":coil:coil-compose-core"))
+                substitute(module("io.coil-kt.coil3:coil-compose")).using(project(":coil:coil-compose"))
+                substitute(module("io.coil-kt.coil3:coil-svg")).using(project(":coil:coil-svg"))
+                substitute(module("io.coil-kt.coil3:coil-network-core")).using(project(":coil:coil-network-core"))
+                substitute(module("io.coil-kt.coil3:coil-network-ktor3")).using(project(":coil:coil-network-ktor3"))
             }
         }
     }

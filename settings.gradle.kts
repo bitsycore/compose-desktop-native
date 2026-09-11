@@ -91,6 +91,15 @@ include(":koin:koin-core-viewmodel")
 include(":koin:koin-compose")
 include(":koin:koin-compose-viewmodel")
 include(":koin:koin-compose-navigation3")
+// Coil 3 image loading - upstream ships linux but no mingwX64, and no desktop
+// native at all for the compose layer.
+include(":coil:coil-core")
+include(":coil:coil")
+include(":coil:coil-compose-core")
+include(":coil:coil-compose")
+include(":coil:coil-svg")
+include(":coil:coil-network-core")
+include(":coil:coil-network-ktor3")
 include(":components:resources:components-resources")
 
 // Demo App testing foundation, animation, ui and material3

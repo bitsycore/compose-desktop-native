@@ -1,0 +1,37 @@
+# :coil:coil-network-core - shared network fetcher plumbing.
+# Upstream: linux + apple, no mingwX64.
+# Upstream source sets collapse onto this port: it has NO android, jvm or js
+# target, so nonAndroidMain / nonJvmCommonMain / nonJsCommonMain / nativeMain all
+# apply to EVERY target here. They land in TWO trees, not one: the non* sets keep
+# their own level (src/vendor/nonAndroid) ABOVE src/vendor/native, because some of
+# them declare `expect`s whose `actual`s live in upstream nativeMain - collapsing
+# both into one source set makes expect and actual siblings, which is an error. appleMain is macosArm64
+# only and nonAppleMain is linux + mingw, so those two keep their own trees (the
+# build file wires a `nonAppleMain` intermediate; appleMain comes from the default
+# hierarchy template).
+SET_REPO=https://github.com/coil-kt/coil@<COIL_REF>
+
+SET_FOLDER=coil-network-core/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/coil3/network/CacheNetworkResponse.kt -> src/vendor/common/kotlin/coil3/network/CacheNetworkResponse.kt
+#     | commonMain/kotlin/coil3/network/CacheStrategy.kt -> src/vendor/common/kotlin/coil3/network/CacheStrategy.kt
+#     | commonMain/kotlin/coil3/network/ConcurrentRequestStrategy.kt -> src/vendor/common/kotlin/coil3/network/ConcurrentRequestStrategy.kt
+#     | commonMain/kotlin/coil3/network/ConnectivityChecker.kt -> src/vendor/common/kotlin/coil3/network/ConnectivityChecker.kt
+#     | commonMain/kotlin/coil3/network/HttpException.kt -> src/vendor/common/kotlin/coil3/network/HttpException.kt
+#     | commonMain/kotlin/coil3/network/NetworkClient.kt -> src/vendor/common/kotlin/coil3/network/NetworkClient.kt
+#     | commonMain/kotlin/coil3/network/NetworkFetcher.kt -> src/vendor/common/kotlin/coil3/network/NetworkFetcher.kt
+#     | commonMain/kotlin/coil3/network/NetworkHeaders.kt -> src/vendor/common/kotlin/coil3/network/NetworkHeaders.kt
+#     | commonMain/kotlin/coil3/network/imageRequests.kt -> src/vendor/common/kotlin/coil3/network/imageRequests.kt
+#     | commonMain/kotlin/coil3/network/internal/DefaultCacheStrategy.kt -> src/vendor/common/kotlin/coil3/network/internal/DefaultCacheStrategy.kt
+#     | commonMain/kotlin/coil3/network/internal/SingleParameterLazy.kt -> src/vendor/common/kotlin/coil3/network/internal/SingleParameterLazy.kt
+#     | commonMain/kotlin/coil3/network/internal/utils.kt -> src/vendor/common/kotlin/coil3/network/internal/utils.kt
+nonAndroidMain/kotlin/ -> src/vendor/nonAndroid/kotlin/
+#     | nonAndroidMain/kotlin/coil3/network/ConnectivityChecker.kt -> src/vendor/nonAndroid/kotlin/coil3/network/ConnectivityChecker.kt
+#     | nonAndroidMain/kotlin/coil3/network/internal/utils.nonAndroid.kt -> src/vendor/nonAndroid/kotlin/coil3/network/internal/utils.nonAndroid.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/coil3/network/ConnectivityChecker.kt -> src/vendor/android/kotlin/coil3/network/ConnectivityChecker.kt
+#     | androidMain/kotlin/coil3/network/internal/utils.android.kt -> src/vendor/android/kotlin/coil3/network/internal/utils.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>
