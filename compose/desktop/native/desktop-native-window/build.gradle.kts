@@ -34,12 +34,12 @@ kotlin {
             // out of :ui (upstream Compose layout).
             // Material widgets used to be re-exported from :material here; the
             // module was retired when :apidemo and :demo migrated to :material3.
-            // Apps that want Material 3 widgets pull `implementation(project(":material3"))`
+            // Apps that want Material 3 widgets pull `implementation(project(":compose:material3:material3"))`
             // themselves (:material3 doesn't need to be `api`-exposed - the
             // upstream vendored surface is stable and apps import it directly).
-            api(project(":ui"))
-            api(project(":foundation"))
-            api(project(":animation-core"))
+            api(project(":compose:ui:ui"))
+            api(project(":compose:foundation:foundation"))
+            api(project(":compose:animation:animation-core"))
             implementation(libs.kotlinx.coroutines.core)
             // setMain() / resetMain() - see Sdl3MainDispatcher.kt for usage.
             implementation(libs.kotlinx.coroutines.test)

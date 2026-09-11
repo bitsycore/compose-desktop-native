@@ -68,7 +68,7 @@ kotlin {
                 implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
 
                 // Common Material Symbols Utility
-                implementation(project(":material-symbols"))
+                implementation(project(":utils:material-symbols"))
 
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
@@ -81,13 +81,17 @@ kotlin {
         }
         nativeMain {
             dependencies {
-                implementation(project(":desktop-native-window"))
+                implementation(project(":compose:desktop:native:desktop-native-window"))
                 implementation(libs.ktor.client.curl)
             }
         }
         jvmMain {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                // decodeToImageBitmap / decodeToSvgPainter (window icon + in-memory
+                // image viewer). JVM-only: the native side goes through the port's
+                // own EncodedImageDecoder seam, so this stays out of commonMain.
+                implementation("org.jetbrains.compose.components:components-resources:${libs.versions.compose.get()}")
                 implementation(libs.ktor.client.cio)
                 implementation(libs.kotlinx.coroutines.swing)
             }

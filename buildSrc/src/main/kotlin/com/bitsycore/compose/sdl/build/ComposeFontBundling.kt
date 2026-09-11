@@ -197,7 +197,7 @@ private fun Project.addFontEntries(
 		inTask.from(vNotoFile) { into("font") }
 		inDownloadNotoFonts?.let { inTask.dependsOn(it) }
 	}
-	val vSymbolsProject = rootProject.project(":material-symbols")
+	val vSymbolsProject = rootProject.project(":utils:material-symbols")
 	for (vStyle in inUsedStyles) {
 		@Suppress("UNCHECKED_CAST")
 		val vFontFile = vSymbolsProject.extra["iconFontFile$vStyle"] as Provider<RegularFile>
@@ -232,7 +232,7 @@ private fun Project.registerIconSubsetPipeline(inUsedStyles: List<String>): Map<
 	val vFindUsage = tasks.register<Exec>("findMaterialSymbolsUsage") {
 		description = "Scan src/ for MaterialSymbols.<Name> usages → usage-codepoint.txt."
 		val vScript = rootProject.layout.projectDirectory.file("scripts/subset-material-symbols.py").asFile
-		val vConstants = rootProject.project(":material-symbols").layout.projectDirectory
+		val vConstants = rootProject.project(":utils:material-symbols").layout.projectDirectory
 			.file("src/commonMain/kotlin/com/compose/sdl/icons/MaterialSymbols.kt").asFile
 		val vUsageFile = vIconsBuildDir.get().file("usage-codepoint.txt").asFile
 		inputs.files(fileTree("src") { include("**/*.kt") })
@@ -259,7 +259,7 @@ private fun Project.registerSubsetTask(
 	inIconsBuildDir: Provider<Directory>,
 	inFindUsage: TaskProvider<*>,
 ): TaskProvider<*> {
-	val vSymbolsProject = rootProject.project(":material-symbols")
+	val vSymbolsProject = rootProject.project(":utils:material-symbols")
 	return tasks.register("subsetMaterialSymbols$inStyle") {
 		description = "hb-subset the $inStyle Material Symbols font to icons actually used."
 		@Suppress("UNCHECKED_CAST")

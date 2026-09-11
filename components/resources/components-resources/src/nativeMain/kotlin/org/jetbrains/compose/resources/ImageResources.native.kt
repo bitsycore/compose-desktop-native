@@ -1,5 +1,11 @@
 @file:OptIn(InternalResourceApi::class, ExperimentalResourceApi::class)
 
+// VENDOR-REIMPL(COMPOSE_REF): components/resources/library/src/skikoMain/kotlin/org/jetbrains/compose/resources/ImageResources.skiko.kt @ v1.12.0
+// Project REIMPLEMENTATION, not a derived copy: same package + signatures,
+// different body (the port replaces upstream's skiko scene/platform layer).
+// Upstream edits to the counterpart do NOT need reconciling here - re-check
+// only if the expect/actual SIGNATURES change.
+
 package org.jetbrains.compose.resources
 
 import org.jetbrains.compose.resources.InternalResourceApi

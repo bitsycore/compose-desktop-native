@@ -32,26 +32,30 @@ val vPublishVersion = (System.getenv("PUBLISH_VERSION") ?: "0.0.0-SNAPSHOT").rem
 // headline app-shell artifact, published under com.bitsycore.compose.
 val kDefaultGroup = "com.bitsycore.compose.sdl"
 val kAreaGroups = mapOf(
-    ":ui" to "com.bitsycore.compose.ui",
-    ":ui-graphics" to "com.bitsycore.compose.ui",
-    ":ui-text" to "com.bitsycore.compose.ui",
-    ":ui-unit" to "com.bitsycore.compose.ui",
-    ":ui-geometry" to "com.bitsycore.compose.ui",
-    ":ui-util" to "com.bitsycore.compose.ui",
-    ":ui-backhandler" to "com.bitsycore.compose.ui",
-    ":ui-tooling-preview" to "com.bitsycore.compose.ui",
-    ":foundation" to "com.bitsycore.compose.foundation",
-    ":foundation-layout" to "com.bitsycore.compose.foundation",
-    ":animation" to "com.bitsycore.compose.animation",
-    ":animation-core" to "com.bitsycore.compose.animation",
-    ":animation-graphics" to "com.bitsycore.compose.animation",
-    ":material3" to "com.bitsycore.compose.material3",
-    ":material-ripple" to "com.bitsycore.compose.material",
-    ":components-resources" to "com.bitsycore.compose.components",
-    ":navigation3-ui" to "com.bitsycore.navigation3",
-    ":desktop-native-window" to "com.bitsycore.compose",
+    ":compose:ui:ui" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-graphics" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-text" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-unit" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-geometry" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-util" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-backhandler" to "com.bitsycore.compose.ui",
+    ":compose:ui:ui-tooling-preview" to "com.bitsycore.compose.ui",
+    ":compose:foundation:foundation" to "com.bitsycore.compose.foundation",
+    ":compose:foundation:foundation-layout" to "com.bitsycore.compose.foundation",
+    ":compose:animation:animation" to "com.bitsycore.compose.animation",
+    ":compose:animation:animation-core" to "com.bitsycore.compose.animation",
+    ":compose:animation:animation-graphics" to "com.bitsycore.compose.animation",
+    ":compose:material3:material3" to "com.bitsycore.compose.material3",
+    ":compose:material:material-ripple" to "com.bitsycore.compose.material",
+    ":components:resources:components-resources" to "com.bitsycore.compose.components",
+    ":navigation3:navigation3-ui" to "com.bitsycore.navigation3",
+    ":compose:desktop:native:desktop-native-window" to "com.bitsycore.compose",
 )
 fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
+
+// The published artifactId is always the leaf project name - settings.gradle.kts
+// keeps the leaf equal to the artifactId even where the directory differs.
+fun artifactIdFor(path: String): String = path.substringAfterLast(':')
 
 allprojects {
     group = groupFor(path)
@@ -72,14 +76,16 @@ allprojects {
 
 val kAppModules = setOf(":demo", ":apidemo")
 val kPublishedLibs = setOf(
-    ":sdl-core",
-    ":ui", ":ui-util", ":ui-geometry", ":ui-graphics", ":ui-text",
-    ":ui-unit", ":ui-backhandler", ":ui-tooling-preview",
-    ":animation-core", ":animation", ":animation-graphics",
-    ":foundation", ":foundation-layout",
-    ":material3", ":material-ripple",
-    ":desktop-native-window", ":material-symbols",
-    ":navigation3-ui", ":components-resources",
+    ":sdl:sdl-core",
+    ":compose:ui:ui", ":compose:ui:ui-util", ":compose:ui:ui-geometry",
+    ":compose:ui:ui-graphics", ":compose:ui:ui-text",
+    ":compose:ui:ui-unit", ":compose:ui:ui-backhandler", ":compose:ui:ui-tooling-preview",
+    ":compose:animation:animation-core", ":compose:animation:animation",
+    ":compose:animation:animation-graphics",
+    ":compose:foundation:foundation", ":compose:foundation:foundation-layout",
+    ":compose:material3:material3", ":compose:material:material-ripple",
+    ":compose:desktop:native:desktop-native-window", ":utils:material-symbols",
+    ":navigation3:navigation3-ui", ":components:resources:components-resources",
 )
 
 // -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
@@ -110,7 +116,7 @@ subprojects {
         configurations.configureEach {
             resolutionStrategy.dependencySubstitution {
                 kPublishedLibs.forEach { modulePath ->
-                    val vArtifactId = modulePath.removePrefix(":")
+                    val vArtifactId = artifactIdFor(modulePath)
                     substitute(project(modulePath))
                         .using(module("${groupFor(modulePath)}:$vArtifactId:$kConsumeVersion"))
                         .because("-PuseGithubPackages=true")
@@ -128,6 +134,9 @@ subprojects {
         }
         return@subprojects
     }
+    // Nesting the paths under compose/ / sdl/ / utils/ … materialises container
+    // projects (:compose, :compose:ui, …) that hold no code - skip them.
+    if (path !in kPublishedLibs) return@subprojects
     plugins.apply("maven-publish")
     afterEvaluate {
         extensions.configure<PublishingExtension> {
@@ -178,27 +187,27 @@ allprojects {
     configurations.configureEach {
         if (vNativeTargetTokens.any { name.contains(it, ignoreCase = true) }) {
             resolutionStrategy.dependencySubstitution {
-                substitute(module("org.jetbrains.compose.ui:ui")).using(project(":ui"))
+                substitute(module("org.jetbrains.compose.ui:ui")).using(project(":compose:ui:ui"))
                 // ui-graphics / ui-text are their own modules (split out of :ui,
                 // upstream layout). Declare each DIRECTLY so the app commonMain sees
                 // them under the granular-metadata visibility rule.
-                substitute(module("org.jetbrains.compose.ui:ui-graphics")).using(project(":ui-graphics"))
-                substitute(module("org.jetbrains.compose.ui:ui-text")).using(project(":ui-text"))
-                substitute(module("org.jetbrains.compose.ui:ui-unit")).using(project(":ui-unit"))
-                substitute(module("org.jetbrains.compose.ui:ui-geometry")).using(project(":ui-geometry"))
-                substitute(module("org.jetbrains.compose.ui:ui-util")).using(project(":ui-util"))
-                substitute(module("org.jetbrains.compose.ui:ui-tooling-preview")).using(project(":ui-tooling-preview"))
-                substitute(module("org.jetbrains.compose.foundation:foundation")).using(project(":foundation"))
-                substitute(module("org.jetbrains.compose.foundation:foundation-layout")).using(project(":foundation-layout"))
-                substitute(module("org.jetbrains.compose.animation:animation")).using(project(":animation"))
-                substitute(module("org.jetbrains.compose.animation:animation-core")).using(project(":animation-core"))
-                substitute(module("org.jetbrains.compose.material3:material3")).using(project(":material3"))
+                substitute(module("org.jetbrains.compose.ui:ui-graphics")).using(project(":compose:ui:ui-graphics"))
+                substitute(module("org.jetbrains.compose.ui:ui-text")).using(project(":compose:ui:ui-text"))
+                substitute(module("org.jetbrains.compose.ui:ui-unit")).using(project(":compose:ui:ui-unit"))
+                substitute(module("org.jetbrains.compose.ui:ui-geometry")).using(project(":compose:ui:ui-geometry"))
+                substitute(module("org.jetbrains.compose.ui:ui-util")).using(project(":compose:ui:ui-util"))
+                substitute(module("org.jetbrains.compose.ui:ui-tooling-preview")).using(project(":compose:ui:ui-tooling-preview"))
+                substitute(module("org.jetbrains.compose.foundation:foundation")).using(project(":compose:foundation:foundation"))
+                substitute(module("org.jetbrains.compose.foundation:foundation-layout")).using(project(":compose:foundation:foundation-layout"))
+                substitute(module("org.jetbrains.compose.animation:animation")).using(project(":compose:animation:animation"))
+                substitute(module("org.jetbrains.compose.animation:animation-core")).using(project(":compose:animation:animation-core"))
+                substitute(module("org.jetbrains.compose.material3:material3")).using(project(":compose:material3:material3"))
                 // navigation3-ui: the JB Maven artifact has no K/N desktop
                 // klibs - the port vendors it as :navigation3-ui.
-                substitute(module("org.jetbrains.androidx.navigation3:navigation3-ui")).using(project(":navigation3-ui"))
+                substitute(module("org.jetbrains.androidx.navigation3:navigation3-ui")).using(project(":navigation3:navigation3-ui"))
                 // components-resources: the official resources runtime ships no
                 // mingwX64/linux klibs - the port vendors it as :components-resources.
-                substitute(module("org.jetbrains.compose.components:components-resources")).using(project(":components-resources"))
+                substitute(module("org.jetbrains.compose.components:components-resources")).using(project(":components:resources:components-resources"))
             }
         }
     }

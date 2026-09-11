@@ -1,4 +1,4 @@
-// VENDOR-BASE: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Scrollbar.skiko.kt @ v1.12.0-beta03+dev4483
+// VENDOR-BASE: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/Scrollbar.skiko.kt @ v1.12.0
 // MANUAL VENDOR: refused in compose-fork.txt (flat native source set). Only edit vs base is the
 // K2 @file:Suppress below - identical to what sync.py injects into src/vendor .kt (this file lives
 // in src/nativeMain so sync doesn't regenerate it). Needed so compileNativeMainKotlinMetadata (the

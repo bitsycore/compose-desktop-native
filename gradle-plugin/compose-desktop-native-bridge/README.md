@@ -32,21 +32,11 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        maven("https://maven.bitsycore.com/releases") {
-            content { excludeGroup("com.bitsycore.skiko") }
-        }
-        // Windows (mingwX64) renders through the bitsycore skiko fork, published to
-        // its OWN GitHub Packages repo as com.bitsycore.skiko:skiko / :skiko-mingwx64.
-        // GitHub Packages requires authentication even for public packages.
-        // (macOS/Linux use the official org.jetbrains.skiko from Maven Central, so this
-        // repo is scoped to just the fork group.) Omit only if you build no mingwX64.
-        maven("https://maven.pkg.github.com/bitsycore/skiko") {
-            credentials {
-                username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
-                password = providers.gradleProperty("gpr.token").orNull ?: System.getenv("GITHUB_TOKEN")
-            }
-            content { includeGroup("com.bitsycore.skiko") }
-        }
+        // The port's own artifacts AND the bitsycore skiko fork
+        // (com.bitsycore.skiko:skiko / :skiko-mingwx64) both live here - public,
+        // no credentials. Windows (mingwX64) renders through the fork; macOS and
+        // Linux use the official org.jetbrains.skiko from Maven Central.
+        maven("https://maven.bitsycore.com/releases")
         google()
         mavenCentral()
     }

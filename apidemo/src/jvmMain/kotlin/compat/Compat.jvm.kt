@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
+import apidemo.monoFontFamily
 import org.jetbrains.compose.resources.decodeToSvgPainter
 import org.jetbrains.skia.Image
 import java.awt.Desktop

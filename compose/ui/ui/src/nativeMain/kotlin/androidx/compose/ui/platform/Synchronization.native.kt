@@ -1,3 +1,9 @@
+// VENDOR-REIMPL: compose/ui/ui/src/skikoMain/kotlin/androidx/compose/ui/platform/Synchronization.skiko.kt @ v1.12.0
+// Project REIMPLEMENTATION, not a derived copy: same package + signatures,
+// different body (the port replaces upstream's skiko scene/platform layer).
+// Upstream edits to the counterpart do NOT need reconciling here - re-check
+// only if the expect/actual SIGNATURES change.
+
 package androidx.compose.ui.platform
 
 import kotlin.contracts.ExperimentalContracts

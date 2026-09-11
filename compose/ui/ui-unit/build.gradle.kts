@@ -14,8 +14,8 @@ kotlin {
 		commonMain {
 			dependencies {
 				api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
-				api(project(":ui-geometry"))
-				api(project(":ui-util"))
+				api(project(":compose:ui:ui-geometry"))
+				api(project(":compose:ui:ui-util"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

@@ -66,7 +66,7 @@ kotlin {
                 implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
 
                 // Common Material Symbols Utility
-                implementation(project(":material-symbols"))
+                implementation(project(":utils:material-symbols"))
 
                 // nav3 + lifecycle: real KMP Maven artifacts on every target
                 implementation("androidx.navigation3:navigation3-runtime:1.1.4")
@@ -76,7 +76,7 @@ kotlin {
         }
         nativeMain {
             dependencies {
-                implementation(project(":desktop-native-window"))
+                implementation(project(":compose:desktop:native:desktop-native-window"))
             }
         }
         jvmMain {

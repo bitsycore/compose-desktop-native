@@ -2789,16 +2789,16 @@ final class androidx.compose.ui/CombinedModifier : androidx.compose.ui/Modifier 
 }
 
 final class com.compose.sdl.input/LegacyPointerEvent { // com.compose.sdl.input/LegacyPointerEvent|null[0]
-    constructor <init>(kotlin/Int, kotlin/Int, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ...) // com.compose.sdl.input/LegacyPointerEvent.<init>|<init>(kotlin.Int;kotlin.Int;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton){}[0]
+    constructor <init>(kotlin/Float, kotlin/Float, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ...) // com.compose.sdl.input/LegacyPointerEvent.<init>|<init>(kotlin.Float;kotlin.Float;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton){}[0]
 
     final val button // com.compose.sdl.input/LegacyPointerEvent.button|{}button[0]
         final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton // com.compose.sdl.input/LegacyPointerEvent.button.<get-button>|<get-button>(){}[0]
     final val type // com.compose.sdl.input/LegacyPointerEvent.type|{}type[0]
         final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // com.compose.sdl.input/LegacyPointerEvent.type.<get-type>|<get-type>(){}[0]
     final val x // com.compose.sdl.input/LegacyPointerEvent.x|{}x[0]
-        final fun <get-x>(): kotlin/Int // com.compose.sdl.input/LegacyPointerEvent.x.<get-x>|<get-x>(){}[0]
+        final fun <get-x>(): kotlin/Float // com.compose.sdl.input/LegacyPointerEvent.x.<get-x>|<get-x>(){}[0]
     final val y // com.compose.sdl.input/LegacyPointerEvent.y|{}y[0]
-        final fun <get-y>(): kotlin/Int // com.compose.sdl.input/LegacyPointerEvent.y.<get-y>|<get-y>(){}[0]
+        final fun <get-y>(): kotlin/Float // com.compose.sdl.input/LegacyPointerEvent.y.<get-y>|<get-y>(){}[0]
 
     final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.input/LegacyPointerEvent.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.compose.sdl.input/LegacyPointerEvent.hashCode|hashCode(){}[0]
@@ -4136,7 +4136,7 @@ sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
     }
 
     final class MouseWheel : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.MouseWheel|null[0]
-        constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/UInt = ...) // com.compose.sdl/AppEvent.MouseWheel.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.UInt){}[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/UInt = ...) // com.compose.sdl/AppEvent.MouseWheel.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.UInt){}[0]
 
         final val deltaX // com.compose.sdl/AppEvent.MouseWheel.deltaX|{}deltaX[0]
             final fun <get-deltaX>(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.deltaX.<get-deltaX>|<get-deltaX>(){}[0]
@@ -4145,16 +4145,16 @@ sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
         final val windowId // com.compose.sdl/AppEvent.MouseWheel.windowId|{}windowId[0]
             final fun <get-windowId>(): kotlin/UInt // com.compose.sdl/AppEvent.MouseWheel.windowId.<get-windowId>|<get-windowId>(){}[0]
         final val x // com.compose.sdl/AppEvent.MouseWheel.x|{}x[0]
-            final fun <get-x>(): kotlin/Int // com.compose.sdl/AppEvent.MouseWheel.x.<get-x>|<get-x>(){}[0]
+            final fun <get-x>(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.x.<get-x>|<get-x>(){}[0]
         final val y // com.compose.sdl/AppEvent.MouseWheel.y|{}y[0]
-            final fun <get-y>(): kotlin/Int // com.compose.sdl/AppEvent.MouseWheel.y.<get-y>|<get-y>(){}[0]
+            final fun <get-y>(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.y.<get-y>|<get-y>(){}[0]
 
-        final fun component1(): kotlin/Int // com.compose.sdl/AppEvent.MouseWheel.component1|component1(){}[0]
-        final fun component2(): kotlin/Int // com.compose.sdl/AppEvent.MouseWheel.component2|component2(){}[0]
+        final fun component1(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.component1|component1(){}[0]
+        final fun component2(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.component2|component2(){}[0]
         final fun component3(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.component3|component3(){}[0]
         final fun component4(): kotlin/Float // com.compose.sdl/AppEvent.MouseWheel.component4|component4(){}[0]
         final fun component5(): kotlin/UInt // com.compose.sdl/AppEvent.MouseWheel.component5|component5(){}[0]
-        final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/UInt = ...): com.compose.sdl/AppEvent.MouseWheel // com.compose.sdl/AppEvent.MouseWheel.copy|copy(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.UInt){}[0]
+        final fun copy(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/UInt = ...): com.compose.sdl/AppEvent.MouseWheel // com.compose.sdl/AppEvent.MouseWheel.copy|copy(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.UInt){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl/AppEvent.MouseWheel.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.compose.sdl/AppEvent.MouseWheel.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.compose.sdl/AppEvent.MouseWheel.toString|toString(){}[0]
@@ -4542,6 +4542,9 @@ final object com.compose.sdl.platform/DefaultViewConfiguration : androidx.compos
 }
 
 final object com.compose.sdl.text.input/ImeBridge { // com.compose.sdl.text.input/ImeBridge|null[0]
+    final var onSessionActiveChange // com.compose.sdl.text.input/ImeBridge.onSessionActiveChange|{}onSessionActiveChange[0]
+        final fun <get-onSessionActiveChange>(): kotlin/Function1<kotlin/Boolean, kotlin/Unit>? // com.compose.sdl.text.input/ImeBridge.onSessionActiveChange.<get-onSessionActiveChange>|<get-onSessionActiveChange>(){}[0]
+        final fun <set-onSessionActiveChange>(kotlin/Function1<kotlin/Boolean, kotlin/Unit>?) // com.compose.sdl.text.input/ImeBridge.onSessionActiveChange.<set-onSessionActiveChange>|<set-onSessionActiveChange>(kotlin.Function1<kotlin.Boolean,kotlin.Unit>?){}[0]
     final var request // com.compose.sdl.text.input/ImeBridge.request|{}request[0]
         final fun <get-request>(): androidx.compose.ui.platform/PlatformTextInputMethodRequest? // com.compose.sdl.text.input/ImeBridge.request.<get-request>|<get-request>(){}[0]
 

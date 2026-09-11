@@ -72,9 +72,9 @@ saved state behave as they do on Android.
 
 ```kotlin
 commonMain.dependencies {
-    implementation(project(":desktop-native-window")) // window shell + main loop
-    implementation(project(":material3"))        // Material 3 widgets
-    implementation(project(":material-symbols")) // icon-font composables (optional)
+    implementation(project(":compose:desktop:native:desktop-native-window")) // window shell + main loop
+    implementation(project(":compose:material3:material3"))   // Material 3 widgets
+    implementation(project(":utils:material-symbols"))        // icon-font composables (optional)
 }
 ```
 
@@ -106,15 +106,11 @@ commonMain.dependencies {
 }
 ```
 
-**Two GitHub Packages repos are needed.** A consumer declares the port's repo
-(`bitsycore/compose-desktop-native`) **and** the skiko fork's (`bitsycore/skiko`).
-The Windows (mingwX64) target renders through the bitsycore skiko fork, and
-GitHub Packages binds each package name to a **single** repository - so
-`com.bitsycore.skiko` can't be mirrored into the port's repo, it stays in its
-own. Scope them with `includeGroup`/`excludeGroup("com.bitsycore.skiko")`
-(macOS/Linux pull the official skiko from Maven Central instead; if you build no
-mingwX64 you can omit the fork repo). The exact `repositories {}` snippet,
-credentials, and version pinning:
+**One repository, no credentials.** `https://maven.bitsycore.com/releases`
+carries both the port's artifacts and the bitsycore skiko fork
+(`com.bitsycore.skiko`), which the Windows (mingwX64) target renders through;
+macOS/Linux pull the official skiko from Maven Central instead. The exact
+`repositories {}` snippet and version pinning:
 [gradle-plugin/compose-desktop-native-bridge/README.md](gradle-plugin/compose-desktop-native-bridge/README.md).
 
 For a complete project that applies the bridge and builds one shared UI for

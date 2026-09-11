@@ -48,10 +48,10 @@ kotlin {
         commonMain {
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                api(project(":ui"))
-                api(project(":animation-core"))
-                api(project(":animation"))
-                api(project(":foundation-layout"))
+                api(project(":compose:ui:ui"))
+                api(project(":compose:animation:animation-core"))
+                api(project(":compose:animation:animation"))
+                api(project(":compose:foundation:foundation-layout"))
             }
         }
         nativeMain {

@@ -1,6 +1,8 @@
 package apidemo
 
 import androidx.compose.runtime.remember
+import apidemo.compat.jvmOnCloseRequest
+import apidemo.compat.jvmOnKeyShortcut
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp

@@ -28,8 +28,8 @@ kotlin {
 			dependencies {
 				// animation.* imports animation.core.* and foundation.layout.* (Box/Row/Column);
 				// ui / runtime arrive transitively.
-				api(project(":animation-core"))
-				api(project(":foundation-layout"))
+				api(project(":compose:animation:animation-core"))
+				api(project(":compose:foundation:foundation-layout"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

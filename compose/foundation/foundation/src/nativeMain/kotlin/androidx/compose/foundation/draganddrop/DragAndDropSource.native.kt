@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+// VENDOR-REIMPL: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/draganddrop/DragAndDropSource.skiko.kt @ v1.12.0
+// Project REIMPLEMENTATION, not a derived copy: same package + signatures,
+// different body (the port replaces upstream's skiko scene/platform layer).
+// Upstream edits to the counterpart do NOT need reconciling here - re-check
+// only if the expect/actual SIGNATURES change.
+
 package androidx.compose.foundation.draganddrop
 
 import androidx.compose.foundation.gestures.detectDragGestures

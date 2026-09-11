@@ -28,8 +28,8 @@ kotlin {
 			dependencies {
 				// ripple imports androidx.compose.foundation.* (Indication) and
 				// androidx.compose.animation.core.* (RippleAnimation); ui/runtime arrive transitively.
-				api(project(":foundation"))
-				api(project(":animation-core"))
+				api(project(":compose:foundation:foundation"))
+				api(project(":compose:animation:animation-core"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

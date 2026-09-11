@@ -42,12 +42,12 @@ kotlin {
             // scripts/compose-fork/sync.sh. Never hand-edit; re-run sync.
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                api(project(":ui-util"))
-                api(project(":ui-geometry"))
-                api(project(":ui-graphics"))
-                api(project(":ui-text"))
-                api(project(":ui-unit"))
-                api(project(":ui-backhandler"))
+                api(project(":compose:ui:ui-util"))
+                api(project(":compose:ui:ui-geometry"))
+                api(project(":compose:ui:ui-graphics"))
+                api(project(":compose:ui:ui-text"))
+                api(project(":compose:ui:ui-unit"))
+                api(project(":compose:ui:ui-backhandler"))
                 api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 api("org.jetbrains.compose.runtime:runtime-saveable:${libs.versions.composeRuntime.get()}")
                 api("androidx.compose.runtime:runtime-retain:${libs.versions.composeRuntime.get()}")
@@ -70,7 +70,7 @@ kotlin {
                 // The sdl3 cinterop now lives in :sdl-core; expose it (api) so :ui's
                 // SDL platform + renderer code - and :desktop-native-window downstream - see sdl3.*
                 // and inherit SDL3's static-lib + linker-opt propagation.
-                api(project(":sdl-core"))
+                api(project(":sdl:sdl-core"))
             }
         }
 
@@ -106,7 +106,7 @@ kotlin {
                 dependencies {
                     // Published by the fork's CI to GitHub Packages; version
                     // overridable via -PskikoMingwVersion=.
-                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
+                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse(libs.versions.skikoMingw.get())}")
                 }
             }
             val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }

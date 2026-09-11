@@ -34,7 +34,7 @@ kotlin {
 				// foundation (isSystemInDarkTheme in ResourceEnvironment) pulls the
 				// whole ui surface + loadComposeResourceBytes + the sdl3 cinterop
 				// types transitively (all edges are api).
-				api(project(":foundation"))
+				api(project(":compose:foundation:foundation"))
 				implementation(libs.kotlinx.coroutines.core)
 			}
 		}

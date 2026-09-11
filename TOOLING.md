@@ -160,8 +160,8 @@ gradlew.bat :apidemo:runDebugExecutableMingwX64
 ```
 
 mingwX64 renders through Skia via the **bitsycore skiko fork**, consumed from
-GitHub Packages as `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (macOS/Linux use
-official Skiko). The runtime `skiko-windows-x64.dll` is auto-provisioned next
+the PUBLIC `https://maven.bitsycore.com/releases` (no credentials) as
+`com.bitsycore.skiko:skiko:0.150.1-mingw.2` (macOS/Linux use official Skiko). The runtime `skiko-windows-x64.dll` is auto-provisioned next
 to the executable by the bridge plugin - no manual copy. The fork itself is
 published by a separate GitHub Actions workflow in the fork repo, out of band
 from this repo's release flow.
@@ -184,8 +184,8 @@ single file to edit; know which axis you are changing.
 |---------|-------|-------|
 | Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Groups mirror upstream per area (`com.bitsycore.compose.<area>:<module>`, e.g. `com.bitsycore.compose.ui:ui`); project-only modules use `com.bitsycore.compose.sdl` and `:desktop-native-window` is `com.bitsycore.compose` - see `groupFor()` in the root build. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
-| JVM parity forcing | `vComposeJvmVersion` in `demo`, `apidemo`, and `material-symbols` `build.gradle.kts`. | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published. |
-| Skiko | `skiko` in `gradle/libs.versions.toml`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.1` from GitHub Packages), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
+| JVM parity forcing | `compose` / `composeMaterial3` / `composeRuntime` in `gradle/libs.versions.toml` (read by `demo`, `apidemo`, `material-symbols` and the root build's forcing map). | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published; at v1.12.0 they are in lockstep. |
+| Skiko | `skiko` (official) and `skikoMingw` (the fork) in `gradle/libs.versions.toml`; keep the fork's `-mingw.N` base equal to `skiko`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.2` from the public maven.bitsycore.com), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
 | SDL3 | `scripts/build-sdl/build-sdl.properties`. | Rebuild `libs/` with `build-all.py` after any change. |
 | Bridge substituted version | Defaults to the bridge plugin's own published version; consumers override with the `composeDesktopNative.version` Gradle property. | The plugin publishes with the release tag, so a consumer on the matching plugin version resolves the right klibs automatically. |
 

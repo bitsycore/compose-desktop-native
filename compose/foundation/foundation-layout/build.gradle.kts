@@ -27,7 +27,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				// foundation.layout.* only needs ui (+ runtime/collection transitively).
-				api(project(":ui"))
+				api(project(":compose:ui:ui"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

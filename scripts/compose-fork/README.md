@@ -107,7 +107,7 @@ The script is idempotent.
 If you want to vendor a Compose module we don't yet cover (e.g. `material3`):
 
 1. Create the module in the repo if needed (`material3/build.gradle.kts` etc.),
-   and add its `include(":material3")` to `settings.gradle.kts`.
+   and add its `include(":compose:material3:material3")` to `settings.gradle.kts`.
 2. Create `material3/compose-fork.txt` with the standard header (any comment;
    `format-manifest.py` will fix the layout). Populate it either by hand or by
    letting `--discover` seed it:

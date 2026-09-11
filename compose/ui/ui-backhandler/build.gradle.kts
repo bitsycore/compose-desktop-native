@@ -15,7 +15,7 @@ kotlin {
 			dependencies {
 				api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
 				api("androidx.navigationevent:navigationevent-compose:1.1.2")
-				api(project(":ui-util"))
+				api(project(":compose:ui:ui-util"))
 				implementation(libs.kotlinx.coroutines.core)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")

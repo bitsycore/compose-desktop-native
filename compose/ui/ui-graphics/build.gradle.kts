@@ -24,9 +24,9 @@ kotlin {
         commonMain {
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                api(project(":ui-geometry"))
-                api(project(":ui-unit"))
-                api(project(":ui-util"))
+                api(project(":compose:ui:ui-geometry"))
+                api(project(":compose:ui:ui-unit"))
+                api(project(":compose:ui:ui-util"))
                 api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 implementation(libs.kotlinx.coroutines.core)
                 // androidx.collection comes transitively via :ui-util (api).
@@ -55,7 +55,7 @@ kotlin {
                 kotlin.srcDir("src/skikoRendererMain/kotlin")
                 kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
                 dependencies {
-                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
+                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse(libs.versions.skikoMingw.get())}")
                 }
             }
             val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }

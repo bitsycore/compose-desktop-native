@@ -74,7 +74,9 @@ kTargets = [
 	(kCoreRepo,     "compose/material/material-ripple",      "compose/material/material-ripple"),
 	(kCoreRepo,     "compose/material3/material3",           "compose/material3/material3"),
 	(kCoreRepo,     "navigation3/navigation3-ui",            "navigation3/navigation3-ui"),
-	(kUmbrellaRepo, "components/resources/library",          "components/resources/library"),
+	# Upstream keeps `library` as the leaf dir and sets artifactId by hand; the
+	# port renames the dir to the artifactId (leaf == project name == artifactId).
+	(kUmbrellaRepo, "components/resources/library",          "components/resources/components-resources"),
 ]
 
 # Packages under these prefixes are MIRRORED surface: anything we expose here

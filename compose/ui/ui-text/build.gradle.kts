@@ -23,9 +23,9 @@ kotlin {
         commonMain {
             kotlin.srcDir("src/vendor/common/kotlin")
             dependencies {
-                api(project(":ui-graphics"))
-                api(project(":ui-unit"))
-                api(project(":ui-util"))
+                api(project(":compose:ui:ui-graphics"))
+                api(project(":compose:ui:ui-unit"))
+                api(project(":compose:ui:ui-util"))
                 api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 api("org.jetbrains.compose.runtime:runtime-saveable:${libs.versions.composeRuntime.get()}")
                 implementation(libs.kotlinx.coroutines.core)
@@ -54,7 +54,7 @@ kotlin {
                 kotlin.srcDir("src/skikoRendererMain/kotlin")
                 kotlin.srcDir("src/vendor/skikoRenderer/kotlin")
                 dependencies {
-                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse("0.150.1-mingw.1")}")
+                    implementation("com.bitsycore.skiko:skiko:${providers.gradleProperty("skikoMingwVersion").getOrElse(libs.versions.skikoMingw.get())}")
                 }
             }
             val skikoRendererMingwMain = create("skikoRendererMingwMain") { dependsOn(skikoRendererMingwSharedMain) }

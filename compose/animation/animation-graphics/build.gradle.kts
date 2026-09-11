@@ -28,8 +28,8 @@ kotlin {
 			dependencies {
 				// animation.graphics.* uses animation.* / animation.core.* and the vector
 				// graphics from ui (ui-graphics.vector, ui-util).
-				api(project(":animation"))
-				api(project(":ui"))
+				api(project(":compose:animation:animation"))
+				api(project(":compose:ui:ui"))
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

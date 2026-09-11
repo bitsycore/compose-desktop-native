@@ -22,8 +22,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				api(project(":animation"))
-				api(project(":ui"))
+				api(project(":compose:animation:animation"))
+				api(project(":compose:ui:ui"))
 				api("androidx.navigation3:navigation3-runtime:1.2.0-alpha05")
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")

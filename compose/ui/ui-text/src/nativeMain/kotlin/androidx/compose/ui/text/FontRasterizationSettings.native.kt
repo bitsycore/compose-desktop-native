@@ -2,7 +2,7 @@ package androidx.compose.ui.text
 
 import kotlin.experimental.ExperimentalNativeApi
 
-// VENDOR-BASE: compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt @ v1.12.0-beta03+dev4483
+// VENDOR-BASE: compose/ui/ui-text/src/skikoMain/kotlin/androidx/compose/ui/text/FontRasterizationSettings.skiko.kt @ v1.12.0
 
 // ==================
 // MARK: FontRasterizationSettings native actual (Skia-free)

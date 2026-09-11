@@ -37,20 +37,13 @@ dependencyResolutionManagement {
             // Central, the bitsycore fork from GitHubPackagesSkiko below.
             content { excludeGroup("org.jetbrains.skiko"); excludeGroup("com.bitsycore.skiko") }
         }
-        // Route 1a: the bitsycore/skiko fork's mingwX64 klib + runtime DLL,
-        // published by its CI to GitHub Packages. Scoped to com.bitsycore.skiko
-        // (the fork is republished under the bitsycore name - see the fork repo).
+        // Route 1a: the bitsycore/skiko fork's mingwX64 klib + runtime DLL.
+        // PUBLIC and unauthenticated - no GitHub token needed to build the
+        // Windows target. Scoped to com.bitsycore.skiko (the fork is
+        // republished under the bitsycore name - see the fork repo).
         maven {
-            name = "GitHubPackagesSkiko"
-            url = uri("https://maven.pkg.github.com/bitsycore/skiko")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                    ?: providers.gradleProperty("gpr.user").orNull
-                    ?: ""
-                password = System.getenv("GITHUB_TOKEN")
-                    ?: providers.gradleProperty("gpr.token").orNull
-                    ?: ""
-            }
+            name = "BitsycoreSkiko"
+            url = uri("https://maven.bitsycore.com/releases")
             content { includeGroup("com.bitsycore.skiko") }
         }
     }
@@ -58,47 +51,42 @@ dependencyResolutionManagement {
 
 rootProject.name = "ComposeDesktopNative"
 
-// Library modules mirror upstream Compose Multiplatform's `compose/` tree
-include(":ui")
-include(":ui-util")
-include(":ui-geometry")
-include(":ui-graphics")
-include(":ui-text")
-include(":ui-unit")
-include(":ui-backhandler")
-include(":ui-tooling-preview")
-include(":animation-core")
-include(":animation")
-include(":animation-graphics")
-include(":foundation")
-include(":foundation-layout")
-include(":material3")
-include(":material-ripple")
-include(":desktop-native-window")
-include(":sdl-core")
-include(":material-symbols")
-include(":navigation3-ui")
-include(":components-resources")
-project(":ui").projectDir = file("compose/ui/ui")
-project(":ui-util").projectDir = file("compose/ui/ui-util")
-project(":ui-geometry").projectDir = file("compose/ui/ui-geometry")
-project(":ui-graphics").projectDir = file("compose/ui/ui-graphics")
-project(":ui-text").projectDir = file("compose/ui/ui-text")
-project(":ui-unit").projectDir = file("compose/ui/ui-unit")
-project(":ui-backhandler").projectDir = file("compose/ui/ui-backhandler")
-project(":ui-tooling-preview").projectDir = file("compose/ui/ui-tooling-preview")
-project(":animation-core").projectDir = file("compose/animation/animation-core")
-project(":animation").projectDir = file("compose/animation/animation")
-project(":animation-graphics").projectDir = file("compose/animation/animation-graphics")
-project(":foundation").projectDir = file("compose/foundation/foundation")
-project(":foundation-layout").projectDir = file("compose/foundation/foundation-layout")
-project(":material3").projectDir = file("compose/material3/material3")
-project(":material-ripple").projectDir = file("compose/material/material-ripple")
-project(":desktop-native-window").projectDir = file("compose/desktop/native/window")
-project(":sdl-core").projectDir = file("sdl/sdl-core")
-project(":material-symbols").projectDir = file("utils/material-symbols")
-project(":navigation3-ui").projectDir = file("navigation3/navigation3-ui")
-project(":components-resources").projectDir = file("components/resources/library")
+// Library modules mirror upstream Compose Multiplatform's `compose/` tree, and
+// the Gradle path mirrors the directory 1:1 - a plain `include(...)` per module,
+// no projectDir redirection anywhere.
+//
+// INVARIANT: the leaf directory IS the published artifactId. Kotlin
+// Multiplatform derives each target publication's coordinate as
+// `<project.name>-<target>`, and for a target DISABLED on the current host
+// (every Apple target on Windows/Linux) there is no publication object to
+// retarget after the fact - yet the root `kotlinMultiplatform` module metadata,
+// which the WINDOWS publish job owns, still writes an `available-at` entry for
+// it. So a mismatched leaf silently publishes a root module pointing at a
+// nonexistent `<leaf>-macosarm64` and breaks macOS consumers; an artifactId
+// override can't reach it. Two directories were renamed to hold the invariant:
+// compose/desktop/native/window -> .../desktop-native-window, and
+// components/resources/library -> components/resources/components-resources
+// (upstream keeps `library` there and sets artifactId by hand instead).
+include(":compose:ui:ui")
+include(":compose:ui:ui-util")
+include(":compose:ui:ui-geometry")
+include(":compose:ui:ui-graphics")
+include(":compose:ui:ui-text")
+include(":compose:ui:ui-unit")
+include(":compose:ui:ui-backhandler")
+include(":compose:ui:ui-tooling-preview")
+include(":compose:animation:animation-core")
+include(":compose:animation:animation")
+include(":compose:animation:animation-graphics")
+include(":compose:foundation:foundation")
+include(":compose:foundation:foundation-layout")
+include(":compose:material3:material3")
+include(":compose:material:material-ripple")
+include(":compose:desktop:native:desktop-native-window")
+include(":sdl:sdl-core")
+include(":utils:material-symbols")
+include(":navigation3:navigation3-ui")
+include(":components:resources:components-resources")
 
 // Demo App testing foundation, animation, ui and material3
 include(":demo")

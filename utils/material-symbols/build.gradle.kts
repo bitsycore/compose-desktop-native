@@ -83,10 +83,10 @@ kotlin {
             // Official Maven coordinates for the API surface (Modifier / Color
             // / Dp / material3's LocalContentColor). Metadata + jvm resolve
             // them from Maven; NATIVE configurations substitute them for
-            // project(":ui") / project(":material3") (root build bridge).
+            // project(":compose:ui:ui") / project(":compose:material3:material3") (root build bridge).
             api("org.jetbrains.compose.ui:ui:$vComposeJvmVersion")
             // ui's transitives, declared EXPLICITLY: the native substitution
-            // (ui → project(":ui")) hides them from the granular-metadata
+            // (ui → project(":compose:ui:ui")) hides them from the granular-metadata
             // visibility check, so compileCommonMainKotlinMetadata loses
             // Color / Dp without a direct declaration (+ bridge rules).
             api("org.jetbrains.compose.ui:ui-graphics:$vComposeJvmVersion")
@@ -96,7 +96,7 @@ kotlin {
         nativeMain.dependencies {
             // The native actual draws via com.compose.sdl.icons.IconFontIcon -
             // project code in :foundation (which api-depends on :ui).
-            api(project(":foundation"))
+            api(project(":compose:foundation:foundation"))
         }
         jvmMain.dependencies {
             // BasicText for the JVM actual - same version as :demo's jvm
@@ -112,9 +112,9 @@ kotlin {
 // Each style's variable font is downloaded once at build time to build/iconFont/.
 // The three files are advertised via project extras so consumer app builds can
 // pull them (and their download tasks for correct task ordering) generically:
-//     rootProject.project(":material-symbols").extra["iconFontFileOutlined"]
-//     rootProject.project(":material-symbols").extra["iconFontFileRounded"]
-//     rootProject.project(":material-symbols").extra["iconFontFileSharp"]
+//     rootProject.project(":utils:material-symbols").extra["iconFontFileOutlined"]
+//     rootProject.project(":utils:material-symbols").extra["iconFontFileRounded"]
+//     rootProject.project(":utils:material-symbols").extra["iconFontFileSharp"]
 
 data class SymbolsStyle(val id: String, val fileName: String, val url: String)
 

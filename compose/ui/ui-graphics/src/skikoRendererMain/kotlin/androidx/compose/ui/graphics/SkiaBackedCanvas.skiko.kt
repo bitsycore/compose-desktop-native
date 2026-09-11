@@ -15,7 +15,7 @@
  */
 
 // DERIVED (copy + edit) from compose-multiplatform-core -- MANUAL VENDOR, NON-IDEMPOTENT.
-// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt @ v1.12.0-beta03+dev4483
+// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaBackedCanvas.skiko.kt @ v1.12.0
 // ONLY change vs upstream: this class also implements the port draw contracts
 // (NativePainterCanvas / NativeShadowCanvas / NativeFinishableCanvas) so the
 // resource-image cache + elevation shadows keep working on the Skia renderer,

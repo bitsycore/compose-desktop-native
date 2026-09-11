@@ -8,15 +8,21 @@ kotlin = "2.4.0"
 #   compose          = ui / foundation / animation / material
 #   composeMaterial3 = material3 (versioned separately upstream)
 #   composeRuntime   = the official runtime klibs (never substituted)
-compose = "1.12.0-beta02"
+compose = "1.12.0"
+# material3 rides its own release train upstream: 1.12.0-alpha03 IS the version
+# Compose Multiplatform 1.12.0 ships (Jetpack material3 1.5.0-alpha22).
 composeMaterial3 = "1.12.0-alpha03"
-composeRuntime = "1.11.1"
+composeRuntime = "1.12.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 okio = "3.17.0"
 ktor = "3.5.1"
 skiko = "0.150.1"
+# The bitsycore skiko FORK for mingwX64 (skiko+Skia in skiko-windows-x64.dll).
+# Same Skia base as `skiko` above - keep the `-mingw.N` suffix's base in lockstep.
+# Overridable per-build with -PskikoMingwVersion.
+skikoMingw = "0.150.1-mingw.2"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }

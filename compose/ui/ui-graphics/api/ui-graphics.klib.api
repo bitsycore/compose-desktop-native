@@ -333,6 +333,8 @@ abstract interface androidx.compose.ui.graphics/Shape { // androidx.compose.ui.g
 
 abstract interface com.compose.sdl.graphics/EncodedImageDecoder { // com.compose.sdl.graphics/EncodedImageDecoder|null[0]
     abstract fun decode(kotlin/ByteArray): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/EncodedImageDecoder.decode|decode(kotlin.ByteArray){}[0]
+    open fun decodeSvgAt(kotlin/ByteArray, kotlin/Int, kotlin/Int): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/EncodedImageDecoder.decodeSvgAt|decodeSvgAt(kotlin.ByteArray;kotlin.Int;kotlin.Int){}[0]
+    open fun svgIntrinsicSize(kotlin/ByteArray): androidx.compose.ui.geometry/Size? // com.compose.sdl.graphics/EncodedImageDecoder.svgIntrinsicSize|svgIntrinsicSize(kotlin.ByteArray){}[0]
 }
 
 abstract interface com.compose.sdl.graphics/NativeFinishableCanvas { // com.compose.sdl.graphics/NativeFinishableCanvas|null[0]
@@ -1090,6 +1092,8 @@ final class com.compose.sdl.renderer.skia/SkiaEncodedImageDecoder : com.compose.
     constructor <init>() // com.compose.sdl.renderer.skia/SkiaEncodedImageDecoder.<init>|<init>(){}[0]
 
     final fun decode(kotlin/ByteArray): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.renderer.skia/SkiaEncodedImageDecoder.decode|decode(kotlin.ByteArray){}[0]
+    final fun decodeSvgAt(kotlin/ByteArray, kotlin/Int, kotlin/Int): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.renderer.skia/SkiaEncodedImageDecoder.decodeSvgAt|decodeSvgAt(kotlin.ByteArray;kotlin.Int;kotlin.Int){}[0]
+    final fun svgIntrinsicSize(kotlin/ByteArray): androidx.compose.ui.geometry/Size? // com.compose.sdl.renderer.skia/SkiaEncodedImageDecoder.svgIntrinsicSize|svgIntrinsicSize(kotlin.ByteArray){}[0]
 }
 
 final class com.compose.sdl.renderer.skia/SkiaImageCache { // com.compose.sdl.renderer.skia/SkiaImageCache|null[0]
@@ -2445,7 +2449,9 @@ final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_MoveTo$s
 final fun com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_QuadTo$stableprop_getter(): kotlin/Int // com.compose.sdl.graphics/com_compose_sdl_graphics_PathCommand_QuadTo$stableprop_getter|com_compose_sdl_graphics_PathCommand_QuadTo$stableprop_getter(){}[0]
 final fun com.compose.sdl.graphics/createGraphicsContext(): androidx.compose.ui.graphics/GraphicsContext // com.compose.sdl.graphics/createGraphicsContext|createGraphicsContext(){}[0]
 final fun com.compose.sdl.graphics/decodeEncodedImageBitmap(kotlin/ByteArray): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/decodeEncodedImageBitmap|decodeEncodedImageBitmap(kotlin.ByteArray){}[0]
+final fun com.compose.sdl.graphics/decodeSvgAt(kotlin/ByteArray, kotlin/Int, kotlin/Int): androidx.compose.ui.graphics/ImageBitmap? // com.compose.sdl.graphics/decodeSvgAt|decodeSvgAt(kotlin.ByteArray;kotlin.Int;kotlin.Int){}[0]
 final fun com.compose.sdl.graphics/prepareLayerTransformationMatrix(androidx.compose.ui.graphics/Matrix, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/prepareLayerTransformationMatrix|prepareLayerTransformationMatrix(androidx.compose.ui.graphics.Matrix;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+final fun com.compose.sdl.graphics/svgIntrinsicSize(kotlin/ByteArray): androidx.compose.ui.geometry/Size? // com.compose.sdl.graphics/svgIntrinsicSize|svgIntrinsicSize(kotlin.ByteArray){}[0]
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop_getter|com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop_getter(){}[0]
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter|com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter(){}[0]
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter|com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter(){}[0]

@@ -103,7 +103,7 @@ gradlew :apidemo:run                              :: JVM apidemo reference
 ```
 
 - The bridge plugin auto-drops `skiko-windows-x64.dll` next to the exe (`installWindowsSkiaDll`).
-  Fork coords `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (override `-PskikoMingwVersion`).
+  Fork coords `com.bitsycore.skiko:skiko:0.150.1-mingw.2` (override `-PskikoMingwVersion`).
 - `:demo` CLI flags (native AND jvm): `--screen=<Name>`, `--screenshot=<path.bmp>` (capture at
   quiescence then quit), `--gpu=auto|software|skia.opengl`. `CDN_TEXT_METRICS=1` env var dumps
   text metrics (§1b). `CDN_PROFILE=1` frame profiler. `:apidemo` has NO screenshot CLI - drive it
@@ -172,7 +172,7 @@ All Windows divergences live **below Kotlin** - the mingw source set reuses
 the only mingw-unique file is `PlatformGpu.mingw.kt` (13 lines, GPU only). So every
 divergence is in the **fork's Skia binary**, in **`FontMgr.default`'s per-OS impl**, or in
 the **GPU backend**. The fork is external (`bitsycore/skiko`,
-`com.bitsycore.skiko:skiko:0.150.1-mingw.1`) and its GN args are **not verifiable from this
+`com.bitsycore.skiko:skiko:0.150.1-mingw.2`) and its GN args are **not verifiable from this
 tree** - recovering them is a prerequisite for several fixes below.
 
 **Fidelity reference for Windows is skiko-on-JVM Compose Desktop on Windows** (also
@@ -371,7 +371,7 @@ macOS↔Windows delta is expected upstream behavior.
       different ascent/descent on Windows (different metric-table selection) AND why fork
       `FontMgr.default` may not enumerate Windows system fonts for glyph fallback (FreeType
       has no system fontmgr without fontconfig). **CAVEAT:** that's the *recommended recipe*,
-      not a verified dump of the shipped `0.150.1-mingw.1` GN args. **REMAINING:** whoever
+      not a verified dump of the shipped `0.150.1-mingw.2` GN args. **REMAINING:** whoever
       rebuilds the fork should capture the real `args.gn` (`SK_GAMMA_*`, ICU packaging,
       freetype-vs-dwrite) alongside the fork sources so drift is auditable - NOT as a doc in
       this repo (kept lean); a comment in the fork repo or `build-sdl.properties`-style pin.

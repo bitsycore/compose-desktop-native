@@ -38,8 +38,8 @@ Rendering is **Skia everywhere** behind one `RenderBackend` - Metal / OpenGL
 - **macOS + Linux** link the OFFICIAL Skiko klibs from Maven.
 - **Windows (mingwX64)** links the bitsycore skiko FORK - skiko+Skia compiled
   into `skiko-windows-x64.dll` with a flat extern-C surface, bound from K/N via
-  an embedded GNU import lib, published to GitHub Packages as
-  `com.bitsycore.skiko:skiko:0.150.1-mingw.1` (override with
+  an embedded GNU import lib, published to https://maven.bitsycore.com/releases as
+  `com.bitsycore.skiko:skiko:0.150.1-mingw.2` (override with
   `-PskikoMingwVersion`). The runtime DLL is auto-provisioned next to the exe by
   the bridge plugin (`installWindowsSkiaDll`).
 
@@ -57,59 +57,60 @@ Library modules mirror upstream Compose Multiplatform's `compose/` tree.
 The SDL layer is two modules: `:sdl-core` (the NAKED sdl3 cinterop + platform
 primitives - zero Compose dep, like `skiko`) at `sdl/sdl-core/`, and
 `:desktop-native-window` (the SDL3 main-loop shell + app entry point) at
-`compose/desktop/native/window/`. `:ui` depends on `:sdl-core` and its renderer
+`compose/desktop/native/desktop-native-window/`. `:ui` depends on `:sdl-core` and its renderer
 + SDL↔Compose bridges pick the cinterop from it.
 
 One Gradle module per upstream artifact; the directory mirrors the upstream
-`compose/` path, the gradle path is kept short (redirected via `projectDir`).
+`compose/` path, and the gradle path mirrors the directory (no `projectDir`
+redirection).
 
 ```
 compose/
 ├── ui/
-│   ├── ui/                          → :ui        - androidx.compose.ui.* CORE (Modifier, LayoutNode,
+│   ├── ui/                          → :compose:ui:ui        - androidx.compose.ui.* CORE (Modifier, LayoutNode,
 │   │                                               composition, semantics, input, focus) + com.compose.sdl.* -
 │   │                                               the Skia RenderBackend + GPU bridges + the SDL↔Compose
 │   │                                               bridges (events / clipboard / cursors / window). Depends on
 │   │                                               :ui-graphics, :ui-text, :sdl-core. (ui-graphics + ui-text +
 │   │                                               the sdl3 cinterop were split OUT - upstream layout.)
-│   ├── ui-graphics/                 → :ui-graphics - androidx.compose.ui.graphics.* + the Skia actuals
+│   ├── ui-graphics/                 → :compose:ui:ui-graphics - androidx.compose.ui.graphics.* + the Skia actuals
 │   │                                               (SkiaBackedCanvas/Path/Paint, GraphicsLayer, SkiaImageCache,
 │   │                                               painter/image + resource seams). → skiko; SDL-free.
-│   ├── ui-text/                     → :ui-text   - androidx.compose.ui.text.* + the skiko text engine
+│   ├── ui-text/                     → :compose:ui:ui-text   - androidx.compose.ui.text.* + the skiko text engine
 │   │                                               (SkiaParagraph → NativeParagraphOps → SkiaFonts, IconFont,
 │   │                                               NamedFont). → :ui-graphics, skiko; SDL-free.
-│   ├── ui-util/                     → :ui-util       - androidx.compose.ui.util.* (+ Experimental/InternalComposeUiApi)
-│   ├── ui-geometry/                 → :ui-geometry   - androidx.compose.ui.geometry.*
-│   ├── ui-unit/                     → :ui-unit       - androidx.compose.ui.unit.*
-│   ├── ui-backhandler/              → :ui-backhandler - androidx.compose.ui.backhandler.*
-│   └── ui-tooling-preview/          → :ui-tooling-preview - androidx.compose.ui.tooling.preview.*
+│   ├── ui-util/                     → :compose:ui:ui-util       - androidx.compose.ui.util.* (+ Experimental/InternalComposeUiApi)
+│   ├── ui-geometry/                 → :compose:ui:ui-geometry   - androidx.compose.ui.geometry.*
+│   ├── ui-unit/                     → :compose:ui:ui-unit       - androidx.compose.ui.unit.*
+│   ├── ui-backhandler/              → :compose:ui:ui-backhandler - androidx.compose.ui.backhandler.*
+│   └── ui-tooling-preview/          → :compose:ui:ui-tooling-preview - androidx.compose.ui.tooling.preview.*
 │                                                     (the common @Preview + PreviewParameterProvider,
 │                                                     vendored verbatim; the Maven artifact ships no
 │                                                     mingwX64/linux klibs). IDE-only metadata - previews
 │                                                     render through the apps' jvm parity targets.
 ├── animation/
-│   ├── animation-core/              → :animation-core     - androidx.compose.animation.core.*
-│   ├── animation/                   → :animation          - androidx.compose.animation.* (non-core)
-│   └── animation-graphics/          → :animation-graphics - androidx.compose.animation.graphics.*
+│   ├── animation-core/              → :compose:animation:animation-core     - androidx.compose.animation.core.*
+│   ├── animation/                   → :compose:animation:animation          - androidx.compose.animation.* (non-core)
+│   └── animation-graphics/          → :compose:animation:animation-graphics - androidx.compose.animation.graphics.*
 ├── foundation/
-│   ├── foundation/                  → :foundation       - androidx.compose.foundation.*
-│   └── foundation-layout/           → :foundation-layout - androidx.compose.foundation.layout.*
+│   ├── foundation/                  → :compose:foundation:foundation       - androidx.compose.foundation.*
+│   └── foundation-layout/           → :compose:foundation:foundation-layout - androidx.compose.foundation.layout.*
 ├── material3/
-│   └── material3/                   → :material3   - androidx.compose.material3.*
+│   └── material3/                   → :compose:material3:material3   - androidx.compose.material3.*
 ├── material/
-│   └── material-ripple/             → :material-ripple - androidx.compose.material.ripple.*
-└── desktop/native/window/           → :desktop-native-window - nativeComposeApp { Window(...) {} }
+│   └── material-ripple/             → :compose:material:material-ripple - androidx.compose.material.ripple.*
+└── desktop/native/desktop-native-window/ → :compose:desktop:native:desktop-native-window - nativeComposeApp { Window(...) {} }
                                                     multi-window shell + SDL3 main loop; nativeComposeWindow()
                                                     wrapper (project app-shell, not an upstream CMP artifact).
                                                     Published as com.bitsycore.compose:desktop-native-window.
 
 sdl/
-└── sdl-core/                        → :sdl-core   - the NAKED sdl3 cinterop + platform primitives
+└── sdl-core/                        → :sdl:sdl-core   - the NAKED sdl3 cinterop + platform primitives
                                                     (zero Compose dep, like skiko); the single `sdl3` cinterop
                                                     lives here. :ui depends on it. com.bitsycore.compose.sdl:sdl-core.
 
 utils/
-└── material-symbols/                → :material-symbols - codepoints + all three style objects
+└── material-symbols/                → :utils:material-symbols - codepoints + all three style objects
                                                     (Outlined / Rounded / Sharp). COMMON API (usable from
                                                     shared app code) + per-stack actuals: native renders
                                                     via :foundation IconFontIcon (Skia), jvm() via Skiko directly
@@ -127,7 +128,7 @@ utils/
                                                     jvmProcessResources stages the same fonts (jvm).
 
 components/
-└── resources/library/               → :components-resources - the OFFICIAL Compose resources
+└── resources/components-resources/  → :components:resources:components-resources - the OFFICIAL Compose resources
                                                     runtime (org.jetbrains.compose.components:
                                                     components-resources), VENDORED from the
                                                     compose-multiplatform UMBRELLA repo (the first
@@ -141,7 +142,7 @@ components/
                                                     generated Res accessors work against BOTH.
 
 navigation3/
-└── navigation3-ui/                  → :navigation3-ui - androidx.navigation3.ui.* + scene machinery,
+└── navigation3-ui/                  → :navigation3:navigation3-ui - androidx.navigation3.ui.* + scene machinery,
                                                     VENDORED verbatim from upstream (SET_FOLDER manifest).
                                                     Navigation 3's runtime layers (navigation3-runtime,
                                                     lifecycle-viewmodel-navigation3) are real Maven KMP
@@ -206,13 +207,36 @@ libs/                → gitignored per-host static SDL3 output of
                       scripts/build-sdl/build-all.py on Windows
 ```
 
-Module PATHS stay short (`:ui`, `:foundation`, `:desktop-native-window`, …) -
-`settings.gradle.kts` redirects `projectDir` for each so build files across
-the repo stay terse. `androidx.collection` is a plain Maven dependency
+Module PATHS mirror the DIRECTORY 1:1 - `:compose:ui:ui`,
+`:compose:foundation:foundation`, `:compose:desktop:native:desktop-native-window`,
+`:sdl:sdl-core`, `:utils:material-symbols`, `:navigation3:navigation3-ui`,
+`:components:resources:components-resources`. There is NO `projectDir` redirection in
+`settings.gradle.kts`; a plain `include(...)` per module is the whole story, and
+the intermediate container projects (`:compose`, `:compose:ui`, …) hold no code.
+
+**INVARIANT: the leaf directory IS the published artifactId.** Don't break it to
+mirror an upstream directory name. KMP derives every target publication's
+coordinate as `<project.name>-<target>`, and a target DISABLED on the building
+host (all Apple targets on Windows/Linux) has no publication object to retarget
+afterwards - while the root `kotlinMultiplatform` metadata, which the WINDOWS
+publish job owns, still emits an `available-at` for it. A mismatched leaf
+therefore ships a root module pointing at a nonexistent `<leaf>-macosarm64`,
+breaking macOS consumers, and no `artifactId = …` override can reach it. Two
+directories are renamed away from upstream's layout to hold this:
+`compose/desktop/native/desktop-native-window` (upstream: `window`) and
+`components/resources/components-resources` (upstream: `library` + a hand-set
+artifactId). `scripts/compose-coverage.py`'s `kTargets` carries the
+upstream→local mapping for the latter.
+
+`androidx.collection` is a plain Maven dependency
 (`androidx.collection:collection`), not a module - same as other simple
 androidx KMP libs.
 
 ## Dependency graph
+
+Written with LEAF names for readability (`:ui` = `:compose:ui:ui`,
+`:foundation` = `:compose:foundation:foundation`, …); build files use the full
+path shown in the module layout above.
 
 ```
 :ui  ←  :animation-core  ←  :animation          ←  :foundation  ←  :material3  ← :demo, :apidemo
@@ -414,8 +438,8 @@ Passing raw `px.dp` will double-scale on Retina.
 ./gradlew :apidemo:runDebugExecutableLinuxX64
 
 # Windows (from Windows - mingw cross-build from macOS/Linux fails at cinterop).
-# Links the bitsycore skiko FORK from GitHub Packages (com.bitsycore.skiko:skiko:
-# 0.150.1-mingw.1, override -PskikoMingwVersion); the bridge plugin drops
+# Links the bitsycore skiko FORK from maven.bitsycore.com (com.bitsycore.skiko:skiko:
+# 0.150.1-mingw.2, override -PskikoMingwVersion); the bridge plugin drops
 # skiko-windows-x64.dll next to the exe (installWindowsSkiaDll).
 gradlew.bat :demo:runDebugExecutableMingwX64
 gradlew.bat :apidemo:runDebugExecutableMingwX64
@@ -481,7 +505,7 @@ drift / vendor-clean guardrails are in
 ## Key files by area - start here when you need to find something
 
 ### Renderer + main loop
-- `compose/desktop/native/window/src/nativeMain/…/ComposeWindow.kt` - main loop,
+- `compose/desktop/native/desktop-native-window/src/nativeMain/…/ComposeWindow.kt` - main loop,
   recomposer lifecycle, SDL event dispatch, composition-local seeding.
 - `compose/ui/ui/src/nativeMain/…/RenderBackend.kt` - the interface.
 - `compose/ui/ui/src/nativeMain/…/GpuMode.kt` - sealed driver picker
