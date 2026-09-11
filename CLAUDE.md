@@ -141,6 +141,54 @@ components/
                                                     Apps' JVM targets keep the Maven artifact - the
                                                     generated Res accessors work against BOTH.
 
+koin/                → the Koin DI modules upstream stops publishing for desktop native.
+├── koin-core-viewmodel/             → :koin:koin-core-viewmodel   - org.koin.viewmodel.* + module DSL
+├── koin-compose/                    → :koin:koin-compose           - org.koin.compose.*
+├── koin-compose-viewmodel/          → :koin:koin-compose-viewmodel - org.koin.compose.viewmodel.*
+└── koin-compose-navigation3/        → :koin:koin-compose-navigation3 - org.koin.compose.navigation3.*
+                                                    VENDORED verbatim from InsertKoinIO/koin
+                                                    (KOIN_REF). koin-core ITSELF publishes mingwX64
+                                                    + linux and is a plain Maven dep - only these
+                                                    four stop at apple+android upstream. NOTE it is
+                                                    the NAV3 module, not koin-compose-viewmodel-
+                                                    navigation: that one sits on nav2's
+                                                    navigation-compose, which has no mingwX64/linux
+                                                    klibs under EITHER coordinate set.
+                                                    com.bitsycore.koin:<module>.
+
+coil/                → Coil 3 image loading. Upstream ships linux but NO mingwX64 for
+│                      core/network/svg, and NO desktop native at all for the compose
+│                      layer. VENDORED verbatim from coil-kt/coil (COIL_REF).
+├── coil-core/                       → :coil:coil-core            - coil3.* core, Skia-based decode
+├── coil/                            → :coil:coil                 - singleton ImageLoader facade
+├── coil-compose-core/               → :coil:coil-compose-core    - AsyncImage internals
+├── coil-compose/                    → :coil:coil-compose         - public compose entry points
+├── coil-svg/                        → :coil:coil-svg             - SVG via skiko SVGDOM
+├── coil-network-core/               → :coil:coil-network-core    - fetcher plumbing
+└── coil-network-ktor3/              → :coil:coil-network-ktor3   - Ktor 3 fetcher
+                                                    Upstream's nonAndroid / nonJvmCommon /
+                                                    nonJsCommon sets all apply here (no android /
+                                                    jvm / js target) but must stay ABOVE nativeMain
+                                                    - they declare expects whose actuals live in
+                                                    nativeMain. coil-core / coil-svg /
+                                                    coil-compose-core use org.jetbrains.skia
+                                                    directly, so they carry TWO PARALLEL skiko
+                                                    branches (official for macOS/Linux, the
+                                                    bitsycore fork for mingwX64) exactly like
+                                                    :compose:ui:ui-graphics. com.bitsycore.coil3:<m>.
+
+pulse/               → Pulse MVI. Upstream (bitsycore/pulse-mvi, PULSE_REF) targets
+│                      android / jvm / ios / js / wasm and publishes NO desktop-native
+│                      artifact, so all four modules are vendored. commonMain only.
+├── pulse/                           → :pulse:pulse            - MVI core (store/state/intents)
+├── pulse-viewmodel/                 → :pulse:pulse-viewmodel  - ViewModel binding
+├── pulse-savedstate/                → :pulse:pulse-savedstate - SavedStateHandle persistence
+└── pulse-compose/                   → :pulse:pulse-compose    - Compose bindings
+                                                    Published as com.bitsycore.pulse:<module>, NOT
+                                                    upstream's com.bitsycore.lib:<module> - the two
+                                                    must not collide; the bridge substitutes the
+                                                    upstream coord on native configs.
+
 navigation3/
 └── navigation3-ui/                  → :navigation3:navigation3-ui - androidx.navigation3.ui.* + scene machinery,
                                                     VENDORED verbatim from upstream (SET_FOLDER manifest).
@@ -336,8 +384,17 @@ Two categories of code live in each module:
    // VENDOR-BASE(COMPOSE_REF): <path> @ <tag>     ← for umbrella-repo files
    ```
 
-   `scripts/compose-fork/check-vendor-drift.py` reads these at every ref
-   bump: it flags any file whose recorded base lags the current pin and
+   A file that is a fresh REIMPLEMENTATION rather than a derived copy (same
+   package + signatures, different body - see the fallback rule at the end of
+   this section) gets `// VENDOR-REIMPL: <path> @ <tag>` instead. That marks it
+   as deliberately NOT drift-tracked: upstream edits to the counterpart need no
+   reconciling, only a SIGNATURE change does.
+   `scripts/compose-fork/audit-exclusions.py` classifies every `!` exclusion as
+   manual vendor / reimpl / orphan and FAILS on any local counterpart carrying
+   neither marker, so nothing rots invisibly.
+
+   `scripts/compose-fork/check-vendor-drift.py` reads the VENDOR-BASE lines at
+   every ref bump: it flags any file whose recorded base lags the current pin and
    (with the local clone) reports whether the upstream base ACTUALLY
    changed base..pin - i.e. whether the copy needs hand-reconciling or
    just a ref re-stamp. Now it's a project file - the next sync won't
@@ -496,8 +553,12 @@ executable, loaded via `SDL_GetBasePath()`). Contents:
 scripts/compose-fork/sync.sh
 ```
 
-Upstream ref: `scripts/compose-fork/compose.properties` - set to a durable tag
-of `JetBrains/compose-multiplatform-core`. Bump the ref → re-sync → let the
+Upstream refs live in `scripts/compose-fork/compose.properties`, one `NAME=value`
+per repo, each pinned to a durable TAG. Five repos are vendored now:
+`COMPOSE_CORE_REF` (JetBrains/compose-multiplatform-core), `COMPOSE_REF` (the
+compose-multiplatform umbrella), `KOIN_REF` (InsertKoinIO/koin), `COIL_REF`
+(coil-kt/coil) and `PULSE_REF` (bitsycore/pulse-mvi). Each gets its own sibling
+sparse clone (`../cmp-ref`, `../cmp-ref-koin`, …). Bump the ref → re-sync → let the
 build tell you what broke. Per-module sync, manifest re-formatting, and the
 drift / vendor-clean guardrails are in
 [TOOLING.md](TOOLING.md#vendoring-upstream-compose).
@@ -664,8 +725,24 @@ Verified in-tree (api-exposed by `:ui` unless noted):
 - `androidx.navigationevent:navigationevent-compose` 1.1.2 - predictive-back
   event plumbing (BackHandler, NavDisplay gestures).
 - `androidx.collection:collection` - plain Maven dep, not a module.
+- `io.insert-koin:koin-core` **4.2.2** - the DI container itself publishes
+  mingwX64 + linux + macos. Only Koin's viewmodel / compose layers stop at
+  apple+android and are vendored (`koin/`).
+- `androidx.navigationevent:navigationevent-compose` 1.1.2 AND the jetbrains
+  `org.jetbrains.androidx.navigationevent:navigationevent-compose` 1.1.0 - BOTH
+  publish mingwX64 + linux + macos. Nothing to vendor here.
 - NOT compatible (vendored instead): `components-resources` (no mingw/linux
-  klibs → `:components-resources`), `navigation3-ui` (same → `:navigation3-ui`).
+  klibs → `:components:resources:components-resources`), `navigation3-ui` (same →
+  `:navigation3:navigation3-ui`), Koin's viewmodel/compose modules (→ `koin/`),
+  the whole Coil 3 stack (no mingwX64 anywhere; no desktop native at all for its
+  compose layer → `coil/`), and Pulse MVI (no desktop native → `pulse/`).
+- **Always check BOTH coordinate sets before concluding an artifact has no
+  desktop-native klibs.** `androidx.*` and `org.jetbrains.androidx.*` are
+  different artifacts with the same classes; sometimes only one carries the K/N
+  variant, and where both do, pick ONE - putting both on the path duplicates
+  every class. This port standardises on the GOOGLE `androidx.lifecycle:*`
+  coordinates, so vendored upstream code that referenced the jetbrains mirrors
+  is repointed at the google ones in the module's build file.
 - Infra: `kotlinx-coroutines-core`, `atomicfu`, `okio`,
   `kotlinx-serialization`.
 

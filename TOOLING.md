@@ -48,15 +48,24 @@ Reach for this after a fresh checkout or a ref bump. Details:
 Guardrails that keep the vendor tree honest:
 
 ```bash
-python3 scripts/compose-fork/check-vendor-clean.py   # src/vendor matches the pinned refs
-python3 scripts/compose-fork/check-vendor-drift.py   # hand-edited "manual vendors" match their pin
+python3 scripts/compose-fork/check-vendor-clean.py     # src/vendor matches the pinned refs
+python3 scripts/compose-fork/check-vendor-drift.py     # hand-edited "manual vendors" match their pin
+python3 scripts/compose-fork/audit-exclusions.py       # every `!` exclusion is classified
 ```
 
 `check-vendor-clean` fails if a hand-edit ever leaks into `src/vendor/`.
 `check-vendor-drift` reads the `// VENDOR-BASE:` header on every edited copy and,
 using the local upstream clone, reports whether the base actually changed since
-the pin (needs reconciling) or is merely stale (safe to re-stamp). Run both on
-every ref bump.
+the pin (needs reconciling) or is merely stale (safe to re-stamp).
+
+`audit-exclusions` covers the other half: a manifest `!` line takes a file OUT of
+the verbatim sync, and the local replacement is either a derived copy
+(`// VENDOR-BASE:`, drift-tracked) or a fresh reimplementation
+(`// VENDOR-REIMPL:`, deliberately not tracked - only a SIGNATURE change matters).
+It classifies each one, flags any local counterpart carrying NEITHER marker
+(invisible to the drift check, silently rotting) and any copy that has become
+identical to upstream (drop it and re-vendor), and exits non-zero on an
+unclassified file. Run all three on every ref bump.
 
 ### Coverage against upstream
 
@@ -184,6 +193,7 @@ single file to edit; know which axis you are changing.
 |---------|-------|-------|
 | Project release version | The git tag `vX.Y.Z`. `PUBLISH_VERSION` (from the tag) feeds `vPublishVersion` in `build.gradle.kts`, which strips the leading `v`. Groups mirror upstream per area (`com.bitsycore.compose.<area>:<module>`, e.g. `com.bitsycore.compose.ui:ui`); project-only modules use `com.bitsycore.compose.sdl` and `:desktop-native-window` is `com.bitsycore.compose` - see `groupFor()` in the root build. | Set by the tag, not edited by hand. A non-publish build is `0.0.0-SNAPSHOT`. |
 | Vendored Compose (native side) | `COMPOSE_CORE_REF` and `COMPOSE_REF` in `scripts/compose-fork/compose.properties`, plus `compose` in `gradle/libs.versions.toml`. | Pin to a durable tag (not a `+dev` commit upstream may GC). Re-sync after changing. |
+| Vendored ecosystem libs | `KOIN_REF`, `COIL_REF`, `PULSE_REF` in the same file, plus `koin` / `coil` in `gradle/libs.versions.toml`. | Same rule: durable tags. Each repo gets its own sibling sparse clone (`../cmp-ref-koin`, `../cmp-ref-coil`, `../cmp-ref-pulse-mvi`). Re-sync, then `apiDump` - these modules are BCV-validated like the rest. |
 | JVM parity forcing | `compose` / `composeMaterial3` / `composeRuntime` in `gradle/libs.versions.toml` (read by `demo`, `apidemo`, `material-symbols` and the root build's forcing map). | Must be a version PUBLISHED to Maven Central. It may lag the vendored native ref (a documented skew) until the matching version is published; at v1.12.0 they are in lockstep. |
 | Skiko | `skiko` (official) and `skikoMingw` (the fork) in `gradle/libs.versions.toml`; keep the fork's `-mingw.N` base equal to `skiko`. | macOS/Linux use official Skiko (`org.jetbrains.skiko`); mingwX64 uses the bitsycore fork (`com.bitsycore.skiko:skiko:0.150.1-mingw.2` from the public maven.bitsycore.com), published out of band by the fork repo's own workflow. Must expose the `org.jetbrains.skiko.node` `RenderNode` / `GraphicsContext` API the vendored compose-core uses (the fork keeps upstream's `org.jetbrains.skiko.*` package names; only the Maven coord is rebranded). Verify with a throwaway `skikoRendererMain` compile if unsure. |
 | SDL3 | `scripts/build-sdl/build-sdl.properties`. | Rebuild `libs/` with `build-all.py` after any change. |
@@ -193,12 +203,17 @@ single file to edit; know which axis you are changing.
 
 Run this on each upstream bump; it is the flow that keeps the sync tax low.
 
-1. Edit `COMPOSE_CORE_REF` / `COMPOSE_REF` in `compose.properties` (and `compose`
-   in `libs.versions.toml` if the coordinate version moved).
+1. Edit the relevant `*_REF` in `compose.properties` - `COMPOSE_CORE_REF` /
+   `COMPOSE_REF` for Compose, `KOIN_REF` / `COIL_REF` / `PULSE_REF` for the
+   ecosystem libs (and the matching entry in `libs.versions.toml` if the
+   coordinate version moved).
 2. `scripts/compose-fork/sync.sh`
 3. `python3 scripts/compose-fork/check-vendor-drift.py`. For any manual vendor
    whose upstream base actually changed, reconcile by hand; otherwise re-stamp
-   its `// VENDOR-BASE:` header to the new ref.
+   its `// VENDOR-BASE:` header to the new ref. Then
+   `python3 scripts/compose-fork/audit-exclusions.py` - a newly-identical copy
+   should go back to verbatim vendoring, and an unclassified one needs a marker.
+   Finish with `./gradlew apiDump` and review the klib API diff.
 4. Build and fix any fallout.
 5. `scripts/verify-mac.sh` (green, including the soak and parity gates).
 6. If a matching Compose version is now published to Maven, bump

@@ -769,7 +769,7 @@ residual offset is a genuine native text-metrics bug and belongs under §1b.
 
 Affects `:demo` identically (it bundles NotoSans the same way).
 
-### 7b. Vendor Koin + Coil3 (requested 2026-09-12) - NOT STARTED
+### 7b. Vendor Koin + Coil3 + Pulse MVI (requested 2026-09-12) - ✅ DONE
 
 Target-availability audit against Maven Central (the deciding fact - re-check on every
 version bump, and check BOTH the google and jetbrains coordinate sets before concluding an
@@ -797,14 +797,36 @@ WRONG - both coordinate sets publish mingwX64 + linux + macos, and the port alre
 `androidx.navigationevent:navigationevent-compose:1.1.2` unmodified ("Known Compatible" in
 CLAUDE.md, exercised by `demo --backtest`). Nothing to vendor there.
 
-Work per module: a new `SET_REPO` manifest pinned to a durable tag on a NEW upstream repo
-(`InsertKoinIO/koin`, `coil-kt/coil` - both need a `<NAME>_REF` entry in
-`scripts/compose-fork/compose.properties` and a sparse clone dir), source-set wiring, whatever
-platform actuals the missing targets need (Coil carries image decode + disk cache + network;
-its non-Apple decoder is already Skia-based, which should suit the port), a bridge-plugin
-substitution rule per artifact so consumers keep declaring official coordinates, group/
-artifactId assignment in the root build's `kAreaGroups` / `kPublishedLibs`, and a BCV dump.
+**Landed** as `koin/` (4 modules, `com.bitsycore.koin`), `coil/` (7 modules,
+`com.bitsycore.coil3`) and `pulse/` (4 modules, `com.bitsycore.pulse`) - 202 files vendored
+verbatim across three new pinned repos (`KOIN_REF=4.2.2`, `COIL_REF=3.6.2`,
+`PULSE_REF=0.3.7`), ZERO local source edits. All build for mingwX64 + linuxX64/arm64, are
+BCV-dumped, publish, and carry bridge substitution rules so consumers keep declaring the
+official coordinates.
 
-Remember the granular-metadata trap (CLAUDE.md "Common pitfalls"): every artifact the shared
-code touches must be declared DIRECTLY and get its own bridge rule, or
-`compileCommonMainKotlinMetadata` loses its transitives on the Windows publish job.
+Three things worth remembering from doing it:
+
+- **nav2 is a dead end here.** koin-compose-viewmodel-navigation needs nav2's
+  `navigation-compose`, which has no mingwX64/linux klibs under either coordinate set.
+  Vendored `koin-compose-navigation3` instead - it needs only koin-compose +
+  navigation3-runtime, matching this port's nav3 story.
+- **Upstream `non*` source sets must stay ABOVE nativeMain, not merge into it.** Several
+  declare `expect`s whose `actual`s live in upstream nativeMain; collapsing both into one
+  source set makes them siblings, which is a hard error.
+- **A shared-metadata compilation is a real compile.** Coil's nonAndroid code uses
+  `org.jetbrains.skia.*` directly, so the INTERMEDIATE source set holding it needs skiko on
+  its own classpath - and since mingwX64 needs the FORK while macOS/Linux need the official
+  build, the two cannot share an intermediate. coil-core / coil-svg / coil-compose-core
+  therefore carry two PARALLEL branches over the same srcDirs, the shape
+  :compose:ui:ui-graphics already used. Kotlin emits no metadata compilation for the
+  single-target fork branch, so they never collide.
+
+Also hit the granular-metadata trap (CLAUDE.md "Common pitfalls") in coil-compose-core:
+every artifact the shared code touches must be declared DIRECTLY and get its own bridge
+rule, or `compileCommonMainKotlinMetadata` loses its transitives on the Windows publish job.
+
+REMAINING (deliberate): upstream Koin/Coil/Pulse reference the
+`org.jetbrains.androidx.lifecycle:*` mirrors while this port standardises on the GOOGLE
+`androidx.lifecycle:*` coords. The build files repoint them, but a consumer that pulls the
+jetbrains mirrors in itself will get duplicate `unique_name` klib warnings at metadata
+compile. Harmless today; if it ever becomes an error, force the google coords repo-wide.

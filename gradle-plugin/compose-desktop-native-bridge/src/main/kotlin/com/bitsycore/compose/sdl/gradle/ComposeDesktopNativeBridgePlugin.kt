@@ -18,7 +18,12 @@ import java.util.Properties
  * FULL-COMMONIZATION BRIDGE (root build.gradle.kts): ui-graphics / ui-text are
  * their own modules (upstream layout). The runtime is deliberately absent - the
  * official org.jetbrains.compose.runtime klibs serve every target, never
- * substituted.
+ * substituted. The table also covers the ECOSYSTEM libraries the port vendors
+ * (Koin, Coil 3, Pulse MVI) - see the grouped entries below.
+ *
+ * NOTE every entry here must have a matching rule in the repo-internal
+ * FULL-COMMONIZATION BRIDGE, and vice versa: the two are the consumer-side and
+ * in-repo halves of the same swap.
  */
 private val bridgeTable = mapOf(
     "org.jetbrains.compose.ui:ui" to "com.bitsycore.compose.ui:ui",
@@ -38,6 +43,37 @@ private val bridgeTable = mapOf(
     "org.jetbrains.compose.material:material-ripple" to "com.bitsycore.compose.material:material-ripple",
     "org.jetbrains.compose.components:components-resources" to "com.bitsycore.compose.components:components-resources",
     "org.jetbrains.androidx.navigation3:navigation3-ui" to "com.bitsycore.navigation3:navigation3-ui",
+
+    // ============
+    //  Ecosystem libraries the port vendors because upstream stops short of
+    //  Kotlin/Native desktop. Same deal: declare the OFFICIAL coordinate, get
+    //  the port's klib on native desktop targets only.
+
+    // Koin. koin-core itself publishes mingwX64 + linux and is NOT substituted.
+    // koin-compose-viewmodel-navigation is absent on purpose: it needs nav2's
+    // navigation-compose, which has no mingwX64/linux klibs under either
+    // coordinate set - use koin-compose-navigation3.
+    "io.insert-koin:koin-core-viewmodel" to "com.bitsycore.koin:koin-core-viewmodel",
+    "io.insert-koin:koin-compose" to "com.bitsycore.koin:koin-compose",
+    "io.insert-koin:koin-compose-viewmodel" to "com.bitsycore.koin:koin-compose-viewmodel",
+    "io.insert-koin:koin-compose-navigation3" to "com.bitsycore.koin:koin-compose-navigation3",
+
+    // Coil 3 - no mingwX64 upstream anywhere, no desktop native at all for the
+    // compose layer.
+    "io.coil-kt.coil3:coil-core" to "com.bitsycore.coil3:coil-core",
+    "io.coil-kt.coil3:coil" to "com.bitsycore.coil3:coil",
+    "io.coil-kt.coil3:coil-compose-core" to "com.bitsycore.coil3:coil-compose-core",
+    "io.coil-kt.coil3:coil-compose" to "com.bitsycore.coil3:coil-compose",
+    "io.coil-kt.coil3:coil-svg" to "com.bitsycore.coil3:coil-svg",
+    "io.coil-kt.coil3:coil-network-core" to "com.bitsycore.coil3:coil-network-core",
+    "io.coil-kt.coil3:coil-network-ktor3" to "com.bitsycore.coil3:coil-network-ktor3",
+
+    // Pulse MVI. Upstream publishes com.bitsycore.lib:*; the port republishes
+    // under com.bitsycore.pulse:* so the two coordinates never collide.
+    "com.bitsycore.lib:pulse" to "com.bitsycore.pulse:pulse",
+    "com.bitsycore.lib:pulse-viewmodel" to "com.bitsycore.pulse:pulse-viewmodel",
+    "com.bitsycore.lib:pulse-savedstate" to "com.bitsycore.pulse:pulse-savedstate",
+    "com.bitsycore.lib:pulse-compose" to "com.bitsycore.pulse:pulse-compose",
 )
 
 /** The K/N desktop targets the port serves; configuration names carry the token. */

@@ -77,6 +77,44 @@ upstream), `composeRuntime`, and `version` (the port klib version being
 substituted). You can still write literal versions if you prefer; the extension
 just removes the drift.
 
+### Ecosystem libraries
+
+Substitution is not limited to Compose. Several popular libraries stop short of
+Kotlin/Native desktop upstream; the port vendors them and the bridge swaps them
+in on native desktop targets, so you declare the **official** coordinates and
+they resolve everywhere:
+
+```kotlin
+commonMain.dependencies {
+    // Koin - koin-core already ships desktop-native klibs; these four are the
+    // ones upstream builds for apple + android only.
+    implementation("io.insert-koin:koin-core:4.2.2")
+    implementation("io.insert-koin:koin-compose:4.2.2")
+    implementation("io.insert-koin:koin-compose-viewmodel:4.2.2")
+    implementation("io.insert-koin:koin-compose-navigation3:4.2.2")
+
+    // Coil 3 - no mingwX64 upstream anywhere, and no desktop native at all for
+    // its compose layer.
+    implementation("io.coil-kt.coil3:coil-compose:3.6.2")
+    implementation("io.coil-kt.coil3:coil-network-ktor3:3.6.2")
+    implementation("io.coil-kt.coil3:coil-svg:3.6.2")
+
+    // Pulse MVI
+    implementation("com.bitsycore.lib:pulse:0.3.7")
+    implementation("com.bitsycore.lib:pulse-compose:0.3.7")
+}
+```
+
+Two caveats:
+
+- Koin's `koin-compose-viewmodel-navigation` is **not** substituted. It sits on
+  Navigation 2's `navigation-compose`, which publishes no mingwX64 or linux
+  klibs under either the `androidx.*` or `org.jetbrains.androidx.*`
+  coordinates. Use `koin-compose-navigation3` instead.
+- Lifecycle comes from the **google** `androidx.lifecycle:*` coordinates here.
+  If your own build also pulls the `org.jetbrains.androidx.lifecycle:*` mirrors,
+  you will get the same classes twice - pick one.
+
 ### Settings-wide or per-module
 
 The plugin applies at either level:

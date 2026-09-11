@@ -18,6 +18,9 @@ executable for macOS (arm64), Linux (x64/arm64), and Windows (mingwX64), using
 - **The UI layers are vendored upstream.** `androidx.compose.ui`, `foundation`,
   `animation`, and `material3` are copied from Compose Multiplatform verbatim
   wherever they compile as is, with project code filling in only the native glue.
+  The same treatment extends to ecosystem libraries that stop short of
+  Kotlin/Native desktop - Koin, Coil 3 and Pulse MVI are vendored and rebuilt for
+  these targets, and you still declare their official coordinates.
 - **Rendering is Skia everywhere.** macOS and Linux link the official Skiko
   klibs (Metal / OpenGL); Windows links the bitsycore Skiko fork, which ships
   Skiko and Skia together in `skiko-windows-x64.dll`.
@@ -148,16 +151,29 @@ client certificates.
 
 ## Modules
 
-One Gradle module per upstream Compose artifact, mirroring the upstream
-`compose/` tree. The renderer lives in `:ui` and the `sdl3` cinterop in
-`:sdl-core`; `:desktop-native-window` is the SDL integration layer. `:material-symbols`, `:components-resources`, and
-`:navigation3-ui` are project or vendored modules that the official Maven
-artifacts do not cover for Kotlin/Native desktop.
+One Gradle module per upstream artifact, and the Gradle path mirrors the
+directory (`:compose:ui:ui`, `:compose:foundation:foundation`, …). The renderer
+lives in `:compose:ui:ui` and the `sdl3` cinterop in `:sdl:sdl-core`;
+`:compose:desktop:native:desktop-native-window` is the SDL integration layer.
 
 Most of the androidx architecture stack (lifecycle, viewmodel, navigation3,
 savedstate, navigationevent) ships real Kotlin/Native desktop klibs and runs on
-the port unmodified. The full module map, dependency graph, and the list of
-compatible artifacts are in [CLAUDE.md](CLAUDE.md).
+the port unmodified. Where an ecosystem library stops short of Kotlin/Native
+desktop, this repo vendors it verbatim from upstream and rebuilds it for these
+targets, so you keep writing against the official coordinates:
+
+| Vendored | Why | Published as |
+|----------|-----|--------------|
+| Compose `ui` / `foundation` / `animation` / `material3` | the port itself | `com.bitsycore.compose.*` |
+| `components-resources`, `navigation3-ui` | no mingwX64 / linux klibs | `com.bitsycore.compose.components`, `com.bitsycore.navigation3` |
+| **Koin** viewmodel + compose modules | apple + android only upstream (`koin-core` itself is fine) | `com.bitsycore.koin` |
+| **Coil 3** (whole stack) | no mingwX64 anywhere; no desktop native at all for its compose layer | `com.bitsycore.coil3` |
+| **Pulse MVI** | no desktop-native artifact upstream | `com.bitsycore.pulse` |
+
+The bridge plugin substitutes each of these on native desktop configurations, so
+app code declares `io.insert-koin:koin-compose`, `io.coil-kt.coil3:coil-compose`
+and so on exactly as it would anywhere else. The full module map, dependency
+graph, and the list of compatible artifacts are in [CLAUDE.md](CLAUDE.md).
 
 ## Building
 
