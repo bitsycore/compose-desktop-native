@@ -1,0 +1,17 @@
+# :koin:koin-compose-viewmodel - vendored verbatim from InsertKoinIO/koin.
+# Upstream publishes apple + android only. Pure commonMain.
+SET_REPO=https://github.com/InsertKoinIO/koin@<KOIN_REF>
+
+SET_FOLDER=projects/compose/koin-compose-viewmodel/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/org/koin/compose/viewmodel/ViewModel.kt -> src/vendor/common/kotlin/org/koin/compose/viewmodel/ViewModel.kt
+#     | commonMain/kotlin/org/koin/compose/viewmodel/dsl/ModuleExt.kt -> src/vendor/common/kotlin/org/koin/compose/viewmodel/dsl/ModuleExt.kt
+#     | commonMain/kotlin/org/koin/compose/viewmodel/dsl/ScopeSetExt.kt -> src/vendor/common/kotlin/org/koin/compose/viewmodel/dsl/ScopeSetExt.kt
+#     | commonMain/kotlin/org/koin/compose/viewmodel/dsl/ScopeViewModelOf.kt -> src/vendor/common/kotlin/org/koin/compose/viewmodel/dsl/ScopeViewModelOf.kt
+#     | commonMain/kotlin/org/koin/compose/viewmodel/dsl/ViewModelOf.kt -> src/vendor/common/kotlin/org/koin/compose/viewmodel/dsl/ViewModelOf.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (1)
+#     | androidMain/kotlin/org/koin/compose/viewmodel/ViewModelExt.kt -> src/vendor/android/kotlin/org/koin/compose/viewmodel/ViewModelExt.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

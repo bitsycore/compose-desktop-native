@@ -1,0 +1,102 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.koin:koin-compose>
+final class <#A: kotlin/Any?> org.koin.compose/ComposeContextWrapper { // org.koin.compose/ComposeContextWrapper|null[0]
+    constructor <init>(#A? = ..., kotlin/Function0<#A>? = ...) // org.koin.compose/ComposeContextWrapper.<init>|<init>(1:0?;kotlin.Function0<1:0>?){}[0]
+
+    final val setValue // org.koin.compose/ComposeContextWrapper.setValue|{}setValue[0]
+        final fun <get-setValue>(): kotlin/Function0<#A>? // org.koin.compose/ComposeContextWrapper.setValue.<get-setValue>|<get-setValue>(){}[0]
+
+    final fun getValue(): #A // org.koin.compose/ComposeContextWrapper.getValue|getValue(){}[0]
+    final fun resetValue(): #A? // org.koin.compose/ComposeContextWrapper.resetValue|resetValue(){}[0]
+}
+
+final class org.koin.compose.application/CompositionKoinApplicationLoader : androidx.compose.runtime/RememberObserver { // org.koin.compose.application/CompositionKoinApplicationLoader|null[0]
+    constructor <init>(org.koin.core/KoinApplication? = ...) // org.koin.compose.application/CompositionKoinApplicationLoader.<init>|<init>(org.koin.core.KoinApplication?){}[0]
+
+    final val koinApplication // org.koin.compose.application/CompositionKoinApplicationLoader.koinApplication|{}koinApplication[0]
+        final fun <get-koinApplication>(): org.koin.core/KoinApplication? // org.koin.compose.application/CompositionKoinApplicationLoader.koinApplication.<get-koinApplication>|<get-koinApplication>(){}[0]
+
+    final var koin // org.koin.compose.application/CompositionKoinApplicationLoader.koin|{}koin[0]
+        final fun <get-koin>(): org.koin.core/Koin? // org.koin.compose.application/CompositionKoinApplicationLoader.koin.<get-koin>|<get-koin>(){}[0]
+        final fun <set-koin>(org.koin.core/Koin?) // org.koin.compose.application/CompositionKoinApplicationLoader.koin.<set-koin>|<set-koin>(org.koin.core.Koin?){}[0]
+
+    final fun onAbandoned() // org.koin.compose.application/CompositionKoinApplicationLoader.onAbandoned|onAbandoned(){}[0]
+    final fun onForgotten() // org.koin.compose.application/CompositionKoinApplicationLoader.onForgotten|onForgotten(){}[0]
+    final fun onRemembered() // org.koin.compose.application/CompositionKoinApplicationLoader.onRemembered|onRemembered(){}[0]
+}
+
+final class org.koin.compose.error/UnknownKoinContext : kotlin/Exception { // org.koin.compose.error/UnknownKoinContext|null[0]
+    constructor <init>() // org.koin.compose.error/UnknownKoinContext.<init>|<init>(){}[0]
+}
+
+final class org.koin.compose.module/CompositionKoinModuleLoader : androidx.compose.runtime/RememberObserver { // org.koin.compose.module/CompositionKoinModuleLoader|null[0]
+    constructor <init>(kotlin.collections/List<org.koin.core.module/Module>, org.koin.core/Koin, kotlin/Boolean, kotlin/Boolean) // org.koin.compose.module/CompositionKoinModuleLoader.<init>|<init>(kotlin.collections.List<org.koin.core.module.Module>;org.koin.core.Koin;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val koin // org.koin.compose.module/CompositionKoinModuleLoader.koin|{}koin[0]
+        final fun <get-koin>(): org.koin.core/Koin // org.koin.compose.module/CompositionKoinModuleLoader.koin.<get-koin>|<get-koin>(){}[0]
+    final val modules // org.koin.compose.module/CompositionKoinModuleLoader.modules|{}modules[0]
+        final fun <get-modules>(): kotlin.collections/List<org.koin.core.module/Module> // org.koin.compose.module/CompositionKoinModuleLoader.modules.<get-modules>|<get-modules>(){}[0]
+    final val unloadOnAbandoned // org.koin.compose.module/CompositionKoinModuleLoader.unloadOnAbandoned|{}unloadOnAbandoned[0]
+        final fun <get-unloadOnAbandoned>(): kotlin/Boolean // org.koin.compose.module/CompositionKoinModuleLoader.unloadOnAbandoned.<get-unloadOnAbandoned>|<get-unloadOnAbandoned>(){}[0]
+    final val unloadOnForgotten // org.koin.compose.module/CompositionKoinModuleLoader.unloadOnForgotten|{}unloadOnForgotten[0]
+        final fun <get-unloadOnForgotten>(): kotlin/Boolean // org.koin.compose.module/CompositionKoinModuleLoader.unloadOnForgotten.<get-unloadOnForgotten>|<get-unloadOnForgotten>(){}[0]
+
+    final fun onAbandoned() // org.koin.compose.module/CompositionKoinModuleLoader.onAbandoned|onAbandoned(){}[0]
+    final fun onForgotten() // org.koin.compose.module/CompositionKoinModuleLoader.onForgotten|onForgotten(){}[0]
+    final fun onRemembered() // org.koin.compose.module/CompositionKoinModuleLoader.onRemembered|onRemembered(){}[0]
+}
+
+final class org.koin.compose.scope/CompositionKoinScopeLoader : androidx.compose.runtime/RememberObserver { // org.koin.compose.scope/CompositionKoinScopeLoader|null[0]
+    constructor <init>(org.koin.core.scope/Scope) // org.koin.compose.scope/CompositionKoinScopeLoader.<init>|<init>(org.koin.core.scope.Scope){}[0]
+
+    final val scope // org.koin.compose.scope/CompositionKoinScopeLoader.scope|{}scope[0]
+        final fun <get-scope>(): org.koin.core.scope/Scope // org.koin.compose.scope/CompositionKoinScopeLoader.scope.<get-scope>|<get-scope>(){}[0]
+
+    final fun onAbandoned() // org.koin.compose.scope/CompositionKoinScopeLoader.onAbandoned|onAbandoned(){}[0]
+    final fun onForgotten() // org.koin.compose.scope/CompositionKoinScopeLoader.onForgotten|onForgotten(){}[0]
+    final fun onRemembered() // org.koin.compose.scope/CompositionKoinScopeLoader.onRemembered|onRemembered(){}[0]
+}
+
+final val org.koin.compose.application/org_koin_compose_application_CompositionKoinApplicationLoader$stableprop // org.koin.compose.application/org_koin_compose_application_CompositionKoinApplicationLoader$stableprop|#static{}org_koin_compose_application_CompositionKoinApplicationLoader$stableprop[0]
+final val org.koin.compose.error/org_koin_compose_error_UnknownKoinContext$stableprop // org.koin.compose.error/org_koin_compose_error_UnknownKoinContext$stableprop|#static{}org_koin_compose_error_UnknownKoinContext$stableprop[0]
+final val org.koin.compose.module/org_koin_compose_module_CompositionKoinModuleLoader$stableprop // org.koin.compose.module/org_koin_compose_module_CompositionKoinModuleLoader$stableprop|#static{}org_koin_compose_module_CompositionKoinModuleLoader$stableprop[0]
+final val org.koin.compose.scope/org_koin_compose_scope_CompositionKoinScopeLoader$stableprop // org.koin.compose.scope/org_koin_compose_scope_CompositionKoinScopeLoader$stableprop|#static{}org_koin_compose_scope_CompositionKoinScopeLoader$stableprop[0]
+final val org.koin.compose/LocalKoinApplication // org.koin.compose/LocalKoinApplication|{}LocalKoinApplication[0]
+    final fun <get-LocalKoinApplication>(): androidx.compose.runtime/ProvidableCompositionLocal<org.koin.core/Koin> // org.koin.compose/LocalKoinApplication.<get-LocalKoinApplication>|<get-LocalKoinApplication>(){}[0]
+final val org.koin.compose/LocalKoinScope // org.koin.compose/LocalKoinScope|{}LocalKoinScope[0]
+    final fun <get-LocalKoinScope>(): androidx.compose.runtime/ProvidableCompositionLocal<org.koin.core.scope/Scope> // org.koin.compose/LocalKoinScope.<get-LocalKoinScope>|<get-LocalKoinScope>(){}[0]
+final val org.koin.compose/LocalKoinScopeContext // org.koin.compose/LocalKoinScopeContext|{}LocalKoinScopeContext[0]
+    final fun <get-LocalKoinScopeContext>(): androidx.compose.runtime/ProvidableCompositionLocal<org.koin.compose/ComposeContextWrapper<org.koin.core.scope/Scope>> // org.koin.compose/LocalKoinScopeContext.<get-LocalKoinScopeContext>|<get-LocalKoinScopeContext>(){}[0]
+final val org.koin.compose/org_koin_compose_ComposeContextWrapper$stableprop // org.koin.compose/org_koin_compose_ComposeContextWrapper$stableprop|#static{}org_koin_compose_ComposeContextWrapper$stableprop[0]
+
+final fun org.koin.compose.application/org_koin_compose_application_CompositionKoinApplicationLoader$stableprop_getter(): kotlin/Int // org.koin.compose.application/org_koin_compose_application_CompositionKoinApplicationLoader$stableprop_getter|org_koin_compose_application_CompositionKoinApplicationLoader$stableprop_getter(){}[0]
+final fun org.koin.compose.error/org_koin_compose_error_UnknownKoinContext$stableprop_getter(): kotlin/Int // org.koin.compose.error/org_koin_compose_error_UnknownKoinContext$stableprop_getter|org_koin_compose_error_UnknownKoinContext$stableprop_getter(){}[0]
+final fun org.koin.compose.module/org_koin_compose_module_CompositionKoinModuleLoader$stableprop_getter(): kotlin/Int // org.koin.compose.module/org_koin_compose_module_CompositionKoinModuleLoader$stableprop_getter|org_koin_compose_module_CompositionKoinModuleLoader$stableprop_getter(){}[0]
+final fun org.koin.compose.scope/KoinScope(kotlin/Function1<org.koin.core/Koin, org.koin.core.scope/Scope>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose.scope/KoinScope|KoinScope(kotlin.Function1<org.koin.core.Koin,org.koin.core.scope.Scope>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose.scope/OnKoinScope(org.koin.core.scope/Scope, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose.scope/OnKoinScope|OnKoinScope(org.koin.core.scope.Scope;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose.scope/org_koin_compose_scope_CompositionKoinScopeLoader$stableprop_getter(): kotlin/Int // org.koin.compose.scope/org_koin_compose_scope_CompositionKoinScopeLoader$stableprop_getter|org_koin_compose_scope_CompositionKoinScopeLoader$stableprop_getter(){}[0]
+final fun org.koin.compose.scope/rememberKoinScope(org.koin.core.scope/Scope, androidx.compose.runtime/Composer?, kotlin/Int): org.koin.core.scope/Scope // org.koin.compose.scope/rememberKoinScope|rememberKoinScope(org.koin.core.scope.Scope;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/KoinApplication(kotlin/Function1<org.koin.core/KoinApplication, kotlin/Unit>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose/KoinApplication|KoinApplication(kotlin.Function1<org.koin.core.KoinApplication,kotlin.Unit>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/KoinApplication(org.koin.dsl/KoinConfiguration, org.koin.core.logger/Level?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.koin.compose/KoinApplication|KoinApplication(org.koin.dsl.KoinConfiguration;org.koin.core.logger.Level?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun org.koin.compose/KoinApplicationPreview(kotlin/Function1<org.koin.core/KoinApplication, kotlin/Unit>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose/KoinApplicationPreview|KoinApplicationPreview(kotlin.Function1<org.koin.core.KoinApplication,kotlin.Unit>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/KoinContext(org.koin.core/Koin?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.koin.compose/KoinContext|KoinContext(org.koin.core.Koin?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun org.koin.compose/KoinIsolatedContext(org.koin.core/KoinApplication, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose/KoinIsolatedContext|KoinIsolatedContext(org.koin.core.KoinApplication;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/KoinMultiplatformApplication(org.koin.dsl/KoinConfiguration, org.koin.core.logger/Level?, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.koin.compose/KoinMultiplatformApplication|KoinMultiplatformApplication(org.koin.dsl.KoinConfiguration;org.koin.core.logger.Level?;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun org.koin.compose/currentKoinScope(androidx.compose.runtime/Composer?, kotlin/Int): org.koin.core.scope/Scope // org.koin.compose/currentKoinScope|currentKoinScope(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/getKoin(androidx.compose.runtime/Composer?, kotlin/Int): org.koin.core/Koin // org.koin.compose/getKoin|getKoin(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun org.koin.compose/org_koin_compose_ComposeContextWrapper$stableprop_getter(): kotlin/Int // org.koin.compose/org_koin_compose_ComposeContextWrapper$stableprop_getter|org_koin_compose_ComposeContextWrapper$stableprop_getter(){}[0]
+final inline fun <#A: reified kotlin/Any> org.koin.compose.scope/KoinScope(kotlin/String, noinline kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose.scope/KoinScope|KoinScope(kotlin.String;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any>}[0]
+final inline fun <#A: reified kotlin/Any?> org.koin.compose/koinInject(org.koin.core.qualifier/Qualifier?, org.koin.core.scope/Scope?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): #A // org.koin.compose/koinInject|koinInject(org.koin.core.qualifier.Qualifier?;org.koin.core.scope.Scope?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> org.koin.compose/koinInject(org.koin.core.qualifier/Qualifier?, org.koin.core.scope/Scope?, noinline kotlin/Function0<org.koin.core.parameter/ParametersHolder>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): #A // org.koin.compose/koinInject|koinInject(org.koin.core.qualifier.Qualifier?;org.koin.core.scope.Scope?;kotlin.Function0<org.koin.core.parameter.ParametersHolder>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> org.koin.compose/koinInject(org.koin.core.qualifier/Qualifier?, org.koin.core.scope/Scope?, org.koin.core.parameter/ParametersHolder, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): #A // org.koin.compose/koinInject|koinInject(org.koin.core.qualifier.Qualifier?;org.koin.core.scope.Scope?;org.koin.core.parameter.ParametersHolder;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any?>}[0]
+final inline fun org.koin.compose.application/rememberKoinApplication(noinline kotlin/Function1<org.koin.core/KoinApplication, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int): org.koin.core/Koin // org.koin.compose.application/rememberKoinApplication|rememberKoinApplication(kotlin.Function1<org.koin.core.KoinApplication,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final inline fun org.koin.compose.application/rememberKoinMPApplication(org.koin.dsl/KoinConfiguration, org.koin.core.logger/Level, androidx.compose.runtime/Composer?, kotlin/Int): org.koin.core/Koin // org.koin.compose.application/rememberKoinMPApplication|rememberKoinMPApplication(org.koin.dsl.KoinConfiguration;org.koin.core.logger.Level;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final inline fun org.koin.compose.module/rememberKoinModules(kotlin/Boolean?, kotlin/Boolean?, kotlin/Boolean, crossinline kotlin/Function0<kotlin.collections/List<org.koin.core.module/Module>>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.koin.compose.module/rememberKoinModules|rememberKoinModules(kotlin.Boolean?;kotlin.Boolean?;kotlin.Boolean;kotlin.Function0<kotlin.collections.List<org.koin.core.module.Module>>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final inline fun org.koin.compose.scope/KoinScope(kotlin/String, org.koin.core.qualifier/Qualifier, noinline kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose.scope/KoinScope|KoinScope(kotlin.String;org.koin.core.qualifier.Qualifier;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final inline fun org.koin.compose.scope/UnboundKoinScope(org.koin.core.scope/Scope, noinline kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // org.koin.compose.scope/UnboundKoinScope|UnboundKoinScope(org.koin.core.scope.Scope;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]

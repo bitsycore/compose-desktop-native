@@ -1,0 +1,22 @@
+# :koin:koin-compose-navigation3 - vendored verbatim from InsertKoinIO/koin.
+#
+# This is the Navigation 3 integration, NOT koin-compose-viewmodel-navigation.
+# That module sits on nav2's navigation-compose, which publishes NO mingwX64 or
+# linux klibs under either the androidx.* or org.jetbrains.androidx.* coords, so
+# it cannot reach this port's targets without vendoring nav2 as well. This port's
+# navigation story is Navigation 3 (see :navigation3:navigation3-ui), and
+# koin-compose-navigation3 needs only koin-compose + navigation3-runtime, both of
+# which are reachable. Pure commonMain.
+SET_REPO=https://github.com/InsertKoinIO/koin@<KOIN_REF>
+
+SET_FOLDER=projects/compose/koin-compose-navigation3/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/org/koin/compose/navigation3/EntryProvider.kt -> src/vendor/common/kotlin/org/koin/compose/navigation3/EntryProvider.kt
+#     | commonMain/kotlin/org/koin/compose/navigation3/EntryProviderInstaller.kt -> src/vendor/common/kotlin/org/koin/compose/navigation3/EntryProviderInstaller.kt
+#     | commonMain/kotlin/org/koin/dsl/navigation3/ModuleExt.kt -> src/vendor/common/kotlin/org/koin/dsl/navigation3/ModuleExt.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (1)
+#     | androidMain/kotlin/org/koin/androidx/compose/navigation3/ComponentCallbacksExt.kt -> src/vendor/android/kotlin/org/koin/androidx/compose/navigation3/ComponentCallbacksExt.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

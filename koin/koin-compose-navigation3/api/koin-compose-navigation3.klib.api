@@ -1,0 +1,11 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.koin:koin-compose-navigation3>
+final fun <#A: kotlin/Any> org.koin.compose.navigation3/koinEntryProvider(org.koin.core.scope/Scope?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): kotlin/Function1<#A, androidx.navigation3.runtime/NavEntry<#A>> // org.koin.compose.navigation3/koinEntryProvider|koinEntryProvider(org.koin.core.scope.Scope?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any>}[0]
+final inline fun <#A: reified kotlin/Any> (org.koin.core.module/Module).org.koin.dsl.navigation3/navigation(kotlin.collections/Map<kotlin/String, kotlin/Any> = ..., noinline kotlin/Function4<org.koin.core.scope/Scope, #A, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>): org.koin.core.definition/KoinDefinition<kotlin/Function1<androidx.navigation3.runtime/EntryProviderScope<kotlin/Any>, kotlin/Unit>> // org.koin.dsl.navigation3/navigation|navigation@org.koin.core.module.Module(kotlin.collections.Map<kotlin.String,kotlin.Any>;kotlin.Function4<org.koin.core.scope.Scope,0:0,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){0§<kotlin.Any>}[0]
+final inline fun <#A: reified kotlin/Any> (org.koin.dsl/ScopeDSL).org.koin.dsl.navigation3/navigation(kotlin.collections/Map<kotlin/String, kotlin/Any> = ..., noinline kotlin/Function4<org.koin.core.scope/Scope, #A, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>): org.koin.core.definition/KoinDefinition<kotlin/Function1<androidx.navigation3.runtime/EntryProviderScope<kotlin/Any>, kotlin/Unit>> // org.koin.dsl.navigation3/navigation|navigation@org.koin.dsl.ScopeDSL(kotlin.collections.Map<kotlin.String,kotlin.Any>;kotlin.Function4<org.koin.core.scope.Scope,0:0,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>){0§<kotlin.Any>}[0]

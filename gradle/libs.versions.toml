@@ -18,6 +18,10 @@ kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 okio = "3.17.0"
 ktor = "3.5.1"
+koin = "4.2.2"
+coil = "3.6.2"
+androidxLifecycle = "2.11.0"
+navigation3Runtime = "1.2.0-alpha05"
 skiko = "0.150.1"
 # The bitsycore skiko FORK for mingwX64 (skiko+Skia in skiko-windows-x64.dll).
 # Same Skia base as `skiko` above - keep the `-mingw.N` suffix's base in lockstep.
@@ -37,6 +41,15 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
+# koin-core publishes mingwX64 + linux klibs - consumed from Maven as-is; only the
+# viewmodel / compose layers are vendored (see koin/).
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+# GOOGLE lifecycle coordinates, matching the rest of the port. Upstream koin uses the
+# org.jetbrains.androidx.* mirrors; mixing both would duplicate the same classes.
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

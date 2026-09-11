@@ -86,6 +86,11 @@ include(":compose:desktop:native:desktop-native-window")
 include(":sdl:sdl-core")
 include(":utils:material-symbols")
 include(":navigation3:navigation3-ui")
+// Koin DI - only the modules upstream stops publishing for desktop native.
+include(":koin:koin-core-viewmodel")
+include(":koin:koin-compose")
+include(":koin:koin-compose-viewmodel")
+include(":koin:koin-compose-navigation3")
 include(":components:resources:components-resources")
 
 // Demo App testing foundation, animation, ui and material3

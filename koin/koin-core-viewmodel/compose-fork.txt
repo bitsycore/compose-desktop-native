@@ -1,0 +1,27 @@
+# :koin:koin-core-viewmodel - vendored verbatim from InsertKoinIO/koin.
+# Upstream publishes apple + android only (no mingwX64 / linux), so the port
+# rebuilds the SAME sources for its desktop targets. Pure commonMain.
+SET_REPO=https://github.com/InsertKoinIO/koin@<KOIN_REF>
+
+SET_FOLDER=projects/core/koin-core-viewmodel/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/org/koin/core/module/dsl/ModuleExt.kt -> src/vendor/common/kotlin/org/koin/core/module/dsl/ModuleExt.kt
+#     | commonMain/kotlin/org/koin/core/module/dsl/ScopeSetExt.kt -> src/vendor/common/kotlin/org/koin/core/module/dsl/ScopeSetExt.kt
+#     | commonMain/kotlin/org/koin/core/module/dsl/ScopeViewModelOf.kt -> src/vendor/common/kotlin/org/koin/core/module/dsl/ScopeViewModelOf.kt
+#     | commonMain/kotlin/org/koin/core/module/dsl/ViewModelOf.kt -> src/vendor/common/kotlin/org/koin/core/module/dsl/ViewModelOf.kt
+#     | commonMain/kotlin/org/koin/plugin/module/dsl/ViewModelDSLExt.kt -> src/vendor/common/kotlin/org/koin/plugin/module/dsl/ViewModelDSLExt.kt
+#     | commonMain/kotlin/org/koin/plugin/module/dsl/ViewModelModuleExt.kt -> src/vendor/common/kotlin/org/koin/plugin/module/dsl/ViewModelModuleExt.kt
+#     | commonMain/kotlin/org/koin/viewmodel/BundleExt.kt -> src/vendor/common/kotlin/org/koin/viewmodel/BundleExt.kt
+#     | commonMain/kotlin/org/koin/viewmodel/CreationExtrasExt.kt -> src/vendor/common/kotlin/org/koin/viewmodel/CreationExtrasExt.kt
+#     | commonMain/kotlin/org/koin/viewmodel/GetViewModel.kt -> src/vendor/common/kotlin/org/koin/viewmodel/GetViewModel.kt
+#     | commonMain/kotlin/org/koin/viewmodel/factory/AndroidParametersHolder.kt -> src/vendor/common/kotlin/org/koin/viewmodel/factory/AndroidParametersHolder.kt
+#     | commonMain/kotlin/org/koin/viewmodel/factory/KoinViewModelFactory.kt -> src/vendor/common/kotlin/org/koin/viewmodel/factory/KoinViewModelFactory.kt
+#     | commonMain/kotlin/org/koin/viewmodel/factory/ViewModelScopeAutoCloseable.kt -> src/vendor/common/kotlin/org/koin/viewmodel/factory/ViewModelScopeAutoCloseable.kt
+#     | commonMain/kotlin/org/koin/viewmodel/scope/ScopeViewModel.kt -> src/vendor/common/kotlin/org/koin/viewmodel/scope/ScopeViewModel.kt
+#     | commonMain/kotlin/org/koin/viewmodel/scope/ViewModelScopeArchetype.kt -> src/vendor/common/kotlin/org/koin/viewmodel/scope/ViewModelScopeArchetype.kt
+#     | commonMain/kotlin/org/koin/viewmodel/scope/ViewModelScopeArchetypeDSL.kt -> src/vendor/common/kotlin/org/koin/viewmodel/scope/ViewModelScopeArchetypeDSL.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   (none - every source set under SET_FOLDER is vendored)
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

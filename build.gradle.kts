@@ -49,6 +49,10 @@ val kAreaGroups = mapOf(
     ":compose:material:material-ripple" to "com.bitsycore.compose.material",
     ":components:resources:components-resources" to "com.bitsycore.compose.components",
     ":navigation3:navigation3-ui" to "com.bitsycore.navigation3",
+    ":koin:koin-core-viewmodel" to "com.bitsycore.koin",
+    ":koin:koin-compose" to "com.bitsycore.koin",
+    ":koin:koin-compose-viewmodel" to "com.bitsycore.koin",
+    ":koin:koin-compose-navigation3" to "com.bitsycore.koin",
     ":compose:desktop:native:desktop-native-window" to "com.bitsycore.compose",
 )
 fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
@@ -86,6 +90,8 @@ val kPublishedLibs = setOf(
     ":compose:material3:material3", ":compose:material:material-ripple",
     ":compose:desktop:native:desktop-native-window", ":utils:material-symbols",
     ":navigation3:navigation3-ui", ":components:resources:components-resources",
+    ":koin:koin-core-viewmodel", ":koin:koin-compose",
+    ":koin:koin-compose-viewmodel", ":koin:koin-compose-navigation3",
 )
 
 // -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
@@ -208,6 +214,12 @@ allprojects {
                 // components-resources: the official resources runtime ships no
                 // mingwX64/linux klibs - the port vendors it as :components-resources.
                 substitute(module("org.jetbrains.compose.components:components-resources")).using(project(":components:resources:components-resources"))
+                // Koin: koin-core itself publishes mingwX64 + linux and is used
+                // from Maven; these four stop at apple+android upstream.
+                substitute(module("io.insert-koin:koin-core-viewmodel")).using(project(":koin:koin-core-viewmodel"))
+                substitute(module("io.insert-koin:koin-compose")).using(project(":koin:koin-compose"))
+                substitute(module("io.insert-koin:koin-compose-viewmodel")).using(project(":koin:koin-compose-viewmodel"))
+                substitute(module("io.insert-koin:koin-compose-navigation3")).using(project(":koin:koin-compose-navigation3"))
             }
         }
     }

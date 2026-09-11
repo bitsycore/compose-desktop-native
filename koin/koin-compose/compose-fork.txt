@@ -1,0 +1,34 @@
+# :koin:koin-compose - vendored verbatim from InsertKoinIO/koin.
+# Upstream publishes apple + android only. nativeMain carries the KoinApplication
+# actual, which is target-agnostic and serves mingwX64 / linux unchanged.
+SET_REPO=https://github.com/InsertKoinIO/koin@<KOIN_REF>
+
+SET_FOLDER=projects/compose/koin-compose/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/org/koin/compose/ComposeContextWrapper.kt -> src/vendor/common/kotlin/org/koin/compose/ComposeContextWrapper.kt
+#     | commonMain/kotlin/org/koin/compose/Inject.kt -> src/vendor/common/kotlin/org/koin/compose/Inject.kt
+#     | commonMain/kotlin/org/koin/compose/KoinApplication.kt -> src/vendor/common/kotlin/org/koin/compose/KoinApplication.kt
+#     | commonMain/kotlin/org/koin/compose/application/CompositionKoinApplicationLoader.kt -> src/vendor/common/kotlin/org/koin/compose/application/CompositionKoinApplicationLoader.kt
+#     | commonMain/kotlin/org/koin/compose/application/RememberKoinApplication.kt -> src/vendor/common/kotlin/org/koin/compose/application/RememberKoinApplication.kt
+#     | commonMain/kotlin/org/koin/compose/error/UnknownKoinContext.kt -> src/vendor/common/kotlin/org/koin/compose/error/UnknownKoinContext.kt
+#     | commonMain/kotlin/org/koin/compose/module/CompositionKoinModuleLoader.kt -> src/vendor/common/kotlin/org/koin/compose/module/CompositionKoinModuleLoader.kt
+#     | commonMain/kotlin/org/koin/compose/module/RememberModules.kt -> src/vendor/common/kotlin/org/koin/compose/module/RememberModules.kt
+#     | commonMain/kotlin/org/koin/compose/scope/CompositionKoinScopeLoader.kt -> src/vendor/common/kotlin/org/koin/compose/scope/CompositionKoinScopeLoader.kt
+#     | commonMain/kotlin/org/koin/compose/scope/KoinScope.kt -> src/vendor/common/kotlin/org/koin/compose/scope/KoinScope.kt
+#     | commonMain/kotlin/org/koin/compose/scope/RememberScopes.kt -> src/vendor/common/kotlin/org/koin/compose/scope/RememberScopes.kt
+#     | commonMain/kotlin/org/koin/compose/scope/UnboundKoinScope.kt -> src/vendor/common/kotlin/org/koin/compose/scope/UnboundKoinScope.kt
+nativeMain/kotlin/ -> src/vendor/native/kotlin/
+#     | nativeMain/kotlin/org/koin/compose/KoinApplication.native.kt -> src/vendor/native/kotlin/org/koin/compose/KoinApplication.native.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/org/koin/compose/KoinApplication.android.kt -> src/vendor/android/kotlin/org/koin/compose/KoinApplication.android.kt
+#     | androidMain/kotlin/org/koin/compose/activity/KoinActivityInject.kt -> src/vendor/android/kotlin/org/koin/compose/activity/KoinActivityInject.kt
+#   jsMain (1)
+#     | jsMain/kotlin/org/koin/compose/KoinApplication.js.kt -> src/vendor/js/kotlin/org/koin/compose/KoinApplication.js.kt
+#   jvmMain (1)
+#     | jvmMain/kotlin/org/koin/compose/KoinApplication.jvm.kt -> src/vendor/jvm/kotlin/org/koin/compose/KoinApplication.jvm.kt
+#   wasmJsMain (1)
+#     | wasmJsMain/kotlin/org/koin/compose/KoinApplication.wasmJS.kt -> src/vendor/wasmJs/kotlin/org/koin/compose/KoinApplication.wasmJS.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>
