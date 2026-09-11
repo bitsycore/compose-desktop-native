@@ -1,0 +1,76 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.pulse:pulse>
+open annotation class com.bitsycore.lib.pulse.internal/ExperimentalPulse : kotlin/Annotation { // com.bitsycore.lib.pulse.internal/ExperimentalPulse|null[0]
+    constructor <init>() // com.bitsycore.lib.pulse.internal/ExperimentalPulse.<init>|<init>(){}[0]
+}
+
+open annotation class com.bitsycore.lib.pulse.internal/PulseDsl : kotlin/Annotation { // com.bitsycore.lib.pulse.internal/PulseDsl|null[0]
+    constructor <init>() // com.bitsycore.lib.pulse.internal/PulseDsl.<init>|<init>(){}[0]
+}
+
+abstract interface <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerHost { // com.bitsycore.lib.pulse.container/ContainerHost|null[0]
+    abstract val effectFlow // com.bitsycore.lib.pulse.container/ContainerHost.effectFlow|{}effectFlow[0]
+        abstract fun <get-effectFlow>(): kotlinx.coroutines.flow/Flow<#C> // com.bitsycore.lib.pulse.container/ContainerHost.effectFlow.<get-effectFlow>|<get-effectFlow>(){}[0]
+    abstract val stateFlow // com.bitsycore.lib.pulse.container/ContainerHost.stateFlow|{}stateFlow[0]
+        abstract fun <get-stateFlow>(): kotlinx.coroutines.flow/StateFlow<#A> // com.bitsycore.lib.pulse.container/ContainerHost.stateFlow.<get-stateFlow>|<get-stateFlow>(){}[0]
+
+    abstract fun dispatch(#B) // com.bitsycore.lib.pulse.container/ContainerHost.dispatch|dispatch(1:1){}[0]
+}
+
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/Container : com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C> { // com.bitsycore.lib.pulse.container/Container|null[0]
+    constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, #A? = ..., kotlinx.coroutines/CoroutineScope) // com.bitsycore.lib.pulse.container/Container.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;1:0?;kotlinx.coroutines.CoroutineScope){}[0]
+
+    final val containerContract // com.bitsycore.lib.pulse.container/Container.containerContract|{}containerContract[0]
+        final fun <get-containerContract>(): com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C> // com.bitsycore.lib.pulse.container/Container.containerContract.<get-containerContract>|<get-containerContract>(){}[0]
+    final val coroutineScope // com.bitsycore.lib.pulse.container/Container.coroutineScope|{}coroutineScope[0]
+        final fun <get-coroutineScope>(): kotlinx.coroutines/CoroutineScope // com.bitsycore.lib.pulse.container/Container.coroutineScope.<get-coroutineScope>|<get-coroutineScope>(){}[0]
+    open val effectFlow // com.bitsycore.lib.pulse.container/Container.effectFlow|{}effectFlow[0]
+        open fun <get-effectFlow>(): kotlinx.coroutines.flow/Flow<#C> // com.bitsycore.lib.pulse.container/Container.effectFlow.<get-effectFlow>|<get-effectFlow>(){}[0]
+    open val stateFlow // com.bitsycore.lib.pulse.container/Container.stateFlow|{}stateFlow[0]
+        open fun <get-stateFlow>(): kotlinx.coroutines.flow/StateFlow<#A> // com.bitsycore.lib.pulse.container/Container.stateFlow.<get-stateFlow>|<get-stateFlow>(){}[0]
+
+    final fun dispatchCustom(kotlin/Function1<com.bitsycore.lib.pulse.internal/UntypedIntentBuilder<#A>, kotlin/Unit>) // com.bitsycore.lib.pulse.container/Container.dispatchCustom|dispatchCustom(kotlin.Function1<com.bitsycore.lib.pulse.internal.UntypedIntentBuilder<1:0>,kotlin.Unit>){}[0]
+    final fun emitEffect(#C) // com.bitsycore.lib.pulse.container/Container.emitEffect|emitEffect(1:2){}[0]
+    final fun updateState(kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.container/Container.updateState|updateState(kotlin.Function1<1:0,1:0>){}[0]
+    open fun dispatch(#B) // com.bitsycore.lib.pulse.container/Container.dispatch|dispatch(1:1){}[0]
+    open fun onError(#B, kotlin/Throwable) // com.bitsycore.lib.pulse.container/Container.onError|onError(1:1;kotlin.Throwable){}[0]
+    open fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.container/Container.reduce|reduce(1:0;1:1){}[0]
+    open suspend fun handleIntent(#B) // com.bitsycore.lib.pulse.container/Container.handleIntent|handleIntent(1:1){}[0]
+}
+
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerContract { // com.bitsycore.lib.pulse.container/ContainerContract|null[0]
+    constructor <init>() // com.bitsycore.lib.pulse.container/ContainerContract.<init>|<init>(){}[0]
+
+    open fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.container/ContainerContract.reduce|reduce(1:0;1:1){}[0]
+}
+
+abstract class <#A: kotlin/Any, #B: kotlin/Any> com.bitsycore.lib.pulse.component/ComponentContract { // com.bitsycore.lib.pulse.component/ComponentContract|null[0]
+    constructor <init>(#A) // com.bitsycore.lib.pulse.component/ComponentContract.<init>|<init>(1:0){}[0]
+
+    final val initialState // com.bitsycore.lib.pulse.component/ComponentContract.initialState|{}initialState[0]
+        final fun <get-initialState>(): #A // com.bitsycore.lib.pulse.component/ComponentContract.initialState.<get-initialState>|<get-initialState>(){}[0]
+
+    abstract fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.component/ComponentContract.reduce|reduce(1:0;1:1){}[0]
+}
+
+final class <#A: kotlin/Any> com.bitsycore.lib.pulse.internal/UntypedIntentBuilder { // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder|null[0]
+    final fun handle(kotlin.coroutines/SuspendFunction1<com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.HandlerScope, kotlin/Unit>) // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.handle|handle(kotlin.coroutines.SuspendFunction1<com.bitsycore.lib.pulse.internal.UntypedIntentBuilder.HandlerScope,kotlin.Unit>){}[0]
+    final fun reduce(kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.reduce|reduce(kotlin.Function1<1:0,1:0>){}[0]
+
+    final class HandlerScope // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.HandlerScope|null[0]
+}
+
+final class <#A: kotlin/Any> com.bitsycore.lib.pulse.utility/DebouncedDispatcher { // com.bitsycore.lib.pulse.utility/DebouncedDispatcher|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineScope, kotlin/Function1<#A, kotlin/Unit>) // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.<init>|<init>(kotlinx.coroutines.CoroutineScope;kotlin.Function1<1:0,kotlin.Unit>){}[0]
+
+    final fun cancel(kotlin/String) // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.cancel|cancel(kotlin.String){}[0]
+    final fun cancelAll() // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.cancelAll|cancelAll(){}[0]
+    final fun clearHistory() // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.clearHistory|clearHistory(){}[0]
+    final fun dispatchDebounced(#A, kotlin.time/Duration, kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.dispatchDebounced|dispatchDebounced(1:0;kotlin.time.Duration;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
+}

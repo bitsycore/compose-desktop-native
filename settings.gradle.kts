@@ -100,6 +100,11 @@ include(":coil:coil-compose")
 include(":coil:coil-svg")
 include(":coil:coil-network-core")
 include(":coil:coil-network-ktor3")
+// Pulse MVI (bitsycore/pulse-mvi) - upstream has no desktop-native target at all.
+include(":pulse:pulse")
+include(":pulse:pulse-viewmodel")
+include(":pulse:pulse-savedstate")
+include(":pulse:pulse-compose")
 include(":components:resources:components-resources")
 
 // Demo App testing foundation, animation, ui and material3

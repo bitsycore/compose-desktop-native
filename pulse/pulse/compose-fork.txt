@@ -1,0 +1,21 @@
+# :pulse:pulse - vendored VERBATIM from bitsycore/pulse-mvi.
+# Upstream targets android / jvm / ios / js / wasm but NO desktop native
+# (macosArm64 / linuxX64 / linuxArm64 / mingwX64), so the port re-declares the
+# targets and rebuilds the same sources. commonMain only.
+SET_REPO=https://github.com/bitsycore/pulse-mvi@<PULSE_REF>
+
+SET_FOLDER=pulse/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/component/ComponentContract.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/component/ComponentContract.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/Container.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/Container.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/ContainerContract.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/ContainerContract.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/ContainerHost.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/ContainerHost.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/ExperimentalPulse.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/ExperimentalPulse.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/PulseDsl.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/PulseDsl.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/UntypedIntentBuilder.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/UntypedIntentBuilder.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/utility/DebouncedDispatcher.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/utility/DebouncedDispatcher.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   (none - every source set under SET_FOLDER is vendored)
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

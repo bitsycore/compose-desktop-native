@@ -1,0 +1,15 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.pulse:pulse-savedstate>
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel : com.bitsycore.lib.pulse.viewmodel/PulseViewModel<#A, #B, #C> { // com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel|null[0]
+    constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, androidx.lifecycle/SavedStateHandle, kotlinx.serialization/KSerializer<#A>, kotlin/String = ...) // com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;androidx.lifecycle.SavedStateHandle;kotlinx.serialization.KSerializer<1:0>;kotlin.String){}[0]
+}
+
+final val com.bitsycore.lib.pulse.savedstate/com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop // com.bitsycore.lib.pulse.savedstate/com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop|#static{}com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop[0]
+
+final fun com.bitsycore.lib.pulse.savedstate/com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop_getter(): kotlin/Int // com.bitsycore.lib.pulse.savedstate/com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop_getter|com_bitsycore_lib_pulse_savedstate_PulseSavedStateViewModel$stableprop_getter(){}[0]

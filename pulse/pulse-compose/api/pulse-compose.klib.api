@@ -1,0 +1,40 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.pulse:pulse-compose>
+open annotation class com.bitsycore.lib.pulse.scopes/PulseScopeDsl : kotlin/Annotation { // com.bitsycore.lib.pulse.scopes/PulseScopeDsl|null[0]
+    constructor <init>() // com.bitsycore.lib.pulse.scopes/PulseScopeDsl.<init>|<init>(){}[0]
+}
+
+final class <#A: kotlin/Any?> com.bitsycore.lib.pulse.scopes/ComposeIntentScope { // com.bitsycore.lib.pulse.scopes/ComposeIntentScope|null[0]
+    constructor <init>(kotlin/Function1<#A, kotlin/Unit>) // com.bitsycore.lib.pulse.scopes/ComposeIntentScope.<init>|<init>(kotlin.Function1<1:0,kotlin.Unit>){}[0]
+
+    final fun onEnter(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/ComposeIntentScope.onEnter|onEnter(kotlin.Function0<1:0>){}[0]
+    final fun onExit(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/ComposeIntentScope.onExit|onExit(kotlin.Function0<1:0>){}[0]
+}
+
+final class <#A: kotlin/Any?> com.bitsycore.lib.pulse.scopes/LifecycleIntentScope { // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope|null[0]
+    constructor <init>(kotlin/Function1<#A, kotlin/Unit>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.<init>|<init>(kotlin.Function1<1:0,kotlin.Unit>){}[0]
+
+    final fun onCreate(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onCreate|onCreate(kotlin.Function0<1:0>){}[0]
+    final fun onDestroy(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onDestroy|onDestroy(kotlin.Function0<1:0>){}[0]
+    final fun onPause(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onPause|onPause(kotlin.Function0<1:0>){}[0]
+    final fun onResume(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onResume|onResume(kotlin.Function0<1:0>){}[0]
+    final fun onStart(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onStart|onStart(kotlin.Function0<1:0>){}[0]
+    final fun onStop(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.scopes/LifecycleIntentScope.onStop|onStop(kotlin.Function0<1:0>){}[0]
+}
+
+final val com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop // com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop|#static{}com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop[0]
+final val com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop // com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop|#static{}com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop[0]
+
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.compose/collectAsStateWithLifecycle(androidx.lifecycle/Lifecycle.State?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): androidx.compose.runtime/State<#A> // com.bitsycore.lib.pulse.compose/collectAsStateWithLifecycle|collectAsStateWithLifecycle@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(androidx.lifecycle.Lifecycle.State?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.compose/collectEffect(kotlin.coroutines/SuspendFunction1<#C, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // com.bitsycore.lib.pulse.compose/collectEffect|collectEffect@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(kotlin.coroutines.SuspendFunction1<0:2,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.compose/collectEffectWithLifecycle(androidx.lifecycle/Lifecycle.State?, kotlin.coroutines/SuspendFunction1<#C, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.bitsycore.lib.pulse.compose/collectEffectWithLifecycle|collectEffectWithLifecycle@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(androidx.lifecycle.Lifecycle.State?;kotlin.coroutines.SuspendFunction1<0:2,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.compose/onCompositionIntent(kotlin/Any?, kotlin/Array<out kotlin/Any?>..., kotlin/Function1<com.bitsycore.lib.pulse.scopes/ComposeIntentScope<#B>, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.bitsycore.lib.pulse.compose/onCompositionIntent|onCompositionIntent@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(kotlin.Any?;kotlin.Array<out|kotlin.Any?>...;kotlin.Function1<com.bitsycore.lib.pulse.scopes.ComposeIntentScope<0:1>,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.compose/onLifecycleIntent(androidx.lifecycle/LifecycleOwner?, kotlin/Function1<com.bitsycore.lib.pulse.scopes/LifecycleIntentScope<#B>, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.bitsycore.lib.pulse.compose/onLifecycleIntent|onLifecycleIntent@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(androidx.lifecycle.LifecycleOwner?;kotlin.Function1<com.bitsycore.lib.pulse.scopes.LifecycleIntentScope<0:1>,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop_getter(): kotlin/Int // com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop_getter|com_bitsycore_lib_pulse_scopes_ComposeIntentScope$stableprop_getter(){}[0]
+final fun com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop_getter(): kotlin/Int // com.bitsycore.lib.pulse.scopes/com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop_getter|com_bitsycore_lib_pulse_scopes_LifecycleIntentScope$stableprop_getter(){}[0]
