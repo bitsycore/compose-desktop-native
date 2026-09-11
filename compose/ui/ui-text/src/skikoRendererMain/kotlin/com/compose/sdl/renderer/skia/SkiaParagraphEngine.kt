@@ -434,6 +434,14 @@ internal class SkiaParagraphOps(
 		// Per-run line height (upstream: res.height = lineHeight / fontSize), set only
 		// when lineHeight is specified so untouched text keeps skiko's default spacing.
 		resolveLineHeightPx(sizePx)?.let { ts.height = it / sizePx }
+		// How the EXTRA leading (lineHeight - fontSize) splits above vs below the
+		// glyphs. Mirrors upstream ParagraphBuilder.skiko.kt `res.topRatio = topRatio`.
+		// Without this, skiko keeps its own default (-1 = proportional to the font's
+		// ascent:descent), which for a line box much taller than the glyphs pushes them
+		// visibly DOWN - while Material 3's type styles ask for Alignment.Center. The
+		// fallback is Proportional, matching upstream, so text that specifies no
+		// lineHeightStyle is unaffected.
+		ts.topRatio = (style.lineHeightStyle?.alignment ?: LineHeightStyle.Alignment.Proportional).topRatio
 		// Span/base background fill behind the run.
 		if (background.isSpecified) ts.background = SkPaint().also { it.color = background.toArgb() }
 		// Register + resolve to a provider alias so skiko's shaper maps codepoints

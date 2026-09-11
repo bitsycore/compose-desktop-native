@@ -788,35 +788,31 @@ screen-scrape approach was tried first and grabbed whatever happened to be in fr
 First run after the font fix, 1240x820: **2.9% of pixels differ at all, 2.1% by >32/255.**
 Two residuals, neither a text-metrics bug:
 
-- **Inherited lineHeight distributes its leading differently - ROOT-CAUSED, OPEN.** This is
-  the residue of the SourceTag pill complaint: aligning the font (7a) made the glyph RASTER
-  identical (ink is 7 rows tall on both stacks) but the text still sits low on native.
-  Measured on the "Session" pill, `Box(padding(vertical = 1.dp)) { Text(fontSize = 9.sp) }`:
+- **Inherited lineHeight leading distribution - ✅ FIXED.** The port never forwarded
+  `topRatio` to skiko. Upstream's `ParagraphBuilder.skiko.kt` sets `res.topRatio = topRatio`
+  on EVERY SkTextStyle, sourced from `LineHeightStyle.Alignment.topRatio`; the port set
+  `ts.height` and `heightMode` but left `topRatio` alone, so skiko fell back to its own
+  default (-1 = split the extra leading proportionally to the font's ascent:descent). For a
+  line box much taller than the glyphs that pushes them visibly DOWN - while Material 3's
+  type styles ask for `Alignment.Center` (topRatio 0.5).
 
-    |        | line box | ink rows  | above | below |
-    |--------|----------|-----------|-------|-------|
-    | jvm    | 24px     | 217..223  | 10    | 9     |
-    | native | 25px     | 220..226  | 13    | 7     |
+  One line in `SkiaParagraphEngine.kt`'s SkTextStyle builder, with `Alignment.Proportional`
+  as the fallback exactly like upstream, so text specifying no lineHeightStyle is unchanged.
+  `topRatio` is present on both the official skiko and the bitsycore mingw fork.
 
-  The Text sets `fontSize = 9.sp` but NOT `lineHeight`, so it inherits lineHeight from
-  M3's `LocalTextStyle` (bodyLarge, 24.sp) - a line box far taller than the 9sp glyphs, i.e.
-  a lot of extra leading to distribute. DECISIVE TEST: adding an explicit `lineHeight = 9.sp`
-  (no extra leading) makes the two stacks PIXEL-IDENTICAL - same 14px box, same ink rows
-  217..223, same 4/3 gaps. So the port's font metrics, glyph raster and baseline placement
-  are all CORRECT; only the leading-distribution path diverges, and it both adds a pixel to
-  the box and biases the glyphs downward (13:7 vs upstream's 10:9).
+  Measured on apidemo (1240x820), whole window, native vs jvm:
 
-  Start at `SkiaParagraphEngine.kt`'s `heightMode` selection (the
-  `baseLineHeightPx > fontPx` branch that picks `LineHeightStyle.trim.toSkHeightMode()`) and
-  the per-run height multiplier near "res.height = lineHeight / fontSize", and compare
-  against upstream's `ParagraphBuilder.textStyleToParagraphStyle`. Do NOT "fix" this by
-  pinning lineHeight at call sites - that hides a library bug in app code.
+    |                    | differ | >32/255 |
+    |--------------------|--------|---------|
+    | before             | 2.94%  | 2.14%   |
+    | after              | 1.52%  | 0.29%   |
 
-- **Constant ~2px vertical offset.** The whole native content sits 2px lower. Shifting the
-  JVM capture down 2px halves the significant difference (2.14% -> 1.05%), so this single
-  offset is about half of ALL remaining drift; the leftover ~1% is rasterizer AA. It may well
-  be the same leading bug compounding through stacked text rows rather than an independent
-  issue - retest once the above is fixed.
+  The Session/Pack pills are now pixel-identical. This ALSO killed the "constant ~2px
+  vertical offset" logged alongside it - that was the same bug compounding through stacked
+  text rows, not an independent issue: shifting the jvm capture now makes the match WORSE
+  (0.29% at +0px vs 2.13% at +1px), where before +2px halved the error. The residual 0.29%
+  is rasterizer AA.
+
 - **Missing glyph in the session header.** The leading icon next to "Untitled session"
   renders as a `.notdef` TOFU on jvm and as NOTHING on native - so the glyph is absent from
   the subsetted Material Symbols font on both, and the two stacks just disagree on how to
