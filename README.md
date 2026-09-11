@@ -1,4 +1,4 @@
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
 
 # Compose Desktop Native
@@ -185,11 +185,18 @@ Everything below is pinned in exactly two files -
 for SDL3. A release tracks one Compose Multiplatform version; the table is the
 contract.
 
+**Version policy.** Anything Compose Multiplatform integrates is pinned to what
+CMP ships - for the androidx mirrors, the *Jetpack* version CMP's release notes
+map its `org.jetbrains.androidx.*` artifact to, since this port consumes the
+google coordinates. Anything CMP does not integrate is pinned to the latest
+release. Deliberate exceptions are commented in the catalog; there is currently
+one (`savedstate`, below).
+
 ### Toolchain
 
 | | Version | Notes |
 |---|---|---|
-| Kotlin | **2.4.0** | Newer than the 2.2.20 CMP 1.12.0 is built with. Kotlin/Native consumes older klibs fine, and the port compiles against 2.4.0, so there is no reason to hold back. |
+| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.0 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
 | Compose Multiplatform | **1.12.0** | The vendored sources are the `v1.12.0` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. |
 | SDL3 | **release-3.4.16** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
 | Skiko | **0.150.1** | macOS / Linux use the official `org.jetbrains.skiko`. |
@@ -243,8 +250,8 @@ mirrors or you will have every class twice.
 | Library | Coordinate |
 |---|---|
 | Lifecycle / ViewModel | `androidx.lifecycle:lifecycle-*:2.11.0` |
-| SavedState | `androidx.savedstate:savedstate*:1.5.0` |
-| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.2.0-alpha05` |
+| SavedState | `androidx.savedstate:savedstate*:1.5.0` (CMP builds against 1.4.0; lifecycle 2.11.0 requires it only as a *minimum*, so 1.5.0 resolves cleanly and gives consumers the newer API) |
+| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.2.0-alpha04` |
 | Navigation Event | `androidx.navigationevent:navigationevent-compose:1.1.2` |
 | Collection | `androidx.collection:collection:1.5.0` |
 | Graphics Shapes | `androidx.graphics:graphics-shapes:1.1.0` |
@@ -257,8 +264,8 @@ mirrors or you will have every class twice.
 | kotlinx-serialization | 1.11.0 |
 | kotlinx-datetime | 0.8.0 |
 | kotlinx-io-okio | 0.9.1 |
-| Okio | 3.17.0 |
-| Ktor | 3.5.1 |
+| Okio | 3.18.2 |
+| Ktor | 3.5.2 |
 
 ## Building
 

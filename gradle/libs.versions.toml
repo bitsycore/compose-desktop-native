@@ -1,71 +1,149 @@
+# ==========================================================================
+#  VERSION POLICY - read before bumping anything
+# ==========================================================================
+#
+#  1. If Compose Multiplatform integrates it, pin what CMP ships. For the
+#     androidx mirrors that means the JETPACK version CMP's release notes map
+#     its org.jetbrains.androidx.* artifact to - the port consumes the GOOGLE
+#     coordinates, never the mirrors (mixing both duplicates every class).
+#     Do not upgrade these past CMP on a hunch: the vendored sources under
+#     src/vendor were compiled against them.
+#  2. If CMP does not integrate it, pin the latest release.
+#  3. Deliberate exceptions to (1) are allowed, but each one is COMMENTED with
+#     why it is safe. Today there is one: androidxSavedState.
+#
+#  Keep in lockstep with the upstream git refs in
+#  scripts/compose-fork/compose.properties, and with the "Pinned versions"
+#  tables in README.md.
+#
+# ==========================================================================
+
 [versions]
-kotlin = "2.4.0"
-# Official Compose Multiplatform versions the port's vendored sources track and
-# the JVM parity leg forces. SINGLE SOURCE: consumed by the bridge plugin
-# (stamped into bridge-version.properties and exposed to consumers) and by
-# demo / apidemo / material-symbols. Keep in lockstep with the vendored ref in
-# scripts/compose-fork/compose.properties on each bump.
-#   compose          = ui / foundation / animation / material
-#   composeMaterial3 = material3 (versioned separately upstream)
-#   composeRuntime   = the official runtime klibs (never substituted)
+
+# ============
+#  Toolchain
+
+# Policy 2 (not something CMP dictates): latest release. Newer than the Kotlin
+# CMP 1.12.0 is itself built with (2.3.20), which is fine - Kotlin/Native reads
+# older klibs, and the whole port + both sample apps compile and link clean on
+# 2.4.20 with no klib API diff against 2.4.0.
+kotlin = "2.4.20"
+
+# ============
+#  Compose Multiplatform  (CMP-pinned - policy 1)
+#
+#  compose          = ui / foundation / animation / material
+#  composeMaterial3 = material3, which rides its own train upstream:
+#                     1.12.0-alpha03 IS what CMP 1.12.0 ships
+#                     (Jetpack material3 1.5.0-alpha22)
+#  composeRuntime   = the official runtime klibs, never substituted
+#
+#  Consumed by the bridge plugin (stamped into bridge-version.properties and
+#  exposed to consumers) and by demo / apidemo / material-symbols.
+
 compose = "1.12.0"
-# material3 rides its own release train upstream: 1.12.0-alpha03 IS the version
-# Compose Multiplatform 1.12.0 ships (Jetpack material3 1.5.0-alpha22).
 composeMaterial3 = "1.12.0-alpha03"
 composeRuntime = "1.12.0"
-kotlinxCoroutines = "1.11.0"
-kotlinxDateTime = "0.8.0"
-kotlinxSerialization = "1.11.0"
-okio = "3.17.0"
-kotlinxIoOkio = "0.9.1"
-ktor = "3.5.1"
-koin = "4.2.2"
-coil = "3.6.2"
-androidxLifecycle = "2.11.0"
-navigation3Runtime = "1.2.0-alpha05"
-androidxSavedState = "1.5.0"
-androidxNavigationEvent = "1.1.2"
-androidxCollection = "1.5.0"
-androidxGraphicsShapes = "1.1.0"
+
+# ============
+#  Skia
+
+# CMP 1.12.0 pins skiko 0.150.1, so macOS/Linux use exactly that.
 skiko = "0.150.1"
-# The bitsycore skiko FORK for mingwX64 (skiko+Skia in skiko-windows-x64.dll).
-# Same Skia base as `skiko` above - keep the `-mingw.N` suffix's base in lockstep.
+# The bitsycore skiko FORK for mingwX64 (skiko + Skia inside
+# skiko-windows-x64.dll). Its `-mingw.N` base MUST stay equal to `skiko` above.
 # Overridable per-build with -PskikoMingwVersion.
 skikoMingw = "0.150.1-mingw.2"
 
+# ============
+#  AndroidX  (CMP-pinned - policy 1)
+
+androidxLifecycle = "2.11.0"
+androidxCollection = "1.5.0"
+androidxGraphicsShapes = "1.1.0"
+# CMP ships org.jetbrains.androidx.navigationevent 1.1.0 == Jetpack 1.1.1; 1.1.2
+# is the latest PATCH of that same minor, so it stays inside policy 1.
+androidxNavigationEvent = "1.1.2"
+# CMP ships org.jetbrains.androidx.navigation3 1.2.0-alpha02 == Jetpack
+# 1.2.0-alpha04. Stay exactly there: it is a pre-release line, so alpha-to-alpha
+# can move API under the vendored :navigation3:navigation3-ui.
+navigation3Runtime = "1.2.0-alpha04"
+# EXCEPTION to policy 1, deliberate: CMP 1.12.0 builds against savedstate 1.4.0,
+# and androidx.lifecycle 2.11.0 *requires* 1.4.0 - but only as a MINIMUM, so
+# 1.5.0 resolves with no conflict. Taken on purpose to hand consumers the newer
+# savedstate API; the delta is additive within the same major.
+androidxSavedState = "1.5.0"
+
+# ============
+#  Vendored ecosystem libraries  (not in CMP - latest release, policy 2)
+#
+#  These numbers double as the upstream git refs the sources are vendored from
+#  (KOIN_REF / COIL_REF in scripts/compose-fork/compose.properties) - bump both.
+
+koin = "4.2.2"
+coil = "3.6.2"
+
+# ============
+#  Infrastructure  (not in CMP - latest release, policy 2)
+
+kotlinxCoroutines = "1.11.0"
+kotlinxDateTime = "0.8.0"
+kotlinxSerialization = "1.11.0"
+kotlinxIoOkio = "0.9.1"
+okio = "3.18.2"
+ktor = "3.5.2"
+
 [libraries]
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
-# coil-network-ktor3 bridges ktor's kotlinx-io sinks onto okio.
-kotlinx-io-okio = { module = "org.jetbrains.kotlinx:kotlinx-io-okio", version.ref = "kotlinxIoOkio" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+# ============
+#  Skia
+
 skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
-# koin-core publishes mingwX64 + linux klibs - consumed from Maven as-is; only the
-# viewmodel / compose layers are vendored (see koin/).
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-# GOOGLE lifecycle coordinates, matching the rest of the port. Upstream koin uses the
-# org.jetbrains.androidx.* mirrors; mixing both would duplicate the same classes.
-androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxLifecycle" }
-androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "androidxLifecycle" }
-androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
-androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
-androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
-androidx-savedstate = { module = "androidx.savedstate:savedstate", version.ref = "androidxSavedState" }
-androidx-savedstate-compose = { module = "androidx.savedstate:savedstate-compose", version.ref = "androidxSavedState" }
-androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "androidxNavigationEvent" }
+
+# ============
+#  AndroidX - used AS-IS (these publish real Kotlin/Native desktop klibs, so
+#  nothing here is vendored or substituted). GOOGLE coordinates throughout: the
+#  org.jetbrains.androidx.* mirrors carry the same classes, so pulling both puts
+#  every class on the path twice.
+
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
 androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "androidxGraphicsShapes" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "androidxLifecycle" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
+androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "androidxNavigationEvent" }
+androidx-savedstate = { module = "androidx.savedstate:savedstate", version.ref = "androidxSavedState" }
+androidx-savedstate-compose = { module = "androidx.savedstate:savedstate-compose", version.ref = "androidxSavedState" }
+
+# ============
+#  Koin. koin-core publishes mingwX64 + linux klibs and is consumed from Maven
+#  as-is; only the viewmodel / compose layers are vendored (see koin/).
+
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+
+# ============
+#  Infrastructure
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+# coil-network-ktor3 bridges ktor's kotlinx-io sinks onto okio.
+kotlinx-io-okio = { module = "org.jetbrains.kotlinx:kotlinx-io-okio", version.ref = "kotlinxIoOkio" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 [plugins]
+
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
