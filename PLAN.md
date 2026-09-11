@@ -734,3 +734,77 @@ scope for desktop 1.0 - but ship the non-throwing `PlatformScreenReader` no-op),
 hand-rolled text engine as an architectural deviation (§2 P1), per-focus
 `SDL_StartTextInput/StopTextInput`, `loadImageBitmap`/`loadSvgPainter` (JVM `InputStream`
 signatures, N/A on K/N).
+
+## 7. Post-1.12.0 open items (opened 2026-09-12)
+
+### 7a. JVM parity reference uses a DIFFERENT default font than native - ROOT-CAUSED, unfixed
+
+Symptom (apidemo, `SourceTag` in `InheritanceUi.kt`): the "Session" / "Pack" pill is
+`Box(padding(horizontal = 5.dp, vertical = 1.dp)) { Text(fontSize = 9.sp) }` - no explicit
+vertical centering, so the pill's look is entirely decided by where the glyphs sit inside the
+Text node's measured paragraph box. On the JVM leg the label looks vertically centred in the
+pill; on native it does not.
+
+**Not a centering bug - a font-resolution divergence.** The two stacks render that label in
+two different typefaces, which have different ascent / descent / line-gap, so the glyph run
+sits at a different height inside an equally-tall box:
+
+- NATIVE: `FontFamily.Default` resolves to the BUNDLED **NotoSans** -
+  `SkiaFonts.defaultTypeface` (`compose/ui/ui-text/src/skikoRendererMain/.../SkiaFonts.kt`)
+  loads `font/NotoSans.ttf` from data.kres and registers it as "the fallback for every
+  unresolved family".
+- JVM: nothing registers NotoSans as the default. `apidemo/src/jvmMain/kotlin/Fonts.jvm.kt`
+  only defines `monoFontFamily`; `jvmProcessResources` stages the .ttf on the classpath but
+  never installs it. So `FontFamily.Default` is Skiko's SYSTEM default (Segoe UI on Windows).
+
+This is a defect in the PARITY HARNESS, not (necessarily) in the renderer: every `Text` that
+doesn't name a `fontFamily` is being compared against a different typeface, so any such
+difference is uninterpretable. It likely masks or manufactures other "port bugs".
+
+**Fix:** make the JVM leg default to the bundled NotoSans so both stacks rasterise the same
+typeface - add a `defaultFontFamily` expect/actual next to `monoFontFamily` (jvm actual loads
+`/font/NotoSans.ttf`, native actual returns null since it is already the default) and apply it
+through the shared theme's `Typography` / `LocalTextStyle`. THEN re-compare the pill: any
+residual offset is a genuine native text-metrics bug and belongs under §1b.
+
+Affects `:demo` identically (it bundles NotoSans the same way).
+
+### 7b. Vendor Koin + Coil3 (requested 2026-09-12) - NOT STARTED
+
+Target-availability audit against Maven Central (the deciding fact - re-check on every
+version bump, and check BOTH the google and jetbrains coordinate sets before concluding an
+artifact "has no desktop klibs"):
+
+| Artifact | mingwX64 | linuxX64/arm64 | macosArm64 | Action |
+|---|---|---|---|---|
+| `androidx.navigationevent:navigationevent-compose` 1.1.2 | YES | YES | YES | **none - already used as-is** |
+| `org.jetbrains.androidx.navigationevent:navigationevent-compose` 1.1.0 | YES | YES | YES | **none** |
+| `io.insert-koin:koin-core` 4.2.2 | YES | YES | YES | none - Maven as-is |
+| `io.insert-koin:koin-core-viewmodel` 4.2.2 | no | no | YES | VENDOR |
+| `io.insert-koin:koin-compose` 4.2.2 | no | no | YES | VENDOR |
+| `io.insert-koin:koin-compose-viewmodel` 4.2.2 | no | no | YES | VENDOR |
+| `io.insert-koin:koin-compose-viewmodel-navigation` 4.2.2 | no | no | YES | VENDOR |
+| `io.coil-kt.coil3:coil-core` 3.6.2 | no | YES | YES | VENDOR (mingw gap) |
+| `io.coil-kt.coil3:coil` 3.6.2 | no | YES | YES | VENDOR (mingw gap) |
+| `io.coil-kt.coil3:coil-network-core` 3.6.2 | no | YES | YES | VENDOR (mingw gap) |
+| `io.coil-kt.coil3:coil-network-ktor3` 3.6.2 | no | YES | YES | VENDOR (mingw gap) |
+| `io.coil-kt.coil3:coil-svg` 3.6.2 | no | YES | YES | VENDOR (mingw gap) |
+| `io.coil-kt.coil3:coil-compose-core` 3.6.2 | no | no | YES | VENDOR |
+| `io.coil-kt.coil3:coil-compose` 3.6.2 | no | no | YES | VENDOR |
+
+NOTE the original premise that navigationevent-compose lacks desktop-native artifacts is
+WRONG - both coordinate sets publish mingwX64 + linux + macos, and the port already consumes
+`androidx.navigationevent:navigationevent-compose:1.1.2` unmodified ("Known Compatible" in
+CLAUDE.md, exercised by `demo --backtest`). Nothing to vendor there.
+
+Work per module: a new `SET_REPO` manifest pinned to a durable tag on a NEW upstream repo
+(`InsertKoinIO/koin`, `coil-kt/coil` - both need a `<NAME>_REF` entry in
+`scripts/compose-fork/compose.properties` and a sparse clone dir), source-set wiring, whatever
+platform actuals the missing targets need (Coil carries image decode + disk cache + network;
+its non-Apple decoder is already Skia-based, which should suit the port), a bridge-plugin
+substitution rule per artifact so consumers keep declaring official coordinates, group/
+artifactId assignment in the root build's `kAreaGroups` / `kPublishedLibs`, and a BCV dump.
+
+Remember the granular-metadata trap (CLAUDE.md "Common pitfalls"): every artifact the shared
+code touches must be declared DIRECTLY and get its own bridge rule, or
+`compileCommonMainKotlinMetadata` loses its transitives on the Windows publish job.
