@@ -23,6 +23,10 @@ koin = "4.2.2"
 coil = "3.6.2"
 androidxLifecycle = "2.11.0"
 navigation3Runtime = "1.2.0-alpha05"
+androidxSavedState = "1.5.0"
+androidxNavigationEvent = "1.1.2"
+androidxCollection = "1.5.0"
+androidxGraphicsShapes = "1.1.0"
 skiko = "0.150.1"
 # The bitsycore skiko FORK for mingwX64 (skiko+Skia in skiko-windows-x64.dll).
 # Same Skia base as `skiko` above - keep the `-mingw.N` suffix's base in lockstep.
@@ -54,6 +58,12 @@ androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecyc
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
+androidx-savedstate = { module = "androidx.savedstate:savedstate", version.ref = "androidxSavedState" }
+androidx-savedstate-compose = { module = "androidx.savedstate:savedstate-compose", version.ref = "androidxSavedState" }
+androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "androidxNavigationEvent" }
+androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
+androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "androidxGraphicsShapes" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

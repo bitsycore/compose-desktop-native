@@ -24,7 +24,7 @@ kotlin {
 			dependencies {
 				api(project(":compose:animation:animation"))
 				api(project(":compose:ui:ui"))
-				api("androidx.navigation3:navigation3-runtime:1.2.0-alpha05")
+				api(libs.androidx.navigation3.runtime)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

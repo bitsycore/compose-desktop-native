@@ -16,7 +16,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
-				api("androidx.collection:collection:1.5.0")
+				api(libs.androidx.collection)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")
 		}

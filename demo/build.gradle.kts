@@ -69,9 +69,9 @@ kotlin {
                 implementation(project(":utils:material-symbols"))
 
                 // nav3 + lifecycle: real KMP Maven artifacts on every target
-                implementation("androidx.navigation3:navigation3-runtime:1.1.4")
+                implementation(libs.androidx.navigation3.runtime)
                 implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.2.0-alpha02")
-                implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
+                implementation(libs.androidx.lifecycle.viewmodel.navigation3)
             }
         }
         nativeMain {
@@ -81,7 +81,7 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                implementation("androidx.navigation3:navigation3-runtime:1.2.0-alpha05")
+                implementation(libs.androidx.navigation3.runtime)
                 implementation(compose.desktop.currentOs)
             }
         }

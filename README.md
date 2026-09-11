@@ -175,6 +175,91 @@ app code declares `io.insert-koin:koin-compose`, `io.coil-kt.coil3:coil-compose`
 and so on exactly as it would anywhere else. The full module map, dependency
 graph, and the list of compatible artifacts are in [CLAUDE.md](CLAUDE.md).
 
+## Pinned versions
+
+Everything below is pinned in exactly two files -
+[`gradle/libs.versions.toml`](gradle/libs.versions.toml) (Maven coordinates) and
+[`scripts/compose-fork/compose.properties`](scripts/compose-fork/compose.properties)
+(the upstream git refs the vendored sources are copied from) - plus
+[`scripts/build-sdl/build-sdl.properties`](scripts/build-sdl/build-sdl.properties)
+for SDL3. A release tracks one Compose Multiplatform version; the table is the
+contract.
+
+### Toolchain
+
+| | Version | Notes |
+|---|---|---|
+| Kotlin | **2.4.0** | Newer than the 2.2.20 CMP 1.12.0 is built with. Kotlin/Native consumes older klibs fine, and the port compiles against 2.4.0, so there is no reason to hold back. |
+| Compose Multiplatform | **1.12.0** | The vendored sources are the `v1.12.0` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. |
+| SDL3 | **release-3.4.16** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
+| Skiko | **0.150.1** | macOS / Linux use the official `org.jetbrains.skiko`. |
+| Skiko (Windows fork) | **0.150.1-mingw.2** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
+
+### Compose libraries
+
+The port republishes each vendored artifact under a `com.bitsycore` group that
+mirrors the upstream one, so the fork of any given coordinate is obvious. Apply
+the bridge plugin and you keep declaring the **official** coordinate.
+
+| Library | Official coordinate | Port coordinate |
+|---|---|---|
+| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.0` | *not forked - the official klibs serve every target* |
+| UI | `org.jetbrains.compose.ui:ui*:1.12.0` | `com.bitsycore.compose.ui:ui*` |
+| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.0` | `com.bitsycore.compose.foundation:foundation*` |
+| Animation | `org.jetbrains.compose.animation:animation*:1.12.0` | `com.bitsycore.compose.animation:animation*` |
+| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.0` | `com.bitsycore.compose.material:material-ripple` |
+| Material3 | `org.jetbrains.compose.material3:material3:1.12.0-alpha03` | `com.bitsycore.compose.material3:material3` |
+| Resources | `org.jetbrains.compose.components:components-resources:1.12.0` | `com.bitsycore.compose.components:components-resources` |
+| Navigation3 UI | `org.jetbrains.androidx.navigation3:navigation3-ui` | `com.bitsycore.navigation3:navigation3-ui` |
+| Window shell | *no upstream equivalent* | `com.bitsycore.compose:desktop-native-window` |
+| SDL layer | *no upstream equivalent* | `com.bitsycore.compose.sdl:sdl-core` |
+
+Material3 rides its own release train upstream: `1.12.0-alpha03` **is** the
+version Compose Multiplatform 1.12.0 ships (Jetpack Material3 1.5.0-alpha22).
+
+### Ecosystem libraries
+
+Vendored because upstream stops short of Kotlin/Native desktop. The bridge
+substitutes them on native desktop targets only.
+
+| Library | Official coordinate | Port coordinate | Why |
+|---|---|---|---|
+| Koin | `io.insert-koin:koin-compose*:4.2.2` | `com.bitsycore.koin:*` | apple + android only upstream |
+| Koin core | `io.insert-koin:koin-core:4.2.2` | *not forked* | already ships mingwX64 + linux |
+| Coil 3 | `io.coil-kt.coil3:coil*:3.6.2` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
+| Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.pulse:*` | no desktop-native artifact upstream |
+
+Koin's `koin-compose-viewmodel-navigation` is deliberately **not** provided: it
+needs Navigation 2's `navigation-compose`, which has no mingwX64 or linux klibs
+under either coordinate set. Use `koin-compose-navigation3`.
+
+### AndroidX, used as-is
+
+These publish real Kotlin/Native desktop klibs and run on the port unmodified -
+nothing is vendored or substituted. The port standardises on the **google**
+`androidx.*` coordinates; do not also pull the `org.jetbrains.androidx.*`
+mirrors or you will have every class twice.
+
+| Library | Coordinate |
+|---|---|
+| Lifecycle / ViewModel | `androidx.lifecycle:lifecycle-*:2.11.0` |
+| SavedState | `androidx.savedstate:savedstate*:1.5.0` |
+| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.2.0-alpha05` |
+| Navigation Event | `androidx.navigationevent:navigationevent-compose:1.1.2` |
+| Collection | `androidx.collection:collection:1.5.0` |
+| Graphics Shapes | `androidx.graphics:graphics-shapes:1.1.0` |
+
+### Infrastructure
+
+| Library | Version |
+|---|---|
+| kotlinx-coroutines | 1.11.0 |
+| kotlinx-serialization | 1.11.0 |
+| kotlinx-datetime | 0.8.0 |
+| kotlinx-io-okio | 0.9.1 |
+| Okio | 3.17.0 |
+| Ktor | 3.5.1 |
+
 ## Building
 
 Build the native libraries once per machine, then build any app target:
