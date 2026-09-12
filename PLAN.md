@@ -813,6 +813,18 @@ Two residuals, neither a text-metrics bug:
   (0.29% at +0px vs 2.13% at +1px), where before +2px halved the error. The residual 0.29%
   is rasterizer AA.
 
+- **Icon-font glyphs rendered LOW - ✅ FIXED.** Material Symbols sat 2-4px lower on native
+  than on jvm, the offset scaling with icon size (~13% of it). Cause: the JVM actual centres
+  the glyph explicitly (`y = height/2 - (ascent+descent)/2`), while `IconFontIcon` placed
+  `IconText` in a Box at the DEFAULT TopStart alignment - and the glyph's natural text box is
+  taller than the nominal icon size. Fixed by centring, with
+  `wrapContentSize(unbounded = true)` so the text measures at its natural size first:
+  `Modifier.size()` imposes FIXED constraints, so without it nothing overflows and
+  contentAlignment is a no-op (a first attempt without it changed literally nothing).
+  gear/download/lock are now pixel-exact; the eye is 1px off from half-pixel rounding (odd
+  glyph height centred in an even box; jvm draws at a float y, native placement is integer).
+  Whole-window >32/255 drift 0.29% -> 0.17%.
+
 - **Missing glyph in the session header.** The leading icon next to "Untitled session"
   renders as a `.notdef` TOFU on jvm and as NOTHING on native - so the glyph is absent from
   the subsetted Material Symbols font on both, and the two stacks just disagree on how to
