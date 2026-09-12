@@ -2,7 +2,9 @@ package com.compose.sdl.icons
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontVariation
@@ -36,9 +38,21 @@ fun IconFontIcon(
 	size: Dp = IconDefaults.DefaultIconSize,
 	fontVariationSettings: List<FontVariation.Setting>? = null,
 ) {
-	Box(modifier = modifier.size(size)) {
+	// CENTER the glyph in the icon box. The glyph's natural text box is TALLER than
+	// `size` - its height is the font's ascent+descent, and Material Symbols' em box
+	// overshoots the nominal icon size - so the glyph used to render ~13% of the icon
+	// size too LOW. This mirrors the JVM actual's explicit baseline math
+	// (`y = height/2 - (ascent+descent)/2` in MaterialSymbolsIcon.jvm.kt): IconText
+	// sets no lineHeight, so its box height IS ascent+descent and centering that box
+	// centers the same span the JVM centers.
+	//
+	// `wrapContentSize(unbounded = true)` is load-bearing: Modifier.size() hands the
+	// child FIXED constraints, so without it the text is measured at exactly `size`,
+	// nothing overflows, and contentAlignment has nothing to align.
+	Box(modifier = modifier.size(size), contentAlignment = Alignment.Center) {
 		com.compose.sdl.text.IconText(
 			text = codepointToString(codepoint),
+			modifier = Modifier.wrapContentSize(Alignment.Center, unbounded = true),
 			fontFamily = fontFamily,
 			color = tint,
 			fontSize = size.value.sp,
