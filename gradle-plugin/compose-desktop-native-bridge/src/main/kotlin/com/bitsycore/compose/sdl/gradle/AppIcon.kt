@@ -10,6 +10,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.work.DisableCachingByDefault
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.util.zip.Inflater
@@ -91,10 +92,23 @@ internal fun installAppIcon(inProject: Project, inExt: ComposeDesktopNativeExten
 		}
 		// Link the object last: the mingw link tasks must run windres first (the
 		// path is referenced via linkerOpts, added reflectively in NativeApplication).
+		//
+		// `inputs.files(task)` rather than a bare `dependsOn`: dependsOn only orders
+		// the two, it does NOT make the object's CONTENT part of the link's up-to-date
+		// check. The .o path reaches the linker as a linkerOpts STRING, which is an
+		// input only as a string - so editing an icon PNG rebuilt the .ico and the .o
+		// and then left the link UP-TO-DATE, silently shipping an .exe with the OLD
+		// icon embedded. Declaring the task's outputs as link inputs carries the
+		// dependency AND invalidates on content.
 		inProject.tasks.matching {
 			it.name == "linkDebugExecutableMingwX64" || it.name == "linkReleaseExecutableMingwX64" ||
 				it.name == "runDebugExecutableMingwX64" || it.name == "runReleaseExecutableMingwX64"
-		}.configureEach { it.dependsOn(vWindresTask) }
+		}.configureEach { task ->
+			task.inputs.files(vWindresTask)
+				.withPropertyName("composeNativeAppIconObject")
+				.withPathSensitivity(PathSensitivity.NONE)
+			task.dependsOn(vWindresTask)
+		}
 	}
 }
 
@@ -102,6 +116,7 @@ internal fun installAppIcon(inProject: Project, inExt: ComposeDesktopNativeExten
 // MARK: Tasks
 // ==================
 
+@DisableCachingByDefault(because = "trivial PNG decode; caching would cost more than it saves")
 abstract class GenerateRgbaIconsTask : DefaultTask() {
 	@get:InputFiles
 	@get:PathSensitive(PathSensitivity.NONE)
@@ -124,6 +139,7 @@ abstract class GenerateRgbaIconsTask : DefaultTask() {
 	}
 }
 
+@DisableCachingByDefault(because = "trivial byte concatenation of already-local PNGs")
 abstract class GenerateIcoTask : DefaultTask() {
 	@get:InputFiles
 	@get:PathSensitive(PathSensitivity.NONE)
@@ -140,6 +156,7 @@ abstract class GenerateIcoTask : DefaultTask() {
 	}
 }
 
+@DisableCachingByDefault(because = "shells out to the host windres; not portable across machines")
 abstract class CompileWindowsIconResourceTask : DefaultTask() {
 	@get:InputFiles
 	@get:PathSensitive(PathSensitivity.NONE)
