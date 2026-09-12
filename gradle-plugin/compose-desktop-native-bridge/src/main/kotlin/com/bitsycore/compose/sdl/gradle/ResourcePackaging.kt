@@ -88,18 +88,39 @@ private fun registerDataKresTasks(project: Project) {
 				val compress = project.providers.gradleProperty("compressResources").orNull?.toBoolean() ?: false
 				task.entryCompression = if (compress) ZipEntryCompression.DEFLATED else ZipEntryCompression.STORED
 				task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-				val resPackage = project.resolveResourcePackage()
-				val prepareNames = sourceSets
-					.map { "prepareComposeResourcesTaskFor" + it.replaceFirstChar { c -> c.uppercase() } }
-					.filter { it in project.tasks.names }
-				for (prepareName in prepareNames) {
-					val sourceSet = prepareName.removePrefix("prepareComposeResourcesTaskFor")
-						.replaceFirstChar { it.lowercase() }
-					val prepared = project.layout.buildDirectory.dir(
-						"generated/compose/resourceGenerator/preparedResources/$sourceSet/composeResources"
+				// MULTI-MODULE: source from Kotlin's per-target resource AGGREGATE, which
+				// already merges this project's OWN composeResources with those of every
+				// dependency module (each under its own `composeResources/<package>/`).
+				// Reading the project's `preparedResources/` instead - as this did - silently
+				// dropped every library module's resources from data.kres, and forced a
+				// single `resPackage` onto the lot, which is wrong the moment more than one
+				// module contributes.
+				//
+				// The aggregate directory is already rooted at `composeResources/`, so it is
+				// copied in with NO `into()` remapping.
+				val aggregateName = "${target.replaceFirstChar { it.lowercase() }}AggregateResources"
+				if (aggregateName in project.tasks.names) {
+					val aggregated = project.layout.buildDirectory.dir(
+						"kotlin-multiplatform-resources/aggregated-resources/${target.replaceFirstChar { it.lowercase() }}"
 					)
-					task.from(prepared) { spec -> spec.into("composeResources/$resPackage") }
-					task.dependsOn(project.tasks.named(prepareName))
+					task.from(aggregated)
+					task.dependsOn(project.tasks.named(aggregateName))
+				} else {
+					// Fallback for Kotlin versions without the resources-aggregation tasks:
+					// this project's own resources only (the pre-existing behaviour).
+					val resPackage = project.resolveResourcePackage()
+					val prepareNames = sourceSets
+						.map { "prepareComposeResourcesTaskFor" + it.replaceFirstChar { c -> c.uppercase() } }
+						.filter { it in project.tasks.names }
+					for (prepareName in prepareNames) {
+						val sourceSet = prepareName.removePrefix("prepareComposeResourcesTaskFor")
+							.replaceFirstChar { it.lowercase() }
+						val prepared = project.layout.buildDirectory.dir(
+							"generated/compose/resourceGenerator/preparedResources/$sourceSet/composeResources"
+						)
+						task.from(prepared) { spec -> spec.into("composeResources/$resPackage") }
+						task.dependsOn(project.tasks.named(prepareName))
+					}
 				}
 			}
 			project.tasks.matching { it.name == linkName }.configureEach { it.dependsOn(zipTask) }
