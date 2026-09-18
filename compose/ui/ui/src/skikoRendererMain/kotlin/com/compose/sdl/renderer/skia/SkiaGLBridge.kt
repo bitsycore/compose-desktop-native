@@ -14,6 +14,7 @@ import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Surface
 import org.jetbrains.skia.SurfaceColorFormat
 import org.jetbrains.skia.SurfaceOrigin
+import sdl3.SDL_GL_MakeCurrent
 import sdl3.SDL_GL_SwapWindow
 
 // ==================
@@ -34,8 +35,29 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
     private var fWidth = 0
     private var fHeight = 0
 
+    /**
+     Binds THIS window's GL context to the calling thread.
+
+     A GL context is per-window but "current" is per-THREAD state, so with more
+     than one window open the last one to touch GL owns the thread. SDL makes a
+     context current once at creation (SDL3Backend.init) and nothing re-bound it
+     per frame, so window A issued its draw and swap against window B's context:
+     silent corruption while both live, and a hard crash (SIGSEGV in present)
+     the moment B is destroyed and the current context is left dangling.
+
+     Every entry point that touches GL calls this first. Cheap when already
+     current - SDL short-circuits a redundant bind, so the single-window path
+     pays nothing.
+     */
+    private fun makeCurrent() {
+        val vWindow = backend.window ?: return
+        val vContext = backend.glContext ?: return
+        SDL_GL_MakeCurrent(vWindow.reinterpret(), vContext.reinterpret())
+    }
+
     fun init(): Boolean {
         return try {
+            makeCurrent()
             fContext = DirectContext.makeGL()
             fContext != null
         } catch (t: Throwable) {
@@ -48,6 +70,9 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
         get() = requireNotNull(fSurface) { "SkiaGLBridge not initialised" }.canvas
 
     override fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
+        // BEFORE the unchanged-size early return: this runs once per frame and is
+        // what re-binds this window's context for the draw phase that follows.
+        makeCurrent()
         if (inWidth == fWidth && inHeight == fHeight && fSurface != null) return true
         if (inWidth <= 0 || inHeight <= 0) return false
         val vContext = fContext ?: return false
@@ -87,6 +112,7 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
     override fun present() {
         val vSurface = fSurface ?: return
         val vWindow = backend.window ?: return
+        makeCurrent()
         vSurface.flushAndSubmit()
         SDL_GL_SwapWindow(vWindow.reinterpret())
     }
@@ -97,6 +123,9 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
         readBackBgra(fSurface, fWidth, fHeight)
 
     override fun destroy() {
+        // Free this window's GPU objects against its OWN context, not whichever
+        // window happens to be current.
+        makeCurrent()
         fSurface?.close()
         fRT?.close()
         fContext?.close()

@@ -727,27 +727,29 @@ A read-only feasibility map (no code changed) found two layers:
 proves infeasible, fall back to keeping the seam but at least converting the hand files to tracked
 Rule-3 vendors (like `FontRasterizationSettings.native.kt` now has a `VENDOR-BASE` line).
 
-### 7c. `demo --multiwintest` SEGFAULTS on mingwX64 - PRE-EXISTING, open
+### 7c. `demo --multiwintest` segfault on mingwX64 - ✅ FIXED
 
-`demo.exe --multiwintest` exits 139 (segmentation fault) with no output, so the
-multi-window regression probe has silently not been asserting anything. It never
-reaches its own `println("multiwintest: ...")` at the end of runMultiWindowTest.
+The multi-window probe exited 139 with no output, so it had silently been
+asserting nothing. Root cause: an OpenGL context is per-WINDOW but "current" is
+per-THREAD, and `SDL_GL_MakeCurrent` ran only once at creation
+(`SDL3Backend.init`) with nothing re-binding it per frame. With two windows open,
+whichever initialised last owned the thread - so window A issued its draw and
+swap against window B's context (silent corruption while both lived), and
+destroying B left the current context dangling, faulting in `present()`.
 
-NOT caused by the window-module refactor: verified by stashing the refactor,
-rebuilding from the previous commit and re-running - the baseline segfaults
-identically (exit 139, empty output). It predates that work; it just went
-unnoticed because the probe is silent on crash and nothing checks its exit code.
+Fixed in `SkiaGLBridge` by binding the window's own context at every entry point
+that touches GL: `init`, `ensureSize` (before its unchanged-size early return -
+this is the per-frame bind that covers the draw phase), `present`, and `destroy`
+(so a window frees its GPU objects against its own context). Purely additive, 29
+lines.
 
-The scenario is two concurrent Windows where the second closes via state while
-the app survives on the first, so suspects are the teardown path
-(`AppRuntime.scheduleDestroy` / `reapDestroyed` → `WindowInstance.destroy()`)
-racing the render loop, or the per-window render-bridge globals
-(`installGlobals`) pointing at a renderer that was just destroyed. Run it under a
-debugger and check whether the fault is in the destroy or the next frame's draw.
+Single-window rendering is bit-identical before and after (same mean RGB
+[46.6 44.4 51.5] and 167 distinct colours on the Buttons screenshot), which is
+expected: SDL short-circuits a redundant bind. `--multiwintest` now PASSes.
 
-Worth fixing before advertising multi-window: `nativeComposeApp {}` with more
-than one Window is a documented feature in the README.
-
+NOTE the multi-window path was never correct, not just at teardown - two live
+windows were sharing one context. Anything that looked like flicker or
+cross-window corruption before this is explained by it.
 
 ## Accepted 1.0.0 gaps (documented, not fixed)
 
