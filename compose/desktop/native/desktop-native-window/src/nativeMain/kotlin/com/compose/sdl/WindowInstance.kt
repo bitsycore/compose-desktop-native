@@ -162,9 +162,9 @@ internal class WindowInstance(
 		// can't come up (RDP / headless / missing GL driver), fall back once to
 		// CPU raster (Software) so the window still opens instead of failing.
 		var vRender = makeBackend(gpuMode)
-		if (vRender == null && gpuMode is GpuMode.Skia) {
+		if (vRender == null && gpuMode.isGpuAccelerated) {
 			println("GPU renderer ($gpuMode) unavailable - falling back to CPU raster (Software)")
-			gpuMode = GpuMode.Software
+			gpuMode = GpuMode.CpuRaster
 			vRender = makeBackend(gpuMode)
 		}
 		if (vRender == null) {

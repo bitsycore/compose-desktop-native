@@ -8,7 +8,7 @@ import com.compose.sdl.GpuMode
 
 /** Parsed view of the demo's command line.
 
-   --gpu=auto | software | skia.metal | skia.opengl   (default: auto)
+   --gpu=auto | cpu | metal | opengl                 (default: auto)
    --screen=Buttons | TextField | ...            (default: full app w/ sidebar)
    --screenshot=path.bmp                         capture at quiescence and quit
    --width=W  --height=H                         (default 1000 / 700)
@@ -25,15 +25,14 @@ internal data class CliArgs(
     val maxFrames: Int = 300,
 )
 
-/** Translates the --gpu= string to the right GpuMode sealed instance.
-   Accepts both dotted (`skia.metal`) and dashed (`skia-metal`) forms,
-   plus the bare driver names (`metal`, `opengl`, …) as Skia aliases
-   for backwards compatibility. */
+/** Translates the --gpu= string to a GpuMode. Accepts the bare driver names
+   (`metal`, `opengl`, `cpu`) plus the retired `skia.*` / `skia-*` spellings, so
+   existing scripts and docs keep working after GpuMode was flattened. */
 private fun parseGpu(inValue: String): GpuMode = when (inValue.lowercase().replace('-', '.')) {
     "auto"           -> GpuMode.Auto
-    "none", "cpu", "software"    -> GpuMode.Software
-    "metal", "skia.metal"   -> GpuMode.Skia.Metal
-    "opengl", "gl", "skia.opengl" -> GpuMode.Skia.OpenGL
+    "none", "cpu", "software", "raster" -> GpuMode.CpuRaster
+    "metal", "skia.metal"   -> GpuMode.Metal
+    "opengl", "gl", "skia.opengl" -> GpuMode.OpenGL
     else -> {
         println("Unknown --gpu=$inValue, using auto")
         GpuMode.Auto

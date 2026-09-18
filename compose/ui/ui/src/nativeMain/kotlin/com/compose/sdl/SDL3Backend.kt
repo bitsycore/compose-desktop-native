@@ -11,7 +11,7 @@ class SDL3Backend(
     private val title: String = "ComposeNativeSDL3",
     private val width: Int = 800,
     private val height: Int = 600,
-    val gpuMode: GpuMode = GpuMode.Software,
+    val gpuMode: GpuMode = GpuMode.CpuRaster,
     // Resource paths (inside data.kres) of the pre-decoded .rgba icon blobs.
     // The first-listed size is irrelevant - the largest becomes the base and
     // the rest become alternate resolutions. Dark set falls back to light.
@@ -75,7 +75,7 @@ class SDL3Backend(
         com.compose.sdl.res.preferredLocaleProvider = ::sdlPreferredLocale
         com.compose.sdl.res.preferredLocaleTagsProvider = { com.compose.sdl.text.systemPreferredLocaleTags() }
 
-        if (gpuMode is GpuMode.Skia.OpenGL) {
+        if (gpuMode is GpuMode.OpenGL) {
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, 2)
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_PROFILE_MASK,
@@ -91,9 +91,9 @@ class SDL3Backend(
         if (alwaysOnTop) attrFlags = attrFlags or SDL_WINDOW_ALWAYS_ON_TOP
         if (!focusable) attrFlags = attrFlags or SDL_WINDOW_NOT_FOCUSABLE
         val flags = attrFlags or when (gpuMode) {
-            is GpuMode.Skia.OpenGL -> SDL_WINDOW_OPENGL
-            is GpuMode.Skia.Metal  -> SDL_WINDOW_METAL
-            is GpuMode.Software        -> 0UL
+            is GpuMode.OpenGL -> SDL_WINDOW_OPENGL
+            is GpuMode.Metal  -> SDL_WINDOW_METAL
+            is GpuMode.CpuRaster        -> 0UL
             is GpuMode.Auto        -> error("unreachable")
         }
         window = SDL_CreateWindow(title, width, height, flags)
@@ -103,7 +103,7 @@ class SDL3Backend(
         }
 
         when (gpuMode) {
-            is GpuMode.Skia.OpenGL -> {
+            is GpuMode.OpenGL -> {
                 glContext = SDL_GL_CreateContext(window?.reinterpret())
                 if (glContext == null) {
                     println("SDL_GL_CreateContext failed: ${SDL_GetError()?.toKString()}")
@@ -116,7 +116,7 @@ class SDL3Backend(
                 // keeps its fallback frame cap.
                 vsyncEnabled = SDL_GL_SetSwapInterval(1)
             }
-            is GpuMode.Skia.Metal -> {
+            is GpuMode.Metal -> {
                 metalView = SDL_Metal_CreateView(window?.reinterpret())
                 if (metalView == null) {
                     println("SDL_Metal_CreateView failed: ${SDL_GetError()?.toKString()}")
@@ -126,7 +126,7 @@ class SDL3Backend(
                 // blocks - so Metal is vsync-paced and the loop skips its delay.
                 vsyncEnabled = true
             }
-            is GpuMode.Software -> {
+            is GpuMode.CpuRaster -> {
                 // Skia CPU raster: SkiaSurfaceBridge paints a host buffer that
                 // this SDL_Renderer uploads as a texture each frame.
                 renderer = SDL_CreateRenderer(window?.reinterpret(), null)

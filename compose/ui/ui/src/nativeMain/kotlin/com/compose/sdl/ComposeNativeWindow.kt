@@ -73,9 +73,9 @@ class ComposeNativeWindow constructor(
         "Skia / Metal", "Skia / OpenGL", "Skia / CPU raster". */
     val rendererName: String
         get() = when (gpuMode) {
-            is GpuMode.Skia.Metal  -> "Skia / Metal"
-            is GpuMode.Skia.OpenGL -> "Skia / OpenGL"
-            is GpuMode.Software        -> "Skia / CPU raster"
+            is GpuMode.Metal  -> "Skia / Metal"
+            is GpuMode.OpenGL -> "Skia / OpenGL"
+            is GpuMode.CpuRaster   -> "Skia / CPU raster"
             is GpuMode.Auto -> "Auto (unresolved)"
         }
 

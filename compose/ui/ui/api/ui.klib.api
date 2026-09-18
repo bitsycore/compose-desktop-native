@@ -4324,22 +4324,23 @@ sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
 }
 
 sealed class com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode|null[0]
-    sealed class Skia : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.Skia|null[0]
-        final object Metal : com.compose.sdl/GpuMode.Skia { // com.compose.sdl/GpuMode.Skia.Metal|null[0]
-            final fun toString(): kotlin/String // com.compose.sdl/GpuMode.Skia.Metal.toString|toString(){}[0]
-        }
-
-        final object OpenGL : com.compose.sdl/GpuMode.Skia { // com.compose.sdl/GpuMode.Skia.OpenGL|null[0]
-            final fun toString(): kotlin/String // com.compose.sdl/GpuMode.Skia.OpenGL.toString|toString(){}[0]
-        }
-    }
+    final val isGpuAccelerated // com.compose.sdl/GpuMode.isGpuAccelerated|{}isGpuAccelerated[0]
+        final fun <get-isGpuAccelerated>(): kotlin/Boolean // com.compose.sdl/GpuMode.isGpuAccelerated.<get-isGpuAccelerated>|<get-isGpuAccelerated>(){}[0]
 
     final object Auto : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.Auto|null[0]
         final fun toString(): kotlin/String // com.compose.sdl/GpuMode.Auto.toString|toString(){}[0]
     }
 
-    final object Software : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.Software|null[0]
-        final fun toString(): kotlin/String // com.compose.sdl/GpuMode.Software.toString|toString(){}[0]
+    final object CpuRaster : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.CpuRaster|null[0]
+        final fun toString(): kotlin/String // com.compose.sdl/GpuMode.CpuRaster.toString|toString(){}[0]
+    }
+
+    final object Metal : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.Metal|null[0]
+        final fun toString(): kotlin/String // com.compose.sdl/GpuMode.Metal.toString|toString(){}[0]
+    }
+
+    final object OpenGL : com.compose.sdl/GpuMode { // com.compose.sdl/GpuMode.OpenGL|null[0]
+        final fun toString(): kotlin/String // com.compose.sdl/GpuMode.OpenGL.toString|toString(){}[0]
     }
 }
 
@@ -4920,10 +4921,9 @@ final val com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop // c
 final val com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop // com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop|#static{}com_compose_sdl_ComposeNativeWindow$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_GpuMode$stableprop // com.compose.sdl/com_compose_sdl_GpuMode$stableprop|#static{}com_compose_sdl_GpuMode$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_GpuMode_Auto$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Auto$stableprop|#static{}com_compose_sdl_GpuMode_Auto$stableprop[0]
-final val com.compose.sdl/com_compose_sdl_GpuMode_Skia$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Skia$stableprop|#static{}com_compose_sdl_GpuMode_Skia$stableprop[0]
-final val com.compose.sdl/com_compose_sdl_GpuMode_Skia_Metal$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Skia_Metal$stableprop|#static{}com_compose_sdl_GpuMode_Skia_Metal$stableprop[0]
-final val com.compose.sdl/com_compose_sdl_GpuMode_Skia_OpenGL$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Skia_OpenGL$stableprop|#static{}com_compose_sdl_GpuMode_Skia_OpenGL$stableprop[0]
-final val com.compose.sdl/com_compose_sdl_GpuMode_Software$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Software$stableprop|#static{}com_compose_sdl_GpuMode_Software$stableprop[0]
+final val com.compose.sdl/com_compose_sdl_GpuMode_CpuRaster$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_CpuRaster$stableprop|#static{}com_compose_sdl_GpuMode_CpuRaster$stableprop[0]
+final val com.compose.sdl/com_compose_sdl_GpuMode_Metal$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_Metal$stableprop|#static{}com_compose_sdl_GpuMode_Metal$stableprop[0]
+final val com.compose.sdl/com_compose_sdl_GpuMode_OpenGL$stableprop // com.compose.sdl/com_compose_sdl_GpuMode_OpenGL$stableprop|#static{}com_compose_sdl_GpuMode_OpenGL$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_RawSdlHandles$stableprop // com.compose.sdl/com_compose_sdl_RawSdlHandles$stableprop|#static{}com_compose_sdl_RawSdlHandles$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_SDL3Backend$stableprop // com.compose.sdl/com_compose_sdl_SDL3Backend$stableprop|#static{}com_compose_sdl_SDL3Backend$stableprop[0]
 final val com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop // com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop|#static{}com_compose_sdl_TextLayoutConfig$stableprop[0]
@@ -5450,10 +5450,9 @@ final fun com.compose.sdl/com_compose_sdl_AppEvent_WindowResized$stableprop_gett
 final fun com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_ComposeNativeWindow$stableprop_getter|com_compose_sdl_ComposeNativeWindow$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_GpuMode$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode$stableprop_getter|com_compose_sdl_GpuMode$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_GpuMode_Auto$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Auto$stableprop_getter|com_compose_sdl_GpuMode_Auto$stableprop_getter(){}[0]
-final fun com.compose.sdl/com_compose_sdl_GpuMode_Skia$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Skia$stableprop_getter|com_compose_sdl_GpuMode_Skia$stableprop_getter(){}[0]
-final fun com.compose.sdl/com_compose_sdl_GpuMode_Skia_Metal$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Skia_Metal$stableprop_getter|com_compose_sdl_GpuMode_Skia_Metal$stableprop_getter(){}[0]
-final fun com.compose.sdl/com_compose_sdl_GpuMode_Skia_OpenGL$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Skia_OpenGL$stableprop_getter|com_compose_sdl_GpuMode_Skia_OpenGL$stableprop_getter(){}[0]
-final fun com.compose.sdl/com_compose_sdl_GpuMode_Software$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Software$stableprop_getter|com_compose_sdl_GpuMode_Software$stableprop_getter(){}[0]
+final fun com.compose.sdl/com_compose_sdl_GpuMode_CpuRaster$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_CpuRaster$stableprop_getter|com_compose_sdl_GpuMode_CpuRaster$stableprop_getter(){}[0]
+final fun com.compose.sdl/com_compose_sdl_GpuMode_Metal$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_Metal$stableprop_getter|com_compose_sdl_GpuMode_Metal$stableprop_getter(){}[0]
+final fun com.compose.sdl/com_compose_sdl_GpuMode_OpenGL$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_GpuMode_OpenGL$stableprop_getter|com_compose_sdl_GpuMode_OpenGL$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_RawSdlHandles$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_RawSdlHandles$stableprop_getter|com_compose_sdl_RawSdlHandles$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_SDL3Backend$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_SDL3Backend$stableprop_getter|com_compose_sdl_SDL3Backend$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop_getter|com_compose_sdl_TextLayoutConfig$stableprop_getter(){}[0]

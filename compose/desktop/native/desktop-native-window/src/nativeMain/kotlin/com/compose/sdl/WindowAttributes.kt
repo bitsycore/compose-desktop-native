@@ -9,9 +9,9 @@ package com.compose.sdl
  travel as one value from the composable down to [WindowInstance] instead of as
  six positional booleans.
 
- [transparent] is creation-only: SDL needs `SDL_WINDOW_TRANSPARENT` at
- `SDL_CreateWindow` time and offers no setter, so changing it after the window
- exists has no effect. The rest are re-applied whenever `Window()` recomposes
+ [transparent] is creation-only: SDL needs "SDL_WINDOW_TRANSPARENT" at
+ "SDL_CreateWindow" time and offers no setter, so changing it after the window
+ exists has no effect. The rest are re-applied whenever "Window()" recomposes
  with a new value.
  */
 internal data class WindowAttributes(
