@@ -1392,10 +1392,10 @@ abstract interface com.compose.sdl/RenderBackend { // com.compose.sdl/RenderBack
 
     abstract fun beginFrame(kotlin/Float) // com.compose.sdl/RenderBackend.beginFrame|beginFrame(kotlin.Float){}[0]
     abstract fun destroy() // com.compose.sdl/RenderBackend.destroy|destroy(){}[0]
+    abstract fun drawRoot(kotlin/Function1<androidx.compose.ui.graphics/Canvas, kotlin/Unit>) // com.compose.sdl/RenderBackend.drawRoot|drawRoot(kotlin.Function1<androidx.compose.ui.graphics.Canvas,kotlin.Unit>){}[0]
     abstract fun endFrame() // com.compose.sdl/RenderBackend.endFrame|endFrame(){}[0]
     abstract fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.sdl/RenderBackend.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
     abstract fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.sdl/RenderBackend.snapshotBgra|snapshotBgra(){}[0]
-    open fun drawRoot(kotlin/Function1<androidx.compose.ui.graphics/Canvas, kotlin/Unit>) // com.compose.sdl/RenderBackend.drawRoot|drawRoot(kotlin.Function1<androidx.compose.ui.graphics.Canvas,kotlin.Unit>){}[0]
 }
 
 sealed interface androidx.compose.ui.autofill/ContentDataType { // androidx.compose.ui.autofill/ContentDataType|null[0]

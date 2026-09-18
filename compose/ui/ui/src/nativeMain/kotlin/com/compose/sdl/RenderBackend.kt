@@ -30,8 +30,13 @@ interface RenderBackend {
        DrawModifierNode pipeline. Taking a (Canvas)->Unit instead of the host keeps
        RenderBackend + its implementations independent of the node/host layer - the
        decoupling that lets the renderers live in :ui-graphics (no ui-graphics→ui
-       cycle). Default no-op. */
-    fun drawRoot(inDraw: (canvas: androidx.compose.ui.graphics.Canvas) -> Unit) {}
+       cycle).
+
+       ABSTRACT, not a no-op default: the empty body dates from when a second,
+       non-Skia backend could opt out of it, and with the Skia backend now the
+       only implementation an unimplemented drawRoot would silently render
+       nothing rather than fail to compile. */
+    fun drawRoot(inDraw: (canvas: androidx.compose.ui.graphics.Canvas) -> Unit)
 
     /** Flush + present whatever was just drawn. */
     fun endFrame()
