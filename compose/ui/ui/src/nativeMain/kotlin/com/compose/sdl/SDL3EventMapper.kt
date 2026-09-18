@@ -5,7 +5,6 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
-import com.compose.sdl.input.LegacyPointerEvent
 import kotlinx.cinterop.*
 import sdl3.*
 
@@ -17,7 +16,16 @@ import sdl3.*
    events; the loop routes those to its first window). Quit is app-level. */
 sealed class AppEvent {
 	data object Quit : AppEvent()
-	data class Pointer(val event: LegacyPointerEvent, val windowId: UInt = 0u) : AppEvent()
+	/** A single-pointer SDL mouse event. Flat like its MouseWheel sibling: the
+	   fields used to sit behind a `LegacyPointerEvent` wrapper that the mapper
+	   built and the window loop immediately took apart again. */
+	data class Pointer(
+		val x: Float,
+		val y: Float,
+		val type: PointerEventType,
+		val button: PointerButton = PointerButton.Primary,
+		val windowId: UInt = 0u,
+	) : AppEvent()
 	data class Key(val event: KeyEvent, val windowId: UInt = 0u) : AppEvent()
 	data class TextInput(val text: String, val windowId: UInt = 0u) : AppEvent()
 	/** IME preedit / composition (SDL_EVENT_TEXT_EDITING). Empty text = composition
@@ -81,28 +89,31 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
 		SDL_EVENT_MOUSE_BUTTON_DOWN -> {
 			val mb = e.button
-			AppEvent.Pointer(LegacyPointerEvent(
+			AppEvent.Pointer(
 				x = mb.x, y = mb.y,
 				type = PointerEventType.Press,
-				button = mapButton(mb.button)
-			), mb.windowID)
+				button = mapButton(mb.button),
+				windowId = mb.windowID,
+			)
 		}
 
 		SDL_EVENT_MOUSE_BUTTON_UP -> {
 			val mb = e.button
-			AppEvent.Pointer(LegacyPointerEvent(
+			AppEvent.Pointer(
 				x = mb.x, y = mb.y,
 				type = PointerEventType.Release,
-				button = mapButton(mb.button)
-			), mb.windowID)
+				button = mapButton(mb.button),
+				windowId = mb.windowID,
+			)
 		}
 
 		SDL_EVENT_MOUSE_MOTION -> {
 			val mm = e.motion
-			AppEvent.Pointer(LegacyPointerEvent(
+			AppEvent.Pointer(
 				x = mm.x, y = mm.y,
-				type = PointerEventType.Move
-			), mm.windowID)
+				type = PointerEventType.Move,
+				windowId = mm.windowID,
+			)
 		}
 
 		SDL_EVENT_KEY_DOWN -> mapKey(e.key, KeyEventType.KeyDown)

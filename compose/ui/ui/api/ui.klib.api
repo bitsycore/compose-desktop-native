@@ -2788,23 +2788,6 @@ final class androidx.compose.ui/CombinedModifier : androidx.compose.ui/Modifier 
     final fun toString(): kotlin/String // androidx.compose.ui/CombinedModifier.toString|toString(){}[0]
 }
 
-final class com.compose.sdl.input/LegacyPointerEvent { // com.compose.sdl.input/LegacyPointerEvent|null[0]
-    constructor <init>(kotlin/Float, kotlin/Float, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ...) // com.compose.sdl.input/LegacyPointerEvent.<init>|<init>(kotlin.Float;kotlin.Float;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton){}[0]
-
-    final val button // com.compose.sdl.input/LegacyPointerEvent.button|{}button[0]
-        final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton // com.compose.sdl.input/LegacyPointerEvent.button.<get-button>|<get-button>(){}[0]
-    final val type // com.compose.sdl.input/LegacyPointerEvent.type|{}type[0]
-        final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // com.compose.sdl.input/LegacyPointerEvent.type.<get-type>|<get-type>(){}[0]
-    final val x // com.compose.sdl.input/LegacyPointerEvent.x|{}x[0]
-        final fun <get-x>(): kotlin/Float // com.compose.sdl.input/LegacyPointerEvent.x.<get-x>|<get-x>(){}[0]
-    final val y // com.compose.sdl.input/LegacyPointerEvent.y|{}y[0]
-        final fun <get-y>(): kotlin/Float // com.compose.sdl.input/LegacyPointerEvent.y.<get-y>|<get-y>(){}[0]
-
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.input/LegacyPointerEvent.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.input/LegacyPointerEvent.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // com.compose.sdl.input/LegacyPointerEvent.toString|toString(){}[0]
-}
-
 final class com.compose.sdl.node/ComposeRootHost { // com.compose.sdl.node/ComposeRootHost|null[0]
     constructor <init>(kotlin/Float = ...) // com.compose.sdl.node/ComposeRootHost.<init>|<init>(kotlin.Float){}[0]
 
@@ -4200,16 +4183,25 @@ sealed class com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent|null[0]
     }
 
     final class Pointer : com.compose.sdl/AppEvent { // com.compose.sdl/AppEvent.Pointer|null[0]
-        constructor <init>(com.compose.sdl.input/LegacyPointerEvent, kotlin/UInt = ...) // com.compose.sdl/AppEvent.Pointer.<init>|<init>(com.compose.sdl.input.LegacyPointerEvent;kotlin.UInt){}[0]
+        constructor <init>(kotlin/Float, kotlin/Float, androidx.compose.ui.input.pointer/PointerEventType, androidx.compose.ui.input.pointer/PointerButton = ..., kotlin/UInt = ...) // com.compose.sdl/AppEvent.Pointer.<init>|<init>(kotlin.Float;kotlin.Float;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton;kotlin.UInt){}[0]
 
-        final val event // com.compose.sdl/AppEvent.Pointer.event|{}event[0]
-            final fun <get-event>(): com.compose.sdl.input/LegacyPointerEvent // com.compose.sdl/AppEvent.Pointer.event.<get-event>|<get-event>(){}[0]
+        final val button // com.compose.sdl/AppEvent.Pointer.button|{}button[0]
+            final fun <get-button>(): androidx.compose.ui.input.pointer/PointerButton // com.compose.sdl/AppEvent.Pointer.button.<get-button>|<get-button>(){}[0]
+        final val type // com.compose.sdl/AppEvent.Pointer.type|{}type[0]
+            final fun <get-type>(): androidx.compose.ui.input.pointer/PointerEventType // com.compose.sdl/AppEvent.Pointer.type.<get-type>|<get-type>(){}[0]
         final val windowId // com.compose.sdl/AppEvent.Pointer.windowId|{}windowId[0]
             final fun <get-windowId>(): kotlin/UInt // com.compose.sdl/AppEvent.Pointer.windowId.<get-windowId>|<get-windowId>(){}[0]
+        final val x // com.compose.sdl/AppEvent.Pointer.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // com.compose.sdl/AppEvent.Pointer.x.<get-x>|<get-x>(){}[0]
+        final val y // com.compose.sdl/AppEvent.Pointer.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // com.compose.sdl/AppEvent.Pointer.y.<get-y>|<get-y>(){}[0]
 
-        final fun component1(): com.compose.sdl.input/LegacyPointerEvent // com.compose.sdl/AppEvent.Pointer.component1|component1(){}[0]
-        final fun component2(): kotlin/UInt // com.compose.sdl/AppEvent.Pointer.component2|component2(){}[0]
-        final fun copy(com.compose.sdl.input/LegacyPointerEvent = ..., kotlin/UInt = ...): com.compose.sdl/AppEvent.Pointer // com.compose.sdl/AppEvent.Pointer.copy|copy(com.compose.sdl.input.LegacyPointerEvent;kotlin.UInt){}[0]
+        final fun component1(): kotlin/Float // com.compose.sdl/AppEvent.Pointer.component1|component1(){}[0]
+        final fun component2(): kotlin/Float // com.compose.sdl/AppEvent.Pointer.component2|component2(){}[0]
+        final fun component3(): androidx.compose.ui.input.pointer/PointerEventType // com.compose.sdl/AppEvent.Pointer.component3|component3(){}[0]
+        final fun component4(): androidx.compose.ui.input.pointer/PointerButton // com.compose.sdl/AppEvent.Pointer.component4|component4(){}[0]
+        final fun component5(): kotlin/UInt // com.compose.sdl/AppEvent.Pointer.component5|component5(){}[0]
+        final fun copy(kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.input.pointer/PointerEventType = ..., androidx.compose.ui.input.pointer/PointerButton = ..., kotlin/UInt = ...): com.compose.sdl/AppEvent.Pointer // com.compose.sdl/AppEvent.Pointer.copy|copy(kotlin.Float;kotlin.Float;androidx.compose.ui.input.pointer.PointerEventType;androidx.compose.ui.input.pointer.PointerButton;kotlin.UInt){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl/AppEvent.Pointer.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.compose.sdl/AppEvent.Pointer.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.compose.sdl/AppEvent.Pointer.toString|toString(){}[0]
@@ -4893,7 +4885,6 @@ final val androidx.compose.ui/androidx_compose_ui_BiasAlignment_Vertical$stablep
 final val androidx.compose.ui/androidx_compose_ui_CombinedModifier$stableprop // androidx.compose.ui/androidx_compose_ui_CombinedModifier$stableprop|#static{}androidx_compose_ui_CombinedModifier$stableprop[0]
 final val androidx.compose.ui/androidx_compose_ui_ComposeUiFlags$stableprop // androidx.compose.ui/androidx_compose_ui_ComposeUiFlags$stableprop|#static{}androidx_compose_ui_ComposeUiFlags$stableprop[0]
 final val androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop // androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop|#static{}androidx_compose_ui_Modifier_Node$stableprop[0]
-final val com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop // com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop|#static{}com_compose_sdl_input_LegacyPointerEvent$stableprop[0]
 final val com.compose.sdl.layout/intOffset // com.compose.sdl.layout/intOffset|@androidx.compose.ui.layout.LayoutCoordinates{}intOffset[0]
     final fun (androidx.compose.ui.layout/LayoutCoordinates).<get-intOffset>(): androidx.compose.ui.unit/IntOffset // com.compose.sdl.layout/intOffset.<get-intOffset>|<get-intOffset>@androidx.compose.ui.layout.LayoutCoordinates(){}[0]
 final val com.compose.sdl.layout/x // com.compose.sdl.layout/x|@androidx.compose.ui.layout.LayoutCoordinates{}x[0]
@@ -5429,7 +5420,6 @@ final fun androidx.compose.ui/androidx_compose_ui_CombinedModifier$stableprop_ge
 final fun androidx.compose.ui/androidx_compose_ui_ComposeUiFlags$stableprop_getter(): kotlin/Int // androidx.compose.ui/androidx_compose_ui_ComposeUiFlags$stableprop_getter|androidx_compose_ui_ComposeUiFlags$stableprop_getter(){}[0]
 final fun androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop_getter(): kotlin/Int // androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop_getter|androidx_compose_ui_Modifier_Node$stableprop_getter(){}[0]
 final fun androidx.compose.ui/isUiSystemInDarkTheme(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/Boolean // androidx.compose.ui/isUiSystemInDarkTheme|isUiSystemInDarkTheme(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop_getter(): kotlin/Int // com.compose.sdl.input/com_compose_sdl_input_LegacyPointerEvent$stableprop_getter|com_compose_sdl_input_LegacyPointerEvent$stableprop_getter(){}[0]
 final fun com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter(): kotlin/Int // com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter|com_compose_sdl_node_ComposeRootHost$stableprop_getter(){}[0]
 final fun com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter(): kotlin/Int // com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter|com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter(){}[0]
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter|com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter(){}[0]

@@ -319,12 +319,12 @@ internal class WindowInstance(
 		if (!facade.isEnabled) return
 		needsFrame = true
 		installGlobals()
-		val vType = when (inEvent.event.type) {
+		val vType = when (inEvent.type) {
 			PointerEventType.Press -> 1
 			PointerEventType.Release -> 2
 			else -> 0
 		}
-		val vBtn = when (inEvent.event.button) {
+		val vBtn = when (inEvent.button) {
 			PointerButton.Secondary -> 1
 			PointerButton.Tertiary -> 2
 			else -> 0
@@ -332,9 +332,9 @@ internal class WindowInstance(
 		// SDL3 delivers mouse coords in logical points on HiDPI - multiply by
 		// DPR so hit-testing lands in the pixel space layout uses.
 		val vDpr = backend.pixelDensity
-		val vPx = inEvent.event.x * vDpr
-		val vPy = inEvent.event.y * vDpr
-		if (inEvent.event.type == PointerEventType.Press) {
+		val vPx = inEvent.x * vDpr
+		val vPy = inEvent.y * vDpr
+		if (inEvent.type == PointerEventType.Press) {
 			popupHost?.notifyOutsidePress(vPx.toInt(), vPy.toInt())
 		}
 		host.onPointerRaw(vPx, vPy, vType, vBtn, SDL_GetTicks().toLong())
