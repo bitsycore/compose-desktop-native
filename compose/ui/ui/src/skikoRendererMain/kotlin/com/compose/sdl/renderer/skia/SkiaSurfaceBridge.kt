@@ -19,20 +19,20 @@ import sdl3.*
    used to push that buffer onto the window. All three (buffer, Skia surface,
    SDL texture) get reallocated when the window resizes. */
 class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
-    private var fWidth = 0
-    private var fHeight = 0
-    private var fPixels: CPointer<UByteVar>? = null
-    private var fSurface: Surface? = null
-    private var fTexture: COpaquePointer? = null
+    private var mWidth = 0
+    private var mHeight = 0
+    private var mPixels: CPointer<UByteVar>? = null
+    private var mSurface: Surface? = null
+    private var mTexture: COpaquePointer? = null
 
     override val canvas: Canvas
-        get() = requireNotNull(fSurface) { "SkiaSurfaceBridge not initialised" }.canvas
+        get() = requireNotNull(mSurface) { "SkiaSurfaceBridge not initialised" }.canvas
 
-    val width: Int get() = fWidth
-    val height: Int get() = fHeight
+    val width: Int get() = mWidth
+    val height: Int get() = mHeight
 
     override fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
-        if (inWidth == fWidth && inHeight == fHeight && fSurface != null) return true
+        if (inWidth == mWidth && inHeight == mHeight && mSurface != null) return true
         if (inWidth <= 0 || inHeight <= 0) return false
         destroy()
 
@@ -60,34 +60,34 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
         }
         SDL_SetTextureBlendMode(vTexture.reinterpret(), SDL_BLENDMODE_NONE)
 
-        fPixels = vPixels
-        fSurface = vSurface
-        fTexture = vTexture
-        fWidth = inWidth
-        fHeight = inHeight
+        mPixels = vPixels
+        mSurface = vSurface
+        mTexture = vTexture
+        mWidth = inWidth
+        mHeight = inHeight
         return true
     }
 
     /** Skia → SDL_Texture → screen, once per frame. */
     override fun present() {
         val vRenderer = backend.renderer ?: return
-        val vTexture = fTexture ?: return
-        val vSurface = fSurface ?: return
-        val vPixels = fPixels ?: return
+        val vTexture = mTexture ?: return
+        val vSurface = mSurface ?: return
+        val vPixels = mPixels ?: return
 
         vSurface.flushAndSubmit()
-        SDL_UpdateTexture(vTexture.reinterpret(), null, vPixels, fWidth * 4)
+        SDL_UpdateTexture(vTexture.reinterpret(), null, vPixels, mWidth * 4)
         SDL_RenderTexture(vRenderer.reinterpret(), vTexture.reinterpret(), null, null)
         SDL_RenderPresent(vRenderer.reinterpret())
     }
 
-    override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
+    override fun snapshot(): Image? = mSurface?.makeImageSnapshot()
 
-    /** CPU bridge already has the raw pixels in fPixels (RGBA8888 premul).
+    /** CPU bridge already has the raw pixels in mPixels (RGBA8888 premul).
        Repack to BGRA so we share one BMP writer with the GPU bridges. */
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? {
-        val vPixels = fPixels ?: return null
-        val vCount = fWidth * fHeight
+        val vPixels = mPixels ?: return null
+        val vCount = mWidth * mHeight
         val vBytes = ByteArray(vCount * 4)
         for (i in 0 until vCount) {
             val vR = vPixels[i * 4 + 0]
@@ -99,17 +99,17 @@ class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
             vBytes[i * 4 + 2] = vR.toByte()
             vBytes[i * 4 + 3] = vA.toByte()
         }
-        return Triple(fWidth, fHeight, vBytes)
+        return Triple(mWidth, mHeight, vBytes)
     }
 
     override fun destroy() {
-        fTexture?.let { SDL_DestroyTexture(it.reinterpret()) }
-        fSurface?.close()
-        fPixels?.let { nativeHeap.free(it) }
-        fTexture = null
-        fSurface = null
-        fPixels = null
-        fWidth = 0
-        fHeight = 0
+        mTexture?.let { SDL_DestroyTexture(it.reinterpret()) }
+        mSurface?.close()
+        mPixels?.let { nativeHeap.free(it) }
+        mTexture = null
+        mSurface = null
+        mPixels = null
+        mWidth = 0
+        mHeight = 0
     }
 }

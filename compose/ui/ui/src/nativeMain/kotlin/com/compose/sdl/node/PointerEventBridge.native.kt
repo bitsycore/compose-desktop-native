@@ -18,9 +18,9 @@ import com.compose.sdl.node.impl.ComposeOwner
    mouse down unless `buttons.isPrimaryPressed`, and drag/scroll gestures need the held button to
    persist across Move events, so the synthesized PointerInputEvent must carry a live button mask -
    not just the changed button. A single mouse => module-level flags are enough. */
-private var fPrimaryDown = false
-private var fSecondaryDown = false
-private var fTertiaryDown = false
+private var mPrimaryDown = false
+private var mSecondaryDown = false
+private var mTertiaryDown = false
 
 /** Builds the internal PointerInputEvent (its constructor is native-only) from a single mouse
    pointer and drives the owner's PointerInputEventProcessor. inType: 0=Move 1=Press 2=Release 3=Exit;
@@ -34,14 +34,14 @@ internal fun feedPointerToProcessor(
 	inY: Float,
 ) {
 	when (inType) {
-		1 -> when (inButton) { 0 -> fPrimaryDown = true; 1 -> fSecondaryDown = true; 2 -> fTertiaryDown = true }
-		2 -> when (inButton) { 0 -> fPrimaryDown = false; 1 -> fSecondaryDown = false; 2 -> fTertiaryDown = false }
+		1 -> when (inButton) { 0 -> mPrimaryDown = true; 1 -> mSecondaryDown = true; 2 -> mTertiaryDown = true }
+		2 -> when (inButton) { 0 -> mPrimaryDown = false; 1 -> mSecondaryDown = false; 2 -> mTertiaryDown = false }
 	}
 
 	val vButtons = PointerButtons(
-		isPrimaryPressed = fPrimaryDown,
-		isSecondaryPressed = fSecondaryDown,
-		isTertiaryPressed = fTertiaryDown,
+		isPrimaryPressed = mPrimaryDown,
+		isSecondaryPressed = mSecondaryDown,
+		isTertiaryPressed = mTertiaryDown,
 	)
 	val vButton = if (inType == 1 || inType == 2) {
 		when (inButton) {
@@ -57,7 +57,7 @@ internal fun feedPointerToProcessor(
 		uptime = inUptime,
 		positionOnScreen = vPos,
 		position = vPos,
-		down = fPrimaryDown || fSecondaryDown || fTertiaryDown,
+		down = mPrimaryDown || mSecondaryDown || mTertiaryDown,
 		pressure = 1f,
 		type = PointerType.Mouse,
 		activeHover = inType == 0, // Exit (3) also reports no active hover

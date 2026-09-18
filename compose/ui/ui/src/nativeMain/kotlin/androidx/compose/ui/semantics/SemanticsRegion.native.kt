@@ -18,12 +18,12 @@ import androidx.compose.ui.unit.IntRect
  * no-ops.
  */
 private class StubSemanticsRegion : SemanticsRegion {
-	private var fBounds: IntRect = IntRect.Zero
-	override fun set(rect: IntRect) { fBounds = rect }
+	private var mBounds: IntRect = IntRect.Zero
+	override fun set(rect: IntRect) { mBounds = rect }
 	override fun intersect(region: SemanticsRegion): Boolean = false
 	override fun difference(rect: IntRect): Boolean = false
-	override val bounds: IntRect get() = fBounds
-	override val isEmpty: Boolean get() = fBounds == IntRect.Zero
+	override val bounds: IntRect get() = mBounds
+	override val isEmpty: Boolean get() = mBounds == IntRect.Zero
 }
 
 internal actual fun SemanticsRegion(): SemanticsRegion = StubSemanticsRegion()

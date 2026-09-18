@@ -642,9 +642,23 @@ Open renderer / fidelity / release work is tracked in [PLAN.md](PLAN.md).
 
 ## Conventions
 
-Kotlin standard style - plain `camelCase` for parameters, local variables,
-and fields. **No `f`/`in`/`v` prefixes**, no SPIRTECH scheme (see the global
-CLAUDE.md - that scheme is C-only).
+Kotlin standard style for formatting (braces, wrapping, indentation).
+
+Naming, as the code actually is - this paragraph used to claim "no prefixes",
+which had not been true for a long time:
+
+- **`m` for private/protected members** - `mWidth`, `mSurface`, `mCache`. NOT
+  `f`: the `f` prefix was retired across the project, so do not reintroduce it.
+- **`v` for local variables** - `vWindow`, `vResult`.
+- **`in` for function parameters** - `inTitle`, `inWidth`. Note Compose
+  `@Composable` parameters are the exception: they stay plain, because the name
+  is part of the call-site API (`title = `, `onCloseRequest = `).
+- **`k` for private file-level constants** - `kMaxFrames`, `kIsWindows`.
+- Public API surface is plain `camelCase` - prefixes are for implementation
+  detail only, and nothing prefixed should ever reach the klib dump.
+
+VENDORED code under `src/vendor/` follows UPSTREAM's naming, untouched - it is
+copied byte-for-byte, so never re-prefix anything in it.
 
 Section headers inside a file, when useful:
 

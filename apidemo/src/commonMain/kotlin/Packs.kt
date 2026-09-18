@@ -9,7 +9,7 @@ import okio.Path.Companion.toPath
 // MARK: Pack persistence (okio + kotlinx.serialization)
 // ==================
 
-private val fJson = Json {
+private val mJson = Json {
     prettyPrint = true
     prettyPrintIndent = "  "
     ignoreUnknownKeys = true
@@ -20,7 +20,7 @@ private val fJson = Json {
 error message. */
 fun exportPack(inPack: Pack, inPath: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) {
-        writeUtf8(fJson.encodeToString(inPack))
+        writeUtf8(mJson.encodeToString(inPack))
     }
     null
 } catch (e: Throwable) {
@@ -30,7 +30,7 @@ fun exportPack(inPack: Pack, inPath: String): String? = try {
 /** Read a pack back from inPath. */
 fun importPack(inPath: String): Result<Pack> = try {
     val vText = systemFileSystem.read(inPath.trim().toPath()) { readUtf8() }
-    Result.success(fJson.decodeFromString<Pack>(vText))
+    Result.success(mJson.decodeFromString<Pack>(vText))
 } catch (e: Throwable) {
     Result.failure(e)
 }
@@ -38,7 +38,7 @@ fun importPack(inPath: String): Result<Pack> = try {
 /** Write a whole self-contained session to inPath. Returns null on success. */
 fun exportSession(inSession: Session, inPath: String): String? = try {
     systemFileSystem.write(inPath.trim().toPath()) {
-        writeUtf8(fJson.encodeToString(inSession))
+        writeUtf8(mJson.encodeToString(inSession))
     }
     null
 } catch (e: Throwable) {
@@ -48,7 +48,7 @@ fun exportSession(inSession: Session, inPath: String): String? = try {
 /** Read a session back from inPath. */
 fun importSession(inPath: String): Result<Session> = try {
     val vText = systemFileSystem.read(inPath.trim().toPath()) { readUtf8() }
-    Result.success(fJson.decodeFromString<Session>(vText))
+    Result.success(mJson.decodeFromString<Session>(vText))
 } catch (e: Throwable) {
     Result.failure(e)
 }
@@ -85,7 +85,7 @@ fun writeBytesFile(inPath: String, inBytes: ByteArray): String? = try {
 /** Re-indent a JSON response for display; returns the input unchanged if it
 isn't valid JSON (so plain-text / HTML responses still show). */
 fun prettyJsonOrRaw(inText: String): String = try {
-    fJson.encodeToString(JsonElement.serializer(), fJson.parseToJsonElement(inText))
+    mJson.encodeToString(JsonElement.serializer(), mJson.parseToJsonElement(inText))
 } catch (_: Throwable) {
     inText
 }

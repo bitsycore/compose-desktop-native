@@ -15,7 +15,7 @@ import sdl3.SDL_ShowSaveFileDialog
 
    The C callback can't capture Kotlin state, so the result handler is parked in
    a StableRef passed as the dialog's `userdata` and disposed inside the callback. */
-private val fDialogCallback = staticCFunction { inUserData: COpaquePointer?, inFileList: CPointer<CPointerVar<ByteVar>>?, inFilter: Int ->
+private val mDialogCallback = staticCFunction { inUserData: COpaquePointer?, inFileList: CPointer<CPointerVar<ByteVar>>?, inFilter: Int ->
     inFilter.hashCode() // unused (selected filter index)
     val vRef = inUserData?.asStableRef<(String?) -> Unit>() ?: return@staticCFunction
     val vHandler = vRef.get()
@@ -31,7 +31,7 @@ private val fDialogCallback = staticCFunction { inUserData: COpaquePointer?, inF
 fun showSaveFileDialog(inDefaultName: String? = null, inOnResult: (String?) -> Unit) {
     val vRef = StableRef.create(inOnResult)
     SDL_ShowSaveFileDialog(
-        fDialogCallback,
+        mDialogCallback,
         vRef.asCPointer(),
         null,            // parent window (null = unparented)
         null,            // no file-type filters
@@ -45,7 +45,7 @@ fun showSaveFileDialog(inDefaultName: String? = null, inOnResult: (String?) -> U
 fun showOpenFileDialog(inOnResult: (String?) -> Unit) {
     val vRef = StableRef.create(inOnResult)
     SDL_ShowOpenFileDialog(
-        fDialogCallback,
+        mDialogCallback,
         vRef.asCPointer(),
         null,    // parent window
         null,    // filters

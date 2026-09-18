@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonElement
 // respects the editor's "tab size" (TextLayoutConfig.tabWidth), exactly like
 // typed tabs. Lenient so slightly-off JSON (single quotes, trailing commas)
 // still reformats instead of failing.
-private val fPrettyJson = Json {
+private val mPrettyJson = Json {
     prettyPrint = true
     prettyPrintIndent = "\t"
     isLenient = true
@@ -23,7 +23,7 @@ private val fPrettyJson = Json {
 fun formatBody(inText: String, inFormat: BodyFormat): String =
     when (inFormat) {
         BodyFormat.JSON -> runCatching {
-            fPrettyJson.encodeToString(JsonElement.serializer(), fPrettyJson.parseToJsonElement(inText))
+            mPrettyJson.encodeToString(JsonElement.serializer(), mPrettyJson.parseToJsonElement(inText))
         }.getOrDefault(inText)
 
         BodyFormat.XML -> runCatching { formatXml(inText) }.getOrDefault(inText)

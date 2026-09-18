@@ -17,10 +17,10 @@ import com.compose.sdl.loadComposeResourceBytes
  *
  * Idempotent; called from ComposeWindow.installGlobals (data.kres is loadable by then).
  */
-private var fRegistered = false
+private var mRegistered = false
 
 fun registerGenericFonts() {
-	if (fRegistered) return
-	fRegistered = true
+	if (mRegistered) return
+	mRegistered = true
 	loadComposeResourceBytes("font/NotoSansMono.ttf")?.let { IconFont.register("generic:monospace", it) }
 }

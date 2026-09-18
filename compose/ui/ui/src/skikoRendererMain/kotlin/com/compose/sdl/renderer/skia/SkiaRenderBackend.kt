@@ -29,9 +29,9 @@ internal class SkiaRenderBackend(
     private val gpuMode: GpuMode,
 ) : RenderBackend {
 
-    private val fBridge: SkiaBridge = buildBridge()
-    private val fSkiaImageCache = SkiaImageCache()
-    private var fCurrentCanvas: Canvas? = null
+    private val mBridge: SkiaBridge = buildBridge()
+    private val mSkiaImageCache = SkiaImageCache()
+    private var mCurrentCanvas: Canvas? = null
 
     init {
         // skiko's paragraph engine always supports variable-font axes (Material
@@ -60,11 +60,11 @@ internal class SkiaRenderBackend(
     // Setting it once in the ctor left it dangling at a CLOSED window's (destroyed)
     // image cache after a multi-window teardown → crash on the surviving window's
     // next frame, so it is re-pointed at THIS backend before every frame.
-    private val fLeafDrawer = SkiaLeafDrawer(fSkiaImageCache)
+    private val mLeafDrawer = SkiaLeafDrawer(mSkiaImageCache)
 
     override val imageLoader: ImageLoader = object : ImageLoader {
         override fun intrinsicSize(inPath: String, inKind: ResourceKind): Size =
-            fSkiaImageCache.intrinsicSize(inPath, inKind)
+            mSkiaImageCache.intrinsicSize(inPath, inKind)
         override fun readBytes(inPath: String): ByteArray? =
             loadComposeResourceBytes(inPath)
     }
@@ -77,23 +77,23 @@ internal class SkiaRenderBackend(
     }
 
     override fun ensureSize(inPixelWidth: Int, inPixelHeight: Int): Boolean =
-        fBridge.ensureSize(inPixelWidth, inPixelHeight)
+        mBridge.ensureSize(inPixelWidth, inPixelHeight)
 
     override fun beginFrame(inDpr: Float) {
-        val canvas = fBridge.canvas
+        val canvas = mBridge.canvas
         // Clear the surface to Material dark. Without this the Metal back
         // buffer shows uninitialized GPU memory (pink). Clearing before scale
         // so it covers the whole physical target.
         canvas.clear(SkColor.makeARGB(0xFF, 0x12, 0x12, 0x12))
         canvas.save()
         if (inDpr != 1f) canvas.scale(inDpr, inDpr)
-        fCurrentCanvas = canvas
+        mCurrentCanvas = canvas
     }
 
     override fun drawRoot(inDraw: (androidx.compose.ui.graphics.Canvas) -> Unit) {
-        val canvas = fCurrentCanvas ?: return
+        val canvas = mCurrentCanvas ?: return
         // Point the leaf-draw global at THIS window's renderers before drawing.
-        skiaLeafDrawer = fLeafDrawer
+        skiaLeafDrawer = mLeafDrawer
         // Wrap the live skia canvas as upstream's SkiaBackedCanvas (real gradients/
         // paint/shader). Its port draw contracts forward to skiaLeafDrawer. The
         // ImageBitmap-backed offscreen (VectorPainter / DrawCache) now goes through
@@ -104,18 +104,18 @@ internal class SkiaRenderBackend(
     }
 
     override fun endFrame() {
-        fCurrentCanvas?.restore()
-        fCurrentCanvas = null
-        fBridge.present()
+        mCurrentCanvas?.restore()
+        mCurrentCanvas = null
+        mBridge.present()
     }
 
-    override fun snapshotBgra(): Triple<Int, Int, ByteArray>? = fBridge.snapshotBgra()
+    override fun snapshotBgra(): Triple<Int, Int, ByteArray>? = mBridge.snapshotBgra()
 
     override fun destroy() {
         // Drop the global if it still points at this (about-to-be-destroyed) backend,
         // so a stray draw before the next window's drawRoot can't hit freed renderers.
-        if (skiaLeafDrawer === fLeafDrawer) skiaLeafDrawer = null
-        fSkiaImageCache.destroy()
-        fBridge.destroy()
+        if (skiaLeafDrawer === mLeafDrawer) skiaLeafDrawer = null
+        mSkiaImageCache.destroy()
+        mBridge.destroy()
     }
 }

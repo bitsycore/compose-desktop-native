@@ -157,9 +157,9 @@ actual fun wrappedRowCount(inText: String, inFontPx: Int, inMaxWidthPx: Int, inF
 
 /** The jvm parity app only stores the preference - upstream's text pipeline has
 no global tab-width knob. Backed by state so menu checkmarks recompose. */
-private var fTabWidth by mutableStateOf(4)
+private var mTabWidth by mutableStateOf(4)
 actual var editorTabWidth: Int
-    get() = fTabWidth
+    get() = mTabWidth
     set(value) {
-        fTabWidth = value
+        mTabWidth = value
     }

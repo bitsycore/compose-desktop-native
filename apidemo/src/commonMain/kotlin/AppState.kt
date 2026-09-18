@@ -56,11 +56,11 @@ internal class PackState(
     // A linked copy mirrors its source's requests read-only; non-linked packs own
     // their requests. `requests` resolves to whichever applies.
     var linkedSource by mutableStateOf<PackState?>(null)
-    private val fOwnRequests = mutableStateListOf<ReqState>().apply {
+    private val mOwnRequests = mutableStateListOf<ReqState>().apply {
         inPack.requests.forEach { add(ReqState(it)) }   // packs (and the loose root) may be empty
     }
     val requests: androidx.compose.runtime.snapshots.SnapshotStateList<ReqState>
-        get() = linkedSource?.requests ?: fOwnRequests
+        get() = linkedSource?.requests ?: mOwnRequests
     val isLinked: Boolean get() = linkedSource != null
     var parent: PackState? =
         null                                                  // enclosing pack (null = top-level / root)

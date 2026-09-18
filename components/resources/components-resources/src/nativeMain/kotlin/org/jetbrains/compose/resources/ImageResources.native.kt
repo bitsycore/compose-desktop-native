@@ -51,20 +51,20 @@ private class SvgPainter(private val bytes: ByteArray) : Painter() {
 
 	override val intrinsicSize: Size = svgIntrinsicSize(bytes) ?: Size.Unspecified
 
-	private var fAlpha: Float = 1f
-	private var fColorFilter: ColorFilter? = null
-	private var fCacheKey: Long = -1L
-	private var fCacheBitmap: ImageBitmap? = null
+	private var mAlpha: Float = 1f
+	private var mColorFilter: ColorFilter? = null
+	private var mCacheKey: Long = -1L
+	private var mCacheBitmap: ImageBitmap? = null
 
-	override fun applyAlpha(alpha: Float): Boolean { fAlpha = alpha; return true }
-	override fun applyColorFilter(colorFilter: ColorFilter?): Boolean { fColorFilter = colorFilter; return true }
+	override fun applyAlpha(alpha: Float): Boolean { mAlpha = alpha; return true }
+	override fun applyColorFilter(colorFilter: ColorFilter?): Boolean { mColorFilter = colorFilter; return true }
 
 	private fun rasterFor(inWidthPx: Int, inHeightPx: Int): ImageBitmap? {
 		val vKey = (inWidthPx.toLong() shl 32) or inHeightPx.toLong()
-		if (vKey == fCacheKey && fCacheBitmap != null) return fCacheBitmap
+		if (vKey == mCacheKey && mCacheBitmap != null) return mCacheBitmap
 		val vBitmap = decodeSvgAt(bytes, inWidthPx, inHeightPx) ?: return null
-		fCacheKey = vKey
-		fCacheBitmap = vBitmap
+		mCacheKey = vKey
+		mCacheBitmap = vBitmap
 		return vBitmap
 	}
 
@@ -79,8 +79,8 @@ private class SvgPainter(private val bytes: ByteArray) : Painter() {
 			srcSize = IntSize(vBitmap.width, vBitmap.height),
 			dstOffset = IntOffset.Zero,
 			dstSize = IntSize(vWpx, vHpx),
-			alpha = fAlpha,
-			colorFilter = fColorFilter,
+			alpha = mAlpha,
+			colorFilter = mColorFilter,
 		)
 	}
 }

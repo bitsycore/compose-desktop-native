@@ -64,7 +64,7 @@ data class Session(
 // MARK: Load / save (app-data dir via okio)
 // ==================
 
-private val fStateJson = Json {
+private val mStateJson = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
     prettyPrint = true
@@ -88,7 +88,7 @@ fun loadAppState(): AppState {
     val vPath = stateFilePath() ?: return AppState()
     return try {
         val vText = systemFileSystem.read(vPath.toPath()) { readUtf8() }
-        fStateJson.decodeFromString<AppState>(vText)
+        mStateJson.decodeFromString<AppState>(vText)
     } catch (_: Throwable) {
         AppState()
     }
@@ -99,7 +99,7 @@ the session, not the user's exported .json packs). */
 fun saveAppState(inState: AppState) {
     val vPath = stateFilePath() ?: return
     try {
-        systemFileSystem.write(vPath.toPath()) { writeUtf8(fStateJson.encodeToString(inState)) }
+        systemFileSystem.write(vPath.toPath()) { writeUtf8(mStateJson.encodeToString(inState)) }
     } catch (_: Throwable) {
         // ignore - nothing the user can act on, and packs can still be exported
     }

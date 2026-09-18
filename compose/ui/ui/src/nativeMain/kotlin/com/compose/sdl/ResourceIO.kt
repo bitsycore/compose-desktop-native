@@ -43,7 +43,7 @@ import sdl3.SDL_GetBasePath
 // no zlib/gzip wrapper). ZIP64 is not supported - the resource set is
 // small enough that the standard 4 GB / 65535-entry limits don't apply.
 
-private class ComposeResourceArchive(private val fHandle: FileHandle) {
+private class ComposeResourceArchive(private val mHandle: FileHandle) {
 
 	// One entry's location + sizing + compression method from the central
 	// directory. method 0 = stored, 8 = deflated.
@@ -53,18 +53,18 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 		val uncompressedSize: Long,
 		val method: Int,
 	)
-	private val fEntries: Map<String, Entry>
+	private val mEntries: Map<String, Entry>
 
 	init {
-		fEntries = readCentralDirectory()
+		mEntries = readCentralDirectory()
 	}
 
-	fun has(inPath: String): Boolean = fEntries.containsKey(inPath)
+	fun has(inPath: String): Boolean = mEntries.containsKey(inPath)
 
 	/** Reads an entry's bytes (inflated if needed) or null if the entry is
 	   missing / uses an unsupported compression method. */
 	fun readBytes(inPath: String): ByteArray? {
-		val vEntry = fEntries[inPath] ?: return null
+		val vEntry = mEntries[inPath] ?: return null
 		if (vEntry.uncompressedSize <= 0L) return ByteArray(0)
 
 		// Local file header layout: 30 fixed bytes, then filename_len + extra_len.
@@ -126,7 +126,7 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 		// End of Central Directory record: 22 bytes minimum, with up to 65535
 		// bytes of comment trailing. Read the last 64 KiB + 22 and scan backward
 		// for the EOCD signature.
-		val vFileLen: Long = fHandle.size()
+		val vFileLen: Long = mHandle.size()
 		if (vFileLen < 22L) return emptyMap()
 		val vTailLen = minOf(vFileLen, 65557L).toInt()
 		val vTail = ByteArray(vTailLen)
@@ -182,14 +182,14 @@ private class ComposeResourceArchive(private val fHandle: FileHandle) {
 		if (outBuf.isEmpty()) return true
 		var vRead = 0
 		while (vRead < outBuf.size) {
-			val vN = fHandle.read(inOffset + vRead, outBuf, vRead, outBuf.size - vRead)
+			val vN = mHandle.read(inOffset + vRead, outBuf, vRead, outBuf.size - vRead)
 			if (vN <= 0) return false
 			vRead += vN
 		}
 		return true
 	}
 
-	fun close() = fHandle.close()
+	fun close() = mHandle.close()
 
 	private fun le16(inBuf: ByteArray, inOff: Int): Int =
 		(inBuf[inOff].toInt() and 0xFF) or

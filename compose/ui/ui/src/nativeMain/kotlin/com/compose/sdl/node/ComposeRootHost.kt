@@ -29,12 +29,12 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		// the root keeps LayoutNode's ErrorMeasurePolicy ("Undefined measure").
 		measurePolicy = androidx.compose.ui.layout.RootMeasurePolicy
 	}
-	private val fOwner = ComposeOwner(rootNode, Density(inDensity), LayoutDirection.Ltr)
-	private val fApplier = NodeApplier(rootNode)
+	private val mOwner = ComposeOwner(rootNode, Density(inDensity), LayoutDirection.Ltr)
+	private val mApplier = NodeApplier(rootNode)
 
 	// Upcast to the public supertype so the internal NodeApplier / LayoutNode
 	// don't leak across the module boundary; Composition accepts Applier<*>.
-	val applier: Applier<*> get() = fApplier
+	val applier: Applier<*> get() = mApplier
 
 	fun attach() {
 		// Install the focus root + drag-and-drop root on the root LayoutNode
@@ -43,8 +43,8 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		// focus root the focus tree has no origin and requestFocus never
 		// sticks; without the DnD root the root DragAndDropNode never receives
 		// events from Sdl3DragAndDropOwner's dispatch calls.
-		rootNode.modifier = fOwner.focusOwner.modifier.then(fOwner.dragAndDropManager.modifier)
-		fOwner.attach()
+		rootNode.modifier = mOwner.focusOwner.modifier.then(mOwner.dragAndDropManager.modifier)
+		mOwner.attach()
 		// Turn on snapshot observation so writes to `mutableStateOf` (ScrollState.value,
 		// LazyList firstVisibleItemIndex, etc.) fire the appropriate invalidation
 		// callbacks - requestRelayout / requestRemeasure - routing through the vendored
@@ -52,53 +52,53 @@ class ComposeRootHost(inDensity: Float = 1f) {
 		// state but the placement lambda inside ScrollNode.measure never re-runs, so
 		// the child layer's move(IntOffset(0, -scroll)) never happens → scroll offset
 		// is invisible even though the state is updating.
-		fOwner.snapshotObserver.startObserving()
+		mOwner.snapshotObserver.startObserving()
 	}
 
 	fun setConstraints(inWidth: Int, inHeight: Int) {
-		fOwner.setRootConstraints(Constraints.fixed(inWidth, inHeight))
+		mOwner.setRootConstraints(Constraints.fixed(inWidth, inHeight))
 	}
 
 	// Pump the owner's node-animation frame clock (scroll fling / animateScrollToItem / node
 	// Animatables). Called once per frame by ComposeWindow with a monotonic nanos timestamp.
 	fun sendAnimationFrame(inNanos: Long) {
-		fOwner.animationFrameClock.sendFrame(inNanos)
+		mOwner.animationFrameClock.sendFrame(inNanos)
 	}
 
 	// True while a node-level animation (scroll fling, node Animatable) awaits the next
 	// animation frame - the node half of the window's quiescence signal (render-to-quiescence
 	// screenshot capture asks the window whether ANY work is still pending).
-	fun hasAnimationAwaiters(): Boolean = fOwner.animationFrameClock.hasAwaiters
+	fun hasAnimationAwaiters(): Boolean = mOwner.animationFrameClock.hasAwaiters
 
 	fun measureAndLayout() {
 		// Flush deferred end-of-apply work (focus invalidation etc.) before measuring, so
 		// requestFocus() from composition OR from a pointer event this frame takes effect -
 		// e.g. focus-on-click, which schedules a focus invalidation during event dispatch.
-		fOwner.onEndApplyChanges()
-		fOwner.measureAndLayout()
+		mOwner.onEndApplyChanges()
+		mOwner.measureAndLayout()
 		// Drop snapshot observations whose scope is no longer valid (detached nodes,
 		// destroyed layers, disposed draw scopes). Upstream RootNodeOwner does this after
 		// the measure pass; without it, every disposed subtree's measure/layout/DRAW
 		// observation scopes linger in the OwnerSnapshotObserver forever - each pins its
 		// observed object graph (a leak the P2.2 soak caught on ripple/indication draws).
-		fOwner.snapshotObserver.clearInvalidObservations()
+		mOwner.snapshotObserver.clearInvalidObservations()
 	}
 
 	// Draw the composed tree into [canvas] - re-records dirty layers, then walks
 	// the root so clean layers replay their cached content. Backends call this
 	// instead of rootNode.draw so retained-layer bookkeeping runs each frame.
 	fun drawRoot(canvas: androidx.compose.ui.graphics.Canvas) {
-		fOwner.renderRoot(canvas)
+		mOwner.renderRoot(canvas)
 	}
 
 	// The window wires this to set needsFrame - a layer whose content changed
 	// (OwnedLayer.invalidate) schedules a frame even with nothing else pending.
 	fun setInvalidationCallback(callback: () -> Unit) {
-		fOwner.onInvalidate = callback
+		mOwner.onInvalidate = callback
 	}
 
 	// The owner's FocusOwner IS a FocusManager - the window provides it as LocalFocusManager.
-	val focusManager: androidx.compose.ui.focus.FocusManager get() = fOwner.focusOwner
+	val focusManager: androidx.compose.ui.focus.FocusManager get() = mOwner.focusOwner
 
 	// ==================
 	// MARK: Owner-backed values for the composition-locals seed
@@ -107,19 +107,19 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// Provider; ComposeWindow wraps setContent in a CompositionLocalProvider whose
 	// values come from the ComposeOwner attached below. These accessors expose the
 	// right fields without leaking the `internal Owner` interface across modules.
-	val density: androidx.compose.ui.unit.Density get() = fOwner.density
-	val layoutDirection: androidx.compose.ui.unit.LayoutDirection get() = fOwner.layoutDirection
-	val viewConfiguration: androidx.compose.ui.platform.ViewConfiguration get() = fOwner.viewConfiguration
-	val graphicsContext: androidx.compose.ui.graphics.GraphicsContext get() = fOwner.graphicsContext
-	val inputModeManager: androidx.compose.ui.input.InputModeManager get() = fOwner.inputModeManager
-	val hapticFeedback: androidx.compose.ui.hapticfeedback.HapticFeedback get() = fOwner.hapticFeedBack
-	val textToolbar: androidx.compose.ui.platform.TextToolbar get() = fOwner.textToolbar
-	val windowInfo: androidx.compose.ui.platform.WindowInfo get() = fOwner.windowInfo
+	val density: androidx.compose.ui.unit.Density get() = mOwner.density
+	val layoutDirection: androidx.compose.ui.unit.LayoutDirection get() = mOwner.layoutDirection
+	val viewConfiguration: androidx.compose.ui.platform.ViewConfiguration get() = mOwner.viewConfiguration
+	val graphicsContext: androidx.compose.ui.graphics.GraphicsContext get() = mOwner.graphicsContext
+	val inputModeManager: androidx.compose.ui.input.InputModeManager get() = mOwner.inputModeManager
+	val hapticFeedback: androidx.compose.ui.hapticfeedback.HapticFeedback get() = mOwner.hapticFeedBack
+	val textToolbar: androidx.compose.ui.platform.TextToolbar get() = mOwner.textToolbar
+	val windowInfo: androidx.compose.ui.platform.WindowInfo get() = mOwner.windowInfo
 
 	// Push SDL window focus into windowInfo.isWindowFocused (focus-reactive UI).
-	fun setWindowFocused(inFocused: Boolean) = fOwner.setWindowFocused(inFocused)
+	fun setWindowFocused(inFocused: Boolean) = mOwner.setWindowFocused(inFocused)
 	val softwareKeyboardController: androidx.compose.ui.platform.SoftwareKeyboardController
-		get() = fOwner.softwareKeyboardController
+		get() = mOwner.softwareKeyboardController
 
 	// PointerIconService and its composition local are :ui-internal, so ComposeWindow
 	// can't provide the local directly. This wrapper seeds it from the owner so
@@ -127,7 +127,7 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	@androidx.compose.runtime.Composable
 	fun ProvidePointerIconService(content: @androidx.compose.runtime.Composable () -> Unit) {
 		androidx.compose.runtime.CompositionLocalProvider(
-			androidx.compose.ui.platform.LocalPointerIconService provides fOwner.pointerIconService,
+			androidx.compose.ui.platform.LocalPointerIconService provides mOwner.pointerIconService,
 			content = content,
 		)
 	}
@@ -140,7 +140,7 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	   onKeyEvent) - drives text-field editing keys (backspace / arrows / enter) and
 	   clickable Enter/Space activation. Returns true if some node consumed it. */
 	fun dispatchKeyEvent(inEvent: androidx.compose.ui.input.key.KeyEvent): Boolean =
-		runCatching { fOwner.focusOwner.dispatchKeyEvent(inEvent) }.getOrDefault(false)
+		runCatching { mOwner.focusOwner.dispatchKeyEvent(inEvent) }.getOrDefault(false)
 
 	// ==================
 	// MARK: Input - feed the vendored PointerInputEventProcessor
@@ -152,13 +152,13 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// `expect PointerInputEvent` has no commonMain constructor, so the actual build+dispatch
 	// lives in nativeMain (feedPointerToProcessor).
 	fun onPointerRaw(inX: Float, inY: Float, inType: Int, inButton: Int, inUptime: Long) {
-		feedPointerToProcessor(fOwner, inType, inButton, inUptime, inX, inY)
+		feedPointerToProcessor(mOwner, inType, inButton, inUptime, inX, inY)
 	}
 
 	// Mouse wheel - feed a scroll PointerInputEvent to the processor so the vendored
 	// Modifier.scrollable (MouseWheelScrollingLogic) handles it, exactly like upstream.
 	fun onWheel(inX: Float, inY: Float, inDeltaX: Float, inDeltaY: Float, inUptime: Long) {
-		feedScrollToProcessor(fOwner, inX, inY, inDeltaX, inDeltaY, inUptime)
+		feedScrollToProcessor(mOwner, inX, inY, inDeltaX, inDeltaY, inUptime)
 	}
 
 	// ==================
@@ -169,11 +169,11 @@ class ComposeRootHost(inDensity: Float = 1f) {
 	// COMPLETE to these methods; Sdl3DragAndDropOwner accumulates the drop
 	// session and dispatches through the root DragAndDropNode on COMPLETE.
 
-	fun onDropBegin() = fOwner.dragAndDropManager.dropBegin()
-	fun onDropPosition(inX: Float, inY: Float) = fOwner.dragAndDropManager.dropPosition(inX, inY)
-	fun onDropFile(inPath: String) = fOwner.dragAndDropManager.dropFile(inPath)
-	fun onDropText(inText: String) = fOwner.dragAndDropManager.dropText(inText)
-	fun onDropComplete() = fOwner.dragAndDropManager.dropComplete()
+	fun onDropBegin() = mOwner.dragAndDropManager.dropBegin()
+	fun onDropPosition(inX: Float, inY: Float) = mOwner.dragAndDropManager.dropPosition(inX, inY)
+	fun onDropFile(inPath: String) = mOwner.dragAndDropManager.dropFile(inPath)
+	fun onDropText(inText: String) = mOwner.dragAndDropManager.dropText(inText)
+	fun onDropComplete() = mOwner.dragAndDropManager.dropComplete()
 }
 
 // NOTE: feedPointerToProcessor / feedScrollToProcessor are plain nativeMain

@@ -38,7 +38,7 @@ class SkiaImageCache {
 	// (registerMemoryResource - e.g. downloaded PNGs) from growing image memory
 	// without limit (issue #2). On-screen images stay hot; an evicted one just
 	// re-decodes on next use.
-	private val fCache = LinkedHashMap<String, Image?>()
+	private val mCache = LinkedHashMap<String, Image?>()
 
 	// SVG / Android-vector kinds are RESOLUTION-INDEPENDENT: instead of caching one
 	// intrinsic-size raster and letting drawImageRect upscale it (blurry when an icon
@@ -46,8 +46,8 @@ class SkiaImageCache {
 	// destination pixel size and cache that raster keyed by "path@WxH". Mirrors
 	// upstream's size-driven DrawCache for SVGPainter. Intrinsic dims are cached
 	// separately so the layout pass (intrinsicSize) doesn't force a raster.
-	private val fSvgRasterCache = LinkedHashMap<String, Image?>()
-	private val fSvgIntrinsic = HashMap<String, androidx.compose.ui.geometry.Size>()
+	private val mSvgRasterCache = LinkedHashMap<String, Image?>()
+	private val mSvgIntrinsic = HashMap<String, androidx.compose.ui.geometry.Size>()
 
 	fun intrinsicSize(inPath: String, inKind: ResourceKind): androidx.compose.ui.geometry.Size {
 		if (inKind == ResourceKind.Svg || inKind == ResourceKind.AndroidVector) {
@@ -58,18 +58,18 @@ class SkiaImageCache {
 	}
 
 	private fun get(inPath: String, inKind: ResourceKind): Image? {
-		if (fCache.containsKey(inPath)) {
+		if (mCache.containsKey(inPath)) {
 			// Re-insert to mark most-recently-used (LinkedHashMap keeps first =
 			// least-recently-used for eviction below).
-			val vExisting = fCache.remove(inPath)
-			fCache[inPath] = vExisting
+			val vExisting = mCache.remove(inPath)
+			mCache[inPath] = vExisting
 			return vExisting
 		}
 		val vImage = decode(inPath, inKind)
-		fCache[inPath] = vImage
-		if (fCache.size > MAX_CACHED_IMAGES) {
-			val vEldest = fCache.keys.firstOrNull()
-			if (vEldest != null) fCache.remove(vEldest)?.close()
+		mCache[inPath] = vImage
+		if (mCache.size > MAX_CACHED_IMAGES) {
+			val vEldest = mCache.keys.firstOrNull()
+			if (vEldest != null) mCache.remove(vEldest)?.close()
 		}
 		return vImage
 	}
@@ -136,7 +136,7 @@ class SkiaImageCache {
 
 	/** Intrinsic (viewport) size of the vector, parsed once and cached. */
 	private fun svgIntrinsicSize(inPath: String, inKind: ResourceKind): androidx.compose.ui.geometry.Size {
-		fSvgIntrinsic[inPath]?.let { return it }
+		mSvgIntrinsic[inPath]?.let { return it }
 		val vBytes = svgBytes(inPath, inKind) ?: return androidx.compose.ui.geometry.Size.Unspecified
 		val vSize = runCatching {
 			val vDom = SVGDOM(Data.makeFromBytes(vBytes))
@@ -146,7 +146,7 @@ class SkiaImageCache {
 			vDom.close()
 			androidx.compose.ui.geometry.Size(vW, vH)
 		}.getOrDefault(androidx.compose.ui.geometry.Size.Unspecified)
-		fSvgIntrinsic[inPath] = vSize
+		mSvgIntrinsic[inPath] = vSize
 		return vSize
 	}
 
@@ -157,9 +157,9 @@ class SkiaImageCache {
 		val vWpx = inW.roundToInt().coerceAtLeast(1)
 		val vHpx = inH.roundToInt().coerceAtLeast(1)
 		val vKey = "$inPath@${vWpx}x$vHpx"
-		val vImg = if (fSvgRasterCache.containsKey(vKey)) {
-			val vExisting = fSvgRasterCache.remove(vKey)
-			fSvgRasterCache[vKey] = vExisting
+		val vImg = if (mSvgRasterCache.containsKey(vKey)) {
+			val vExisting = mSvgRasterCache.remove(vKey)
+			mSvgRasterCache[vKey] = vExisting
 			vExisting
 		} else {
 			val vIntrinsic = svgIntrinsicSize(inPath, inKind)
@@ -167,9 +167,9 @@ class SkiaImageCache {
 			val vRaster = if (vBytes != null && vIntrinsic.isSpecified) {
 				rasterizeSvgAt(vBytes, vIntrinsic.width, vIntrinsic.height, vWpx, vHpx)
 			} else null
-			fSvgRasterCache[vKey] = vRaster
-			if (fSvgRasterCache.size > MAX_CACHED_IMAGES) {
-				fSvgRasterCache.keys.firstOrNull()?.let { fSvgRasterCache.remove(it)?.close() }
+			mSvgRasterCache[vKey] = vRaster
+			if (mSvgRasterCache.size > MAX_CACHED_IMAGES) {
+				mSvgRasterCache.keys.firstOrNull()?.let { mSvgRasterCache.remove(it)?.close() }
 			}
 			vRaster
 		} ?: return
@@ -183,11 +183,11 @@ class SkiaImageCache {
 	}
 
 	fun destroy() {
-		for (vImg in fCache.values) vImg?.close()
-		fCache.clear()
-		for (vImg in fSvgRasterCache.values) vImg?.close()
-		fSvgRasterCache.clear()
-		fSvgIntrinsic.clear()
+		for (vImg in mCache.values) vImg?.close()
+		mCache.clear()
+		for (vImg in mSvgRasterCache.values) vImg?.close()
+		mSvgRasterCache.clear()
+		mSvgIntrinsic.clear()
 	}
 }
 

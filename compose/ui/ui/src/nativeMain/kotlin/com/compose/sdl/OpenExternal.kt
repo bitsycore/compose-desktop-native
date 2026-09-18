@@ -22,7 +22,7 @@ import sdl3.SDL_OpenURL
    UI until the file manager was up. None of the three platform backends
    requires the main thread, so a small background scope launches them and
    (optionally) posts the result back to Main. */
-private val fOpenExternalScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+private val mOpenExternalScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 /** Opens a URL or file:// URI with the OS's default handler (browser, file
    manager, …) via SDL_OpenURL - asynchronously, so the UI keeps pumping while
@@ -30,7 +30,7 @@ private val fOpenExternalScope = CoroutineScope(SupervisorJob() + Dispatchers.De
    thread with SDL_OpenURL's success flag. */
 @OptIn(ExperimentalForeignApi::class)
 fun openUrl(inUrl: String, inOnResult: ((Boolean) -> Unit)? = null) {
-	fOpenExternalScope.launch {
+	mOpenExternalScope.launch {
 		val vOk = SDL_OpenURL(inUrl)
 		if (inOnResult != null) withContext(Dispatchers.Main) { inOnResult(vOk) }
 	}

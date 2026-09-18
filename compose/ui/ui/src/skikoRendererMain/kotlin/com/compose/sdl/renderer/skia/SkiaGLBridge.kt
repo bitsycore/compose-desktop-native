@@ -29,11 +29,11 @@ import sdl3.SDL_GL_SwapWindow
    DirectContext is reused. The default GL framebuffer (id 0) is wrapped
    directly; we don't manage an offscreen FBO. */
 internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
-    private var fContext: DirectContext? = null
-    private var fRT: BackendRenderTarget? = null
-    private var fSurface: Surface? = null
-    private var fWidth = 0
-    private var fHeight = 0
+    private var mContext: DirectContext? = null
+    private var mRT: BackendRenderTarget? = null
+    private var mSurface: Surface? = null
+    private var mWidth = 0
+    private var mHeight = 0
 
     /**
      Binds THIS window's GL context to the calling thread.
@@ -58,8 +58,8 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
     fun init(): Boolean {
         return try {
             makeCurrent()
-            fContext = DirectContext.makeGL()
-            fContext != null
+            mContext = DirectContext.makeGL()
+            mContext != null
         } catch (t: Throwable) {
             println("SkiaGLBridge: DirectContext.makeGL failed: ${t.message}")
             false
@@ -67,20 +67,20 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
     }
 
     override val canvas: Canvas
-        get() = requireNotNull(fSurface) { "SkiaGLBridge not initialised" }.canvas
+        get() = requireNotNull(mSurface) { "SkiaGLBridge not initialised" }.canvas
 
     override fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
         // BEFORE the unchanged-size early return: this runs once per frame and is
         // what re-binds this window's context for the draw phase that follows.
         makeCurrent()
-        if (inWidth == fWidth && inHeight == fHeight && fSurface != null) return true
+        if (inWidth == mWidth && inHeight == mHeight && mSurface != null) return true
         if (inWidth <= 0 || inHeight <= 0) return false
-        val vContext = fContext ?: return false
+        val vContext = mContext ?: return false
 
-        fSurface?.close()
-        fRT?.close()
-        fSurface = null
-        fRT = null
+        mSurface?.close()
+        mRT?.close()
+        mSurface = null
+        mRT = null
 
         // GL_RGBA8 = 0x8058. fbId = 0 binds the default framebuffer.
         // sampleCnt = 0 means no MSAA; stencilBits = 8 is what Skia recommends.
@@ -102,35 +102,35 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
             println("SkiaGLBridge: Surface.makeFromBackendRenderTarget returned null")
             return false
         }
-        fRT = vRT
-        fSurface = vSurface
-        fWidth = inWidth
-        fHeight = inHeight
+        mRT = vRT
+        mSurface = vSurface
+        mWidth = inWidth
+        mHeight = inHeight
         return true
     }
 
     override fun present() {
-        val vSurface = fSurface ?: return
+        val vSurface = mSurface ?: return
         val vWindow = backend.window ?: return
         makeCurrent()
         vSurface.flushAndSubmit()
         SDL_GL_SwapWindow(vWindow.reinterpret())
     }
 
-    override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
+    override fun snapshot(): Image? = mSurface?.makeImageSnapshot()
 
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? =
-        readBackBgra(fSurface, fWidth, fHeight)
+        readBackBgra(mSurface, mWidth, mHeight)
 
     override fun destroy() {
         // Free this window's GPU objects against its OWN context, not whichever
         // window happens to be current.
         makeCurrent()
-        fSurface?.close()
-        fRT?.close()
-        fContext?.close()
-        fSurface = null
-        fRT = null
-        fContext = null
+        mSurface?.close()
+        mRT?.close()
+        mContext?.close()
+        mSurface = null
+        mRT = null
+        mContext = null
     }
 }

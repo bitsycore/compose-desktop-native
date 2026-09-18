@@ -80,28 +80,28 @@ internal class ComposeOwner(
 ) : Owner, OwnedLayerManager {
 
 	// The vendored measure/layout state machine, rooted at [root].
-	private val fDelegate = MeasureAndLayoutDelegate(root)
+	private val mDelegate = MeasureAndLayoutDelegate(root)
 
 	// The vendored pointer-input dispatcher. Routes a PointerInputEvent through
 	// HitPathTracker to the tree's PointerInputModifierNodes (hover / gesture),
 	// synthesizing Enter/Exit. Fed from ComposeWindow via ComposeRootHost.
-	private val fPointerProcessor = androidx.compose.ui.input.pointer.PointerInputEventProcessor(root)
+	private val mPointerProcessor = androidx.compose.ui.input.pointer.PointerInputEventProcessor(root)
 
 	// Window focus + container size backing [windowInfo], snapshot-backed so
 	// focus-reactive UI and LocalWindowInfo.containerSize readers recompose. Fed by
 	// the window: focus via setWindowFocused (SDL activation), size from setRootConstraints.
-	private val fWindowFocused = androidx.compose.runtime.mutableStateOf(true)
-	private val fContainerSize = androidx.compose.runtime.mutableStateOf(androidx.compose.ui.unit.IntSize.Zero)
+	private val mWindowFocused = androidx.compose.runtime.mutableStateOf(true)
+	private val mContainerSize = androidx.compose.runtime.mutableStateOf(androidx.compose.ui.unit.IntSize.Zero)
 
 	// Called by the window on SDL focus gain/loss.
-	internal fun setWindowFocused(inFocused: Boolean) { fWindowFocused.value = inFocused }
+	internal fun setWindowFocused(inFocused: Boolean) { mWindowFocused.value = inFocused }
 
 	// Dispatch one pointer event to the upstream PointerInputModifierNode tree.
 	// [this] is the PositionCalculator (Owner : PositionCalculator).
 	internal fun processPointerInput(inEvent: androidx.compose.ui.input.pointer.PointerInputEvent): Boolean {
-		val vResult = fPointerProcessor.process(inEvent, this)
+		val vResult = mPointerProcessor.process(inEvent, this)
 		// Apply the cursor the hover pipeline just set for this event (deduped in SdlCursors).
-		com.compose.sdl.SdlCursors.apply(fPointerIcon)
+		com.compose.sdl.SdlCursors.apply(mPointerIcon)
 		return vResult.dispatchedToAPointerInputModifier
 	}
 
@@ -115,11 +115,11 @@ internal class ComposeOwner(
 	// Sets the constraints the root is measured against (window pixel size in
 	// logical points). Call each frame before [measureAndLayout].
 	fun setRootConstraints(inConstraints: Constraints) {
-		fDelegate.updateRootConstraints(inConstraints)
+		mDelegate.updateRootConstraints(inConstraints)
 		// Report the container size (physical px, the port's layout coord space) to
 		// windowInfo; updates on every resize since the window re-measures per frame.
 		if (inConstraints.hasBoundedWidth && inConstraints.hasBoundedHeight) {
-			fContainerSize.value =
+			mContainerSize.value =
 				androidx.compose.ui.unit.IntSize(inConstraints.maxWidth, inConstraints.maxHeight)
 		}
 	}
@@ -138,8 +138,8 @@ internal class ComposeOwner(
 		forceRequest: Boolean,
 		scheduleMeasureAndLayout: Boolean,
 	) {
-		if (affectsLookahead) fDelegate.requestLookaheadRemeasure(layoutNode, forceRequest)
-		else fDelegate.requestRemeasure(layoutNode, forceRequest)
+		if (affectsLookahead) mDelegate.requestLookaheadRemeasure(layoutNode, forceRequest)
+		else mDelegate.requestRemeasure(layoutNode, forceRequest)
 	}
 
 	override fun onRequestRelayout(
@@ -147,25 +147,25 @@ internal class ComposeOwner(
 		affectsLookahead: Boolean,
 		forceRequest: Boolean,
 	) {
-		if (affectsLookahead) fDelegate.requestLookaheadRelayout(layoutNode, forceRequest)
-		else fDelegate.requestRelayout(layoutNode, forceRequest)
+		if (affectsLookahead) mDelegate.requestLookaheadRelayout(layoutNode, forceRequest)
+		else mDelegate.requestRelayout(layoutNode, forceRequest)
 	}
 
 	override fun measureAndLayout(sendPointerUpdate: Boolean) {
-		fDelegate.measureAndLayout()
-		fDelegate.dispatchOnPositionedCallbacks()
+		mDelegate.measureAndLayout()
+		mDelegate.dispatchOnPositionedCallbacks()
 	}
 
 	override fun measureAndLayout(layoutNode: LayoutNode, constraints: Constraints) {
-		fDelegate.measureAndLayout(layoutNode, constraints)
+		mDelegate.measureAndLayout(layoutNode, constraints)
 	}
 
 	override fun forceMeasureTheSubtree(layoutNode: LayoutNode, affectsLookahead: Boolean) {
-		fDelegate.forceMeasureTheSubtree(layoutNode, affectsLookahead)
+		mDelegate.forceMeasureTheSubtree(layoutNode, affectsLookahead)
 	}
 
 	override fun onDetach(node: LayoutNode) {
-		fDelegate.onNodeDetached(node)
+		mDelegate.onNodeDetached(node)
 		// Drop the detached node's read-observation scopes, exactly as upstream
 		// RootNodeOwner.onDetach does. Without this, every disposed node's measure/
 		// layout/draw observation scopes accumulate in the snapshot observer forever
@@ -174,7 +174,7 @@ internal class ComposeOwner(
 	}
 
 	override fun registerOnLayoutCompletedListener(listener: Owner.OnLayoutCompletedListener) {
-		fDelegate.registerOnLayoutCompletedListener(listener)
+		mDelegate.registerOnLayoutCompletedListener(listener)
 	}
 
 	override fun requestOnPositionedCallback(layoutNode: LayoutNode) = Unit
@@ -345,12 +345,12 @@ internal class ComposeOwner(
 		}
 	// Desired hover cursor, set by the vendored HoverIconModifierNode
 	// (Modifier.pointerHoverIcon) and applied via SDL in processPointerInput. null = default.
-	private var fPointerIcon: androidx.compose.ui.input.pointer.PointerIcon =
+	private var mPointerIcon: androidx.compose.ui.input.pointer.PointerIcon =
 		androidx.compose.ui.input.pointer.PointerIcon.Default
 	override val pointerIconService: PointerIconService = object : PointerIconService {
-		override fun getIcon(): androidx.compose.ui.input.pointer.PointerIcon = fPointerIcon
+		override fun getIcon(): androidx.compose.ui.input.pointer.PointerIcon = mPointerIcon
 		override fun setIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {
-			fPointerIcon = value ?: androidx.compose.ui.input.pointer.PointerIcon.Default
+			mPointerIcon = value ?: androidx.compose.ui.input.pointer.PointerIcon.Default
 		}
 		override fun getStylusHoverIcon(): androidx.compose.ui.input.pointer.PointerIcon? = null
 		override fun setStylusHoverIcon(value: androidx.compose.ui.input.pointer.PointerIcon?) {}
@@ -368,13 +368,13 @@ internal class ComposeOwner(
 		owner = this,
 	)
 	override val windowInfo: WindowInfo = object : WindowInfo {
-		override val isWindowFocused: Boolean get() = fWindowFocused.value
-		override val containerSize: androidx.compose.ui.unit.IntSize get() = fContainerSize.value
+		override val isWindowFocused: Boolean get() = mWindowFocused.value
+		override val containerSize: androidx.compose.ui.unit.IntSize get() = mContainerSize.value
 		override val containerDpSize: androidx.compose.ui.unit.DpSize
 			get() = with(density) {
 				androidx.compose.ui.unit.DpSize(
-					fContainerSize.value.width.toDp(),
-					fContainerSize.value.height.toDp(),
+					mContainerSize.value.width.toDp(),
+					mContainerSize.value.height.toDp(),
 				)
 			}
 	}
@@ -412,16 +412,16 @@ internal class ComposeOwner(
 	// End-of-apply-changes listeners - the focus system (FocusInvalidationManager) and other
 	// engine parts register here to defer work until changes are applied; without this the
 	// focus invalidation never flushes and requestFocus() (e.g. focus-on-click) never sticks.
-	private val fEndApplyChangesListeners = mutableListOf<() -> Unit>()
+	private val mEndApplyChangesListeners = mutableListOf<() -> Unit>()
 
 	override fun registerOnEndApplyChangesListener(listener: () -> Unit) {
-		if (listener !in fEndApplyChangesListeners) fEndApplyChangesListeners.add(listener)
+		if (listener !in mEndApplyChangesListeners) mEndApplyChangesListeners.add(listener)
 	}
 
 	override fun onEndApplyChanges() {
 		// Drain in order; listeners may re-register, so loop until empty.
-		while (fEndApplyChangesListeners.isNotEmpty()) {
-			val vListener = fEndApplyChangesListeners.removeAt(0)
+		while (mEndApplyChangesListeners.isNotEmpty()) {
+			val vListener = mEndApplyChangesListeners.removeAt(0)
 			vListener()
 		}
 	}

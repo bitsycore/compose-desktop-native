@@ -20,7 +20,7 @@ import org.gradle.api.tasks.Copy
 //
 // Text rendering goes through Skia's skparagraph (HarfBuzz + skunicode). On
 // Windows, Skia loads its ICU data (icudtl.dat) from a file next to the binary at
-// runtime - without it ParagraphBuilder fatal-aborts (check(fUnicode)). Unlike
+// runtime - without it ParagraphBuilder fatal-aborts (check(mUnicode)). Unlike
 // macOS/Linux skiko, which bake the ICU data in, the Windows build ships it as a
 // sidecar. The official skiko-awt-runtime-windows-x64 jar already contains a
 // compatible icudtl.dat (same Skia base as the fork), so we source it from there

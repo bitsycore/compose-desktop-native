@@ -28,12 +28,12 @@ import kotlinx.atomicfu.locks.synchronized
  */
 object NativeReleaseQueue {
 
-	private val fLock = SynchronizedObject()
-	private var fPending = ArrayList<() -> Unit>()
+	private val mLock = SynchronizedObject()
+	private var mPending = ArrayList<() -> Unit>()
 
 	/** Enqueue a release action. Safe to call from any thread. */
 	fun enqueue(action: () -> Unit) {
-		synchronized(fLock) { fPending.add(action) }
+		synchronized(mLock) { mPending.add(action) }
 	}
 
 	/**
@@ -41,10 +41,10 @@ object NativeReleaseQueue {
 	 * renderer APIs that aren't thread-safe. Returns the number drained.
 	 */
 	fun drain(): Int {
-		val vBatch = synchronized(fLock) {
-			if (fPending.isEmpty()) return 0
-			val vTaken = fPending
-			fPending = ArrayList()
+		val vBatch = synchronized(mLock) {
+			if (mPending.isEmpty()) return 0
+			val vTaken = mPending
+			mPending = ArrayList()
 			vTaken
 		}
 		for (vAction in vBatch) {

@@ -32,12 +32,12 @@ class ResourcePainter internal constructor(
 	val kind: ResourceKind,
 ) : Painter() {
 
-	private var fAlpha: Float = 1f
+	private var mAlpha: Float = 1f
 
 	override val intrinsicSize: Size
 		get() = currentImageLoader.intrinsicSize(resourcePath, kind)
 
-	override fun applyAlpha(alpha: Float): Boolean { fAlpha = alpha; return true }
+	override fun applyAlpha(alpha: Float): Boolean { mAlpha = alpha; return true }
 
 	override fun DrawScope.onDraw() {
 		drawIntoCanvas { vCanvas ->
@@ -45,7 +45,7 @@ class ResourcePainter internal constructor(
 			// translate + scaledSize, so we paint the resource FillBounds into the
 			// full DrawScope size. Alpha is threaded via applyAlpha.
 			(vCanvas as? NativePainterCanvas)?.drawNativePainter(
-				resourcePath, kind, 0f, 0f, size.width, size.height, fAlpha,
+				resourcePath, kind, 0f, 0f, size.width, size.height, mAlpha,
 			)
 		}
 	}

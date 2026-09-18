@@ -18,35 +18,35 @@ package com.compose.sdl.icons
    the renderer where to find the bytes. */
 object IconFont {
 
-	private val fFonts = mutableMapOf<String, ByteArray>()
+	private val mFonts = mutableMapOf<String, ByteArray>()
 	// Families that render as single variable-axis glyphs (Material Symbols),
 	// vs ordinary text fonts - icon families are drawn one codepoint at a time,
 	// while text families (e.g. a bundled monospace) go through normal
 	// full-string rendering.
-	private val fIconFamilies = mutableSetOf<String>()
+	private val mIconFamilies = mutableSetOf<String>()
 
 	/** Register a TEXT font family's bytes (rendered as full strings; e.g. a
 	   bundled monospace). Idempotent - a second call with the same family
 	   replaces the previous bytes. */
 	fun register(inFamily: String, inBytes: ByteArray) {
-		fFonts[inFamily] = inBytes
+		mFonts[inFamily] = inBytes
 	}
 
 	/** Register an ICON font family (Material Symbols et al.) - variable-axis.
 	   Same byte store as register(), but also flags the family as an icon
 	   font. */
 	fun registerIcon(inFamily: String, inBytes: ByteArray) {
-		fFonts[inFamily] = inBytes
-		fIconFamilies += inFamily
+		mFonts[inFamily] = inBytes
+		mIconFamilies += inFamily
 	}
 
 	/** Bytes for a registered family, or null if not registered. Renderers
 	   fall back to the default font when this returns null. */
-	fun bytesFor(inFamily: String): ByteArray? = fFonts[inFamily]
+	fun bytesFor(inFamily: String): ByteArray? = mFonts[inFamily]
 
 	/** True only for families registered via registerIcon() - icon fonts that
 	   need single-glyph (variable-axis) rendering, not text fonts. */
-	fun isIconFamily(inFamily: String): Boolean = inFamily in fIconFamilies
+	fun isIconFamily(inFamily: String): Boolean = inFamily in mIconFamilies
 
-	val families: Set<String> get() = fFonts.keys
+	val families: Set<String> get() = mFonts.keys
 }

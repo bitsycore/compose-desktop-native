@@ -98,23 +98,23 @@ class PopupHostState internal constructor() {
 		fun contains(inX: Int, inY: Int) = inX >= x && inX < x + w && inY >= y && inY < y + h
 	}
 
-	private val fDismissers = mutableListOf<Dismisser>()
+	private val mDismissers = mutableListOf<Dismisser>()
 
 	internal fun setDismisser(inId: Any, inX: Int, inY: Int, inW: Int, inH: Int, inOnDismiss: () -> Unit) {
-		val vD = fDismissers.firstOrNull { it.id === inId } ?: Dismisser(inId).also { fDismissers.add(it) }
+		val vD = mDismissers.firstOrNull { it.id === inId } ?: Dismisser(inId).also { mDismissers.add(it) }
 		vD.x = inX; vD.y = inY; vD.w = inW; vD.h = inH; vD.onDismiss = inOnDismiss
 	}
 
 	internal fun removeDismisser(inId: Any) {
-		fDismissers.removeAll { it.id === inId }
+		mDismissers.removeAll { it.id === inId }
 	}
 
 	/** Dismiss every registered popup whose content rect does NOT contain the
 	   press. Called from the window's press dispatch; never consumes the press. */
 	fun notifyOutsidePress(inX: Int, inY: Int) {
-		if (fDismissers.isEmpty()) return
+		if (mDismissers.isEmpty()) return
 		// Copy: an onDismiss typically removes the dismisser (state write).
-		for (vD in fDismissers.toList()) {
+		for (vD in mDismissers.toList()) {
 			if (vD.w > 0 && vD.h > 0 && !vD.contains(inX, inY)) vD.onDismiss()
 		}
 	}
@@ -140,18 +140,18 @@ fun createPopupHostState(): PopupHostState = PopupHostState()
    composition, not the owner's) observes that, plays its animation, and MUST
    end with [finish], which actually removes the entry. */
 class PopupExitHandle internal constructor(
-	private val fHost: PopupHostState,       // owning host - target of finish()
-	private val fEntry: PopupHostState.Entry, // the entry this handle controls
+	private val mHost: PopupHostState,       // owning host - target of finish()
+	private val mEntry: PopupHostState.Entry, // the entry this handle controls
 ) {
 	/** True once the owning Popup left the composition and the host is waiting
 	   for this entry's exit animation. Observable - recomposes the content. */
-	val isExiting: State<Boolean> get() = fEntry.exiting
+	val isExiting: State<Boolean> get() = mEntry.exiting
 
 	/** Opt in to exit deferral. Idempotent; call from a SideEffect. */
-	fun enableExitTransition() { fEntry.hasExitTransition = true }
+	fun enableExitTransition() { mEntry.hasExitTransition = true }
 
 	/** Ends the deferral - the entry is removed from the host for real. */
-	fun finish() { fHost.forceRemove(fEntry.id) }
+	fun finish() { mHost.forceRemove(mEntry.id) }
 }
 
 /** Per-entry handle, provided by PopupLayer around each hosted content. Null

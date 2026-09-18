@@ -32,13 +32,13 @@ private class Attr(val prefix: String, val localName: String, val nsUri: String,
 	val qualifiedName: String get() = if (prefix.isEmpty()) localName else "$prefix:$localName"
 }
 
-private class NodeListImpl(private val fNodes: List<Node>) : NodeList {
-	override fun item(i: Int): Node = fNodes[i]
-	override val length: Int get() = fNodes.size
+private class NodeListImpl(private val mNodes: List<Node>) : NodeList {
+	override fun item(i: Int): Node = mNodes[i]
+	override val length: Int get() = mNodes.size
 }
 
-private class TextNodeImpl(private val fText: String) : Node {
-	override val textContent: String? get() = fText
+private class TextNodeImpl(private val mText: String) : Node {
+	override val textContent: String? get() = mText
 	override val nodeName: String get() = "#text"
 	override val localName: String get() = ""
 	override val childNodes: NodeList = NodeListImpl(emptyList())
@@ -47,16 +47,16 @@ private class TextNodeImpl(private val fText: String) : Node {
 }
 
 private class ElementImpl(
-	private val fPrefix: String,
+	private val mPrefix: String,
 	override val localName: String,
 	override val namespaceURI: String,
-	private val fAttrs: List<Attr>,
+	private val mAttrs: List<Attr>,
 	// Innermost-first chain of xmlns scopes: each is prefix -> uri ("" = default ns).
-	private val fNsScope: List<Map<String, String>>,
+	private val mNsScope: List<Map<String, String>>,
 ) : Element {
 	var children: List<Node> = emptyList()
 
-	override val nodeName: String get() = if (fPrefix.isEmpty()) localName else "$fPrefix:$localName"
+	override val nodeName: String get() = if (mPrefix.isEmpty()) localName else "$mPrefix:$localName"
 	override val childNodes: NodeList get() = NodeListImpl(children)
 
 	// Concatenated descendant text - what DOM's textContent does.
@@ -72,7 +72,7 @@ private class ElementImpl(
 
 	override fun lookupPrefix(namespaceURI: String): String {
 		if (namespaceURI.isEmpty()) return ""
-		for (vScope in fNsScope) {
+		for (vScope in mNsScope) {
 			for ((vPrefix, vUri) in vScope) {
 				if (vUri == namespaceURI && vPrefix.isNotEmpty()) return vPrefix
 			}
@@ -81,22 +81,22 @@ private class ElementImpl(
 	}
 
 	override fun getAttributeNS(nameSpaceURI: String, localName: String): String =
-		fAttrs.firstOrNull { it.nsUri == nameSpaceURI && it.localName == localName }?.value ?: ""
+		mAttrs.firstOrNull { it.nsUri == nameSpaceURI && it.localName == localName }?.value ?: ""
 
 	override fun getAttribute(name: String): String =
-		fAttrs.firstOrNull { it.qualifiedName == name }?.value ?: ""
+		mAttrs.firstOrNull { it.qualifiedName == name }?.value ?: ""
 }
 
 // ============
 //  The parser - one pass over the string with a cursor.
-private class XmlDomParser(private val fXml: String) {
-	private var fPos = 0
+private class XmlDomParser(private val mXml: String) {
+	private var mPos = 0
 
 	fun skipProlog() {
 		while (true) {
 			skipWhitespace()
 			when {
-				lookingAt("﻿") -> fPos++
+				lookingAt("﻿") -> mPos++
 				lookingAt("<?") -> skipUntil("?>")
 				lookingAt("<!--") -> skipUntil("-->")
 				lookingAt("<!DOCTYPE") -> skipDoctype()
@@ -112,7 +112,7 @@ private class XmlDomParser(private val fXml: String) {
 		if (!lookingAt("<") || lookingAt("</")) return null
 		expect("<")
 		val vQName = readName()
-		if (vQName.isEmpty()) throw MalformedXMLException("empty element name at $fPos")
+		if (vQName.isEmpty()) throw MalformedXMLException("empty element name at $mPos")
 
 		// Attributes (collect raw first - xmlns declarations shape the scope
 		// that THIS element's own prefix resolves against).
@@ -121,7 +121,7 @@ private class XmlDomParser(private val fXml: String) {
 			skipWhitespace()
 			if (lookingAt("/>") || lookingAt(">")) break
 			val vAttrName = readName()
-			if (vAttrName.isEmpty()) throw MalformedXMLException("bad attribute at $fPos")
+			if (vAttrName.isEmpty()) throw MalformedXMLException("bad attribute at $mPos")
 			skipWhitespace(); expect("="); skipWhitespace()
 			vRawAttrs.add(vAttrName to readQuotedValue())
 		}
@@ -160,7 +160,7 @@ private class XmlDomParser(private val fXml: String) {
 		val vElement = ElementImpl(vPrefix, vLocal, resolveNs(vPrefix), vAttrs, vScope)
 
 		if (lookingAt("/>")) {
-			fPos += 2
+			mPos += 2
 			return vElement
 		}
 		expect(">")
@@ -169,9 +169,9 @@ private class XmlDomParser(private val fXml: String) {
 		val vChildren = ArrayList<Node>()
 		while (true) {
 			when {
-				fPos >= fXml.length -> throw MalformedXMLException("unclosed <$vQName>")
+				mPos >= mXml.length -> throw MalformedXMLException("unclosed <$vQName>")
 				lookingAt("</") -> {
-					fPos += 2
+					mPos += 2
 					val vClose = readName()
 					skipWhitespace(); expect(">")
 					if (vClose != vQName) throw MalformedXMLException("mismatched </$vClose> for <$vQName>")
@@ -180,18 +180,18 @@ private class XmlDomParser(private val fXml: String) {
 				}
 				lookingAt("<!--") -> skipUntil("-->")
 				lookingAt("<![CDATA[") -> {
-					val vEnd = fXml.indexOf("]]>", fPos + 9)
+					val vEnd = mXml.indexOf("]]>", mPos + 9)
 					if (vEnd < 0) throw MalformedXMLException("unclosed CDATA")
-					vChildren.add(TextNodeImpl(fXml.substring(fPos + 9, vEnd)))
-					fPos = vEnd + 3
+					vChildren.add(TextNodeImpl(mXml.substring(mPos + 9, vEnd)))
+					mPos = vEnd + 3
 				}
 				lookingAt("<?") -> skipUntil("?>")
 				lookingAt("<") -> parseElement(vScope)?.let { vChildren.add(it) }
 				else -> {
-					val vNext = fXml.indexOf('<', fPos).let { if (it < 0) fXml.length else it }
-					val vText = decodeEntities(fXml.substring(fPos, vNext))
+					val vNext = mXml.indexOf('<', mPos).let { if (it < 0) mXml.length else it }
+					val vText = decodeEntities(mXml.substring(mPos, vNext))
 					if (vText.isNotBlank()) vChildren.add(TextNodeImpl(vText))
-					fPos = vNext
+					mPos = vNext
 				}
 			}
 		}
@@ -200,28 +200,28 @@ private class XmlDomParser(private val fXml: String) {
 	// ============
 	//  Lexing helpers
 
-	private fun lookingAt(inToken: String): Boolean = fXml.startsWith(inToken, fPos)
+	private fun lookingAt(inToken: String): Boolean = mXml.startsWith(inToken, mPos)
 
 	private fun expect(inToken: String) {
-		if (!lookingAt(inToken)) throw MalformedXMLException("expected '$inToken' at $fPos")
-		fPos += inToken.length
+		if (!lookingAt(inToken)) throw MalformedXMLException("expected '$inToken' at $mPos")
+		mPos += inToken.length
 	}
 
 	private fun skipWhitespace() {
-		while (fPos < fXml.length && fXml[fPos].isWhitespace()) fPos++
+		while (mPos < mXml.length && mXml[mPos].isWhitespace()) mPos++
 	}
 
 	private fun skipUntil(inToken: String) {
-		val vEnd = fXml.indexOf(inToken, fPos)
+		val vEnd = mXml.indexOf(inToken, mPos)
 		if (vEnd < 0) throw MalformedXMLException("unterminated '$inToken' section")
-		fPos = vEnd + inToken.length
+		mPos = vEnd + inToken.length
 	}
 
 	/* DOCTYPE may nest an internal subset in [ ] - skip to the matching '>'. */
 	private fun skipDoctype() {
 		var vDepth = 0
-		while (fPos < fXml.length) {
-			val c = fXml[fPos++]
+		while (mPos < mXml.length) {
+			val c = mXml[mPos++]
 			if (c == '[') vDepth++
 			else if (c == ']') vDepth--
 			else if (c == '>' && vDepth <= 0) return
@@ -230,24 +230,24 @@ private class XmlDomParser(private val fXml: String) {
 	}
 
 	private fun readName(): String {
-		val vStart = fPos
-		while (fPos < fXml.length) {
-			val c = fXml[fPos]
+		val vStart = mPos
+		while (mPos < mXml.length) {
+			val c = mXml[mPos]
 			if (c.isWhitespace() || c == '=' || c == '>' || c == '/' || c == '<') break
-			fPos++
+			mPos++
 		}
-		return fXml.substring(vStart, fPos)
+		return mXml.substring(vStart, mPos)
 	}
 
 	private fun readQuotedValue(): String {
-		if (fPos >= fXml.length) throw MalformedXMLException("unterminated attribute value")
-		val vQuote = fXml[fPos]
-		if (vQuote != '"' && vQuote != '\'') throw MalformedXMLException("attribute value must be quoted at $fPos")
-		fPos++
-		val vEnd = fXml.indexOf(vQuote, fPos)
+		if (mPos >= mXml.length) throw MalformedXMLException("unterminated attribute value")
+		val vQuote = mXml[mPos]
+		if (vQuote != '"' && vQuote != '\'') throw MalformedXMLException("attribute value must be quoted at $mPos")
+		mPos++
+		val vEnd = mXml.indexOf(vQuote, mPos)
 		if (vEnd < 0) throw MalformedXMLException("unterminated attribute value")
-		val vRaw = fXml.substring(fPos, vEnd)
-		fPos = vEnd + 1
+		val vRaw = mXml.substring(mPos, vEnd)
+		mPos = vEnd + 1
 		return decodeEntities(vRaw)
 	}
 

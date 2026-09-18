@@ -38,15 +38,15 @@ import sdl3.SDL_Metal_GetLayer
    (cheap - the DirectContext + device + queue persist). */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
-    private var fDevice: MTLDeviceProtocol? = null
-    private var fQueue: MTLCommandQueueProtocol? = null
-    private var fLayer: CAMetalLayer? = null
-    private var fContext: DirectContext? = null
-    private var fSurface: Surface? = null
-    private var fRT: BackendRenderTarget? = null
-    private var fDrawable: CAMetalDrawableProtocol? = null
-    private var fWidth = 0
-    private var fHeight = 0
+    private var mDevice: MTLDeviceProtocol? = null
+    private var mQueue: MTLCommandQueueProtocol? = null
+    private var mLayer: CAMetalLayer? = null
+    private var mContext: DirectContext? = null
+    private var mSurface: Surface? = null
+    private var mRT: BackendRenderTarget? = null
+    private var mDrawable: CAMetalDrawableProtocol? = null
+    private var mWidth = 0
+    private var mHeight = 0
 
     fun init(): Boolean {
         val vView = backend.metalView ?: run {
@@ -84,22 +84,22 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
             return false
         }
 
-        fDevice = vDevice
-        fQueue = vQueue
-        fLayer = vLayer
-        fContext = vContext
+        mDevice = vDevice
+        mQueue = vQueue
+        mLayer = vLayer
+        mContext = vContext
         return true
     }
 
     override val canvas: Canvas
-        get() = requireNotNull(fSurface) { "SkiaMetalBridge not initialised" }.canvas
+        get() = requireNotNull(mSurface) { "SkiaMetalBridge not initialised" }.canvas
 
     override fun ensureSize(inWidth: Int, inHeight: Int): Boolean {
         if (inWidth <= 0 || inHeight <= 0) return false
-        val vLayer = fLayer ?: return false
-        val vContext = fContext ?: return false
+        val vLayer = mLayer ?: return false
+        val vContext = mContext ?: return false
 
-        if (inWidth != fWidth || inHeight != fHeight) {
+        if (inWidth != mWidth || inHeight != mHeight) {
             vLayer.drawableSize = CGSizeMake(inWidth.toDouble(), inHeight.toDouble())
             // Keep contentsScale in lock-step with the live backing density.
             // Setting it only in init() can leave it stale at 1.0 when the
@@ -107,18 +107,18 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
             // drawable then gets downscaled to the layer's logical backing and
             // re-upscaled by the display, softening text and aliasing edges.
             vLayer.contentsScale = backend.pixelDensity.toDouble()
-            fWidth = inWidth
-            fHeight = inHeight
+            mWidth = inWidth
+            mHeight = inHeight
             println("SkiaMetalBridge: drawable ${inWidth}x${inHeight} @ contentsScale ${backend.pixelDensity}")
         }
 
         // Per-frame: drop the previous frame's drawable wrappers and grab a
         // fresh one. nextDrawable() may block (~16ms vsync) when 3 drawables
         // are already in flight - that's the natural pacing mechanism.
-        fSurface?.close()
-        fRT?.close()
-        fSurface = null
-        fRT = null
+        mSurface?.close()
+        mRT?.close()
+        mSurface = null
+        mRT = null
 
         val vDrawable = vLayer.nextDrawable() ?: run {
             println("SkiaMetalBridge: nextDrawable returned null")
@@ -142,38 +142,38 @@ internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
             println("SkiaMetalBridge: Surface.makeFromBackendRenderTarget returned null")
             return false
         }
-        fRT = vRT
-        fSurface = vSurface
-        fDrawable = vDrawable
+        mRT = vRT
+        mSurface = vSurface
+        mDrawable = vDrawable
         return true
     }
 
     override fun present() {
-        val vSurface = fSurface ?: return
-        val vQueue = fQueue ?: return
-        val vDrawable = fDrawable ?: return
+        val vSurface = mSurface ?: return
+        val vQueue = mQueue ?: return
+        val vDrawable = mDrawable ?: return
         vSurface.flushAndSubmit()
         val vCommandBuffer = vQueue.commandBuffer() ?: return
         vCommandBuffer.presentDrawable(vDrawable)
         vCommandBuffer.commit()
-        fDrawable = null
+        mDrawable = null
     }
 
-    override fun snapshot(): Image? = fSurface?.makeImageSnapshot()
+    override fun snapshot(): Image? = mSurface?.makeImageSnapshot()
 
     override fun snapshotBgra(): Triple<Int, Int, ByteArray>? =
-        readBackBgra(fSurface, fWidth, fHeight)
+        readBackBgra(mSurface, mWidth, mHeight)
 
     override fun destroy() {
-        fSurface?.close()
-        fRT?.close()
-        fContext?.close()
-        fSurface = null
-        fRT = null
-        fContext = null
-        fLayer = null
-        fQueue = null
-        fDevice = null
-        fDrawable = null
+        mSurface?.close()
+        mRT?.close()
+        mContext?.close()
+        mSurface = null
+        mRT = null
+        mContext = null
+        mLayer = null
+        mQueue = null
+        mDevice = null
+        mDrawable = null
     }
 }

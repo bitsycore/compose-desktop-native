@@ -22,7 +22,7 @@ macOS/Linux). Same TLS stack as the client-cert path in CurlMtls.kt.
 run() is a suspend fun - call it off the UI dispatcher. */
 class HttpRunner {
 
-    private val fClient = createApiHttpClient()
+    private val mClient = createApiHttpClient()
 
     init {
         // Clear any temporary client certs a prior crash left in the Windows
@@ -36,7 +36,7 @@ class HttpRunner {
         if (inReq.hasClientCert) return curlSendWithClientCert(inReq)
         val vMark = TimeSource.Monotonic.markNow()
         return try {
-            val vResp: HttpResponse = fClient.request(inReq.url.trim()) {
+            val vResp: HttpResponse = mClient.request(inReq.url.trim()) {
                 method = HttpMethod.parse(inReq.method.name)
                 inReq.params
                     .filter { it.enabled && it.key.isNotBlank() }
@@ -113,7 +113,7 @@ class HttpRunner {
         }
     }
 
-    fun close() = fClient.close()
+    fun close() = mClient.close()
 }
 
 /** Heuristic for a non-text body: textual content types (text, json, xml, html,

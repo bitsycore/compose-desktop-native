@@ -22,10 +22,10 @@ import com.compose.sdl.LocalComposeNativeWindow
    own id, so closing one removes exactly THAT id (a count would always drop the
    last-declared window, closing the wrong one). */
 val ExtraWindows = mutableStateListOf<Int>()
-private var fNextExtraWindowId = 1
+private var mNextExtraWindowId = 1
 
 fun openExtraWindow() {
-    ExtraWindows.add(fNextExtraWindowId++)
+    ExtraWindows.add(mNextExtraWindowId++)
 }
 
 @Composable

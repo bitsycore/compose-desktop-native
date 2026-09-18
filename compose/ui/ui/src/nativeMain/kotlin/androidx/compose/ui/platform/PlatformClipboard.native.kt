@@ -103,14 +103,14 @@ private const val kImageMime = "image/png"
 // call with an image). Held on nativeHeap because SDL keeps the callback alive
 // until the clipboard is cleared or another SDL_SetClipboardData replaces us -
 // a Kotlin heap reference would break as soon as the caller's coroutine
-// returned. Read by [fClipboardDataCallback], freed by [fClipboardCleanupCallback].
-private var fOutgoingImagePtr: CPointer<ByteVar>? = null
-private var fOutgoingImageSize: Int = 0
+// returned. Read by [mClipboardDataCallback], freed by [mClipboardCleanupCallback].
+private var mOutgoingImagePtr: CPointer<ByteVar>? = null
+private var mOutgoingImageSize: Int = 0
 
 // SDL fires this on the main event thread when another app asks the clipboard
 // for a MIME we advertised. We serve back the pointer + size we stashed at
 // SDL_SetClipboardData time. Return NULL if the MIME doesn't match.
-private val fClipboardDataCallback = staticCFunction {
+private val mClipboardDataCallback = staticCFunction {
 		userdata: COpaquePointer?,
 		mimeType: CPointer<ByteVar>?,
 		sizePtr: CPointer<platform.posix.size_tVar>?,
@@ -118,20 +118,20 @@ private val fClipboardDataCallback = staticCFunction {
 	userdata.hashCode()                                             // unused
 	val vRequested = mimeType?.toKString() ?: return@staticCFunction null
 	if (vRequested != kImageMime) return@staticCFunction null
-	val vPtr = fOutgoingImagePtr ?: return@staticCFunction null
-	sizePtr?.pointed?.value = fOutgoingImageSize.toULong()
+	val vPtr = mOutgoingImagePtr ?: return@staticCFunction null
+	sizePtr?.pointed?.value = mOutgoingImageSize.toULong()
 	vPtr as COpaquePointer
 }
 
 // SDL calls this when the clipboard we set is cleared or overwritten (by us
 // or another app). Frees the nativeHeap allocation.
-private val fClipboardCleanupCallback = staticCFunction {
+private val mClipboardCleanupCallback = staticCFunction {
 		userdata: COpaquePointer?,
 	->
 	userdata.hashCode()                                             // unused
-	fOutgoingImagePtr?.let { nativeHeap.free(it.rawValue) }
-	fOutgoingImagePtr = null
-	fOutgoingImageSize = 0
+	mOutgoingImagePtr?.let { nativeHeap.free(it.rawValue) }
+	mOutgoingImagePtr = null
+	mOutgoingImageSize = 0
 	Unit
 }
 
@@ -172,19 +172,19 @@ private fun sdlReadImage(): ByteArray? = memScoped {
 private fun sdlWriteImage(bytes: ByteArray) {
 	// Free any previously-held buffer proactively (the cleanup callback also
 	// fires from SDL, but doing it eagerly here handles same-thread re-set).
-	fOutgoingImagePtr?.let { nativeHeap.free(it.rawValue) }
+	mOutgoingImagePtr?.let { nativeHeap.free(it.rawValue) }
 
 	val vPtr = nativeHeap.allocArray<ByteVar>(bytes.size)
 	for (i in bytes.indices) vPtr[i] = bytes[i]
-	fOutgoingImagePtr = vPtr
-	fOutgoingImageSize = bytes.size
+	mOutgoingImagePtr = vPtr
+	mOutgoingImageSize = bytes.size
 
 	memScoped {
 		val vMimeArray = allocArray<CPointerVar<ByteVar>>(1)
 		vMimeArray[0] = kImageMime.cstr.ptr
 		SDL_SetClipboardData(
-			fClipboardDataCallback,
-			fClipboardCleanupCallback,
+			mClipboardDataCallback,
+			mClipboardCleanupCallback,
 			null,
 			vMimeArray,
 			1.toULong(),

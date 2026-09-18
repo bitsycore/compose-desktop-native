@@ -40,34 +40,34 @@ class ComposeNativeWindow constructor(
     val gpuMode: GpuMode,
     initialTitle: String,
 ) {
-    private var fWidth by mutableStateOf(backend.windowWidth)
-    private var fHeight by mutableStateOf(backend.windowHeight)
-    private var fPixelWidth by mutableStateOf(backend.pixelWidth)
-    private var fPixelHeight by mutableStateOf(backend.pixelHeight)
-    private var fTitle by mutableStateOf(initialTitle)
-    private var fMinimized by mutableStateOf(false)
-    private var fMaximized by mutableStateOf(false)
-    private var fFullscreen by mutableStateOf(false)
-    private var fCloseRequested by mutableStateOf(false)
-    private var fFps by mutableStateOf(0)
+    private var mWidth by mutableStateOf(backend.windowWidth)
+    private var mHeight by mutableStateOf(backend.windowHeight)
+    private var mPixelWidth by mutableStateOf(backend.pixelWidth)
+    private var mPixelHeight by mutableStateOf(backend.pixelHeight)
+    private var mTitle by mutableStateOf(initialTitle)
+    private var mMinimized by mutableStateOf(false)
+    private var mMaximized by mutableStateOf(false)
+    private var mFullscreen by mutableStateOf(false)
+    private var mCloseRequested by mutableStateOf(false)
+    private var mFps by mutableStateOf(0)
 
     // ============
     //  State
 
     /** Logical (point) width - the same units layout uses. */
-    val width: Int get() = fWidth
-    val height: Int get() = fHeight
+    val width: Int get() = mWidth
+    val height: Int get() = mHeight
     /** Physical (pixel) back-buffer size; on Retina this is `width * pixelDensity`. */
-    val pixelWidth: Int get() = fPixelWidth
-    val pixelHeight: Int get() = fPixelHeight
-    val title: String get() = fTitle
-    val isMinimized: Boolean get() = fMinimized
-    val isMaximized: Boolean get() = fMaximized
-    val isFullscreen: Boolean get() = fFullscreen
+    val pixelWidth: Int get() = mPixelWidth
+    val pixelHeight: Int get() = mPixelHeight
+    val title: String get() = mTitle
+    val isMinimized: Boolean get() = mMinimized
+    val isMaximized: Boolean get() = mMaximized
+    val isFullscreen: Boolean get() = mFullscreen
     val pixelDensity: Float get() = backend.pixelDensity
     /** Frames per second, refreshed ~once a second by the render loop. Snapshot-
        backed, so reading it in a composable recomposes when it changes. */
-    val fps: Int get() = fFps
+    val fps: Int get() = mFps
 
     /** Human-readable name of the rendering pipeline:
         "Skia / Metal", "Skia / OpenGL", "Skia / CPU raster". */
@@ -85,7 +85,7 @@ class ComposeNativeWindow constructor(
     fun setTitle(inTitle: String) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
         SDL_SetWindowTitle(vWindow, inTitle)
-        fTitle = inTitle
+        mTitle = inTitle
     }
 
     /** Logical size in points - SDL fires AppEvent.WindowResized which
@@ -97,25 +97,25 @@ class ComposeNativeWindow constructor(
 
     fun minimize() {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_MinimizeWindow(vWindow); fMinimized = true
+        SDL_MinimizeWindow(vWindow); mMinimized = true
     }
 
     fun maximize() {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_MaximizeWindow(vWindow); fMaximized = true; fMinimized = false
+        SDL_MaximizeWindow(vWindow); mMaximized = true; mMinimized = false
     }
 
     fun restore() {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_RestoreWindow(vWindow); fMaximized = false; fMinimized = false
+        SDL_RestoreWindow(vWindow); mMaximized = false; mMinimized = false
     }
 
     fun setFullscreen(inFullscreen: Boolean) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_SetWindowFullscreen(vWindow, inFullscreen); fFullscreen = inFullscreen
+        SDL_SetWindowFullscreen(vWindow, inFullscreen); mFullscreen = inFullscreen
     }
 
-    fun toggleFullscreen() = setFullscreen(!fFullscreen)
+    fun toggleFullscreen() = setFullscreen(!mFullscreen)
 
     fun raise() {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
@@ -130,37 +130,37 @@ class ComposeNativeWindow constructor(
     //  `transparent` is absent on purpose: SDL needs SDL_WINDOW_TRANSPARENT at
     //  creation and offers no setter, so it is a construction-time attribute.
 
-    private var fUndecorated = false
-    private var fResizable = true
-    private var fAlwaysOnTop = false
-    private var fFocusable = true
-    private var fEnabled = true
+    private var mUndecorated = false
+    private var mResizable = true
+    private var mAlwaysOnTop = false
+    private var mFocusable = true
+    private var mEnabled = true
 
-    val isUndecorated: Boolean get() = fUndecorated
-    val isResizable: Boolean get() = fResizable
-    val isAlwaysOnTop: Boolean get() = fAlwaysOnTop
-    val isFocusable: Boolean get() = fFocusable
+    val isUndecorated: Boolean get() = mUndecorated
+    val isResizable: Boolean get() = mResizable
+    val isAlwaysOnTop: Boolean get() = mAlwaysOnTop
+    val isFocusable: Boolean get() = mFocusable
 
     /** False hides the window's title bar and border. */
     fun setUndecorated(inUndecorated: Boolean) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_SetWindowBordered(vWindow, !inUndecorated); fUndecorated = inUndecorated
+        SDL_SetWindowBordered(vWindow, !inUndecorated); mUndecorated = inUndecorated
     }
 
     fun setResizable(inResizable: Boolean) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_SetWindowResizable(vWindow, inResizable); fResizable = inResizable
+        SDL_SetWindowResizable(vWindow, inResizable); mResizable = inResizable
     }
 
     fun setAlwaysOnTop(inAlwaysOnTop: Boolean) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_SetWindowAlwaysOnTop(vWindow, inAlwaysOnTop); fAlwaysOnTop = inAlwaysOnTop
+        SDL_SetWindowAlwaysOnTop(vWindow, inAlwaysOnTop); mAlwaysOnTop = inAlwaysOnTop
     }
 
     /** False stops the window taking keyboard focus when clicked or raised. */
     fun setFocusable(inFocusable: Boolean) {
         val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
-        SDL_SetWindowFocusable(vWindow, inFocusable); fFocusable = inFocusable
+        SDL_SetWindowFocusable(vWindow, inFocusable); mFocusable = inFocusable
     }
 
     /** Window opacity, 0f (fully transparent) to 1f. Needs a compositing window
@@ -173,35 +173,35 @@ class ComposeNativeWindow constructor(
     /** True while the window accepts input. A disabled window still renders and
        repaints; it just drops pointer / keyboard / text / wheel / drop events,
        which is how Compose Desktop's `enabled = false` behaves. */
-    val isEnabled: Boolean get() = fEnabled
+    val isEnabled: Boolean get() = mEnabled
 
-    fun setEnabled(inEnabled: Boolean) { fEnabled = inEnabled }
+    fun setEnabled(inEnabled: Boolean) { mEnabled = inEnabled }
 
     /** Asks composeWindow's main loop to break out at the next frame.
        Same effect as the user closing the window via the OS. Bypasses any
        onCloseRequest handler - this is the "really quit now" path. */
-    fun close() { fCloseRequested = true }
+    fun close() { mCloseRequested = true }
 
     // ============
     //  Close interception
 
-    private var fOnCloseRequest: (() -> Boolean)? = null
+    private var mOnCloseRequest: (() -> Boolean)? = null
 
     /** Register a handler invoked when the user tries to close the window (OS
        close button / Quit). Return true to let the close proceed, false to veto
        it (e.g. to show an "unsaved changes" dialog first, then call close()
        once the user confirms). Pass null to clear. */
-    fun setOnCloseRequest(inHandler: (() -> Boolean)?) { fOnCloseRequest = inHandler }
+    fun setOnCloseRequest(inHandler: (() -> Boolean)?) { mOnCloseRequest = inHandler }
 
     // ============
     //  Global key shortcuts
 
-    private var fOnKeyShortcut: ((KeyEvent) -> Boolean)? = null
+    private var mOnKeyShortcut: ((KeyEvent) -> Boolean)? = null
 
     /** Register a handler for key events the focused node didn't consume - for
        app-wide shortcuts (Ctrl+S, etc.). Receives every unconsumed key (and all
        keys when nothing is focused). Return true if handled. Pass null to clear. */
-    fun setOnKeyShortcut(inHandler: ((KeyEvent) -> Boolean)?) { fOnKeyShortcut = inHandler }
+    fun setOnKeyShortcut(inHandler: ((KeyEvent) -> Boolean)?) { mOnKeyShortcut = inHandler }
 
     // ============
     //  Framework hooks - driven by composeWindow's main loop (which lives in
@@ -209,24 +209,24 @@ class ComposeNativeWindow constructor(
     //  intended for app code.
 
     fun onResized() {
-        fWidth = backend.windowWidth
-        fHeight = backend.windowHeight
-        fPixelWidth = backend.pixelWidth
-        fPixelHeight = backend.pixelHeight
+        mWidth = backend.windowWidth
+        mHeight = backend.windowHeight
+        mPixelWidth = backend.pixelWidth
+        mPixelHeight = backend.pixelHeight
     }
 
     /** Called by the main loop ~once a second with the measured frame rate. */
-    fun updateFps(inFps: Int) { fFps = inFps }
+    fun updateFps(inFps: Int) { mFps = inFps }
 
-    val isCloseRequested: Boolean get() = fCloseRequested
+    val isCloseRequested: Boolean get() = mCloseRequested
 
     /** Driven by composeWindow's main loop on an OS close / Quit event. Returns
        true if the close should proceed (no handler, or the handler allowed it). */
-    fun requestCloseFromUser(): Boolean = fOnCloseRequest?.invoke() ?: true
+    fun requestCloseFromUser(): Boolean = mOnCloseRequest?.invoke() ?: true
 
     /** Driven by composeWindow's main loop for keys the focused node didn't
        consume. Returns true if the shortcut handler handled it. */
-    fun dispatchKeyShortcut(inEvent: KeyEvent): Boolean = fOnKeyShortcut?.invoke(inEvent) ?: false
+    fun dispatchKeyShortcut(inEvent: KeyEvent): Boolean = mOnKeyShortcut?.invoke(inEvent) ?: false
 
     // ============
     //  Raw SDL escape hatch

@@ -36,16 +36,16 @@ import sdl3.SDL_GetCurrentThreadID
    writes land at the loop's drainPending(), observable on the same frame. */
 internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 
-	private val fQueue = Channel<Runnable>(Channel.UNLIMITED)
+	private val mQueue = Channel<Runnable>(Channel.UNLIMITED)
 
 	// The SDL main thread - the dispatcher is constructed by nativeComposeApp
 	// on the thread that then runs the loop.
-	private val fMainThreadId = SDL_GetCurrentThreadID()
+	private val mMainThreadId = SDL_GetCurrentThreadID()
 
 	override val immediate: MainCoroutineDispatcher = ImmediateDispatcher()
 
 	override fun dispatch(context: CoroutineContext, block: Runnable) {
-		fQueue.trySend(block)
+		mQueue.trySend(block)
 	}
 
 	/** Drains all pending tasks. Called from the SDL3 main loop once per
@@ -54,7 +54,7 @@ internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 	   composition. */
 	fun drainPending() {
 		while (true) {
-			val vTask = fQueue.tryReceive().getOrNull() ?: break
+			val vTask = mQueue.tryReceive().getOrNull() ?: break
 			runCatching { vTask.run() }.onFailure { vErr ->
 				println("Sdl3MainDispatcher: dispatched task threw: ${vErr.message}")
 			}
@@ -64,7 +64,7 @@ internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 	/** Closes the queue. After this, dispatch() drops new posts silently.
 	   Called from nativeComposeWindow as part of shutdown. */
 	fun close() {
-		fQueue.close()
+		mQueue.close()
 	}
 
 	override fun toString(): String = "Sdl3MainDispatcher"
@@ -75,10 +75,10 @@ internal class Sdl3MainDispatcher : MainCoroutineDispatcher() {
 		override val immediate: MainCoroutineDispatcher get() = this
 
 		override fun isDispatchNeeded(context: CoroutineContext): Boolean =
-			SDL_GetCurrentThreadID() != fMainThreadId
+			SDL_GetCurrentThreadID() != mMainThreadId
 
 		override fun dispatch(context: CoroutineContext, block: Runnable) {
-			fQueue.trySend(block)
+			mQueue.trySend(block)
 		}
 
 		override fun toString(): String = "Sdl3MainDispatcher.immediate"
