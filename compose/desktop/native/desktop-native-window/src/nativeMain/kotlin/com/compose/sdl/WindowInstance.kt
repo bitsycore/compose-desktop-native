@@ -1,0 +1,575 @@
+@file:OptIn(
+	androidx.compose.ui.InternalComposeUiApi::class,
+	androidx.compose.runtime.InternalComposeApi::class,
+)
+
+package com.compose.sdl
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerEventType
+import com.compose.sdl.node.ComposeRootHost
+import com.compose.sdl.res.currentImageLoader
+import com.compose.sdl.window.LocalPopupHost
+import com.compose.sdl.window.PopupLayer
+import com.compose.sdl.window.createPopupHostState
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import sdl3.SDL_GetTicks
+import sdl3.SDL_SetWindowTitle
+
+// ==================
+// MARK: WindowInstance - one SDL window + renderer + composition
+// ==================
+
+internal class WindowInstance(
+	private val initialTitle: String,
+	inWidth: Int,
+	inHeight: Int,
+	inGpu: GpuMode,
+	inIcon: AppWindowIcon?,
+	private val attrs: WindowAttributes,
+	private val onFrame: ((RenderBackend, Int) -> Boolean)?,
+	// Window-level key handlers, read through holders so Window() recompositions
+	// with new lambdas take effect without recreating the window.
+	private val previewKeyHandler: () -> ((KeyEvent) -> Boolean),
+	private val keyHandler: () -> ((KeyEvent) -> Boolean),
+	private val contentHolder: () -> (@Composable ComposeWindowScope.() -> Unit),
+) {
+	// Resolved renderer mode. `var` so init() can fall back GPU → CPU raster when
+	// a Skia GPU context can't be created (RDP / headless / missing GL driver).
+	private var gpuMode = if (inGpu is GpuMode.Auto) rendererPreferredGpuMode() else inGpu
+	private val initialWidth = inWidth
+	private val initialHeight = inHeight
+	private val icon = inIcon
+	// Assigned by init() from the first backend that comes up (see makeBackend()).
+	lateinit var backend: SDL3Backend
+		private set
+	private var renderBackend: RenderBackend? = null
+	lateinit var host: ComposeRootHost
+		private set
+	lateinit var facade: ComposeNativeWindow
+		private set
+	private var popupHost: com.compose.sdl.window.PopupHostState? = null
+
+	val frameClock = SDL3FrameClock()
+	private var recomposer: Recomposer? = null
+	private var recomposeJob: Job? = null
+	private var composition: Composition? = null
+
+	// Set by Window(); the compat wrapper points it at exitApplication().
+	var onCloseRequest: () -> Unit = {}
+	var closeDispatched = false
+
+	// Render-on-demand flag (see the pre-multi-window loop): set by events,
+	// state writes (global observer), resize, expose.
+	var needsFrame = true
+
+	// Hover refresh: last pointer position in PIXEL space, re-dispatched as a
+	// synthetic Move after layout so items scrolled under the cursor hover.
+	private var lastMouseX = -1f
+	private var lastMouseY = -1f
+	private var hasMousePos = false
+
+	private var frameIndex = 0
+	private var fpsEma = 0.0
+	private var fpsLastFrameMs = SDL_GetTicks()
+	private var fpsLastTitleMs = 0uL
+
+	// Escape → back (upstream desktop's BackNavigationEventInput): unconsumed
+	// Escape completes a back navigation on THIS window's dispatcher.
+	private val navigationEventOwner = object : androidx.navigationevent.NavigationEventDispatcherOwner {
+		override val navigationEventDispatcher = androidx.navigationevent.NavigationEventDispatcher()
+	}
+	private val backNavigationInput = BackNavigationInput()
+
+	// WINDOW-scoped architecture-components owner (Lifecycle + ViewModelStore +
+	// SavedStateRegistry) - the same trio upstream desktop's
+	// DefaultArchitectureComponentsOwner supplies through the window
+	// PlatformContext (compose/ui skikoMain PlatformOwnerProvider.skiko.kt).
+	// viewModel(), SavedStateHandle plumbing and navigation3's
+	// rememberViewModelStoreNavEntryDecorator all resolve their parent owners
+	// from this; destroy() moves it to DESTROYED and clears the store.
+	private val architectureOwner = WindowArchitectureOwner()
+
+	// Window focus / visibility → Lifecycle.State, Compose Desktop's mapping:
+	// focused → RESUMED, visible unfocused → STARTED, hidden/minimised →
+	// CREATED. Starts focused+visible (SDL fires FOCUS_GAINED right after
+	// creation anyway; headless probe runs simply stay RESUMED).
+	private var windowFocused = true
+	private var windowVisible = true
+
+	fun onActivationEvent(inEvent: AppEvent.WindowActivation) {
+		inEvent.focused?.let { windowFocused = it }
+		inEvent.visible?.let { windowVisible = it }
+		if (::host.isInitialized) host.setWindowFocused(windowFocused)
+		architectureOwner.setLifecycleState(
+			when {
+				!windowVisible -> androidx.lifecycle.Lifecycle.State.CREATED
+				windowFocused -> androidx.lifecycle.Lifecycle.State.RESUMED
+				else -> androidx.lifecycle.Lifecycle.State.STARTED
+			}
+		)
+		// Shown / restored / focus-gained also invalidate the contents - keep
+		// the pre-lifecycle RedrawNeeded behaviour of these SDL events.
+		needsFrame = true
+	}
+
+	// Creates + initialises an SDL3Backend for [mode] and its RenderBackend. On
+	// success commits `backend` and returns the renderer; else tears everything
+	// down and returns null so the caller can retry with a different mode.
+	private fun makeBackend(mode: GpuMode): RenderBackend? {
+		val vBackend = SDL3Backend(
+			initialTitle, initialWidth, initialHeight, gpuMode = mode,
+			iconLightResourcePaths = icon?.light ?: emptyList(),
+			iconDarkResourcePaths = icon?.dark ?: emptyList(),
+			undecorated = attrs.undecorated,
+			transparent = attrs.transparent,
+			resizable = attrs.resizable,
+			alwaysOnTop = attrs.alwaysOnTop,
+			focusable = attrs.focusable,
+		)
+		if (!vBackend.init()) {
+			vBackend.destroy(inQuitSdl = false)
+			return null
+		}
+		vBackend.updateWindowSize()
+		val vRender = createRenderBackend(vBackend, mode)
+		if (vRender == null || !vRender.ensureSize(vBackend.pixelWidth, vBackend.pixelHeight)) {
+			vRender?.destroy()
+			vBackend.destroy(inQuitSdl = false)
+			return null
+		}
+		backend = vBackend
+		return vRender
+	}
+
+	fun init(inScope: CoroutineScope): Boolean {
+		// Try the resolved gpuMode; if it's a Skia GPU mode whose context/bridge
+		// can't come up (RDP / headless / missing GL driver), fall back once to
+		// CPU raster (Software) so the window still opens instead of failing.
+		var vRender = makeBackend(gpuMode)
+		if (vRender == null && gpuMode is GpuMode.Skia) {
+			println("GPU renderer ($gpuMode) unavailable - falling back to CPU raster (Software)")
+			gpuMode = GpuMode.Software
+			vRender = makeBackend(gpuMode)
+		}
+		if (vRender == null) {
+			println("Failed to init render backend")
+			return false
+		}
+		renderBackend = vRender
+
+		host = ComposeRootHost(inDensity = backend.pixelDensity)
+		host.attach()
+		// A layer whose content changed (OwnedLayer.invalidate) schedules a frame
+		// even when nothing else (recompose / relayout) is pending - retained layers
+		// need this so a draw-only state change still repaints.
+		host.setInvalidationCallback { needsFrame = true }
+		facade = ComposeNativeWindow(backend, gpuMode, initialTitle)
+		// Mirror the creation flags into the facade so isResizable & co. read true
+		// from the start and a later Window() update only fires on a real change.
+		applyAttributes(attrs)
+		navigationEventOwner.navigationEventDispatcher.addInput(backNavigationInput)
+
+		// The render-bridge globals must point at THIS window's renderer while
+		// its content composes/measures (first composition happens inside
+		// setContent below).
+		installGlobals()
+
+		// Effect context for this window's composition - the screenshot flag injects the
+		// infinite-animation-cancelling policy (see disableInfiniteAnimations above).
+		var vEffectContext = inScope.coroutineContext + frameClock
+		if (disableInfiniteAnimations) vEffectContext += CancelInfiniteAnimationsPolicy
+		val vRecomposer = Recomposer(vEffectContext)
+		recomposer = vRecomposer
+		recomposeJob = inScope.launch(frameClock) { vRecomposer.runRecomposeAndApplyChanges() }
+		val vComposition = Composition(host.applier, vRecomposer)
+		composition = vComposition
+
+		val vUriHandler = object : androidx.compose.ui.platform.UriHandler {
+			override fun openUri(uri: String) { openUrl(uri) }
+		}
+		val vPopupHost = createPopupHostState()
+		popupHost = vPopupHost
+		val vWindowScope = object : ComposeWindowScope {
+			override val window: ComposeNativeWindow = facade
+		}
+
+		vComposition.setContent {
+			CompositionLocalProvider(
+				LocalComposeNativeWindow provides facade,
+				LocalPopupHost provides vPopupHost,
+				// Upstream vendored CompositionLocals.kt declares each of these as
+				// `staticCompositionLocalOf<T> { noLocalProvidedFor("…") }` - reading
+				// one without a Provider throws. Seed them all from the ComposeOwner.
+				androidx.compose.ui.platform.LocalDensity provides host.density,
+				androidx.compose.ui.platform.LocalLayoutDirection provides host.layoutDirection,
+				androidx.compose.ui.platform.LocalFocusManager provides host.focusManager,
+				androidx.compose.ui.platform.LocalGraphicsContext provides host.graphicsContext,
+				androidx.compose.ui.platform.LocalViewConfiguration provides host.viewConfiguration,
+				androidx.compose.ui.platform.LocalInputModeManager provides host.inputModeManager,
+				androidx.compose.ui.platform.LocalHapticFeedback provides host.hapticFeedback,
+				androidx.compose.ui.platform.LocalTextToolbar provides host.textToolbar,
+				androidx.compose.ui.platform.LocalWindowInfo provides host.windowInfo,
+				androidx.compose.ui.platform.LocalSoftwareKeyboardController provides host.softwareKeyboardController,
+				androidx.compose.ui.platform.LocalClipboard provides
+					androidx.compose.ui.platform.platformClipboard(),
+				androidx.compose.ui.platform.LocalFontFamilyResolver provides
+					com.compose.sdl.text.font.projectFontFamilyResolver,
+				androidx.compose.ui.platform.LocalUriHandler provides vUriHandler,
+				// Desktop windows have no system bars / notch / IME insets - the
+				// interface's all-zero defaults are exactly right.
+				androidx.compose.ui.platform.LocalPlatformWindowInsets provides
+					object : androidx.compose.ui.platform.PlatformWindowInsets {},
+				// The window's architecture-components owner backs all three arch
+				// locals, exactly like upstream desktop's window PlatformContext:
+				// - LocalLifecycleOwner: RESUMED for the window's whole life;
+				//   lifecycle-aware content (NavDisplay, rememberLifecycleOwner, …)
+				//   errors without it.
+				// - LocalViewModelStoreOwner: window-scoped ViewModels (google
+				//   lifecycle-viewmodel-compose's local is a plain composition
+				//   local; the JB HostDefault route doesn't exist in the google
+				//   artifacts this port ships).
+				// - LocalSavedStateRegistryOwner: SavedStateHandle / rememberSaveable
+				//   registry parent (nav3's ViewModelStoreNavEntryDecorator requires it).
+				androidx.lifecycle.compose.LocalLifecycleOwner provides architectureOwner,
+				androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner provides architectureOwner,
+				androidx.savedstate.compose.LocalSavedStateRegistryOwner provides architectureOwner,
+				// Runtime-level host defaults - this window's navigation-event
+				// owner (SearchBar / sheets back plumbing). The viewmodel store
+				// is provided through the plain LocalViewModelStoreOwner above
+				// instead: the google lifecycle artifacts this port ships have no
+				// HostDefault key for it (that mechanism is JB-variant-only).
+				androidx.compose.runtime.LocalHostDefaultProvider provides
+					remember {
+						object : androidx.compose.runtime.HostDefaultProvider {
+							@Suppress("UNCHECKED_CAST")
+							override fun <T> getHostDefault(key: androidx.compose.runtime.HostDefaultKey<T>): T = when (key) {
+								androidx.navigationevent.compose.NavigationEventDispatcherOwnerHostDefaultKey -> navigationEventOwner
+								else -> null
+							} as T
+						}
+					},
+			) {
+				// Seed the :ui-internal LocalPointerIconService so Modifier.pointerHoverIcon
+				// drives the SDL cursor (the local + service type can't cross the module boundary).
+				host.ProvidePointerIconService {
+					Box(modifier = Modifier.fillMaxSize()) {
+						// Read through the holder so Window() recompositions with a
+						// new content lambda propagate into this composition.
+						val vContent = contentHolder()
+						with(vWindowScope) { vContent() }
+						PopupLayer(vPopupHost)
+					}
+				}
+			}
+		}
+		// First composition done (setContent is synchronous) - promote the
+		// window lifecycle from CREATED to the focus/visibility-derived state.
+		// Composition itself runs at CREATED so enableSavedStateHandles()
+		// callers see a legal state, mirroring upstream desktop's
+		// compose-first-resume-after ordering.
+		architectureOwner.setLifecycleState(
+			when {
+				!windowVisible -> androidx.lifecycle.Lifecycle.State.CREATED
+				windowFocused -> androidx.lifecycle.Lifecycle.State.RESUMED
+				else -> androidx.lifecycle.Lifecycle.State.STARTED
+			}
+		)
+		return true
+	}
+
+	/** Points the render-bridge globals (text measurer / image loader /
+	   viewport) at this window's renderer. Must be called before composing,
+	   measuring, or drawing this window's tree. */
+	fun installGlobals() {
+		val vRender = renderBackend ?: return
+		currentImageLoader = vRender.imageLoader
+		com.compose.sdl.text.currentViewportWidth = backend.pixelWidth
+		com.compose.sdl.text.currentViewportHeight = backend.pixelHeight
+		// Register bundled generic fonts (FontFamily.Monospace → NotoSansMono) once
+		// data.kres is loadable; idempotent, no-op if the font isn't bundled.
+		com.compose.sdl.text.registerGenericFonts()
+		// Position the OS IME candidate window the moment a field in THIS window
+		// gains focus, not only on the first TEXT_EDITING event (repointed per
+		// window here so multi-window focus targets the right SDL window).
+		com.compose.sdl.text.input.ImeBridge.onSessionActiveChange = { active ->
+			if (active) updateImeArea()
+		}
+	}
+
+	// ============
+	//  Event handling (loop-routed, per window)
+
+	fun onPointerEvent(inEvent: AppEvent.Pointer) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		val vType = when (inEvent.event.type) {
+			PointerEventType.Press -> 1
+			PointerEventType.Release -> 2
+			else -> 0
+		}
+		val vBtn = when (inEvent.event.button) {
+			PointerButton.Secondary -> 1
+			PointerButton.Tertiary -> 2
+			else -> 0
+		}
+		// SDL3 delivers mouse coords in logical points on HiDPI - multiply by
+		// DPR so hit-testing lands in the pixel space layout uses.
+		val vDpr = backend.pixelDensity
+		val vPx = inEvent.event.x * vDpr
+		val vPy = inEvent.event.y * vDpr
+		if (inEvent.event.type == PointerEventType.Press) {
+			popupHost?.notifyOutsidePress(vPx.toInt(), vPy.toInt())
+		}
+		host.onPointerRaw(vPx, vPy, vType, vBtn, SDL_GetTicks().toLong())
+		lastMouseX = vPx
+		lastMouseY = vPy
+		hasMousePos = true
+	}
+
+	/** Pointer left the window (SDL_EVENT_WINDOW_MOUSE_LEAVE). Stop the per-frame
+	   synthetic hover re-dispatch and fire one Exit at the last position so a
+	   hovered widget clears its highlight instead of sticking forever. */
+	fun onPointerExit() {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		if (hasMousePos) {
+			host.onPointerRaw(lastMouseX, lastMouseY, 3, 0, SDL_GetTicks().toLong())
+		}
+		hasMousePos = false
+	}
+
+	fun onWheelEvent(inEvent: AppEvent.MouseWheel) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		val vDpr = backend.pixelDensity
+		host.onWheel(inEvent.x * vDpr, inEvent.y * vDpr, inEvent.deltaX, inEvent.deltaY, SDL_GetTicks().toLong())
+	}
+
+	fun onKeyEvent(inEvent: AppEvent.Key) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		// Compose Desktop's order: window preview → focused content → window
+		// onKeyEvent → app shortcut handler → back navigation (Escape).
+		if (previewKeyHandler().invoke(inEvent.event)) return
+		if (host.dispatchKeyEvent(inEvent.event)) return
+		if (keyHandler().invoke(inEvent.event)) return
+		if (!facade.dispatchKeyShortcut(inEvent.event)) {
+			backNavigationInput.onKeyEvent(inEvent.event)
+		}
+	}
+
+	/** Applies the mutable window attributes. Called at init from the creation
+	   flags and again whenever Window() sees one of them change. */
+	fun applyAttributes(inAttrs: WindowAttributes) {
+		facade.setUndecorated(inAttrs.undecorated)
+		facade.setResizable(inAttrs.resizable)
+		facade.setAlwaysOnTop(inAttrs.alwaysOnTop)
+		facade.setFocusable(inAttrs.focusable)
+		facade.setEnabled(inAttrs.enabled)
+	}
+
+	fun onTextInputEvent(inEvent: AppEvent.TextInput) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		// A focused text field runs an IME session (ComposeOwner.textInputSession):
+		// commit through it so the text REPLACES any active composition. Falls back
+		// to synthesising typed KeyEvents when no field is focused - SDL key events
+		// carry UNSHIFTED keycodes (no uppercase/numpad/dead keys), so committed
+		// text is the only layout-correct character source.
+		if (!com.compose.sdl.text.input.ImeBridge.commit(inEvent.text)) {
+			dispatchTypedText(host, inEvent.text)
+		}
+	}
+
+	fun onTextEditingEvent(inEvent: AppEvent.TextEditing) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		// IME preedit: show the composing (underlined) region in the focused field.
+		// No-op if no field is focused. Also nudge the OS candidate window to the
+		// field's on-screen rect.
+		com.compose.sdl.text.input.ImeBridge.compose(inEvent.text)
+		updateImeArea()
+	}
+
+	// Nudge the OS IME candidate window to the focused field's on-screen rect.
+	// Best-effort: no-op without an active session or a laid-out field.
+	@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class, kotlinx.cinterop.ExperimentalForeignApi::class)
+	private fun updateImeArea() {
+		val vRequest = com.compose.sdl.text.input.ImeBridge.request ?: return
+		val vRect = vRequest.focusedRectInRoot() ?: return
+		val vWindow = backend.window ?: return
+		val vDpr = backend.pixelDensity
+		kotlinx.cinterop.memScoped {
+			// SDL wants the area in logical window points; layout runs in physical px.
+			val vSdlRect = alloc<sdl3.SDL_Rect>()
+			vSdlRect.x = (vRect.left / vDpr).toInt()
+			vSdlRect.y = (vRect.top / vDpr).toInt()
+			vSdlRect.w = (vRect.width / vDpr).toInt().coerceAtLeast(1)
+			vSdlRect.h = (vRect.height / vDpr).toInt().coerceAtLeast(1)
+			sdl3.SDL_SetTextInputArea(vWindow.reinterpret(), vSdlRect.ptr, 0)
+		}
+	}
+
+	fun onDropEvent(inEvent: AppEvent.Drop) {
+		if (!facade.isEnabled) return
+		needsFrame = true
+		installGlobals()
+		// SDL fires drop coords in logical points at DPR-1; scale to the pixel
+		// space layout runs in (Option-B density flow) so hit-testing lands
+		// where the pointer is.
+		val vDpr = backend.pixelDensity
+		when (inEvent.phase) {
+			AppEvent.DropPhase.BEGIN -> host.onDropBegin()
+			AppEvent.DropPhase.POSITION -> host.onDropPosition(inEvent.x * vDpr, inEvent.y * vDpr)
+			AppEvent.DropPhase.FILE -> inEvent.data?.let { host.onDropFile(it) }
+			AppEvent.DropPhase.TEXT -> inEvent.data?.let { host.onDropText(it) }
+			AppEvent.DropPhase.COMPLETE -> host.onDropComplete()
+		}
+	}
+
+	fun onResizedEvent() {
+		needsFrame = true
+		backend.updateWindowSize()
+		facade.onResized()
+	}
+
+	/** OS light/dark theme changed - re-pick the theme-appropriate window icon
+	   (no-op if this window has no icon configured or the choice is unchanged). */
+	fun onSystemThemeChanged() {
+		backend.applyThemeIcon()
+	}
+
+	/** OS close button / app-level Quit: honour the veto handler, then hand the
+	   decision to the Window() declaration. */
+	fun requestClose() {
+		if (closeDispatched) return
+		if (facade.requestCloseFromUser()) {
+			closeDispatched = true
+			onCloseRequest()
+		}
+	}
+
+	// ============
+	//  Frame pump
+
+	fun shouldRender(): Boolean =
+		needsFrame || (recomposer?.hasPendingWork == true) || onFrame != null || kForceRender
+
+	/** True while this window still has pending work: a state/layout/draw invalidation
+	   (needsFrame), recomposer work, or a composition/node animation awaiting the next
+	   frame. Sampled by windowHasInvalidations() from onFrame probes - the quiescence
+	   signal for render-to-settle screenshot capture. */
+	fun hasInvalidations(): Boolean =
+		needsFrame || recomposer?.hasPendingWork == true ||
+			frameClock.hasAwaiters || host.hasAnimationAwaiters()
+
+	fun renderFrame() {
+		val vRender = renderBackend ?: return
+		needsFrame = false
+		if (recomposer?.hasPendingWork == true) needsFrame = true
+
+		backend.updateWindowSize()
+		vRender.ensureSize(backend.pixelWidth, backend.pixelHeight)
+		// Charge the GPU back-buffer acquire to its own phase. On Metal this is
+		// where nextDrawable() blocks on vsync (the natural frame pacing), so
+		// folding it into "layout" made the profiler read the vsync wait as
+		// layout cost - a ~6-7ms phantom that hid the real (tiny) layout time.
+		FrameProfiler.phase("  acquire")
+		host.setConstraints(backend.pixelWidth, backend.pixelHeight)
+		// Deliver any state written by this iteration's frame-clock continuations
+		// (withFrameNanos animations - notably smooth wheel scrolling) BEFORE we lay
+		// out. Those writes happen in the per-window pump's sendFrame()/yield(), which
+		// is AFTER the loop's last sendApplyNotifications() - so without this the
+		// relayout they trigger wasn't registered until the next frame, and the frame
+		// drew last frame's positions. That one-frame trail read as "the clip is a
+		// frame late" when scrolling (content briefly drawn past the viewport edge).
+		Snapshot.sendApplyNotifications()
+		host.measureAndLayout()
+		FrameProfiler.phase("  layout")
+
+		// Hover refresh after layout (upstream skiko: SyntheticEventSender).
+		if (hasMousePos) {
+			host.onPointerRaw(lastMouseX, lastMouseY, 0, 0, SDL_GetTicks().toLong())
+		}
+
+		vRender.beginFrame(1f)
+		vRender.drawRoot { canvas -> host.drawRoot(canvas) }
+		if (onFrame != null) {
+			renderingWindow = this
+			val vContinue = onFrame.invoke(vRender, frameIndex)
+			renderingWindow = null
+			// Probe consumers end the app when their scenario completes.
+			if (!vContinue) facade.close()
+		}
+		FrameProfiler.phase("  draw")
+		vRender.endFrame()
+		FrameProfiler.phase("  present")
+		frameIndex++
+
+		// FPS - instantaneous inter-frame rate, EMA-smoothed, title refreshed
+		// ~4x/sec. This shows within ~2 rendered frames of ANY activity rather
+		// than waiting for a full second of unbroken rendering to accumulate
+		// (the old fixed-window counter never got its first update: bursty
+		// interaction kept idling before 1s elapsed, and the idle-skip reset the
+		// window each time - so FPS only appeared during a long enough page
+		// transition). A dt outside 1..100ms is the first frame or a resume from
+		// idle (the gap isn't a real frame interval), so it's not sampled - the
+		// title just holds the last active rate while idle.
+		val vNowMs = SDL_GetTicks()
+		val vDt = (vNowMs - fpsLastFrameMs).toInt()
+		fpsLastFrameMs = vNowMs
+		if (vDt in 1..100) {
+			val vInst = 1000.0 / vDt
+			fpsEma = if (fpsEma <= 0.0) vInst else fpsEma * 0.9 + vInst * 0.1
+			if ((vNowMs - fpsLastTitleMs).toInt() >= 250) {
+				val vFps = (fpsEma + 0.5).toInt()
+				facade.updateFps(vFps)
+				SDL_SetWindowTitle(backend.window?.reinterpret(), "${facade.title} · $vFps FPS")
+				fpsLastTitleMs = vNowMs
+			}
+		}
+	}
+
+	// Idle-skip calls this: drop the frame timer so the resume-from-idle frame's
+	// dt (the whole idle gap) isn't sampled as a real interval. The EMA is left
+	// intact so the title keeps showing the last active rate while idle.
+	fun resetFpsWindow() {
+		fpsLastFrameMs = SDL_GetTicks()
+	}
+
+	fun destroy() {
+		composition?.dispose()
+		composition = null
+		// Window gone → DESTROYED lifecycle + ViewModels cleared (onCleared
+		// runs), matching upstream desktop's window-scoped owner lifetime.
+		architectureOwner.destroy()
+		recomposer?.cancel()
+		recomposer = null
+		recomposeJob?.cancel()
+		recomposeJob = null
+		renderBackend?.destroy()
+		renderBackend = null
+		backend.destroy(inQuitSdl = false)
+	}
+}

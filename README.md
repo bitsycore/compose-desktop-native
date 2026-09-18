@@ -71,6 +71,23 @@ Each window gets its own `Lifecycle`, `ViewModelStore`, and `SavedStateRegistry`
 owners, driven by real SDL focus and visibility events, so ViewModels and
 saved state behave as they do on Android.
 
+`Window()` takes the same attributes as Compose Desktop's - `undecorated`,
+`transparent`, `resizable`, `enabled`, `focusable`, `alwaysOnTop`,
+`onPreviewKeyEvent` and `onKeyEvent` - and re-applies them when they change.
+(`transparent` is the one exception: SDL needs it at window-creation time, so it
+is fixed for the window's life.)
+
+When the Compose-level API doesn't reach far enough, drop to SDL directly:
+
+```kotlin
+val handles = window.rawSdlHandles()   // SDL_Window* / SDL_Renderer* / GL / Metal
+handles.window?.let { sdl3.SDL_FlashWindow(it.reinterpret(), SDL_FLASH_BRIEFLY) }
+```
+
+The pointers are a snapshot valid only while the window lives, and which ones
+are non-null depends on the resolved renderer (`glContext` for Skia OpenGL,
+`metalView` for Metal, `renderer` for CPU raster).
+
 ### Building in this repo
 
 ```kotlin

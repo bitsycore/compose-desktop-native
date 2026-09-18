@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.key.KeyEvent
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKString
 import sdl3.SDL_GetRendererName
@@ -12,7 +13,12 @@ import sdl3.SDL_MaximizeWindow
 import sdl3.SDL_MinimizeWindow
 import sdl3.SDL_RaiseWindow
 import sdl3.SDL_RestoreWindow
+import sdl3.SDL_SetWindowAlwaysOnTop
+import sdl3.SDL_SetWindowBordered
+import sdl3.SDL_SetWindowFocusable
 import sdl3.SDL_SetWindowFullscreen
+import sdl3.SDL_SetWindowOpacity
+import sdl3.SDL_SetWindowResizable
 import sdl3.SDL_SetWindowSize
 import sdl3.SDL_SetWindowTitle
 
@@ -116,6 +122,61 @@ class ComposeNativeWindow constructor(
         SDL_RaiseWindow(vWindow)
     }
 
+    // ============
+    //  Mutable window attributes (Compose Desktop's Window() parameters)
+    //
+    //  Window() re-applies these from the composition whenever they change, so
+    //  app code normally passes them as parameters rather than calling these.
+    //  `transparent` is absent on purpose: SDL needs SDL_WINDOW_TRANSPARENT at
+    //  creation and offers no setter, so it is a construction-time attribute.
+
+    private var fUndecorated = false
+    private var fResizable = true
+    private var fAlwaysOnTop = false
+    private var fFocusable = true
+    private var fEnabled = true
+
+    val isUndecorated: Boolean get() = fUndecorated
+    val isResizable: Boolean get() = fResizable
+    val isAlwaysOnTop: Boolean get() = fAlwaysOnTop
+    val isFocusable: Boolean get() = fFocusable
+
+    /** False hides the window's title bar and border. */
+    fun setUndecorated(inUndecorated: Boolean) {
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        SDL_SetWindowBordered(vWindow, !inUndecorated); fUndecorated = inUndecorated
+    }
+
+    fun setResizable(inResizable: Boolean) {
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        SDL_SetWindowResizable(vWindow, inResizable); fResizable = inResizable
+    }
+
+    fun setAlwaysOnTop(inAlwaysOnTop: Boolean) {
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        SDL_SetWindowAlwaysOnTop(vWindow, inAlwaysOnTop); fAlwaysOnTop = inAlwaysOnTop
+    }
+
+    /** False stops the window taking keyboard focus when clicked or raised. */
+    fun setFocusable(inFocusable: Boolean) {
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        SDL_SetWindowFocusable(vWindow, inFocusable); fFocusable = inFocusable
+    }
+
+    /** Window opacity, 0f (fully transparent) to 1f. Needs a compositing window
+       manager; SDL reports failure on platforms without one. */
+    fun setOpacity(inOpacity: Float) {
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        SDL_SetWindowOpacity(vWindow, inOpacity.coerceIn(0f, 1f))
+    }
+
+    /** True while the window accepts input. A disabled window still renders and
+       repaints; it just drops pointer / keyboard / text / wheel / drop events,
+       which is how Compose Desktop's `enabled = false` behaves. */
+    val isEnabled: Boolean get() = fEnabled
+
+    fun setEnabled(inEnabled: Boolean) { fEnabled = inEnabled }
+
     /** Asks composeWindow's main loop to break out at the next frame.
        Same effect as the user closing the window via the OS. Bypasses any
        onCloseRequest handler - this is the "really quit now" path. */
@@ -166,7 +227,52 @@ class ComposeNativeWindow constructor(
     /** Driven by composeWindow's main loop for keys the focused node didn't
        consume. Returns true if the shortcut handler handled it. */
     fun dispatchKeyShortcut(inEvent: KeyEvent): Boolean = fOnKeyShortcut?.invoke(inEvent) ?: false
+
+    // ============
+    //  Raw SDL escape hatch
+
+    /**
+     The live SDL handles behind this window, for calling the `sdl3.*` cinterop
+     directly when the Compose-level API doesn't cover something.
+
+     Returns a snapshot: the pointers are only valid while the window is alive,
+     so re-read it rather than caching, and never use it after the window closes.
+     Whatever you do through it is outside the port's control - resizing,
+     destroying or re-creating the window or its renderer behind Compose's back
+     will desync the renderer state.
+     */
+    fun rawSdlHandles(): RawSdlHandles = RawSdlHandles(
+        window = backend.window,
+        renderer = backend.renderer,
+        glContext = backend.glContext,
+        metalView = backend.metalView,
+    )
 }
+
+/**
+ Opaque SDL pointers for one window, as handed out by
+ [ComposeNativeWindow.rawSdlHandles].
+
+ `reinterpret()` each to the `cnames.structs.*` type the SDL function expects:
+
+     val vHandles = window.rawSdlHandles()
+     vHandles.window?.let { sdl3.SDL_FlashWindow(it.reinterpret(), FLASH_BRIEFLY) }
+
+ Which pointers are non-null depends on the resolved [GpuMode]: `renderer` is
+ set only for the CPU-raster (Software) backend, `glContext` only for Skia
+ OpenGL, and `metalView` only for Skia Metal. `window` is always set on a
+ successfully created window.
+ */
+data class RawSdlHandles(
+    /** `SDL_Window*` - always present while the window lives. */
+    val window: COpaquePointer?,
+    /** `SDL_Renderer*` - CPU-raster (Software) backend only. */
+    val renderer: COpaquePointer?,
+    /** `SDL_GLContext` - Skia OpenGL backend only. */
+    val glContext: COpaquePointer?,
+    /** `SDL_MetalView` - Skia Metal backend only. */
+    val metalView: COpaquePointer?,
+)
 
 // ==================
 // MARK: Scope + CompositionLocal

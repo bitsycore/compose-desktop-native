@@ -79,6 +79,12 @@ fun main(args: Array<String>) {
         runSearchEscTest()
         return
     }
+    // Verifies the Compose Desktop window attributes (undecorated / resizable /
+    // alwaysOnTop / focusable / enabled) reach SDL, plus the raw SDL escape hatch.
+    if (args.any { it == "--winattrtest" }) {
+        runWindowAttrTest()
+        return
+    }
     // Verifies nativeComposeApp multi-window: two Windows render concurrently,
     // one closes via state, the app keeps running on the survivor.
     if (args.any { it == "--multiwintest" }) {

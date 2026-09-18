@@ -727,6 +727,28 @@ A read-only feasibility map (no code changed) found two layers:
 proves infeasible, fall back to keeping the seam but at least converting the hand files to tracked
 Rule-3 vendors (like `FontRasterizationSettings.native.kt` now has a `VENDOR-BASE` line).
 
+### 7c. `demo --multiwintest` SEGFAULTS on mingwX64 - PRE-EXISTING, open
+
+`demo.exe --multiwintest` exits 139 (segmentation fault) with no output, so the
+multi-window regression probe has silently not been asserting anything. It never
+reaches its own `println("multiwintest: ...")` at the end of runMultiWindowTest.
+
+NOT caused by the window-module refactor: verified by stashing the refactor,
+rebuilding from the previous commit and re-running - the baseline segfaults
+identically (exit 139, empty output). It predates that work; it just went
+unnoticed because the probe is silent on crash and nothing checks its exit code.
+
+The scenario is two concurrent Windows where the second closes via state while
+the app survives on the first, so suspects are the teardown path
+(`AppRuntime.scheduleDestroy` / `reapDestroyed` → `WindowInstance.destroy()`)
+racing the render loop, or the per-window render-bridge globals
+(`installGlobals`) pointing at a renderer that was just destroyed. Run it under a
+debugger and check whether the fault is in the destroy or the next frame's draw.
+
+Worth fixing before advertising multi-window: `nativeComposeApp {}` with more
+than one Window is a documented feature in the README.
+
+
 ## Accepted 1.0.0 gaps (documented, not fixed)
 
 Drag-OUT of window (SDL platform limit; drop-IN works), full accessibility pipeline (out of

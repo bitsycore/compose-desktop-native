@@ -17,6 +17,15 @@ class SDL3Backend(
     // the rest become alternate resolutions. Dark set falls back to light.
     private val iconLightResourcePaths: List<String> = emptyList(),
     private val iconDarkResourcePaths: List<String> = emptyList(),
+    // Creation-time window attributes, mirroring Compose Desktop's Window().
+    // `undecorated`, `resizable`, `alwaysOnTop` and `focusable` can also be
+    // changed later (see ComposeNativeWindow); `transparent` cannot - SDL needs
+    // SDL_WINDOW_TRANSPARENT at creation, so it is honoured here only.
+    private val undecorated: Boolean = false,
+    private val transparent: Boolean = false,
+    private val resizable: Boolean = true,
+    private val alwaysOnTop: Boolean = false,
+    private val focusable: Boolean = true,
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
@@ -75,7 +84,13 @@ class SDL3Backend(
             SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STENCIL_SIZE, 8)
         }
 
-        val flags = SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or when (gpuMode) {
+        var attrFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY
+        if (resizable) attrFlags = attrFlags or SDL_WINDOW_RESIZABLE
+        if (undecorated) attrFlags = attrFlags or SDL_WINDOW_BORDERLESS
+        if (transparent) attrFlags = attrFlags or SDL_WINDOW_TRANSPARENT
+        if (alwaysOnTop) attrFlags = attrFlags or SDL_WINDOW_ALWAYS_ON_TOP
+        if (!focusable) attrFlags = attrFlags or SDL_WINDOW_NOT_FOCUSABLE
+        val flags = attrFlags or when (gpuMode) {
             is GpuMode.Skia.OpenGL -> SDL_WINDOW_OPENGL
             is GpuMode.Skia.Metal  -> SDL_WINDOW_METAL
             is GpuMode.Software        -> 0UL

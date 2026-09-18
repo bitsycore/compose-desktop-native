@@ -566,8 +566,18 @@ drift / vendor-clean guardrails are in
 ## Key files by area - start here when you need to find something
 
 ### Renderer + main loop
-- `compose/desktop/native/desktop-native-window/src/nativeMain/…/ComposeWindow.kt` - main loop,
-  recomposer lifecycle, SDL event dispatch, composition-local seeding.
+- `compose/desktop/native/desktop-native-window/src/nativeMain/…/` - the window
+  module, one concern per file:
+  - `ComposeWindow.kt` - the PUBLIC surface (`ApplicationScope`, `Window()`,
+    `nativeComposeApp`, `nativeComposeWindow`) + the main loop.
+  - `WindowInstance.kt` - one SDL window: backend + render backend + root host +
+    its own recomposer/composition, event handling, frame pump, teardown. This is
+    where composition-local seeding lives.
+  - `AppRuntime.kt` - the live-window registry + create/destroy lifecycle.
+  - `WindowAttributes.kt` - the Compose Desktop `Window()` attribute bundle.
+  - `FrameTiming.kt` - deterministic/virtual frame clocks and the
+    probe-quiescence hooks (`disableInfiniteAnimations`, `useVirtualFrameTime`,
+    `windowHasInvalidations`).
 - `compose/ui/ui/src/nativeMain/…/RenderBackend.kt` - the interface.
 - `compose/ui/ui/src/nativeMain/…/GpuMode.kt` - sealed driver picker
   (`Auto` / `Software` / `Skia.OpenGL` / `Skia.Metal`).
@@ -752,7 +762,7 @@ Caveats that make these work here (all already wired - listed so nobody
 - The google `LocalViewModelStoreOwner` / `LocalSavedStateRegistryOwner` /
   `LocalLifecycleOwner` are PLAIN composition locals - the JB HostDefault
   mechanism (`compositionLocalWithHostDefaultOf`) does not exist in google
-  artifacts. `WindowArchitectureOwner` (ComposeWindow.kt) provides all three
+  artifacts. `WindowArchitectureOwner` (WindowInstance.kt) provides all three
   per window, mirrors upstream desktop's DefaultArchitectureComponentsOwner,
   calls `enableSavedStateHandles()` at construction, and follows SDL focus /
   visibility (focused → RESUMED, unfocused → STARTED, minimised → CREATED).
