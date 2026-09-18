@@ -273,17 +273,6 @@ mirrors or you will have every class twice.
 | Collection | `androidx.collection:collection:1.5.0` |
 | Graphics Shapes | `androidx.graphics:graphics-shapes:1.1.0` |
 
-### Infrastructure
-
-| Library | Version |
-|---|---|
-| kotlinx-coroutines | 1.11.0 |
-| kotlinx-serialization | 1.11.0 |
-| kotlinx-datetime | 0.8.0 |
-| kotlinx-io-okio | 0.9.1 |
-| Okio | 3.18.2 |
-| Ktor | 3.5.2 |
-
 ## Building
 
 Build the native libraries once per machine, then build any app target:
@@ -297,6 +286,10 @@ Every host needs `git`, `cmake`, and Python 3. Per host: macOS needs the Xcode
 command line tools; Linux needs gcc/g++ and the X11 / Wayland / audio dev
 headers; Windows needs a mingw-w64 g++ on PATH. See [TOOLING.md](TOOLING.md) for
 the full build and verification workflow.
+
+## Support
+
+[Bitsycore's Discord](https://discord.gg/kGnraVAtDR)
 
 ## Documentation
 
