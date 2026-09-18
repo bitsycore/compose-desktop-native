@@ -10,6 +10,21 @@ import com.compose.sdl.res.ImageLoader
    (official Skiko on macOS/Linux, the fork on mingwX64); text measurement +
    drawing go through the skiko paragraph engine (androidx.compose.ui.text
    Paragraph actuals), so there is no renderer-owned measurer here. */
+/*
+   WHY THIS INTERFACE EXISTS WITH ONE IMPLEMENTATION - do not "simplify" it away.
+
+   SkiaRenderBackend is its only implementor, which reads like leftover
+   dual-backend scaffolding from when SDL's own renderer was the alternative. It
+   is not. SkiaRenderBackend lives in skikoRendererMain, BELOW nativeMain, so
+   nativeMain-level code cannot name it: :desktop-native-window's WindowInstance
+   holds the renderer in nativeMain and would not compile against the concrete
+   type. Verified by trying it - compileNativeMainKotlinMetadata fails with
+   "Unresolved reference 'renderer'".
+
+   So this interface is the nativeMain-visible boundary for an implementation
+   that must live lower down, exactly like the expect fun createRenderBackend
+   that returns it. Same reasoning, same constraint.
+*/
 interface RenderBackend {
     /** Loader the shared ImageMeasurePolicy / Res.readBytes plug into. Backed
        by the same decode cache the renderer uses to paint images, so a
