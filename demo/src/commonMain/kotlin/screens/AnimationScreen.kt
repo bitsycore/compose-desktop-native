@@ -36,7 +36,7 @@ internal fun AnimationScreen() {
 			"animation.core",
 			"animate*AsState, AnimationSpec (tween / spring / repeatable / infiniteRepeatable), " +
 				"Easing (Linear, FastOutSlowIn, CubicBezier), rememberInfiniteTransition. " +
-				"All driven by the SDL3FrameClock via withFrameNanos.",
+				"All driven by the Sdl3FrameClock via withFrameNanos.",
 		)
 
 		// ============

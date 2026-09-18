@@ -391,21 +391,21 @@ re-vendoring.** The debt is **completing native-actual stubs**.
 ### P0 - blocks fidelity/correctness
 
 - [~] **P0** Text context menu (right-click copy/paste/select-all) - **RECONCILED: already
-      works, no reimplementation.** Static trace confirmed the menu is wired end-to-end
-      through the vendored LEGACY path: text-level `ContextMenuArea` (`ContextMenu.native.kt`)
+  works, no reimplementation.** Static trace confirmed the menu is wired end-to-end
+  through the vendored LEGACY path: text-level `ContextMenuArea` (`ContextMenu.native.kt`)
       → `CommonContextMenuArea` (`vendor/common/.../text/CommonContextMenuArea.kt`) → (native
       `ComposeFoundationFlags.isNewContextMenuEnabled = false`, so the legacy branch) →
       `contextmenu.ContextMenuArea` → `contextMenuGestures`/`onRightClickDown`
       (`isSecondaryPressed`) → `ContextMenuPopup` → `Popup.native.kt` (hosted by
       `LocalPopupHost` at the app root). Items are real: `TextFieldSelectionManager` /
       `SelectionManager.contextMenuBuilder` emit Cut/Copy/Paste/SelectAll with real actions.
-      SDL right-click → `PointerButton.Secondary` (`SDL3EventMapper.kt`) →
+  SDL right-click → `PointerButton.Secondary` (`AppEvent.kt`) →
       `isSecondaryPressed` (`PointerEventBridge`). The three "NOP" seams belong to the
-      DISABLED *new* context-menu API and are unreachable - **DONE:** their misleading
+  DISABLED *new* context-menu API and are unreachable - **DONE:** their misleading
       `TODO(CMP-7819)` comments corrected to say so, in all three files.
-      **REMAINING:** an interactive right-click smoke check (no headless driver here - fold
-      into manual/WIN-SMOKE). Known limitation, not a breakage: Paste enablement is
-      plain-text-only (`ClipboardPasteState.hasClip = hasText`, see P2 below).
+  **REMAINING:** an interactive right-click smoke check (no headless driver here - fold
+  into manual/WIN-SMOKE). Known limitation, not a breakage: Paste enablement is
+  plain-text-only (`ClipboardPasteState.hasClip = hasText`, see P2 below).
 - [ ] **P1** DatePicker/TimePicker localization - VERIFIED current state:
       `material3/.../internal/PlatformDateFormat.native.kt` is a real kotlinx-datetime
       formatter that DOES honor CLDR patterns/skeletons (renders "Jul 29, 2026" /
@@ -417,14 +417,14 @@ re-vendoring.** The debt is **completing native-actual stubs**.
       (author):** bundle a CLDR subset or K/N i18n lib for localized names + locale-aware
       first-day/24h; also unblocks `CalendarLocale.native.kt:20` (fixed `"en"`). Ships
       readable English dates today - polish, not a P0 gate.
-- [x] **P0** Float pointer coordinates - `SDL3EventMapper.kt` `.toInt()`-truncated SDL's
-      Float `mb.x`/`mb.y`/`mm.x`/`mm.y` and the wheel `mouse_x/y` before the DPR multiply in
+- [x] **P0** Float pointer coordinates - `AppEvent.kt` `.toInt()`-truncated SDL's
+  Float `mb.x`/`mb.y`/`mm.x`/`mm.y` and the wheel `mouse_x/y` before the DPR multiply in
       `ComposeWindow.kt`. On 2× displays a click at logical 100.9 → physical 200 not ~201,
-      quantizing the caret to 2px steps near glyph edges. **DONE:** widened
+  quantizing the caret to 2px steps near glyph edges. **DONE:** widened
       `LegacyPointerEvent.x/y` and `AppEvent.MouseWheel.x/y` to `Float`, dropped the
       `.toInt()` at the three mapper construction sites, and removed the now-redundant
       `.toFloat()` at the two `ComposeWindow` read sites. Consumers fully contained (verified
-      by grep). Builds + runs clean on macosArm64.
+  by grep). Builds + runs clean on macosArm64.
 
 ### P1 - quality / parity
 
@@ -521,7 +521,7 @@ re-vendoring.** The debt is **completing native-actual stubs**.
 Static lib built from source per host (`scripts/build-sdl/build-all.py`, ref
 `release-3.4.12`); linked into the exe via `sdl3.def` (`staticLibraries=libSDL3.a`). Today
 only tests/examples + Windows D3D12/GPU are off (`build-all.py:311-319`). `SDL_Init` uses
-**`SDL_INIT_VIDEO` only** (`SDL3Backend.kt:49`).
+**`SDL_INIT_VIDEO` only** (`Sdl3Backend.kt:49`).
 
 **USED (keep ON):** Video/window, Events, Clipboard, Dialog (file open/save - no cheaper
 substitute; Linux uses portal/zenity, keep deps), OpenGL + Metal contexts, Render (2D CPU-
@@ -554,7 +554,7 @@ joystick.
       disabled SDL subsystems.)
 - [ ] **P2** (higher-risk, flag-don't-apply) Render-driver pruning to software-only. Only
       the CPU-raster fallback uses `SDL_Render`; GL/Metal go direct. But
-      `SDL_CreateRenderer(window, null)` (`SDL3Backend.kt:117`) lets SDL pick the first
+      `SDL_CreateRenderer(window, null)` (`Sdl3Backend.kt:117`) lets SDL pick the first
       driver - with only software present it picks software (fine) but couples the fallback
       to that assumption. **Conservative: leave render drivers alone.**
 
@@ -732,7 +732,7 @@ Rule-3 vendors (like `FontRasterizationSettings.native.kt` now has a `VENDOR-BAS
 The multi-window probe exited 139 with no output, so it had silently been
 asserting nothing. Root cause: an OpenGL context is per-WINDOW but "current" is
 per-THREAD, and `SDL_GL_MakeCurrent` ran only once at creation
-(`SDL3Backend.init`) with nothing re-binding it per frame. With two windows open,
+(`Sdl3Backend.init`) with nothing re-binding it per frame. With two windows open,
 whichever initialised last owned the thread - so window A issued its draw and
 swap against window B's context (silent corruption while both lived), and
 destroying B left the current context dangling, faulting in `present()`.

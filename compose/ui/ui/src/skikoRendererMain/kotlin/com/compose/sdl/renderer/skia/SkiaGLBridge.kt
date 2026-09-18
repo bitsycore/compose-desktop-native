@@ -4,13 +4,9 @@ import com.compose.sdl.*
 
 import kotlinx.cinterop.*
 import org.jetbrains.skia.BackendRenderTarget
-import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
-import org.jetbrains.skia.ColorAlphaType
-import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.DirectContext
 import org.jetbrains.skia.Image
-import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Surface
 import org.jetbrains.skia.SurfaceColorFormat
 import org.jetbrains.skia.SurfaceOrigin
@@ -28,7 +24,7 @@ import sdl3.SDL_GL_SwapWindow
    Resize: tear down and rebuild the BackendRenderTarget + Surface; the
    DirectContext is reused. The default GL framebuffer (id 0) is wrapped
    directly; we don't manage an offscreen FBO. */
-internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
+internal class SkiaGLBridge(private val backend: Sdl3Backend) : SkiaBridge {
     private var mContext: DirectContext? = null
     private var mRT: BackendRenderTarget? = null
     private var mSurface: Surface? = null
@@ -40,7 +36,7 @@ internal class SkiaGLBridge(private val backend: SDL3Backend) : SkiaBridge {
 
      A GL context is per-window but "current" is per-THREAD state, so with more
      than one window open the last one to touch GL owns the thread. SDL makes a
-     context current once at creation (SDL3Backend.init) and nothing re-bound it
+     context current once at creation (Sdl3Backend.init) and nothing re-bound it
      per frame, so window A issued its draw and swap against window B's context:
      silent corruption while both live, and a hard crash (SIGSEGV in present)
      the moment B is destroyed and the current context is left dangling.

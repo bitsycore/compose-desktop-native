@@ -31,7 +31,7 @@ internal fun GestureScreen() {
 		ScreenTitle(
 			"pointerInput + gesture DSL",
 			"Suspending Modifier.pointerInput { } with detectTapGestures / detectDragGestures " +
-				"on top. Awaits resume on the SDL3FrameClock; no per-event polling.",
+				"on top. Awaits resume on the Sdl3FrameClock; no per-event polling.",
 		)
 
 		// ============

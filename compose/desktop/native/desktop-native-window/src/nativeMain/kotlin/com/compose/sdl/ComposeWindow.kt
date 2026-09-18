@@ -14,7 +14,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.Snapshot
-import com.compose.sdl.res.currentImageLoader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -141,7 +140,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 		runtime.scope = this
 
 		// App-level composition: no UI tree - it only declares Window()s.
-		val appClock = SDL3FrameClock()
+		val appClock = Sdl3FrameClock()
 		val appRecomposer = Recomposer(coroutineContext + appClock)
 		// The clock must be in the collector's context - runRecomposeAndApplyChanges
 		// awaits parent frames through it.

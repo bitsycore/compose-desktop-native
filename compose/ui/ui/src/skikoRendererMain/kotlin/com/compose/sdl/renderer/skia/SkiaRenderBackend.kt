@@ -25,7 +25,7 @@ import org.jetbrains.skia.Color as SkColor
    elevation shadows ride behind it via skiaLeafDrawer + the SkiaBackedCanvas
    manual-vendor. */
 internal class SkiaRenderBackend(
-    private val sdl: SDL3Backend,
+    private val sdl: Sdl3Backend,
     private val gpuMode: GpuMode,
 ) : RenderBackend {
 

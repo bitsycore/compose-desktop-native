@@ -9,7 +9,7 @@ import kotlinx.cinterop.*
 import sdl3.*
 
 // ==================
-// MARK: SDL3EventMapper
+// MARK: AppEvent + the SDL3 event mapper
 // ==================
 
 /** Events carry the SDL window id they belong to (0 = unknown - injected test
@@ -83,8 +83,7 @@ fun pollEvents(): List<AppEvent> {
 }
 
 private fun mapEvent(e: SDL_Event): AppEvent? {
-	val type = e.type
-	return when (type) {
+    return when (e.type) {
 		SDL_EVENT_QUIT -> AppEvent.Quit
 
 		SDL_EVENT_MOUSE_BUTTON_DOWN -> {

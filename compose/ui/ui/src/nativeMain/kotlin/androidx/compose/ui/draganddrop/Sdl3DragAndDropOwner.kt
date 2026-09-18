@@ -10,7 +10,7 @@ import androidx.compose.ui.node.ModifierNodeElement
 
 /** The per-window DragAndDropManager backing ComposeOwner. Holds a root
  * DragAndDropNode installed on the root LayoutNode via [modifier]; the SDL
- * event pump (see SDL3EventMapper + ComposeWindow) drives [handleDrop] which
+ * event pump (see AppEvent.kt + ComposeWindow) drives [handleDrop] which
  * accumulates BEGIN → FILE / TEXT / POSITION → COMPLETE into a single
  * DragAndDropEvent and dispatches through the node tree.
  *

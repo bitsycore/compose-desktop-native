@@ -20,7 +20,7 @@ import sdl3.SDL_GetTicksNS
 
    Both come from delegating to the runtime's BroadcastFrameClock, which is
    exactly upstream's dispatch structure. */
-internal class SDL3FrameClock : MonotonicFrameClock {
+internal class Sdl3FrameClock : MonotonicFrameClock {
 	private val broadcast = BroadcastFrameClock()
 
 	override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R =

@@ -11,12 +11,6 @@ plugins {
 	alias(libs.plugins.kotlin.plugin.compose)
 }
 
-repositories {
-	google()
-	mavenCentral()
-	maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-}
-
 val vHostSupportsMingw = rootProject.extra["vHostSupportsMingw"] as Boolean
 
 kotlin {

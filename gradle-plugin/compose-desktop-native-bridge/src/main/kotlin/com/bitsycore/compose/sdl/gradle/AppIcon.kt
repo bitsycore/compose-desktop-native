@@ -278,7 +278,7 @@ internal object IconCodec {
 	}
 
 	/** An 8-byte little-endian [width][height] header + straight-alpha RGBA - the
-	   format the runtime (WindowIcon.kt / SDL3Backend) reads. */
+	   format the runtime (WindowIcon.kt / Sdl3Backend) reads. */
 	fun rgbaBlob(inW: Int, inH: Int, inRgba: ByteArray): ByteArray {
 		val vOut = ByteArray(8 + inRgba.size)
 		le32(vOut, 0, inW)

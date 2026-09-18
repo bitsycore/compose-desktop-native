@@ -16,7 +16,7 @@ package com.compose.sdl
 
 /** Create the render backend for the selected [GpuMode]; null when the
    backend can't initialise (caller falls back / reports). */
-expect fun createRenderBackend(inSdl: SDL3Backend, inGpu: GpuMode): RenderBackend?
+expect fun createRenderBackend(inSdl: Sdl3Backend, inGpu: GpuMode): RenderBackend?
 
 /** The renderer module's per-OS default GpuMode (used for GpuMode.Auto). */
 expect fun rendererPreferredGpuMode(): GpuMode

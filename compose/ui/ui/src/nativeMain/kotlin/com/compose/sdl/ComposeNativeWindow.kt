@@ -7,8 +7,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.key.KeyEvent
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.toKString
-import sdl3.SDL_GetRendererName
 import sdl3.SDL_MaximizeWindow
 import sdl3.SDL_MinimizeWindow
 import sdl3.SDL_RaiseWindow
@@ -36,7 +34,7 @@ import sdl3.SDL_SetWindowTitle
    them subscribes the caller to recomposition. The setter methods
    call into SDL and also push the new value into the snapshot. */
 class ComposeNativeWindow constructor(
-    private val backend: SDL3Backend,
+    private val backend: Sdl3Backend,
     val gpuMode: GpuMode,
     initialTitle: String,
 ) {

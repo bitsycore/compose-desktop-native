@@ -37,7 +37,7 @@ import sdl3.SDL_Metal_GetLayer
    per frame, so we tear the BackendRenderTarget + Surface down every frame
    (cheap - the DirectContext + device + queue persist). */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-internal class SkiaMetalBridge(private val backend: SDL3Backend) : SkiaBridge {
+internal class SkiaMetalBridge(private val backend: Sdl3Backend) : SkiaBridge {
     private var mDevice: MTLDeviceProtocol? = null
     private var mQueue: MTLCommandQueueProtocol? = null
     private var mLayer: CAMetalLayer? = null

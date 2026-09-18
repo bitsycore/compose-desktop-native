@@ -18,7 +18,7 @@ import sdl3.*
 /** Owns the CPU pixel buffer Skia draws into, plus the streaming SDL_Texture
    used to push that buffer onto the window. All three (buffer, Skia surface,
    SDL texture) get reallocated when the window resizes. */
-internal class SkiaSurfaceBridge(private val backend: SDL3Backend) : SkiaBridge {
+internal class SkiaSurfaceBridge(private val backend: Sdl3Backend) : SkiaBridge {
     private var mWidth = 0
     private var mHeight = 0
     private var mPixels: CPointer<UByteVar>? = null

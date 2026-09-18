@@ -8,7 +8,7 @@ import androidx.compose.ui.geometry.Offset
 
 /* Actuals for the vendored `DragAndDrop.kt` expect classes.
  * Backed by SDL3's SDL_EVENT_DROP_* stream (file / text / begin / position /
- * complete) - see Sdl3DragAndDropOwner + SDL3EventMapper for the pump side.
+ * complete) - see Sdl3DragAndDropOwner + AppEvent.kt for the pump side.
  *
  * DragAndDropTransferData carries the payload a drop into the window
  * delivered: zero or more file paths (SDL_EVENT_DROP_FILE) plus an optional

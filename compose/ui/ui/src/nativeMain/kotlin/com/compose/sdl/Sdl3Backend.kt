@@ -4,10 +4,10 @@ import kotlinx.cinterop.*
 import sdl3.*
 
 // ==================
-// MARK: SDL3Backend
+// MARK: Sdl3Backend
 // ==================
 
-class SDL3Backend(
+class Sdl3Backend(
     private val title: String = "ComposeNativeSDL3",
     private val width: Int = 800,
     private val height: Int = 600,
@@ -29,7 +29,7 @@ class SDL3Backend(
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
-            "SDL3Backend received GpuMode.Auto - resolve via preferredGpuMode() first"
+            "Sdl3Backend received GpuMode.Auto - resolve via preferredGpuMode() first"
         }
     }
 

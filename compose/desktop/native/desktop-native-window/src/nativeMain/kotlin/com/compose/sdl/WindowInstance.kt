@@ -56,7 +56,7 @@ internal class WindowInstance(
 	private val initialHeight = inHeight
 	private val icon = inIcon
 	// Assigned by init() from the first backend that comes up (see makeBackend()).
-	lateinit var backend: SDL3Backend
+	lateinit var backend: Sdl3Backend
 		private set
 	private var renderBackend: RenderBackend? = null
 	lateinit var host: ComposeRootHost
@@ -65,7 +65,7 @@ internal class WindowInstance(
 		private set
 	private var popupHost: com.compose.sdl.window.PopupHostState? = null
 
-	val frameClock = SDL3FrameClock()
+	val frameClock = Sdl3FrameClock()
 	private var recomposer: Recomposer? = null
 	private var recomposeJob: Job? = null
 	private var composition: Composition? = null
@@ -128,11 +128,11 @@ internal class WindowInstance(
 		needsFrame = true
 	}
 
-	// Creates + initialises an SDL3Backend for [mode] and its RenderBackend. On
+	// Creates + initialises an Sdl3Backend for [mode] and its RenderBackend. On
 	// success commits `backend` and returns the renderer; else tears everything
 	// down and returns null so the caller can retry with a different mode.
 	private fun makeBackend(mode: GpuMode): RenderBackend? {
-		val vBackend = SDL3Backend(
+		val vBackend = Sdl3Backend(
 			initialTitle, initialWidth, initialHeight, gpuMode = mode,
 			iconLightResourcePaths = icon?.light ?: emptyList(),
 			iconDarkResourcePaths = icon?.dark ?: emptyList(),

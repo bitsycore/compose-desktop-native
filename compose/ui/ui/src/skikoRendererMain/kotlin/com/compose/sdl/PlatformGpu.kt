@@ -7,7 +7,7 @@ import kotlin.experimental.ExperimentalNativeApi
 // MARK: Metal bridge factory (skia-only)
 // ==================
 
-internal expect fun makeMetalBridge(backend: SDL3Backend): SkiaBridge?
+internal expect fun makeMetalBridge(backend: Sdl3Backend): SkiaBridge?
 
 actual fun rendererPreferredGpuMode(): GpuMode {
     @OptIn(ExperimentalNativeApi::class)
