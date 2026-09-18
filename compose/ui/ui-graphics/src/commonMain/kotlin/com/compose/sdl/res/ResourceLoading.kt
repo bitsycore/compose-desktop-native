@@ -18,7 +18,7 @@ enum class ResourceKind {
 }
 
 /** Picks a ResourceKind from a file extension. */
-fun resourceKindForPath(path: String): ResourceKind {
+internal fun resourceKindForPath(path: String): ResourceKind {
 	val vExt = path.substringAfterLast('.', "").lowercase()
 	return when (vExt) {
 		"svg"                                              -> ResourceKind.Svg

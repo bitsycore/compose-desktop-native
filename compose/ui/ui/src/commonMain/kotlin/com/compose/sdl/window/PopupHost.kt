@@ -139,7 +139,7 @@ fun createPopupHostState(): PopupHostState = PopupHostState()
    the entry. The hosted content (still composed - it lives in the HOST's
    composition, not the owner's) observes that, plays its animation, and MUST
    end with [finish], which actually removes the entry. */
-class PopupExitHandle internal constructor(
+internal class PopupExitHandle internal constructor(
 	private val mHost: PopupHostState,       // owning host - target of finish()
 	private val mEntry: PopupHostState.Entry, // the entry this handle controls
 ) {
@@ -158,7 +158,7 @@ class PopupExitHandle internal constructor(
    outside a popup layer. NB: safe to expose through the caller-locals rewrap
    in Popup (CompositionLocalProvider(callerContext)) - the caller never
    provides this local, so the layer's per-entry value stays visible. */
-val LocalPopupExitHandle = staticCompositionLocalOf<PopupExitHandle?> { null }
+internal val LocalPopupExitHandle = staticCompositionLocalOf<PopupExitHandle?> { null }
 
 // ==================
 // MARK: PopupLayer
@@ -187,7 +187,7 @@ fun PopupLayer(inHost: PopupHostState) {
    popup host so the dismissing press is NOT consumed (it still reaches whatever
    is under it - no dead first click). */
 @Composable
-fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest: () -> Unit) {
+internal fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest: () -> Unit) {
 	val vHost = LocalPopupHost.current
 	val vId = remember { Any() }
 	SideEffect { vHost.setDismisser(vId, inX, inY, inW, inH, onDismissRequest) }
@@ -203,7 +203,7 @@ fun PopupOutsideDismiss(inX: Int, inY: Int, inW: Int, inH: Int, onDismissRequest
    `x`/`y` are LAYOUT PIXELS (matches `LayoutCoordinates.positionInRoot`), not
    `Dp` - layout runs in physical pixels under the Option-B density flow. */
 @Composable
-fun PositionedPopup(
+internal fun PositionedPopup(
 	x: Int,
 	y: Int,
 	onDismissRequest: () -> Unit,

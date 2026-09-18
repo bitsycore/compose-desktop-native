@@ -27,7 +27,7 @@ import com.compose.sdl.graphics.NativePainterCanvas
  If the Canvas doesn't implement NativePainterCanvas (offscreen layer capture
  for graphics-layer effects) the paint is skipped.
 */
-class ResourcePainter internal constructor(
+internal class ResourcePainter internal constructor(
 	val resourcePath: String,
 	val kind: ResourceKind,
 ) : Painter() {

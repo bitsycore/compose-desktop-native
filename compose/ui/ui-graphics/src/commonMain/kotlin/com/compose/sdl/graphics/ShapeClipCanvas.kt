@@ -21,7 +21,7 @@ import androidx.compose.ui.geometry.RoundRect
  `Canvas.restore()` - the backend composites and pops it on the matching
  `restore()`.
 */
-interface NativeShapeClipCanvas {
+internal interface NativeShapeClipCanvas {
 	// Pushes a rounded-rect clip for subsequent draws until the matching
 	// Canvas.restore(). [inRoundRect] is in the CURRENT canvas-local coordinate
 	// space (the same space draw calls use after the enclosing translate).

@@ -61,7 +61,7 @@ fun IconFontIcon(
 	}
 }
 
-object IconDefaults {
+internal object IconDefaults {
 	val DefaultIconSize: Dp = 24.dp
 	/** STATIC fallback tint for direct IconFontIcon use - :foundation cannot
 	   read material3's LocalContentColor (module layering, same as upstream).

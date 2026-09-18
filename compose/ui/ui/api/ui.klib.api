@@ -1370,17 +1370,6 @@ abstract interface androidx.compose.ui/UiMediaScope { // androidx.compose.ui/UiM
     }
 }
 
-abstract interface com.compose.sdl.renderer.skia/SkiaBridge { // com.compose.sdl.renderer.skia/SkiaBridge|null[0]
-    abstract val canvas // com.compose.sdl.renderer.skia/SkiaBridge.canvas|{}canvas[0]
-        abstract fun <get-canvas>(): org.jetbrains.skia/Canvas // com.compose.sdl.renderer.skia/SkiaBridge.canvas.<get-canvas>|<get-canvas>(){}[0]
-
-    abstract fun destroy() // com.compose.sdl.renderer.skia/SkiaBridge.destroy|destroy(){}[0]
-    abstract fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.sdl.renderer.skia/SkiaBridge.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
-    abstract fun present() // com.compose.sdl.renderer.skia/SkiaBridge.present|present(){}[0]
-    abstract fun snapshot(): org.jetbrains.skia/Image? // com.compose.sdl.renderer.skia/SkiaBridge.snapshot|snapshot(){}[0]
-    abstract fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.sdl.renderer.skia/SkiaBridge.snapshotBgra|snapshotBgra(){}[0]
-}
-
 abstract interface com.compose.sdl/ComposeWindowScope { // com.compose.sdl/ComposeWindowScope|null[0]
     abstract val window // com.compose.sdl/ComposeWindowScope.window|{}window[0]
         abstract fun <get-window>(): com.compose.sdl/ComposeNativeWindow // com.compose.sdl/ComposeWindowScope.window.<get-window>|<get-window>(){}[0]
@@ -2831,31 +2820,6 @@ final class com.compose.sdl.node/ComposeRootHost { // com.compose.sdl.node/Compo
     final fun setConstraints(kotlin/Int, kotlin/Int) // com.compose.sdl.node/ComposeRootHost.setConstraints|setConstraints(kotlin.Int;kotlin.Int){}[0]
     final fun setInvalidationCallback(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.node/ComposeRootHost.setInvalidationCallback|setInvalidationCallback(kotlin.Function0<kotlin.Unit>){}[0]
     final fun setWindowFocused(kotlin/Boolean) // com.compose.sdl.node/ComposeRootHost.setWindowFocused|setWindowFocused(kotlin.Boolean){}[0]
-}
-
-final class com.compose.sdl.renderer.skia/SkiaSurfaceBridge : com.compose.sdl.renderer.skia/SkiaBridge { // com.compose.sdl.renderer.skia/SkiaSurfaceBridge|null[0]
-    constructor <init>(com.compose.sdl/SDL3Backend) // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.<init>|<init>(com.compose.sdl.SDL3Backend){}[0]
-
-    final val canvas // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.canvas|{}canvas[0]
-        final fun <get-canvas>(): org.jetbrains.skia/Canvas // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.canvas.<get-canvas>|<get-canvas>(){}[0]
-    final val height // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.height|{}height[0]
-        final fun <get-height>(): kotlin/Int // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.height.<get-height>|<get-height>(){}[0]
-    final val width // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.width|{}width[0]
-        final fun <get-width>(): kotlin/Int // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.width.<get-width>|<get-width>(){}[0]
-
-    final fun destroy() // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.destroy|destroy(){}[0]
-    final fun ensureSize(kotlin/Int, kotlin/Int): kotlin/Boolean // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.ensureSize|ensureSize(kotlin.Int;kotlin.Int){}[0]
-    final fun present() // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.present|present(){}[0]
-    final fun snapshot(): org.jetbrains.skia/Image? // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.snapshot|snapshot(){}[0]
-    final fun snapshotBgra(): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.sdl.renderer.skia/SkiaSurfaceBridge.snapshotBgra|snapshotBgra(){}[0]
-}
-
-final class com.compose.sdl.window/PopupExitHandle { // com.compose.sdl.window/PopupExitHandle|null[0]
-    final val isExiting // com.compose.sdl.window/PopupExitHandle.isExiting|{}isExiting[0]
-        final fun <get-isExiting>(): androidx.compose.runtime/State<kotlin/Boolean> // com.compose.sdl.window/PopupExitHandle.isExiting.<get-isExiting>|<get-isExiting>(){}[0]
-
-    final fun enableExitTransition() // com.compose.sdl.window/PopupExitHandle.enableExitTransition|enableExitTransition(){}[0]
-    final fun finish() // com.compose.sdl.window/PopupExitHandle.finish|finish(){}[0]
 }
 
 final class com.compose.sdl.window/PopupHostState { // com.compose.sdl.window/PopupHostState|null[0]
@@ -4552,27 +4516,6 @@ final object androidx.compose.ui/ComposeUiFlags { // androidx.compose.ui/Compose
         final fun <set-isViewFocusFixEnabled>(kotlin/Boolean) // androidx.compose.ui/ComposeUiFlags.isViewFocusFixEnabled.<set-isViewFocusFixEnabled>|<set-isViewFocusFixEnabled>(kotlin.Boolean){}[0]
 }
 
-final object com.compose.sdl.platform/DefaultViewConfiguration : androidx.compose.ui.platform/ViewConfiguration { // com.compose.sdl.platform/DefaultViewConfiguration|null[0]
-    final val doubleTapMinTimeMillis // com.compose.sdl.platform/DefaultViewConfiguration.doubleTapMinTimeMillis|{}doubleTapMinTimeMillis[0]
-        final fun <get-doubleTapMinTimeMillis>(): kotlin/Long // com.compose.sdl.platform/DefaultViewConfiguration.doubleTapMinTimeMillis.<get-doubleTapMinTimeMillis>|<get-doubleTapMinTimeMillis>(){}[0]
-    final val doubleTapTimeoutMillis // com.compose.sdl.platform/DefaultViewConfiguration.doubleTapTimeoutMillis|{}doubleTapTimeoutMillis[0]
-        final fun <get-doubleTapTimeoutMillis>(): kotlin/Long // com.compose.sdl.platform/DefaultViewConfiguration.doubleTapTimeoutMillis.<get-doubleTapTimeoutMillis>|<get-doubleTapTimeoutMillis>(){}[0]
-    final val handwritingGestureLineMargin // com.compose.sdl.platform/DefaultViewConfiguration.handwritingGestureLineMargin|{}handwritingGestureLineMargin[0]
-        final fun <get-handwritingGestureLineMargin>(): kotlin/Float // com.compose.sdl.platform/DefaultViewConfiguration.handwritingGestureLineMargin.<get-handwritingGestureLineMargin>|<get-handwritingGestureLineMargin>(){}[0]
-    final val handwritingSlop // com.compose.sdl.platform/DefaultViewConfiguration.handwritingSlop|{}handwritingSlop[0]
-        final fun <get-handwritingSlop>(): kotlin/Float // com.compose.sdl.platform/DefaultViewConfiguration.handwritingSlop.<get-handwritingSlop>|<get-handwritingSlop>(){}[0]
-    final val longPressTimeoutMillis // com.compose.sdl.platform/DefaultViewConfiguration.longPressTimeoutMillis|{}longPressTimeoutMillis[0]
-        final fun <get-longPressTimeoutMillis>(): kotlin/Long // com.compose.sdl.platform/DefaultViewConfiguration.longPressTimeoutMillis.<get-longPressTimeoutMillis>|<get-longPressTimeoutMillis>(){}[0]
-    final val maximumFlingVelocity // com.compose.sdl.platform/DefaultViewConfiguration.maximumFlingVelocity|{}maximumFlingVelocity[0]
-        final fun <get-maximumFlingVelocity>(): kotlin/Float // com.compose.sdl.platform/DefaultViewConfiguration.maximumFlingVelocity.<get-maximumFlingVelocity>|<get-maximumFlingVelocity>(){}[0]
-    final val minimumFlingVelocity // com.compose.sdl.platform/DefaultViewConfiguration.minimumFlingVelocity|{}minimumFlingVelocity[0]
-        final fun <get-minimumFlingVelocity>(): kotlin/Float // com.compose.sdl.platform/DefaultViewConfiguration.minimumFlingVelocity.<get-minimumFlingVelocity>|<get-minimumFlingVelocity>(){}[0]
-    final val minimumTouchTargetSize // com.compose.sdl.platform/DefaultViewConfiguration.minimumTouchTargetSize|{}minimumTouchTargetSize[0]
-        final fun <get-minimumTouchTargetSize>(): androidx.compose.ui.unit/DpSize // com.compose.sdl.platform/DefaultViewConfiguration.minimumTouchTargetSize.<get-minimumTouchTargetSize>|<get-minimumTouchTargetSize>(){}[0]
-    final val touchSlop // com.compose.sdl.platform/DefaultViewConfiguration.touchSlop|{}touchSlop[0]
-        final fun <get-touchSlop>(): kotlin/Float // com.compose.sdl.platform/DefaultViewConfiguration.touchSlop.<get-touchSlop>|<get-touchSlop>(){}[0]
-}
-
 final object com.compose.sdl.text.input/ImeBridge { // com.compose.sdl.text.input/ImeBridge|null[0]
     final var onSessionActiveChange // com.compose.sdl.text.input/ImeBridge.onSessionActiveChange|{}onSessionActiveChange[0]
         final fun <get-onSessionActiveChange>(): kotlin/Function1<kotlin/Boolean, kotlin/Unit>? // com.compose.sdl.text.input/ImeBridge.onSessionActiveChange.<get-onSessionActiveChange>|<get-onSessionActiveChange>(){}[0]
@@ -4893,14 +4836,9 @@ final val com.compose.sdl.layout/x // com.compose.sdl.layout/x|@androidx.compose
 final val com.compose.sdl.layout/y // com.compose.sdl.layout/y|@androidx.compose.ui.layout.LayoutCoordinates{}y[0]
     final fun (androidx.compose.ui.layout/LayoutCoordinates).<get-y>(): kotlin/Int // com.compose.sdl.layout/y.<get-y>|<get-y>@androidx.compose.ui.layout.LayoutCoordinates(){}[0]
 final val com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop // com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop|#static{}com_compose_sdl_node_ComposeRootHost$stableprop[0]
-final val com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop // com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop|#static{}com_compose_sdl_platform_DefaultViewConfiguration$stableprop[0]
-final val com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop|#static{}com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop[0]
 final val com.compose.sdl.text.input/com_compose_sdl_text_input_ImeBridge$stableprop // com.compose.sdl.text.input/com_compose_sdl_text_input_ImeBridge$stableprop|#static{}com_compose_sdl_text_input_ImeBridge$stableprop[0]
-final val com.compose.sdl.window/LocalPopupExitHandle // com.compose.sdl.window/LocalPopupExitHandle|{}LocalPopupExitHandle[0]
-    final fun <get-LocalPopupExitHandle>(): androidx.compose.runtime/ProvidableCompositionLocal<com.compose.sdl.window/PopupExitHandle?> // com.compose.sdl.window/LocalPopupExitHandle.<get-LocalPopupExitHandle>|<get-LocalPopupExitHandle>(){}[0]
 final val com.compose.sdl.window/LocalPopupHost // com.compose.sdl.window/LocalPopupHost|{}LocalPopupHost[0]
     final fun <get-LocalPopupHost>(): androidx.compose.runtime/ProvidableCompositionLocal<com.compose.sdl.window/PopupHostState> // com.compose.sdl.window/LocalPopupHost.<get-LocalPopupHost>|<get-LocalPopupHost>(){}[0]
-final val com.compose.sdl.window/com_compose_sdl_window_PopupExitHandle$stableprop // com.compose.sdl.window/com_compose_sdl_window_PopupExitHandle$stableprop|#static{}com_compose_sdl_window_PopupExitHandle$stableprop[0]
 final val com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stableprop // com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stableprop|#static{}com_compose_sdl_window_PopupHostState$stableprop[0]
 final val com.compose.sdl/LocalComposeNativeWindow // com.compose.sdl/LocalComposeNativeWindow|{}LocalComposeNativeWindow[0]
     final fun <get-LocalComposeNativeWindow>(): androidx.compose.runtime/ProvidableCompositionLocal<com.compose.sdl/ComposeNativeWindow> // com.compose.sdl/LocalComposeNativeWindow.<get-LocalComposeNativeWindow>|<get-LocalComposeNativeWindow>(){}[0]
@@ -5421,14 +5359,9 @@ final fun androidx.compose.ui/androidx_compose_ui_ComposeUiFlags$stableprop_gett
 final fun androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop_getter(): kotlin/Int // androidx.compose.ui/androidx_compose_ui_Modifier_Node$stableprop_getter|androidx_compose_ui_Modifier_Node$stableprop_getter(){}[0]
 final fun androidx.compose.ui/isUiSystemInDarkTheme(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/Boolean // androidx.compose.ui/isUiSystemInDarkTheme|isUiSystemInDarkTheme(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
 final fun com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter(): kotlin/Int // com.compose.sdl.node/com_compose_sdl_node_ComposeRootHost$stableprop_getter|com_compose_sdl_node_ComposeRootHost$stableprop_getter(){}[0]
-final fun com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter(): kotlin/Int // com.compose.sdl.platform/com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter|com_compose_sdl_platform_DefaultViewConfiguration$stableprop_getter(){}[0]
-final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter|com_compose_sdl_renderer_skia_SkiaSurfaceBridge$stableprop_getter(){}[0]
 final fun com.compose.sdl.text.input/com_compose_sdl_text_input_ImeBridge$stableprop_getter(): kotlin/Int // com.compose.sdl.text.input/com_compose_sdl_text_input_ImeBridge$stableprop_getter|com_compose_sdl_text_input_ImeBridge$stableprop_getter(){}[0]
 final fun com.compose.sdl.text/registerGenericFonts() // com.compose.sdl.text/registerGenericFonts|registerGenericFonts(){}[0]
 final fun com.compose.sdl.window/PopupLayer(com.compose.sdl.window/PopupHostState, androidx.compose.runtime/Composer?, kotlin/Int) // com.compose.sdl.window/PopupLayer|PopupLayer(com.compose.sdl.window.PopupHostState;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun com.compose.sdl.window/PopupOutsideDismiss(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Function0<kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // com.compose.sdl.window/PopupOutsideDismiss|PopupOutsideDismiss(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Function0<kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun com.compose.sdl.window/PositionedPopup(kotlin/Int, kotlin/Int, kotlin/Function0<kotlin/Unit>, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // com.compose.sdl.window/PositionedPopup|PositionedPopup(kotlin.Int;kotlin.Int;kotlin.Function0<kotlin.Unit>;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun com.compose.sdl.window/com_compose_sdl_window_PopupExitHandle$stableprop_getter(): kotlin/Int // com.compose.sdl.window/com_compose_sdl_window_PopupExitHandle$stableprop_getter|com_compose_sdl_window_PopupExitHandle$stableprop_getter(){}[0]
 final fun com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stableprop_getter(): kotlin/Int // com.compose.sdl.window/com_compose_sdl_window_PopupHostState$stableprop_getter|com_compose_sdl_window_PopupHostState$stableprop_getter(){}[0]
 final fun com.compose.sdl.window/createPopupHostState(): com.compose.sdl.window/PopupHostState // com.compose.sdl.window/createPopupHostState|createPopupHostState(){}[0]
 final fun com.compose.sdl/appDataDir(kotlin/String, kotlin/String): kotlin/String? // com.compose.sdl/appDataDir|appDataDir(kotlin.String;kotlin.String){}[0]

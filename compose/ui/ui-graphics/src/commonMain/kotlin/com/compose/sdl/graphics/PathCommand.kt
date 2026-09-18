@@ -10,7 +10,7 @@ package com.compose.sdl.graphics
    carries a `commands: List<PathCommand>` that the SDL3 / Skia renderers walk
    directly. No official equivalent, so lives in com.compose.sdl
    per FIDELITY.md's relocate rule. */
-sealed interface PathCommand {
+internal sealed interface PathCommand {
 	class MoveTo(val x: Float, val y: Float) : PathCommand
 	class LineTo(val x: Float, val y: Float) : PathCommand
 	class QuadTo(val cx: Float, val cy: Float, val x: Float, val y: Float) : PathCommand

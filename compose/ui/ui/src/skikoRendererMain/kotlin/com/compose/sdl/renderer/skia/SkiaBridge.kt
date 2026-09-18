@@ -13,7 +13,7 @@ import org.jetbrains.skia.Image
    per frame; the concrete implementation owns whatever GPU / CPU
    resources it needs (raster buffer + SDL_Texture, or a GL/Metal backend
    render target). */
-interface SkiaBridge {
+internal interface SkiaBridge {
     val canvas: Canvas
     fun ensureSize(inWidth: Int, inHeight: Int): Boolean
     fun present()

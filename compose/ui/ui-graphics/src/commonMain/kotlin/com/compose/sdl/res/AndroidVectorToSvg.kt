@@ -16,7 +16,7 @@ package com.compose.sdl.res
    Not supported: <group> transforms (paths are flattened, transforms ignored),
    gradients, clip-paths, trim-path. This covers the common single-/multi-path
    icon case such as exported Material icons. */
-object AndroidVectorToSvg {
+internal object AndroidVectorToSvg {
 
 	// Tag values never contain '>' (pathData is letters/digits/.,- /space) and
 	// quoted attribute values can't either, so [^>] within a tag is safe.

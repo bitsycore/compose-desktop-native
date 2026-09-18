@@ -16,7 +16,7 @@ import com.compose.sdl.res.ResourceKind
  the given rect, and this seam carries no ui-layout (ContentScale) dependency -
  keeping :ui-graphics free of :ui.
 */
-interface NativePainterCanvas {
+internal interface NativePainterCanvas {
 	fun drawNativePainter(
 		inResourcePath: String,
 		inKind: ResourceKind,

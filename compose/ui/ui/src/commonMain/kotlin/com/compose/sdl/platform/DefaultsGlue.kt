@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.DpSize
  * StubOwner). Constant values match the upstream `PlatformContext.DefaultViewConfiguration`
  * (longPressTimeout=500ms, doubleTapTimeout=300ms, doubleTapMinTime=40ms, touchSlop=8f).
  */
-object DefaultViewConfiguration : ViewConfiguration {
+internal object DefaultViewConfiguration : ViewConfiguration {
 	override val longPressTimeoutMillis: Long = 500
 	override val doubleTapTimeoutMillis: Long = 300
 	override val doubleTapMinTimeMillis: Long = 40

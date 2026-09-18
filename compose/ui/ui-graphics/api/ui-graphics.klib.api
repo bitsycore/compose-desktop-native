@@ -341,16 +341,8 @@ abstract interface com.compose.sdl.graphics/NativeFinishableCanvas { // com.comp
     abstract fun finish() // com.compose.sdl.graphics/NativeFinishableCanvas.finish|finish(){}[0]
 }
 
-abstract interface com.compose.sdl.graphics/NativePainterCanvas { // com.compose.sdl.graphics/NativePainterCanvas|null[0]
-    abstract fun drawNativePainter(kotlin/String, com.compose.sdl.res/ResourceKind, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/NativePainterCanvas.drawNativePainter|drawNativePainter(kotlin.String;com.compose.sdl.res.ResourceKind;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-}
-
 abstract interface com.compose.sdl.graphics/NativeShadowCanvas { // com.compose.sdl.graphics/NativeShadowCanvas|null[0]
     abstract fun drawDropShadow(androidx.compose.ui.graphics/Outline, kotlin/Float, androidx.compose.ui.graphics/Color, androidx.compose.ui.graphics/Color) // com.compose.sdl.graphics/NativeShadowCanvas.drawDropShadow|drawDropShadow(androidx.compose.ui.graphics.Outline;kotlin.Float;androidx.compose.ui.graphics.Color;androidx.compose.ui.graphics.Color){}[0]
-}
-
-abstract interface com.compose.sdl.graphics/NativeShapeClipCanvas { // com.compose.sdl.graphics/NativeShapeClipCanvas|null[0]
-    abstract fun clipRoundRect(androidx.compose.ui.geometry/RoundRect) // com.compose.sdl.graphics/NativeShapeClipCanvas.clipRoundRect|clipRoundRect(androidx.compose.ui.geometry.RoundRect){}[0]
 }
 
 abstract interface com.compose.sdl.res/ImageLoader { // com.compose.sdl.res/ImageLoader|null[0]
@@ -362,62 +354,6 @@ sealed interface androidx.compose.ui.graphics.shadow/ShadowContext { // androidx
     open fun clearCache() // androidx.compose.ui.graphics.shadow/ShadowContext.clearCache|clearCache(){}[0]
     open fun createDropShadowPainter(androidx.compose.ui.graphics/Shape, androidx.compose.ui.graphics.shadow/Shadow): androidx.compose.ui.graphics.shadow/DropShadowPainter // androidx.compose.ui.graphics.shadow/ShadowContext.createDropShadowPainter|createDropShadowPainter(androidx.compose.ui.graphics.Shape;androidx.compose.ui.graphics.shadow.Shadow){}[0]
     open fun createInnerShadowPainter(androidx.compose.ui.graphics/Shape, androidx.compose.ui.graphics.shadow/Shadow): androidx.compose.ui.graphics.shadow/InnerShadowPainter // androidx.compose.ui.graphics.shadow/ShadowContext.createInnerShadowPainter|createInnerShadowPainter(androidx.compose.ui.graphics.Shape;androidx.compose.ui.graphics.shadow.Shadow){}[0]
-}
-
-sealed interface com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand|null[0]
-    final class CubicTo : com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand.CubicTo|null[0]
-        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/PathCommand.CubicTo.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-
-        final val c1x // com.compose.sdl.graphics/PathCommand.CubicTo.c1x|{}c1x[0]
-            final fun <get-c1x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.c1x.<get-c1x>|<get-c1x>(){}[0]
-        final val c1y // com.compose.sdl.graphics/PathCommand.CubicTo.c1y|{}c1y[0]
-            final fun <get-c1y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.c1y.<get-c1y>|<get-c1y>(){}[0]
-        final val c2x // com.compose.sdl.graphics/PathCommand.CubicTo.c2x|{}c2x[0]
-            final fun <get-c2x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.c2x.<get-c2x>|<get-c2x>(){}[0]
-        final val c2y // com.compose.sdl.graphics/PathCommand.CubicTo.c2y|{}c2y[0]
-            final fun <get-c2y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.c2y.<get-c2y>|<get-c2y>(){}[0]
-        final val x // com.compose.sdl.graphics/PathCommand.CubicTo.x|{}x[0]
-            final fun <get-x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.x.<get-x>|<get-x>(){}[0]
-        final val y // com.compose.sdl.graphics/PathCommand.CubicTo.y|{}y[0]
-            final fun <get-y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.CubicTo.y.<get-y>|<get-y>(){}[0]
-    }
-
-    final class LineTo : com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand.LineTo|null[0]
-        constructor <init>(kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/PathCommand.LineTo.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
-
-        final val x // com.compose.sdl.graphics/PathCommand.LineTo.x|{}x[0]
-            final fun <get-x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.LineTo.x.<get-x>|<get-x>(){}[0]
-        final val y // com.compose.sdl.graphics/PathCommand.LineTo.y|{}y[0]
-            final fun <get-y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.LineTo.y.<get-y>|<get-y>(){}[0]
-    }
-
-    final class MoveTo : com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand.MoveTo|null[0]
-        constructor <init>(kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/PathCommand.MoveTo.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
-
-        final val x // com.compose.sdl.graphics/PathCommand.MoveTo.x|{}x[0]
-            final fun <get-x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.MoveTo.x.<get-x>|<get-x>(){}[0]
-        final val y // com.compose.sdl.graphics/PathCommand.MoveTo.y|{}y[0]
-            final fun <get-y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.MoveTo.y.<get-y>|<get-y>(){}[0]
-    }
-
-    final class QuadTo : com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand.QuadTo|null[0]
-        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // com.compose.sdl.graphics/PathCommand.QuadTo.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-
-        final val cx // com.compose.sdl.graphics/PathCommand.QuadTo.cx|{}cx[0]
-            final fun <get-cx>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.QuadTo.cx.<get-cx>|<get-cx>(){}[0]
-        final val cy // com.compose.sdl.graphics/PathCommand.QuadTo.cy|{}cy[0]
-            final fun <get-cy>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.QuadTo.cy.<get-cy>|<get-cy>(){}[0]
-        final val x // com.compose.sdl.graphics/PathCommand.QuadTo.x|{}x[0]
-            final fun <get-x>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.QuadTo.x.<get-x>|<get-x>(){}[0]
-        final val y // com.compose.sdl.graphics/PathCommand.QuadTo.y|{}y[0]
-            final fun <get-y>(): kotlin/Float // com.compose.sdl.graphics/PathCommand.QuadTo.y.<get-y>|<get-y>(){}[0]
-    }
-
-    final object Close : com.compose.sdl.graphics/PathCommand { // com.compose.sdl.graphics/PathCommand.Close|null[0]
-        final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.graphics/PathCommand.Close.equals|equals(kotlin.Any?){}[0]
-        final fun hashCode(): kotlin/Int // com.compose.sdl.graphics/PathCommand.Close.hashCode|hashCode(){}[0]
-        final fun toString(): kotlin/String // com.compose.sdl.graphics/PathCommand.Close.toString|toString(){}[0]
-    }
 }
 
 abstract class androidx.compose.ui.graphics.colorspace/Adaptation { // androidx.compose.ui.graphics.colorspace/Adaptation|null[0]
@@ -1109,19 +1045,6 @@ final class com.compose.sdl.renderer.skia/SkiaLeafDrawer { // com.compose.sdl.re
 
     final val imageCache // com.compose.sdl.renderer.skia/SkiaLeafDrawer.imageCache|{}imageCache[0]
         final fun <get-imageCache>(): com.compose.sdl.renderer.skia/SkiaImageCache // com.compose.sdl.renderer.skia/SkiaLeafDrawer.imageCache.<get-imageCache>|<get-imageCache>(){}[0]
-}
-
-final class com.compose.sdl.res/ResourcePainter : androidx.compose.ui.graphics.painter/Painter { // com.compose.sdl.res/ResourcePainter|null[0]
-    final val intrinsicSize // com.compose.sdl.res/ResourcePainter.intrinsicSize|{}intrinsicSize[0]
-        final fun <get-intrinsicSize>(): androidx.compose.ui.geometry/Size // com.compose.sdl.res/ResourcePainter.intrinsicSize.<get-intrinsicSize>|<get-intrinsicSize>(){}[0]
-    final val kind // com.compose.sdl.res/ResourcePainter.kind|{}kind[0]
-        final fun <get-kind>(): com.compose.sdl.res/ResourceKind // com.compose.sdl.res/ResourcePainter.kind.<get-kind>|<get-kind>(){}[0]
-    final val resourcePath // com.compose.sdl.res/ResourcePainter.resourcePath|{}resourcePath[0]
-        final fun <get-resourcePath>(): kotlin/String // com.compose.sdl.res/ResourcePainter.resourcePath.<get-resourcePath>|<get-resourcePath>(){}[0]
-
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.compose.sdl.res/ResourcePainter.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.compose.sdl.res/ResourcePainter.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // com.compose.sdl.res/ResourcePainter.toString|toString(){}[0]
 }
 
 final value class androidx.compose.ui.graphics.colorspace/ColorModel { // androidx.compose.ui.graphics.colorspace/ColorModel|null[0]
@@ -2108,10 +2031,6 @@ final object com.compose.sdl.graphics/NativeReleaseQueue { // com.compose.sdl.gr
     final fun enqueue(kotlin/Function0<kotlin/Unit>) // com.compose.sdl.graphics/NativeReleaseQueue.enqueue|enqueue(kotlin.Function0<kotlin.Unit>){}[0]
 }
 
-final object com.compose.sdl.res/AndroidVectorToSvg { // com.compose.sdl.res/AndroidVectorToSvg|null[0]
-    final fun convert(kotlin/String): kotlin/String // com.compose.sdl.res/AndroidVectorToSvg.convert|convert(kotlin.String){}[0]
-}
-
 final object com.compose.sdl.res/Res { // com.compose.sdl.res/Res|null[0]
     final fun readBytes(kotlin/String): kotlin/ByteArray? // com.compose.sdl.res/Res.readBytes|readBytes(kotlin.String){}[0]
 
@@ -2261,11 +2180,9 @@ final val com.compose.sdl.graphics/gradientTileMode // com.compose.sdl.graphics/
 final val com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop|#static{}com_compose_sdl_renderer_skia_SkiaEncodedImageDecoder$stableprop[0]
 final val com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop|#static{}com_compose_sdl_renderer_skia_SkiaImageCache$stableprop[0]
 final val com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop|#static{}com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop[0]
-final val com.compose.sdl.res/com_compose_sdl_res_AndroidVectorToSvg$stableprop // com.compose.sdl.res/com_compose_sdl_res_AndroidVectorToSvg$stableprop|#static{}com_compose_sdl_res_AndroidVectorToSvg$stableprop[0]
 final val com.compose.sdl.res/com_compose_sdl_res_Res$stableprop // com.compose.sdl.res/com_compose_sdl_res_Res$stableprop|#static{}com_compose_sdl_res_Res$stableprop[0]
 final val com.compose.sdl.res/com_compose_sdl_res_Res_drawable$stableprop // com.compose.sdl.res/com_compose_sdl_res_Res_drawable$stableprop|#static{}com_compose_sdl_res_Res_drawable$stableprop[0]
 final val com.compose.sdl.res/com_compose_sdl_res_Res_files$stableprop // com.compose.sdl.res/com_compose_sdl_res_Res_files$stableprop|#static{}com_compose_sdl_res_Res_files$stableprop[0]
-final val com.compose.sdl.res/com_compose_sdl_res_ResourcePainter$stableprop // com.compose.sdl.res/com_compose_sdl_res_ResourcePainter$stableprop|#static{}com_compose_sdl_res_ResourcePainter$stableprop[0]
 
 final var androidx.compose.ui.graphics/alphaMultiplier // androidx.compose.ui.graphics/alphaMultiplier|@androidx.compose.ui.graphics.Canvas{}alphaMultiplier[0]
     final fun (androidx.compose.ui.graphics/Canvas).<get-alphaMultiplier>(): kotlin/Float // androidx.compose.ui.graphics/alphaMultiplier.<get-alphaMultiplier>|<get-alphaMultiplier>@androidx.compose.ui.graphics.Canvas(){}[0]
@@ -2456,14 +2373,11 @@ final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaEncode
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter|com_compose_sdl_renderer_skia_SkiaImageCache$stableprop_getter(){}[0]
 final fun com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter(): kotlin/Int // com.compose.sdl.renderer.skia/com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter|com_compose_sdl_renderer_skia_SkiaLeafDrawer$stableprop_getter(){}[0]
 final fun com.compose.sdl.renderer.skia/readBackBgra(org.jetbrains.skia/Surface?, kotlin/Int, kotlin/Int): kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/ByteArray>? // com.compose.sdl.renderer.skia/readBackBgra|readBackBgra(org.jetbrains.skia.Surface?;kotlin.Int;kotlin.Int){}[0]
-final fun com.compose.sdl.res/com_compose_sdl_res_AndroidVectorToSvg$stableprop_getter(): kotlin/Int // com.compose.sdl.res/com_compose_sdl_res_AndroidVectorToSvg$stableprop_getter|com_compose_sdl_res_AndroidVectorToSvg$stableprop_getter(){}[0]
 final fun com.compose.sdl.res/com_compose_sdl_res_Res$stableprop_getter(): kotlin/Int // com.compose.sdl.res/com_compose_sdl_res_Res$stableprop_getter|com_compose_sdl_res_Res$stableprop_getter(){}[0]
 final fun com.compose.sdl.res/com_compose_sdl_res_Res_drawable$stableprop_getter(): kotlin/Int // com.compose.sdl.res/com_compose_sdl_res_Res_drawable$stableprop_getter|com_compose_sdl_res_Res_drawable$stableprop_getter(){}[0]
 final fun com.compose.sdl.res/com_compose_sdl_res_Res_files$stableprop_getter(): kotlin/Int // com.compose.sdl.res/com_compose_sdl_res_Res_files$stableprop_getter|com_compose_sdl_res_Res_files$stableprop_getter(){}[0]
-final fun com.compose.sdl.res/com_compose_sdl_res_ResourcePainter$stableprop_getter(): kotlin/Int // com.compose.sdl.res/com_compose_sdl_res_ResourcePainter$stableprop_getter|com_compose_sdl_res_ResourcePainter$stableprop_getter(){}[0]
 final fun com.compose.sdl.res/painterResource(kotlin/String): androidx.compose.ui.graphics.painter/Painter // com.compose.sdl.res/painterResource|painterResource(kotlin.String){}[0]
 final fun com.compose.sdl.res/painterResource(kotlin/String, com.compose.sdl.res/ResourceKind): androidx.compose.ui.graphics.painter/Painter // com.compose.sdl.res/painterResource|painterResource(kotlin.String;com.compose.sdl.res.ResourceKind){}[0]
-final fun com.compose.sdl.res/resourceKindForPath(kotlin/String): com.compose.sdl.res/ResourceKind // com.compose.sdl.res/resourceKindForPath|resourceKindForPath(kotlin.String){}[0]
 final inline fun (androidx.compose.ui.graphics.drawscope/DrawScope).androidx.compose.ui.graphics.drawscope/clipPath(androidx.compose.ui.graphics/Path, androidx.compose.ui.graphics/ClipOp = ..., kotlin/Function1<androidx.compose.ui.graphics.drawscope/DrawScope, kotlin/Unit>) // androidx.compose.ui.graphics.drawscope/clipPath|clipPath@androidx.compose.ui.graphics.drawscope.DrawScope(androidx.compose.ui.graphics.Path;androidx.compose.ui.graphics.ClipOp;kotlin.Function1<androidx.compose.ui.graphics.drawscope.DrawScope,kotlin.Unit>){}[0]
 final inline fun (androidx.compose.ui.graphics.drawscope/DrawScope).androidx.compose.ui.graphics.drawscope/clipRect(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., androidx.compose.ui.graphics/ClipOp = ..., kotlin/Function1<androidx.compose.ui.graphics.drawscope/DrawScope, kotlin/Unit>) // androidx.compose.ui.graphics.drawscope/clipRect|clipRect@androidx.compose.ui.graphics.drawscope.DrawScope(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;androidx.compose.ui.graphics.ClipOp;kotlin.Function1<androidx.compose.ui.graphics.drawscope.DrawScope,kotlin.Unit>){}[0]
 final inline fun (androidx.compose.ui.graphics.drawscope/DrawScope).androidx.compose.ui.graphics.drawscope/draw(androidx.compose.ui.unit/Density, androidx.compose.ui.unit/LayoutDirection, androidx.compose.ui.graphics/Canvas, androidx.compose.ui.geometry/Size, androidx.compose.ui.graphics.layer/GraphicsLayer? = ..., kotlin/Function1<androidx.compose.ui.graphics.drawscope/DrawScope, kotlin/Unit>) // androidx.compose.ui.graphics.drawscope/draw|draw@androidx.compose.ui.graphics.drawscope.DrawScope(androidx.compose.ui.unit.Density;androidx.compose.ui.unit.LayoutDirection;androidx.compose.ui.graphics.Canvas;androidx.compose.ui.geometry.Size;androidx.compose.ui.graphics.layer.GraphicsLayer?;kotlin.Function1<androidx.compose.ui.graphics.drawscope.DrawScope,kotlin.Unit>){}[0]
