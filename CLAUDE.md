@@ -184,10 +184,14 @@ pulse/               → Pulse MVI. Upstream (bitsycore/pulse-mvi, PULSE_REF) ta
 ├── pulse-viewmodel/                 → :pulse:pulse-viewmodel  - ViewModel binding
 ├── pulse-savedstate/                → :pulse:pulse-savedstate - SavedStateHandle persistence
 └── pulse-compose/                   → :pulse:pulse-compose    - Compose bindings
-                                                    Published as com.bitsycore.pulse:<module>, NOT
-                                                    upstream's com.bitsycore.lib:<module> - the two
-                                                    must not collide; the bridge substitutes the
-                                                    upstream coord on native configs.
+                                                    Published as com.bitsycore.compose.desktop.native
+                                                    .pulse:<module>, NOT upstream's com.bitsycore.lib:
+                                                    <module>. Pulse is the one vendored dep that is
+                                                    ITSELF a com.bitsycore library, so the republish is
+                                                    namespaced under this project rather than a bare
+                                                    com.bitsycore.pulse that would read like upstream;
+                                                    the bridge substitutes the upstream coord on
+                                                    native configs.
 
 navigation3/
 └── navigation3-ui/                  → :navigation3:navigation3-ui - androidx.navigation3.ui.* + scene machinery,

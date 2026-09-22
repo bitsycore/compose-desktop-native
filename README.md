@@ -185,7 +185,7 @@ targets, so you keep writing against the official coordinates:
 | `components-resources`, `navigation3-ui` | no mingwX64 / linux klibs | `com.bitsycore.compose.components`, `com.bitsycore.navigation3` |
 | **Koin** viewmodel + compose modules | apple + android only upstream (`koin-core` itself is fine) | `com.bitsycore.koin` |
 | **Coil 3** (whole stack) | no mingwX64 anywhere; no desktop native at all for its compose layer | `com.bitsycore.coil3` |
-| **Pulse MVI** | no desktop-native artifact upstream | `com.bitsycore.pulse` |
+| **Pulse MVI** | no desktop-native artifact upstream | `com.bitsycore.compose.desktop.native.pulse` |
 
 The bridge plugin substitutes each of these on native desktop configurations, so
 app code declares `io.insert-koin:koin-compose`, `io.coil-kt.coil3:coil-compose`
@@ -251,7 +251,7 @@ substitutes them on native desktop targets only.
 | Koin | `io.insert-koin:koin-compose*:4.2.2` | `com.bitsycore.koin:*` | apple + android only upstream |
 | Koin core | `io.insert-koin:koin-core:4.2.2` | *not forked* | already ships mingwX64 + linux |
 | Coil 3 | `io.coil-kt.coil3:coil*:3.6.2` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
-| Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.pulse:*` | no desktop-native artifact upstream |
+| Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.compose.desktop.native.pulse:*` | no desktop-native artifact upstream - and Pulse is itself a `com.bitsycore` library, so the republish is namespaced under this project |
 
 Koin's `koin-compose-viewmodel-navigation` is deliberately **not** provided: it
 needs Navigation 2's `navigation-compose`, which has no mingwX64 or linux klibs

@@ -74,12 +74,14 @@ private val bridgeTable = mapOf(
     "io.coil-kt.coil3:coil-network-core" to "com.bitsycore.coil3:coil-network-core",
     "io.coil-kt.coil3:coil-network-ktor3" to "com.bitsycore.coil3:coil-network-ktor3",
 
-    // Pulse MVI. Upstream publishes com.bitsycore.lib:*; the port republishes
-    // under com.bitsycore.pulse:* so the two coordinates never collide.
-    "com.bitsycore.lib:pulse" to "com.bitsycore.pulse:pulse",
-    "com.bitsycore.lib:pulse-viewmodel" to "com.bitsycore.pulse:pulse-viewmodel",
-    "com.bitsycore.lib:pulse-savedstate" to "com.bitsycore.pulse:pulse-savedstate",
-    "com.bitsycore.lib:pulse-compose" to "com.bitsycore.pulse:pulse-compose",
+    // Pulse MVI. Upstream publishes com.bitsycore.lib:*. Pulse is itself a
+    // com.bitsycore library, so the port's republish is namespaced under THIS
+    // project - a bare com.bitsycore.pulse:* would read like an upstream
+    // coordinate and could collide with one later.
+    "com.bitsycore.lib:pulse" to "com.bitsycore.compose.desktop.native.pulse:pulse",
+    "com.bitsycore.lib:pulse-viewmodel" to "com.bitsycore.compose.desktop.native.pulse:pulse-viewmodel",
+    "com.bitsycore.lib:pulse-savedstate" to "com.bitsycore.compose.desktop.native.pulse:pulse-savedstate",
+    "com.bitsycore.lib:pulse-compose" to "com.bitsycore.compose.desktop.native.pulse:pulse-compose",
 )
 
 /** The K/N desktop targets the port serves; configuration names carry the token. */

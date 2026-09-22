@@ -886,7 +886,7 @@ WRONG - both coordinate sets publish mingwX64 + linux + macos, and the port alre
 CLAUDE.md, exercised by `demo --backtest`). Nothing to vendor there.
 
 **Landed** as `koin/` (4 modules, `com.bitsycore.koin`), `coil/` (7 modules,
-`com.bitsycore.coil3`) and `pulse/` (4 modules, `com.bitsycore.pulse`) - 202 files vendored
+`com.bitsycore.coil3`) and `pulse/` (4 modules, `com.bitsycore.compose.desktop.native.pulse`) - 202 files vendored
 verbatim across three new pinned repos (`KOIN_REF=4.2.2`, `COIL_REF=3.6.2`,
 `PULSE_REF=0.3.7`), ZERO local source edits. All build for mingwX64 + linuxX64/arm64, are
 BCV-dumped, publish, and carry bridge substitution rules so consumers keep declaring the

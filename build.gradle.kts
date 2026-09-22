@@ -60,10 +60,10 @@ val kAreaGroups = mapOf(
     ":coil:coil-svg" to "com.bitsycore.coil3",
     ":coil:coil-network-core" to "com.bitsycore.coil3",
     ":coil:coil-network-ktor3" to "com.bitsycore.coil3",
-    ":pulse:pulse" to "com.bitsycore.pulse",
-    ":pulse:pulse-viewmodel" to "com.bitsycore.pulse",
-    ":pulse:pulse-savedstate" to "com.bitsycore.pulse",
-    ":pulse:pulse-compose" to "com.bitsycore.pulse",
+    ":pulse:pulse" to "com.bitsycore.compose.desktop.native.pulse",
+    ":pulse:pulse-viewmodel" to "com.bitsycore.compose.desktop.native.pulse",
+    ":pulse:pulse-savedstate" to "com.bitsycore.compose.desktop.native.pulse",
+    ":pulse:pulse-compose" to "com.bitsycore.compose.desktop.native.pulse",
     ":compose:desktop:native:desktop-native-window" to "com.bitsycore.compose",
 )
 fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
@@ -244,7 +244,9 @@ allprojects {
                 substitute(module("io.coil-kt.coil3:coil-network-core")).using(project(":coil:coil-network-core"))
                 substitute(module("io.coil-kt.coil3:coil-network-ktor3")).using(project(":coil:coil-network-ktor3"))
                 // Pulse MVI: upstream publishes com.bitsycore.lib:* with no desktop
-                // native targets. The port republishes under com.bitsycore.pulse so the
+                // native targets. Pulse is itself a com.bitsycore library, so the port's
+                // republish is namespaced under THIS project rather than a bare
+                // com.bitsycore.pulse, which would read like the upstream artifact. The
                 // two coordinates never collide, and substitutes the official one here.
                 substitute(module("com.bitsycore.lib:pulse")).using(project(":pulse:pulse"))
                 substitute(module("com.bitsycore.lib:pulse-viewmodel")).using(project(":pulse:pulse-viewmodel"))
