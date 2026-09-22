@@ -1,4 +1,4 @@
-// VENDOR-BASE: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/v2/Scrollbar.skiko.kt @ v1.12.0
+// VENDOR-BASE: compose/foundation/foundation/src/skikoMain/kotlin/androidx/compose/foundation/v2/Scrollbar.skiko.kt @ v1.12.1
 // MANUAL VENDOR: expect fun runBlockingIfPossible inlined to runBlocking (flat native source set can't hold expect+actual together).
 // Also carries the K2 @file:Suppress below (same as sync.py injects into src/vendor) so the native metadata compile / Windows publish accepts the orphaned JVM annotation.
 /*

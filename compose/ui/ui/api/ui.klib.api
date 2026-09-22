@@ -4818,6 +4818,8 @@ final val androidx.compose.ui.semantics/androidx_compose_ui_semantics_SemanticsP
 final val androidx.compose.ui.spatial/androidx_compose_ui_spatial_RelativeLayoutBounds$stableprop // androidx.compose.ui.spatial/androidx_compose_ui_spatial_RelativeLayoutBounds$stableprop|#static{}androidx_compose_ui_spatial_RelativeLayoutBounds$stableprop[0]
 final val androidx.compose.ui.window/androidx_compose_ui_window_DialogProperties$stableprop // androidx.compose.ui.window/androidx_compose_ui_window_DialogProperties$stableprop|#static{}androidx_compose_ui_window_DialogProperties$stableprop[0]
 final val androidx.compose.ui.window/androidx_compose_ui_window_PopupProperties$stableprop // androidx.compose.ui.window/androidx_compose_ui_window_PopupProperties$stableprop|#static{}androidx_compose_ui_window_PopupProperties$stableprop[0]
+final val androidx.compose.ui/LocalSystemTheme // androidx.compose.ui/LocalSystemTheme|{}LocalSystemTheme[0]
+    final fun <get-LocalSystemTheme>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui/SystemTheme> // androidx.compose.ui/LocalSystemTheme.<get-LocalSystemTheme>|<get-LocalSystemTheme>(){}[0]
 final val androidx.compose.ui/LocalUiMediaScope // androidx.compose.ui/LocalUiMediaScope|{}LocalUiMediaScope[0]
     final fun <get-LocalUiMediaScope>(): androidx.compose.runtime/ProvidableCompositionLocal<androidx.compose.ui/UiMediaScope> // androidx.compose.ui/LocalUiMediaScope.<get-LocalUiMediaScope>|<get-LocalUiMediaScope>(){}[0]
 final val androidx.compose.ui/androidx_compose_ui_AbsoluteAlignment$stableprop // androidx.compose.ui/androidx_compose_ui_AbsoluteAlignment$stableprop|#static{}androidx_compose_ui_AbsoluteAlignment$stableprop[0]

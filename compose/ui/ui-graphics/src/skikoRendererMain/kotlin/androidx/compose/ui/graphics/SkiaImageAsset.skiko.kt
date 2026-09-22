@@ -17,7 +17,7 @@
  */
 
 // DERIVED (copy + edit) from compose-multiplatform-core -- MANUAL VENDOR, NON-IDEMPOTENT.
-// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt @ v1.12.0
+// VENDOR-BASE: compose/ui/ui-graphics/src/skikoMain/kotlin/androidx/compose/ui/graphics/SkiaImageAsset.skiko.kt @ v1.12.1
 // FLATTENED for our single-native-source-set layout: upstream splits Image.toBitmap /
 // ByteArray.putBytesInto into expect (here) + actual (skikoExcludingWebMain / nativeMain).
 // Those collapse into the same skikoRenderer source set here, which is illegal, so the two

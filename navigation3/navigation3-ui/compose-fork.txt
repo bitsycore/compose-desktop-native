@@ -5,9 +5,7 @@ commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/androidx/navigation3/ListUtils.kt -> src/vendor/common/kotlin/androidx/navigation3/ListUtils.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/BackStackAwareLifecycleNavEntryDecorator.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/DialogScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/DialogScene.kt
-#     | commonMain/kotlin/androidx/navigation3/scene/NavigationEventHandler.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/NavigationEventHandler.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/OverlayScene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/OverlayScene.kt
-#     | commonMain/kotlin/androidx/navigation3/scene/RememberNavigationEventState.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/RememberNavigationEventState.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/Scene.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/Scene.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/SceneDecoratorStrategy.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneDecoratorStrategy.kt
 #     | commonMain/kotlin/androidx/navigation3/scene/SceneInfo.kt -> src/vendor/common/kotlin/androidx/navigation3/scene/SceneInfo.kt

@@ -24,7 +24,7 @@
 #  Toolchain
 
 # Policy 2 (not something CMP dictates): latest release. Newer than the Kotlin
-# CMP 1.12.0 is itself built with (2.3.20), which is fine - Kotlin/Native reads
+# CMP 1.12.1 is itself built with (2.3.20), which is fine - Kotlin/Native reads
 # older klibs, and the whole port + both sample apps compile and link clean on
 # 2.4.20 with no klib API diff against 2.4.0.
 kotlin = "2.4.20"
@@ -34,21 +34,21 @@ kotlin = "2.4.20"
 #
 #  compose          = ui / foundation / animation / material
 #  composeMaterial3 = material3, which rides its own train upstream:
-#                     1.12.0-alpha03 IS what CMP 1.12.0 ships
+#                     1.12.0-alpha03 IS what CMP 1.12.1 ships
 #                     (Jetpack material3 1.5.0-alpha22)
 #  composeRuntime   = the official runtime klibs, never substituted
 #
 #  Consumed by the bridge plugin (stamped into bridge-version.properties and
 #  exposed to consumers) and by demo / apidemo / material-symbols.
 
-compose = "1.12.0"
+compose = "1.12.1"
 composeMaterial3 = "1.12.0-alpha03"
-composeRuntime = "1.12.0"
+composeRuntime = "1.12.1"
 
 # ============
 #  Skia
 
-# CMP 1.12.0 pins skiko 0.150.1, so macOS/Linux use exactly that.
+# CMP 1.12.1 pins skiko 0.150.1, so macOS/Linux use exactly that.
 skiko = "0.150.1"
 # The bitsycore skiko FORK for mingwX64 (skiko + Skia inside
 # skiko-windows-x64.dll). Its `-mingw.N` base MUST stay equal to `skiko` above.
@@ -64,11 +64,12 @@ androidxGraphicsShapes = "1.1.0"
 # CMP ships org.jetbrains.androidx.navigationevent 1.1.0 == Jetpack 1.1.1; 1.1.2
 # is the latest PATCH of that same minor, so it stays inside policy 1.
 androidxNavigationEvent = "1.1.2"
-# CMP ships org.jetbrains.androidx.navigation3 1.2.0-alpha02 == Jetpack
-# 1.2.0-alpha04. Stay exactly there: it is a pre-release line, so alpha-to-alpha
-# can move API under the vendored :navigation3:navigation3-ui.
-navigation3Runtime = "1.2.0-alpha04"
-# EXCEPTION to policy 1, deliberate: CMP 1.12.0 builds against savedstate 1.4.0,
+# CMP 1.12.1 moved navigation3 BACKWARDS off the alpha line onto stable 1.1.7
+# (redirectversions.toml; upstream re-checked navigation3 out of release/1.11).
+# The vendored :navigation3:navigation3-ui is that same 1.1.7 source, so the
+# runtime has to follow it down - a 1.2.0-alpha runtime no longer matches.
+navigation3Runtime = "1.1.7"
+# EXCEPTION to policy 1, deliberate: CMP 1.12.1 builds against savedstate 1.5.0-alpha01,
 # and androidx.lifecycle 2.11.0 *requires* 1.4.0 - but only as a MINIMUM, so
 # 1.5.0 resolves with no conflict. Taken on purpose to hand consumers the newer
 # savedstate API; the delta is additive within the same major.
