@@ -81,6 +81,7 @@ val Material3Screens: List<DemoScreen> = listOf(
     DemoScreen("Pickers") { M3PickersScreen() },
     DemoScreen("Carousel") { M3CarouselScreen() },
     DemoScreen("M3Misc") { M3MiscScreen() },
+    DemoScreen("Adaptive") { AdaptiveScreen() },
 )
 
 val Navigation3Screens: List<DemoScreen> = listOf(

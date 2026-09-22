@@ -46,6 +46,10 @@ val kAreaGroups = mapOf(
     ":compose:animation:animation-core" to "com.bitsycore.compose.animation",
     ":compose:animation:animation-graphics" to "com.bitsycore.compose.animation",
     ":compose:material3:material3" to "com.bitsycore.compose.material3",
+    ":compose:material3:adaptive:adaptive" to "com.bitsycore.compose.material3.adaptive",
+    ":compose:material3:adaptive:adaptive-layout" to "com.bitsycore.compose.material3.adaptive",
+    ":compose:material3:adaptive:adaptive-navigation" to "com.bitsycore.compose.material3.adaptive",
+    ":compose:material3:adaptive:adaptive-navigation3" to "com.bitsycore.compose.material3.adaptive",
     ":compose:material:material-ripple" to "com.bitsycore.compose.material",
     ":components:resources:components-resources" to "com.bitsycore.compose.components",
     ":navigation3:navigation3-ui" to "com.bitsycore.navigation3",
@@ -99,6 +103,7 @@ val kPublishedLibs = setOf(
     ":compose:animation:animation-graphics",
     ":compose:foundation:foundation", ":compose:foundation:foundation-layout",
     ":compose:material3:material3", ":compose:material:material-ripple",
+    ":compose:material3:adaptive:adaptive", ":compose:material3:adaptive:adaptive-layout", ":compose:material3:adaptive:adaptive-navigation", ":compose:material3:adaptive:adaptive-navigation3",
     ":compose:desktop:native:desktop-native-window", ":utils:material-symbols",
     ":navigation3:navigation3-ui", ":components:resources:components-resources",
     ":koin:koin-core-viewmodel", ":koin:koin-compose",
@@ -222,6 +227,12 @@ allprojects {
                 substitute(module("org.jetbrains.compose.animation:animation")).using(project(":compose:animation:animation"))
                 substitute(module("org.jetbrains.compose.animation:animation-core")).using(project(":compose:animation:animation-core"))
                 substitute(module("org.jetbrains.compose.material3:material3")).using(project(":compose:material3:material3"))
+                // material3-adaptive: upstream publishes ios + macosArm64 only - no
+                // linux, no mingw (issues/4). Vendored as :compose:material3:adaptive:*.
+                substitute(module("org.jetbrains.compose.material3.adaptive:adaptive")).using(project(":compose:material3:adaptive:adaptive"))
+                substitute(module("org.jetbrains.compose.material3.adaptive:adaptive-layout")).using(project(":compose:material3:adaptive:adaptive-layout"))
+                substitute(module("org.jetbrains.compose.material3.adaptive:adaptive-navigation")).using(project(":compose:material3:adaptive:adaptive-navigation"))
+                substitute(module("org.jetbrains.compose.material3.adaptive:adaptive-navigation3")).using(project(":compose:material3:adaptive:adaptive-navigation3"))
                 // navigation3-ui: the JB Maven artifact has no K/N desktop
                 // klibs - the port vendors it as :navigation3-ui.
                 substitute(module("org.jetbrains.androidx.navigation3:navigation3-ui")).using(project(":navigation3:navigation3-ui"))

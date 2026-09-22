@@ -45,6 +45,7 @@ kotlin {
             dependencies {
                 val vComposeJvmVersion = libs.versions.compose.get()
                 val vComposeM3JvmVersion = libs.versions.composeMaterial3.get()
+                val vAdaptiveJvmVersion = libs.versions.composeMaterial3Adaptive.get()
 
                 // Official Maven coords for everything the shared UI touches; native
                 // configurations substitute them for the port modules automatically
@@ -64,13 +65,21 @@ kotlin {
                 implementation("org.jetbrains.compose.components:components-resources:${vComposeJvmVersion}")
 
                 implementation("org.jetbrains.compose.material3:material3:$vComposeM3JvmVersion")
+                implementation("org.jetbrains.compose.material3.adaptive:adaptive:$vAdaptiveJvmVersion")
+                implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:$vAdaptiveJvmVersion")
+                implementation("org.jetbrains.compose.material3.adaptive:adaptive-navigation:$vAdaptiveJvmVersion")
+                // adaptive api-exposes window-core (WindowSizeClass). Because `adaptive`
+                // is SUBSTITUTED on native configs, KGP's granular-metadata visibility
+                // check drops its transitives from the commonMain classpath - so the
+                // shared screen only sees WindowSizeClass if we declare it DIRECTLY.
+                implementation(libs.androidx.window.core)
 
                 // Common Material Symbols Utility
                 implementation(project(":utils:material-symbols"))
 
                 // nav3 + lifecycle: real KMP Maven artifacts on every target
                 implementation(libs.androidx.navigation3.runtime)
-                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.2.0-alpha02")
+                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.1.2")
                 implementation(libs.androidx.lifecycle.viewmodel.navigation3)
             }
         }

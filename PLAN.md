@@ -759,6 +759,42 @@ hand-rolled text engine as an architectural deviation (§2 P1), per-focus
 `SDL_StartTextInput/StopTextInput`, `loadImageBitmap`/`loadSvgPainter` (JVM `InputStream`
 signatures, N/A on K/N).
 
+## 8. material3-adaptive ported to desktop native (2026-09-22) - ✅ LANDED
+
+Asked for in [issue #4](https://github.com/bitsycore/compose-desktop-native/issues/4):
+`org.jetbrains.compose.material3.adaptive:*` 1.3.0-rc01 publishes `ios_arm64
+ios_simulator_arm64 macos_arm64` and nothing else - no linux, no mingw. (It DOES
+carry macosArm64, which answers the reporter's open question.)
+
+**The port needed zero source edits.** Two things made it a pure re-target:
+
+1. Every platform actual the native legs want already exists upstream -
+   `adaptive/nonAndroidMain` (`calculatePosture`), `adaptive-layout/skikoMain`
+   (the ~75 l10n tables + `Strings` + the drag handle) and
+   `adaptive-layout/nativeMain` (`identityHashCode`, `isGraphicsLayerElement`).
+2. `androidx.window:window-core` - the dependency `adaptive` api-exposes, and the
+   obvious suspect for why the artifacts stop at apple - has published
+   `linux_x64 linux_arm64 mingw_x64 macos_arm64` klibs all along, under BOTH the
+   google and jetbrains coordinates.
+
+So the artifacts were missing purely because upstream never enabled the targets.
+
+**Landed** as four modules under `compose/material3/adaptive/`
+(`com.bitsycore.compose.material3.adaptive:*`), 125 files vendored verbatim off the
+existing `COMPOSE_CORE_REF` pin - no new SET_REPO. Upstream's `skikoMain` lands in
+`src/vendor/native/` beside upstream's own `nativeMain`; they actualise disjoint
+expects so they share one source set. Both bridges substitute all four, and
+`demo --screen=Adaptive` renders a live `ListDetailPaneScaffold` on mingwX64.
+
+One wrinkle worth remembering, and a textbook case of the granular-metadata trap
+already documented in CLAUDE.md: because `adaptive` is SUBSTITUTED on native
+configs, KGP drops its transitives from the commonMain metadata classpath, so the
+shared demo screen could not see `WindowSizeClass` until `window-core` was declared
+DIRECTLY in `demo`'s commonMain.
+
+Not yet exercised: `adaptive-navigation3` builds and dumps API but has no demo
+screen - the nav3 SceneStrategy path is unproven at runtime.
+
 ## 7. Post-1.12.0 open items (opened 2026-09-12)
 
 ### 7a. JVM parity reference used a DIFFERENT default font than native - ✅ FIXED

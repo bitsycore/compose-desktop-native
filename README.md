@@ -186,6 +186,7 @@ targets, so you keep writing against the official coordinates:
 | **Koin** viewmodel + compose modules | apple + android only upstream (`koin-core` itself is fine) | `com.bitsycore.koin` |
 | **Coil 3** (whole stack) | no mingwX64 anywhere; no desktop native at all for its compose layer | `com.bitsycore.coil3` |
 | **Pulse MVI** | no desktop-native artifact upstream | `com.bitsycore.compose.desktop.native.pulse` |
+| **material3-adaptive** (all four) | ios + macosArm64 only upstream - no linux, no mingw | `com.bitsycore.compose.material3.adaptive` |
 
 The bridge plugin substitutes each of these on native desktop configurations, so
 app code declares `io.insert-koin:koin-compose`, `io.coil-kt.coil3:coil-compose`
@@ -213,8 +214,8 @@ one (`savedstate`, below).
 
 | | Version | Notes |
 |---|---|---|
-| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.0 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
-| Compose Multiplatform | **1.12.0** | The vendored sources are the `v1.12.0` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. |
+| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.1 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
+| Compose Multiplatform | **1.12.1** | The vendored sources are the `v1.12.1` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. skiko is unchanged at 0.150.1, so the mingwX64 fork still matches its Skia base. |
 | SDL3 | **release-3.4.16** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
 | Skiko | **0.150.1** | macOS / Linux use the official `org.jetbrains.skiko`. |
 | Skiko (Windows fork) | **0.150.1-mingw.2** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
@@ -227,19 +228,31 @@ the bridge plugin and you keep declaring the **official** coordinate.
 
 | Library | Official coordinate | Port coordinate |
 |---|---|---|
-| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.0` | *not forked - the official klibs serve every target* |
-| UI | `org.jetbrains.compose.ui:ui*:1.12.0` | `com.bitsycore.compose.ui:ui*` |
-| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.0` | `com.bitsycore.compose.foundation:foundation*` |
-| Animation | `org.jetbrains.compose.animation:animation*:1.12.0` | `com.bitsycore.compose.animation:animation*` |
-| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.0` | `com.bitsycore.compose.material:material-ripple` |
+| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.1` | *not forked - the official klibs serve every target* |
+| UI | `org.jetbrains.compose.ui:ui*:1.12.1` | `com.bitsycore.compose.ui:ui*` |
+| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.1` | `com.bitsycore.compose.foundation:foundation*` |
+| Animation | `org.jetbrains.compose.animation:animation*:1.12.1` | `com.bitsycore.compose.animation:animation*` |
+| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.1` | `com.bitsycore.compose.material:material-ripple` |
 | Material3 | `org.jetbrains.compose.material3:material3:1.12.0-alpha03` | `com.bitsycore.compose.material3:material3` |
-| Resources | `org.jetbrains.compose.components:components-resources:1.12.0` | `com.bitsycore.compose.components:components-resources` |
+| Material3 Adaptive | `org.jetbrains.compose.material3.adaptive:adaptive*:1.3.0-rc01` | `com.bitsycore.compose.material3.adaptive:adaptive*` |
+| Resources | `org.jetbrains.compose.components:components-resources:1.12.1` | `com.bitsycore.compose.components:components-resources` |
 | Navigation3 UI | `org.jetbrains.androidx.navigation3:navigation3-ui` | `com.bitsycore.navigation3:navigation3-ui` |
 | Window shell | *no upstream equivalent* | `com.bitsycore.compose:desktop-native-window` |
 | SDL layer | *no upstream equivalent* | `com.bitsycore.compose.sdl:sdl-core` |
 
 Material3 rides its own release train upstream: `1.12.0-alpha03` **is** the
-version Compose Multiplatform 1.12.0 ships (Jetpack Material3 1.5.0-alpha22).
+version Compose Multiplatform 1.12.1 ships (Jetpack Material3 1.5.0-alpha22).
+material3-adaptive rides a third train again.
+
+**material3-adaptive** (`adaptive`, `adaptive-layout`, `adaptive-navigation`,
+`adaptive-navigation3`) is published upstream for ios and macosArm64 only - no
+linux, no mingw. This port ships all four for every desktop-native target. It
+needed no source changes at all: every platform actual the native legs want is
+already in upstream's `nonAndroidMain` / `skikoMain` / `nativeMain`, and
+`androidx.window:window-core` - the one dependency involved - has published
+linux, mingw and macos klibs the whole time. The artifacts were missing only
+because upstream never turned the targets on. `demo --screen=Adaptive` renders
+a live `ListDetailPaneScaffold`.
 
 ### Ecosystem libraries
 
@@ -250,7 +263,7 @@ substitutes them on native desktop targets only.
 |---|---|---|---|
 | Koin | `io.insert-koin:koin-compose*:4.2.2` | `com.bitsycore.koin:*` | apple + android only upstream |
 | Koin core | `io.insert-koin:koin-core:4.2.2` | *not forked* | already ships mingwX64 + linux |
-| Coil 3 | `io.coil-kt.coil3:coil*:3.6.2` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
+| Coil 3 | `io.coil-kt.coil3:coil*:3.6.3` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
 | Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.compose.desktop.native.pulse:*` | no desktop-native artifact upstream - and Pulse is itself a `com.bitsycore` library, so the republish is namespaced under this project |
 
 Koin's `koin-compose-viewmodel-navigation` is deliberately **not** provided: it
@@ -268,7 +281,7 @@ mirrors or you will have every class twice.
 |---|---|
 | Lifecycle / ViewModel | `androidx.lifecycle:lifecycle-*:2.11.0` |
 | SavedState | `androidx.savedstate:savedstate*:1.5.0` (CMP builds against 1.4.0; lifecycle 2.11.0 requires it only as a *minimum*, so 1.5.0 resolves cleanly and gives consumers the newer API) |
-| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.2.0-alpha04` |
+| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.1.7` |
 | Navigation Event | `androidx.navigationevent:navigationevent-compose:1.1.2` |
 | Collection | `androidx.collection:collection:1.5.0` |
 | Graphics Shapes | `androidx.graphics:graphics-shapes:1.1.0` |

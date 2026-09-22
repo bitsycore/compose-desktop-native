@@ -47,6 +47,17 @@ private val bridgeTable = mapOf(
     "org.jetbrains.compose.animation:animation-graphics" to "com.bitsycore.compose.animation:animation-graphics",
     "org.jetbrains.compose.material3:material3" to "com.bitsycore.compose.material3:material3",
     "org.jetbrains.compose.material:material-ripple" to "com.bitsycore.compose.material:material-ripple",
+    // material3-adaptive. Upstream publishes ios + macosArm64 only - no linux,
+    // no mingw - so the four artifacts are vendored. Nothing in the sources
+    // blocked those targets; upstream simply did not enable them.
+    "org.jetbrains.compose.material3.adaptive:adaptive"
+        to "com.bitsycore.compose.material3.adaptive:adaptive",
+    "org.jetbrains.compose.material3.adaptive:adaptive-layout"
+        to "com.bitsycore.compose.material3.adaptive:adaptive-layout",
+    "org.jetbrains.compose.material3.adaptive:adaptive-navigation"
+        to "com.bitsycore.compose.material3.adaptive:adaptive-navigation",
+    "org.jetbrains.compose.material3.adaptive:adaptive-navigation3"
+        to "com.bitsycore.compose.material3.adaptive:adaptive-navigation3",
     "org.jetbrains.compose.components:components-resources" to "com.bitsycore.compose.components:components-resources",
     "org.jetbrains.androidx.navigation3:navigation3-ui" to "com.bitsycore.navigation3:navigation3-ui",
 

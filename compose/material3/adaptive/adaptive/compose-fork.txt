@@ -1,0 +1,17 @@
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/material3/adaptive/adaptive/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/ExperimentalMaterial3AdaptiveApi.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/ExperimentalMaterial3AdaptiveApi.kt
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/ExperimentalMaterial3AdaptiveComponentOverrideApi.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/ExperimentalMaterial3AdaptiveComponentOverrideApi.kt
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/Posture.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/Posture.kt
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/WindowAdaptiveInfo.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/WindowAdaptiveInfo.kt
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/WindowSizeClassHelper.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/WindowSizeClassHelper.kt
+nonAndroidMain/kotlin/ -> src/vendor/native/kotlin/
+#     | nonAndroidMain/kotlin/androidx/compose/material3/adaptive/WindowAdaptiveInfo.nonAndroid.kt -> src/vendor/native/kotlin/androidx/compose/material3/adaptive/WindowAdaptiveInfo.nonAndroid.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/androidx/compose/material3/adaptive/AndroidPosture.android.kt -> src/vendor/android/kotlin/androidx/compose/material3/adaptive/AndroidPosture.android.kt
+#     | androidMain/kotlin/androidx/compose/material3/adaptive/AndroidWindowAdaptiveInfo.android.kt -> src/vendor/android/kotlin/androidx/compose/material3/adaptive/AndroidWindowAdaptiveInfo.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

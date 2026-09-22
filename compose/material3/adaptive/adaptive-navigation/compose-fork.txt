@@ -1,0 +1,12 @@
+SET_REPO=https://github.com/JetBrains/compose-multiplatform-core@<COMPOSE_CORE_REF>
+SET_FOLDER=compose/material3/adaptive/adaptive-navigation/src
+
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/navigation/BackNavigationBehavior.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/navigation/BackNavigationBehavior.kt
+#     | commonMain/kotlin/androidx/compose/material3/adaptive/navigation/ThreePaneScaffoldNavigator.kt -> src/vendor/common/kotlin/androidx/compose/material3/adaptive/navigation/ThreePaneScaffoldNavigator.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   androidMain (2)
+#     | androidMain/kotlin/androidx/compose/material3/adaptive/navigation/AndroidThreePaneScaffold.android.kt -> src/vendor/android/kotlin/androidx/compose/material3/adaptive/navigation/AndroidThreePaneScaffold.android.kt
+#     | androidMain/kotlin/androidx/compose/material3/adaptive/navigation/ThreePaneScaffoldPredictiveBackHandler.android.kt -> src/vendor/android/kotlin/androidx/compose/material3/adaptive/navigation/ThreePaneScaffoldPredictiveBackHandler.android.kt
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

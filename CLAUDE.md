@@ -96,7 +96,30 @@ compose/
 │   ├── foundation/                  → :compose:foundation:foundation       - androidx.compose.foundation.*
 │   └── foundation-layout/           → :compose:foundation:foundation-layout - androidx.compose.foundation.layout.*
 ├── material3/
-│   └── material3/                   → :compose:material3:material3   - androidx.compose.material3.*
+│   ├── material3/                   → :compose:material3:material3   - androidx.compose.material3.*
+│   └── adaptive/                    → the material3-adaptive family, VENDORED VERBATIM.
+│       │                              org.jetbrains.compose.material3.adaptive:* publishes
+│       │                              ios + macosArm64 ONLY - no linux, no mingw (issue #4).
+│       │                              Nothing in the sources blocks those targets: every
+│       │                              actual the native legs need already exists upstream
+│       │                              (nonAndroidMain / skikoMain / nativeMain), and the one
+│       │                              real dependency, androidx.window:window-core, ALREADY
+│       │                              publishes linux + mingw + macos. The artifacts were
+│       │                              missing purely because upstream never enabled the
+│       │                              targets - so this port is vendor-only, ZERO source
+│       │                              edits. Upstream's skikoMain (the ~75 l10n tables +
+│       │                              Strings / drag-handle actuals) lands in src/vendor/
+│       │                              native/ next to upstream's own nativeMain actuals;
+│       │                              they actualise disjoint expects so they coexist.
+│       │                              com.bitsycore.compose.material3.adaptive:<module>.
+│       ├── adaptive/                → :compose:material3:adaptive:adaptive  - WindowAdaptiveInfo /
+│       │                              Posture / window size class. api-exposes window-core.
+│       ├── adaptive-layout/         → :compose:material3:adaptive:adaptive-layout - ListDetail /
+│       │                              SupportingPane / ThreePane scaffolds + pane motion
+│       ├── adaptive-navigation/     → :compose:material3:adaptive:adaptive-navigation -
+│       │                              ThreePaneScaffoldNavigator + back behaviour
+│       └── adaptive-navigation3/    → :compose:material3:adaptive:adaptive-navigation3 -
+│                                      SceneStrategy bindings for nav3 (→ :navigation3-ui)
 ├── material/
 │   └── material-ripple/             → :compose:material:material-ripple - androidx.compose.material.ripple.*
 └── desktop/native/desktop-native-window/ → :compose:desktop:native:desktop-native-window - nativeComposeApp { Window(...) {} }
@@ -308,6 +331,14 @@ sees the split modules. Full DAG: `:ui-util → collection`; `:ui-geometry → :
 `:foundation → :animation, :foundation-layout, :animation-core, :ui`;
 `:material-ripple → :foundation, :animation-core`;
 `:material3 → :foundation, :material-ripple, :animation-core, :foundation-layout`.
+The adaptive family sits beside material3 rather than under it - it depends on
+`:ui` / `:foundation` / `:animation-core`, NOT on `:material3`:
+`:adaptive → :ui, :foundation, window-core`;
+`:adaptive-layout → :adaptive, :ui, :animation-core, :animation, :foundation,
+:foundation-layout, :ui-geometry, collection, window-core`;
+`:adaptive-navigation → :adaptive-layout, :foundation, :ui-util`;
+`:adaptive-navigation3 → :adaptive-navigation, :navigation3-ui, collection,
+navigationevent-compose`.
 
 `:ui` is the Compose core + the Skia RenderBackend + the SDL↔Compose bridges; it
 sits on `:ui-graphics` / `:ui-text` (the graphics/text primitives + their skiko
@@ -753,6 +784,11 @@ Verified in-tree (api-exposed by `:ui` unless noted):
 - `androidx.navigationevent:navigationevent-compose` 1.1.2 - predictive-back
   event plumbing (BackHandler, NavDisplay gestures).
 - `androidx.collection:collection` - plain Maven dep, not a module.
+- `androidx.window:window-core` **1.5.0** - WindowSizeClass / the adaptive
+  window model. Publishes mingwX64 + linux + macos under BOTH coordinate sets;
+  the port takes the google one like the rest of the androidx stack. This is
+  what makes the material3-adaptive vendoring a pure re-target: the dependency
+  everybody assumed was the blocker was never missing.
 - `io.insert-koin:koin-core` **4.2.2** - the DI container itself publishes
   mingwX64 + linux + macos. Only Koin's viewmodel / compose layers stop at
   apple+android and are vendored (`koin/`).

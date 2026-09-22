@@ -36,6 +36,8 @@ kotlin = "2.4.20"
 #  composeMaterial3 = material3, which rides its own train upstream:
 #                     1.12.0-alpha03 IS what CMP 1.12.1 ships
 #                     (Jetpack material3 1.5.0-alpha22)
+#  composeMaterial3Adaptive = material3-adaptive, its own train again
+#                     (CMP 1.12.1 maps it to Jetpack adaptive 1.3.0-beta02)
 #  composeRuntime   = the official runtime klibs, never substituted
 #
 #  Consumed by the bridge plugin (stamped into bridge-version.properties and
@@ -43,6 +45,9 @@ kotlin = "2.4.20"
 
 compose = "1.12.1"
 composeMaterial3 = "1.12.0-alpha03"
+# material3-adaptive rides its own train too. Used ONLY for the apps' JVM parity
+# leg - the native leg gets the vendored :compose:material3:adaptive:* modules.
+composeMaterial3Adaptive = "1.3.0-rc01"
 composeRuntime = "1.12.1"
 
 # ============
@@ -60,6 +65,9 @@ skikoMingw = "0.150.1-mingw.2"
 
 androidxLifecycle = "2.11.0"
 androidxCollection = "1.5.0"
+# material3-adaptive api-exposes window-core. GOOGLE coordinates like the rest of
+# the androidx stack here - both sets publish linux + mingw + macos for this one.
+androidxWindow = "1.5.0"
 androidxGraphicsShapes = "1.1.0"
 # CMP ships org.jetbrains.androidx.navigationevent 1.1.0 == Jetpack 1.1.1; 1.1.2
 # is the latest PATCH of that same minor, so it stays inside policy 1.
@@ -108,6 +116,7 @@ skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
 #  every class on the path twice.
 
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
+androidx-window-core = { module = "androidx.window:window-core", version.ref = "androidxWindow" }
 androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "androidxGraphicsShapes" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidxLifecycle" }
