@@ -15,6 +15,10 @@ import com.compose.sdl.GpuMode
    --frames=N                                    quiescence cap: capture at frame N even if
                                                  the screen never settles (default 300)
 
+   Probes (each opens its own window, prints a verdict and exits):
+   --nav3test --backtest --clicktest --scrolltest --multiwintest --soaktest
+   --adaptivetest                                material3-adaptive folds on a live resize
+
    Names match the Screen registry entries (case-insensitive). */
 internal data class CliArgs(
     val gpu: GpuMode = GpuMode.Auto,

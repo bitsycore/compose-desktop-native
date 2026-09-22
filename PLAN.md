@@ -783,8 +783,18 @@ So the artifacts were missing purely because upstream never enabled the targets.
 (`com.bitsycore.compose.material3.adaptive:*`), 125 files vendored verbatim off the
 existing `COMPOSE_CORE_REF` pin - no new SET_REPO. Upstream's `skikoMain` lands in
 `src/vendor/native/` beside upstream's own `nativeMain`; they actualise disjoint
-expects so they share one source set. Both bridges substitute all four, and
-`demo --screen=Adaptive` renders a live `ListDetailPaneScaffold` on mingwX64.
+expects so they share one source set. Both bridges substitute all four. `demo --screen=Adaptive` renders a
+`ListDetailPaneScaffold`, and `demo --adaptivetest` drives one window
+wide -> narrow -> wide and asserts the scaffold folds and unfolds, which is what
+actually proves the resize chain end to end (SDL resize -> the owner's
+snapshot-backed containerSize -> recomposition -> BoxWithConstraints re-measure ->
+a new PaneScaffoldDirective -> a new scaffold value).
+
+The demo screen computes its directive from the width IT gets rather than taking
+the `rememberListDetailPaneScaffoldNavigator` default, which is the window size
+class: the shell spends 190dp on the sidebar plus 48dp of padding, so defaulting
+folds ~240dp too late and leaves two panes in a region already too cramped for
+them. Pane-hosting apps that are not full-window should do the same.
 
 One wrinkle worth remembering, and a textbook case of the granular-metadata trap
 already documented in CLAUDE.md: because `adaptive` is SUBSTITUTED on native

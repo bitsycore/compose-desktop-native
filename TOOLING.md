@@ -154,6 +154,7 @@ demo.kexe --backtest        # predictive-back / BackHandler
 demo.kexe --clicktest       # pointer -> upstream clickable
 demo.kexe --scrolltest      # wheel -> scrollable
 demo.kexe --multiwintest    # multi-window lifecycle
+demo.kexe --adaptivetest    # material3-adaptive folds/unfolds on a LIVE window resize
 demo.kexe --soaktest        # memory soak (CDN_SOAK_SCREEN, CDN_SOAK_STATIC, CDN_SOAK_CYCLES)
 ```
 

@@ -74,6 +74,14 @@ fun main(args: Array<String>) {
     }
     // Verifies nativeComposeApp multi-window: two Windows render concurrently,
     // one closes via state, the app keeps running on the survivor.
+    // Verifies material3-adaptive reacts to a LIVE resize: one window driven
+    // wide -> narrow -> wide, asserting the ListDetailPaneScaffold folds and
+    // unfolds. The --screen=Adaptive screenshots only cover the opening size.
+    if (args.any { it == "--adaptivetest" }) {
+        runAdaptiveTest()
+        return
+    }
+
     if (args.any { it == "--multiwintest" }) {
         runMultiWindowTest()
         return
