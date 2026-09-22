@@ -90,11 +90,13 @@ val vGenerateVersion = tasks.register("generateBridgeVersionResource") {
     val vVersion = project.version.toString()
     val vCompose = libs.versions.compose.get()
     val vComposeMaterial3 = libs.versions.composeMaterial3.get()
+    val vComposeMaterial3Adaptive = libs.versions.composeMaterial3Adaptive.get()
     val vComposeRuntime = libs.versions.composeRuntime.get()
     val vOut = vVersionDir.get().file("com/bitsycore/compose/sdl/gradle/bridge-version.properties").asFile
     inputs.property("version", vVersion)
     inputs.property("compose", vCompose)
     inputs.property("composeMaterial3", vComposeMaterial3)
+    inputs.property("composeMaterial3Adaptive", vComposeMaterial3Adaptive)
     inputs.property("composeRuntime", vComposeRuntime)
     outputs.dir(vVersionDir)
     doLast {
@@ -103,6 +105,7 @@ val vGenerateVersion = tasks.register("generateBridgeVersionResource") {
             "version=$vVersion\n" +
                 "compose=$vCompose\n" +
                 "composeMaterial3=$vComposeMaterial3\n" +
+                "composeMaterial3Adaptive=$vComposeMaterial3Adaptive\n" +
                 "composeRuntime=$vComposeRuntime\n"
         )
     }

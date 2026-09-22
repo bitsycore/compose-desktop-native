@@ -145,6 +145,8 @@ open class ComposeDesktopNativeBridgeExtension(
 	val compose: String,
 	/** Official material3 version (versioned separately upstream). */
 	val composeMaterial3: String,
+	/** Official material3-adaptive version (its own release train again). */
+	val composeMaterial3Adaptive: String,
 	/** Official Compose runtime version (never substituted; serves every target). */
 	val composeRuntime: String,
 )
@@ -202,6 +204,7 @@ private fun installBridge(project: Project) {
 			version,
 			bridgeProperty("compose"),
 			bridgeProperty("composeMaterial3"),
+			bridgeProperty("composeMaterial3Adaptive"),
 			bridgeProperty("composeRuntime"),
 		)
 	}
@@ -209,6 +212,8 @@ private fun installBridge(project: Project) {
 		extra["composeDesktopNative.version"] = version
 		extra["composeDesktopNative.compose"] = bridgeProperty("compose")
 		extra["composeDesktopNative.composeMaterial3"] = bridgeProperty("composeMaterial3")
+		extra["composeDesktopNative.composeMaterial3Adaptive"] =
+			bridgeProperty("composeMaterial3Adaptive")
 		extra["composeDesktopNative.composeRuntime"] = bridgeProperty("composeRuntime")
 	}
 

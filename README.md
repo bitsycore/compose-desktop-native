@@ -118,11 +118,21 @@ plugins {
 
 commonMain.dependencies {
     // The plugin exposes the exact Compose versions the port tracks, so you
-    // never hand-match them (material3 is versioned separately upstream).
+    // never hand-match them (material3 and material3-adaptive each ride their
+    // own release train upstream).
     implementation("org.jetbrains.compose.runtime:runtime:${composeDesktopNative.composeRuntime}")
     implementation("org.jetbrains.compose.ui:ui:${composeDesktopNative.compose}")
     implementation("org.jetbrains.compose.foundation:foundation:${composeDesktopNative.compose}")
     implementation("org.jetbrains.compose.material3:material3:${composeDesktopNative.composeMaterial3}")
+
+    // material3-adaptive, which upstream publishes for apple targets only.
+    // Note adaptive api-exposes androidx.window:window-core - declare it
+    // DIRECTLY if your commonMain touches WindowSizeClass, since substituted
+    // modules hide their transitives from the common metadata classpath.
+    val vAdaptive = composeDesktopNative.composeMaterial3Adaptive
+    implementation("org.jetbrains.compose.material3.adaptive:adaptive:$vAdaptive")
+    implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:$vAdaptive")
+    implementation("androidx.window:window-core:1.5.0")
 }
 ```
 
