@@ -82,7 +82,7 @@ androidxSavedState = "1.5.0"
 #  (KOIN_REF / COIL_REF in scripts/compose-fork/compose.properties) - bump both.
 
 koin = "4.2.2"
-coil = "3.6.2"
+coil = "3.6.3"
 
 # ============
 #  Infrastructure  (not in CMP - latest release, policy 2)
@@ -92,7 +92,7 @@ kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 kotlinxIoOkio = "0.9.1"
 okio = "3.18.2"
-ktor = "3.5.2"
+ktor = "3.6.0"
 
 [libraries]
 

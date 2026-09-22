@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.pulse:pulse-viewmodel>
+// Library unique name: <com.bitsycore.compose.desktop.native.pulse:pulse-viewmodel>
 abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.viewmodel/PulseViewModel : androidx.lifecycle/ViewModel, com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C> { // com.bitsycore.lib.pulse.viewmodel/PulseViewModel|null[0]
     constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, #A? = ...) // com.bitsycore.lib.pulse.viewmodel/PulseViewModel.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;1:0?){}[0]
 

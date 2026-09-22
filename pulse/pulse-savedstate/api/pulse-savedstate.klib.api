@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.pulse:pulse-savedstate>
+// Library unique name: <com.bitsycore.compose.desktop.native.pulse:pulse-savedstate>
 abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel : com.bitsycore.lib.pulse.viewmodel/PulseViewModel<#A, #B, #C> { // com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel|null[0]
     constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, androidx.lifecycle/SavedStateHandle, kotlinx.serialization/KSerializer<#A>, kotlin/String = ...) // com.bitsycore.lib.pulse.savedstate/PulseSavedStateViewModel.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;androidx.lifecycle.SavedStateHandle;kotlinx.serialization.KSerializer<1:0>;kotlin.String){}[0]
 }

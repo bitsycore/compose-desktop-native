@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <com.bitsycore.pulse:pulse-compose>
+// Library unique name: <com.bitsycore.compose.desktop.native.pulse:pulse-compose>
 open annotation class com.bitsycore.lib.pulse.scopes/PulseScopeDsl : kotlin/Annotation { // com.bitsycore.lib.pulse.scopes/PulseScopeDsl|null[0]
     constructor <init>() // com.bitsycore.lib.pulse.scopes/PulseScopeDsl.<init>|<init>(){}[0]
 }
