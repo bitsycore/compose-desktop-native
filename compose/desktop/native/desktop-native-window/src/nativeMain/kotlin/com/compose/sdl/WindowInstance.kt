@@ -88,6 +88,9 @@ internal class WindowInstance(
 	private var fpsEma = 0.0
 	private var fpsLastFrameMs = SDL_GetTicks()
 	private var fpsLastTitleMs = 0uL
+	// Mirrors attrs.showFpsInTitle but stays mutable: applyAttributes() runs on
+	// every Window() change and `attrs` is the creation-time snapshot.
+	private var showFpsInTitle = attrs.showFpsInTitle
 
 	// Escape → back (upstream desktop's BackNavigationEventInput): unconsumed
 	// Escape completes a back navigation on THIS window's dispatcher.
@@ -385,6 +388,13 @@ internal class WindowInstance(
 		facade.setAlwaysOnTop(inAttrs.alwaysOnTop)
 		facade.setFocusable(inAttrs.focusable)
 		facade.setEnabled(inAttrs.enabled)
+		// Turning the suffix off has to repaint the title: the FPS path writes
+		// SDL directly and never touches facade.title, so without this the last
+		// " · N FPS" would stay on the title bar forever.
+		if (showFpsInTitle && !inAttrs.showFpsInTitle) {
+			SDL_SetWindowTitle(backend.window?.reinterpret(), facade.title)
+		}
+		showFpsInTitle = inAttrs.showFpsInTitle
 	}
 
 	fun onTextInputEvent(inEvent: AppEvent.TextInput) {
@@ -544,8 +554,12 @@ internal class WindowInstance(
 			fpsEma = if (fpsEma <= 0.0) vInst else fpsEma * 0.9 + vInst * 0.1
 			if ((vNowMs - fpsLastTitleMs).toInt() >= 250) {
 				val vFps = (fpsEma + 0.5).toInt()
+				// Published unconditionally - apps read it off the facade and
+				// draw their own counter; only the title suffix is opt-in.
 				facade.updateFps(vFps)
-				SDL_SetWindowTitle(backend.window?.reinterpret(), "${facade.title} · $vFps FPS")
+				if (showFpsInTitle) {
+					SDL_SetWindowTitle(backend.window?.reinterpret(), "${facade.title} · $vFps FPS")
+				}
 				fpsLastTitleMs = vNowMs
 			}
 		}

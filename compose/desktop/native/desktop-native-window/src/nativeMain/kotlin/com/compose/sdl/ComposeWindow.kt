@@ -73,6 +73,7 @@ fun ApplicationScope.Window(
 	enabled: Boolean = true,
 	focusable: Boolean = true,
 	alwaysOnTop: Boolean = false,
+	showFpsInTitle: Boolean = false,
 	onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
 	onKeyEvent: (KeyEvent) -> Boolean = { false },
 	onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
@@ -91,6 +92,7 @@ fun ApplicationScope.Window(
 		enabled = enabled,
 		focusable = focusable,
 		alwaysOnTop = alwaysOnTop,
+		showFpsInTitle = showFpsInTitle,
 	)
 	val vWindow = remember {
 		vScope.runtime.createWindow(
@@ -329,6 +331,7 @@ fun nativeComposeWindow(
 	enabled: Boolean = true,
 	focusable: Boolean = true,
 	alwaysOnTop: Boolean = false,
+	showFpsInTitle: Boolean = false,
 	onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
 	onKeyEvent: (KeyEvent) -> Boolean = { false },
 	onFrame: ((backend: RenderBackend, frameIndex: Int) -> Boolean)? = null,
@@ -348,6 +351,7 @@ fun nativeComposeWindow(
 			enabled = enabled,
 			focusable = focusable,
 			alwaysOnTop = alwaysOnTop,
+			showFpsInTitle = showFpsInTitle,
 			onPreviewKeyEvent = onPreviewKeyEvent,
 			onKeyEvent = onKeyEvent,
 			onFrame = onFrame,

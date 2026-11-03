@@ -195,6 +195,9 @@ fun main(args: Array<String>) {
         width = vCli.width,
         height = vCli.height,
         gpu = vCli.gpu,
+        // The showcase doubles as the frame-pacing dev tool, so it opts back
+        // into the title-bar counter the library now ships off by default.
+        showFpsInTitle = true,
         onFrame = if (vCli.screenshot != null) {
             // P0.5 render-to-quiescence: capture once the window reports no pending
             // invalidations for a few consecutive frames (entrance animations settled,
