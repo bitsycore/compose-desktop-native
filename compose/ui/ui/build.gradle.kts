@@ -50,7 +50,7 @@ kotlin {
                 api(project(":compose:ui:ui-backhandler"))
                 api("org.jetbrains.compose.runtime:runtime:${libs.versions.composeRuntime.get()}")
                 api("org.jetbrains.compose.runtime:runtime-saveable:${libs.versions.composeRuntime.get()}")
-                api("androidx.compose.runtime:runtime-retain:${libs.versions.composeRuntime.get()}")
+                api("androidx.compose.runtime:runtime-retain:${libs.versions.composeRuntimeRetain.get()}")
                 api(libs.androidx.navigationevent.compose)
                 api(libs.androidx.savedstate)
                 api(libs.androidx.savedstate.compose)

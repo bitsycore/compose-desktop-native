@@ -49,6 +49,12 @@ composeMaterial3 = "1.12.0-alpha03"
 # leg - the native leg gets the vendored :compose:material3:adaptive:* modules.
 composeMaterial3Adaptive = "1.3.0-rc01"
 composeRuntime = "1.12.2"
+# androidx.compose.runtime:runtime-retain (GOOGLE coords) rides the Jetpack train,
+# not CMP's: Google published 1.12.1 and then jumped straight to 1.13.0-alpha, so
+# there is no 1.12.2. CMP 1.12.2's own ui-desktop POM still depends on 1.12.1, so
+# pinning it here IS policy 1 - it is what CMP ships. Keep it separate from
+# composeRuntime; the two only coincidentally matched before 1.12.2.
+composeRuntimeRetain = "1.12.1"
 
 # ============
 #  Skia
