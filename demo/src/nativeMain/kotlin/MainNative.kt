@@ -86,6 +86,12 @@ fun main(args: Array<String>) {
         runMultiWindowTest()
         return
     }
+    // Draws every advanced BlendMode so Skia takes the
+    // KHR_blend_equation_advanced path no normal screen reaches (issue #7).
+    if (args.any { it == "--blendtest" }) {
+        runBlendTest(args.firstOrNull { it.startsWith("--blendshot=") }?.substringAfter('='))
+        return
+    }
     // Verifies the lookahead pass: a SharedTransitionLayout shared-element
     // morph runs both directions without crashing.
     if (args.any { it == "--sharedtest" }) {

@@ -4,6 +4,30 @@ import kotlinx.cinterop.*
 import sdl3.*
 
 // ==================
+// MARK: GL context version
+// ==================
+
+/* Preferred GL core version. 4.1 rather than the 3.2 floor because AMD's
+   Windows GLSL compiler mis-compiles KHR_blend_equation_advanced under a 3.2
+   core context: it lowers `layout(blend_support_all_equations)` into code using
+   gl_SampleID without requesting GL_ARB_sample_shading, so EVERY program Skia
+   builds for an advanced BlendMode fails to compile and spams stderr
+   ("required extension not requested: GL_ARB_sample_shading" - issue #7).
+   Rendering still came out right (Skia falls back to a shader blend) but the
+   log was unusable. Asking for 4.1 takes a driver path without the bug.
+
+   4.1 is a safe ceiling to ASK for: it is the highest macOS ever exposed, and
+   Mesa/AMD/NVIDIA on Linux + Windows have shipped 4.1+ for over a decade.
+   Drivers that cannot honour it fall back to [kGlMajorMin] below. */
+private const val kGlMajorPreferred = 4
+private const val kGlMinorPreferred = 1
+
+/* The floor retried when the preferred version is refused - Skia's own minimum
+   for its GL backend. */
+private const val kGlMajorMin = 3
+private const val kGlMinorMin = 2
+
+// ==================
 // MARK: Sdl3Backend
 // ==================
 
@@ -54,6 +78,18 @@ class Sdl3Backend(
     // vertical blank), Software from SDL_SetRenderVSync.
     var vsyncEnabled: Boolean = false; private set
 
+    /** Requests a GL core context of the given version. Must run BEFORE
+       SDL_CreateWindow - SDL latches these when the window is created, which is
+       why the retry in init() has to rebuild the window, not just the context. */
+    private fun setGlAttributes(inMajor: Int, inMinor: Int) {
+        SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, inMajor)
+        SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, inMinor)
+        SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_PROFILE_MASK,
+            SDL_GL_CONTEXT_PROFILE_CORE)
+        SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_DOUBLEBUFFER, 1)
+        SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STENCIL_SIZE, 8)
+    }
+
     fun init(): Boolean {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
             println("SDL_Init failed: ${SDL_GetError()?.toKString()}")
@@ -76,13 +112,9 @@ class Sdl3Backend(
         com.compose.sdl.res.preferredLocaleTagsProvider = { com.compose.sdl.text.systemPreferredLocaleTags() }
 
         if (gpuMode is GpuMode.OpenGL) {
-            SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
-            SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, 2)
-            SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_PROFILE_MASK,
-                SDL_GL_CONTEXT_PROFILE_CORE)
-            SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_DOUBLEBUFFER, 1)
-            SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STENCIL_SIZE, 8)
+            setGlAttributes(kGlMajorPreferred, kGlMinorPreferred)
         }
+
 
         var attrFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY
         if (resizable) attrFlags = attrFlags or SDL_WINDOW_RESIZABLE
@@ -105,6 +137,23 @@ class Sdl3Backend(
         when (gpuMode) {
             is GpuMode.OpenGL -> {
                 glContext = SDL_GL_CreateContext(window?.reinterpret())
+                if (glContext == null) {
+                    // The preferred version is not available. Rebuild the window
+                    // against the 3.2 floor rather than letting the caller drop
+                    // the whole GPU path to CPU raster - see setGlAttributes.
+                    println("SDL_GL_CreateContext failed at " +
+                        "$kGlMajorPreferred.$kGlMinorPreferred: ${SDL_GetError()?.toKString()}" +
+                        " - retrying at $kGlMajorMin.$kGlMinorMin")
+                    SDL_DestroyWindow(window?.reinterpret())
+                    window = null
+                    setGlAttributes(kGlMajorMin, kGlMinorMin)
+                    window = SDL_CreateWindow(title, width, height, flags)
+                    if (window == null) {
+                        println("SDL_CreateWindow failed on GL retry: ${SDL_GetError()?.toKString()}")
+                        return false
+                    }
+                    glContext = SDL_GL_CreateContext(window?.reinterpret())
+                }
                 if (glContext == null) {
                     println("SDL_GL_CreateContext failed: ${SDL_GetError()?.toKString()}")
                     return false
