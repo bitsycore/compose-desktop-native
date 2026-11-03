@@ -224,11 +224,11 @@ one (`savedstate`, below).
 
 | | Version | Notes |
 |---|---|---|
-| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.1 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
-| Compose Multiplatform | **1.12.1** | The vendored sources are the `v1.12.1` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. skiko is unchanged at 0.150.1, so the mingwX64 fork still matches its Skia base. |
+| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.2 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
+| Compose Multiplatform | **1.12.2** | The vendored sources are the `v1.12.2` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. 1.12.2 moves skiko to 0.150.2, so the mingwX64 fork was rebased onto skiko `v0.150.2` and republished to keep the same Skia base. |
 | SDL3 | **release-3.4.16** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
-| Skiko | **0.150.1** | macOS / Linux use the official `org.jetbrains.skiko`. |
-| Skiko (Windows fork) | **0.150.1-mingw.2** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
+| Skiko | **0.150.2** | macOS / Linux use the official `org.jetbrains.skiko`. |
+| Skiko (Windows fork) | **0.150.2-mingw.1** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
 
 ### Compose libraries
 
@@ -238,20 +238,20 @@ the bridge plugin and you keep declaring the **official** coordinate.
 
 | Library | Official coordinate | Port coordinate |
 |---|---|---|
-| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.1` | *not forked - the official klibs serve every target* |
-| UI | `org.jetbrains.compose.ui:ui*:1.12.1` | `com.bitsycore.compose.ui:ui*` |
-| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.1` | `com.bitsycore.compose.foundation:foundation*` |
-| Animation | `org.jetbrains.compose.animation:animation*:1.12.1` | `com.bitsycore.compose.animation:animation*` |
-| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.1` | `com.bitsycore.compose.material:material-ripple` |
+| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.2` | *not forked - the official klibs serve every target* |
+| UI | `org.jetbrains.compose.ui:ui*:1.12.2` | `com.bitsycore.compose.ui:ui*` |
+| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.2` | `com.bitsycore.compose.foundation:foundation*` |
+| Animation | `org.jetbrains.compose.animation:animation*:1.12.2` | `com.bitsycore.compose.animation:animation*` |
+| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.2` | `com.bitsycore.compose.material:material-ripple` |
 | Material3 | `org.jetbrains.compose.material3:material3:1.12.0-alpha03` | `com.bitsycore.compose.material3:material3` |
 | Material3 Adaptive | `org.jetbrains.compose.material3.adaptive:adaptive*:1.3.0-rc01` | `com.bitsycore.compose.material3.adaptive:adaptive*` |
-| Resources | `org.jetbrains.compose.components:components-resources:1.12.1` | `com.bitsycore.compose.components:components-resources` |
+| Resources | `org.jetbrains.compose.components:components-resources:1.12.2` | `com.bitsycore.compose.components:components-resources` |
 | Navigation3 UI | `org.jetbrains.androidx.navigation3:navigation3-ui` | `com.bitsycore.navigation3:navigation3-ui` |
 | Window shell | *no upstream equivalent* | `com.bitsycore.compose:desktop-native-window` |
 | SDL layer | *no upstream equivalent* | `com.bitsycore.compose.sdl:sdl-core` |
 
 Material3 rides its own release train upstream: `1.12.0-alpha03` **is** the
-version Compose Multiplatform 1.12.1 ships (Jetpack Material3 1.5.0-alpha22).
+version Compose Multiplatform 1.12.2 ships (Jetpack Material3 1.5.0-alpha22).
 material3-adaptive rides a third train again.
 
 **material3-adaptive** (`adaptive`, `adaptive-layout`, `adaptive-navigation`,

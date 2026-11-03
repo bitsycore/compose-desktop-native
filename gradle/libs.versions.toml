@@ -24,7 +24,7 @@
 #  Toolchain
 
 # Policy 2 (not something CMP dictates): latest release. Newer than the Kotlin
-# CMP 1.12.1 is itself built with (2.3.20), which is fine - Kotlin/Native reads
+# CMP 1.12.2 is itself built with (2.3.20), which is fine - Kotlin/Native reads
 # older klibs, and the whole port + both sample apps compile and link clean on
 # 2.4.20 with no klib API diff against 2.4.0.
 kotlin = "2.4.20"
@@ -34,31 +34,37 @@ kotlin = "2.4.20"
 #
 #  compose          = ui / foundation / animation / material
 #  composeMaterial3 = material3, which rides its own train upstream:
-#                     1.12.0-alpha03 IS what CMP 1.12.1 ships
+#                     1.12.0-alpha03 IS what CMP 1.12.2 ships
 #                     (Jetpack material3 1.5.0-alpha22)
 #  composeMaterial3Adaptive = material3-adaptive, its own train again
-#                     (CMP 1.12.1 maps it to Jetpack adaptive 1.3.0-beta02)
+#                     (CMP 1.12.2 maps it to Jetpack adaptive 1.3.0-beta02)
 #  composeRuntime   = the official runtime klibs, never substituted
 #
 #  Consumed by the bridge plugin (stamped into bridge-version.properties and
 #  exposed to consumers) and by demo / apidemo / material-symbols.
 
-compose = "1.12.1"
+compose = "1.12.2"
 composeMaterial3 = "1.12.0-alpha03"
 # material3-adaptive rides its own train too. Used ONLY for the apps' JVM parity
 # leg - the native leg gets the vendored :compose:material3:adaptive:* modules.
 composeMaterial3Adaptive = "1.3.0-rc01"
-composeRuntime = "1.12.1"
+composeRuntime = "1.12.2"
+# androidx.compose.runtime:runtime-retain (GOOGLE coords) rides the Jetpack train,
+# not CMP's: Google published 1.12.1 and then jumped straight to 1.13.0-alpha, so
+# there is no 1.12.2. CMP 1.12.2's own ui-desktop POM still depends on 1.12.1, so
+# pinning it here IS policy 1 - it is what CMP ships. Keep it separate from
+# composeRuntime; the two only coincidentally matched before 1.12.2.
+composeRuntimeRetain = "1.12.1"
 
 # ============
 #  Skia
 
-# CMP 1.12.1 pins skiko 0.150.1, so macOS/Linux use exactly that.
-skiko = "0.150.1"
+# CMP 1.12.2 pins skiko 0.150.2, so macOS/Linux use exactly that.
+skiko = "0.150.2"
 # The bitsycore skiko FORK for mingwX64 (skiko + Skia inside
 # skiko-windows-x64.dll). Its `-mingw.N` base MUST stay equal to `skiko` above.
 # Overridable per-build with -PskikoMingwVersion.
-skikoMingw = "0.150.1-mingw.2"
+skikoMingw = "0.150.2-mingw.1"
 
 # ============
 #  AndroidX  (CMP-pinned - policy 1)
@@ -72,12 +78,12 @@ androidxGraphicsShapes = "1.1.0"
 # CMP ships org.jetbrains.androidx.navigationevent 1.1.0 == Jetpack 1.1.1; 1.1.2
 # is the latest PATCH of that same minor, so it stays inside policy 1.
 androidxNavigationEvent = "1.1.2"
-# CMP 1.12.1 moved navigation3 BACKWARDS off the alpha line onto stable 1.1.7
+# CMP 1.12.2 moved navigation3 BACKWARDS off the alpha line onto stable 1.1.7
 # (redirectversions.toml; upstream re-checked navigation3 out of release/1.11).
 # The vendored :navigation3:navigation3-ui is that same 1.1.7 source, so the
 # runtime has to follow it down - a 1.2.0-alpha runtime no longer matches.
 navigation3Runtime = "1.1.7"
-# EXCEPTION to policy 1, deliberate: CMP 1.12.1 builds against savedstate 1.5.0-alpha01,
+# EXCEPTION to policy 1, deliberate: CMP 1.12.2 builds against savedstate 1.5.0-alpha01,
 # and androidx.lifecycle 2.11.0 *requires* 1.4.0 - but only as a MINIMUM, so
 # 1.5.0 resolves with no conflict. Taken on purpose to hand consumers the newer
 # savedstate API; the delta is additive within the same major.
