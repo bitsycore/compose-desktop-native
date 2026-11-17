@@ -3,7 +3,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://packages.jetbrains.team/maven/p/cmp/dev")
     }
     // The consumer-side bridge plugin, built from source as an INCLUDED build
     includeBuild("gradle-plugin/compose-desktop-native-bridge")
@@ -21,7 +21,7 @@ dependencyResolutionManagement {
         mavenLocal()
         google()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://packages.jetbrains.team/maven/p/cmp/dev")
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/bitsycore/compose-desktop-native")

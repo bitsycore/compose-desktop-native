@@ -35,8 +35,9 @@ private fun makeSkiaParagraph(
 
 /** Carries text+style for the intrinsics-based Paragraph factories; intrinsic
    widths come from an unbounded skiko layout. `density` is the LocalDensity
-   scalar (dpr on Retina): it converts sp → pixels so intrinsic widths land in
-   the same physical-pixel space the layout tree measures in. */
+   sp → px scalar, density × fontScale (dpr on Retina at fontScale 1), so
+   intrinsic widths land in the same physical-pixel space the layout tree
+   measures in. */
 internal class NativeParagraphIntrinsics(
 	val paragraphText: String,
 	val paragraphStyle: TextStyle,

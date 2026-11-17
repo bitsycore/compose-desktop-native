@@ -7,10 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 // ==================
 // MARK: IconFontIcon - codepoint-based Icon rendered via a text glyph
@@ -55,7 +55,9 @@ fun IconFontIcon(
 			modifier = Modifier.wrapContentSize(Alignment.Center, unbounded = true),
 			fontFamily = fontFamily,
 			color = tint,
-			fontSize = size.value.sp,
+			// Dp → sp through the density, so the glyph keeps matching the dp box when
+			// LocalDensity carries a fontScale.
+			fontSize = with(LocalDensity.current) { size.toSp() },
 			fontVariationSettings = fontVariationSettings,
 		)
 	}
