@@ -74,6 +74,9 @@ private fun paragraphFromIntrinsics(
 private fun widthFrom(constraints: Constraints): Float =
 	if (constraints.hasBoundedWidth) constraints.maxWidth.toFloat() else Float.POSITIVE_INFINITY
 
+private val Density.textDensity: Float
+	get() = density * fontScale
+
 // ---- ParagraphIntrinsics factories ----
 
 @Suppress("DEPRECATION")
@@ -84,7 +87,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles, placeholders)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.textDensity, spanStyles, placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -93,7 +96,7 @@ actual fun ParagraphIntrinsics(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, spanStyles, placeholders)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.textDensity, spanStyles, placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -102,7 +105,7 @@ actual fun ParagraphIntrinsics(
 	density: Density,
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles(), placeholders)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.textDensity, annotations.filterSpanStyles(), placeholders)
 
 actual fun ParagraphIntrinsics(
 	text: String,
@@ -112,7 +115,7 @@ actual fun ParagraphIntrinsics(
 	fontFamilyResolver: FontFamily.Resolver,
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	softWrap: Boolean,
-): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.density, annotations.filterSpanStyles(), placeholders)
+): ParagraphIntrinsics = NativeParagraphIntrinsics(text, style, density.textDensity, annotations.filterSpanStyles(), placeholders)
 
 // AnnotatedString.Annotation is a sealed interface (SpanStyle, ParagraphStyle,
 // LinkAnnotation, StringAnnotation, TtsAnnotation, …). Only SpanStyle affects
@@ -135,7 +138,7 @@ actual fun Paragraph(
 	width: Float,
 	density: Density,
 	resourceLoader: Font.ResourceLoader,
-): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles, placeholders)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.textDensity, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -147,7 +150,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.density, spanStyles, placeholders)
+): Paragraph = makeSkiaParagraph(text, style, width, maxLines, ellipsis, density.textDensity, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -159,7 +162,7 @@ actual fun Paragraph(
 	placeholders: List<AnnotatedString.Range<Placeholder>>,
 	maxLines: Int,
 	ellipsis: Boolean,
-): Paragraph = makeSkiaParagraph(text, style, widthFrom(constraints), maxLines, ellipsis, density.density, spanStyles, placeholders)
+): Paragraph = makeSkiaParagraph(text, style, widthFrom(constraints), maxLines, ellipsis, density.textDensity, spanStyles, placeholders)
 
 actual fun Paragraph(
 	text: String,
@@ -172,7 +175,7 @@ actual fun Paragraph(
 	maxLines: Int,
 	overflow: TextOverflow,
 ): Paragraph = makeSkiaParagraph(
-	text, style, widthFrom(constraints), maxLines, overflow == TextOverflow.Ellipsis, density.density, spanStyles, placeholders,
+	text, style, widthFrom(constraints), maxLines, overflow == TextOverflow.Ellipsis, density.textDensity, spanStyles, placeholders,
 )
 
 actual fun Paragraph(
