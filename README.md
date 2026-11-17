@@ -226,7 +226,7 @@ one (`savedstate`, below).
 |---|---|---|
 | Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.2 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
 | Compose Multiplatform | **1.12.2** | The vendored sources are the `v1.12.2` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. 1.12.2 moves skiko to 0.150.2, so the mingwX64 fork was rebased onto skiko `v0.150.2` and republished to keep the same Skia base. |
-| SDL3 | **release-3.4.16** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
+| SDL3 | **release-3.4.20** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
 | Skiko | **0.150.2** | macOS / Linux use the official `org.jetbrains.skiko`. |
 | Skiko (Windows fork) | **0.150.2-mingw.1** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
 
