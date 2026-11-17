@@ -1,11 +1,14 @@
 package com.bitsycore.compose.sdl.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -32,7 +35,9 @@ import java.util.zip.Inflater
 //
 // Everything is self-contained Kotlin - no Python / Pillow dependency for
 // consumers. The only external tool is `windres` (mingw-w64 binutils), needed
-// solely for the optional Windows .exe embed.
+// solely for the Windows .exe embed: taken from PATH, else from the mingw
+// toolchain Kotlin/Native already downloads for the mingwX64 target, so a
+// stock Windows setup needs nothing extra.
 
 /** Deterministic output paths so the executable's linkerOpts (added reflectively
    in NativeApplication) and the windres task agree without sharing state. */
@@ -88,6 +93,11 @@ internal fun installAppIcon(inProject: Project, inExt: ComposeDesktopNativeExten
 			task.description = "Compile the .ico to a COFF resource object (windres) for the .exe icon."
 			task.icoFile.set(vIco)
 			task.objectFile.set(vObj)
+			task.konanDataDir.set(
+				inProject.providers.gradleProperty("konan.data.dir")
+					.orElse(inProject.providers.environmentVariable("KONAN_DATA_DIR"))
+					.orElse(inProject.providers.systemProperty("user.home").map { "$it/.konan" })
+			)
 			task.dependsOn(vIcoTask)
 		}
 		// Link the object last: the mingw link tasks must run windres first (the
@@ -165,24 +175,56 @@ abstract class CompileWindowsIconResourceTask : DefaultTask() {
 	@get:OutputFile
 	abstract val objectFile: RegularFileProperty
 
+	/** Kotlin/Native's data dir (`~/.konan` unless relocated), searched for the
+	    mingw toolchain's windres when none is on PATH. */
+	@get:Internal
+	abstract val konanDataDir: Property<String>
+
 	@TaskAction
 	fun run() {
 		val vIco = icoFile.get().asFile
 		val vObj = objectFile.get().asFile
 		vObj.parentFile.mkdirs()
+		val vWindres = findWindres() ?: throw GradleException(
+			"windres not found - it embeds the app icon into the Windows .exe. Looked on PATH and in " +
+				"Kotlin/Native's mingw toolchain (${File(konanDataDir.get(), "dependencies")}" +
+				"/msys2-mingw-w64-x86_64-*/bin), which a mingwX64 build downloads. Install mingw-w64 " +
+				"binutils, or set compose.desktop.native { icon { embedWindowsIcon.set(false) } }.")
 		// windres reads the .ico via the .rc; a bare filename + -I keeps it portable.
 		val vRc = File(vObj.parentFile, "app_icon.rc")
 		vRc.writeText("1 ICON \"${vIco.name}\"\n")
-		val vProc = ProcessBuilder(
-			"windres", "-I", vIco.parentFile.absolutePath,
+		val vBuilder = ProcessBuilder(
+			vWindres.absolutePath, "-I", vIco.parentFile.absolutePath,
 			"-O", "coff", vRc.absolutePath, vObj.absolutePath,
-		).redirectErrorStream(true).start()
+		).redirectErrorStream(true)
+		// windres preprocesses the .rc with the `gcc` it finds on PATH; put its own
+		// toolchain first so the Kotlin/Native copy runs without a system mingw.
+		val vEnv = vBuilder.environment()
+		val vPathKey = vEnv.keys.firstOrNull { it.equals("PATH", ignoreCase = true) } ?: "PATH"
+		vEnv[vPathKey] = vWindres.parentFile.absolutePath + File.pathSeparator + (vEnv[vPathKey] ?: "")
+		val vProc = vBuilder.start()
 		val vOutput = vProc.inputStream.bufferedReader().readText()
 		val vCode = vProc.waitFor()
-		if (vCode != 0) throw org.gradle.api.GradleException(
-			"windres failed (exit $vCode):\n$vOutput\n" +
+		if (vCode != 0) throw GradleException(
+			"windres failed (exit $vCode, ${vWindres.absolutePath}):\n$vOutput\n" +
 				"Install mingw-w64 binutils (provides windres) or set " +
 				"compose.desktop.native { icon { embedWindowsIcon.set(false) } }.")
+	}
+
+	/** windres on PATH first, then the newest Kotlin/Native msys2 mingw toolchain. */
+	private fun findWindres(): File? {
+		val vExe = if (File.separatorChar == '\\') "windres.exe" else "windres"
+		System.getenv("PATH").orEmpty().split(File.pathSeparator)
+			.filter { it.isNotBlank() }
+			.map { File(it, vExe) }
+			.firstOrNull { it.isFile }
+			?.let { return it }
+		return File(konanDataDir.get(), "dependencies")
+			.listFiles { vDir -> vDir.isDirectory && vDir.name.startsWith("msys2-mingw-w64-x86_64") }
+			.orEmpty()
+			.sortedByDescending { it.name }
+			.map { File(it, "bin/$vExe") }
+			.firstOrNull { it.isFile }
 	}
 }
 

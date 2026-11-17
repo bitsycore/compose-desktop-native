@@ -203,9 +203,11 @@ The plugin (no Python / native tooling needed - pure-Kotlin codec):
   The runtime icon uses core SDL only, so it works on every target.
 
 - on **Windows**, assembles a multi-size `.ico` from `exeIcon` (or `light` when
-  `exeIcon` is unset), compiles it with `windres` (mingw-w64 binutils), and links
-  it into the `.exe` so Explorer and the pinned taskbar show it. Set
-  `embedWindowsIcon.set(false)` to skip this (e.g. if `windres` isn't installed).
+  `exeIcon` is unset), compiles it with `windres`, and links it into the `.exe`
+  so Explorer and the pinned taskbar show it. Nothing to install: `windres` is
+  taken from `PATH` if present, otherwise from the mingw toolchain Kotlin/Native
+  already downloads for the mingwX64 target (`~/.konan/dependencies/msys2-mingw-w64-*`).
+  Set `embedWindowsIcon.set(false)` to skip the embed.
   The resource object is linked into every mingw executable - the one the plugin
   creates via `native { entryPoint }` and hand-declared
   `binaries.executable { }` ones alike.

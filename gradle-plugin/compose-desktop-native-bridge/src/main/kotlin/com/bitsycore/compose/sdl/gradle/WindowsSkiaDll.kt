@@ -1,8 +1,19 @@
 package com.bitsycore.compose.sdl.gradle
 
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
+import java.util.zip.ZipFile
 
 // ==================
 // MARK: Windows Skia leg - runtime DLL + ICU data provisioning
@@ -81,15 +92,15 @@ internal fun installWindowsSkiaDll(inProject: Project) {
 			task.rename { "skiko-windows-x64.dll" }
 		}
 		val vProvisionIcu = inProject.tasks.register(
-			"provisionSkikoIcu${vVariant}MingwX64", Copy::class.java
+			"provisionSkikoIcu${vVariant}MingwX64", ExtractIcuDataTask::class.java
 		) { task ->
 			task.description =
 				"Extract icudtl.dat next to the mingwX64 $vVariant executable (Skia ICU data for skparagraph)."
-			task.from(inProject.provider { inProject.zipTree(vIcuConfig.singleFile) }) {
-				it.include("icudtl.dat")
-			}
-			task.into(vExeDir)
-			task.includeEmptyDirs = false
+			// The configuration itself is the input: Gradle resolves it when the task
+			// runs. (A `provider { zipTree(config.singleFile) }` source resolved it at
+			// configuration time instead - flagged by Gradle, gradle/gradle#2298.)
+			task.runtimeJar.from(vIcuConfig)
+			task.icuFile.set(vExeDir.map { it.file("icudtl.dat") })
 		}
 		// finalizedBy the link (a plain build stages the sidecars) and dependsOn from
 		// run (the exe finds them before launch). finalizedBy - not dependsOn on link/
@@ -99,5 +110,29 @@ internal fun installWindowsSkiaDll(inProject: Project) {
 			.configureEach { it.finalizedBy(vProvision, vProvisionIcu) }
 		inProject.tasks.matching { it.name == "run${vVariant}ExecutableMingwX64" }
 			.configureEach { it.dependsOn(vProvision, vProvisionIcu) }
+	}
+}
+
+/** Extracts `icudtl.dat` from the official skiko Windows runtime jar. */
+@DisableCachingByDefault(because = "a single small file copied out of a local jar")
+abstract class ExtractIcuDataTask : DefaultTask() {
+	/** The skiko-awt-runtime-windows-x64 jar (resolved lazily, at execution). */
+	@get:InputFiles
+	@get:PathSensitive(PathSensitivity.NONE)
+	abstract val runtimeJar: ConfigurableFileCollection
+
+	@get:OutputFile
+	abstract val icuFile: RegularFileProperty
+
+	@TaskAction
+	fun run() {
+		val vJar = runtimeJar.singleFile
+		val vOut = icuFile.get().asFile
+		vOut.parentFile.mkdirs()
+		ZipFile(vJar).use { vZip ->
+			val vEntry = vZip.getEntry("icudtl.dat")
+				?: throw GradleException("icudtl.dat not found in ${vJar.name}")
+			vZip.getInputStream(vEntry).use { vIn -> vOut.outputStream().use { vIn.copyTo(it) } }
+		}
 	}
 }
