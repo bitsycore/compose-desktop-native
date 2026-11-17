@@ -797,7 +797,7 @@ Verified in-tree (api-exposed by `:ui` unless noted):
 - `androidx.navigationevent:navigationevent-compose` 1.1.2 - predictive-back
   event plumbing (BackHandler, NavDisplay gestures).
 - `androidx.collection:collection` - plain Maven dep, not a module.
-- `androidx.window:window-core` **1.5.0** - WindowSizeClass / the adaptive
+- `androidx.window:window-core` **1.5.1** - WindowSizeClass / the adaptive
   window model. Publishes mingwX64 + linux + macos under BOTH coordinate sets;
   the port takes the google one like the rest of the androidx stack. This is
   what makes the material3-adaptive vendoring a pure re-target: the dependency

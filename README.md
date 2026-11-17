@@ -1,4 +1,4 @@
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
 
 # Compose Desktop Native
@@ -132,7 +132,7 @@ commonMain.dependencies {
     val vAdaptive = composeDesktopNative.composeMaterial3Adaptive
     implementation("org.jetbrains.compose.material3.adaptive:adaptive:$vAdaptive")
     implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:$vAdaptive")
-    implementation("androidx.window:window-core:1.5.0")
+    implementation("androidx.window:window-core:1.5.1")
 }
 ```
 
@@ -224,7 +224,7 @@ one (`savedstate`, below).
 
 | | Version | Notes |
 |---|---|---|
-| Kotlin | **2.4.20** | Newer than the 2.3.20 CMP 1.12.2 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.20 with no klib API diff, so there is no reason to hold back. |
+| Kotlin | **2.4.21** | Newer than the 2.3.20 CMP 1.12.2 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.21 with no klib API diff, so there is no reason to hold back. |
 | Compose Multiplatform | **1.12.2** | The vendored sources are the `v1.12.2` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. 1.12.2 moves skiko to 0.150.2, so the mingwX64 fork was rebased onto skiko `v0.150.2` and republished to keep the same Skia base. |
 | SDL3 | **release-3.4.20** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
 | Skiko | **0.150.2** | macOS / Linux use the official `org.jetbrains.skiko`. |
@@ -244,7 +244,7 @@ the bridge plugin and you keep declaring the **official** coordinate.
 | Animation | `org.jetbrains.compose.animation:animation*:1.12.2` | `com.bitsycore.compose.animation:animation*` |
 | Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.2` | `com.bitsycore.compose.material:material-ripple` |
 | Material3 | `org.jetbrains.compose.material3:material3:1.12.0-alpha03` | `com.bitsycore.compose.material3:material3` |
-| Material3 Adaptive | `org.jetbrains.compose.material3.adaptive:adaptive*:1.3.0-rc01` | `com.bitsycore.compose.material3.adaptive:adaptive*` |
+| Material3 Adaptive | `org.jetbrains.compose.material3.adaptive:adaptive*:1.3.0` | `com.bitsycore.compose.material3.adaptive:adaptive*` |
 | Resources | `org.jetbrains.compose.components:components-resources:1.12.2` | `com.bitsycore.compose.components:components-resources` |
 | Navigation3 UI | `org.jetbrains.androidx.navigation3:navigation3-ui` | `com.bitsycore.navigation3:navigation3-ui` |
 | Window shell | *no upstream equivalent* | `com.bitsycore.compose:desktop-native-window` |

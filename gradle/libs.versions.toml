@@ -26,8 +26,8 @@
 # Policy 2 (not something CMP dictates): latest release. Newer than the Kotlin
 # CMP 1.12.2 is itself built with (2.3.20), which is fine - Kotlin/Native reads
 # older klibs, and the whole port + both sample apps compile and link clean on
-# 2.4.20 with no klib API diff against 2.4.0.
-kotlin = "2.4.20"
+# 2.4.21 with no klib API diff against 2.4.0.
+kotlin = "2.4.21"
 
 # ============
 #  Compose Multiplatform  (CMP-pinned - policy 1)
@@ -47,7 +47,7 @@ compose = "1.12.2"
 composeMaterial3 = "1.12.0-alpha03"
 # material3-adaptive rides its own train too. Used ONLY for the apps' JVM parity
 # leg - the native leg gets the vendored :compose:material3:adaptive:* modules.
-composeMaterial3Adaptive = "1.3.0-rc01"
+composeMaterial3Adaptive = "1.3.0"
 composeRuntime = "1.12.2"
 # androidx.compose.runtime:runtime-retain (GOOGLE coords) rides the Jetpack train,
 # not CMP's: Google published 1.12.1 and then jumped straight to 1.13.0-alpha, so
@@ -73,7 +73,7 @@ androidxLifecycle = "2.11.0"
 androidxCollection = "1.5.0"
 # material3-adaptive api-exposes window-core. GOOGLE coordinates like the rest of
 # the androidx stack here - both sets publish linux + mingw + macos for this one.
-androidxWindow = "1.5.0"
+androidxWindow = "1.5.1"
 androidxGraphicsShapes = "1.1.0"
 # CMP ships org.jetbrains.androidx.navigationevent 1.1.0 == Jetpack 1.1.1; 1.1.2
 # is the latest PATCH of that same minor, so it stays inside policy 1.
@@ -103,10 +103,10 @@ coil = "3.6.3"
 
 kotlinxCoroutines = "1.11.0"
 kotlinxDateTime = "0.8.0"
-kotlinxSerialization = "1.11.0"
-kotlinxIoOkio = "0.9.1"
+kotlinxSerialization = "1.13.0"
+kotlinxIoOkio = "0.9.3"
 okio = "3.18.2"
-ktor = "3.6.0"
+ktor = "3.6.1"
 
 [libraries]
 
