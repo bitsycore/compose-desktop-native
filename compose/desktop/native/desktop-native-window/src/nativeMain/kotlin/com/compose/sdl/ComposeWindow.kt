@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.Snapshot
+import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -65,6 +66,7 @@ fun ApplicationScope.Window(
 	title: String = "ComposeNativeSDL3",
 	width: Int = 800,
 	height: Int = 600,
+	visible: Boolean = true,
 	gpu: GpuMode = GpuMode.Auto,
 	icon: AppWindowIcon? = null,
 	undecorated: Boolean = false,
@@ -114,6 +116,11 @@ fun ApplicationScope.Window(
 	}
 	SideEffect {
 		if (vWindow.facade.title != title) vWindow.facade.setTitle(title)
+		if (visible) {
+			vWindow.facade.show()
+		} else {
+			vWindow.facade.hide()
+		}
 	}
 	// Re-apply only on a real change; `transparent` is creation-only (see
 	// WindowAttributes) so it is deliberately not re-applied here.
@@ -221,7 +228,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			}
 
 			// Exit when the last window is gone (after at least one existed).
-			if (runtime.hadWindow && runtime.windows.isEmpty()) runtime.exitRequested = true
+			if (runtime.hadWindow && runtime.windows.isEmpty() && runtime.activeTrayCount == 0 && runtime.exitOnLastWindowClosed) {
+				runtime.exitRequested = true
+			}
 			if (runtime.exitRequested) break
 			FrameProfiler.phase("app")
 
@@ -359,3 +368,16 @@ fun nativeComposeWindow(
 		)
 	}
 }
+
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+fun ComposeNativeWindow.show() {
+	val handle = rawSdlHandles().window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+	sdl3.SDL_ShowWindow(handle)
+}
+
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+fun ComposeNativeWindow.hide() {
+	val handle = rawSdlHandles().window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+	sdl3.SDL_HideWindow(handle)
+}
+

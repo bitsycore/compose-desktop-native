@@ -27,6 +27,8 @@ internal class AppRuntime {
 	private val destroyQueue = mutableListOf<WindowInstance>()
 	var exitRequested = false
 	var hadWindow = false
+	var activeTrayCount = 0
+	var exitOnLastWindowClosed = true
 
 	fun windowFor(inId: UInt): WindowInstance? =
 		if (inId == 0u) windows.firstOrNull()

@@ -37,9 +37,11 @@ kotlin {
             // Apps that want Material 3 widgets pull `implementation(project(":compose:material3:material3"))`
             // themselves (:material3 doesn't need to be `api`-exposed - the
             // upstream vendored surface is stable and apps import it directly).
-            api(project(":compose:ui:ui"))
-            api(project(":compose:foundation:foundation"))
-            api(project(":compose:animation:animation-core"))
+            val vComposeVersion = "1.12.2-4"
+            api("com.bitsycore.compose.ui:ui:$vComposeVersion")
+            api("com.bitsycore.compose.foundation:foundation:$vComposeVersion")
+            api("com.bitsycore.compose.animation:animation-core:$vComposeVersion")
+            api("com.bitsycore.compose.components:components-resources:$vComposeVersion")
             implementation(libs.kotlinx.coroutines.core)
             // setMain() / resetMain() - see Sdl3MainDispatcher.kt for usage.
             implementation(libs.kotlinx.coroutines.test)
