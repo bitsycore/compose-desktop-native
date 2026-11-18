@@ -24,6 +24,24 @@ plugins {
     `maven-publish`
 }
 
+// Bytecode target = what CONSUMERS' Gradle must run on, so pin it to Gradle 9's
+// own floor (JVM 17). Left unset it follows the JDK running this build - the
+// repo's daemon JVM (gradle-daemon-jvm.properties, 25) - and the plugin shipped
+// with org.gradle.jvm.version=25, so builds on JDK 17/21 could not resolve it.
+// -Xjdk-release also keeps the compiler from linking JDK 18+ APIs.
+val kPluginJvmTarget = 17
+java {
+    sourceCompatibility = JavaVersion.toVersion(kPluginJvmTarget)
+    targetCompatibility = JavaVersion.toVersion(kPluginJvmTarget)
+}
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(kPluginJvmTarget.toString()))
+        freeCompilerArgs.add("-Xjdk-release=$kPluginJvmTarget")
+    }
+}
+tasks.withType<JavaCompile>().configureEach { options.release.set(kPluginJvmTarget) }
+
 // Same coordinate scheme as the root build: version is driven by
 // PUBLISH_VERSION (the git tag, `v1.2.3` → `1.2.3`); local dev = SNAPSHOT.
 group = "com.bitsycore.compose.sdl"
