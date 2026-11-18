@@ -336,6 +336,12 @@ def buildSdl3(inHost, inCc, inCxx):
 		# OFF value (it only checks vars that aren't already cached) and SDL3
 		# falls back to its portable implementations.
 		vExtra += ["-DHAVE_MEMFD_CREATE=0", "-DHAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP=0"]
+		# Same story for sem_clockwait (glibc 2.30), probed since SDL 3.4.20 -
+		# the app link failed with "undefined symbol: sem_clockwait". Here the
+		# cached var is the COMPILER_HAS_* check result (HAVE_SEM_CLOCKWAIT is
+		# a plain set() derived from it); with both off SDL3 falls back to
+		# sem_timedwait, which the sysroot has.
+		vExtra += ["-DCOMPILER_HAS_SEM_CLOCKWAIT=0", "-DCOMPILER_HAS_SEM_CLOCKWAIT_NP=0"]
 
 	print(">> configuring (static, size-sectioned)")
 	forceRmtree(vOut)
