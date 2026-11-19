@@ -8,12 +8,18 @@ package com.compose.sdl
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -65,6 +71,7 @@ fun ApplicationScope.Window(
 	title: String = "ComposeNativeSDL3",
 	width: Int = 800,
 	height: Int = 600,
+	visible: Boolean = true,
 	gpu: GpuMode = GpuMode.Auto,
 	icon: AppWindowIcon? = null,
 	undecorated: Boolean = false,
@@ -114,6 +121,11 @@ fun ApplicationScope.Window(
 	}
 	SideEffect {
 		if (vWindow.facade.title != title) vWindow.facade.setTitle(title)
+		if (visible) {
+			vWindow.facade.show()
+		} else {
+			vWindow.facade.hide()
+		}
 	}
 	// Re-apply only on a real change; `transparent` is creation-only (see
 	// WindowAttributes) so it is deliberately not re-applied here.
@@ -135,6 +147,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	val mainDispatcher = Sdl3MainDispatcher()
 	@OptIn(ExperimentalCoroutinesApi::class)
 	Dispatchers.setMain(mainDispatcher)
+
+	// Install the resource reader so headless or pre-window composables (e.g. Tray) can load bundled resources.
+	com.compose.sdl.res.composeResourceReader = ::loadComposeResourceBytes
 
 	val runtime = AppRuntime()
 
@@ -159,7 +174,14 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			runtime.markAllNeedFrame()
 		}
 
-		appComposition.setContent { appScope.content() }
+		appComposition.setContent {
+            CompositionLocalProvider(
+                LocalDensity provides Density(1f),
+                LocalLayoutDirection provides LayoutDirection.Ltr,
+            ) {
+                appScope.content()
+            }
+		}
 		// Compose the initial Window() declarations before entering the loop.
 		appClock.sendFrame(frameClockNanos())
 		yield()
@@ -221,7 +243,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			}
 
 			// Exit when the last window is gone (after at least one existed).
-			if (runtime.hadWindow && runtime.windows.isEmpty()) runtime.exitRequested = true
+			if (runtime.hadWindow && runtime.windows.isEmpty() && runtime.activeTrayCount == 0 && runtime.exitOnLastWindowClosed) {
+				runtime.exitRequested = true
+			}
 			if (runtime.exitRequested) break
 			FrameProfiler.phase("app")
 
@@ -359,3 +383,16 @@ fun nativeComposeWindow(
 		)
 	}
 }
+
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+fun ComposeNativeWindow.show() {
+	val handle = rawSdlHandles().window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+	sdl3.SDL_ShowWindow(handle)
+}
+
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+fun ComposeNativeWindow.hide() {
+	val handle = rawSdlHandles().window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+	sdl3.SDL_HideWindow(handle)
+}
+
