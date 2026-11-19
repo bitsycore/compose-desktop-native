@@ -8,12 +8,17 @@ package com.compose.sdl
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
@@ -166,7 +171,14 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			runtime.markAllNeedFrame()
 		}
 
-		appComposition.setContent { appScope.content() }
+		appComposition.setContent {
+            CompositionLocalProvider(
+                LocalDensity provides Density(1f),
+                LocalLayoutDirection provides LayoutDirection.Ltr,
+            ) {
+                appScope.content()
+            }
+		}
 		// Compose the initial Window() declarations before entering the loop.
 		appClock.sendFrame(frameClockNanos())
 		yield()
