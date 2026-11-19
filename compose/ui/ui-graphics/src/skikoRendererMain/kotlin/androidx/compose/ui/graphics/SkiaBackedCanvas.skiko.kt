@@ -505,7 +505,7 @@ internal class SkiaBackedCanvas(
         inHeight: Float,
         inAlpha: Float,
     ) {
-        val drawer = skiaLeafDrawer ?: return
+        val drawer = skiaLeafDrawer ?: com.compose.sdl.renderer.skia.defaultSkiaLeafDrawer
         drawer.imageCache.draw(
             inCanvas = internalSkiaCanvas,
             inPath = inResourcePath,

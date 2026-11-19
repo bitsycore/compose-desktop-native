@@ -148,6 +148,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	@OptIn(ExperimentalCoroutinesApi::class)
 	Dispatchers.setMain(mainDispatcher)
 
+	// Install the resource reader so headless or pre-window composables (e.g. Tray) can load bundled resources.
+	com.compose.sdl.res.composeResourceReader = ::loadComposeResourceBytes
+
 	val runtime = AppRuntime()
 
 	runBlocking {

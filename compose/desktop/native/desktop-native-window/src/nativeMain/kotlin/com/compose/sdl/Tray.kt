@@ -173,20 +173,35 @@ internal class AppTrayIcon(
 			height: Int = 32,
 			density: Density = Density(1f),
 		): AppTrayIcon {
-			val bitmap = ImageBitmap(width, height)
-			val canvas = Canvas(bitmap)
-			val drawScope = CanvasDrawScope()
-			drawScope.draw(
-				density = density,
-				layoutDirection = LayoutDirection.Ltr,
-				canvas = canvas,
-				size = Size(width.toFloat(), height.toFloat()),
-			) {
-				with(painter) {
-					draw(size)
+			if (com.compose.sdl.res.composeResourceReader == null) {
+				com.compose.sdl.res.composeResourceReader = ::loadComposeResourceBytes
+			}
+			val prevDrawer = com.compose.sdl.renderer.skia.skiaLeafDrawer
+			if (prevDrawer == null) {
+				com.compose.sdl.renderer.skia.skiaLeafDrawer = com.compose.sdl.renderer.skia.SkiaLeafDrawer(
+					com.compose.sdl.renderer.skia.SkiaImageCache()
+				)
+			}
+			try {
+				val bitmap = ImageBitmap(width, height)
+				val canvas = Canvas(bitmap)
+				val drawScope = CanvasDrawScope()
+				drawScope.draw(
+					density = density,
+					layoutDirection = LayoutDirection.Ltr,
+					canvas = canvas,
+					size = Size(width.toFloat(), height.toFloat()),
+				) {
+					with(painter) {
+						draw(size)
+					}
+				}
+				return fromImageBitmap(bitmap)
+			} finally {
+				if (prevDrawer == null) {
+					com.compose.sdl.renderer.skia.skiaLeafDrawer = null
 				}
 			}
-			return fromImageBitmap(bitmap)
 		}
 	}
 }

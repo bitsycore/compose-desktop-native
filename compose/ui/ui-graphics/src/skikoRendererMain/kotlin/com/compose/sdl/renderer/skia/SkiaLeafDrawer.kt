@@ -12,6 +12,20 @@ package com.compose.sdl.renderer.skia
    recording - B6.2) can then draw images onto its own `internalSkiaCanvas`. */
 var skiaLeafDrawer: SkiaLeafDrawer? = null
 
+val defaultSkiaLeafDrawer: SkiaLeafDrawer by lazy {
+	if (com.compose.sdl.graphics.encodedImageDecoder == null) {
+		com.compose.sdl.graphics.encodedImageDecoder = SkiaEncodedImageDecoder()
+	}
+	val cache = SkiaImageCache()
+	com.compose.sdl.res.currentImageLoader = object : com.compose.sdl.res.ImageLoader {
+		override fun intrinsicSize(path: String, kind: com.compose.sdl.res.ResourceKind): androidx.compose.ui.geometry.Size =
+			cache.intrinsicSize(path, kind)
+		override fun readBytes(path: String): ByteArray? =
+			com.compose.sdl.res.composeResourceReader?.invoke(path)
+	}
+	SkiaLeafDrawer(cache)
+}
+
 class SkiaLeafDrawer(
 	val imageCache: SkiaImageCache,
 )
