@@ -42,9 +42,9 @@ dependencyResolutionManagement {
         // Windows target. Scoped to com.bitsycore.skiko (the fork is
         // republished under the bitsycore name - see the fork repo).
         maven {
-            name = "BitsycoreSkiko"
+            name = "BitsycoreReleases"
             url = uri("https://maven.bitsycore.com/releases")
-            content { includeGroup("com.bitsycore.skiko") }
+            content { includeGroupAndSubgroups("com.bitsycore") }
         }
     }
 }
