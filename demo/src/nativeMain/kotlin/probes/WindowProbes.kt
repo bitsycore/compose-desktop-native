@@ -9,8 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.compose.sdl.Tray
 import com.compose.sdl.Window
 import com.compose.sdl.nativeComposeApp
+import demo.generated.resources.Res
+import demo.generated.resources.compose_logo
+import org.jetbrains.compose.resources.painterResource
 import com.compose.sdl.nativeComposeWindow
 import utils.encodeBmpBgra32
 import utils.writeFile
@@ -185,4 +189,27 @@ internal fun runLocaleTest() {
             }
         }
     }
+}
+
+/** --traytest: a Tray whose icon is a painterResource image, declared BEFORE any window - the
+   tray-first / tray-only shape. Image decode used to crash here ("Image decode failed") because
+   only a window's render backend installed the decoder. The menu carries checkboxes and a
+   submenu so the tray applier builds a real tree. PASS = the app reaches its frame budget. */
+internal fun runTrayTest() {
+    var vFrames = 0
+    nativeComposeApp {
+        var vAccepted by remember { mutableStateOf(false) }
+        Tray(icon = painterResource(Res.drawable.compose_logo), tooltip = "traytest") {
+            CheckboxItem("Accepting checkbox", checked = vAccepted, onCheckedChange = { vAccepted = it })
+            CheckboxItem("Rejecting checkbox", checked = false, onCheckedChange = {})
+            Separator()
+            Menu("Submenu") { Item("Nested item", onClick = {}) }
+            Item("Exit", onClick = ::exitApplication)
+        }
+        Window(onCloseRequest = ::exitApplication, title = "traytest", width = 240, height = 120,
+            onFrame = { _, vFrame -> vFrames = vFrame; vFrame < 10 }) {
+            Box(Modifier.fillMaxSize().background(Color(0xFF202020)))
+        }
+    }
+    println(if (vFrames >= 10) "traytest: PASS (painterResource tray icon before any window, menu built)" else "traytest: FAIL (frames=$vFrames)")
 }

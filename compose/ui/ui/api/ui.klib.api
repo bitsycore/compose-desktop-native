@@ -2853,6 +2853,8 @@ final class com.compose.sdl/ComposeNativeWindow { // com.compose.sdl/ComposeNati
         final fun <get-isResizable>(): kotlin/Boolean // com.compose.sdl/ComposeNativeWindow.isResizable.<get-isResizable>|<get-isResizable>(){}[0]
     final val isUndecorated // com.compose.sdl/ComposeNativeWindow.isUndecorated|{}isUndecorated[0]
         final fun <get-isUndecorated>(): kotlin/Boolean // com.compose.sdl/ComposeNativeWindow.isUndecorated.<get-isUndecorated>|<get-isUndecorated>(){}[0]
+    final val isVisible // com.compose.sdl/ComposeNativeWindow.isVisible|{}isVisible[0]
+        final fun <get-isVisible>(): kotlin/Boolean // com.compose.sdl/ComposeNativeWindow.isVisible.<get-isVisible>|<get-isVisible>(){}[0]
     final val pixelDensity // com.compose.sdl/ComposeNativeWindow.pixelDensity|{}pixelDensity[0]
         final fun <get-pixelDensity>(): kotlin/Float // com.compose.sdl/ComposeNativeWindow.pixelDensity.<get-pixelDensity>|<get-pixelDensity>(){}[0]
     final val pixelHeight // com.compose.sdl/ComposeNativeWindow.pixelHeight|{}pixelHeight[0]
@@ -2868,6 +2870,7 @@ final class com.compose.sdl/ComposeNativeWindow { // com.compose.sdl/ComposeNati
 
     final fun close() // com.compose.sdl/ComposeNativeWindow.close|close(){}[0]
     final fun dispatchKeyShortcut(androidx.compose.ui.input.key/KeyEvent): kotlin/Boolean // com.compose.sdl/ComposeNativeWindow.dispatchKeyShortcut|dispatchKeyShortcut(androidx.compose.ui.input.key.KeyEvent){}[0]
+    final fun hide() // com.compose.sdl/ComposeNativeWindow.hide|hide(){}[0]
     final fun maximize() // com.compose.sdl/ComposeNativeWindow.maximize|maximize(){}[0]
     final fun minimize() // com.compose.sdl/ComposeNativeWindow.minimize|minimize(){}[0]
     final fun onResized() // com.compose.sdl/ComposeNativeWindow.onResized|onResized(){}[0]
@@ -2886,6 +2889,8 @@ final class com.compose.sdl/ComposeNativeWindow { // com.compose.sdl/ComposeNati
     final fun setSize(kotlin/Int, kotlin/Int) // com.compose.sdl/ComposeNativeWindow.setSize|setSize(kotlin.Int;kotlin.Int){}[0]
     final fun setTitle(kotlin/String) // com.compose.sdl/ComposeNativeWindow.setTitle|setTitle(kotlin.String){}[0]
     final fun setUndecorated(kotlin/Boolean) // com.compose.sdl/ComposeNativeWindow.setUndecorated|setUndecorated(kotlin.Boolean){}[0]
+    final fun setVisible(kotlin/Boolean) // com.compose.sdl/ComposeNativeWindow.setVisible|setVisible(kotlin.Boolean){}[0]
+    final fun show() // com.compose.sdl/ComposeNativeWindow.show|show(){}[0]
     final fun toggleFullscreen() // com.compose.sdl/ComposeNativeWindow.toggleFullscreen|toggleFullscreen(){}[0]
     final fun updateFps(kotlin/Int) // com.compose.sdl/ComposeNativeWindow.updateFps|updateFps(kotlin.Int){}[0]
 }
@@ -2913,12 +2918,14 @@ final class com.compose.sdl/RawSdlHandles { // com.compose.sdl/RawSdlHandles|nul
 }
 
 final class com.compose.sdl/Sdl3Backend { // com.compose.sdl/Sdl3Backend|null[0]
-    constructor <init>(kotlin/String = ..., kotlin/Int = ..., kotlin/Int = ..., com.compose.sdl/GpuMode = ..., kotlin.collections/List<kotlin/String> = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.compose.sdl/Sdl3Backend.<init>|<init>(kotlin.String;kotlin.Int;kotlin.Int;com.compose.sdl.GpuMode;kotlin.collections.List<kotlin.String>;kotlin.collections.List<kotlin.String>;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/String = ..., kotlin/Int = ..., kotlin/Int = ..., com.compose.sdl/GpuMode = ..., kotlin.collections/List<kotlin/String> = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.compose.sdl/Sdl3Backend.<init>|<init>(kotlin.String;kotlin.Int;kotlin.Int;com.compose.sdl.GpuMode;kotlin.collections.List<kotlin.String>;kotlin.collections.List<kotlin.String>;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
 
     final val gpuMode // com.compose.sdl/Sdl3Backend.gpuMode|{}gpuMode[0]
         final fun <get-gpuMode>(): com.compose.sdl/GpuMode // com.compose.sdl/Sdl3Backend.gpuMode.<get-gpuMode>|<get-gpuMode>(){}[0]
     final val pixelDensity // com.compose.sdl/Sdl3Backend.pixelDensity|{}pixelDensity[0]
         final fun <get-pixelDensity>(): kotlin/Float // com.compose.sdl/Sdl3Backend.pixelDensity.<get-pixelDensity>|<get-pixelDensity>(){}[0]
+    final val visible // com.compose.sdl/Sdl3Backend.visible|{}visible[0]
+        final fun <get-visible>(): kotlin/Boolean // com.compose.sdl/Sdl3Backend.visible.<get-visible>|<get-visible>(){}[0]
     final val windowId // com.compose.sdl/Sdl3Backend.windowId|{}windowId[0]
         final fun <get-windowId>(): kotlin/UInt // com.compose.sdl/Sdl3Backend.windowId.<get-windowId>|<get-windowId>(){}[0]
 
@@ -5392,6 +5399,7 @@ final fun com.compose.sdl/com_compose_sdl_RawSdlHandles$stableprop_getter(): kot
 final fun com.compose.sdl/com_compose_sdl_Sdl3Backend$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_Sdl3Backend$stableprop_getter|com_compose_sdl_Sdl3Backend$stableprop_getter(){}[0]
 final fun com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop_getter(): kotlin/Int // com.compose.sdl/com_compose_sdl_TextLayoutConfig$stableprop_getter|com_compose_sdl_TextLayoutConfig$stableprop_getter(){}[0]
 final fun com.compose.sdl/createRenderBackend(com.compose.sdl/Sdl3Backend, com.compose.sdl/GpuMode): com.compose.sdl/RenderBackend? // com.compose.sdl/createRenderBackend|createRenderBackend(com.compose.sdl.Sdl3Backend;com.compose.sdl.GpuMode){}[0]
+final fun com.compose.sdl/ensureImageDecoder() // com.compose.sdl/ensureImageDecoder|ensureImageDecoder(){}[0]
 final fun com.compose.sdl/fileManagerName(): kotlin/String // com.compose.sdl/fileManagerName|fileManagerName(){}[0]
 final fun com.compose.sdl/hasComposeResource(kotlin/String): kotlin/Boolean // com.compose.sdl/hasComposeResource|hasComposeResource(kotlin.String){}[0]
 final fun com.compose.sdl/injectKey(kotlin/Int, kotlin/Boolean) // com.compose.sdl/injectKey|injectKey(kotlin.Int;kotlin.Boolean){}[0]

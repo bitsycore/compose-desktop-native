@@ -188,8 +188,10 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	@OptIn(ExperimentalCoroutinesApi::class)
 	Dispatchers.setMain(mainDispatcher)
 
-	// Install the resource reader so headless or pre-window composables (e.g. Tray) can load bundled resources.
+	// Resource reader + image decoder up front, so app-level composables that run before any
+	// window - a Tray icon from painterResource - can load and decode bundled resources.
 	composeResourceReader = ::loadComposeResourceBytes
+	ensureImageDecoder()
 
 	val runtime = AppRuntime()
 

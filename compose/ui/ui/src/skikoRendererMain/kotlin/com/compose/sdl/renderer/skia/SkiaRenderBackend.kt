@@ -48,9 +48,7 @@ internal class SkiaRenderBackend(
         // and on Dispatchers.Default workers, which the CPU-raster Skia decoder
         // tolerates. Without this the first painterResource on a Skia build
         // dies with "Image decode failed" (issue #1).
-        if (com.compose.sdl.graphics.encodedImageDecoder == null) {
-            com.compose.sdl.graphics.encodedImageDecoder = SkiaEncodedImageDecoder()
-        }
+        com.compose.sdl.ensureImageDecoder()
     }
 
     // B6.1: the Skia leg draws through upstream SkiaBackedCanvas; its port draw

@@ -131,8 +131,13 @@ internal object TrayMenuScopeImpl : MenuScope {
 // MARK: Tray Node Tree & Applier
 // ==================
 
+/** One native tray entry mirrored by the menu composition. [attach] creates the native entry at
+   `pos` in `parentMenu`; [detach] removes it but keeps the node (and its children) so a move can
+   re-attach it; [destroy] is the final teardown. */
 internal sealed class TrayNode {
-	abstract fun destroy()
+	abstract fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int)
+	abstract fun detach()
+	open fun destroy() = detach()
 }
 
 internal sealed class TrayContainerNode : TrayNode() {
@@ -141,14 +146,7 @@ internal sealed class TrayContainerNode : TrayNode() {
 
 	fun insertChild(index: Int, child: TrayNode) {
 		children.add(index, child)
-		val m = menu ?: return
-		when (child) {
-			is TrayItemNode -> child.attach(m, index)
-			is TrayCheckboxItemNode -> child.attach(m, index)
-			is TraySeparatorNode -> child.attach(m, index)
-			is TraySubmenuNode -> child.attach(m, index)
-			else -> {}
-		}
+		menu?.let { child.attach(it, index) }
 	}
 
 	fun removeChildren(index: Int, count: Int) {
@@ -169,19 +167,11 @@ internal sealed class TrayContainerNode : TrayNode() {
 		for ((idx, node) in moved.withIndex()) {
 			children.add(targetIndex + idx, node)
 		}
+		// SDL entries can't be moved: detach every child natively, then re-attach in the new order.
+		// detach keeps each node's own children, so submenus come back intact.
 		val m = menu ?: return
-		for (child in children) {
-			child.destroy()
-		}
-		for ((idx, child) in children.withIndex()) {
-			when (child) {
-				is TrayItemNode -> child.attach(m, idx)
-				is TrayCheckboxItemNode -> child.attach(m, idx)
-				is TraySeparatorNode -> child.attach(m, idx)
-				is TraySubmenuNode -> child.attach(m, idx)
-				else -> {}
-			}
-		}
+		children.forEach { it.detach() }
+		children.forEachIndexed { idx, child -> child.attach(m, idx) }
 	}
 
 	fun clearChildren() {
@@ -193,10 +183,15 @@ internal sealed class TrayContainerNode : TrayNode() {
 
 	override fun destroy() {
 		clearChildren()
+		detach()
 	}
 }
 
-internal class TrayRootNode(override val menu: CPointer<SDL_TrayMenu>?) : TrayContainerNode()
+/** The tray's own root menu: owned by the tray, never inserted as an entry. */
+internal class TrayRootNode(override val menu: CPointer<SDL_TrayMenu>?) : TrayContainerNode() {
+	override fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) = Unit
+	override fun detach() = Unit
+}
 
 private class TrayCallbackHolder(var action: () -> Unit)
 
@@ -213,7 +208,7 @@ internal class TrayItemNode(
 	private var callbackRef: StableRef<TrayCallbackHolder>? = null
 	private val holder = TrayCallbackHolder { onClick() }
 
-	fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
+	override fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
 		var flags: SDL_TrayEntryFlags = SDL_TRAYENTRY_BUTTON
 		if (!enabled) flags = flags or SDL_TRAYENTRY_DISABLED
 		val e = SDL_InsertTrayEntryAt(parentMenu, pos, text, flags)
@@ -243,7 +238,7 @@ internal class TrayItemNode(
 		onClick = newOnClick
 	}
 
-	override fun destroy() {
+	override fun detach() {
 		callbackRef?.dispose()
 		callbackRef = null
 		entry?.let {
@@ -261,14 +256,14 @@ internal class TrayCheckboxItemNode(
 ) : TrayNode() {
 	var entry: CPointer<SDL_TrayEntry>? = null
 	private var callbackRef: StableRef<TrayCallbackHolder>? = null
+	// SDL flips the native checkbox before calling back. Keep it controlled: restore the composed
+	// value and request the flip - recomposition applies whatever the app decides.
 	private val holder = TrayCallbackHolder {
-		entry?.let { e ->
-			val isCheckedNow = SDL_GetTrayEntryChecked(e)
-			onCheckedChange(isCheckedNow)
-		}
+		entry?.let { SDL_SetTrayEntryChecked(it, checked) }
+		onCheckedChange(!checked)
 	}
 
-	fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
+	override fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
 		var flags: SDL_TrayEntryFlags = SDL_TRAYENTRY_CHECKBOX
 		if (checked) flags = flags or SDL_TRAYENTRY_CHECKED
 		if (!enabled) flags = flags or SDL_TRAYENTRY_DISABLED
@@ -306,7 +301,7 @@ internal class TrayCheckboxItemNode(
 		onCheckedChange = newOnCheckedChange
 	}
 
-	override fun destroy() {
+	override fun detach() {
 		callbackRef?.dispose()
 		callbackRef = null
 		entry?.let {
@@ -319,11 +314,11 @@ internal class TrayCheckboxItemNode(
 internal class TraySeparatorNode : TrayNode() {
 	var entry: CPointer<SDL_TrayEntry>? = null
 
-	fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
+	override fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
 		entry = SDL_InsertTrayEntryAt(parentMenu, pos, null, 0u)
 	}
 
-	override fun destroy() {
+	override fun detach() {
 		entry?.let {
 			SDL_RemoveTrayEntry(it)
 			entry = null
@@ -339,7 +334,7 @@ internal class TraySubmenuNode(
 	private var mSubMenu: CPointer<SDL_TrayMenu>? = null
 	override val menu: CPointer<SDL_TrayMenu>? get() = mSubMenu
 
-	fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
+	override fun attach(parentMenu: CPointer<SDL_TrayMenu>, pos: Int) {
 		var flags: SDL_TrayEntryFlags = SDL_TRAYENTRY_SUBMENU
 		if (!enabled) flags = flags or SDL_TRAYENTRY_DISABLED
 		val e = SDL_InsertTrayEntryAt(parentMenu, pos, text, flags)
@@ -348,15 +343,7 @@ internal class TraySubmenuNode(
 			mSubMenu = SDL_CreateTraySubmenu(e)
 			val sub = mSubMenu
 			if (sub != null) {
-				for ((idx, child) in children.withIndex()) {
-					when (child) {
-						is TrayItemNode -> child.attach(sub, idx)
-						is TrayCheckboxItemNode -> child.attach(sub, idx)
-						is TraySeparatorNode -> child.attach(sub, idx)
-						is TraySubmenuNode -> child.attach(sub, idx)
-						else -> {}
-					}
-				}
+				children.forEachIndexed { idx, child -> child.attach(sub, idx) }
 			}
 		}
 	}
@@ -375,8 +362,9 @@ internal class TraySubmenuNode(
 		}
 	}
 
-	override fun destroy() {
-		super.destroy()
+	override fun detach() {
+		// Children first: removing the submenu entry frees its native submenu and entries.
+		children.forEach { it.detach() }
 		mSubMenu = null
 		entry?.let {
 			SDL_RemoveTrayEntry(it)
@@ -524,6 +512,10 @@ internal class NativeTrayController(
 	var rootMenu: CPointer<SDL_TrayMenu>? = null
 		private set
 	private var currentSurface: CPointer<SDL_Surface>? = null
+	// Last values pushed to SDL: Tray() re-applies on every recomposition, but a new icon
+	// surface per recomposition (and a tooltip round-trip) is wasted native work.
+	private var mTooltip: String? = initialTooltip
+	private var mIcon: AppTrayIcon? = initialIcon
 
 	val isCreated: Boolean get() = tray != null
 
@@ -540,11 +532,15 @@ internal class NativeTrayController(
 
 	fun updateTooltip(tooltip: String?) {
 		val t = tray ?: return
+		if (tooltip == mTooltip) return
+		mTooltip = tooltip
 		SDL_SetTrayTooltip(t, tooltip)
 	}
 
 	fun updateIcon(icon: AppTrayIcon?) {
 		val t = tray ?: return
+		if (icon === mIcon) return
+		mIcon = icon
 		val newSurface = resolveIconSurface(icon)
 		SDL_SetTrayIcon(t, newSurface)
 		if (currentSurface != null && currentSurface != newSurface) {

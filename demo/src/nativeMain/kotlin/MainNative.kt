@@ -87,6 +87,11 @@ fun main(args: Array<String>) {
         return
     }
 
+    // Tray icon from painterResource before any window (startup decode crash regression).
+    if (args.any { it == "--traytest" }) {
+        runTrayTest()
+        return
+    }
     if (args.any { it == "--multiwintest" }) {
         runMultiWindowTest()
         return
@@ -222,27 +227,20 @@ fun main(args: Array<String>) {
                 Item(
                     text = if (isMainWindowVisible) "Hide Main Window" else "Show Main Window",
                     enabled = isMainWindowOpen,
-                    onClick = {
-                        isMainWindowVisible = !isMainWindowVisible
-                        println("[VISIBILITY] >>> Main Window visible set to: $isMainWindowVisible")
-                    },
+                    onClick = { isMainWindowVisible = !isMainWindowVisible },
                 )
                 Item(
                     text = if (isMainWindowOpen) "Unload Main Window (Free Skia & UI)" else "Reload Main Window",
                     onClick = {
                         isMainWindowOpen = !isMainWindowOpen
                         if (isMainWindowOpen) isMainWindowVisible = true
-                        println("[LIFECYCLE] >>> Main Window open set to: $isMainWindowOpen")
                     },
                 )
                 Separator()
                 CheckboxItem(
                     text = "Secondary Tool Window",
                     checked = showSecondaryToolWindow,
-                    onCheckedChange = {
-                        showSecondaryToolWindow = it
-                        println("[LIFECYCLE] >>> Secondary Tool Window open set to: $showSecondaryToolWindow")
-                    },
+                    onCheckedChange = { showSecondaryToolWindow = it },
                 )
                 Separator()
                 Item("Exit Showcase", onClick = ::exitApplication)
@@ -278,16 +276,11 @@ fun main(args: Array<String>) {
         }
 
         if (isMainWindowOpen) {
-            DisposableEffect(Unit) {
-                println("[LIFECYCLE] >>> Main Window ENTERED composition (UI node tree & Skia active)")
-                onDispose {
-                    println("[LIFECYCLE] >>> Main Window EXITED composition (UI node tree & Skia disposed)")
-                }
-            }
             Window(
                 onCloseRequest = {
+                    // With the tray up, closing unloads the window back to the tray (if the
+                    // platform has no tray, the last window closing still exits the app).
                     if (vCli.screenshot == null) {
-                        println("[LIFECYCLE] >>> Window close button clicked -> reducing to tray (unloading)")
                         isMainWindowOpen = false
                     } else {
                         exitApplication()

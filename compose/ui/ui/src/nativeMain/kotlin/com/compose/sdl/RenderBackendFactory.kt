@@ -20,3 +20,8 @@ expect fun createRenderBackend(inSdl: Sdl3Backend, inGpu: GpuMode): RenderBacken
 
 /** The renderer module's per-OS default GpuMode (used for GpuMode.Auto). */
 expect fun rendererPreferredGpuMode(): GpuMode
+
+/** Installs the renderer's encoded-image decoder (painterResource PNG / JPEG / WebP / SVG) if none
+   is set yet. A render backend installs it when it is created; compositions that run before any
+   window exists - a Tray icon from painterResource, a tray-only app - need it earlier. */
+expect fun ensureImageDecoder()

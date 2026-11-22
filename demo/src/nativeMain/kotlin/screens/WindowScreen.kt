@@ -98,7 +98,7 @@ internal fun WindowScreen() {
             }
         }
 
-        Section("Window state", "Minimize / maximize / restore / fullscreen / hide") {
+        Section("Window state", "Minimize / maximize / restore / fullscreen") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { window.minimize() }) {
                     Text("Minimize", color = MaterialTheme.colorScheme.onPrimary)
@@ -114,9 +114,6 @@ internal fun WindowScreen() {
                         if (window.isFullscreen) "Exit fullscreen" else "Fullscreen",
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
-                }
-                Button(onClick = { window.hide() }) {
-                    Text("Hide to tray", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }

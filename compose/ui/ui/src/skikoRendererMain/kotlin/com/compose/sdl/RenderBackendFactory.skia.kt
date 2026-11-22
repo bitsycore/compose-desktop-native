@@ -1,5 +1,6 @@
 package com.compose.sdl
 
+import com.compose.sdl.renderer.skia.SkiaEncodedImageDecoder
 import com.compose.sdl.renderer.skia.SkiaRenderBackend
 
 // ==================
@@ -17,5 +18,11 @@ actual fun createRenderBackend(inSdl: Sdl3Backend, inGpu: GpuMode): RenderBacken
 	} catch (t: Throwable) {
 		println("makeRenderBackend failed: ${t.message}")
 		null
+	}
+}
+
+actual fun ensureImageDecoder() {
+	if (com.compose.sdl.graphics.encodedImageDecoder == null) {
+		com.compose.sdl.graphics.encodedImageDecoder = SkiaEncodedImageDecoder()
 	}
 }
