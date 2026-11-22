@@ -113,7 +113,7 @@ internal class WindowInstance(
 	// CREATED. Starts focused+visible (SDL fires FOCUS_GAINED right after
 	// creation anyway; headless probe runs simply stay RESUMED).
 	private var windowFocused = true
-	private var windowVisible = true
+	private var windowVisible = attrs.visible
 
 	fun onActivationEvent(inEvent: AppEvent.WindowActivation) {
 		inEvent.focused?.let { windowFocused = it }
@@ -144,6 +144,7 @@ internal class WindowInstance(
 			resizable = attrs.resizable,
 			alwaysOnTop = attrs.alwaysOnTop,
 			focusable = attrs.focusable,
+			visible = attrs.visible,
 		)
 		if (!vBackend.init()) {
 			vBackend.destroy(inQuitSdl = false)
@@ -388,6 +389,7 @@ internal class WindowInstance(
 		facade.setAlwaysOnTop(inAttrs.alwaysOnTop)
 		facade.setFocusable(inAttrs.focusable)
 		facade.setEnabled(inAttrs.enabled)
+		facade.setVisible(inAttrs.visible)
 		// Turning the suffix off has to repaint the title: the FPS path writes
 		// SDL directly and never touches facade.title, so without this the last
 		// " · N FPS" would stay on the title bar forever.

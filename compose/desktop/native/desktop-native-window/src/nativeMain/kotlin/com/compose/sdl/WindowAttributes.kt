@@ -33,4 +33,6 @@ internal data class WindowAttributes(
 	   consumer's title bar. The rate is published either way through
 	   `ComposeNativeWindow.fps`, for apps that want to render it themselves. */
 	val showFpsInTitle: Boolean = false,
+	/** Whether the window is shown on screen (`SDL_ShowWindow` / `SDL_HideWindow`). When false at creation, `SDL_WINDOW_HIDDEN` prevents initial flashing. */
+	val visible: Boolean = true,
 )

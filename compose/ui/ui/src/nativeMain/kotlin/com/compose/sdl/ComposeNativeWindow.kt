@@ -19,6 +19,8 @@ import sdl3.SDL_SetWindowOpacity
 import sdl3.SDL_SetWindowResizable
 import sdl3.SDL_SetWindowSize
 import sdl3.SDL_SetWindowTitle
+import sdl3.SDL_ShowWindow
+import sdl3.SDL_HideWindow
 
 // ==================
 // MARK: ComposeNativeWindow
@@ -48,6 +50,7 @@ class ComposeNativeWindow constructor(
     private var mFullscreen by mutableStateOf(false)
     private var mCloseRequested by mutableStateOf(false)
     private var mFps by mutableStateOf(0)
+    private var mVisible by mutableStateOf(backend.visible)
 
     // ============
     //  State
@@ -62,6 +65,7 @@ class ComposeNativeWindow constructor(
     val isMinimized: Boolean get() = mMinimized
     val isMaximized: Boolean get() = mMaximized
     val isFullscreen: Boolean get() = mFullscreen
+    val isVisible: Boolean get() = mVisible
     val pixelDensity: Float get() = backend.pixelDensity
     /** Frames per second, refreshed ~once a second by the render loop. Snapshot-
        backed, so reading it in a composable recomposes when it changes. */
@@ -174,6 +178,20 @@ class ComposeNativeWindow constructor(
     val isEnabled: Boolean get() = mEnabled
 
     fun setEnabled(inEnabled: Boolean) { mEnabled = inEnabled }
+
+    fun setVisible(inVisible: Boolean) {
+        if (mVisible == inVisible) return
+        val vWindow = backend.window?.reinterpret<cnames.structs.SDL_Window>() ?: return
+        if (inVisible) {
+            SDL_ShowWindow(vWindow)
+        } else {
+            SDL_HideWindow(vWindow)
+        }
+        mVisible = inVisible
+    }
+
+    fun show() = setVisible(true)
+    fun hide() = setVisible(false)
 
     /** Asks composeWindow's main loop to break out at the next frame.
        Same effect as the user closing the window via the OS. Bypasses any

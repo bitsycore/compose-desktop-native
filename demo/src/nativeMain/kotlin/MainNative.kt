@@ -3,15 +3,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.compose.sdl.Tray
 import com.compose.sdl.Window
 import com.compose.sdl.nativeComposeApp
 import demo.registry.allCategories
@@ -195,72 +200,165 @@ fun main(args: Array<String>) {
     // from WindowScreen's "Multi-window" section (state-driven, Compose Desktop
     // style - the count IS the windows' lifetime).
     nativeComposeApp {
-    Window(
-        onCloseRequest = { exitApplication() },
-        title = vTitle,
-        width = vCli.width,
-        height = vCli.height,
-        gpu = vCli.gpu,
-        // The showcase doubles as the frame-pacing dev tool, so it opts back
-        // into the title-bar counter the library now ships off by default.
-        showFpsInTitle = true,
-        onFrame = if (vCli.screenshot != null) {
-            // P0.5 render-to-quiescence: capture once the window reports no pending
-            // invalidations for a few consecutive frames (entrance animations settled,
-            // async loads applied), or at the --frames cap as a safety net. Replaces
-            // the fixed frame-6 capture, whose mid-animation timing was run-dependent.
-            var vQuietFrames = 0
-            { bridge, frameIndex ->
-                vQuietFrames = if (com.compose.sdl.windowHasInvalidations()) 0 else vQuietFrames + 1
-                if (vQuietFrames >= 3 || frameIndex >= vCli.maxFrames) {
-                    if (frameIndex >= vCli.maxFrames) {
-                        println("Screenshot: quiescence not reached by frame $frameIndex - capturing anyway")
-                    }
-                    val vSnap = bridge.snapshotBgra()
-                    if (vSnap != null) {
-                        val (vW, vH, vBgra) = vSnap
-                        val vBmp = encodeBmpBgra32(vW, vH, vBgra)
-                        writeFile(vCli.screenshot, vBmp)
-                        println("Wrote screenshot: ${vCli.screenshot} (${vW}x${vH}, settled at frame $frameIndex)")
-                    } else println("Screenshot snapshot was null")
-                    false  // quit
-                } else true
-            }
-        } else null,
-    ) {
-        // Material Symbols fonts auto-install on first use of the matching
-        // MaterialSymbolsOutlined / Rounded / Sharp composable - no setup
-        // needed here.
-        MaterialTheme(colorScheme = darkColorScheme()) {
-            if (vCli.screen != null) {
-                val vAllScreens = allCategories().flatMap { it.screens }
-                val vMatch = vAllScreens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
-                if (vMatch == null) {
-                    println("Unknown --screen='${vCli.screen}'. Available: ${vAllScreens.joinToString { it.name }}")
-                    Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
-                } else {
-                    // Single screen, no sidebar - SAME wrapper as the App's
-                    // content pane (verticalScroll ⇒ infinite max height!) so
-                    // screenshot verification exercises the constraints screens
-                    // actually get when navigated to interactively. A plain
-                    // bounded Box here used to hide "scrollable measured with
-                    // infinite height" crashes from the --screenshot sweeps.
-                    val vScroll = rememberScrollState()
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
-                            .verticalScroll(vScroll)
-                            .padding(24.dp),
-                    ) {
-                        vMatch.content()
-                    }
+        var isMainWindowOpen by remember { mutableStateOf(true) }
+        var isMainWindowVisible by remember { mutableStateOf(true) }
+        var showSecondaryToolWindow by remember { mutableStateOf(false) }
+
+        val trayPainter = remember {
+            object : Painter() {
+                override val intrinsicSize = Size(32f, 32f)
+                override fun DrawScope.onDraw() {
+                    drawCircle(Color(0xFF3D5AFE))
+                    drawCircle(Color(0xFF00E5FF), radius = size.minDimension / 3f)
                 }
-            } else {
-                App()
             }
         }
-    }
+
+        if (vCli.screenshot == null) {
+            Tray(
+                icon = trayPainter,
+                tooltip = "Compose Desktop Native Showcase",
+            ) {
+                Item(
+                    text = if (isMainWindowVisible) "Hide Main Window" else "Show Main Window",
+                    enabled = isMainWindowOpen,
+                    onClick = {
+                        isMainWindowVisible = !isMainWindowVisible
+                        println("[VISIBILITY] >>> Main Window visible set to: $isMainWindowVisible")
+                    },
+                )
+                Item(
+                    text = if (isMainWindowOpen) "Unload Main Window (Free Skia & UI)" else "Reload Main Window",
+                    onClick = {
+                        isMainWindowOpen = !isMainWindowOpen
+                        if (isMainWindowOpen) isMainWindowVisible = true
+                        println("[LIFECYCLE] >>> Main Window open set to: $isMainWindowOpen")
+                    },
+                )
+                Separator()
+                CheckboxItem(
+                    text = "Secondary Tool Window",
+                    checked = showSecondaryToolWindow,
+                    onCheckedChange = {
+                        showSecondaryToolWindow = it
+                        println("[LIFECYCLE] >>> Secondary Tool Window open set to: $showSecondaryToolWindow")
+                    },
+                )
+                Separator()
+                Item("Exit Showcase", onClick = ::exitApplication)
+            }
+        }
+
+        if (showSecondaryToolWindow) {
+            Window(
+                onCloseRequest = { showSecondaryToolWindow = false },
+                title = "Tray Secondary Tool Window",
+                width = 420,
+                height = 260,
+                gpu = vCli.gpu,
+            ) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text("Secondary Tool Window", color = MaterialTheme.colorScheme.primary, fontSize = 16.sp)
+                            Text("Controlled from System Tray menu checkbox", fontSize = 12.sp)
+                            Button(onClick = { showSecondaryToolWindow = false }) {
+                                Text("Close window")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isMainWindowOpen) {
+            DisposableEffect(Unit) {
+                println("[LIFECYCLE] >>> Main Window ENTERED composition (UI node tree & Skia active)")
+                onDispose {
+                    println("[LIFECYCLE] >>> Main Window EXITED composition (UI node tree & Skia disposed)")
+                }
+            }
+            Window(
+                onCloseRequest = {
+                    if (vCli.screenshot == null) {
+                        println("[LIFECYCLE] >>> Window close button clicked -> reducing to tray (unloading)")
+                        isMainWindowOpen = false
+                    } else {
+                        exitApplication()
+                    }
+                },
+                visible = isMainWindowVisible,
+                title = vTitle,
+                width = vCli.width,
+                height = vCli.height,
+                gpu = vCli.gpu,
+                // The showcase doubles as the frame-pacing dev tool, so it opts back
+                // into the title-bar counter the library now ships off by default.
+                showFpsInTitle = true,
+                onFrame = if (vCli.screenshot != null) {
+                    // P0.5 render-to-quiescence: capture once the window reports no pending
+                    // invalidations for a few consecutive frames (entrance animations settled,
+                    // async loads applied), or at the --frames cap as a safety net. Replaces
+                    // the fixed frame-6 capture, whose mid-animation timing was run-dependent.
+                    var vQuietFrames = 0
+                    { bridge, frameIndex ->
+                        vQuietFrames = if (com.compose.sdl.windowHasInvalidations()) 0 else vQuietFrames + 1
+                        if (vQuietFrames >= 3 || frameIndex >= vCli.maxFrames) {
+                            if (frameIndex >= vCli.maxFrames) {
+                                println("Screenshot: quiescence not reached by frame $frameIndex - capturing anyway")
+                            }
+                            val vSnap = bridge.snapshotBgra()
+                            if (vSnap != null) {
+                                val (vW, vH, vBgra) = vSnap
+                                val vBmp = encodeBmpBgra32(vW, vH, vBgra)
+                                writeFile(vCli.screenshot, vBmp)
+                                println("Wrote screenshot: ${vCli.screenshot} (${vW}x${vH}, settled at frame $frameIndex)")
+                            } else println("Screenshot snapshot was null")
+                            false  // quit
+                        } else true
+                    }
+                } else null,
+            ) {
+                // Material Symbols fonts auto-install on first use of the matching
+                // MaterialSymbolsOutlined / Rounded / Sharp composable - no setup
+                // needed here.
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    if (vCli.screen != null) {
+                        val vAllScreens = allCategories().flatMap { it.screens }
+                        val vMatch = vAllScreens.firstOrNull { it.name.equals(vCli.screen, ignoreCase = true) }
+                        if (vMatch == null) {
+                            println("Unknown --screen='${vCli.screen}'. Available: ${vAllScreens.joinToString { it.name }}")
+                            Text("Unknown screen: ${vCli.screen}", color = Color.Red, fontSize = 16.sp)
+                        } else {
+                            // Single screen, no sidebar - SAME wrapper as the App's
+                            // content pane (verticalScroll ⇒ infinite max height!) so
+                            // screenshot verification exercises the constraints screens
+                            // actually get when navigated to interactively. A plain
+                            // bounded Box here used to hide "scrollable measured with
+                            // infinite height" crashes from the --screenshot sweeps.
+                            val vScroll = rememberScrollState()
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .verticalScroll(vScroll)
+                                    .padding(24.dp),
+                            ) {
+                                vMatch.content()
+                            }
+                        }
+                    } else {
+                        App()
+                    }
+                }
+            }
+        }
     // Extra windows opened from WindowScreen - one Window() per id, keyed by id so
     // closing one (OS button or its Close button) removes exactly THAT window.
     for (vId in ExtraWindows) {

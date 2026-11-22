@@ -55,6 +55,7 @@ internal fun WindowScreen() {
                 Text("Minimized:  ${window.isMinimized}", fontSize = 13.sp)
                 Text("Maximized:  ${window.isMaximized}", fontSize = 13.sp)
                 Text("Fullscreen: ${window.isFullscreen}", fontSize = 13.sp)
+                Text("Visible:    ${window.isVisible}", fontSize = 13.sp)
             }
         }
 
@@ -97,7 +98,7 @@ internal fun WindowScreen() {
             }
         }
 
-        Section("Window state", "Minimize / maximize / restore / fullscreen") {
+        Section("Window state", "Minimize / maximize / restore / fullscreen / hide") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { window.minimize() }) {
                     Text("Minimize", color = MaterialTheme.colorScheme.onPrimary)
@@ -113,6 +114,9 @@ internal fun WindowScreen() {
                         if (window.isFullscreen) "Exit fullscreen" else "Fullscreen",
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
+                }
+                Button(onClick = { window.hide() }) {
+                    Text("Hide to tray", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
