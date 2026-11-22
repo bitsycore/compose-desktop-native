@@ -5,6 +5,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.window.WindowPlacement
 import kotlinx.cinterop.*
 import sdl3.*
 
@@ -36,6 +37,7 @@ sealed class AppEvent {
 	   the window's hover state so a widget doesn't stay highlighted after the cursor
 	   exits (SDL then sends no motion, so nothing else would clear it). */
 	data class PointerExit(val windowId: UInt = 0u) : AppEvent()
+	data class WindowMoved(val x: Int, val y: Int, val windowId: UInt = 0u) : AppEvent()
 	data class WindowResized(val windowId: UInt = 0u) : AppEvent()
 	/** The user asked THIS window to close (OS close button). The loop routes it
 	   through the window's close-interception then its onCloseRequest. */
@@ -55,6 +57,8 @@ sealed class AppEvent {
 		val windowId: UInt = 0u,
 		val focused: Boolean? = null,
 		val visible: Boolean? = null,
+		val isMinimized: Boolean? = null,
+		val placement: WindowPlacement? = null,
 	) : AppEvent()
 	/** A drag-and-drop from another app hit the window. SDL fires these as a
 	   BEGIN → (FILE / TEXT)* + POSITION* → COMPLETE sequence; the loop
@@ -118,6 +122,7 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 		SDL_EVENT_KEY_DOWN -> mapKey(e.key, KeyEventType.KeyDown)
 		SDL_EVENT_KEY_UP -> mapKey(e.key, KeyEventType.KeyUp)
 
+		SDL_EVENT_WINDOW_MOVED -> AppEvent.WindowMoved(e.window.data1, e.window.data2, e.window.windowID)
 		SDL_EVENT_WINDOW_RESIZED -> AppEvent.WindowResized(e.window.windowID)
 		// Backing-store size / DPR changes flow through the same resize path.
 		SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED -> AppEvent.WindowResized(e.window.windowID)
@@ -130,21 +135,21 @@ private fun mapEvent(e: SDL_Event): AppEvent? {
 
 		// Content invalidations - the idle-skipping main loop must render a
 		// frame after these even though no Compose state changed.
-		SDL_EVENT_WINDOW_EXPOSED,
-		SDL_EVENT_WINDOW_MAXIMIZED -> AppEvent.RedrawNeeded(e.window.windowID)
+		SDL_EVENT_WINDOW_EXPOSED -> AppEvent.RedrawNeeded(e.window.windowID)
 
 		// OS light/dark theme flip → re-pick the theme-aware window icon.
 		SDL_EVENT_SYSTEM_THEME_CHANGED -> AppEvent.SystemThemeChanged
 
-		// Focus / visibility → the window's Lifecycle state (the loop also
-		// treats these as redraw triggers, preserving the old RedrawNeeded
-		// behaviour of SHOWN / RESTORED / FOCUS_GAINED).
+		// Focus / visibility / placement transitions driving the window's Lifecycle & WindowState.
 		SDL_EVENT_WINDOW_FOCUS_GAINED -> AppEvent.WindowActivation(e.window.windowID, focused = true)
 		SDL_EVENT_WINDOW_FOCUS_LOST -> AppEvent.WindowActivation(e.window.windowID, focused = false)
-		SDL_EVENT_WINDOW_SHOWN,
-		SDL_EVENT_WINDOW_RESTORED -> AppEvent.WindowActivation(e.window.windowID, visible = true)
-		SDL_EVENT_WINDOW_HIDDEN,
-		SDL_EVENT_WINDOW_MINIMIZED -> AppEvent.WindowActivation(e.window.windowID, visible = false)
+		SDL_EVENT_WINDOW_SHOWN -> AppEvent.WindowActivation(e.window.windowID, visible = true)
+		SDL_EVENT_WINDOW_HIDDEN -> AppEvent.WindowActivation(e.window.windowID, visible = false)
+		SDL_EVENT_WINDOW_MINIMIZED -> AppEvent.WindowActivation(e.window.windowID, visible = false, isMinimized = true)
+		SDL_EVENT_WINDOW_MAXIMIZED -> AppEvent.WindowActivation(e.window.windowID, placement = WindowPlacement.Maximized, isMinimized = false)
+		SDL_EVENT_WINDOW_RESTORED -> AppEvent.WindowActivation(e.window.windowID, visible = true, placement = WindowPlacement.Floating, isMinimized = false)
+		SDL_EVENT_WINDOW_ENTER_FULLSCREEN -> AppEvent.WindowActivation(e.window.windowID, placement = WindowPlacement.Fullscreen)
+		SDL_EVENT_WINDOW_LEAVE_FULLSCREEN -> AppEvent.WindowActivation(e.window.windowID, placement = WindowPlacement.Floating)
 
 		// Pointer left the window - clear hover (SDL sends no further motion).
 		SDL_EVENT_WINDOW_MOUSE_LEAVE -> AppEvent.PointerExit(e.window.windowID)

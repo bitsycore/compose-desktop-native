@@ -405,6 +405,10 @@ skikoMain/kotlin/androidx/compose/ui/skiko/OverlayRenderDecorator.skiko.kt -> sr
 skikoMain/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt -> src/vendor/skikoRenderer/kotlin/androidx/compose/ui/skiko/RecordDrawRectRenderDecorator.skiko.kt
 !skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt
 skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt -> src/vendor/common/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt
+desktopMain/kotlin/androidx/compose/ui/window/WindowPlacement.desktop.kt.kt -> src/vendor/common/kotlin/androidx/compose/ui/window/WindowPlacement.desktop.kt
+desktopMain/kotlin/androidx/compose/ui/window/WindowPosition.desktop.kt -> src/vendor/common/kotlin/androidx/compose/ui/window/WindowPosition.desktop.kt
+desktopMain/kotlin/androidx/compose/ui/window/WindowSize.desktop.kt -> src/vendor/common/kotlin/androidx/compose/ui/window/WindowSize.desktop.kt
+desktopMain/kotlin/androidx/compose/ui/window/WindowState.desktop.kt -> src/vendor/common/kotlin/androidx/compose/ui/window/WindowState.desktop.kt
 
 # >>> ---- DIAGNOSTIC GAPS ---- <<<<
 #   androidMain (125)
@@ -533,7 +537,7 @@ skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt -> src/ven
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/AndroidPopup.android.kt
 #     | androidMain/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt -> src/vendor/android/kotlin/androidx/compose/ui/window/SecureFlagPolicy.android.kt
-#   desktopMain (175)
+#   desktopMain (171)
 #     | desktopMain/kotlin/androidx/compose/ui/Actuals.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/Actuals.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeDesktopEntryPoint.kt
 #     | desktopMain/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/ComposeFeatureFlags.desktop.kt
@@ -698,11 +702,7 @@ skikoMain/kotlin/androidx/compose/ui/window/WindowExceptionHandler.kt -> src/ven
 #     | desktopMain/kotlin/androidx/compose/ui/window/WindowDecoration.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowDecoration.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/WindowExceptionHandlerFactory.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowExceptionHandlerFactory.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/WindowLocationTracker.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowLocationTracker.desktop.kt
-#     | desktopMain/kotlin/androidx/compose/ui/window/WindowPlacement.desktop.kt.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowPlacement.desktop.kt.kt
-#     | desktopMain/kotlin/androidx/compose/ui/window/WindowPosition.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowPosition.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/WindowScope.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowScope.kt
-#     | desktopMain/kotlin/androidx/compose/ui/window/WindowSize.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowSize.desktop.kt
-#     | desktopMain/kotlin/androidx/compose/ui/window/WindowState.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/WindowState.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/v2/DialogState.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/v2/DialogState.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/v2/DialogWindow.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/v2/DialogWindow.desktop.kt
 #     | desktopMain/kotlin/androidx/compose/ui/window/v2/Screen.desktop.kt -> src/vendor/desktop/kotlin/androidx/compose/ui/window/v2/Screen.desktop.kt
