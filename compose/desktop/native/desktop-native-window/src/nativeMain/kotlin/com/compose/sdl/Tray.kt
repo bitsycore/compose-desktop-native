@@ -53,9 +53,6 @@ interface MenuScope {
 	fun Separator()
 
 	@Composable
-	fun Divider() = Separator()
-
-	@Composable
 	fun Menu(
 		text: String,
 		enabled: Boolean = true,
@@ -579,16 +576,19 @@ internal class NativeTrayController(
  * If all windows close while an active tray exists, the application remains running in
  * the background.
  *
+ * Unlike Compose Desktop's `Tray`, there is no `onAction` and no `TrayState` (notifications) yet:
+ * SDL 3.4 has no tray-icon click callback (a click opens the menu) and no notification API.
+ *
  * @param icon The [Painter] to rasterize into the native tray icon surface (typically 32x32).
  * @param tooltip Optional hover tooltip string displayed by the OS for the tray icon.
- * @param menu Optional composable menu DSL ([MenuScope]) containing [MenuScope.Item],
- *   [MenuScope.CheckboxItem], [MenuScope.Separator], or nested sub-[MenuScope.Menu] entries.
+ * @param menu The tray's context menu ([MenuScope]): [MenuScope.Item], [MenuScope.CheckboxItem],
+ *   [MenuScope.Separator] and nested [MenuScope.Menu] entries. Empty by default.
  */
 @Composable
 fun ApplicationScope.Tray(
 	icon: Painter,
 	tooltip: String? = null,
-	menu: @Composable @MenuComposable (MenuScope.() -> Unit)? = null,
+	menu: @Composable @MenuComposable MenuScope.() -> Unit = {},
 ) {
 	val vScope = this as? ApplicationScopeImpl
 		?: error("Tray() must be called inside nativeComposeApp { ... }")
@@ -629,10 +629,7 @@ fun ApplicationScope.Tray(
 		val menuComposition = Composition(TrayApplier(rootNode), compositionContext)
 
 		menuComposition.setContent {
-			val activeMenu = currentMenu
-			if (activeMenu != null) {
-				TrayMenuScopeImpl.activeMenu()
-			}
+			TrayMenuScopeImpl.currentMenu()
 		}
 
 		onDispose {
