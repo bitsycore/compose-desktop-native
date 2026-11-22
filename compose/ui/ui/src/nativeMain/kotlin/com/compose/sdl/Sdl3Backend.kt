@@ -50,6 +50,7 @@ class Sdl3Backend(
     private val resizable: Boolean = true,
     private val alwaysOnTop: Boolean = false,
     private val focusable: Boolean = true,
+    val visible: Boolean = true,
 ) {
     init {
         require(gpuMode !is GpuMode.Auto) {
@@ -122,6 +123,7 @@ class Sdl3Backend(
         if (transparent) attrFlags = attrFlags or SDL_WINDOW_TRANSPARENT
         if (alwaysOnTop) attrFlags = attrFlags or SDL_WINDOW_ALWAYS_ON_TOP
         if (!focusable) attrFlags = attrFlags or SDL_WINDOW_NOT_FOCUSABLE
+        if (!visible) attrFlags = attrFlags or SDL_WINDOW_HIDDEN
         val flags = attrFlags or when (gpuMode) {
             is GpuMode.OpenGL -> SDL_WINDOW_OPENGL
             is GpuMode.Metal  -> SDL_WINDOW_METAL

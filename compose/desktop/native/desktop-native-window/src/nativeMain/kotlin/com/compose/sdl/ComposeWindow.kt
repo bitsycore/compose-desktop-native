@@ -8,12 +8,19 @@ package com.compose.sdl
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import com.compose.sdl.res.composeResourceReader
+import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -55,16 +62,60 @@ interface ApplicationScope {
 	fun exitApplication()
 }
 
-/** Declares one native window for as long as this composable stays in the app
-   composition. `onCloseRequest` fires when the user asks the window to close
-   (OS close button, or `window.close()` from content) - remove the state that
-   composes this Window to actually close it, or call exitApplication(). */
+/**
+ * Declares one native window for as long as this composable stays in the app composition.
+ *
+ * `onCloseRequest` fires when the user asks the window to close (OS close button, or
+ * `window.close()` from content) - remove the state that composes this `Window` to actually
+ * destroy it, or call [exitApplication].
+ *
+ * ### Window Lifecycle vs Visibility:
+ * - **Unloading (`if (isOpen) Window(...)`)**: When `Window` leaves the composition, its native OS
+ *   window, Skia rendering context, GPU buffers, and Compose UI node tree are completely destroyed,
+ *   freeing GPU and RAM down to the tray baseline. Any internal `remember` state or scroll positions
+ *   are reset on next opening unless hoisted to the application level.
+ * - **Hiding ([visible] = `false`)**: When [visible] is `false`, the window is hidden from both
+ *   the screen and the OS taskbar (`SDL_HideWindow`), but remains alive in memory. Its Compose
+ *   state, text fields, and Skia pipeline remain resident so setting [visible] back to `true`
+ *   reveals the window instantly with 0ms delay.
+ *
+ * @param onCloseRequest Invoked when the user clicks the native OS close button or triggers window close.
+ *   Typically used to remove this window from composition or call [exitApplication].
+ * @param title Window title displayed on the native title bar. Live updates when the string changes.
+ * @param width Window width in logical points (density-independent pixels).
+ * @param height Window height in logical points (density-independent pixels).
+ * @param visible Whether the native window is visible on screen and in the OS taskbar. When initially
+ *   set to `false`, the native window is created with `SDL_WINDOW_HIDDEN` to prevent startup flashing
+ *   (e.g. for apps starting minimized in the system tray). Toggling this value calls `SDL_ShowWindow`
+ *   or `SDL_HideWindow` without destroying the underlying window or its composition state.
+ * @param gpu The requested GPU rendering backend pipeline ([GpuMode.Auto], [GpuMode.OpenGL],
+ *   [GpuMode.Metal], or [GpuMode.CpuRaster]).
+ * @param icon Application icon for the title bar, taskbar, and Alt-Tab switcher. Supports light/dark
+ *   resource variants.
+ * @param undecorated If `true`, removes native window borders and title bar (`SDL_WINDOW_BORDERLESS`).
+ * @param transparent If `true`, enables per-pixel alpha transparency for the window surface.
+ *   **Creation-only**: changing this after window creation has no effect.
+ * @param resizable Whether the window can be resized by the user.
+ * @param enabled When `false`, drops user input events (pointer, keyboard, text) while the window
+ *   continues to render and repaint.
+ * @param focusable When `false`, prevents the window from taking keyboard focus when clicked or raised.
+ * @param alwaysOnTop When `true`, pins the window above all other non-topmost windows.
+ * @param showFpsInTitle Appends a live smoothed FPS counter (`" · N FPS"`) to the window title bar.
+ * @param onPreviewKeyEvent Interceptor for raw native key events before they reach the Compose focus tree.
+ *   Return `true` to consume the event.
+ * @param onKeyEvent Fallback handler for native key events that were not consumed by the Compose focus tree.
+ *   Return `true` to consume the event.
+ * @param onFrame Optional callback invoked after each frame presentation with the [RenderBackend] and
+ *   frame index. Return `false` to request window closure (used primarily for test and screenshot probes).
+ * @param content The composable UI content of this window, scoped with [ComposeWindowScope].
+ */
 @Composable
 fun ApplicationScope.Window(
 	onCloseRequest: () -> Unit,
 	title: String = "ComposeNativeSDL3",
 	width: Int = 800,
 	height: Int = 600,
+	visible: Boolean = true,
 	gpu: GpuMode = GpuMode.Auto,
 	icon: AppWindowIcon? = null,
 	undecorated: Boolean = false,
@@ -93,6 +144,7 @@ fun ApplicationScope.Window(
 		focusable = focusable,
 		alwaysOnTop = alwaysOnTop,
 		showFpsInTitle = showFpsInTitle,
+		visible = visible,
 	)
 	val vWindow = remember {
 		vScope.runtime.createWindow(
@@ -136,6 +188,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 	@OptIn(ExperimentalCoroutinesApi::class)
 	Dispatchers.setMain(mainDispatcher)
 
+	// Install the resource reader so headless or pre-window composables (e.g. Tray) can load bundled resources.
+	composeResourceReader = ::loadComposeResourceBytes
+
 	val runtime = AppRuntime()
 
 	runBlocking {
@@ -159,7 +214,14 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			runtime.markAllNeedFrame()
 		}
 
-		appComposition.setContent { appScope.content() }
+		appComposition.setContent {
+            CompositionLocalProvider(
+                LocalDensity provides Density(1f),
+                LocalLayoutDirection provides LayoutDirection.Ltr,
+            ) {
+                appScope.content()
+            }
+		}
 		// Compose the initial Window() declarations before entering the loop.
 		appClock.sendFrame(frameClockNanos())
 		yield()
@@ -221,7 +283,9 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			}
 
 			// Exit when the last window is gone (after at least one existed).
-			if (runtime.hadWindow && runtime.windows.isEmpty()) runtime.exitRequested = true
+			if (runtime.hadWindow && runtime.windows.isEmpty() && runtime.activeTrayCount == 0 && runtime.exitOnLastWindowClosed) {
+				runtime.exitRequested = true
+			}
 			if (runtime.exitRequested) break
 			FrameProfiler.phase("app")
 
@@ -359,3 +423,4 @@ fun nativeComposeWindow(
 		)
 	}
 }
+

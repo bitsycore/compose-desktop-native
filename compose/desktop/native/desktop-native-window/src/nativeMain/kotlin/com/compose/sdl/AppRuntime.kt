@@ -27,6 +27,8 @@ internal class AppRuntime {
 	private val destroyQueue = mutableListOf<WindowInstance>()
 	var exitRequested = false
 	var hadWindow = false
+	var activeTrayCount = 0
+	var exitOnLastWindowClosed = true
 
 	fun windowFor(inId: UInt): WindowInstance? =
 		if (inId == 0u) windows.firstOrNull()
@@ -69,10 +71,15 @@ internal class AppRuntime {
 	}
 
 	fun reapDestroyed() {
+		var destroyedAny = false
 		while (destroyQueue.isNotEmpty()) {
 			val vW = destroyQueue.removeLast()
 			windows.remove(vW)
 			vW.destroy()
+			destroyedAny = true
+		}
+		if (destroyedAny) {
+			collectNativeGarbage()
 		}
 	}
 }
