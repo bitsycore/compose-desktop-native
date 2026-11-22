@@ -87,6 +87,11 @@ fun main(args: Array<String>) {
         return
     }
 
+    // Window(visible = false) gets no frames until it is shown.
+    if (args.any { it == "--hiddentest" }) {
+        runHiddenWindowTest()
+        return
+    }
     // Tray icon from painterResource before any window (startup decode crash regression).
     if (args.any { it == "--traytest" }) {
         runTrayTest()

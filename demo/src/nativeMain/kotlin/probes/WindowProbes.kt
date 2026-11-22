@@ -213,3 +213,28 @@ internal fun runTrayTest() {
     }
     println(if (vFrames >= 10) "traytest: PASS (painterResource tray icon before any window, menu built)" else "traytest: FAIL (frames=$vFrames)")
 }
+
+/** --hiddentest: a Window(visible = false) must get no frames while hidden (Compose Desktop parity:
+   skiko only draws a showing layer), then render again once shown. onFrame counts the frames. */
+internal fun runHiddenWindowTest() {
+    var vHiddenFrames = -1
+    var vShownFrames = 0
+    nativeComposeApp {
+        var vVisible by remember { mutableStateOf(false) }
+        var vFrames by remember { mutableStateOf(0) }
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(600)
+            vHiddenFrames = vFrames
+            vVisible = true
+            kotlinx.coroutines.delay(600)
+            vShownFrames = vFrames - vHiddenFrames
+            exitApplication()
+        }
+        Window(onCloseRequest = ::exitApplication, title = "hiddentest", width = 240, height = 120, visible = vVisible,
+            onFrame = { _, _ -> vFrames++; true }) {
+            Box(Modifier.fillMaxSize().background(Color(0xFF202020)))
+        }
+    }
+    val vPass = vHiddenFrames == 0 && vShownFrames > 0
+    println("hiddentest: ${if (vPass) "PASS" else "FAIL"} (frames while hidden=$vHiddenFrames, after show=$vShownFrames)")
+}

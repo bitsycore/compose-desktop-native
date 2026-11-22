@@ -301,6 +301,11 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 			var vFallbackDelayMs = 16u
 			val vAppPending = appRecomposer.hasPendingWork
 			for (vW in runtime.windows.toList()) {
+				// A hidden window (Window(visible = false) / hide()) gets no frame at all - no
+				// animation tick, no frame clock, no render - like Compose Desktop, whose skiko
+				// redrawers only draw while the layer isShowing. SDL's SHOWN event marks it for a
+				// frame, so its composition catches up as soon as it is visible again.
+				if (!vW.facade.isVisible) continue
 				vW.installGlobals()
 				vW.host.sendAnimationFrame(animationClockNanos())
 				mainDispatcher.drainPending()
