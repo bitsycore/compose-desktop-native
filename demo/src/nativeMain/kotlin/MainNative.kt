@@ -14,8 +14,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.rememberWindowState
 import com.compose.sdl.Tray
 import com.compose.sdl.Window
 import com.compose.sdl.nativeComposeApp
@@ -212,6 +214,9 @@ fun main(args: Array<String>) {
     nativeComposeApp {
         var isMainWindowOpen by remember { mutableStateOf(true) }
         var isMainWindowVisible by remember { mutableStateOf(true) }
+        val mainWindowState = rememberWindowState(
+            size = DpSize(vCli.width.dp, vCli.height.dp),
+        )
         var showSecondaryToolWindow by remember { mutableStateOf(false) }
 
         val trayPainter = remember {
@@ -255,9 +260,8 @@ fun main(args: Array<String>) {
         if (showSecondaryToolWindow) {
             Window(
                 onCloseRequest = { showSecondaryToolWindow = false },
+                state = rememberWindowState(size = DpSize(420.dp, 260.dp)),
                 title = "Tray Secondary Tool Window",
-                width = 420,
-                height = 260,
                 gpu = vCli.gpu,
             ) {
                 MaterialTheme(colorScheme = darkColorScheme()) {
@@ -291,10 +295,9 @@ fun main(args: Array<String>) {
                         exitApplication()
                     }
                 },
-                visible = isMainWindowVisible,
+                state = mainWindowState,
                 title = vTitle,
-                width = vCli.width,
-                height = vCli.height,
+                visible = isMainWindowVisible,
                 gpu = vCli.gpu,
                 // The showcase doubles as the frame-pacing dev tool, so it opts back
                 // into the title-bar counter the library now ships off by default.
@@ -364,8 +367,7 @@ fun main(args: Array<String>) {
             Window(
                 onCloseRequest = { ExtraWindows.remove(vId) },
                 title = "Extra window $vId",
-                width = 460,
-                height = 300,
+                state = rememberWindowState(size = DpSize(460.dp, 300.dp)),
                 gpu = vCli.gpu,
             ) {
                 MaterialTheme(colorScheme = darkColorScheme()) {

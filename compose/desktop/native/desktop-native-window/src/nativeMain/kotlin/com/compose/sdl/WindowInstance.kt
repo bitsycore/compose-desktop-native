@@ -17,19 +17,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
+import cnames.structs.SDL_Window
+import com.compose.sdl.LocalWindowState
 import com.compose.sdl.node.ComposeRootHost
 import com.compose.sdl.res.currentImageLoader
 import com.compose.sdl.window.LocalPopupHost
 import com.compose.sdl.window.PopupLayer
 import com.compose.sdl.window.createPopupHostState
+import kotlin.math.roundToInt
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.value
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdl3.SDL_GetTicks
+import sdl3.SDL_GetWindowPosition
+import sdl3.SDL_MaximizeWindow
+import sdl3.SDL_MinimizeWindow
+import sdl3.SDL_RestoreWindow
+import sdl3.SDL_SetWindowFullscreen
+import sdl3.SDL_SetWindowPosition
+import sdl3.SDL_SetWindowSize
 import sdl3.SDL_SetWindowTitle
+import sdl3.SDL_WINDOWPOS_CENTERED
+import sdl3.SDL_WINDOWPOS_UNDEFINED
 
 // ==================
 // MARK: WindowInstance - one SDL window + renderer + composition
@@ -41,6 +65,7 @@ internal class WindowInstance(
 	inHeight: Int,
 	inGpu: GpuMode,
 	inIcon: AppWindowIcon?,
+	inWindowState: WindowState?,
 	private val attrs: WindowAttributes,
 	private val onFrame: ((RenderBackend, Int) -> Boolean)?,
 	// Window-level key handlers, read through holders so Window() recompositions
@@ -55,6 +80,9 @@ internal class WindowInstance(
 	private val initialWidth = inWidth
 	private val initialHeight = inHeight
 	private val icon = inIcon
+	val windowState: WindowState = inWindowState ?: WindowState(size = DpSize(inWidth.dp, inHeight.dp))
+	private var currentPlacement: WindowPlacement? = null
+	private var currentMinimized: Boolean? = null
 	// Assigned by init() from the first backend that comes up (see makeBackend()).
 	lateinit var backend: Sdl3Backend
 		private set
@@ -68,6 +96,7 @@ internal class WindowInstance(
 	val frameClock = Sdl3FrameClock()
 	private var recomposer: Recomposer? = null
 	private var recomposeJob: Job? = null
+	private var windowStateSyncJob: Job? = null
 	private var composition: Composition? = null
 
 	// Set by Window(); the compat wrapper points it at exitApplication().
@@ -118,6 +147,14 @@ internal class WindowInstance(
 	fun onActivationEvent(inEvent: AppEvent.WindowActivation) {
 		inEvent.focused?.let { windowFocused = it }
 		inEvent.visible?.let { windowVisible = it }
+		inEvent.isMinimized?.let {
+			currentMinimized = it
+			windowState.isMinimized = it
+		}
+		inEvent.placement?.let {
+			currentPlacement = it
+			windowState.placement = it
+		}
 		if (::host.isInitialized) host.setWindowFocused(windowFocused)
 		architectureOwner.setLifecycleState(
 			when {
@@ -183,11 +220,35 @@ internal class WindowInstance(
 		// even when nothing else (recompose / relayout) is pending - retained layers
 		// need this so a draw-only state change still repaints.
 		host.setInvalidationCallback { needsFrame = true }
-		facade = ComposeNativeWindow(backend, gpuMode, initialTitle)
+		facade = ComposeNativeWindow(backend, gpuMode, initialTitle, windowState)
 		// Mirror the creation flags into the facade so isResizable & co. read true
 		// from the start and a later Window() update only fires on a real change.
 		applyAttributes(attrs)
 		navigationEventOwner.navigationEventDispatcher.addInput(backNavigationInput)
+
+		val vWindow = backend.window?.reinterpret<SDL_Window>()
+		if (vWindow != null) {
+			applyPositionToSdl(vWindow, windowState.position)
+			applyPlacementToSdl(vWindow, windowState.placement, windowState.isMinimized)
+
+			windowStateSyncJob = inScope.launch(frameClock) {
+				launch {
+					snapshotFlow { windowState.placement to windowState.isMinimized }.collect { (placement, isMinimized) ->
+						applyPlacementToSdl(vWindow, placement, isMinimized)
+					}
+				}
+				launch {
+					snapshotFlow { windowState.size }.collect { size ->
+						applySizeToSdl(vWindow, size)
+					}
+				}
+				launch {
+					snapshotFlow { windowState.position }.collect { pos ->
+						applyPositionToSdl(vWindow, pos)
+					}
+				}
+			}
+		}
 
 		// The render-bridge globals must point at THIS window's renderer while
 		// its content composes/measures (first composition happens inside
@@ -215,6 +276,7 @@ internal class WindowInstance(
 
 		vComposition.setContent {
 			CompositionLocalProvider(
+				LocalWindowState provides windowState,
 				LocalComposeNativeWindow provides facade,
 				LocalPopupHost provides vPopupHost,
 				// Upstream vendored CompositionLocals.kt declares each of these as
@@ -464,6 +526,70 @@ internal class WindowInstance(
 		needsFrame = true
 		backend.updateWindowSize()
 		facade.onResized()
+		windowState.size = DpSize(backend.windowWidth.dp, backend.windowHeight.dp)
+	}
+
+	fun onMovedEvent(x: Int, y: Int) {
+		windowState.position = WindowPosition(x.dp, y.dp)
+	}
+
+	private fun applyPlacementToSdl(window: CPointer<SDL_Window>, placement: WindowPlacement, isMinimized: Boolean) {
+		if (currentPlacement == placement && currentMinimized == isMinimized) return
+		currentPlacement = placement
+		currentMinimized = isMinimized
+		if (isMinimized) {
+			SDL_MinimizeWindow(window)
+			return
+		}
+		when (placement) {
+			WindowPlacement.Fullscreen -> {
+				SDL_SetWindowFullscreen(window, true)
+			}
+			WindowPlacement.Maximized -> {
+				SDL_SetWindowFullscreen(window, false)
+				SDL_MaximizeWindow(window)
+			}
+			WindowPlacement.Floating -> {
+				SDL_SetWindowFullscreen(window, false)
+				SDL_RestoreWindow(window)
+			}
+		}
+	}
+
+	private fun applySizeToSdl(window: CPointer<SDL_Window>, size: DpSize) {
+		if (size.isSpecified) {
+			val targetW = size.width.value.roundToInt()
+			val targetH = size.height.value.roundToInt()
+			if (backend.windowWidth != targetW || backend.windowHeight != targetH) {
+				SDL_SetWindowSize(window, targetW, targetH)
+			}
+		}
+	}
+
+	private fun applyPositionToSdl(window: CPointer<SDL_Window>, position: WindowPosition) {
+		when (position) {
+			is WindowPosition.Absolute -> {
+				val targetX = position.x.value.roundToInt()
+				val targetY = position.y.value.roundToInt()
+				memScoped {
+					val curX = alloc<IntVar>()
+					val curY = alloc<IntVar>()
+					if (SDL_GetWindowPosition(window, curX.ptr, curY.ptr)) {
+						if (curX.value != targetX || curY.value != targetY) {
+							SDL_SetWindowPosition(window, targetX, targetY)
+						}
+					} else {
+						SDL_SetWindowPosition(window, targetX, targetY)
+					}
+				}
+			}
+			is WindowPosition.Aligned -> {
+				if (position.alignment == Alignment.Center) {
+					SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED.toInt(), SDL_WINDOWPOS_CENTERED.toInt())
+				}
+			}
+			is WindowPosition.PlatformDefault -> {}
+		}
 	}
 
 	/** OS light/dark theme changed - re-pick the theme-appropriate window icon
@@ -584,6 +710,8 @@ internal class WindowInstance(
 		recomposer = null
 		recomposeJob?.cancel()
 		recomposeJob = null
+		windowStateSyncJob?.cancel()
+		windowStateSyncJob = null
 		renderBackend?.destroy()
 		renderBackend = null
 		backend.destroy(inQuitSdl = false)

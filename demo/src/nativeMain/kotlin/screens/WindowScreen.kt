@@ -8,9 +8,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.WindowPlacement
 import com.compose.sdl.LocalComposeNativeWindow
+import com.compose.sdl.LocalWindowState
 
 // ==================
 // MARK: Window screen
@@ -31,10 +34,11 @@ fun openExtraWindow() {
 @Composable
 internal fun WindowScreen() {
     val window = LocalComposeNativeWindow.current
+    val windowState = LocalWindowState.current
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ScreenTitle(
             "Window",
-            "ComposeNativeWindow handle - read live state, retitle, resize, minimize, fullscreen, close.",
+            "ComposeNativeWindow handle - read live state, retitle, resize, placement.",
         )
 
         Section("Multi-window", "nativeComposeApp hosts several Window()s - each click composes one more") {
@@ -50,11 +54,10 @@ internal fun WindowScreen() {
         Section("Live state", "Refreshes automatically - every property is snapshot-backed") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Title:      ${window.title}", fontSize = 13.sp)
-                Text("Size:       ${window.width} × ${window.height} pt  (${window.pixelWidth} × ${window.pixelHeight} px)", fontSize = 13.sp)
-                Text("DPR:        ${window.pixelDensity}", fontSize = 13.sp)
-                Text("Minimized:  ${window.isMinimized}", fontSize = 13.sp)
-                Text("Maximized:  ${window.isMaximized}", fontSize = 13.sp)
-                Text("Fullscreen: ${window.isFullscreen}", fontSize = 13.sp)
+                Text("Size:       ${windowState.size}", fontSize = 13.sp)
+                Text("Position:   ${windowState.position}", fontSize = 13.sp)
+                Text("Placement:  ${windowState.placement}", fontSize = 13.sp)
+                Text("Minimized:  ${windowState.isMinimized}", fontSize = 13.sp)
                 Text("Visible:    ${window.isVisible}", fontSize = 13.sp)
             }
         }
@@ -78,40 +81,45 @@ internal fun WindowScreen() {
                     modifier = Modifier.width(300.dp),
                     singleLine = true,
                 )
-                Button(onClick = { window.setTitle(draft) }) {
+                Button(onClick = { window.title = draft }) {
                     Text("Set title", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
 
-        Section("Resize", "SDL_SetWindowSize - both axes in logical points") {
+        Section("Resize", "SDL_SetWindowSize - both axes via DpSize") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { window.setSize(800, 600) }) {
+                Button(onClick = { windowState.size = DpSize(800.dp, 600.dp) }) {
                     Text("800 × 600", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Button(onClick = { window.setSize(1000, 700) }) {
+                Button(onClick = { windowState.size = DpSize(1000.dp, 700.dp) }) {
                     Text("1000 × 700", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Button(onClick = { window.setSize(1280, 800) }) {
+                Button(onClick = { windowState.size = DpSize(1280.dp, 800.dp) }) {
                     Text("1280 × 800", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
-
-        Section("Window state", "Minimize / maximize / restore / fullscreen") {
+        Section("Window state", "Floating / Maximized / Fullscreen / Minimized") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { window.minimize() }) {
+                Button(onClick = { windowState.isMinimized = true }) {
                     Text("Minimize", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Button(onClick = { window.maximize() }) {
+                Button(onClick = { windowState.placement = WindowPlacement.Maximized }) {
                     Text("Maximize", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Button(onClick = { window.restore() }) {
+                Button(onClick = { windowState.placement = WindowPlacement.Floating; windowState.isMinimized = false }) {
                     Text("Restore", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Button(onClick = { window.toggleFullscreen() }) {
+                Button(onClick = {
+                    windowState.placement = if (windowState.placement == WindowPlacement.Fullscreen) {
+                        WindowPlacement.Floating
+                    } else {
+                        WindowPlacement.Fullscreen
+                    }
+                }) {
                     Text(
-                        if (window.isFullscreen) "Exit fullscreen" else "Fullscreen",
+                        if (windowState.placement == WindowPlacement.Fullscreen) "Exit fullscreen" else "Fullscreen",
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 }

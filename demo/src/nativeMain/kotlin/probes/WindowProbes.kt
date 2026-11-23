@@ -8,7 +8,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.rememberWindowState
 import com.compose.sdl.Tray
 import com.compose.sdl.Window
 import com.compose.sdl.nativeComposeApp
@@ -38,8 +40,7 @@ internal fun runMultiWindowTest() {
         Window(
             onCloseRequest = ::exitApplication,
             title = "multiwin main",
-            width = 400,
-            height = 200,
+            state = rememberWindowState(size = DpSize(400.dp, 200.dp)),
             onFrame = { _, vFrame ->
                 when (vFrame) {
                     40 -> {
@@ -68,8 +69,7 @@ internal fun runMultiWindowTest() {
             Window(
                 onCloseRequest = { vShowSecond.value = false },
                 title = "multiwin second",
-                width = 300,
-                height = 150,
+                state = rememberWindowState(size = DpSize(300.dp, 150.dp)),
                 onFrame = { _, _ -> vSecondFrames++; true },
             ) {
                 Text("second window", color = Color.White)
@@ -206,7 +206,7 @@ internal fun runTrayTest() {
             Menu("Submenu") { Item("Nested item", onClick = {}) }
             Item("Exit", onClick = ::exitApplication)
         }
-        Window(onCloseRequest = ::exitApplication, title = "traytest", width = 240, height = 120,
+        Window(onCloseRequest = ::exitApplication, title = "traytest", state = rememberWindowState(size = DpSize(240.dp, 120.dp)),
             onFrame = { _, vFrame -> vFrames = vFrame; vFrame < 10 }) {
             Box(Modifier.fillMaxSize().background(Color(0xFF202020)))
         }
@@ -230,7 +230,7 @@ internal fun runHiddenWindowTest() {
             vShownFrames = vFrames - vHiddenFrames
             exitApplication()
         }
-        Window(onCloseRequest = ::exitApplication, title = "hiddentest", width = 240, height = 120, visible = vVisible,
+        Window(onCloseRequest = ::exitApplication, title = "hiddentest", state = rememberWindowState(size = DpSize(240.dp, 120.dp)), visible = vVisible,
             onFrame = { _, _ -> vFrames++; true }) {
             Box(Modifier.fillMaxSize().background(Color(0xFF202020)))
         }

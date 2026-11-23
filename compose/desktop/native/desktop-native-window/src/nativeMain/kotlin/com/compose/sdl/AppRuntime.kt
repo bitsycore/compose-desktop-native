@@ -7,6 +7,7 @@ package com.compose.sdl
 
 import androidx.compose.runtime.AbstractApplier
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.window.WindowState
 import kotlinx.coroutines.CoroutineScope
 
 // ==================
@@ -44,6 +45,7 @@ internal class AppRuntime {
 		inHeight: Int,
 		inGpu: GpuMode,
 		inIcon: AppWindowIcon?,
+		inWindowState: WindowState?,
 		inAttrs: WindowAttributes,
 		inOnFrame: ((RenderBackend, Int) -> Boolean)?,
 		inPreviewKeyHandler: () -> ((androidx.compose.ui.input.key.KeyEvent) -> Boolean),
@@ -51,7 +53,7 @@ internal class AppRuntime {
 		inContent: () -> (@Composable ComposeWindowScope.() -> Unit),
 	): WindowInstance {
 		val vWindow = WindowInstance(
-			inTitle, inWidth, inHeight, inGpu, inIcon, inAttrs, inOnFrame,
+			inTitle, inWidth, inHeight, inGpu, inIcon, inWindowState, inAttrs, inOnFrame,
 			inPreviewKeyHandler, inKeyHandler, inContent,
 		)
 		// A Window() was declared either way - the "exit when the last window

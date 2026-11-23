@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.compose.sdl.ComposeNativeWindow
 import com.compose.sdl.nativeComposeWindow
@@ -48,12 +49,12 @@ internal fun runAdaptiveTest() {
 			when (vFrames) {
 				kSettle -> {
 					vWide = gAdaptiveTwoPane
-					vFacade?.setSize(760, 760)
+					vFacade?.size = DpSize(760.dp, 760.dp)
 					true
 				}
 				kSettle * 2 -> {
 					vFolded = gAdaptiveTwoPane
-					vFacade?.setSize(1400, 760)
+					vFacade?.size = DpSize(1400.dp, 760.dp)
 					true
 				}
 				kSettle * 3 -> {

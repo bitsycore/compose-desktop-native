@@ -18,7 +18,12 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.rememberWindowState
+import kotlin.math.roundToInt
 import com.compose.sdl.res.composeResourceReader
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
@@ -113,8 +118,7 @@ interface ApplicationScope {
 fun ApplicationScope.Window(
 	onCloseRequest: () -> Unit,
 	title: String = "ComposeNativeSDL3",
-	width: Int = 800,
-	height: Int = 600,
+	state: WindowState = rememberWindowState(),
 	visible: Boolean = true,
 	gpu: GpuMode = GpuMode.Auto,
 	icon: AppWindowIcon? = null,
@@ -136,6 +140,8 @@ fun ApplicationScope.Window(
 	val vClose = rememberUpdatedState(onCloseRequest)
 	val vPreviewKey = rememberUpdatedState(onPreviewKeyEvent)
 	val vKey = rememberUpdatedState(onKeyEvent)
+	val resolvedWidth = state.size.width.value.roundToInt()
+	val resolvedHeight = state.size.height.value.roundToInt()
 	val vAttrs = WindowAttributes(
 		undecorated = undecorated,
 		transparent = transparent,
@@ -149,10 +155,11 @@ fun ApplicationScope.Window(
 	val vWindow = remember {
 		vScope.runtime.createWindow(
 			inTitle = title,
-			inWidth = width,
-			inHeight = height,
+			inWidth = resolvedWidth,
+			inHeight = resolvedHeight,
 			inGpu = gpu,
 			inIcon = icon,
+			inWindowState = state,
 			inAttrs = vAttrs,
 			inOnFrame = onFrame,
 			// Read through holders so updated lambdas propagate without
@@ -165,7 +172,7 @@ fun ApplicationScope.Window(
 		).also { it.onCloseRequest = { vClose.value.invoke() } }
 	}
 	SideEffect {
-		if (vWindow.facade.title != title) vWindow.facade.setTitle(title)
+		if (vWindow.facade.title != title) vWindow.facade.title = title
 	}
 	// Re-apply only on a real change; `transparent` is creation-only (see
 	// WindowAttributes) so it is deliberately not re-applied here.
@@ -252,6 +259,7 @@ fun nativeComposeApp(content: @Composable ApplicationScope.() -> Unit) {
 						else for (vW in runtime.windows.toList()) vW.requestClose()
 					}
 					is AppEvent.WindowClose -> runtime.windowFor(vEvent.windowId)?.requestClose()
+					is AppEvent.WindowMoved -> runtime.windowFor(vEvent.windowId)?.onMovedEvent(vEvent.x, vEvent.y)
 					is AppEvent.WindowResized -> runtime.windowFor(vEvent.windowId)?.onResizedEvent()
 					is AppEvent.RedrawNeeded -> runtime.windowFor(vEvent.windowId)?.let { it.needsFrame = true }
 					is AppEvent.SystemThemeChanged -> for (vW in runtime.windows) vW.onSystemThemeChanged()
@@ -411,9 +419,8 @@ fun nativeComposeWindow(
 	nativeComposeApp {
 		Window(
 			onCloseRequest = { exitApplication() },
+			state = rememberWindowState(size = DpSize(width.dp, height.dp)),
 			title = title,
-			width = width,
-			height = height,
 			gpu = gpu,
 			icon = icon,
 			undecorated = undecorated,
