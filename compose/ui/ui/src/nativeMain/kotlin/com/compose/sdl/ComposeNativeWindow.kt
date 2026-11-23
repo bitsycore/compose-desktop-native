@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
@@ -30,7 +29,7 @@ import sdl3.SDL_ShowWindow
 /** Reactive handle on the SDL3 window backing this composition.
    composeWindow's content lambda gets one via the ComposeWindowScope
    receiver and the LocalComposeNativeWindow CompositionLocal, so deep
-   composables can read state (width, title, …) and act on the window
+   composables can read state (size, title, …) and act on the window
    (close, retitle, …) without threading the instance.
 
    All `val`s are Compose-snapshot-backed mutableStateOf, so reading
@@ -40,10 +39,9 @@ class ComposeNativeWindow constructor(
     private val backend: Sdl3Backend,
     val gpuMode: GpuMode,
     initialTitle: String,
-    val state: WindowState,
+    initialState: WindowState,
 ) {
-    private var mWidth by mutableStateOf(backend.windowWidth)
-    private var mHeight by mutableStateOf(backend.windowHeight)
+    private var mState by mutableStateOf(initialState)
     private var mPixelWidth by mutableStateOf(backend.pixelWidth)
     private var mPixelHeight by mutableStateOf(backend.pixelHeight)
     private var mTitle by mutableStateOf(initialTitle)
@@ -54,9 +52,10 @@ class ComposeNativeWindow constructor(
     // ============
     //  State
 
-    /** Logical (point) width - the same units layout uses. */
-    val width: Int get() = mWidth
-    val height: Int get() = mHeight
+    /** The [WindowState] passed to `Window(state = …)` - the same object
+       [LocalWindowState] provides. Snapshot-backed: follows the caller if
+       `Window()` is recomposed with a different state. */
+    val state: WindowState get() = mState
     /** Logical window size in density-independent pixels, backed by [state]. */
     var size: DpSize
         get() = state.size
@@ -73,7 +72,7 @@ class ComposeNativeWindow constructor(
     var position: WindowPosition
         get() = state.position
         set(value) { state.position = value }
-    /** Physical (pixel) back-buffer size; on Retina this is `width * pixelDensity`. */
+    /** Physical (pixel) back-buffer size; on Retina this is `size.width * pixelDensity`. */
     val pixelWidth: Int get() = mPixelWidth
     val pixelHeight: Int get() = mPixelHeight
     val isVisible: Boolean get() = mVisible
@@ -104,11 +103,6 @@ class ComposeNativeWindow constructor(
         mTitle = inTitle
     }
 
-    /** Logical size in points - updates [state.size]. */
-    fun setSize(inWidth: Int, inHeight: Int) {
-        state.size = DpSize(inWidth.dp, inHeight.dp)
-    }
-
     fun raise() {
         val vWindow = backend.window?.reinterpret<SDL_Window>() ?: return
         SDL_RaiseWindow(vWindow)
@@ -116,6 +110,11 @@ class ComposeNativeWindow constructor(
 
     // ============
     //  Mutable window attributes (Compose Desktop's Window() parameters)
+    //
+    //  Window() re-applies these from the composition whenever they change, so
+    //  app code normally passes them as parameters rather than calling these.
+    //  `transparent` is absent on purpose: SDL needs SDL_WINDOW_TRANSPARENT at
+    //  creation and offers no setter, so it is a construction-time attribute.
 
     private var mUndecorated = false
     private var mResizable = true
@@ -210,11 +209,13 @@ class ComposeNativeWindow constructor(
     //  intended for app code.
 
     fun onResized() {
-        mWidth = backend.windowWidth
-        mHeight = backend.windowHeight
         mPixelWidth = backend.pixelWidth
         mPixelHeight = backend.pixelHeight
     }
+
+    /** Window() was recomposed with a different [WindowState]: [state] (and the
+       properties backed by it) now read the new one. */
+    fun onStateReplaced(inState: WindowState) { mState = inState }
 
     /** Called by the main loop ~once a second with the measured frame rate. */
     fun updateFps(inFps: Int) { mFps = inFps }
@@ -290,6 +291,8 @@ val LocalComposeNativeWindow = staticCompositionLocalOf<ComposeNativeWindow> {
     error("No ComposeNativeWindow in scope - wrap your composable with composeWindow { ... }")
 }
 
+/** The [WindowState] of the enclosing `Window(state = …)` - port-only
+   convenience (upstream has no such local), so it lives in com.compose.sdl. */
 val LocalWindowState = staticCompositionLocalOf<WindowState> {
     error("No WindowState in scope - wrap your composable with Window { ... }")
 }

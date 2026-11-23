@@ -99,6 +99,11 @@ fun main(args: Array<String>) {
         runTrayTest()
         return
     }
+    // Window(state = …) WindowState parity: unspecified size, alignment, state swap, placement.
+    if (args.any { it == "--windowstatetest" }) {
+        runWindowStateTest()
+        return
+    }
     if (args.any { it == "--multiwintest" }) {
         runMultiWindowTest()
         return

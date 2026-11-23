@@ -20,6 +20,10 @@ import org.jetbrains.compose.resources.painterResource
 import com.compose.sdl.nativeComposeWindow
 import utils.encodeBmpBgra32
 import utils.writeFile
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.value
 
 // ==================
 // MARK: Window probes - multi-window lifecycle, window info, locale.
@@ -237,4 +241,92 @@ internal fun runHiddenWindowTest() {
     }
     val vPass = vHiddenFrames == 0 && vShownFrames > 0
     println("hiddentest: ${if (vPass) "PASS" else "FAIL"} (frames while hidden=$vHiddenFrames, after show=$vShownFrames)")
+}
+
+/** --windowstatetest: Window(state = …) parity with Compose Desktop's WindowState.
+   1. size = DpSize(300.dp, Dp.Unspecified) opens (no NaN crash) and the state is written back
+      to absolute values (300 x 600 default height);
+   2. WindowPosition(Alignment.TopEnd) puts the window frame at the top-right of the screen's
+      usable area;
+   3. a different WindowState passed on recomposition takes over the window (size applied,
+      LocalWindowState follows);
+   4. a size write while Maximized does not un-maximize (upstream setSizeSafely);
+   5. minimize then un-minimize a maximized window comes back Maximized. */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+internal fun runWindowStateTest() {
+    val vResults = mutableListOf<String>()
+    var vAllPass = true
+    fun check(inName: String, inPass: Boolean, inDetail: String) {
+        vAllPass = vAllPass && inPass
+        vResults += "  ${if (inPass) "ok  " else "FAIL"} $inName - $inDetail"
+    }
+    nativeComposeApp {
+        val vStateA = remember {
+            androidx.compose.ui.window.WindowState(
+                size = DpSize(300.dp, androidx.compose.ui.unit.Dp.Unspecified),
+                position = androidx.compose.ui.window.WindowPosition(androidx.compose.ui.Alignment.TopEnd),
+            )
+        }
+        val vStateB = remember { androidx.compose.ui.window.WindowState(size = DpSize(500.dp, 400.dp)) }
+        var vUseB by remember { mutableStateOf(false) }
+        var vWindow by remember { mutableStateOf<com.compose.sdl.ComposeNativeWindow?>(null) }
+        var vLocalState by remember { mutableStateOf<androidx.compose.ui.window.WindowState?>(null) }
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(800)
+            val vW = vWindow!!
+            // 1. Unspecified height
+            check("unspecified size", vStateA.size == DpSize(300.dp, 600.dp), "state.size=${vStateA.size}")
+            // 2. TopEnd alignment, frame (borders included) vs usable bounds
+            val vPos = vStateA.position
+            kotlinx.cinterop.memScoped {
+                val vSdl = vW.rawSdlHandles().window!!.reinterpret<cnames.structs.SDL_Window>()
+                val vBounds = alloc<sdl3.SDL_Rect>()
+                val vTop = alloc<kotlinx.cinterop.IntVar>(); val vLeft = alloc<kotlinx.cinterop.IntVar>()
+                val vBottom = alloc<kotlinx.cinterop.IntVar>(); val vRight = alloc<kotlinx.cinterop.IntVar>()
+                sdl3.SDL_GetWindowBordersSize(vSdl, vTop.ptr, vLeft.ptr, vBottom.ptr, vRight.ptr)
+                sdl3.SDL_GetDisplayUsableBounds(sdl3.SDL_GetDisplayForWindow(vSdl), vBounds.ptr)
+                val vOk = vPos is androidx.compose.ui.window.WindowPosition.Absolute &&
+                    kotlin.math.abs(vPos.x.value + 300 + vRight.value - (vBounds.x + vBounds.w)) <= 2 &&
+                    // Frame top at the usable top. macOS: SDL can't report borders
+                    // (Cocoa: unsupported, 0) - the OS keeps the title bar below the menu
+                    // bar instead, so the client lands one title bar lower.
+                    (vPos.y.value - vTop.value - vBounds.y).let { vDy ->
+                        if (vTop.value == 0) vDy in -2f..40f else kotlin.math.abs(vDy) <= 2
+                    }
+                check("TopEnd alignment", vOk,
+                    "position=$vPos usable=(${vBounds.x},${vBounds.y} ${vBounds.w}x${vBounds.h}) borders t${vTop.value} l${vLeft.value} b${vBottom.value} r${vRight.value}")
+            }
+            // 3. State swap
+            vUseB = true
+            kotlinx.coroutines.delay(800)
+            val vLogicalW = (vW.pixelWidth / vW.pixelDensity).toInt()
+            check("state swap", vW.state === vStateB && vLocalState === vStateB && vLogicalW == 500,
+                "facade.state is B=${vW.state === vStateB}, LocalWindowState is B=${vLocalState === vStateB}, window width=$vLogicalW")
+            // 4. Resize while maximized
+            vStateB.placement = androidx.compose.ui.window.WindowPlacement.Maximized
+            kotlinx.coroutines.delay(1200)
+            vStateB.size = DpSize(200.dp, 200.dp)
+            kotlinx.coroutines.delay(800)
+            val vMaxW = (vW.pixelWidth / vW.pixelDensity).toInt()
+            check("size while maximized", vStateB.placement == androidx.compose.ui.window.WindowPlacement.Maximized && vMaxW > 200,
+                "placement=${vStateB.placement} window width=$vMaxW")
+            // 5. Minimize / un-minimize while maximized
+            vStateB.isMinimized = true
+            kotlinx.coroutines.delay(1500)
+            val vMinimized = vStateB.isMinimized
+            vStateB.isMinimized = false
+            kotlinx.coroutines.delay(1500)
+            check("un-minimize keeps Maximized", vMinimized && !vStateB.isMinimized &&
+                vStateB.placement == androidx.compose.ui.window.WindowPlacement.Maximized,
+                "minimized=$vMinimized then isMinimized=${vStateB.isMinimized} placement=${vStateB.placement}")
+            exitApplication()
+        }
+        Window(onCloseRequest = ::exitApplication, title = "windowstatetest", state = if (vUseB) vStateB else vStateA) {
+            vWindow = window
+            vLocalState = com.compose.sdl.LocalWindowState.current
+            Box(Modifier.fillMaxSize().background(Color(0xFF202020)))
+        }
+    }
+    println("windowstatetest: ${if (vAllPass) "PASS" else "FAIL"}")
+    vResults.forEach(::println)
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import kotlin.math.roundToInt
@@ -87,8 +88,11 @@ interface ApplicationScope {
  * @param onCloseRequest Invoked when the user clicks the native OS close button or triggers window close.
  *   Typically used to remove this window from composition or call [exitApplication].
  * @param title Window title displayed on the native title bar. Live updates when the string changes.
- * @param width Window width in logical points (density-independent pixels).
- * @param height Window height in logical points (density-independent pixels).
+ * @param state Hoisted [WindowState] (Compose Desktop's): size / position / placement / minimized,
+ *   in logical points. Changing it moves / resizes / maximizes the window; OS-side changes (user
+ *   drag, maximize button, …) are written back. A side left `Dp.Unspecified` opens at the 800x600
+ *   default (no pack-to-content) and the state then holds the absolute value. Also provided as
+ *   [LocalWindowState] inside the window.
  * @param visible Whether the native window is visible on screen and in the OS taskbar. When initially
  *   set to `false`, the native window is created with `SDL_WINDOW_HIDDEN` to prevent startup flashing
  *   (e.g. for apps starting minimized in the system tray). Toggling this value calls `SDL_ShowWindow`
@@ -114,6 +118,10 @@ interface ApplicationScope {
  *   frame index. Return `false` to request window closure (used primarily for test and screenshot probes).
  * @param content The composable UI content of this window, scoped with [ComposeWindowScope].
  */
+// Upstream rememberWindowState()'s default size, used for an Unspecified side.
+private const val kDefaultWindowWidth = 800
+private const val kDefaultWindowHeight = 600
+
 @Composable
 fun ApplicationScope.Window(
 	onCloseRequest: () -> Unit,
@@ -140,8 +148,6 @@ fun ApplicationScope.Window(
 	val vClose = rememberUpdatedState(onCloseRequest)
 	val vPreviewKey = rememberUpdatedState(onPreviewKeyEvent)
 	val vKey = rememberUpdatedState(onKeyEvent)
-	val resolvedWidth = state.size.width.value.roundToInt()
-	val resolvedHeight = state.size.height.value.roundToInt()
 	val vAttrs = WindowAttributes(
 		undecorated = undecorated,
 		transparent = transparent,
@@ -153,10 +159,16 @@ fun ApplicationScope.Window(
 		visible = visible,
 	)
 	val vWindow = remember {
+		// Creation-time size only: read here, inside remember, so Window() isn't
+		// subscribed to state.size and doesn't recompose on every resize. An
+		// Unspecified side falls back to the default (see @param state).
+		val vSize = state.size
+		val vWidthSpecified = vSize.isSpecified && vSize.width.isSpecified
+		val vHeightSpecified = vSize.isSpecified && vSize.height.isSpecified
 		vScope.runtime.createWindow(
 			inTitle = title,
-			inWidth = resolvedWidth,
-			inHeight = resolvedHeight,
+			inWidth = if (vWidthSpecified) vSize.width.value.roundToInt().coerceAtLeast(1) else kDefaultWindowWidth,
+			inHeight = if (vHeightSpecified) vSize.height.value.roundToInt().coerceAtLeast(1) else kDefaultWindowHeight,
 			inGpu = gpu,
 			inIcon = icon,
 			inWindowState = state,
@@ -173,6 +185,9 @@ fun ApplicationScope.Window(
 	}
 	SideEffect {
 		if (vWindow.facade.title != title) vWindow.facade.title = title
+		// Upstream reads `state` through rememberUpdatedState: a different
+		// WindowState passed on recomposition takes over the window.
+		vWindow.replaceWindowState(state)
 	}
 	// Re-apply only on a real change; `transparent` is creation-only (see
 	// WindowAttributes) so it is deliberately not re-applied here.

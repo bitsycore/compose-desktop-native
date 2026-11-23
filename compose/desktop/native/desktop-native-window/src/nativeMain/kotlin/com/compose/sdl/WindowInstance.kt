@@ -11,7 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composition
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
@@ -21,6 +24,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
@@ -44,7 +49,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdl3.SDL_GetTicks
+import sdl3.SDL_GetDisplayForWindow
+import sdl3.SDL_GetDisplayUsableBounds
+import sdl3.SDL_GetWindowBordersSize
 import sdl3.SDL_GetWindowPosition
+import sdl3.SDL_Rect
 import sdl3.SDL_MaximizeWindow
 import sdl3.SDL_MinimizeWindow
 import sdl3.SDL_RestoreWindow
@@ -80,7 +89,12 @@ internal class WindowInstance(
 	private val initialWidth = inWidth
 	private val initialHeight = inHeight
 	private val icon = inIcon
-	val windowState: WindowState = inWindowState ?: WindowState(size = DpSize(inWidth.dp, inHeight.dp))
+	// Snapshot-backed so the sync collectors (snapshotFlow) re-read through it
+	// when Window() is recomposed with a different state - see replaceWindowState().
+	var windowState: WindowState by mutableStateOf(
+		inWindowState ?: WindowState(size = DpSize(inWidth.dp, inHeight.dp))
+	)
+		private set
 	private var currentPlacement: WindowPlacement? = null
 	private var currentMinimized: Boolean? = null
 	// Assigned by init() from the first backend that comes up (see makeBackend()).
@@ -228,7 +242,15 @@ internal class WindowInstance(
 
 		val vWindow = backend.window?.reinterpret<SDL_Window>()
 		if (vWindow != null) {
+			// Before the first apply, the floating geometry is set whatever the
+			// placement (upstream's setSizeSafely / setPositionSafely do the same for
+			// a not-yet-visible window), so un-maximizing has somewhere to go back to.
 			applyPositionToSdl(vWindow, windowState.position)
+			// An Unspecified side (DpSize(300.dp, Dp.Unspecified)) was created at the
+			// default size; like upstream, the state then holds the absolute value.
+			if (!windowState.size.isFullySpecified()) {
+				windowState.size = DpSize(backend.windowWidth.dp, backend.windowHeight.dp)
+			}
 			applyPlacementToSdl(vWindow, windowState.placement, windowState.isMinimized)
 
 			windowStateSyncJob = inScope.launch(frameClock) {
@@ -239,12 +261,15 @@ internal class WindowInstance(
 				}
 				launch {
 					snapshotFlow { windowState.size }.collect { size ->
-						applySizeToSdl(vWindow, size)
+						// Upstream's setSizeSafely: only a Floating window is resized, so a
+						// size write doesn't knock a maximized / fullscreen window out of it.
+						if (windowState.placement == WindowPlacement.Floating) applySizeToSdl(vWindow, size)
 					}
 				}
 				launch {
 					snapshotFlow { windowState.position }.collect { pos ->
-						applyPositionToSdl(vWindow, pos)
+						// Upstream's setPositionSafely: same Floating-only rule as size.
+						if (windowState.placement == WindowPlacement.Floating) applyPositionToSdl(vWindow, pos)
 					}
 				}
 			}
@@ -276,6 +301,7 @@ internal class WindowInstance(
 
 		vComposition.setContent {
 			CompositionLocalProvider(
+				// Read through the snapshot-backed property: a state swap re-provides it.
 				LocalWindowState provides windowState,
 				LocalComposeNativeWindow provides facade,
 				LocalPopupHost provides vPopupHost,
@@ -529,6 +555,15 @@ internal class WindowInstance(
 		windowState.size = DpSize(backend.windowWidth.dp, backend.windowHeight.dp)
 	}
 
+	/** Window() was recomposed with a different [WindowState] (upstream's
+	   rememberUpdatedState(state)): the sync collectors follow it, apply whatever
+	   differs from the window, and OS changes now land in the new state. */
+	fun replaceWindowState(inState: WindowState) {
+		if (inState === windowState) return
+		windowState = inState
+		facade.onStateReplaced(inState)
+	}
+
 	fun onMovedEvent(x: Int, y: Int) {
 		windowState.position = WindowPosition(x.dp, y.dp)
 	}
@@ -557,13 +592,15 @@ internal class WindowInstance(
 	}
 
 	private fun applySizeToSdl(window: CPointer<SDL_Window>, size: DpSize) {
-		if (size.isSpecified) {
-			val targetW = size.width.value.roundToInt()
-			val targetH = size.height.value.roundToInt()
-			if (backend.windowWidth != targetW || backend.windowHeight != targetH) {
-				SDL_SetWindowSize(window, targetW, targetH)
-			}
+		// An Unspecified side keeps the current extent (upstream sizes it to the
+		// content; the port has no pack-to-content), then the state is written
+		// back to absolute values like upstream does once the window is shown.
+		val targetW = size.widthOrNull()?.roundToInt()?.coerceAtLeast(1) ?: backend.windowWidth
+		val targetH = size.heightOrNull()?.roundToInt()?.coerceAtLeast(1) ?: backend.windowHeight
+		if (backend.windowWidth != targetW || backend.windowHeight != targetH) {
+			SDL_SetWindowSize(window, targetW, targetH)
 		}
+		if (!size.isFullySpecified()) windowState.size = DpSize(targetW.dp, targetH.dp)
 	}
 
 	private fun applyPositionToSdl(window: CPointer<SDL_Window>, position: WindowPosition) {
@@ -584,8 +621,38 @@ internal class WindowInstance(
 				}
 			}
 			is WindowPosition.Aligned -> {
-				if (position.alignment == Alignment.Center) {
-					SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED.toInt(), SDL_WINDOWPOS_CENTERED.toInt())
+				// Upstream's locationAlignedToScreen: align the window inside the
+				// screen's usable area (minus taskbar / menu bar / dock), always Ltr.
+				// AWT aligns the whole frame; SDL positions the CLIENT area, so the
+				// decorations are added to the aligned size and the client origin is
+				// offset by them (else a top-aligned title bar lands under the menu
+				// bar and the OS shoves the window down).
+				memScoped {
+					val vBounds = alloc<SDL_Rect>()
+					val vTop = alloc<IntVar>()
+					val vLeft = alloc<IntVar>()
+					val vBottom = alloc<IntVar>()
+					val vRight = alloc<IntVar>()
+					if (!SDL_GetWindowBordersSize(window, vTop.ptr, vLeft.ptr, vBottom.ptr, vRight.ptr)) {
+						vTop.value = 0; vLeft.value = 0; vBottom.value = 0; vRight.value = 0
+					}
+					if (SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(window), vBounds.ptr)) {
+						val vOffset = position.alignment.align(
+							IntSize(
+								backend.windowWidth + vLeft.value + vRight.value,
+								backend.windowHeight + vTop.value + vBottom.value,
+							),
+							IntSize(vBounds.w, vBounds.h),
+							LayoutDirection.Ltr,
+						)
+						SDL_SetWindowPosition(
+							window,
+							vBounds.x + vOffset.x + vLeft.value,
+							vBounds.y + vOffset.y + vTop.value,
+						)
+					} else if (position.alignment == Alignment.Center) {
+						SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED.toInt(), SDL_WINDOWPOS_CENTERED.toInt())
+					}
 				}
 			}
 			is WindowPosition.PlatformDefault -> {}
@@ -717,3 +784,9 @@ internal class WindowInstance(
 		backend.destroy(inQuitSdl = false)
 	}
 }
+
+// Per-side Dp.Unspecified handling for WindowState.size (upstream allows either
+// side, or both, to be Unspecified).
+private fun DpSize.isFullySpecified(): Boolean = isSpecified && width.isSpecified && height.isSpecified
+private fun DpSize.widthOrNull(): Float? = if (isSpecified && width.isSpecified) width.value else null
+private fun DpSize.heightOrNull(): Float? = if (isSpecified && height.isSpecified) height.value else null

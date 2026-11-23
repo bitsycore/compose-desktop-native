@@ -54,7 +54,8 @@ internal fun WindowScreen() {
         Section("Live state", "Refreshes automatically - every property is snapshot-backed") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Title:      ${window.title}", fontSize = 13.sp)
-                Text("Size:       ${windowState.size}", fontSize = 13.sp)
+                Text("Size:       ${windowState.size}  (${window.pixelWidth} × ${window.pixelHeight} px)", fontSize = 13.sp)
+                Text("DPR:        ${window.pixelDensity}", fontSize = 13.sp)
                 Text("Position:   ${windowState.position}", fontSize = 13.sp)
                 Text("Placement:  ${windowState.placement}", fontSize = 13.sp)
                 Text("Minimized:  ${windowState.isMinimized}", fontSize = 13.sp)

@@ -398,7 +398,12 @@ Two categories of code live in each module:
 1. **`commonMain` should contain NO `androidx.compose.*` code you authored.**
    Anything under `androidx.compose.*` in `commonMain` MUST be a vendored
    copy. Hand-rolled `commonMain` is fine only when the package is
-   `com.compose.sdl.*` (project code).
+   `com.compose.sdl.*` (project code). One exception: an `internal` compat
+   SHIM whose only job is to let an upstream file vendor byte-for-byte (e.g.
+   `WindowPositionCompat.kt`, a `javaClass` stand-in for the JVM-only call in
+   `WindowPosition.desktop.kt`'s `equals()`). It sits in the same package and
+   source set as the vendored file that needs it, adds no public API, and
+   says in a comment which upstream file it serves.
 
 2. **Vendor the `actual`s too whenever possible.** Upstream ships
    `skikoMain` and `native`-flavored actuals. If they compile against
