@@ -1,327 +1,195 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose_Multiplatform-1.12.2-blue.svg?style=flat)](https://github.com/JetBrains/compose-multiplatform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
 
 # Compose Desktop Native
 
 Run [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform)
-as a native binary, with no JVM. Compose Desktop Native compiles to a single
-executable for macOS (arm64), Linux (x64/arm64), and Windows (mingwX64), using
+as a native binary, with no JVM. One executable for macOS (arm64), Linux
+(x64 / arm64) and Windows (mingwX64), rendered by Skia, with
 [SDL3](https://libsdl.org) for windowing and input.
 
 <img src="screenshots/demo.png" width="100%" alt="Compose Desktop Native demo" />
 
-## How it works
-
-- **The runtime is the real one.** Composition, snapshots, and the recomposer
-  are the official `org.jetbrains.compose.runtime` klibs from Maven, never
-  reimplemented.
-- **The UI layers are vendored upstream.** `androidx.compose.ui`, `foundation`,
-  `animation`, and `material3` are copied from Compose Multiplatform verbatim
-  wherever they compile as is, with project code filling in only the native glue.
-  The same treatment extends to ecosystem libraries that stop short of
-  Kotlin/Native desktop - Koin, Coil 3 and Pulse MVI are vendored and rebuilt for
-  these targets, and you still declare their official coordinates.
-- **Rendering is Skia everywhere.** macOS and Linux link the official Skiko
-  klibs (Metal / OpenGL); Windows links the bitsycore Skiko fork, which ships
-  Skiko and Skia together in `skiko-windows-x64.dll`.
-- **The platform is SDL3.** Windowing, input, audio, filesystem, file dialogs,
-  and clipboard all go through SDL3, so one code path covers every OS.
-- **Lean distributables.** SDL3 is built as a static library and linked in. On
-  macOS and Linux a distributable is just the executable plus a `data.kres`
-  resource bundle; on Windows it also ships `skiko-windows-x64.dll` next to the
-  exe (auto-provisioned by the bridge plugin).
-
 | Platform | Gradle target | Renderer |
-|----------|---------------|----------|
-| macOS arm64 | `macosArm64` | Skia (Metal) - official Skiko |
-| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia (OpenGL) - official Skiko |
-| Windows | `mingwX64` | Skia - bitsycore Skiko fork |
+|---|---|---|
+| macOS arm64 | `macosArm64` | Skia / Metal (official Skiko) |
+| Linux x64 / arm64 | `linuxX64` / `linuxArm64` | Skia / OpenGL (official Skiko) |
+| Windows x64 | `mingwX64` | Skia / OpenGL ([bitsycore Skiko fork](https://maven.bitsycore.com/releases)) |
+
+A distributable is the executable plus a `data.kres` resource bundle (and
+`skiko-windows-x64.dll` on Windows). SDL3 is linked in statically.
+
+## Philosophy: stay close to upstream
+
+This is a small project porting a very large one. It stays maintainable by
+writing as little of its own code as possible:
+
+- **The runtime is the real one.** Composition, snapshots and the recomposer
+  are the official `org.jetbrains.compose.runtime` klibs, never reimplemented.
+- **Vendor, don't rewrite.** `ui`, `foundation`, `animation` and `material3` are
+  copied from upstream byte-for-byte by a manifest per module, not checked in.
+  Upgrading means bumping a tag, re-syncing and fixing what breaks. The few
+  files that need edits are tracked copies whose drift from upstream is checked
+  on every bump.
+- **Upstream packages hold upstream API only.** Anything the port adds lives in
+  `com.compose.sdl`, so code written against `androidx.compose.*` behaves the
+  same on the JVM.
+- **Compose Desktop is the reference.** The sample apps also build for stock
+  JVM Compose Desktop. Any difference between the two builds is a porting bug.
+- **One platform layer.** OS integration goes through SDL3, not per-OS code.
+- **Pin to what upstream ships.** Versions follow the Compose Multiplatform
+  release; anything CMP doesn't integrate tracks its latest stable release.
+
+For contributors, that means the best change is usually a manifest line, not
+new code. The rules behind it are in [CLAUDE.md](CLAUDE.md#vendoring-philosophy---read-this-before-writing-any-androidxcompose-code).
 
 ## Quickstart
 
-### A window
+### Use it from your project
+
+Apply the bridge plugin and keep declaring the **official** Compose
+coordinates. On native desktop targets the plugin swaps in this port's klibs;
+Android, JVM, iOS and web keep the official artifacts.
 
 ```kotlin
-import androidx.compose.material3.Text
-import com.compose.sdl.nativeComposeWindow
-
-fun main() = nativeComposeWindow(title = "Hello") {
-    Text("Hello from Compose Desktop Native")
-}
-```
-
-The content lambda runs with a `ComposeWindowScope` receiver that exposes
-`window: ComposeNativeWindow` (`setTitle`, `setSize`, `minimize`, `maximize`,
-`setFullscreen`, `close`). The same handle is reachable from any nested
-composable via `LocalComposeNativeWindow.current`.
-
-For multiple windows, wrap them in `nativeComposeApp`, where the set of
-`Window(...)` calls is state driven (Compose Desktop style):
-
-```kotlin
-fun main() = nativeComposeApp {
-    Window(title = "Main", onCloseRequest = ::exitApplication) { /* ... */ }
-    if (showInspector) {
-        Window(title = "Inspector", onCloseRequest = { showInspector = false }) { /* ... */ }
-    }
-}
-```
-
-Each window gets its own `Lifecycle`, `ViewModelStore`, and `SavedStateRegistry`
-owners, driven by real SDL focus and visibility events, so ViewModels and
-saved state behave as they do on Android.
-
-`Window()` takes the same attributes as Compose Desktop's - `undecorated`,
-`transparent`, `resizable`, `enabled`, `focusable`, `alwaysOnTop`,
-`onPreviewKeyEvent` and `onKeyEvent` - and re-applies them when they change.
-(`transparent` is the one exception: SDL needs it at window-creation time, so it
-is fixed for the window's life.)
-
-When the Compose-level API doesn't reach far enough, drop to SDL directly:
-
-```kotlin
-val handles = window.rawSdlHandles()   // SDL_Window* / SDL_Renderer* / GL / Metal
-handles.window?.let { sdl3.SDL_FlashWindow(it.reinterpret(), SDL_FLASH_BRIEFLY) }
-```
-
-The pointers are a snapshot valid only while the window lives, and which ones
-are non-null depends on the resolved renderer (`glContext` for Skia OpenGL,
-`metalView` for Metal, `renderer` for CPU raster).
-
-### Building in this repo
-
-```kotlin
-commonMain.dependencies {
-    implementation(project(":compose:desktop:native:desktop-native-window")) // window shell + main loop
-    implementation(project(":compose:material3:material3"))   // Material 3 widgets
-    implementation(project(":utils:material-symbols"))        // icon-font composables (in-repo utility, not published)
-}
-```
-
-### Building from your own project: the bridge plugin
-
-The klibs publish to [maven.bitsycore.com](https://maven.bitsycore.com/releases)
-(no auth) and GitHub Packages (authenticated fallback) under per-area coordinates that mirror
-upstream - `com.bitsycore.compose.ui:ui`, `com.bitsycore.compose.foundation:foundation`,
-… (the `com.bitsycore` fork of each `org.jetbrains.compose.*`). Apply
-the bridge Gradle plugin once, declare the **official** Compose Multiplatform
-coordinates, and the plugin swaps in the port's klibs on native desktop targets
-while android, jvm, iOS, and wasm keep resolving the official artifacts.
-
-```kotlin
-// build.gradle.kts, official coordinates everywhere
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
     id("com.bitsycore.compose-desktop-native.bridge") version "<release>"
 }
 
-commonMain.dependencies {
-    // The plugin exposes the exact Compose versions the port tracks, so you
-    // never hand-match them (material3 and material3-adaptive each ride their
-    // own release train upstream).
-    implementation("org.jetbrains.compose.runtime:runtime:${composeDesktopNative.composeRuntime}")
-    implementation("org.jetbrains.compose.ui:ui:${composeDesktopNative.compose}")
-    implementation("org.jetbrains.compose.foundation:foundation:${composeDesktopNative.compose}")
-    implementation("org.jetbrains.compose.material3:material3:${composeDesktopNative.composeMaterial3}")
-
-    // material3-adaptive, which upstream publishes for apple targets only.
-    // Note adaptive api-exposes androidx.window:window-core - declare it
-    // DIRECTLY if your commonMain touches WindowSizeClass, since substituted
-    // modules hide their transitives from the common metadata classpath.
-    val vAdaptive = composeDesktopNative.composeMaterial3Adaptive
-    implementation("org.jetbrains.compose.material3.adaptive:adaptive:$vAdaptive")
-    implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:$vAdaptive")
-    implementation("androidx.window:window-core:1.5.1")
+kotlin {
+    sourceSets.commonMain.dependencies {
+        // The plugin exposes the Compose versions the port tracks.
+        implementation("org.jetbrains.compose.ui:ui:${composeDesktopNative.compose}")
+        implementation("org.jetbrains.compose.foundation:foundation:${composeDesktopNative.compose}")
+        implementation("org.jetbrains.compose.material3:material3:${composeDesktopNative.composeMaterial3}")
+    }
 }
 ```
 
-**One repository, no credentials.** `https://maven.bitsycore.com/releases`
-carries both the port's artifacts and the bitsycore skiko fork
-(`com.bitsycore.skiko`), which the Windows (mingwX64) target renders through;
-macOS/Linux pull the official skiko from Maven Central instead. The exact
-`repositories {}` snippet and version pinning:
-[gradle-plugin/compose-desktop-native-bridge/README.md](gradle-plugin/compose-desktop-native-bridge/README.md).
+Keep the Compose Gradle plugin on the same version as
+`composeDesktopNative.compose`; an older one silently skips generating the
+`Res` accessors. Artifacts are on [maven.bitsycore.com](https://maven.bitsycore.com/releases)
+(public, no credentials). The repository setup and the `compose.desktop.native { }`
+DSL (entry point, app icon, fonts) are in the
+[plugin README](gradle-plugin/compose-desktop-native-bridge/README.md), and
+[compose-desktop-native-bridge-example](https://github.com/bitsycore/compose-desktop-native-bridge-example)
+is a complete Android + JVM + native project.
 
-For a complete project that applies the bridge and builds one shared UI for
-Android, JVM, and native desktop, see the example repo:
-[bitsycore/compose-desktop-native-bridge-example](https://github.com/bitsycore/compose-desktop-native-bridge-example).
+### Write an app
 
-## Sample apps
+The entry point mirrors Compose Desktop's `application { Window(...) }`:
 
-Both live in `commonMain` and also build for stock JVM Compose Desktop, which
-serves as the visual and behavioural reference: any difference against the
-native build is a porting bug.
+```kotlin
+import com.compose.sdl.*
 
-**`:demo`** is a tour of the re-implemented Compose and Material 3 surface,
-30-plus screens covering text, layout, shapes, images, state, lazy lists,
-dialogs, canvas, graphics layers, animation, and gestures.
+fun main() = nativeComposeApp {
+    var showInspector by remember { mutableStateOf(false) }
 
-```bash
-./gradlew :demo:runDebugExecutableMacosArm64   # macOS (Skia / Metal)
-./gradlew :demo:runDebugExecutableLinuxX64     # Linux (Skia / OpenGL)
-gradlew.bat :demo:runDebugExecutableMingwX64   # Windows (Skia / Skiko fork)
-./gradlew :demo:run                            # JVM Compose Desktop (reference)
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Main",
+        state = rememberWindowState(size = DpSize(1000.dp, 700.dp)),
+    ) {
+        Button(onClick = { showInspector = true }) { Text("Open inspector") }
+    }
+
+    if (showInspector) {
+        Window(onCloseRequest = { showInspector = false }, title = "Inspector") { /* ... */ }
+    }
+
+    Tray(icon = painterResource(Res.drawable.icon), tooltip = "My app") {
+        Item("Quit", onClick = ::exitApplication)
+    }
+}
 ```
 
-**`:apidemo`** is a Postman-style REST client built entirely on the library:
-request collections, a session inheritance ladder, syntax-highlighted body
-editors, a response viewer with timing and TLS-chain inspection, and mTLS
-client certificates.
+- `Window()` takes Compose Desktop's parameters (`state`, `visible`,
+  `undecorated`, `transparent`, `resizable`, `alwaysOnTop`, key handlers, …).
+  `WindowState` is upstream's: size, position, placement and minimized sync both
+  ways with the OS.
+- Each window has its own `Lifecycle`, `ViewModelStore` and
+  `SavedStateRegistry`, so ViewModels and saved state work as on Android.
+- `nativeComposeWindow(title = …) { }` is the single-window shortcut.
+- Port-only extras live on `LocalComposeNativeWindow.current` (pixel density,
+  FPS, renderer name, `raise()`) and `rawSdlHandles()` gives the raw SDL / GL /
+  Metal handles when you need SDL directly.
+
+The entry point is the one native-specific piece: everything inside `Window`
+is ordinary shared Compose code.
+
+## What's included
+
+Beyond Compose itself, the port ships the libraries that upstream doesn't
+publish for Kotlin/Native desktop, vendored unchanged and substituted by the
+bridge plugin, so you still declare their official coordinates:
+
+| Library | Why it's vendored |
+|---|---|
+| Compose `ui`, `foundation`, `animation`, `material3`, `material-ripple` | the port itself |
+| `material3-adaptive` (all four modules) | upstream publishes apple targets only |
+| `components-resources`, `navigation3-ui` | no Linux / Windows klibs upstream |
+| Koin `koin-compose*` / `koin-core-viewmodel` | apple + android only upstream (`koin-core` is used as-is) |
+| Coil 3 (whole stack) | no Windows klibs, no desktop-native compose layer |
+| Pulse MVI | no desktop-native artifact upstream |
+
+The androidx architecture stack (lifecycle, viewmodel, savedstate,
+navigation3-runtime, navigationevent, collection, window-core) already ships
+Kotlin/Native desktop klibs and is used unmodified. Use the google `androidx.*`
+coordinates, not the `org.jetbrains.androidx.*` mirrors, or every class is on the
+classpath twice. Koin's `koin-compose-viewmodel-navigation` is not provided (it
+needs Navigation 2, which has no desktop-native klibs); use
+`koin-compose-navigation3`.
+
+## Versions
+
+| | Version |
+|---|---|
+| Compose Multiplatform | 1.12.2 (material3 1.12.0-alpha03, material3-adaptive 1.3.0) |
+| Kotlin | 2.4.21 |
+| SDL3 | 3.4.20 |
+| Skiko | 0.150.2 (Windows fork: 0.150.2-mingw.1) |
+| Koin / Coil / Pulse | 4.2.2 / 3.6.3 / 0.3.7 |
+
+Every version is pinned in [`gradle/libs.versions.toml`](gradle/libs.versions.toml),
+the vendored upstream tags in [`compose.properties`](scripts/compose-fork/compose.properties)
+and SDL in [`build-sdl.properties`](scripts/build-sdl/build-sdl.properties).
+Release numbers are `<compose version>-<n>`, e.g. `1.12.2-4`.
+
+## Building from source
+
+```bash
+python3 scripts/build-sdl/build-all.py          # once per machine: static SDL3
+./gradlew :demo:runDebugExecutableMacosArm64    # or LinuxX64; gradlew.bat ... MingwX64 on Windows
+./gradlew :demo:run                             # the same app on JVM Compose Desktop
+```
+
+Every host needs `git`, `cmake` and Python 3, plus the Xcode command line tools
+(macOS), gcc and the X11 / Wayland dev headers (Linux), or a mingw-w64 g++ on
+`PATH` (Windows). Windows builds must run on Windows.
+
+The repo has two sample apps: **`:demo`**, a tour of 30+ screens of Compose and
+Material 3, and **`:apidemo`**, a Postman-style REST client with mTLS and
+TLS-chain inspection.
 
 <img src="screenshots/apidemo.png" width="100%" alt="Compose Desktop Native API Manager" />
 
-```bash
-./gradlew :apidemo:runDebugExecutableMacosArm64
-./gradlew :apidemo:run                         # JVM Compose Desktop (reference)
-```
+## Documentation
 
-## Modules
-
-One Gradle module per upstream artifact, and the Gradle path mirrors the
-directory (`:compose:ui:ui`, `:compose:foundation:foundation`, …). The renderer
-lives in `:compose:ui:ui` and the `sdl3` cinterop in `:sdl:sdl-core`;
-`:compose:desktop:native:desktop-native-window` is the SDL integration layer.
-
-Most of the androidx architecture stack (lifecycle, viewmodel, navigation3,
-savedstate, navigationevent) ships real Kotlin/Native desktop klibs and runs on
-the port unmodified. Where an ecosystem library stops short of Kotlin/Native
-desktop, this repo vendors it verbatim from upstream and rebuilds it for these
-targets, so you keep writing against the official coordinates:
-
-| Vendored | Why | Published as |
-|----------|-----|--------------|
-| Compose `ui` / `foundation` / `animation` / `material3` | the port itself | `com.bitsycore.compose.*` |
-| `components-resources`, `navigation3-ui` | no mingwX64 / linux klibs | `com.bitsycore.compose.components`, `com.bitsycore.navigation3` |
-| **Koin** viewmodel + compose modules | apple + android only upstream (`koin-core` itself is fine) | `com.bitsycore.koin` |
-| **Coil 3** (whole stack) | no mingwX64 anywhere; no desktop native at all for its compose layer | `com.bitsycore.coil3` |
-| **Pulse MVI** | no desktop-native artifact upstream | `com.bitsycore.compose.desktop.native.pulse` |
-| **material3-adaptive** (all four) | ios + macosArm64 only upstream - no linux, no mingw | `com.bitsycore.compose.material3.adaptive` |
-
-The bridge plugin substitutes each of these on native desktop configurations, so
-app code declares `io.insert-koin:koin-compose`, `io.coil-kt.coil3:coil-compose`
-and so on exactly as it would anywhere else. The full module map, dependency
-graph, and the list of compatible artifacts are in [CLAUDE.md](CLAUDE.md).
-
-## Pinned versions
-
-Everything below is pinned in exactly two files -
-[`gradle/libs.versions.toml`](gradle/libs.versions.toml) (Maven coordinates) and
-[`scripts/compose-fork/compose.properties`](scripts/compose-fork/compose.properties)
-(the upstream git refs the vendored sources are copied from) - plus
-[`scripts/build-sdl/build-sdl.properties`](scripts/build-sdl/build-sdl.properties)
-for SDL3. A release tracks one Compose Multiplatform version; the table is the
-contract.
-
-**Version policy.** Anything Compose Multiplatform integrates is pinned to what
-CMP ships - for the androidx mirrors, the *Jetpack* version CMP's release notes
-map its `org.jetbrains.androidx.*` artifact to, since this port consumes the
-google coordinates. Anything CMP does not integrate is pinned to the latest
-release. Deliberate exceptions are commented in the catalog; there is currently
-one (`savedstate`, below).
-
-### Toolchain
-
-| | Version | Notes |
-|---|---|---|
-| Kotlin | **2.4.21** | Newer than the 2.3.20 CMP 1.12.2 is built with. Kotlin/Native consumes older klibs fine, and the whole port builds clean on 2.4.21 with no klib API diff, so there is no reason to hold back. |
-| Compose Multiplatform | **1.12.2** | The vendored sources are the `v1.12.2` tag of both upstream repos, and the JVM parity leg forces the same version - no dev-build skew. 1.12.2 moves skiko to 0.150.2, so the mingwX64 fork was rebased onto skiko `v0.150.2` and republished to keep the same Skia base. |
-| SDL3 | **release-3.4.20** | Built from source as a static lib per host (`scripts/build-sdl/build-all.py`), linked into the executable. |
-| Skiko | **0.150.2** | macOS / Linux use the official `org.jetbrains.skiko`. |
-| Skiko (Windows fork) | **0.150.2-mingw.1** | `com.bitsycore.skiko:skiko` - Skiko + Skia in `skiko-windows-x64.dll`. Same Skia base as the official build. Public repo, no auth. |
-
-### Compose libraries
-
-The port republishes each vendored artifact under a `com.bitsycore` group that
-mirrors the upstream one, so the fork of any given coordinate is obvious. Apply
-the bridge plugin and you keep declaring the **official** coordinate.
-
-| Library | Official coordinate | Port coordinate |
-|---|---|---|
-| Runtime | `org.jetbrains.compose.runtime:runtime*:1.12.2` | *not forked - the official klibs serve every target* |
-| UI | `org.jetbrains.compose.ui:ui*:1.12.2` | `com.bitsycore.compose.ui:ui*` |
-| Foundation | `org.jetbrains.compose.foundation:foundation*:1.12.2` | `com.bitsycore.compose.foundation:foundation*` |
-| Animation | `org.jetbrains.compose.animation:animation*:1.12.2` | `com.bitsycore.compose.animation:animation*` |
-| Material Ripple | `org.jetbrains.compose.material:material-ripple:1.12.2` | `com.bitsycore.compose.material:material-ripple` |
-| Material3 | `org.jetbrains.compose.material3:material3:1.12.0-alpha03` | `com.bitsycore.compose.material3:material3` |
-| Material3 Adaptive | `org.jetbrains.compose.material3.adaptive:adaptive*:1.3.0` | `com.bitsycore.compose.material3.adaptive:adaptive*` |
-| Resources | `org.jetbrains.compose.components:components-resources:1.12.2` | `com.bitsycore.compose.components:components-resources` |
-| Navigation3 UI | `org.jetbrains.androidx.navigation3:navigation3-ui` | `com.bitsycore.navigation3:navigation3-ui` |
-| Window shell | *no upstream equivalent* | `com.bitsycore.compose:desktop-native-window` |
-| SDL layer | *no upstream equivalent* | `com.bitsycore.compose.sdl:sdl-core` |
-
-Material3 rides its own release train upstream: `1.12.0-alpha03` **is** the
-version Compose Multiplatform 1.12.2 ships (Jetpack Material3 1.5.0-alpha22).
-material3-adaptive rides a third train again.
-
-**material3-adaptive** (`adaptive`, `adaptive-layout`, `adaptive-navigation`,
-`adaptive-navigation3`) is published upstream for ios and macosArm64 only - no
-linux, no mingw. This port ships all four for every desktop-native target. It
-needed no source changes at all: every platform actual the native legs want is
-already in upstream's `nonAndroidMain` / `skikoMain` / `nativeMain`, and
-`androidx.window:window-core` - the one dependency involved - has published
-linux, mingw and macos klibs the whole time. The artifacts were missing only
-because upstream never turned the targets on. `demo --screen=Adaptive` renders
-a live `ListDetailPaneScaffold`.
-
-### Ecosystem libraries
-
-Vendored because upstream stops short of Kotlin/Native desktop. The bridge
-substitutes them on native desktop targets only.
-
-| Library | Official coordinate | Port coordinate | Why |
-|---|---|---|---|
-| Koin | `io.insert-koin:koin-compose*:4.2.2` | `com.bitsycore.koin:*` | apple + android only upstream |
-| Koin core | `io.insert-koin:koin-core:4.2.2` | *not forked* | already ships mingwX64 + linux |
-| Coil 3 | `io.coil-kt.coil3:coil*:3.6.3` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
-| Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.compose.desktop.native.pulse:*` | no desktop-native artifact upstream - and Pulse is itself a `com.bitsycore` library, so the republish is namespaced under this project |
-
-Koin's `koin-compose-viewmodel-navigation` is deliberately **not** provided: it
-needs Navigation 2's `navigation-compose`, which has no mingwX64 or linux klibs
-under either coordinate set. Use `koin-compose-navigation3`.
-
-### AndroidX, used as-is
-
-These publish real Kotlin/Native desktop klibs and run on the port unmodified -
-nothing is vendored or substituted. The port standardises on the **google**
-`androidx.*` coordinates; do not also pull the `org.jetbrains.androidx.*`
-mirrors or you will have every class twice.
-
-| Library | Coordinate |
-|---|---|
-| Lifecycle / ViewModel | `androidx.lifecycle:lifecycle-*:2.11.0` |
-| SavedState | `androidx.savedstate:savedstate*:1.5.0` (CMP builds against 1.4.0; lifecycle 2.11.0 requires it only as a *minimum*, so 1.5.0 resolves cleanly and gives consumers the newer API) |
-| Navigation3 runtime | `androidx.navigation3:navigation3-runtime:1.1.7` |
-| Navigation Event | `androidx.navigationevent:navigationevent-compose:1.1.2` |
-| Collection | `androidx.collection:collection:1.5.0` |
-| Graphics Shapes | `androidx.graphics:graphics-shapes:1.1.0` |
-
-## Building
-
-Build the native libraries once per machine, then build any app target:
-
-```bash
-python3 scripts/build-sdl/build-all.py         # SDL3 (static)
-./gradlew :demo:runDebugExecutableMacosArm64
-```
-
-Every host needs `git`, `cmake`, and Python 3. Per host: macOS needs the Xcode
-command line tools; Linux needs gcc/g++ and the X11 / Wayland / audio dev
-headers; Windows needs a mingw-w64 g++ on PATH. See [TOOLING.md](TOOLING.md) for
-the full build and verification workflow.
+- [TOOLING.md](TOOLING.md): native libraries, vendor sync, verification and
+  probes, the release runbook.
+- [CLAUDE.md](CLAUDE.md): architecture, module layout, vendoring rules,
+  source sets and common pitfalls.
+- [PLAN.md](PLAN.md): known gaps and the road to 1.0.
+- [Bridge plugin](gradle-plugin/compose-desktop-native-bridge/README.md):
+  consuming the port from another build.
 
 ## Support
 
 [Bitsycore's Discord](https://discord.gg/kGnraVAtDR)
 
-## Documentation
-
-- [TOOLING.md](TOOLING.md): building the native libs, vendoring, and verification.
-- [CLAUDE.md](CLAUDE.md): architecture, source-set hierarchy, vendoring rules,
-  density flow, and a per-area file map.
-- [gradle-plugin/compose-desktop-native-bridge](gradle-plugin/compose-desktop-native-bridge/README.md):
-  consuming the port from another build.
-
 ## License
 
-[MIT](LICENSE.md).
+[MIT](LICENSE.md)
