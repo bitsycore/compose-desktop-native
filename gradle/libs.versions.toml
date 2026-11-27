@@ -106,7 +106,7 @@ kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.13.0"
 kotlinxIoOkio = "0.9.3"
 okio = "3.18.2"
-ktor = "3.6.1"
+ktor = "3.6.2"
 
 [libraries]
 
