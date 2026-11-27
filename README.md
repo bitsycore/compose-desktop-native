@@ -274,7 +274,7 @@ substitutes them on native desktop targets only.
 | Koin | `io.insert-koin:koin-compose*:4.2.2` | `com.bitsycore.koin:*` | apple + android only upstream |
 | Koin core | `io.insert-koin:koin-core:4.2.2` | *not forked* | already ships mingwX64 + linux |
 | Coil 3 | `io.coil-kt.coil3:coil*:3.6.3` | `com.bitsycore.coil3:*` | no mingwX64 anywhere; no desktop native at all for the compose layer |
-| Pulse MVI | `com.bitsycore.lib:pulse*:0.3.7` | `com.bitsycore.compose.desktop.native.pulse:*` | no desktop-native artifact upstream - and Pulse is itself a `com.bitsycore` library, so the republish is namespaced under this project |
+| Pulse MVI | `com.bitsycore.lib:pulse*:0.4.1` | `com.bitsycore.compose.desktop.native.pulse:*` | no desktop-native artifact upstream - and Pulse is itself a `com.bitsycore` library, so the republish is namespaced under this project |
 
 Koin's `koin-compose-viewmodel-navigation` is deliberately **not** provided: it
 needs Navigation 2's `navigation-compose`, which has no mingwX64 or linux klibs

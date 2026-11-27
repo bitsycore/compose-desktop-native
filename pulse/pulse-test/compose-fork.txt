@@ -1,0 +1,15 @@
+# :pulse:pulse-test - vendored VERBATIM from bitsycore/pulse-mvi.
+# Upstream targets android / jvm / ios / js / wasm but NO desktop native
+# (macosArm64 / linuxX64 / linuxArm64 / mingwX64), so the port re-declares the
+# targets and rebuilds the same sources. commonMain only (upstream's commonTest
+# suite is not vendored).
+SET_REPO=https://github.com/bitsycore/pulse-mvi@<PULSE_REF>
+SET_FOLDER=pulse-test/src
+commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/test/ContainerAssertions.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/test/ContainerAssertions.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/test/HostTester.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/test/HostTester.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/test/TestContainer.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/test/TestContainer.kt
+
+# >>> ---- DIAGNOSTIC GAPS ---- <<<<
+#   (none - every source set under SET_FOLDER is vendored)
+# <<< ---- DIAGNOSTIC GAPS ---- >>>>

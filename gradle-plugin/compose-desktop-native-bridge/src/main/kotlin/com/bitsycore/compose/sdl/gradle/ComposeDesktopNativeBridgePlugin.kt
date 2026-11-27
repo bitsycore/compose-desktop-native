@@ -91,8 +91,8 @@ private val bridgeTable = mapOf(
     // coordinate and could collide with one later.
     "com.bitsycore.lib:pulse" to "com.bitsycore.compose.desktop.native.pulse:pulse",
     "com.bitsycore.lib:pulse-viewmodel" to "com.bitsycore.compose.desktop.native.pulse:pulse-viewmodel",
-    "com.bitsycore.lib:pulse-savedstate" to "com.bitsycore.compose.desktop.native.pulse:pulse-savedstate",
     "com.bitsycore.lib:pulse-compose" to "com.bitsycore.compose.desktop.native.pulse:pulse-compose",
+    "com.bitsycore.lib:pulse-test" to "com.bitsycore.compose.desktop.native.pulse:pulse-test",
 )
 
 /** The K/N desktop targets the port serves; configuration names carry the token. */

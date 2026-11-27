@@ -7,13 +7,20 @@ SET_REPO=https://github.com/bitsycore/pulse-mvi@<PULSE_REF>
 SET_FOLDER=pulse/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/ExperimentalPulse.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/ExperimentalPulse.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/Pulse.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/Pulse.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/Reducer.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/Reducer.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/component/ComponentContract.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/component/ComponentContract.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/component/Slot.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/component/Slot.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/container/Container.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/Container.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/container/ContainerContract.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/ContainerContract.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/container/ContainerHost.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/ContainerHost.kt
-#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/ExperimentalPulse.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/ExperimentalPulse.kt
-#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/PulseDsl.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/PulseDsl.kt
-#     | commonMain/kotlin/com/bitsycore/lib/pulse/internal/UntypedIntentBuilder.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/internal/UntypedIntentBuilder.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/ContainerScope.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/ContainerScope.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/IntentPolicy.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/IntentPolicy.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/KeyedJobs.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/KeyedJobs.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/PulseObserver.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/PulseObserver.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/StateChange.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/StateChange.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/container/StateSaver.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/container/StateSaver.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/utility/DebouncedDispatcher.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/utility/DebouncedDispatcher.kt
 
 # >>> ---- DIAGNOSTIC GAPS ---- <<<<

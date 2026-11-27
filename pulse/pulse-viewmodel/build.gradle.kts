@@ -1,5 +1,6 @@
 // :pulse:pulse-viewmodel - vendored VERBATIM from bitsycore/pulse-mvi into src/vendor.
-// ViewModel binding for the MVI store.
+// ViewModel binding for the MVI store + the SavedStateHandle StateSaver
+// (upstream folded the former pulse-savedstate module in here in 0.4.0).
 // Upstream targets android / jvm / ios / js / wasm but NO desktop native, so the
 // port re-declares the targets and rebuilds the same commonMain sources.
 //
@@ -24,6 +25,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":pulse:pulse"))
+				api(libs.androidx.lifecycle.viewmodel.savedstate)
 				implementation(libs.androidx.lifecycle.viewmodel.compose)
 			}
 			kotlin.srcDir("src/vendor/common/kotlin")

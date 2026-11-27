@@ -1,0 +1,38 @@
+// Klib ABI Dump
+// Targets: [linuxArm64, linuxX64, macosArm64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.bitsycore.compose.desktop.native.pulse:pulse-test>
+final class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.test/HostTester { // com.bitsycore.lib.pulse.test/HostTester|null[0]
+    constructor <init>(com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>, kotlinx.coroutines.test/TestScope) // com.bitsycore.lib.pulse.test/HostTester.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerHost<1:0,1:1,1:2>;kotlinx.coroutines.test.TestScope){}[0]
+
+    final val state // com.bitsycore.lib.pulse.test/HostTester.state|{}state[0]
+        final fun <get-state>(): #A // com.bitsycore.lib.pulse.test/HostTester.state.<get-state>|<get-state>(){}[0]
+    final val states // com.bitsycore.lib.pulse.test/HostTester.states|{}states[0]
+        final fun <get-states>(): kotlin.collections/List<#A> // com.bitsycore.lib.pulse.test/HostTester.states.<get-states>|<get-states>(){}[0]
+
+    final fun advanceBy(kotlin.time/Duration) // com.bitsycore.lib.pulse.test/HostTester.advanceBy|advanceBy(kotlin.time.Duration){}[0]
+    final fun dispatch(#B) // com.bitsycore.lib.pulse.test/HostTester.dispatch|dispatch(1:1){}[0]
+    final fun expectEffect(#C) // com.bitsycore.lib.pulse.test/HostTester.expectEffect|expectEffect(1:2){}[0]
+    final fun expectNoEffects() // com.bitsycore.lib.pulse.test/HostTester.expectNoEffects|expectNoEffects(){}[0]
+    final fun expectState(#A) // com.bitsycore.lib.pulse.test/HostTester.expectState|expectState(1:0){}[0]
+    final fun expectState(kotlin/String? = ..., kotlin/Function1<#A, kotlin/Boolean>) // com.bitsycore.lib.pulse.test/HostTester.expectState|expectState(kotlin.String?;kotlin.Function1<1:0,kotlin.Boolean>){}[0]
+    final fun nextEffect(): #C // com.bitsycore.lib.pulse.test/HostTester.nextEffect|nextEffect(){}[0]
+    final fun settle() // com.bitsycore.lib.pulse.test/HostTester.settle|settle(){}[0]
+    final inline fun <#A1: reified #C> expectEffect(): #A1 // com.bitsycore.lib.pulse.test/HostTester.expectEffect|expectEffect(){0§<1:2>}[0]
+    final suspend fun run(kotlin.coroutines/SuspendFunction1<com.bitsycore.lib.pulse.test/HostTester<#A, #B, #C>, kotlin/Unit>) // com.bitsycore.lib.pulse.test/HostTester.run|run(kotlin.coroutines.SuspendFunction1<com.bitsycore.lib.pulse.test.HostTester<1:0,1:1,1:2>,kotlin.Unit>){}[0]
+}
+
+final class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.test/TestContainer : com.bitsycore.lib.pulse.container/Container<#A, #B, #C> { // com.bitsycore.lib.pulse.test/TestContainer|null[0]
+    constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, kotlinx.coroutines.test/TestScope = ..., kotlin/Function2<#A, #B, #A> = ..., com.bitsycore.lib.pulse.container/StateSaver<#A>? = ..., com.bitsycore.lib.pulse.container/PulseObserver? = ..., kotlin/Function1<#B, com.bitsycore.lib.pulse.container/IntentPolicy> = ..., kotlin/Function2<#B?, kotlin/Exception, kotlin/Unit>? = ..., kotlin.coroutines/SuspendFunction2<com.bitsycore.lib.pulse.test/TestContainer<#A, #B, #C>, #B, kotlin/Unit> = ...) // com.bitsycore.lib.pulse.test/TestContainer.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;kotlinx.coroutines.test.TestScope;kotlin.Function2<1:0,1:1,1:0>;com.bitsycore.lib.pulse.container.StateSaver<1:0>?;com.bitsycore.lib.pulse.container.PulseObserver?;kotlin.Function1<1:1,com.bitsycore.lib.pulse.container.IntentPolicy>;kotlin.Function2<1:1?,kotlin.Exception,kotlin.Unit>?;kotlin.coroutines.SuspendFunction2<com.bitsycore.lib.pulse.test.TestContainer<1:0,1:1,1:2>,1:1,kotlin.Unit>){}[0]
+}
+
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>).com.bitsycore.lib.pulse.test/containerTest(#A, kotlin/Function2<#A, #B, #A> = ..., kotlin.coroutines/SuspendFunction2<com.bitsycore.lib.pulse.test/TestContainer<#A, #B, #C>, #B, kotlin/Unit> = ..., kotlin.coroutines/SuspendFunction1<com.bitsycore.lib.pulse.test/TestContainer<#A, #B, #C>, kotlin/Unit>) // com.bitsycore.lib.pulse.test/containerTest|containerTest@com.bitsycore.lib.pulse.container.ContainerContract<0:0,0:1,0:2>(0:0;kotlin.Function2<0:0,0:1,0:0>;kotlin.coroutines.SuspendFunction2<com.bitsycore.lib.pulse.test.TestContainer<0:0,0:1,0:2>,0:1,kotlin.Unit>;kotlin.coroutines.SuspendFunction1<com.bitsycore.lib.pulse.test.TestContainer<0:0,0:1,0:2>,kotlin.Unit>){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, *, *>).com.bitsycore.lib.pulse.test/assertState(#A) // com.bitsycore.lib.pulse.test/assertState|assertState@com.bitsycore.lib.pulse.container.ContainerHost<0:0,*,*>(0:0){0§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, *, *>).com.bitsycore.lib.pulse.test/assertState(kotlin/String? = ..., kotlin/Function1<#A, kotlin/Boolean>) // com.bitsycore.lib.pulse.test/assertState|assertState@com.bitsycore.lib.pulse.container.ContainerHost<0:0,*,*>(kotlin.String?;kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any>}[0]
+final suspend fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>).com.bitsycore.lib.pulse.test/test(kotlinx.coroutines.test/TestScope, kotlin.coroutines/SuspendFunction1<com.bitsycore.lib.pulse.test/HostTester<#A, #B, #C>, kotlin/Unit>) // com.bitsycore.lib.pulse.test/test|test@com.bitsycore.lib.pulse.container.ContainerHost<0:0,0:1,0:2>(kotlinx.coroutines.test.TestScope;kotlin.coroutines.SuspendFunction1<com.bitsycore.lib.pulse.test.HostTester<0:0,0:1,0:2>,kotlin.Unit>){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final suspend fun <#A: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<*, *, #A>).com.bitsycore.lib.pulse.test/awaitEffect(kotlin.coroutines/SuspendFunction0<kotlin/Unit>): #A // com.bitsycore.lib.pulse.test/awaitEffect|awaitEffect@com.bitsycore.lib.pulse.container.ContainerHost<*,*,0:0>(kotlin.coroutines.SuspendFunction0<kotlin.Unit>){0§<kotlin.Any>}[0]
+final suspend fun <#A: kotlin/Any> (com.bitsycore.lib.pulse.container/ContainerHost<*, *, #A>).com.bitsycore.lib.pulse.test/collectEffects(kotlinx.coroutines.test/TestScope, kotlin.coroutines/SuspendFunction0<kotlin/Unit>): kotlin.collections/List<#A> // com.bitsycore.lib.pulse.test/collectEffects|collectEffects@com.bitsycore.lib.pulse.container.ContainerHost<*,*,0:0>(kotlinx.coroutines.test.TestScope;kotlin.coroutines.SuspendFunction0<kotlin.Unit>){0§<kotlin.Any>}[0]

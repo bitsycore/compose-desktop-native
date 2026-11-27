@@ -206,9 +206,13 @@ pulse/               → Pulse MVI. Upstream (bitsycore/pulse-mvi, PULSE_REF) ta
 │                      android / jvm / ios / js / wasm and publishes NO desktop-native
 │                      artifact, so all four modules are vendored. commonMain only.
 ├── pulse/                           → :pulse:pulse            - MVI core (store/state/intents)
-├── pulse-viewmodel/                 → :pulse:pulse-viewmodel  - ViewModel binding
-├── pulse-savedstate/                → :pulse:pulse-savedstate - SavedStateHandle persistence
-└── pulse-compose/                   → :pulse:pulse-compose    - Compose bindings
+├── pulse-viewmodel/                 → :pulse:pulse-viewmodel  - ViewModel binding + the
+│                                      SavedStateHandle StateSaver (upstream folded the
+│                                      former pulse-savedstate module in here in 0.4.0)
+├── pulse-compose/                   → :pulse:pulse-compose    - Compose bindings
+└── pulse-test/                      → :pulse:pulse-test       - host test kit (TestContainer,
+                                       HostTester; api-exposes kotlin-test +
+                                       kotlinx-coroutines-test)
                                                     Published as com.bitsycore.compose.desktop.native
                                                     .pulse:<module>, NOT upstream's com.bitsycore.lib:
                                                     <module>. Pulse is the one vendored dep that is
