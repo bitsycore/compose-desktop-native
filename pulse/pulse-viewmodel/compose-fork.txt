@@ -8,6 +8,7 @@ SET_FOLDER=pulse-viewmodel/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/viewmodel/PulseViewModel.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/viewmodel/PulseViewModel.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/viewmodel/SavedStateHandleSaver.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/viewmodel/SavedStateHandleSaver.kt
 
 # >>> ---- DIAGNOSTIC GAPS ---- <<<<
 #   (none - every source set under SET_FOLDER is vendored)

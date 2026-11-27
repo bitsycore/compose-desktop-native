@@ -66,8 +66,8 @@ val kAreaGroups = mapOf(
     ":coil:coil-network-ktor3" to "com.bitsycore.coil3",
     ":pulse:pulse" to "com.bitsycore.compose.desktop.native.pulse",
     ":pulse:pulse-viewmodel" to "com.bitsycore.compose.desktop.native.pulse",
-    ":pulse:pulse-savedstate" to "com.bitsycore.compose.desktop.native.pulse",
     ":pulse:pulse-compose" to "com.bitsycore.compose.desktop.native.pulse",
+    ":pulse:pulse-test" to "com.bitsycore.compose.desktop.native.pulse",
     ":compose:desktop:native:desktop-native-window" to "com.bitsycore.compose",
 )
 fun groupFor(path: String): String = kAreaGroups[path] ?: kDefaultGroup
@@ -112,7 +112,7 @@ val kPublishedLibs = setOf(
     ":koin:koin-compose-viewmodel", ":koin:koin-compose-navigation3",
     ":coil:coil-core", ":coil:coil", ":coil:coil-compose-core", ":coil:coil-compose",
     ":coil:coil-svg", ":coil:coil-network-core", ":coil:coil-network-ktor3",
-    ":pulse:pulse", ":pulse:pulse-viewmodel", ":pulse:pulse-savedstate", ":pulse:pulse-compose",
+    ":pulse:pulse", ":pulse:pulse-viewmodel", ":pulse:pulse-compose", ":pulse:pulse-test",
 )
 
 // -PuseGithubPackages=true swaps every `project(":<lib>")` reference the demo
@@ -263,8 +263,8 @@ allprojects {
                 // two coordinates never collide, and substitutes the official one here.
                 substitute(module("com.bitsycore.lib:pulse")).using(project(":pulse:pulse"))
                 substitute(module("com.bitsycore.lib:pulse-viewmodel")).using(project(":pulse:pulse-viewmodel"))
-                substitute(module("com.bitsycore.lib:pulse-savedstate")).using(project(":pulse:pulse-savedstate"))
                 substitute(module("com.bitsycore.lib:pulse-compose")).using(project(":pulse:pulse-compose"))
+                substitute(module("com.bitsycore.lib:pulse-test")).using(project(":pulse:pulse-test"))
             }
         }
     }

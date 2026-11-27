@@ -8,6 +8,8 @@ SET_FOLDER=pulse-compose/src
 
 commonMain/kotlin/ -> src/vendor/common/kotlin/
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/compose/ComposeExtensions.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/compose/ComposeExtensions.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/compose/RememberContainer.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/compose/RememberContainer.kt
+#     | commonMain/kotlin/com/bitsycore/lib/pulse/compose/RememberReducer.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/compose/RememberReducer.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/scopes/ComposeIntentScope.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/scopes/ComposeIntentScope.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/scopes/LifecycleIntentScope.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/scopes/LifecycleIntentScope.kt
 #     | commonMain/kotlin/com/bitsycore/lib/pulse/scopes/PulseScopeDsl.kt -> src/vendor/common/kotlin/com/bitsycore/lib/pulse/scopes/PulseScopeDsl.kt

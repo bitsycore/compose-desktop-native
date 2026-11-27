@@ -100,8 +100,8 @@ commonMain.dependencies {
     implementation("io.coil-kt.coil3:coil-svg:3.6.2")
 
     // Pulse MVI
-    implementation("com.bitsycore.lib:pulse:0.3.7")
-    implementation("com.bitsycore.lib:pulse-compose:0.3.7")
+    implementation("com.bitsycore.lib:pulse:0.4.1")
+    implementation("com.bitsycore.lib:pulse-compose:0.4.1")
 }
 ```
 

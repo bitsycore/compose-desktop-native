@@ -6,12 +6,12 @@
 // - Show declarations: true
 
 // Library unique name: <com.bitsycore.compose.desktop.native.pulse:pulse>
-open annotation class com.bitsycore.lib.pulse.internal/ExperimentalPulse : kotlin/Annotation { // com.bitsycore.lib.pulse.internal/ExperimentalPulse|null[0]
-    constructor <init>() // com.bitsycore.lib.pulse.internal/ExperimentalPulse.<init>|<init>(){}[0]
+open annotation class com.bitsycore.lib.pulse/ExperimentalPulse : kotlin/Annotation { // com.bitsycore.lib.pulse/ExperimentalPulse|null[0]
+    constructor <init>() // com.bitsycore.lib.pulse/ExperimentalPulse.<init>|<init>(){}[0]
 }
 
-open annotation class com.bitsycore.lib.pulse.internal/PulseDsl : kotlin/Annotation { // com.bitsycore.lib.pulse.internal/PulseDsl|null[0]
-    constructor <init>() // com.bitsycore.lib.pulse.internal/PulseDsl.<init>|<init>(){}[0]
+abstract fun interface <#A: kotlin/Any?, #B: kotlin/Any?> com.bitsycore.lib.pulse/Reducer { // com.bitsycore.lib.pulse/Reducer|null[0]
+    abstract fun reduce(#A, #B): #A // com.bitsycore.lib.pulse/Reducer.reduce|reduce(1:0;1:1){}[0]
 }
 
 abstract interface <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerHost { // com.bitsycore.lib.pulse.container/ContainerHost|null[0]
@@ -19,12 +19,119 @@ abstract interface <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycor
         abstract fun <get-effectFlow>(): kotlinx.coroutines.flow/Flow<#C> // com.bitsycore.lib.pulse.container/ContainerHost.effectFlow.<get-effectFlow>|<get-effectFlow>(){}[0]
     abstract val stateFlow // com.bitsycore.lib.pulse.container/ContainerHost.stateFlow|{}stateFlow[0]
         abstract fun <get-stateFlow>(): kotlinx.coroutines.flow/StateFlow<#A> // com.bitsycore.lib.pulse.container/ContainerHost.stateFlow.<get-stateFlow>|<get-stateFlow>(){}[0]
+    open val state // com.bitsycore.lib.pulse.container/ContainerHost.state|{}state[0]
+        open fun <get-state>(): #A // com.bitsycore.lib.pulse.container/ContainerHost.state.<get-state>|<get-state>(){}[0]
 
     abstract fun dispatch(#B) // com.bitsycore.lib.pulse.container/ContainerHost.dispatch|dispatch(1:1){}[0]
 }
 
-abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/Container : com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C> { // com.bitsycore.lib.pulse.container/Container|null[0]
-    constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, #A? = ..., kotlinx.coroutines/CoroutineScope) // com.bitsycore.lib.pulse.container/Container.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;1:0?;kotlinx.coroutines.CoroutineScope){}[0]
+abstract interface <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerScope { // com.bitsycore.lib.pulse.container/ContainerScope|null[0]
+    abstract val state // com.bitsycore.lib.pulse.container/ContainerScope.state|{}state[0]
+        abstract fun <get-state>(): #A // com.bitsycore.lib.pulse.container/ContainerScope.state.<get-state>|<get-state>(){}[0]
+
+    abstract fun cancelJob(kotlin/Any) // com.bitsycore.lib.pulse.container/ContainerScope.cancelJob|cancelJob(kotlin.Any){}[0]
+    abstract fun dispatch(#B) // com.bitsycore.lib.pulse.container/ContainerScope.dispatch|dispatch(1:1){}[0]
+    abstract fun emitEffect(#C) // com.bitsycore.lib.pulse.container/ContainerScope.emitEffect|emitEffect(1:2){}[0]
+    abstract fun isRunning(kotlin/Any): kotlin/Boolean // com.bitsycore.lib.pulse.container/ContainerScope.isRunning|isRunning(kotlin.Any){}[0]
+    abstract fun launchDebounced(kotlin/Any, kotlin.time/Duration, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/ContainerScope.launchDebounced|launchDebounced(kotlin.Any;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    abstract fun launchLatest(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/ContainerScope.launchLatest|launchLatest(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    abstract fun launchOnce(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job? // com.bitsycore.lib.pulse.container/ContainerScope.launchOnce|launchOnce(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    abstract fun launchQueued(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/ContainerScope.launchQueued|launchQueued(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    abstract fun reduceOnly(#B) // com.bitsycore.lib.pulse.container/ContainerScope.reduceOnly|reduceOnly(1:1){}[0]
+    abstract fun updateState(kotlin/String? = ..., kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.container/ContainerScope.updateState|updateState(kotlin.String?;kotlin.Function1<1:0,1:0>){}[0]
+}
+
+abstract interface <#A: kotlin/Any> com.bitsycore.lib.pulse.container/StateSaver { // com.bitsycore.lib.pulse.container/StateSaver|null[0]
+    abstract fun restore(): #A? // com.bitsycore.lib.pulse.container/StateSaver.restore|restore(){}[0]
+    open fun bind(kotlin/Function0<#A>) // com.bitsycore.lib.pulse.container/StateSaver.bind|bind(kotlin.Function0<1:0>){}[0]
+    open fun onStateChanged(#A) // com.bitsycore.lib.pulse.container/StateSaver.onStateChanged|onStateChanged(1:0){}[0]
+}
+
+abstract interface com.bitsycore.lib.pulse.container/PolicedIntent { // com.bitsycore.lib.pulse.container/PolicedIntent|null[0]
+    abstract val policy // com.bitsycore.lib.pulse.container/PolicedIntent.policy|{}policy[0]
+        abstract fun <get-policy>(): com.bitsycore.lib.pulse.container/IntentPolicy // com.bitsycore.lib.pulse.container/PolicedIntent.policy.<get-policy>|<get-policy>(){}[0]
+}
+
+abstract interface com.bitsycore.lib.pulse.container/PulseObserver { // com.bitsycore.lib.pulse.container/PulseObserver|null[0]
+    open fun onEffect(kotlin/Any, kotlin/Any) // com.bitsycore.lib.pulse.container/PulseObserver.onEffect|onEffect(kotlin.Any;kotlin.Any){}[0]
+    open fun onError(kotlin/Any, kotlin/Any?, kotlin/Exception) // com.bitsycore.lib.pulse.container/PulseObserver.onError|onError(kotlin.Any;kotlin.Any?;kotlin.Exception){}[0]
+    open fun onIntent(kotlin/Any, kotlin/Any, kotlin/Any, kotlin/Any) // com.bitsycore.lib.pulse.container/PulseObserver.onIntent|onIntent(kotlin.Any;kotlin.Any;kotlin.Any;kotlin.Any){}[0]
+    open fun onStateUpdate(kotlin/Any, kotlin/String?, kotlin/Any, kotlin/Any) // com.bitsycore.lib.pulse.container/PulseObserver.onStateUpdate|onStateUpdate(kotlin.Any;kotlin.String?;kotlin.Any;kotlin.Any){}[0]
+}
+
+sealed interface com.bitsycore.lib.pulse.container/IntentPolicy : com.bitsycore.lib.pulse.container/PolicedIntent { // com.bitsycore.lib.pulse.container/IntentPolicy|null[0]
+    abstract val key // com.bitsycore.lib.pulse.container/IntentPolicy.key|{}key[0]
+        abstract fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.key.<get-key>|<get-key>(){}[0]
+    open val policy // com.bitsycore.lib.pulse.container/IntentPolicy.policy|{}policy[0]
+        open fun <get-policy>(): com.bitsycore.lib.pulse.container/IntentPolicy // com.bitsycore.lib.pulse.container/IntentPolicy.policy.<get-policy>|<get-policy>(){}[0]
+
+    final class Debounce : com.bitsycore.lib.pulse.container/IntentPolicy { // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce|null[0]
+        constructor <init>(kotlin.time/Duration, kotlin/Any? = ...) // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.<init>|<init>(kotlin.time.Duration;kotlin.Any?){}[0]
+
+        final val delay // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.delay|{}delay[0]
+            final fun <get-delay>(): kotlin.time/Duration // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.delay.<get-delay>|<get-delay>(){}[0]
+        final val key // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.key|{}key[0]
+            final fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.key.<get-key>|<get-key>(){}[0]
+
+        final fun component1(): kotlin.time/Duration // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.component1|component1(){}[0]
+        final fun component2(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.component2|component2(){}[0]
+        final fun copy(kotlin.time/Duration = ..., kotlin/Any? = ...): com.bitsycore.lib.pulse.container/IntentPolicy.Debounce // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.copy|copy(kotlin.time.Duration;kotlin.Any?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/IntentPolicy.Debounce.toString|toString(){}[0]
+    }
+
+    final class DropIfRunning : com.bitsycore.lib.pulse.container/IntentPolicy { // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning|null[0]
+        constructor <init>(kotlin/Any? = ...) // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.<init>|<init>(kotlin.Any?){}[0]
+
+        final val key // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.key|{}key[0]
+            final fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.key.<get-key>|<get-key>(){}[0]
+
+        final fun component1(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.component1|component1(){}[0]
+        final fun copy(kotlin/Any? = ...): com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.copy|copy(kotlin.Any?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/IntentPolicy.DropIfRunning.toString|toString(){}[0]
+    }
+
+    final class Latest : com.bitsycore.lib.pulse.container/IntentPolicy { // com.bitsycore.lib.pulse.container/IntentPolicy.Latest|null[0]
+        constructor <init>(kotlin/Any? = ...) // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.<init>|<init>(kotlin.Any?){}[0]
+
+        final val key // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.key|{}key[0]
+            final fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.key.<get-key>|<get-key>(){}[0]
+
+        final fun component1(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.component1|component1(){}[0]
+        final fun copy(kotlin/Any? = ...): com.bitsycore.lib.pulse.container/IntentPolicy.Latest // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.copy|copy(kotlin.Any?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/IntentPolicy.Latest.toString|toString(){}[0]
+    }
+
+    final class Queue : com.bitsycore.lib.pulse.container/IntentPolicy { // com.bitsycore.lib.pulse.container/IntentPolicy.Queue|null[0]
+        constructor <init>(kotlin/Any? = ...) // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.<init>|<init>(kotlin.Any?){}[0]
+
+        final val key // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.key|{}key[0]
+            final fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.key.<get-key>|<get-key>(){}[0]
+
+        final fun component1(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.component1|component1(){}[0]
+        final fun copy(kotlin/Any? = ...): com.bitsycore.lib.pulse.container/IntentPolicy.Queue // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.copy|copy(kotlin.Any?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/IntentPolicy.Queue.toString|toString(){}[0]
+    }
+
+    final object Parallel : com.bitsycore.lib.pulse.container/IntentPolicy { // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel|null[0]
+        final val key // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel.key|{}key[0]
+            final fun <get-key>(): kotlin/Any? // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel.key.<get-key>|<get-key>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/IntentPolicy.Parallel.toString|toString(){}[0]
+    }
+}
+
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/Container : com.bitsycore.lib.pulse.container/ContainerHost<#A, #B, #C>, com.bitsycore.lib.pulse.container/ContainerScope<#A, #B, #C> { // com.bitsycore.lib.pulse.container/Container|null[0]
+    constructor <init>(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, kotlinx.coroutines/CoroutineScope, com.bitsycore.lib.pulse.container/StateSaver<#A>? = ..., com.bitsycore.lib.pulse.container/PulseObserver? = ..., kotlin/Any? = ...) // com.bitsycore.lib.pulse.container/Container.<init>|<init>(com.bitsycore.lib.pulse.container.ContainerContract<1:0,1:1,1:2>;1:0;kotlinx.coroutines.CoroutineScope;com.bitsycore.lib.pulse.container.StateSaver<1:0>?;com.bitsycore.lib.pulse.container.PulseObserver?;kotlin.Any?){}[0]
 
     final val containerContract // com.bitsycore.lib.pulse.container/Container.containerContract|{}containerContract[0]
         final fun <get-containerContract>(): com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C> // com.bitsycore.lib.pulse.container/Container.containerContract.<get-containerContract>|<get-containerContract>(){}[0]
@@ -32,38 +139,45 @@ abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.li
         final fun <get-coroutineScope>(): kotlinx.coroutines/CoroutineScope // com.bitsycore.lib.pulse.container/Container.coroutineScope.<get-coroutineScope>|<get-coroutineScope>(){}[0]
     open val effectFlow // com.bitsycore.lib.pulse.container/Container.effectFlow|{}effectFlow[0]
         open fun <get-effectFlow>(): kotlinx.coroutines.flow/Flow<#C> // com.bitsycore.lib.pulse.container/Container.effectFlow.<get-effectFlow>|<get-effectFlow>(){}[0]
+    open val inactiveGrace // com.bitsycore.lib.pulse.container/Container.inactiveGrace|{}inactiveGrace[0]
+        open fun <get-inactiveGrace>(): kotlin.time/Duration // com.bitsycore.lib.pulse.container/Container.inactiveGrace.<get-inactiveGrace>|<get-inactiveGrace>(){}[0]
+    open val state // com.bitsycore.lib.pulse.container/Container.state|{}state[0]
+        open fun <get-state>(): #A // com.bitsycore.lib.pulse.container/Container.state.<get-state>|<get-state>(){}[0]
     open val stateFlow // com.bitsycore.lib.pulse.container/Container.stateFlow|{}stateFlow[0]
         open fun <get-stateFlow>(): kotlinx.coroutines.flow/StateFlow<#A> // com.bitsycore.lib.pulse.container/Container.stateFlow.<get-stateFlow>|<get-stateFlow>(){}[0]
 
-    final fun dispatchCustom(kotlin/Function1<com.bitsycore.lib.pulse.internal/UntypedIntentBuilder<#A>, kotlin/Unit>) // com.bitsycore.lib.pulse.container/Container.dispatchCustom|dispatchCustom(kotlin.Function1<com.bitsycore.lib.pulse.internal.UntypedIntentBuilder<1:0>,kotlin.Unit>){}[0]
+    final fun cancelJob(kotlin/Any) // com.bitsycore.lib.pulse.container/Container.cancelJob|cancelJob(kotlin.Any){}[0]
+    final fun dispatch(#B) // com.bitsycore.lib.pulse.container/Container.dispatch|dispatch(1:1){}[0]
     final fun emitEffect(#C) // com.bitsycore.lib.pulse.container/Container.emitEffect|emitEffect(1:2){}[0]
-    final fun updateState(kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.container/Container.updateState|updateState(kotlin.Function1<1:0,1:0>){}[0]
-    open fun dispatch(#B) // com.bitsycore.lib.pulse.container/Container.dispatch|dispatch(1:1){}[0]
-    open fun onError(#B, kotlin/Throwable) // com.bitsycore.lib.pulse.container/Container.onError|onError(1:1;kotlin.Throwable){}[0]
+    final fun isRunning(kotlin/Any): kotlin/Boolean // com.bitsycore.lib.pulse.container/Container.isRunning|isRunning(kotlin.Any){}[0]
+    final fun launchDebounced(kotlin/Any, kotlin.time/Duration, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/Container.launchDebounced|launchDebounced(kotlin.Any;kotlin.time.Duration;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    final fun launchLatest(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/Container.launchLatest|launchLatest(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    final fun launchOnce(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job? // com.bitsycore.lib.pulse.container/Container.launchOnce|launchOnce(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    final fun launchQueued(kotlin/Any, kotlin.coroutines/SuspendFunction1<kotlinx.coroutines/CoroutineScope, kotlin/Unit>): kotlinx.coroutines/Job // com.bitsycore.lib.pulse.container/Container.launchQueued|launchQueued(kotlin.Any;kotlin.coroutines.SuspendFunction1<kotlinx.coroutines.CoroutineScope,kotlin.Unit>){}[0]
+    final fun reduceOnly(#B) // com.bitsycore.lib.pulse.container/Container.reduceOnly|reduceOnly(1:1){}[0]
+    final fun updateState(kotlin/String?, kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.container/Container.updateState|updateState(kotlin.String?;kotlin.Function1<1:0,1:0>){}[0]
+    open fun onError(#B?, kotlin/Exception) // com.bitsycore.lib.pulse.container/Container.onError|onError(1:1?;kotlin.Exception){}[0]
+    open fun policyOf(#B): com.bitsycore.lib.pulse.container/IntentPolicy // com.bitsycore.lib.pulse.container/Container.policyOf|policyOf(1:1){}[0]
     open fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.container/Container.reduce|reduce(1:0;1:1){}[0]
     open suspend fun handleIntent(#B) // com.bitsycore.lib.pulse.container/Container.handleIntent|handleIntent(1:1){}[0]
+    open suspend fun handleIntent(#B, com.bitsycore.lib.pulse.container/StateChange<#A>) // com.bitsycore.lib.pulse.container/Container.handleIntent|handleIntent(1:1;com.bitsycore.lib.pulse.container.StateChange<1:0>){}[0]
+    open suspend fun onStart() // com.bitsycore.lib.pulse.container/Container.onStart|onStart(){}[0]
+    open suspend fun whileActive() // com.bitsycore.lib.pulse.container/Container.whileActive|whileActive(){}[0]
 }
 
-abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerContract { // com.bitsycore.lib.pulse.container/ContainerContract|null[0]
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/ContainerContract : com.bitsycore.lib.pulse/Reducer<#A, #B> { // com.bitsycore.lib.pulse.container/ContainerContract|null[0]
     constructor <init>() // com.bitsycore.lib.pulse.container/ContainerContract.<init>|<init>(){}[0]
 
     open fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.container/ContainerContract.reduce|reduce(1:0;1:1){}[0]
 }
 
-abstract class <#A: kotlin/Any, #B: kotlin/Any> com.bitsycore.lib.pulse.component/ComponentContract { // com.bitsycore.lib.pulse.component/ComponentContract|null[0]
+abstract class <#A: kotlin/Any, #B: kotlin/Any> com.bitsycore.lib.pulse.component/ComponentContract : com.bitsycore.lib.pulse/Reducer<#A, #B> { // com.bitsycore.lib.pulse.component/ComponentContract|null[0]
     constructor <init>(#A) // com.bitsycore.lib.pulse.component/ComponentContract.<init>|<init>(1:0){}[0]
 
     final val initialState // com.bitsycore.lib.pulse.component/ComponentContract.initialState|{}initialState[0]
         final fun <get-initialState>(): #A // com.bitsycore.lib.pulse.component/ComponentContract.initialState.<get-initialState>|<get-initialState>(){}[0]
 
     abstract fun reduce(#A, #B): #A // com.bitsycore.lib.pulse.component/ComponentContract.reduce|reduce(1:0;1:1){}[0]
-}
-
-final class <#A: kotlin/Any> com.bitsycore.lib.pulse.internal/UntypedIntentBuilder { // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder|null[0]
-    final fun handle(kotlin.coroutines/SuspendFunction1<com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.HandlerScope, kotlin/Unit>) // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.handle|handle(kotlin.coroutines.SuspendFunction1<com.bitsycore.lib.pulse.internal.UntypedIntentBuilder.HandlerScope,kotlin.Unit>){}[0]
-    final fun reduce(kotlin/Function1<#A, #A>) // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.reduce|reduce(kotlin.Function1<1:0,1:0>){}[0]
-
-    final class HandlerScope // com.bitsycore.lib.pulse.internal/UntypedIntentBuilder.HandlerScope|null[0]
 }
 
 final class <#A: kotlin/Any> com.bitsycore.lib.pulse.utility/DebouncedDispatcher { // com.bitsycore.lib.pulse.utility/DebouncedDispatcher|null[0]
@@ -74,3 +188,41 @@ final class <#A: kotlin/Any> com.bitsycore.lib.pulse.utility/DebouncedDispatcher
     final fun clearHistory() // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.clearHistory|clearHistory(){}[0]
     final fun dispatchDebounced(#A, kotlin.time/Duration, kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // com.bitsycore.lib.pulse.utility/DebouncedDispatcher.dispatchDebounced|dispatchDebounced(1:0;kotlin.time.Duration;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
 }
+
+final class <#A: kotlin/Any?, #B: kotlin/Any?, #C: kotlin/Any?, #D: kotlin/Any?> com.bitsycore.lib.pulse.component/ListSlot { // com.bitsycore.lib.pulse.component/ListSlot|null[0]
+    constructor <init>(com.bitsycore.lib.pulse/Reducer<#C, #D>, kotlin/Function1<#A, kotlin.collections/List<#C>>, kotlin/Function2<#A, kotlin.collections/List<#C>, #A>, kotlin/Function1<#C, #B>) // com.bitsycore.lib.pulse.component/ListSlot.<init>|<init>(com.bitsycore.lib.pulse.Reducer<1:2,1:3>;kotlin.Function1<1:0,kotlin.collections.List<1:2>>;kotlin.Function2<1:0,kotlin.collections.List<1:2>,1:0>;kotlin.Function1<1:2,1:1>){}[0]
+
+    final fun reduce(#A, #B, #D): #A // com.bitsycore.lib.pulse.component/ListSlot.reduce|reduce(1:0;1:1;1:3){}[0]
+    final fun reduceAll(#A, #D): #A // com.bitsycore.lib.pulse.component/ListSlot.reduceAll|reduceAll(1:0;1:3){}[0]
+}
+
+final class <#A: kotlin/Any?, #B: kotlin/Any?, #C: kotlin/Any?> com.bitsycore.lib.pulse.component/Slot { // com.bitsycore.lib.pulse.component/Slot|null[0]
+    constructor <init>(com.bitsycore.lib.pulse/Reducer<#B, #C>, kotlin/Function1<#A, #B>, kotlin/Function2<#A, #B, #A>) // com.bitsycore.lib.pulse.component/Slot.<init>|<init>(com.bitsycore.lib.pulse.Reducer<1:1,1:2>;kotlin.Function1<1:0,1:1>;kotlin.Function2<1:0,1:1,1:0>){}[0]
+
+    final fun reduce(#A, #C): #A // com.bitsycore.lib.pulse.component/Slot.reduce|reduce(1:0;1:2){}[0]
+}
+
+final class <#A: out kotlin/Any> com.bitsycore.lib.pulse.container/StateChange { // com.bitsycore.lib.pulse.container/StateChange|null[0]
+    constructor <init>(#A, #A) // com.bitsycore.lib.pulse.container/StateChange.<init>|<init>(1:0;1:0){}[0]
+
+    final val changed // com.bitsycore.lib.pulse.container/StateChange.changed|{}changed[0]
+        final fun <get-changed>(): kotlin/Boolean // com.bitsycore.lib.pulse.container/StateChange.changed.<get-changed>|<get-changed>(){}[0]
+    final val current // com.bitsycore.lib.pulse.container/StateChange.current|{}current[0]
+        final fun <get-current>(): #A // com.bitsycore.lib.pulse.container/StateChange.current.<get-current>|<get-current>(){}[0]
+    final val previous // com.bitsycore.lib.pulse.container/StateChange.previous|{}previous[0]
+        final fun <get-previous>(): #A // com.bitsycore.lib.pulse.container/StateChange.previous.<get-previous>|<get-previous>(){}[0]
+
+    final fun component1(): #A // com.bitsycore.lib.pulse.container/StateChange.component1|component1(){}[0]
+    final fun component2(): #A // com.bitsycore.lib.pulse.container/StateChange.component2|component2(){}[0]
+    final fun toString(): kotlin/String // com.bitsycore.lib.pulse.container/StateChange.toString|toString(){}[0]
+}
+
+final object com.bitsycore.lib.pulse/Pulse { // com.bitsycore.lib.pulse/Pulse|null[0]
+    final var observer // com.bitsycore.lib.pulse/Pulse.observer|{}observer[0]
+        final fun <get-observer>(): com.bitsycore.lib.pulse.container/PulseObserver? // com.bitsycore.lib.pulse/Pulse.observer.<get-observer>|<get-observer>(){}[0]
+        final fun <set-observer>(com.bitsycore.lib.pulse.container/PulseObserver?) // com.bitsycore.lib.pulse/Pulse.observer.<set-observer>|<set-observer>(com.bitsycore.lib.pulse.container.PulseObserver?){}[0]
+}
+
+final fun <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> com.bitsycore.lib.pulse.container/Container(com.bitsycore.lib.pulse.container/ContainerContract<#A, #B, #C>, #A, kotlinx.coroutines/CoroutineScope, com.bitsycore.lib.pulse.container/StateSaver<#A>? = ..., com.bitsycore.lib.pulse.container/PulseObserver? = ..., kotlin/Function1<#B, com.bitsycore.lib.pulse.container/IntentPolicy> = ..., kotlin/Function2<#B?, kotlin/Exception, kotlin/Unit>? = ..., kotlin.coroutines/SuspendFunction3<com.bitsycore.lib.pulse.container/ContainerScope<#A, #B, #C>, #B, com.bitsycore.lib.pulse.container/StateChange<#A>, kotlin/Unit> = ...): com.bitsycore.lib.pulse.container/Container<#A, #B, #C> // com.bitsycore.lib.pulse.container/Container|Container(com.bitsycore.lib.pulse.container.ContainerContract<0:0,0:1,0:2>;0:0;kotlinx.coroutines.CoroutineScope;com.bitsycore.lib.pulse.container.StateSaver<0:0>?;com.bitsycore.lib.pulse.container.PulseObserver?;kotlin.Function1<0:1,com.bitsycore.lib.pulse.container.IntentPolicy>;kotlin.Function2<0:1?,kotlin.Exception,kotlin.Unit>?;kotlin.coroutines.SuspendFunction3<com.bitsycore.lib.pulse.container.ContainerScope<0:0,0:1,0:2>,0:1,com.bitsycore.lib.pulse.container.StateChange<0:0>,kotlin.Unit>){0§<kotlin.Any>;1§<kotlin.Any>;2§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any?, #B: kotlin/Any?, #C: kotlin/Any?, #D: kotlin/Any?> com.bitsycore.lib.pulse.component/listSlot(com.bitsycore.lib.pulse/Reducer<#C, #D>, kotlin/Function1<#A, kotlin.collections/List<#C>>, kotlin/Function2<#A, kotlin.collections/List<#C>, #A>, kotlin/Function1<#C, #B>): com.bitsycore.lib.pulse.component/ListSlot<#A, #B, #C, #D> // com.bitsycore.lib.pulse.component/listSlot|listSlot(com.bitsycore.lib.pulse.Reducer<0:2,0:3>;kotlin.Function1<0:0,kotlin.collections.List<0:2>>;kotlin.Function2<0:0,kotlin.collections.List<0:2>,0:0>;kotlin.Function1<0:2,0:1>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?, #B: kotlin/Any?, #C: kotlin/Any?> com.bitsycore.lib.pulse.component/slot(com.bitsycore.lib.pulse/Reducer<#B, #C>, kotlin/Function1<#A, #B>, kotlin/Function2<#A, #B, #A>): com.bitsycore.lib.pulse.component/Slot<#A, #B, #C> // com.bitsycore.lib.pulse.component/slot|slot(com.bitsycore.lib.pulse.Reducer<0:1,0:2>;kotlin.Function1<0:0,0:1>;kotlin.Function2<0:0,0:1,0:0>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>}[0]

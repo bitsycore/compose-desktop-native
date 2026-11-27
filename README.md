@@ -151,7 +151,7 @@ needs Navigation 2, which has no desktop-native klibs); use
 | Kotlin | 2.4.21 |
 | SDL3 | 3.4.20 |
 | Skiko | 0.150.2 (Windows fork: 0.150.2-mingw.1) |
-| Koin / Coil / Pulse | 4.2.2 / 3.6.3 / 0.3.7 |
+| Koin / Coil / Pulse | 4.2.2 / 3.6.3 / 0.4.1 |
 
 Every version is pinned in [`gradle/libs.versions.toml`](gradle/libs.versions.toml),
 the vendored upstream tags in [`compose.properties`](scripts/compose-fork/compose.properties)
